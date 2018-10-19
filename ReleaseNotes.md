@@ -19,6 +19,9 @@ Here come the actual release notes:
     * New Number component that allows to record numbers with decimal point or comma.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#2016](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2016) Indicator bar not visible
+    * Bugfix and Improvement for the Save Status Indicator.
 
 # metasfresh 5.77
 ## Features
