@@ -46,6 +46,8 @@ import {
   CLOSE_FILTER_BOX,
   ALLOW_OUTSIDE_CLICK,
   DISABLE_OUTSIDE_CLICK,
+  SHOW_SPINNER,
+  HIDE_SPINNER,
 } from '../constants/ActionTypes';
 
 import {
@@ -64,6 +66,20 @@ export function setLatestNewDocument(id) {
   return {
     type: SET_LATEST_NEW_DOCUMENT,
     id: id,
+  };
+}
+
+export function showSpinner(id) {
+  return {
+    type: SHOW_SPINNER,
+    spinnerId: id,
+  };
+}
+
+export function hideSpinner(id) {
+  return {
+    type: HIDE_SPINNER,
+    spinnerId: id,
   };
 }
 
