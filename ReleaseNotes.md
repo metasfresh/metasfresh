@@ -12,6 +12,9 @@ Here come the actual release notes:
 
 # metasfresh 5.78
 ## Features
+* metasfresh-webui-frontend
+  * [#1989](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1989) Hourglass Overlay for pending Posts
+    * Now showing a Loading indicator for windows with a large amount of records, to indicate about waiting time.
 
 ## Fixes
 
