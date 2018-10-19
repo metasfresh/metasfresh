@@ -56,7 +56,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1063](https://github.com/metasfresh/metasfresh-webui-api/issues/1063) Global QR Code Actions support
+    * New Barcode Feature that allows to Scan a QR Barcode in WebUI via Webcam now.
   * [#1066](https://github.com/metasfresh/metasfresh-webui-api/issues/1066) Don't show KPIs if the ElasticSearch system is disabled
+    * New Configuration feature that allows to hide the KPI's on main Dashboard if Elastic Search service is not enabled.
 
 
 * metasfresh-webui-frontend
