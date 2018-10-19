@@ -93,12 +93,6 @@
 			<version>21.0</version>
 		</dependency>
 
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -160,6 +154,12 @@
 			<classifier>tests</classifier>
 		</dependency>
 
+		<!-- required to display ATP info in sales and purchase contexts -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-commons</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 
 		<!-- Elasticsearch -->
 		<dependency>
