@@ -20,6 +20,7 @@ import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.util.Check;
+
 import lombok.Getter;
 import lombok.NonNull;
 

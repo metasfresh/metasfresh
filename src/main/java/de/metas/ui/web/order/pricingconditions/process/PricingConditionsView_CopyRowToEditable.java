@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -16,6 +15,8 @@ import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

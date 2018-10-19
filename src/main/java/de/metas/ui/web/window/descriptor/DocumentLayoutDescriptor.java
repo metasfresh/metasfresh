@@ -23,6 +23,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+
 import lombok.NonNull;
 
 /*

@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.compiere.util.Env;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -29,6 +28,7 @@ import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 
 /*
  * #%L

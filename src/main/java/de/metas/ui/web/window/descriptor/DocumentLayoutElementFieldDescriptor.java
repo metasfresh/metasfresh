@@ -18,6 +18,7 @@ import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.util.Check;
+
 import lombok.Getter;
 import lombok.NonNull;
 

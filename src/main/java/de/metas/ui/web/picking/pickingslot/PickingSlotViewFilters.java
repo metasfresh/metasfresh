@@ -9,6 +9,7 @@ import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvide
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
+
 import lombok.experimental.UtilityClass;
 
 /*
