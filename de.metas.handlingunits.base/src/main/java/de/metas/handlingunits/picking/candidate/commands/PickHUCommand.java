@@ -101,7 +101,7 @@ public class PickHUCommand
 		pickingCandidate.assertDraft();
 
 		pickingCandidate.pick(qtyToPick);
-		pickingCandidate.changePackToInstructionsId(packToId);
+		pickingCandidate.packTo(packToId);
 		pickingCandidateRepository.save(pickingCandidate);
 
 		allocatePickingSlotIfPossible();

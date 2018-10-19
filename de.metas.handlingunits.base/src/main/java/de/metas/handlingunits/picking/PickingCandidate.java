@@ -140,15 +140,26 @@ public class PickingCandidate
 	{
 		return PickingCandidateStatus.Processed.equals(getStatus());
 	}
-
-	public void assertApprovable()
+	
+	public boolean isRejectedToPick()
 	{
-		assertDraft();
+		return PickingCandidatePickStatus.WILL_NOT_BE_PICKED.equals(pickStatus);
+	}
 
-		if (pickStatus.isToBePicked())
+	private void assertNotApproved()
+	{
+		if (approvalStatus.isApproved())
 		{
-			throw new AdempiereException("Picking candidate not ready for approvable because " + pickStatus)
+			throw new AdempiereException("Picking candidate shall not be already approved")
 					.setParameter("pickingCandidate", this);
+		}
+	}
+
+	private void assertApprovable()
+	{
+		if (!pickStatus.isPacked())
+		{
+			throw new AdempiereException("Picking candidate is not approvable because it's not packed: " + this);
 		}
 	}
 
@@ -171,37 +182,46 @@ public class PickingCandidate
 	public void pick(@NonNull final Quantity qtyPicked)
 	{
 		assertDraft();
+		assertNotApproved();
 
 		this.qtyPicked = qtyPicked;
-		this.qtyReview = null;
-		this.pickStatus = computePickOrPackStatus();
-		updateApprovalStatus();
+		pickStatus = computePickOrPackStatus(this.packToInstructionsId);
 	}
 
 	public void rejectPicking(@NonNull final Quantity qtyRejected)
 	{
 		assertDraft();
+		assertNotApproved();
 
-		this.qtyPicked = qtyRejected;
-		this.qtyReview = null;
-		this.pickStatus = PickingCandidatePickStatus.WILL_NOT_BE_PICKED;
-		updateApprovalStatus();
+		qtyPicked = qtyRejected;
+		pickStatus = PickingCandidatePickStatus.WILL_NOT_BE_PICKED;
 	}
+	
+	public void packTo(final HuPackingInstructionsId packToInstructionsId)
+	{
+		assertDraft();
+		assertNotApproved();
+
+		if (!pickStatus.isPickedOrPacked())
+		{
+			throw new AdempiereException("Invalid status when changing packing instructions: " + pickStatus);
+		}
+
+		this.packToInstructionsId = packToInstructionsId;
+		pickStatus = computePickOrPackStatus(this.packToInstructionsId);
+	}
+
 
 	public void reviewPicking(final BigDecimal qtyReview)
 	{
 		assertDraft();
+		assertApprovable();
 
 		this.qtyReview = qtyReview;
-		updateApprovalStatus();
+		approvalStatus = computeApprovalStatus(qtyPicked, this.qtyReview, pickStatus);
 	}
 
-	private void updateApprovalStatus()
-	{
-		this.approvalStatus = computeApprovalStatus();
-	}
-
-	private PickingCandidateApprovalStatus computeApprovalStatus()
+	private static PickingCandidateApprovalStatus computeApprovalStatus(final Quantity qtyPicked, final BigDecimal qtyReview, final PickingCandidatePickStatus pickStatus)
 	{
 		if (qtyReview == null)
 		{
@@ -230,19 +250,8 @@ public class PickingCandidate
 		}
 	}
 
-	public void changePackToInstructionsId(final HuPackingInstructionsId packToInstructionsId)
-	{
-		assertDraft();
-		if (!pickStatus.isPickedOrPacked())
-		{
-			throw new AdempiereException("Invalid status when changing packing instructions: " + pickStatus);
-		}
 
-		this.packToInstructionsId = packToInstructionsId;
-		this.pickStatus = computePickOrPackStatus();
-	}
-
-	private PickingCandidatePickStatus computePickOrPackStatus()
+	private static PickingCandidatePickStatus computePickOrPackStatus(final HuPackingInstructionsId packToInstructionsId)
 	{
 		return packToInstructionsId != null ? PickingCandidatePickStatus.PACKED : PickingCandidatePickStatus.PICKED;
 	}
