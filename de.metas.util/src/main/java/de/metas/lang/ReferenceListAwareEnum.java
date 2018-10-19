@@ -1,10 +1,10 @@
-package de.metas.handlingunits;
+package de.metas.lang;
 
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +22,7 @@ package de.metas.handlingunits;
  * #L%
  */
 
-
-import de.metas.handlingunits.model.I_M_HU;
-
-/**
- * Pair of LU/TU/VHU
- *
- * @author tsa
- *
- */
-public interface ILUTUCUPair
+public interface ReferenceListAwareEnum
 {
-	I_M_HU getM_TU_HU();
-
-	I_M_HU getM_LU_HU();
-
-	I_M_HU getVHU();
+	String getCode();
 }

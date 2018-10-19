@@ -77,6 +77,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -109,7 +110,6 @@ public class ShipmentScheduleWithHU
 	{
 		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked, false, qtyTypeToUse);
 	}
-
 
 	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
@@ -144,7 +144,7 @@ public class ShipmentScheduleWithHU
 
 	private final IHUContext huContext;
 	private final I_M_ShipmentSchedule shipmentSchedule;
-	private final BigDecimal qtyPicked;
+	private final Quantity qtyPicked;
 
 	private final I_M_HU vhu;
 	private final I_M_HU tuHU;
@@ -183,7 +183,9 @@ public class ShipmentScheduleWithHU
 		this.shipmentScheduleQtyPicked = shipmentScheduleAlloc;
 
 		this.shipmentSchedule = create(shipmentScheduleAlloc.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
-		this.qtyPicked = shipmentScheduleAlloc.getQtyPicked();
+		
+		final I_C_UOM qtyPickedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
+		this.qtyPicked = Quantity.of(shipmentScheduleAlloc.getQtyPicked(), qtyPickedUOM);
 
 		this.vhu = shipmentScheduleAlloc.getVHU_ID() > 0 ? shipmentScheduleAlloc.getVHU() : null;
 		this.tuHU = shipmentScheduleAlloc.getM_TU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_TU_HU() : null;
@@ -215,7 +217,9 @@ public class ShipmentScheduleWithHU
 		this.shipmentScheduleQtyPicked = null; // no allocation, will be created on fly when needed
 
 		this.shipmentSchedule = shipmentSchedule;
-		this.qtyPicked = qtyPicked;
+		
+		final I_C_UOM qtyPickedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
+		this.qtyPicked = Quantity.of(qtyPicked, qtyPickedUOM);
 
 		vhu = null; // no VHU
 		tuHU = null; // no TU
@@ -312,9 +316,9 @@ public class ShipmentScheduleWithHU
 	/**
 	 * Might return a value less or equal to zero!
 	 */
-	public int getC_OrderLine_ID()
+	public OrderAndLineId getOrderLineId()
 	{
-		return shipmentSchedule.getC_OrderLine_ID();
+		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
 
 	public I_M_ShipmentSchedule getM_ShipmentSchedule()
@@ -322,14 +326,14 @@ public class ShipmentScheduleWithHU
 		return shipmentSchedule;
 	}
 
-	public BigDecimal getQtyPicked()
+	public Quantity getQtyPicked()
 	{
 		return qtyPicked;
 	}
-
-	public I_C_UOM getQtyPickedUOM()
+	
+	public I_C_UOM getUOM()
 	{
-		return Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
+		return qtyPicked.getUOM();
 	}
 
 	public I_M_HU getVHU()
@@ -413,7 +417,7 @@ public class ShipmentScheduleWithHU
 		{
 			shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class, inout);
 			shipmentScheduleQtyPicked.setM_ShipmentSchedule(shipmentSchedule);
-			shipmentScheduleQtyPicked.setQtyPicked(qtyPicked);
+			shipmentScheduleQtyPicked.setQtyPicked(qtyPicked.getAsBigDecimal());
 			// lu, tu and vhu are null, so no need to set them
 
 			final IDocumentBL documentBL = Services.get(IDocumentBL.class);

@@ -5,16 +5,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import lombok.NonNull;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
@@ -24,9 +33,12 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.order.model.I_C_Order;
 import de.metas.util.Services;
-import lombok.NonNull;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+		ContractLibraryConfiguration.class})
 public class ExtendContractTest extends AbstractFlatrateTermTest
 {
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
@@ -229,6 +241,9 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 			assertThat(currentflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
 			assertThat(nextflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
 		}
+
+		final I_C_Order order = InterfaceWrapperHelper.create(currentflatrateTerm.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}
 
 	private void assertPartnerData(@NonNull final I_C_Flatrate_Term currentflatrateTerm)

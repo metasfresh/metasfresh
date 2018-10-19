@@ -12,8 +12,16 @@ Here come the actual release notes:
 
 # metasfresh 5.78
 ## Features
+* metasfresh-webui-frontend
+  * [#1989](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1989) Hourglass Overlay for pending Posts
+    * Now showing a Loading indicator for windows with a large amount of records, to indicate about waiting time.
+  * [#2005](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2005) Allow decimal comma in Qty Fields
+    * New Number component that allows to record numbers with decimal point or comma.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#2016](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2016) Indicator bar not visible
+    * Bugfix and Improvement for the Save Status Indicator.
 
 # metasfresh 5.77
 ## Features
@@ -21,8 +29,20 @@ Here come the actual release notes:
 * metasfresh
   * [#4567](https://github.com/metasfresh/metasfresh/issues/4567) Automatic Lot No. Handling into Quarantine Warehouse
     * New Quarantine Handling Feature in Material Receipt.
+  * [#4609](https://github.com/metasfresh/metasfresh/issues/4609) HUEditor-Tweaks
   * [#4628](https://github.com/metasfresh/metasfresh/issues/4628) Split material dispo for M_Transaction with different attributes
     * Improvement of the ATP Calculation for Transactions that were not fulfilled same as planned.
+  * [#4633](https://github.com/metasfresh/metasfresh/issues/4633) Generic Process for SQL -> Excel Export
+  * [#4636](https://github.com/metasfresh/metasfresh/issues/4636) Support attachments being linked to multiple records
+  * [#4640](https://github.com/metasfresh/metasfresh/issues/4640) Option to remove M_Product_Category_ID from Material Cockpit
+  * [#4646](https://github.com/metasfresh/metasfresh/issues/4646) Rename and extend AD_MigrationScript helper function
+  * [#4646](https://github.com/metasfresh/metasfresh/issues/4649) BPartners FTS shall not be active by default
+  * [#4659](https://github.com/metasfresh/metasfresh/issues/4659) Configurable Mailtext for Documents in DocOutbound
+
+* metasfresh-webui-api
+  * [#1063](https://github.com/metasfresh/metasfresh-webui-api/issues/1063) Global QR Code Actions support
+  * [#1066](https://github.com/metasfresh/metasfresh-webui-api/issues/1066) Don't show KPIs if the ElasticSearch system is disabled
+
 
 * metasfresh-webui-frontend
   * [#1952](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1952) Advanced tooltip support
@@ -45,6 +65,9 @@ Here come the actual release notes:
     * Showing the Lookup Fields Tooltips now also when the Field is readonly.
   * [#1987](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1987) Adjustments to tooltip widget
     * Layout Improvements for the new Tooltip widget.
+  * [#1990](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1990) QR code support
+    * New Feature that allows to scan QR Codes now.
+  * [#1999](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1999) Process execution result action: render QR code
 
 ## Fixes
 
@@ -53,6 +76,13 @@ Here come the actual release notes:
     * Fix for the Open Items Reference Date Parm, now able to select to Open Items to a specific date again.
   * [#4632](https://github.com/metasfresh/metasfresh/issues/4632) Swing Picking Terminal: cannot pick
     * Bugfix for a minor case in Picking Workflow.
+  * [#4644](https://github.com/metasfresh/metasfresh/issues/4644) Clone Quotation, switch Sales Order. Wrong Document No
+  * [#4650](https://github.com/metasfresh/metasfresh/issues/4650) Elasticsearch shall use slf4j instead of log4j (again)
+  * [#4657](https://github.com/metasfresh/metasfresh/issues/4657) AD_Message cache in Msg not invalidated on data change
+  * [#4658](https://github.com/metasfresh/metasfresh/issues/4658) Dunning jasper uses untranslated _trl records
+
+* metasfresh-webui-api
+  * [#1060](https://github.com/metasfresh/metasfresh-webui-api/issues/1060) Allow parent-link relation to be set in AD_Tab
 
 * metasfresh-webui-frontend
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
@@ -63,6 +93,8 @@ Here come the actual release notes:
     * Alignment improvement for Calendar Icons in mandatory Date Fields.
   * [#1995](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1995) Cypress Test: Manufacturing Order Test fails
     * Bugfix for failing Manufacturing Order Test with Cypress.
+  * [#1998](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1998) Open view process action shall support profileId (frontend)
+  * [#2000](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2000) Modal view shall query the quick actions initially
 
 # metasfresh 5.76
 ## Features

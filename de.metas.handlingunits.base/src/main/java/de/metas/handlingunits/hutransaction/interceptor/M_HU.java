@@ -32,7 +32,8 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_M_Locator;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.IHUContextFactory;
@@ -131,8 +132,9 @@ public final class M_HU
 
 
 		// Get Locator Old and New
-		final I_M_Locator locatorOld = vhuOld.getM_Locator();
-		final I_M_Locator locatorNew = vhu.getM_Locator();
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		final LocatorId locatorIdOld = warehousesRepo.getLocatorIdByRepoIdOrNull(vhuOld.getM_Locator_ID());
+		final LocatorId locatorIdNew = warehousesRepo.getLocatorIdByRepoIdOrNull(vhu.getM_Locator_ID());
 
 		//
 		// Services
@@ -176,7 +178,7 @@ public final class M_HU
 				productId,
 				quantity.negate(),
 				date,
-				locatorOld,
+				locatorIdOld,
 				huStatusOld);
 		huTransactionFrom.setSkipProcessing(); // i.e. don't change HU's storage
 
@@ -188,7 +190,7 @@ public final class M_HU
 				productId,
 				quantity,
 				date,
-				locatorNew,
+				locatorIdNew,
 				huStatusNew);
 		huTransactionTo.setSkipProcessing(); // i.e. don't change HU's storage
 

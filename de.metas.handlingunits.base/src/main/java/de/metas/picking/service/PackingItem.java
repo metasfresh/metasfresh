@@ -35,9 +35,9 @@ import lombok.NonNull;
  */
 final class PackingItem implements IPackingItem
 {
+	private final PackingItemParts parts;
 	private final PackingItemGroupingKey groupingKey;
 	private final I_C_UOM uom;
-	private final PackingItemParts parts;
 
 	PackingItem(final PackingItemParts parts)
 	{
@@ -75,10 +75,13 @@ final class PackingItem implements IPackingItem
 		// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
 		final BPartnerLocationId bpLocationId = part.getBpartnerLocationId();
 
+		final HUPIItemProductId packingMaterialId = part.getPackingMaterialId();
+
 		return PackingItemGroupingKey.builder()
 				.productId(productId)
 				.bpartnerLocationId(bpLocationId)
 				.documentLineRef(documentLineRef)
+				.packingMaterialId(packingMaterialId)
 				.build();
 	}
 
@@ -94,12 +97,6 @@ final class PackingItem implements IPackingItem
 	{
 		return parts.getQtySum()
 				.orElseGet(() -> Quantity.zero(getC_UOM()));
-	}
-
-	@Override
-	public final ProductId getProductId()
-	{
-		return parts.mapReduce(PackingItemPart::getProductId).get();
 	}
 
 	@Override
@@ -263,6 +260,12 @@ final class PackingItem implements IPackingItem
 	}
 
 	@Override
+	public final ProductId getProductId()
+	{
+		return groupingKey.getProductId();
+	}
+
+	@Override
 	public final I_C_UOM getC_UOM()
 	{
 		return uom;
@@ -277,19 +280,19 @@ final class PackingItem implements IPackingItem
 	@Override
 	public BPartnerId getBPartnerId()
 	{
-		return parts.mapReduce(PackingItemPart::getBpartnerId).get();
+		return getBPartnerLocationId().getBpartnerId();
 	}
 
 	@Override
 	public BPartnerLocationId getBPartnerLocationId()
 	{
-		return parts.mapReduce(PackingItemPart::getBpartnerLocationId).get();
+		return groupingKey.getBpartnerLocationId();
 	}
 
 	@Override
 	public HUPIItemProductId getPackingMaterialId()
 	{
-		return parts.mapReduce(PackingItemPart::getPackingMaterialId).get();
+		return groupingKey.getPackingMaterialId();
 	}
 
 	@Override

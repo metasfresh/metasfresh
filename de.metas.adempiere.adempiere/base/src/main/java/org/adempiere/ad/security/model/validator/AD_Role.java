@@ -14,7 +14,7 @@ import org.adempiere.ad.security.impl.AD_Role_POCopyRecordSupport;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserDAO;
+import org.adempiere.user.UserId;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_Role;
 import org.compiere.util.CCache.CacheMapType;
@@ -75,11 +75,11 @@ public class AD_Role
 		if (changeType.isNew())
 		{
 			// Add Role to SuperUser
-			roleDAO.createUserRoleAssignmentIfMissing(IUserDAO.SUPERUSER_USER_ID, role.getAD_Role_ID());
+			roleDAO.createUserRoleAssignmentIfMissing(UserId.METASFRESH.getRepoId(), role.getAD_Role_ID());
 
 			// Add Role to User which created this record
 			final int createdByUserId = role.getCreatedBy();
-			if (createdByUserId != IUserDAO.SUPERUSER_USER_ID)
+			if (createdByUserId != UserId.METASFRESH.getRepoId())
 			{
 				roleDAO.createUserRoleAssignmentIfMissing(createdByUserId, role.getAD_Role_ID());
 			}

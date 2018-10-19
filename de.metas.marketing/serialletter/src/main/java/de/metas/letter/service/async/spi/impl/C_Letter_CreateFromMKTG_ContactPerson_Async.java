@@ -68,11 +68,14 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 			String body = "";
 			if (contactPerson.getBoilerPlateId() != null)
 			{
-				final BoilerPlate boilerPlate = boilerPlateRepo.getByBoilerPlateId(contactPerson.getBoilerPlateId());
+				final BoilerPlate boilerPlate = boilerPlateRepo.getByBoilerPlateId(
+						contactPerson.getBoilerPlateId(),
+						contactPerson.getLanguage());
+
 				if (boilerPlate != null)
 				{
 					subject = boilerPlate.getSubject();
-					body = boilerPlate.getTextSnippext();
+					body = boilerPlate.getTextSnippet();
 				}
 			}
 			Letter letter = Letter.builder()

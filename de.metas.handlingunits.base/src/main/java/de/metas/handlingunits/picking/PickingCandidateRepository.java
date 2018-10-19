@@ -1,14 +1,17 @@
 package de.metas.handlingunits.picking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -28,6 +31,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU;
@@ -79,6 +83,14 @@ public class PickingCandidateRepository
 		return toPickingCandidate(getRecordById(id));
 	}
 
+	public List<PickingCandidate> getByIds(@NonNull final Set<PickingCandidateId> ids)
+	{
+		return getRecordsByIds(ids)
+				.stream()
+				.map(this::toPickingCandidate)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private I_M_Picking_Candidate getRecordById(@NonNull final PickingCandidateId id)
 	{
 		final I_M_Picking_Candidate record = load(id, I_M_Picking_Candidate.class);
@@ -87,6 +99,11 @@ public class PickingCandidateRepository
 			throw new AdempiereException("@NotFound@ @M_Picking_Candidate_ID@: " + id);
 		}
 		return record;
+	}
+
+	private List<I_M_Picking_Candidate> getRecordsByIds(@NonNull final Set<PickingCandidateId> ids)
+	{
+		return loadByRepoIdAwares(ids, I_M_Picking_Candidate.class);
 	}
 
 	public void saveAll(@NonNull final Collection<PickingCandidate> candidates)
@@ -109,7 +126,7 @@ public class PickingCandidateRepository
 		updateRecord(record, candidate);
 		saveRecord(record);
 
-		candidate.setId(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()));
+		candidate.markSaved(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()));
 	}
 
 	private PickingCandidate toPickingCandidate(final I_M_Picking_Candidate record)
@@ -117,22 +134,43 @@ public class PickingCandidateRepository
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 		final Quantity qtyPicked = Quantity.of(record.getQtyPicked(), uom);
 
+		final BigDecimal qtyReview = !isNull(record, I_M_Picking_Candidate.COLUMNNAME_QtyReview) ? record.getQtyReview() : null;
+
 		return PickingCandidate.builder()
 				.id(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()))
+				//
 				.status(PickingCandidateStatus.ofCode(record.getStatus()))
+				.pickStatus(PickingCandidatePickStatus.ofCode(record.getPickStatus()))
+				.approvalStatus(PickingCandidateApprovalStatus.ofCode(record.getApprovalStatus()))
+				//
+				.pickFromHuId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
 				.qtyPicked(qtyPicked)
-				.huId(HuId.ofRepoId(record.getM_HU_ID()))
+				.qtyReview(qtyReview)
+				//
+				.packToInstructionsId(HuPackingInstructionsId.ofRepoIdOrNull(record.getPackTo_HU_PI_ID()))
+				.packedToHuId(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
+				//
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.pickingSlotId(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
+				//
 				.build();
 	}
 
 	private static void updateRecord(final I_M_Picking_Candidate record, final PickingCandidate from)
 	{
 		record.setStatus(from.getStatus().getCode());
+		record.setPickStatus(from.getPickStatus().getCode());
+		record.setApprovalStatus(from.getApprovalStatus().getCode());
+
+		record.setPickFrom_HU_ID(HuId.toRepoId(from.getPickFromHuId()));
+
 		record.setQtyPicked(from.getQtyPicked().getAsBigDecimal());
 		record.setC_UOM_ID(from.getQtyPicked().getUOMId());
-		record.setM_HU_ID(from.getHuId().getRepoId());
+		record.setQtyReview(from.getQtyReview());
+
+		record.setPackTo_HU_PI_ID(HuPackingInstructionsId.toRepoId(from.getPackToInstructionsId()));
+		record.setM_HU_ID(HuId.toRepoId(from.getPackedToHuId()));
+
 		record.setM_ShipmentSchedule_ID(from.getShipmentScheduleId().getRepoId());
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(from.getPickingSlotId()));
 	}
@@ -177,6 +215,18 @@ public class PickingCandidateRepository
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds);
+	}
+
+	public Stream<PickingCandidate> streamByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.orderBy(I_M_Picking_Candidate.COLUMN_M_Picking_Candidate_ID) // just to have a predictable order
+				.create()
+				.stream()
+				.map(this::toPickingCandidate);
 	}
 
 	public Optional<PickingCandidate> getByShipmentScheduleIdAndHuIdAndPickingSlotId(
@@ -334,7 +384,18 @@ public class PickingCandidateRepository
 			final IQuery<I_M_HU> husQuery = queryBL.createQueryBuilder(I_M_HU.class)
 					.addNotEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Shipped) // not already shipped (https://github.com/metasfresh/metasfresh-webui-api/issues/647)
 					.create();
-			queryBuilder.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
+
+			// PickFrom HU
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addEqualsFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, null)
+					.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
+
+			// Picked HU
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, null)
+					.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
 		}
 
 		//

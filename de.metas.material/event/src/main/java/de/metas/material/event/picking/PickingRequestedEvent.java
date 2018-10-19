@@ -2,7 +2,7 @@ package de.metas.material.event.picking;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -46,7 +46,7 @@ public class PickingRequestedEvent implements MaterialEvent
 
 	int pickingSlotId;
 
-	List<Integer> topLevelHuIdsToPick;
+	Set<Integer> topLevelHuIdsToPick;
 
 	@Builder
 	@JsonCreator
@@ -54,7 +54,7 @@ public class PickingRequestedEvent implements MaterialEvent
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("pickingSlotId") final int pickingSlotId,
-			@JsonProperty("topLevelHuIdsToPick") final List<Integer> topLevelHuIdsToPick)
+			@JsonProperty("topLevelHuIdsToPick") final Set<Integer> topLevelHuIdsToPick)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.shipmentScheduleId = shipmentScheduleId;

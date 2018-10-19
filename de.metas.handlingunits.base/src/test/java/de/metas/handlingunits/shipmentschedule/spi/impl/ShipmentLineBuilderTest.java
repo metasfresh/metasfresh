@@ -12,7 +12,8 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -67,7 +68,11 @@ public class ShipmentLineBuilderTest
 		final I_M_HU_PI_Item itemMA = huTestHelper.createHU_PI_Item_Material(huDefIFCO);
 		piipWithCapacityEight = huTestHelper.assignProduct(itemMA, huTestHelper.pTomatoProductId, EIGHT, huTestHelper.uomEach);
 
+		final I_C_Order order = newInstance(I_C_Order.class);
+		save(order);
+		
 		orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order_ID(order.getC_Order_ID());
 		orderLine.setM_Product(huTestHelper.pTomato);
 		save(orderLine);
 
@@ -77,6 +82,7 @@ public class ShipmentLineBuilderTest
 
 		shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setM_Warehouse(huTestHelper.defaultWarehouse);
+		shipmentSchedule.setC_Order_ID(order.getC_Order_ID());
 		shipmentSchedule.setC_OrderLine(orderLine);
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
 		shipmentSchedule.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name));

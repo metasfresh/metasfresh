@@ -206,8 +206,8 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		HU2PackingItemsAllocator.builder()
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
-				.fromHU(tuHUsWithTen.get(0))
-				.fromHU(tuHUsWithEleven.get(0))
+				.pickFromHU(tuHUsWithTen.get(0))
+				.pickFromHU(tuHUsWithEleven.get(0))
 				.allocate();
 
 		assertThat(POJOLookupMap.get().getRecords(I_M_ShipmentSchedule.class).size(), is(2));
@@ -272,7 +272,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		HU2PackingItemsAllocator.builder()
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
-				.fromHUs(luHUs)
+				.pickFromHUs(luHUs)
 				.allocate();
 
 		assertThat("We shall have packed items", packingItems.hasPackedItems(), is(true));

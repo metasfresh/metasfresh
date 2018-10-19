@@ -2,6 +2,8 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -11,6 +13,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.junit.Before;
@@ -26,6 +29,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 
@@ -59,6 +63,8 @@ public class ShipmentScheduleWithHUTests
 	private static final String typeLU = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
 	private static final String typeTU = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
+	private ProductId productId;
+
 	private LUTUProducerDestinationTestSupport testSupport;
 
 	@Before
@@ -67,6 +73,10 @@ public class ShipmentScheduleWithHUTests
 		// AdempiereTestHelper.get().init();
 		this.testSupport = new LUTUProducerDestinationTestSupport();
 		contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
+
+		final I_M_Product product = newInstance(I_M_Product.class);
+		saveRecord(product);
+		productId = testSupport.helper.pTomatoProductId;
 	}
 
 	@Test
@@ -203,7 +213,6 @@ public class ShipmentScheduleWithHUTests
 		assertThat(shipmentScheduleQtyPicked.getQtyTU()).as("Wrong QtyTU").isEqualByComparingTo(ONE);
 	}
 
-
 	@Test
 	public void testupdateHUDeliveryQuantities_LU_With_AggregatedTU()
 	{
@@ -294,6 +303,7 @@ public class ShipmentScheduleWithHUTests
 			final int qtyOrderedTU)
 	{
 		final I_M_ShipmentSchedule sched = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class, contextProvider);
+		sched.setM_Product_ID(productId.getRepoId());
 		sched.setQtyOrdered_LU(new BigDecimal(qtyOrderedLU));
 		sched.setQtyOrdered_TU(new BigDecimal(qtyOrderedTU));
 

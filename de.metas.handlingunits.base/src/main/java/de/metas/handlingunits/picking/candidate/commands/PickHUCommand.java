@@ -7,6 +7,7 @@ import org.compiere.model.I_C_UOM;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -62,9 +63,10 @@ public class PickHUCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ShipmentScheduleId shipmentScheduleId;
-	private final HuId huId;
+	private final HuId pickFromHuId;
 	private final PickingSlotId pickingSlotId;
 	private final Quantity qtyToPick;
+	private final HuPackingInstructionsId packToId;
 
 	private I_M_ShipmentSchedule _shipmentSchedule; // lazy
 
@@ -76,8 +78,9 @@ public class PickHUCommand
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
 		this.shipmentScheduleId = request.getShipmentScheduleId();
-		this.huId = request.getHuId();
+		this.pickFromHuId = request.getPickFromHuId();
 		this.pickingSlotId = request.getPickingSlotId();
+		this.packToId = request.getPackToId();
 		this.qtyToPick = request.getQtyToPick();
 	}
 
@@ -91,31 +94,45 @@ public class PickHUCommand
 		final Quantity qtyToPick = getQtyToPick();
 		if (qtyToPick.signum() <= 0)
 		{
-			throw new AdempiereException("Invalid quanity to pick: " + qtyToPick);
+			throw new AdempiereException("Invalid quantity to pick: " + qtyToPick);
 		}
 
-		final PickingCandidate pickingCandidate = pickingCandidateRepository.getByShipmentScheduleIdAndHuIdAndPickingSlotId(shipmentScheduleId, huId, pickingSlotId)
-				.orElseGet(() -> PickingCandidate.builder()
-						.status(PickingCandidateStatus.Draft)
-						.qtyPicked(qtyToPick)
-						.shipmentScheduleId(shipmentScheduleId)
-						.huId(huId)
-						.pickingSlotId(pickingSlotId)
-						.build());
-		if (!PickingCandidateStatus.Draft.equals(pickingCandidate.getStatus()))
-		{
-			throw new AdempiereException("Changing processed picking candidate is not allowed")
-					.setParameter("pickingCandidate", pickingCandidate);
-		}
+		final PickingCandidate pickingCandidate = getOrCreatePickingCandidate();
+		pickingCandidate.assertDraft();
 
-		pickingCandidate.setQtyPicked(qtyToPick);
+		pickingCandidate.pick(qtyToPick);
+		pickingCandidate.changePackToInstructionsId(packToId);
 		pickingCandidateRepository.save(pickingCandidate);
 
 		allocatePickingSlotIfPossible();
 
 		return PickHUResult.builder()
-				.pickingCandidateId(pickingCandidate.getId())
+				.pickingCandidate(pickingCandidate)
 				.build();
+	}
+
+	private PickingCandidate getOrCreatePickingCandidate()
+	{
+		final PickingCandidate existingPickingCandidate = pickingCandidateRepository.streamByShipmentScheduleId(shipmentScheduleId)
+				.filter(PickingCandidate::isDraft)
+				.filter(pc -> PickingSlotId.equals(pickingSlotId, pc.getPickingSlotId()))
+				.filter(pc -> HuId.equals(pickFromHuId, pc.getPickFromHuId()))
+				.findFirst()
+				.orElse(null);
+		if (existingPickingCandidate != null)
+		{
+			return existingPickingCandidate;
+		}
+		else
+		{
+			return PickingCandidate.builder()
+					.status(PickingCandidateStatus.Draft)
+					.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
+					.shipmentScheduleId(shipmentScheduleId)
+					.pickFromHuId(pickFromHuId)
+					.pickingSlotId(pickingSlotId)
+					.build();
+		}
 	}
 
 	private Quantity getQtyToPick()
@@ -132,7 +149,7 @@ public class PickHUCommand
 
 	private Quantity getQtyFromHU()
 	{
-		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final I_M_HU pickFromHU = handlingUnitsDAO.getById(pickFromHuId);
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
@@ -140,13 +157,13 @@ public class PickHUCommand
 		final IHUProductStorage productStorage = huContextFactory
 				.createMutableHUContext()
 				.getHUStorageFactory()
-				.getStorage(hu)
+				.getStorage(pickFromHU)
 				.getProductStorageOrNull(productId);
 
 		// Allow empty storage. That's the case when we are adding a newly created HU
 		if (productStorage == null)
 		{
-			final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
+			final I_C_UOM uom = getShipmentScheduleUOM();
 			return Quantity.zero(uom);
 		}
 
@@ -160,6 +177,11 @@ public class PickHUCommand
 			_shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		}
 		return _shipmentSchedule;
+	}
+
+	private I_C_UOM getShipmentScheduleUOM()
+	{
+		return shipmentScheduleBL.getUomOfProduct(getShipmentSchedule());
 	}
 
 	private void allocatePickingSlotIfPossible()

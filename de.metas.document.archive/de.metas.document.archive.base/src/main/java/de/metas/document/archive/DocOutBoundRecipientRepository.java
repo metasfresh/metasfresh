@@ -5,9 +5,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.archive.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.i18n.Language;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
@@ -44,20 +47,27 @@ public class DocOutBoundRecipientRepository
 
 	private DocOutBoundRecipient ofRecord(@NonNull final I_AD_User userRecord)
 	{
+		final Language userLanguage = Language.asLanguage(userRecord.getAD_Language());
+
+		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+		final Language bPartnerLanguage = bPartnerBL.getLanguageForModel(userRecord);
+
 		return DocOutBoundRecipient.builder()
 				.id(DocOutBoundRecipientId.ofRepoId(userRecord.getAD_User_ID()))
 				.emailAddress(userRecord.getEMail())
 				.invoiceAsEmail(computeInvoiceAsEmail(userRecord))
+				.userLanguage(userLanguage)
+				.bPartnerLanguage(bPartnerLanguage)
 				.build();
 	}
 
 	private boolean computeInvoiceAsEmail(@NonNull final I_AD_User userRecord)
 	{
-		if(userRecord.getC_BPartner_ID() > 0)
+		if (userRecord.getC_BPartner_ID() > 0)
 		{
 			final I_C_BPartner bPartnerRecord = create(userRecord.getC_BPartner(), I_C_BPartner.class);
 			final String isInvoiceEmailEnabled = bPartnerRecord.getIsInvoiceEmailEnabled();
-			if(!Check.isEmpty(isInvoiceEmailEnabled, true))
+			if (!Check.isEmpty(isInvoiceEmailEnabled, true))
 			{
 				return StringUtils.toBoolean(isInvoiceEmailEnabled); // we have our result
 			}

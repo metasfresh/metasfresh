@@ -1,6 +1,7 @@
 package de.metas.handlingunits;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.base.Predicates;
@@ -75,5 +76,10 @@ public class HuId implements RepoIdAware
 	private HuId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_ID");
+	}
+
+	public static boolean equals(final HuId o1, final HuId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

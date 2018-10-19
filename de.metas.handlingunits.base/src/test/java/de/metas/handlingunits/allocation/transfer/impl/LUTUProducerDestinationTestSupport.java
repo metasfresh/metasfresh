@@ -1,6 +1,8 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -8,7 +10,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 
 import de.metas.handlingunits.HUTestHelper;
@@ -17,12 +21,14 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
@@ -64,6 +70,8 @@ import de.metas.util.collections.CollectionUtils;
 public class LUTUProducerDestinationTestSupport
 {
 	public HUTestHelper helper;
+
+	public LocatorId defaultLocatorId;
 
 	/**
 	 * The PI for the IFCO TU. By default one IFCO TU can hold 40kg of {@link HUTestHelper#pTomato} or 7pce of {@link HUTestHelper#pSalad}.
@@ -120,6 +128,10 @@ public class LUTUProducerDestinationTestSupport
 		helper = new HUTestHelper();
 		helper.init();
 
+		{
+			defaultLocatorId = createLocatorId();
+		}
+
 		// TU (ifco) with capacities for tomatoes and salad
 		{
 			piTU_IFCO = helper.createHUDefinition("TU_IFCO", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -171,6 +183,18 @@ public class LUTUProducerDestinationTestSupport
 		}
 	}
 
+	private LocatorId createLocatorId()
+	{
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		saveRecord(warehouse);
+
+		final I_M_Locator locator = newInstance(I_M_Locator.class);
+		locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		saveRecord(locator);
+
+		return LocatorId.ofRecord(locator);
+	}
+
 	public I_M_HU createLU(final int qtyTUs, final int qtyCUPerTU)
 	{
 		return createLU(qtyTUs, qtyCUPerTU, lutuProducer -> {
@@ -180,7 +204,7 @@ public class LUTUProducerDestinationTestSupport
 	public I_M_HU createLU(final int qtyTUs, final int qtyCUPerTU, Consumer<LUTUProducerDestination> producerCustomizer)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
-		// lutuProducer.setM_Locator(locator);
+		lutuProducer.setLocatorId(defaultLocatorId);
 
 		// LU
 		lutuProducer.setLUPI(piLU);
@@ -207,7 +231,8 @@ public class LUTUProducerDestinationTestSupport
 	 */
 	public I_M_HU mkRealStandAloneCuWithCuQty(final String strCuQty)
 	{
-		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+				.setLocatorId(defaultLocatorId);
 
 		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()
 				.producer(producer)
@@ -236,6 +261,7 @@ public class LUTUProducerDestinationTestSupport
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(defaultLocatorId);
 		lutuProducer.setNoLU();
 		lutuProducer.setTUPI(piTU_IFCO);
 
@@ -278,6 +304,7 @@ public class LUTUProducerDestinationTestSupport
 		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(defaultLocatorId);
 		lutuProducer.setLUItemPI(piLU_Item_IFCO);
 		lutuProducer.setLUPI(piLU);
 		lutuProducer.setTUPI(piTU_IFCO);

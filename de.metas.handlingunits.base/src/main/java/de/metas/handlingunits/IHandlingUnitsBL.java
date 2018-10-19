@@ -11,6 +11,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
+import com.google.common.base.Predicates;
+
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -65,19 +67,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	IMutableHUContext createMutableHUContext(Properties ctx, String trxName);
-
-	/**
-	 * Checks if given <code>piId</code> (M_HU_PI_ID) is a concrete PI definition.
-	 * <p>
-	 * A concrete PI definition is a PI which is actually defined.
-	 *
-	 * e.g. is not No-PI, not Virtual-PI.
-	 * </p>
-	 *
-	 * @param piId
-	 * @return true if is a concrete PI
-	 */
-	boolean isConcretePI(int piId);
 
 	I_C_UOM getHandlingUOM(I_M_Product product);
 
@@ -242,7 +231,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		 * If the filter returns {@code false} for a given HU, then neither that HU or its parents will be added to the result.
 		 */
 		@Default
-		Predicate<I_M_HU> filter = (hu -> true);
+		Predicate<I_M_HU> filter = Predicates.alwaysTrue();
 	}
 
 	/**
@@ -256,7 +245,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *         <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
 	 *         </ul>
 	 */
-	ILUTUCUPair getTopLevelParentAsLUTUCUPair(I_M_HU hu);
+	LUTUCUPair getTopLevelParentAsLUTUCUPair(I_M_HU hu);
 
 	/**
 	 * Determines if the handling unit is a loading unit (type {@link X_M_HU_PI_Version#HU_UNITTYPE_LoadLogistiqueUnit} )

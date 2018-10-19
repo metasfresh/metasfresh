@@ -40,12 +40,12 @@ SELECT
 FROM
 	C_DunningDoc dd
 	JOIN C_DunningLevel dl		ON dd.C_Dunninglevel_ID = dl.C_DunningLevel_ID AND dl.isActive = 'Y'
-	LEFT JOIN C_DunningLevel_Trl dlt 	ON dd.C_Dunninglevel_ID = dlt.C_DunningLevel_ID AND dlt.ad_Language = $2 AND dlt.isActive = 'Y'
+	LEFT JOIN C_DunningLevel_Trl dlt 	ON dd.C_Dunninglevel_ID = dlt.C_DunningLevel_ID AND dlt.ad_Language = $2 AND dlt.isActive = 'Y' AND dlt.isTranslated = 'Y'
 	LEFT JOIN C_BPartner bp 		ON dd.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	LEFT JOIN AD_Org o 			ON dd.AD_Org_ID = o.AD_Org_ID AND o.isActive = 'Y'
 	LEFT JOIN AD_OrgInfo inf		ON o.AD_Org_ID = inf.AD_Org_ID AND inf.isActive = 'Y'
 	LEFT JOIN C_PaymentTerm p 		ON dl.C_PaymentTerm_ID = p.C_PaymentTerm_ID AND p.isActive = 'Y'
-	LEFT JOIN C_PaymentTerm_Trl pt		ON dl.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.ad_Language = $2 AND pt.isActive = 'Y'
+	LEFT JOIN C_PaymentTerm_Trl pt		ON dl.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.ad_Language = $2 AND pt.isActive = 'Y' AND pt.isTranslated = 'Y'
 WHERE
 	dd.C_DunningDoc_ID = $1 AND dd.isActive = 'Y'
 ;

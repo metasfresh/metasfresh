@@ -72,7 +72,9 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -101,11 +103,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// NOTE: it's public only for testing purposes
-	public static final int PACKING_ITEM_TEMPLATE_HU_PI_ID = 100;
 	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Version_ID = 100;
 	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Item_ID = 540004;
 
-	public static final int VIRTUAL_HU_PI_ID = 101;
 	public static final int VIRTUAL_HU_PI_Version_ID = 101;
 	public static final int VIRTUAL_HU_PI_Item_ID = 101;
 
@@ -142,13 +142,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public I_M_HU_PI retrievePackingItemTemplatePI(final Properties ctx)
 	{
-		final I_M_HU_PI noPI = retrievePI(ctx, PACKING_ITEM_TEMPLATE_HU_PI_ID);
-		if (noPI == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_HU_PI_ID@ NoPI (ID=" + PACKING_ITEM_TEMPLATE_HU_PI_ID + ")");
-		}
-
-		return noPI;
+		return retrievePI(ctx, HuPackingInstructionsId.TEMPLATE);
 	}
 
 	@Override
@@ -167,13 +161,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public I_M_HU_PI retrieveVirtualPI(final Properties ctx)
 	{
-		final I_M_HU_PI virtualPI = retrievePI(ctx, VIRTUAL_HU_PI_ID);
-		if (virtualPI == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_HU_PI_ID@ virtual (ID=" + VIRTUAL_HU_PI_ID + ")");
-		}
-
-		return virtualPI;
+		return retrievePI(ctx, HuPackingInstructionsId.VIRTUAL);
 	}
 
 	@Override
@@ -189,34 +177,31 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return virtualPIItem;
 	}
 
-	@Cached(cacheName = I_M_HU_PI.Table_Name + "#by#" + I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
-	// NOTE: for caching to work, don't make it final
-	/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, final int piId)
+	@Override
+	public I_M_HU_PI getPackingInstructionById(@NonNull final HuPackingInstructionsId id)
 	{
-		final I_M_HU_PI pi = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
-				.filter(new EqualsQueryFilter<I_M_HU_PI>(I_M_HU_PI.COLUMNNAME_M_HU_PI_ID, piId))
-				.create()
-				.firstOnly(I_M_HU_PI.class);
-
-		return pi;
+		return retrievePI(Env.getCtx(), id);
 	}
 
-	@Override
-	public int getPackingItemTemplate_HU_PI_ID()
+	@Cached(cacheName = I_M_HU_PI.Table_Name + "#by#" + I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
+	// NOTE: for caching to work, don't make it final
+	/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
 	{
-		return PACKING_ITEM_TEMPLATE_HU_PI_ID;
+		final I_M_HU_PI pi = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_M_HU_PI_ID, piId)
+				.create()
+				.firstOnly(I_M_HU_PI.class);
+		if (pi == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_HU_PI_ID@: " + piId);
+		}
+		return pi;
 	}
 
 	@Override
 	public int getPackingItemTemplate_HU_PI_Item_ID()
 	{
 		return PACKING_ITEM_TEMPLATE_HU_PI_Item_ID;
-	}
-
-	@Override
-	public int getVirtual_HU_PI_ID()
-	{
-		return VIRTUAL_HU_PI_ID;
 	}
 
 	@Override
@@ -663,18 +648,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPI);
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPI);
-		final int huPIId = huPI.getM_HU_PI_ID();
-		final int bpartnerId = bpartner == null ? -1 : bpartner.getC_BPartner_ID();
+		final HuPackingInstructionsId packingInstructionsId = HuPackingInstructionsId.ofRepoId(huPI.getM_HU_PI_ID());
+		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
 
-		return retrieveParentPIItemsForParentPI(ctx, huPIId, huUnitType, bpartnerId, trxName);
+		return retrieveParentPIItemsForParentPI(ctx, packingInstructionsId, huUnitType, bpartnerId, trxName);
 	}
 
 	@Cached
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@CacheCtx final Properties ctx,
-			final int huPIId,
+			@NonNull final HuPackingInstructionsId packingInstructionsId,
 			@Nullable final String huUnitType,
-			final int bpartnerId,
+			final BPartnerId bpartnerId,
 			@CacheTrx final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -684,10 +669,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		//
 		// Fetch only those PI Items which have our given huPI included
-		// 08254: if No-PI, don't add included HU filter
-		if (huPIId != getPackingItemTemplate_HU_PI_ID())
+		// 08254: if Template-PI, don't add included HU filter
+		if (!packingInstructionsId.isTemplate())
 		{
-			piItemsQueryBuilder.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, huPIId);
+			piItemsQueryBuilder.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, packingInstructionsId);
 		}
 
 		//

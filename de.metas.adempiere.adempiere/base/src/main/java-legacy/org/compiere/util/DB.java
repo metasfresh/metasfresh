@@ -70,6 +70,7 @@ import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
 import de.metas.i18n.ILanguageDAO;
+import de.metas.lang.ReferenceListAwareEnum;
 import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
@@ -799,6 +800,8 @@ public final class DB
 		//
 		else if(param instanceof RepoIdAware)
 			pstmt.setInt(index, ((RepoIdAware)param).getRepoId());
+		else if(param instanceof ReferenceListAwareEnum)
+			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		//
 		else
 			throw new DBException("Unknown parameter type " + index + " - " + param + " (" + param.getClass() + ")");
@@ -2716,6 +2719,38 @@ public final class DB
 		T retrieveRow(ResultSet rs) throws SQLException;
 	}
 
+	public static <T> List<T> retrieveRowsOutOfTrx(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql, ITrx.TRXNAME_None);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			
+			final ArrayList<T> rows = new ArrayList<>();
+			while(rs.next())
+			{
+				T row = loader.retrieveRow(rs);
+				rows.add(row);
+			}
+			
+			return rows;
+		}
+		catch(SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+	}
+
 	public static <T> T retrieveFirstRowOrNull(
 			@NonNull final String sql,
 			@Nullable final List<Object> sqlParams,
@@ -2739,7 +2774,7 @@ public final class DB
 		}
 		catch(SQLException ex)
 		{
-			throw new DBException(sql);
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{

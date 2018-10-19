@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.requests;
 import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.quantity.Quantity;
@@ -39,7 +40,9 @@ public class PickHURequest
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
 	@NonNull
-	HuId huId;
+	HuId pickFromHuId;
+	@Nullable
+	HuPackingInstructionsId packToId;
 
 	@Nullable
 	PickingSlotId pickingSlotId;

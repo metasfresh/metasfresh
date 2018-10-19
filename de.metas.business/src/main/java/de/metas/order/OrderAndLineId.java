@@ -1,10 +1,14 @@
 package de.metas.order;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
+
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,10 +37,17 @@ import lombok.Value;
 @Value
 public class OrderAndLineId
 {
+	private static final Logger logger = LogManager.getLogger(OrderAndLineId.class);
+
 	public static OrderAndLineId ofRepoIdsOrNull(final int orderRepoId, final int orderLineRepoId)
 	{
-		if (orderRepoId <= 0 || orderLineRepoId <= 0)
+		if (orderLineRepoId <= 0)
 		{
+			return null;
+		}
+		if (orderRepoId <= 0)
+		{
+			logger.warn("ofRepoIdsOrNull: Possible development error: orderLineRepoId={} while orderRepoId={}. Returning null", orderLineRepoId, orderRepoId);
 			return null;
 		}
 		return ofRepoIds(orderRepoId, orderLineRepoId);
@@ -55,6 +66,11 @@ public class OrderAndLineId
 	public static int getOrderRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderRepoId() : defaultValue;
+	}
+
+	public static int toOrderLineRepoId(final OrderAndLineId orderAndLineId)
+	{
+		return getOrderLineRepoIdOr(orderAndLineId, -1);
 	}
 
 	public static int getOrderLineRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
@@ -84,6 +100,11 @@ public class OrderAndLineId
 	public int getOrderLineRepoId()
 	{
 		return orderLineId.getRepoId();
+	}
+
+	public static boolean equals(final OrderAndLineId o1, final OrderAndLineId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 
 }

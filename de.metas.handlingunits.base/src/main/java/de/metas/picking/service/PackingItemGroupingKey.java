@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,6 +43,8 @@ public class PackingItemGroupingKey
 	final BPartnerLocationId bpartnerLocationId;
 
 	final TableRecordReference documentLineRef;
+	
+	final HUPIItemProductId packingMaterialId;
 
 	public static boolean equals(final PackingItemGroupingKey o1, final PackingItemGroupingKey o2)
 	{

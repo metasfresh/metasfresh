@@ -38,8 +38,8 @@ import org.compiere.util.Env;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionBL;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;

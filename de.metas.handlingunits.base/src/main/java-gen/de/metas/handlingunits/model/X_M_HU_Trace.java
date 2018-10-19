@@ -15,7 +15,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -897671573L;
+	private static final long serialVersionUID = 649082030L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (Properties ctx, int M_HU_Trace_ID, String trxName)
@@ -587,8 +587,6 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public static final String VHUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String VHUSTATUS_Issued = "I";
-	/** Reserved = R */
-	public static final String VHUSTATUS_Reserved = "R";
 	/** Set CU (VHU) Gebindestatus.
 		@param VHUStatus CU (VHU) Gebindestatus	  */
 	@Override

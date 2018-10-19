@@ -32,6 +32,7 @@ import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -175,7 +176,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransformService.builderForHUcontext()
 				.huContext(data.helper.getHUContext()).build()
-				.cuToNewTUs(cuToSplit, Quantity.of(BigDecimal.ONE,data.helper.uomKg), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.cuToNewTUs(cuToSplit, Quantity.of(BigDecimal.ONE, data.helper.uomKg), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -254,7 +255,8 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == existingTU.getM_HU_ID()), is(true));
 		}
 
-		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+				.setLocatorId(data.defaultLocatorId);
 		data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("3"), data.helper.uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 		final I_M_ReceiptSchedule rs2 = create_receiptSchedule_for_CU(cu2, "3");
@@ -344,7 +346,8 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == tuWithMixedCUs.getM_HU_ID()), is(true));
 		}
 		// create a standalone-CU
-		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+				.setLocatorId(data.defaultLocatorId);
 		data.helper.load(producer, data.helper.pSaladProductId, four, data.helper.uomKg);
 
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
@@ -410,6 +413,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		//
 		// set up packing instructions as described in the issue (TU that holds 4kg, LU that can hold 10 TUs)
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(data.defaultLocatorId);
 		final I_M_HU_PI_Item piLU_Item_10_IFCOs;
 		{
 			final I_M_HU_PI piTU_IFCO = data.helper.createHUDefinition("TU_IFCO-4kg-tomatoes", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -618,7 +622,8 @@ public class HUTransformServiceReceiptCandidatesTests
 
 	private I_M_HU mkRealStandAloneCUToSplit(final String strCuQty)
 	{
-		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+				.setLocatorId(data.defaultLocatorId);
 		data.helper.load(producer, data.helper.pTomatoProductId, new BigDecimal(strCuQty), data.helper.uomKg);
 
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
@@ -631,6 +636,7 @@ public class HUTransformServiceReceiptCandidatesTests
 	private I_M_HU mkRealCUWithTUToSplit(final String strCuQty)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(data.defaultLocatorId);
 		lutuProducer.setNoLU();
 		lutuProducer.setTUPI(data.piTU_IFCO);
 

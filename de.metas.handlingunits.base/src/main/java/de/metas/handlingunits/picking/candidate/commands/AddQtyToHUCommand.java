@@ -81,7 +81,7 @@ public class AddQtyToHUCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final BigDecimal qtyCU;
-	private final HuId targetHUId;
+	private final HuId packToHuId;
 	private final PickingSlotId pickingSlotId;
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final boolean allowOverDelivery;
@@ -95,7 +95,7 @@ public class AddQtyToHUCommand
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.qtyCU = request.getQtyCU();
-		this.targetHUId = request.getTargetHUId();
+		this.packToHuId = request.getPackToHuId();
 		this.pickingSlotId = request.getPickingSlotId();
 		this.shipmentScheduleId = request.getShipmentScheduleId();
 		this.allowOverDelivery = request.isAllowOverDelivery();
@@ -116,7 +116,7 @@ public class AddQtyToHUCommand
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
 		final HUListAllocationSourceDestination source = createAllocationSource(shipmentSchedule);
-		final IAllocationDestination destination = createAllocationDestination(targetHUId);
+		final IAllocationDestination destination = createAllocationDestination(packToHuId);
 
 		// NOTE: create the context with the tread-inherited transaction,
 		// otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
@@ -136,7 +136,7 @@ public class AddQtyToHUCommand
 				.setAllowPartialLoads(true) // don't fail if the the picking staff attempted to to pick more than the TU's capacity
 				.setAllowPartialUnloads(true) // don't fail if the the picking staff attempted to to pick more than the shipment schedule's quantity to deliver.
 				.load(request);
-		logger.info("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", targetHUId, qtyCU, loadResult);
+		logger.info("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", packToHuId, qtyCU, loadResult);
 
 		// Update the candidate
 		final Quantity qtyPicked = Quantity.of(loadResult.getQtyAllocated(), request.getC_UOM());
@@ -148,7 +148,7 @@ public class AddQtyToHUCommand
 	private PickingCandidate getOrCreatePickingCandidate()
 	{
 		final PickingCandidate existingCandidate = pickingCandidateRepository
-				.getByShipmentScheduleIdAndHuIdAndPickingSlotId(shipmentScheduleId, targetHUId, pickingSlotId)
+				.getByShipmentScheduleIdAndHuIdAndPickingSlotId(shipmentScheduleId, packToHuId, pickingSlotId)
 				.orElse(null);
 		if (existingCandidate != null)
 		{
@@ -159,7 +159,7 @@ public class AddQtyToHUCommand
 		final PickingCandidate newCandidate = PickingCandidate.builder()
 				.qtyPicked(Quantity.zero(uom))
 				.shipmentScheduleId(shipmentScheduleId)
-				.huId(targetHUId)
+				.packedToHuId(packToHuId)
 				.pickingSlotId(pickingSlotId)
 				.build();
 		pickingCandidateRepository.save(newCandidate);
@@ -219,7 +219,7 @@ public class AddQtyToHUCommand
 			qtyNew = qty.add(qtyToAddConv);
 		}
 
-		candidate.setQtyPicked(qtyNew);
+		candidate.pick(qtyNew);
 		pickingCandidateRepository.save(candidate);
 	}
 

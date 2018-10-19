@@ -151,7 +151,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			HU2PackingItemsAllocator.builder()
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
-					.fromHUs(luHUs)
+					.pickFromHUs(luHUs)
 					.allocate();
 
 			// Validate
@@ -178,7 +178,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			HU2PackingItemsAllocator.builder()
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
-					.fromHUs(luHUs)
+					.pickFromHUs(luHUs)
 					.allocate();
 
 			// Validate
@@ -205,7 +205,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			HU2PackingItemsAllocator.builder()
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
-					.fromHUs(luHUs)
+					.pickFromHUs(luHUs)
 					.allocate();
 
 			// Validate
@@ -237,7 +237,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			HU2PackingItemsAllocator.builder()
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
-					.fromHUs(tuHUs)
+					.pickFromHUs(tuHUs)
 					.allocate();
 
 			// Validate
@@ -265,7 +265,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		HU2PackingItemsAllocator.builder()
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
-				.fromHUs(tuHUs)
+				.pickFromHUs(tuHUs)
 				.allocate();
 
 		// Validate
@@ -297,7 +297,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		HU2PackingItemsAllocator.builder()
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
-				.fromHU(aggregateVhu)
+				.pickFromHU(aggregateVhu)
 				.allocate();
 
 		// NOTE: even if we asked to allocate to a non-top level HU
