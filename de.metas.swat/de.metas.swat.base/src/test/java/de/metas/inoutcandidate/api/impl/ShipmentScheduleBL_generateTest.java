@@ -2,17 +2,9 @@ package de.metas.inoutcandidate.api.impl;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
-import lombok.Value;
-import lombok.experimental.Wither;
 
 import java.math.BigDecimal;
 
@@ -21,23 +13,22 @@ import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.UserRepository;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.OrderLineSpec;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.OrderSpec;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.ProductSpec;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.ShipmentScheduleSpec;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.StockSpec;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.TestSetupSpec;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
 
@@ -65,7 +56,9 @@ import de.metas.util.Services;
 
 public class ShipmentScheduleBL_generateTest
 {
-	private static final int WAREHOUSE_ID = 35;
+
+	private static final BigDecimal THREE = new BigDecimal("3");
+	private static final BigDecimal FOUR = new BigDecimal("4");;
 
 	private ShipmentScheduleBL shipmentScheduleBL;
 
@@ -86,50 +79,100 @@ public class ShipmentScheduleBL_generateTest
 	@Test
 	public void generate_emptyStock_force()
 	{
+
+		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").stocked(false).build();
+
 		final TestSetupSpec spec = TestSetupSpec.builder()
-				.productStocked(false)
-				.qtyOrdered(TEN)
-				.deliveryRule(DeliveryRule.FORCE)
+				.product(nonStockedProduct)
+				.order(OrderSpec.builder().value("order1").build())
+				.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
+				.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol11").qtyOrdered(TEN).deliveryRule(DeliveryRule.FORCE).build())
 				.build();
 
 		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
 		assertOneResultWithQtyToDeliver(result1, TEN);
 
-		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(spec.withProductStocked(true));
+		final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
+
+		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
 		assertOneResultWithQtyToDeliver(result2, TEN);
 	}
 
 	@Test
 	public void generate_emptyStock_availability()
 	{
-		final TestSetupSpec spec = TestSetupSpec.builder()
-				.productStocked(false)
-				.qtyOrdered(TEN)
-				.deliveryRule(DeliveryRule.AVAILABILITY)
-				.build();
+		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").stocked(false).build();
+		final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(nonStockedProduct);
 
 		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
 		assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
 
-		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(spec.withProductStocked(true));
+		final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
+
+		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
 		assertThat(result2.getAllLines()).isEmpty(); // product is stocked, but there is nothing on stock
+	}
+
+	/** If the product's type is not "item", then deliver the ordered quantity */
+	@Test
+	public void generate_emptyStock_availability_nonitem()
+	{
+		final ImmutableList<String> nonItemTypes = ImmutableList.of(
+				X_M_Product.PRODUCTTYPE_ExpenseType,
+				X_M_Product.PRODUCTTYPE_Online,
+				X_M_Product.PRODUCTTYPE_Resource,
+				X_M_Product.PRODUCTTYPE_Service);
+		for (final String productType : nonItemTypes)
+		{
+			generate_emptyStock_availability_nonitem_performTestWithProductType(productType);
+		}
+	}
+
+	private void generate_emptyStock_availability_nonitem_performTestWithProductType(final String productType)
+	{
+		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").stocked(false).productType(productType).build();
+		final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(nonStockedProduct);
+
+		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
+		assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
+
+		final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
+
+		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
+		assertOneResultWithQtyToDeliver(result2, TEN); // treated as not stocked, because it's not an item;
+	}
+
+	private TestSetupSpec specOneScheduleAvailabilityWithoutStock(final ProductSpec nonStockedProduct)
+	{
+		return TestSetupSpec.builder()
+				.product(nonStockedProduct)
+				.order(OrderSpec.builder().value("order1").build())
+				.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
+				.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol11").qtyOrdered(TEN).deliveryRule(DeliveryRule.AVAILABILITY).build())
+				.build();
 	}
 
 	@Test
 	public void generate_partialStock_availability()
 	{
+		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").stocked(false).build();
+
 		final TestSetupSpec spec = TestSetupSpec.builder()
-				.productStocked(false)
-				.qtyOrdered(TEN)
-				.deliveryRule(DeliveryRule.AVAILABILITY)
-				.qtyStock(ONE)
+				.product(nonStockedProduct)
+				.stock(StockSpec.builder().product("prod1").qtyStock(ONE).build())
+				.stock(StockSpec.builder().product("prod1").qtyStock(THREE).build())
+				.order(OrderSpec.builder().value("order1").build())
+				.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
+				.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol11").qtyOrdered(TEN).deliveryRule(DeliveryRule.AVAILABILITY).build())
 				.build();
 
 		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
 		assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
 
-		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(spec.withProductStocked(true));
-		assertOneResultWithQtyToDeliver(result2, ONE); // product is stocked, and the qty-on-hand ist 1
+		final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
+
+		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
+		assertOneResultWithQtyToDeliver(result2, FOUR); // product is stocked, and the qty-on-hand sums up to 4
 	}
 
 	private void assertOneResultWithQtyToDeliver(
@@ -144,78 +187,15 @@ public class ShipmentScheduleBL_generateTest
 
 	private ShipmentSchedulesDuringUpdate setupAndInvoke(@NonNull final TestSetupSpec spec)
 	{
-		final OlAndSched olAndSched = setup(spec);
+		final ImmutableList<OlAndSched> olAndScheds = ShipmentScheduleTestBase.setup(spec);
 
 		// invoke the method under test
 		final ShipmentSchedulesDuringUpdate result = shipmentScheduleBL.generate(
 				Env.getCtx(),
-				ImmutableList.of(olAndSched),
+				olAndScheds,
 				null/* firstRun */,
 				ITrx.TRXNAME_None);
 		return result;
 	}
 
-	private OlAndSched setup(@NonNull final TestSetupSpec spec)
-	{
-		final I_C_Order orderRecord = newInstance(I_C_Order.class);
-		orderRecord.setDatePromised(TimeUtil.parseTimestamp("2018-10-19"));
-		orderRecord.setM_Warehouse_ID(WAREHOUSE_ID);
-		saveRecord(orderRecord);
-
-		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setIsStocked(spec.isProductStocked()); // <==
-		productRecord.setProductType(X_M_Product.PRODUCTTYPE_Item);
-		saveRecord(productRecord);
-
-		final I_MD_Stock stockRecord = newInstance(I_MD_Stock.class);
-		stockRecord.setM_Product(productRecord);
-		stockRecord.setM_Warehouse_ID(WAREHOUSE_ID);
-		stockRecord.setQtyOnHand(spec.getQtyStock());
-		saveRecord(stockRecord);
-
-		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
-		orderLineRecord.setC_Order(orderRecord);
-		orderLineRecord.setM_Product(productRecord);
-		orderLineRecord.setQtyOrdered(spec.getQtyOrdered()); // <==
-		orderLineRecord.setDatePromised(TimeUtil.parseTimestamp("2018-10-20"));
-		saveRecord(orderLineRecord);
-
-		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
-		saveRecord(bPartnerRecord);
-
-		final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
-		shipmentScheduleRecord.setIsClosed(false);
-		shipmentScheduleRecord.setC_BPartner(bPartnerRecord);
-		shipmentScheduleRecord.setQtyDelivered(BigDecimal.ONE);
-		shipmentScheduleRecord.setQtyOrdered_Override(new BigDecimal("23"));
-		shipmentScheduleRecord.setQtyOrdered_Calculated(new BigDecimal("24"));
-		shipmentScheduleRecord.setM_Warehouse_ID(WAREHOUSE_ID);
-		shipmentScheduleRecord.setC_Order(orderRecord);
-		shipmentScheduleRecord.setC_OrderLine(orderLineRecord);
-		shipmentScheduleRecord.setM_Product(productRecord);
-		shipmentScheduleRecord.setBPartnerAddress_Override("BPartnerAddress_Override"); // not flagged as mandatory in AD, but always set
-		shipmentScheduleRecord.setAD_Table_ID(getTableId(I_C_OrderLine.class));
-		shipmentScheduleRecord.setRecord_ID(orderLineRecord.getC_OrderLine_ID());
-
-		shipmentScheduleRecord.setDeliveryRule(spec.getDeliveryRule().getCode()); // <==
-
-		final OlAndSched olAndSched = OlAndSched.builder()
-				.deliverRequest(() -> orderLineRecord.getQtyOrdered())
-				.shipmentSchedule(shipmentScheduleRecord)
-				.build();
-		return olAndSched;
-	}
-
-	@Value
-	@Builder
-	@Wither
-	private static class TestSetupSpec
-	{
-		boolean productStocked;
-		BigDecimal qtyOrdered;
-		DeliveryRule deliveryRule;
-
-		@Default
-		BigDecimal qtyStock = ZERO;
-	}
 }
