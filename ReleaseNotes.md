@@ -38,14 +38,21 @@ Here come the actual release notes:
   * [#4567](https://github.com/metasfresh/metasfresh/issues/4567) Automatic Lot No. Handling into Quarantine Warehouse
     * New Quarantine Handling Feature in Material Receipt.
   * [#4609](https://github.com/metasfresh/metasfresh/issues/4609) HUEditor-Tweaks
+    * Adjustments to the Handlign Unit Editor window.
   * [#4628](https://github.com/metasfresh/metasfresh/issues/4628) Split material dispo for M_Transaction with different attributes
     * Improvement of the ATP Calculation for Transactions that were not fulfilled same as planned.
   * [#4633](https://github.com/metasfresh/metasfresh/issues/4633) Generic Process for SQL -> Excel Export
+    * New Feature that allows to create SQL Actions and add them to WebUI Menu or Windows for Excel Export.
   * [#4636](https://github.com/metasfresh/metasfresh/issues/4636) Support attachments being linked to multiple records
+    * New Functionality that allows to add attachments references to multiple records.
   * [#4640](https://github.com/metasfresh/metasfresh/issues/4640) Option to remove M_Product_Category_ID from Material Cockpit
+    * New Option for Material Cockpit that allows to remove the Product Category in grid and main View.
   * [#4646](https://github.com/metasfresh/metasfresh/issues/4646) Rename and extend AD_MigrationScript helper function
+    * Internal Improvement for the Migration Script creation and handling.
   * [#4646](https://github.com/metasfresh/metasfresh/issues/4649) BPartners FTS shall not be active by default
+    * Switching off the new Business Partner Full Text Search by default.
   * [#4659](https://github.com/metasfresh/metasfresh/issues/4659) Configurable Mailtext for Documents in DocOutbound
+    * New Feature that allows to configure Mailtexts for Outbound Documents.
 
 * metasfresh-webui-api
   * [#1063](https://github.com/metasfresh/metasfresh-webui-api/issues/1063) Global QR Code Actions support

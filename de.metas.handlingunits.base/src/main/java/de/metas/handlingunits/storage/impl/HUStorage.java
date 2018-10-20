@@ -80,12 +80,6 @@ import lombok.NonNull;
 		virtualHU = Services.get(IHandlingUnitsBL.class).isVirtual(hu);
 	}
 
-	@Override
-	public IHUStorageFactory getHUStorageFactory()
-	{
-		return storageFactory;
-	}
-
 	private I_M_HU_Storage retrieveOrCreateStorageLine(
 			final ProductId productId,
 			final I_C_UOM uomIfNew)

@@ -16,7 +16,7 @@
 
 	<properties>
 		<migration-sql-basedir></migration-sql-basedir>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<metasfresh.version>10.0.0</metasfresh.version>
 	</properties>
 
 	<dependencies>

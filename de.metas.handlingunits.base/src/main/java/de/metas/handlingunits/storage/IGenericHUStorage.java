@@ -41,12 +41,6 @@ public interface IGenericHUStorage
 {
 	/**
 	 *
-	 * @return storage factory used to create this storage
-	 */
-	IHUStorageFactory getHUStorageFactory();
-
-	/**
-	 *
 	 * @return parent storage or null
 	 */
 	IGenericHUStorage getParentStorage();
