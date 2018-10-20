@@ -24,7 +24,9 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.util.Services;
 
@@ -70,8 +72,8 @@ public class ShipmentLineBuilderTest
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		save(order);
-		
-		orderLine = newInstance(I_C_OrderLine.class);
+
+			orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
 		orderLine.setM_Product(huTestHelper.pTomato);
 		save(orderLine);
@@ -92,6 +94,7 @@ public class ShipmentLineBuilderTest
 		save(shipmentSchedule);
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
+		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 	}
 
 	@Test
