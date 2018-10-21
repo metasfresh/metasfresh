@@ -7,12 +7,11 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
-import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_ApproveSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_ProcessAll;
-import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_RejectSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_MarkWillNotPickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_SetPackingInstructions;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
@@ -72,14 +71,14 @@ public class ProductsToPickViewFactory implements IViewFactory
 					.addElementsFromViewRowClassAndFieldNames(
 							ProductsToPickRow.class,
 							viewDataType,
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ApprovalStatus),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Product),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Damaged),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty))
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyReview),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ApprovalStatus))
 					.build();
 		}
 		else
@@ -119,12 +118,13 @@ public class ProductsToPickViewFactory implements IViewFactory
 				.viewId(viewId)
 				.rowsData(rowsData)
 				//
+				// Picker processes:
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_PickSelected.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_MarkWillNotPickSelected.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_SetPackingInstructions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_Request4EyesReview.class))
 				//
-				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_ApproveSelected.class))
-				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_RejectSelected.class))
+				// Reviewer processes:
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_ProcessAll.class))
 				//
 				.build();

@@ -18,6 +18,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.util.Check;
+
 import lombok.NonNull;
 
 /*

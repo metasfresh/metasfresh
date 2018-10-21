@@ -10,8 +10,11 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CacheMgt;
+import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,21 +44,28 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
 import de.metas.notification.UserNotificationTargetType;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.SqlViewFactory;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.event.JSONViewChanges;
+import de.metas.ui.web.view.event.ViewChanges;
 import de.metas.ui.web.view.json.JSONViewResult;
+import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketEventLogRecord;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -250,6 +260,36 @@ public class DebugRestController
 		websocketSender.sendMessage(endpoint, message);
 	}
 
+	@PostMapping("/websocket/view/fireRowChanges")
+	public void sendWebsocketViewChangedNotification(
+			@PathVariable("viewId") final String viewIdStr,
+			@RequestParam("changedIds") final String changedIdsStr)
+	{
+		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
+		final DocumentIdsSelection changedRowIds = DocumentIdsSelection.ofCommaSeparatedString(changedIdsStr);
+		sendWebsocketViewChangedNotification(viewId, changedRowIds);
+	}
+
+	private void sendWebsocketViewChangedNotification(final ViewId viewId, final DocumentIdsSelection changedRowIds)
+	{
+		final ViewChanges viewChanges = new ViewChanges(viewId);
+		viewChanges.addChangedRowIds(changedRowIds);
+		JSONViewChanges jsonViewChanges = JSONViewChanges.of(viewChanges);
+
+		final String endpoint = WebSocketConfig.buildViewNotificationsTopicName(jsonViewChanges.getViewId());
+		try
+		{
+			websocketSender.convertAndSend(endpoint, jsonViewChanges);
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.appendParametersToMessage()
+					.setParameter("json", jsonViewChanges);
+		}
+
+	}
+
 	@RequestMapping(value = "/sql/loadLimit/warn", method = RequestMethod.PUT)
 	public void setSqlLoadLimitWarn(@RequestBody final int limit)
 	{
@@ -405,4 +445,30 @@ public class DebugRestController
 		return websocketSender.getLoggedEvents(destinationFilter);
 	}
 
+	@PostMapping("/view/{viewId}/deleteRows")
+	public String viewDeleteRowIds(
+			@PathVariable("viewId") final String viewIdStr,
+			@RequestParam("ids") final String rowIdsStr)
+	{
+		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
+		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofCommaSeparatedString(rowIdsStr);
+
+		//
+		// Delete from DB selection 
+		String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
+				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(viewId.getViewId())
+				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1 + "=" + DB.buildSqlList(rowIds.toIntSet());
+		final int countDeleted = DB.executeUpdate(sql, ITrx.TRXNAME_None);
+
+		//
+		// Clear view's cache
+		final IView view = viewsRepo.getView(viewId);
+		rowIds.forEach(view::invalidateRowById);
+
+		//
+		// Notify
+		sendWebsocketViewChangedNotification(viewId, rowIds);
+
+		return "Deleted " + countDeleted + " rows";
+	}
 }

@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
@@ -22,6 +23,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -53,45 +56,51 @@ import lombok.ToString;
 public class ProductsToPickRow implements IViewRow
 {
 	static final String FIELD_Product = "product";
-	@ViewColumn(fieldName = FIELD_Product, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Product_ID")
+	@ViewColumn(fieldName = FIELD_Product, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Product_ID", widgetSize = WidgetSize.Small)
 	private final LookupValue product;
 
 	static final String FIELD_Locator = "locator";
-	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID")
+	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", widgetSize = WidgetSize.Small)
 	private final LookupValue locator;
 
 	static final String FIELD_LotNumber = "lotNumber";
-	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "LotNumber")
+	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "LotNumber", widgetSize = WidgetSize.Small)
 	private final String lotNumber;
 
 	static final String FIELD_ExpiringDate = "expiringDate";
-	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.Date, captionKey = "ExpiringDate")
+	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.Date, captionKey = "ExpiringDate", widgetSize = WidgetSize.Small)
 	@Getter
 	private final LocalDate expiringDate;
 
 	static final String FIELD_RepackNumber = "repackNumber";
-	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber")
+	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber", widgetSize = WidgetSize.Small)
 	private final String repackNumber;
 
 	static final String FIELD_Damaged = "damaged";
-	@ViewColumn(fieldName = FIELD_Damaged, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch")
+	@ViewColumn(fieldName = FIELD_Damaged, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch", widgetSize = WidgetSize.Small)
 	private final Boolean damaged;
 
 	static final String FIELD_Qty = "qty";
-	@ViewColumn(fieldName = FIELD_Qty, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty")
+	@ViewColumn(fieldName = FIELD_Qty, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", widgetSize = WidgetSize.Small)
 	@Getter
 	private final Quantity qty;
 
+	static final String FIELD_QtyReview = "qtyReview";
+	@ViewColumn(fieldName = FIELD_QtyReview, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
+	@Getter
+	private final BigDecimal qtyReview;
+
 	static final String FIELD_PickStatus = "pickStatus";
-	@ViewColumn(fieldName = FIELD_PickStatus, captionKey = "PickStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidatePickStatus.AD_REFERENCE_ID)
+	@ViewColumn(fieldName = FIELD_PickStatus, captionKey = "PickStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidatePickStatus.AD_REFERENCE_ID, widgetSize = WidgetSize.Small)
 	private final PickingCandidatePickStatus pickStatus;
 
 	static final String FIELD_ApprovalStatus = "approvalStatus";
-	@ViewColumn(fieldName = FIELD_ApprovalStatus, captionKey = "ApprovalStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidateApprovalStatus.AD_REFERENCE_ID)
+	@ViewColumn(fieldName = FIELD_ApprovalStatus, captionKey = "ApprovalStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidateApprovalStatus.AD_REFERENCE_ID, widgetSize = WidgetSize.Small)
 	private final PickingCandidateApprovalStatus approvalStatus;
 
 	//
 	private final ProductsToPickRowId rowId;
+	private boolean processed;
 	@Getter
 	private final ShipmentScheduleId shipmentScheduleId;
 	@Getter
@@ -113,9 +122,11 @@ public class ProductsToPickRow implements IViewRow
 			final Boolean damaged,
 			//
 			@NonNull final Quantity qty,
+			@Nullable final BigDecimal qtyReview,
 			//
 			final PickingCandidatePickStatus pickStatus,
 			final PickingCandidateApprovalStatus approvalStatus,
+			final boolean processed,
 			//
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			final PickingCandidateId pickingCandidateId)
@@ -129,9 +140,11 @@ public class ProductsToPickRow implements IViewRow
 		this.damaged = damaged;
 
 		this.qty = qty;
+		this.qtyReview = qtyReview;
 
 		this.pickStatus = pickStatus != null ? pickStatus : PickingCandidatePickStatus.TO_BE_PICKED;
 		this.approvalStatus = approvalStatus != null ? approvalStatus : PickingCandidateApprovalStatus.TO_BE_APPROVED;
+		this.processed = processed;
 
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.pickingCandidateId = pickingCandidateId;
@@ -146,7 +159,7 @@ public class ProductsToPickRow implements IViewRow
 	@Override
 	public boolean isProcessed()
 	{
-		return false; // not relevant
+		return processed;
 	}
 
 	@Override
@@ -179,8 +192,10 @@ public class ProductsToPickRow implements IViewRow
 		}
 
 		return toBuilder()
+				.qtyReview(pickingCandidate.getQtyReview())
 				.pickStatus(pickingCandidate.getPickStatus())
 				.approvalStatus(pickingCandidate.getApprovalStatus())
+				.processed(!pickingCandidate.isDraft())
 				.pickingCandidateId(pickingCandidate.getId())
 				.build();
 	}
@@ -195,24 +210,28 @@ public class ProductsToPickRow implements IViewRow
 		return toBuilder().qty(qty).build();
 	}
 
-	public boolean isToBePicked()
-	{
-		return pickStatus.isToBePicked();
-	}
-
-	public boolean isEligibleForApproval()
-	{
-		return !pickStatus.isToBePicked();
-	}
-
-	public boolean isWaitingApproval()
-	{
-		return isEligibleForApproval()
-				&& approvalStatus.isToBeApproved();
-	}
-
 	public boolean isApproved()
 	{
 		return approvalStatus.isApproved();
+	}
+
+	public boolean isEligibleForPicking()
+	{
+		return !isProcessed() && !isApproved();
+	}
+
+	public boolean isEligibleForPacking()
+	{
+		return !isProcessed() && !isApproved() && pickStatus.isPickedOrPacked();
+	}
+
+	public boolean isEligibleForReview()
+	{
+		return !isProcessed() && (pickStatus.isPacked() || pickStatus.isPickRejected());
+	}
+
+	public boolean isEligibleForProcessing()
+	{
+		return !isProcessed() && isApproved();
 	}
 }

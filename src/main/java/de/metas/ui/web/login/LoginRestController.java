@@ -31,7 +31,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.hash.HashableString;
 import de.metas.i18n.ILanguageBL;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.config.WebConfig;
@@ -51,6 +50,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
 
 /*
  * #%L

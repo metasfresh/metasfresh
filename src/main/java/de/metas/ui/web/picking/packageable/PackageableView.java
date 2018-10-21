@@ -20,6 +20,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+
 import lombok.Builder;
 import lombok.NonNull;
 

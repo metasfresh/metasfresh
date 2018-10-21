@@ -64,6 +64,7 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*
@@ -292,10 +293,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.sqlViewBinding(sqlViewBinding)
 					.huReservationService(huReservationService);
 
-			if (!alwaysUseSameLayout())
-			{
-				customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
-			}
+			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
 
 			huEditorViewRepository = huEditorViewRepositoryBuilder.build();
 		}
@@ -325,13 +323,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setHUEditorViewRepository(huEditorViewRepository)
 					.setParameters(request.getParameters());
 
-			if (!alwaysUseSameLayout())
-			{
-				//
-				// Call view customizers
-				getViewCustomizers(referencingTableName).forEach(viewCustomizer -> viewCustomizer.beforeCreate(huViewBuilder));
-				customizeHUEditorView(huViewBuilder);
-			}
+			//
+			// Call view customizers
+			getViewCustomizers(referencingTableName).forEach(viewCustomizer -> viewCustomizer.beforeCreate(huViewBuilder));
+			customizeHUEditorView(huViewBuilder);
 
 			return huViewBuilder.build();
 		}

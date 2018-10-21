@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.DefaultDocumentDescriptorFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

@@ -16,6 +16,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Check;
+
 import lombok.Builder;
 import lombok.NonNull;
 

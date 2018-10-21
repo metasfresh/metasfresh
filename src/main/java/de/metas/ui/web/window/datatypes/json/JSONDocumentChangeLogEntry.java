@@ -1,15 +1,17 @@
-package de.metas.ui.web.view;
+package de.metas.ui.web.window.datatypes.json;
 
-import lombok.NonNull;
-import lombok.Value;
+import java.time.ZonedDateTime;
 
-import de.metas.i18n.ITranslatableString;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+import lombok.Data;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,11 +29,15 @@ import de.metas.i18n.ITranslatableString;
  * #L%
  */
 
-@Value(staticConstructor = "of")
-public class ViewProfile
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Data
+public class JSONDocumentChangeLogEntry
 {
-	@NonNull
-	private final ViewProfileId profileId;
-	@NonNull
-	private final ITranslatableString caption;
+	String columnDisplayName;
+
+	Object valueNew;
+	Object valueOld;
+
+	ZonedDateTime changedTimestamp;
+	String changedByUsername;
 }
