@@ -125,7 +125,7 @@
 
 .indicator-saved {
     animation-name: indicator-saving;
-    animation-duration: 1s;
+    animation-duration: 2s;
 }
 
 .indicator-pending {
@@ -136,7 +136,7 @@
 
 .indicator-error {
     animation-name: indicator-error;
-    animation-duration: 1s;
+    animation-duration: 2s;
     width: 100%;
     background-color: $brand-font-color-danger;
 }

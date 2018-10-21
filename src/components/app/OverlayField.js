@@ -35,7 +35,7 @@ class OverlayField extends Component {
   };
 
   renderElements = (layout, data, type) => {
-    const { disabled, barcodeSelected } = this.props;
+    const { disabled, codeSelected } = this.props;
     const elements = layout.elements;
 
     return elements.map((elem, id) => {
@@ -57,7 +57,7 @@ class OverlayField extends Component {
           disabled={disabled}
           autoFocus={id === 0}
           captionElement={captionElement}
-          data={barcodeSelected || undefined}
+          data={codeSelected || undefined}
           {...elem}
         />
       );
@@ -73,7 +73,7 @@ class OverlayField extends Component {
       handlePatch,
       handleChange,
       captionValue,
-      barcodeSelected,
+      codeSelected,
     } = this.props;
     const parameters = layout.parameters;
     return parameters.map((item, index) => {
@@ -83,8 +83,8 @@ class OverlayField extends Component {
         captionElement = this.renderBarcodeScanButton();
       }
 
-      if (barcodeSelected) {
-        item.value = barcodeSelected;
+      if (codeSelected) {
+        item.value = codeSelected;
       }
 
       return (

@@ -1,104 +1,88 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Quagga from 'quagga';
+import { BrowserBarcodeReader } from '@zxing/library';
+import classnames from 'classnames';
+
+import BrowserQRCodeReader from '../../../services/CustomBrowserQRCodeReader';
 
 export default class BarcodeScanner extends Component {
-  componentDidMount() {
-    Quagga.init(
-      {
-        inputStream: {
-          type: 'LiveStream',
-          constraints: {
-            width: 1280,
-            height: 720,
-            facingMode: 'environment',
-          },
-        },
-        locator: {
-          patchSize: 'medium',
-          halfSample: true,
-        },
-        numOfWorkers: 4,
-        frequency: 5,
-        decoder: {
-          readers: ['ean_reader'],
-        },
-        locate: true,
-      },
-      err => {
-        if (err) {
-          // eslint-disable-next-line no-console
-          return console.log(err);
-        }
-        Quagga.start();
-      }
-    );
-    Quagga.onDetected(this._onDetected);
+  constructor(props) {
+    super(props);
 
-    if (this.props.debug) {
-      Quagga.onProcessed(this._onProcessed);
-    }
+    this.state = {
+      mode: 'Qr',
+    };
+
+    this.reader = new BrowserQRCodeReader();
+  }
+
+  componentDidMount() {
+    this._process();
   }
 
   componentWillUnmount() {
-    Quagga.offDetected(this._onDetected);
+    this._handleStop(false);
   }
 
-  _handleStop = () => {
-    Quagga.offDetected(this._onDetected);
-    Quagga.stop();
-
-    this.props.onClose();
+  _process = () => {
+    this.reader
+      .decodeFromInputVideoDevice(undefined, 'video')
+      .then(result => this._onDetected(result))
+      // eslint-disable-next-line no-console
+      .catch(() => {
+        this._changeReader();
+      });
   };
 
   _onDetected = result => {
-    this._handleStop(true);
-    this.props.onDetected(result);
+    this._handleStop(false);
+    this.props.onDetected(result.text);
   };
 
-  _onProcessed(result) {
-    const drawingCtx = Quagga.canvas.ctx.overlay;
-    const drawingCanvas = Quagga.canvas.dom.overlay;
+  _handleStop = close => {
+    this.reader.stop();
 
-    if (result) {
-      if (result.boxes) {
-        drawingCtx.clearRect(
-          0,
-          0,
-          parseInt(drawingCanvas.getAttribute('width')),
-          parseInt(drawingCanvas.getAttribute('height'))
-        );
-        result.boxes.filter(box => box !== result.box).forEach(box => {
-          Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, {
-            color: 'green',
-            lineWidth: 2,
-          });
-        });
-      }
+    close && this.props.onClose();
+  };
 
-      if (result.box) {
-        Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, {
-          color: '#00F',
-          lineWidth: 2,
-        });
-      }
+  _changeReader = () => {
+    this.reader.stop();
+    this.reader = new BrowserBarcodeReader();
 
-      if (result.codeResult && result.codeResult.code) {
-        Quagga.ImageDebug.drawPath(
-          result.line,
-          { x: 'x', y: 'y' },
-          drawingCtx,
-          { color: 'red', lineWidth: 3 }
-        );
-      }
-    }
-  }
+    this.props.onClose(true);
+
+    this.setState(
+      {
+        mode: 'Barcode',
+      },
+      () => this._process()
+    );
+  };
 
   render() {
+    const { mode } = this.state;
+
     return (
       <div className="row scanner-wrapper">
-        <div id="interactive" className="col-sm-12 viewport scanner-window" />
-        <i className="btn-close meta-icon-close-1" onClick={this._handleStop} />
+        <div className="scan-mode">
+          Scan mode:
+          <i
+            className={classnames('btn-control btn-mode', {
+              [`btn-${mode}`]: mode,
+            })}
+            title={`Scan ${mode}`}
+          />
+        </div>
+        <video
+          className="col-sm-12 viewport scanner-window"
+          id="video"
+          width="1280"
+          height="720"
+        />
+        <i
+          className="btn-control btn-close meta-icon-close-1"
+          onClick={this._handleStop}
+        />
       </div>
     );
   }
@@ -107,5 +91,4 @@ export default class BarcodeScanner extends Component {
 BarcodeScanner.propTypes = {
   onDetected: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
-  onReset: PropTypes.func.isRequired,
 };

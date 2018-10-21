@@ -110,18 +110,19 @@ export function patchRequest({
   );
 }
 
-export function getDataByIds(entity, docType, viewId, docIds) {
-  return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      (docType ? '/' + docType : '') +
-      (viewId ? '/' + viewId : '') +
-      '/byIds' +
-      '?ids=' +
-      docIds
-  );
-}
+// TODO: I think this is not used anymore. Kuba
+// export function getDataByIds(entity, docType, viewId, docIds) {
+//   return axios.get(
+//     config.API_URL +
+//       '/' +
+//       entity +
+//       (docType ? '/' + docType : '') +
+//       (viewId ? '/' + viewId : '') +
+//       '/byIds' +
+//       '?ids=' +
+//       docIds
+//   );
+// }
 
 export function completeRequest(
   entity,

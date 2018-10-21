@@ -244,17 +244,27 @@ class Lookup extends Component {
   // TODO: Rewrite per widget
   handleClear = () => {
     const { onChange, properties, onSelectBarcode } = this.props;
+    const propsWithoutTooltips = properties.filter(
+      prop => prop.type !== 'Tooltip'
+    );
+    const onChangeResp =
+      onChange && onChange(propsWithoutTooltips, null, false);
 
-    onChange && onChange(properties, null, false);
-    onSelectBarcode && onSelectBarcode(null);
+    if (onChangeResp && onChangeResp.then) {
+      onChangeResp.then(resp => {
+        if (resp) {
+          onSelectBarcode && onSelectBarcode(null);
 
-    this.setState({
-      isInputEmpty: true,
-      property: '',
-      initialFocus: true,
-      localClearing: true,
-      autofocusDisabled: false,
-    });
+          this.setState({
+            isInputEmpty: true,
+            property: '',
+            initialFocus: true,
+            localClearing: true,
+            autofocusDisabled: false,
+          });
+        }
+      });
+    }
   };
 
   handleListFocus = field => {
@@ -344,7 +354,7 @@ class Lookup extends Component {
       autoFocus,
       newRecordWindowId,
       scanning,
-      barcodeSelected,
+      codeSelected,
       scannerElement,
       forceFullWidth,
     } = this.props;
@@ -406,6 +416,7 @@ class Lookup extends Component {
               item.field
             )[0];
             const widgetTooltipToggled = lookupWidget.tooltipOpen;
+            const idValue = `lookup_${item.field}`;
 
             if (item.type === 'Tooltip') {
               if (!itemByProperty.value) {
@@ -415,6 +426,7 @@ class Lookup extends Component {
               return (
                 <div
                   key={item.field}
+                  id={idValue}
                   className="raw-lookup-wrapper lookup-tooltip"
                 >
                   <WidgetTooltip
@@ -432,8 +444,8 @@ class Lookup extends Component {
             ) {
               let defaultValue = localClearing ? null : itemByProperty.value;
 
-              if (barcodeSelected) {
-                defaultValue = { caption: barcodeSelected };
+              if (codeSelected) {
+                defaultValue = { caption: codeSelected };
               }
 
               let width = null;
@@ -446,6 +458,7 @@ class Lookup extends Component {
               return (
                 <RawLookup
                   key={index}
+                  idValue={idValue}
                   defaultValue={defaultValue}
                   autoFocus={index === 0 && autoFocus}
                   initialFocus={index === 0 && initialFocus}
@@ -508,6 +521,7 @@ class Lookup extends Component {
               return (
                 <div
                   key={item.field}
+                  id={idValue}
                   className={classnames(
                     'raw-lookup-wrapper raw-lookup-wrapper-bcg',
                     {

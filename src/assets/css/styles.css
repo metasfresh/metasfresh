@@ -454,6 +454,7 @@ body {
     flex: 1;
     flex-direction: column;
     min-height: 100%;
+    position: relative;
 }
 
 .column-size-button {
@@ -1468,4 +1469,24 @@ td.pulse-off input {
     width: 15px;
     height: 15px;
     border-radius: 15px;
+}
+
+@keyframes spin {
+    0% { transform:rotate(0deg); }
+    100% { transform:rotate(1turn); }
+}
+
+.spinner {
+    position: absolute;
+    background-color: rgba(255,255,255,0.8);
+
+    .icon {
+        z-index: 99;
+        animation:spin 2s linear infinite;
+        opacity: 0.7;
+        
+        &.spinner {
+            background: url('../images/spinner-solid.svg') no-repeat scroll center 0;
+        }
+    }
 }

@@ -13,6 +13,7 @@ import {
   DATE_FIELD_TYPES,
   DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
+import WidgetTooltip from '../widget/WidgetTooltip';
 
 class TableCell extends PureComponent {
   static getAmountFormatByPrecision = precision =>
@@ -101,6 +102,14 @@ class TableCell extends PureComponent {
     }
   };
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      tooltipToggled: false,
+    };
+  }
+
   componentWillReceiveProps(nextProps) {
     const { widgetData, updateRow, readonly, rowId } = this.props;
     // We should avoid highlighting when whole row is exchanged (sorting)
@@ -116,6 +125,15 @@ class TableCell extends PureComponent {
       updateRow();
     }
   }
+
+  widgetTooltipToggle = (field, value) => {
+    const curVal = this.state.tooltipToggled;
+    const newVal = value != null ? value : !curVal;
+
+    this.setState({
+      tooltipToggled: newVal,
+    });
+  };
 
   handleBackdropLock = state => {
     const { item } = this.props;
@@ -159,6 +177,7 @@ class TableCell extends PureComponent {
       onClickOutside,
     } = this.props;
     const docId = `${this.props.docId}`;
+    const { tooltipToggled } = this.state;
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
           widgetData[0].value,
@@ -171,6 +190,20 @@ class TableCell extends PureComponent {
       ? TableCell.getDateFormat(item.widgetType)
       : false;
     let style = {};
+    let tooltipData = null;
+    let tooltipWidget =
+      item.fields && item.widgetType === 'Lookup'
+        ? item.fields.find((field, idx) => {
+            if (field.type === 'Tooltip') {
+              tooltipData = widgetData[idx];
+
+              if (tooltipData && tooltipData.value) {
+                return field;
+              }
+            }
+            return false;
+          })
+        : null;
 
     if (cellExtended) {
       style = {
@@ -226,21 +259,32 @@ class TableCell extends PureComponent {
             }}
           />
         ) : (
-          <div
-            className={classnames('cell-text-wrapper', {
-              [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
-              extended: cellExtended,
-            })}
-            style={style}
-            title={
-              item.widgetType === 'YesNo' ||
-              item.widgetType === 'Switch' ||
-              item.widgetType === 'Color'
-                ? ''
-                : tdValue
-            }
-          >
-            {tdValue}
+          <div className={classnames({ 'with-widget': tooltipWidget })}>
+            <div
+              className={classnames('cell-text-wrapper', {
+                [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
+                extended: cellExtended,
+              })}
+              style={style}
+              title={
+                item.widgetType === 'YesNo' ||
+                item.widgetType === 'Switch' ||
+                item.widgetType === 'Color'
+                  ? ''
+                  : tdValue
+              }
+            >
+              {tdValue}
+            </div>
+            {tooltipWidget &&
+              !isEdited && (
+                <WidgetTooltip
+                  widget={tooltipWidget}
+                  data={tooltipData}
+                  isToggled={tooltipToggled}
+                  onToggle={val => this.widgetTooltipToggle(item.field, val)}
+                />
+              )}
           </div>
         )}
       </td>

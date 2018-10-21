@@ -347,6 +347,7 @@ input:checked + .input-slider:before {
 
     &.input-mandatory {
         border: 2px solid $brand-mandatory-color !important;
+        padding-right: .37rem;
     }
 }
 
@@ -453,6 +454,12 @@ input:checked + .input-slider:before {
         text-overflow: ellipsis;
         flex: 1 1 50%;
     }
+}
+
+.react-numeric-input input {
+    padding-bottom: 4px;
+    padding-left: 0 !important;
+    border-color: white !important;
 }
 
 @media (max-width: $breakpoint){
@@ -796,6 +803,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 .lookup-tooltip {
     flex: 0.05;
     justify-content: flex-end;
+    pointer-events: initial;
 }
 
 /* Attributes */

@@ -155,7 +155,7 @@
     max-width: 300px;
     width: auto;
     height: auto;
-    max-height: 233px;
+    max-height: 275px;
     overflow: hidden;
     text-align: left;
     overflow-y: scroll;
@@ -170,5 +170,6 @@
     span {
         white-space: normal;
         word-wrap: break-word;
+        font-size: 12px;
     }
 }

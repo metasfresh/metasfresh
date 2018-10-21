@@ -27,6 +27,7 @@ class MasterWidget extends Component {
 
   componentDidMount() {
     const { data, widgetData } = this.props;
+
     this.setState({
       data: data || widgetData[0].value,
     });

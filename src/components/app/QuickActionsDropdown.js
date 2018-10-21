@@ -55,6 +55,9 @@ class QuickActionsDropdown extends Component {
       <div className="quick-actions-dropdown">
         {actions.map((action, index) => (
           <div
+            id={`quickAction_${
+              action.internalName ? action.internalName : action.processId
+            }`}
             tabIndex={0}
             ref={c => (this.item = c)}
             className={
