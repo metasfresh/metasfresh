@@ -10,6 +10,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelp
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
+
 import lombok.Value;
 
 /*

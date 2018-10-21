@@ -1,6 +1,7 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import com.google.common.collect.ImmutableList;
 
@@ -8,10 +9,12 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
+import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,7 +41,7 @@ import lombok.Singular;
  * #L%
  */
 
-public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
+public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> implements IEditableView
 {
 	public static ProductsToPickView cast(final IView view)
 	{
@@ -46,6 +49,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 	}
 
 	private final ImmutableList<RelatedProcessDescriptor> relatedProcessDescriptors;
+	private final ProductsToPickRowsData rowsData;
 
 	@Builder
 	private ProductsToPickView(
@@ -56,7 +60,16 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 	{
 		super(viewId, description, rowsData, NullDocumentFilterDescriptorsProvider.instance);
 
+		this.rowsData = rowsData;
 		this.relatedProcessDescriptors = relatedProcessDescriptors;
+	}
+
+	@Override
+	public boolean isAllowClosingPerUserRequest()
+	{
+		// don't allow closing per user request because the same view is used the the Picker and the Reviewer.
+		// So the first one which is closing the view would delete it.
+		return false;
 	}
 
 	@Override
@@ -79,9 +92,35 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 			return false;
 		}
 
-		final boolean hasNotEligibleRows = streamByIds(DocumentIdsSelection.ALL)
-				.anyMatch(row -> !row.isEligibleForReview());
+		return streamByIds(DocumentIdsSelection.ALL)
+				.allMatch(ProductsToPickRow::isEligibleForReview);
+	}
 
-		return !hasNotEligibleRows;
+	public void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
+	{
+		rowsData.changeRow(rowId, mapper);
+	}
+
+	public boolean isApproved()
+	{
+		if (size() == 0)
+		{
+			return false;
+		}
+
+		return streamByIds(DocumentIdsSelection.ALL)
+				.allMatch(ProductsToPickRow::isApproved);
+	}
+
+	@Override
+	public LookupValuesList getFieldTypeahead(RowEditingContext ctx, String fieldName, String query)
+	{
+		throw new UnsupportedOperationException();
+}
+
+	@Override
+	public LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName)
+	{
+		throw new UnsupportedOperationException();
 	}
 }

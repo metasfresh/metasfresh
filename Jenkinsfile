@@ -56,7 +56,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// and therefore, the jenkins information would not be added to the build.properties info file.
 				withEnv(["MF_VERSION=${MF_VERSION}"])
 				{
-        withMaven(jdk: 'java-8', maven: 'maven-3.5.2', mavenLocalRepo: '.repository')
+        withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository')
         {
 				stage('Set versions and build metasfresh-webui-api')
         {

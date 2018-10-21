@@ -37,6 +37,8 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Getter;
 import lombok.NonNull;
 

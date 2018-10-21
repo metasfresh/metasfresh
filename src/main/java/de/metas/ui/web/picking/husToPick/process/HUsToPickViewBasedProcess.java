@@ -34,6 +34,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /* package */abstract class HUsToPickViewBasedProcess extends ViewBasedProcessTemplate
@@ -264,7 +265,7 @@ import lombok.NonNull;
 
 		pickingCandidateService.pickHU(PickHURequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
-				.huId(huId)
+				.pickFromHuId(huId)
 				.pickingSlotId(pickingSlotId)
 				.build());
 	}

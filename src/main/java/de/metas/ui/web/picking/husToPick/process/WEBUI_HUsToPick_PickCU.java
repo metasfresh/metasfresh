@@ -9,13 +9,14 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
@@ -33,7 +34,6 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.packageable.PackageableRow;
@@ -93,7 +93,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	@Param(parameterName = PARAM_QtyCU, mandatory = true)
 	private BigDecimal qtyCU;
 
-	private transient I_M_Product _productToPack; // lazy
+	private transient ProductId _productIdToPack; // lazy
 
 	private boolean isAutoProcess = false;
 
@@ -152,7 +152,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		if (PARAM_M_Product_ID.equals(parameterName))
 		{
 			// Make sure user scanned the right product
-			getProduct();
+			getProductId();
 		}
 	}
 
@@ -197,61 +197,51 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		return qtyCU;
 	}
 
-	private I_M_Product getProduct()
+	private ProductId getProductId()
 	{
-		final I_M_Product productToPack = getProductToPack();
+		final ProductId productIdToPack = getProductIdToPack();
 
 		//
 		// Assert scanned product is matching the shipment schedule product.
 		// NOTE: scannedProductId might be not set, in case we deactivate the process parameter.
-		if (scannedProductId > 0 && scannedProductId != productToPack.getM_Product_ID())
+		if (scannedProductId > 0 && scannedProductId != productIdToPack.getRepoId())
 		{
-			final String scannedProductStr = Services.get(IProductBL.class).getProductName(ProductId.ofRepoId(scannedProductId));
-			final String expectedProductStr = productToPack.getName();
+			final IProductBL productBL = Services.get(IProductBL.class);
+			final String scannedProductStr = productBL.getProductName(ProductId.ofRepoId(scannedProductId));
+			final String expectedProductStr = productBL.getProductName(productIdToPack);
 			throw new AdempiereException(MSG_InvalidProduct, new Object[] { scannedProductStr, expectedProductStr });
 		}
 
-		return productToPack;
+		return productIdToPack;
 	}
 
-	private I_M_Product getProductToPack()
+	private ProductId getProductIdToPack()
 	{
-		if (_productToPack == null)
+		if (_productIdToPack == null)
 		{
 			final PackageableRow packageableRow = getSingleSelectedPackageableRow();
-			final int productId = packageableRow.getProductId();
-			_productToPack = Services.get(IProductDAO.class).getById(productId);
+			_productIdToPack = packageableRow.getProductId();
 		}
-		return _productToPack;
+		return _productIdToPack;
 	}
 
 	private void pickCUs()
 	{
-		final I_M_HU splitCU = Services.get(ITrxManager.class).call(this::performPickCU);
+		final HuId splitCUId = Services.get(ITrxManager.class).call(this::performPickCU);
 
 		if (isAutoProcess)
 		{
-			autoProcessPicking(splitCU);
+			autoProcessPicking(splitCUId);
 		}
 
 	}
 
-	private I_M_HU performPickCU()
+	private HuId performPickCU()
 	{
-		final I_M_Product product = getProduct();
-		final I_C_UOM uom = productBL.getStockingUOM(product);
-
 		final HuId huIdToSplit = retrieveHUIdToSplit();
 		final List<I_M_HU> splitHUs = HUSplitBuilderCoreEngine.builder()
 				.huToSplit(handlingUnitsDAO.getById(huIdToSplit))
-				.requestProvider(huContext -> AllocationUtils.createAllocationRequestBuilder()
-						.setHUContext(huContext)
-						.setProduct(product)
-						.setQuantity(getQtyCU(), uom)
-						.setDate(SystemTime.asDate())
-						.setFromReferencedModel(null) // N/A
-						.setForceQtyAllocation(false)
-						.create())
+				.requestProvider(this::createSplitAllocationRequest)
 				.destination(HUProducerDestination.ofVirtualPI())
 				.build()
 				.withPropagateHUValues()
@@ -259,14 +249,29 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 				.performSplit();
 
 		final I_M_HU splitCU = CollectionUtils.singleElement(splitHUs);
-		addHUIdToCurrentPickingSlot(HuId.ofRepoId(splitCU.getM_HU_ID()));
+		final HuId splitCUId = HuId.ofRepoId(splitCU.getM_HU_ID());
+		addHUIdToCurrentPickingSlot(splitCUId);
 
-		return splitCU;
+		return splitCUId;
 	}
 
-	private void autoProcessPicking(final I_M_HU splitCU)
+	private IAllocationRequest createSplitAllocationRequest(final IHUContext huContext)
 	{
-		final HuId splitCUId = HuId.ofRepoId(splitCU.getM_HU_ID());
+		final ProductId productId = getProductId();
+		final I_C_UOM uom = productBL.getStockingUOM(productId);
+
+		return AllocationUtils.createAllocationRequestBuilder()
+				.setHUContext(huContext)
+				.setProduct(productId)
+				.setQuantity(getQtyCU(), uom)
+				.setDate(SystemTime.asDate())
+				.setFromReferencedModel(null) // N/A
+				.setForceQtyAllocation(false)
+				.create();
+	}
+
+	private void autoProcessPicking(final HuId splitCUId)
+	{
 		final ShipmentScheduleId shipmentScheduleId = null;
 		pickingCandidateService.processForHUIds(ImmutableSet.of(splitCUId), shipmentScheduleId);
 

@@ -14,6 +14,8 @@ import de.metas.ui.web.globalaction.GlobalActionHandlerResult;
 import de.metas.ui.web.globalaction.GlobalActionsDispatcher;
 import de.metas.ui.web.globalaction.OpenViewGlobalActionHandlerResult;
 import de.metas.ui.web.process.adprocess.WebuiProcess;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 
 /*
@@ -73,8 +75,11 @@ public class GlobalActionReadProcess extends JavaProcess
 		if (result instanceof OpenViewGlobalActionHandlerResult)
 		{
 			final OpenViewGlobalActionHandlerResult openViewResult = (OpenViewGlobalActionHandlerResult)result;
+			final ViewId viewId = openViewResult.getViewId();
+			final ViewProfileId viewProfileId = openViewResult.getViewProfileId();
 			getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
-					.viewId(openViewResult.getViewId().toJson())
+					.viewId(viewId.toJson())
+					.profileId(viewProfileId != null ? viewProfileId.toJson() : null)
 					.target(ViewOpenTarget.ModalOverlay)
 					.build());
 		}

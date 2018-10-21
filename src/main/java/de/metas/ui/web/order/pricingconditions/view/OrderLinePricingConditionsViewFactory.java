@@ -11,7 +11,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -37,6 +36,8 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

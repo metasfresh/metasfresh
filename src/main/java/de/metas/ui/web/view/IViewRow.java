@@ -20,6 +20,7 @@ import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.util.NumberUtils;
+
 import lombok.NonNull;
 
 /*

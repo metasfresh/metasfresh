@@ -25,6 +25,7 @@ import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodReturnT
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

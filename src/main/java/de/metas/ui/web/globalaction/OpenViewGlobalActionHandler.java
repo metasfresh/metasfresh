@@ -2,9 +2,6 @@ package de.metas.ui.web.globalaction;
 
 import org.springframework.stereotype.Component;
 
-import de.metas.ui.web.view.ViewId;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -30,7 +27,6 @@ import lombok.NonNull;
 @Component
 public class OpenViewGlobalActionHandler implements GlobalActionHandler
 {
-
 	@Override
 	public GlobalActionType getTypeHandled()
 	{
@@ -40,15 +36,6 @@ public class OpenViewGlobalActionHandler implements GlobalActionHandler
 	@Override
 	public GlobalActionHandlerResult handleEvent(final GlobalActionEvent event)
 	{
-		final ViewId viewId = ViewId.ofViewIdString(event.getPayload());
-		return OpenViewGlobalActionHandlerResult.of(viewId);
-	}
-
-	public GlobalActionEvent createEvent(@NonNull final ViewId viewId)
-	{
-		return GlobalActionEvent.builder()
-				.type(GlobalActionType.OPEN_VIEW)
-				.payload(viewId.toJson())
-				.build();
+		return OpenViewGlobalActionHandlerResult.ofPayload(event.getPayload());
 	}
 }

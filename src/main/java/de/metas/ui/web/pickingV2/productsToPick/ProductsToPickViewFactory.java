@@ -7,8 +7,11 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_ProcessAll;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_MarkWillNotPickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_SetPackingInstructions;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
@@ -16,6 +19,7 @@ import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
@@ -59,11 +63,43 @@ public class ProductsToPickViewFactory implements IViewFactory
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
-		return ViewLayout.builder()
-				.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
-				.setCaption("Pick products") // TODO: trl
-				.addElementsFromViewRowClass(ProductsToPickRow.class, viewDataType)
-				.build();
+		if (PickingConstantsV2.PROFILE_ID_ProductsToPickView_Review.equals(profileId))
+		{
+			return ViewLayout.builder()
+					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
+					.setCaption("Review") // TODO: trl
+					.addElementsFromViewRowClassAndFieldNames(
+							ProductsToPickRow.class,
+							viewDataType,
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Product),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Damaged),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyReview),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ApprovalStatus))
+					.build();
+		}
+		else
+		{
+			return ViewLayout.builder()
+					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
+					.setCaption("Pick products") // TODO: trl
+					.addElementsFromViewRowClassAndFieldNames(
+							ProductsToPickRow.class,
+							viewDataType,
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Product),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Damaged),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_PickStatus))
+					.build();
+
+		}
 	}
 
 	@Override
@@ -81,8 +117,16 @@ public class ProductsToPickViewFactory implements IViewFactory
 		final ProductsToPickView view = ProductsToPickView.builder()
 				.viewId(viewId)
 				.rowsData(rowsData)
+				//
+				// Picker processes:
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_PickSelected.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_MarkWillNotPickSelected.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_SetPackingInstructions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_Request4EyesReview.class))
+				//
+				// Reviewer processes:
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_ProcessAll.class))
+				//
 				.build();
 
 		viewsRepository.getViewsStorageFor(viewId).put(view);

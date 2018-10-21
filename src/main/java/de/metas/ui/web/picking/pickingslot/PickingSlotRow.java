@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableList;
@@ -31,6 +32,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -85,7 +87,7 @@ public final class PickingSlotRow implements IViewRow
 	private final LookupValue pickingSlotBPartner;
 	private final LookupValue pickingSlotBPLocation;
 	private final LookupValue pickingSlotWarehouse;
-	private final int pickingSlotLocatorId;
+	private final LocatorId pickingSlotLocatorId;
 	private final ITranslatableString pickingSlotCaption;
 
 	//
@@ -145,7 +147,7 @@ public final class PickingSlotRow implements IViewRow
 		//
 		// Picking slot info
 		pickingSlotWarehouse = null;
-		pickingSlotLocatorId = -1;
+		pickingSlotLocatorId = null;
 		pickingSlotBPartner = null;
 		pickingSlotBPLocation = null;
 		pickingSlotCaption = null;
@@ -173,7 +175,7 @@ public final class PickingSlotRow implements IViewRow
 			//
 			final String pickingSlotName,
 			final LookupValue pickingSlotWarehouse,
-			final int pickingSlotLocatorId,
+			final LocatorId pickingSlotLocatorId,
 			final LookupValue pickingSlotBPartner,
 			final LookupValue pickingSlotBPLocation,
 			//
@@ -254,7 +256,7 @@ public final class PickingSlotRow implements IViewRow
 
 		// Picking slot info
 		pickingSlotWarehouse = null;
-		pickingSlotLocatorId = -1;
+		pickingSlotLocatorId = null;
 		pickingSlotBPartner = null;
 		pickingSlotBPLocation = null;
 		pickingSlotCaption = null;
@@ -450,7 +452,7 @@ public final class PickingSlotRow implements IViewRow
 		return includedViewId;
 	}
 
-	public int getPickingSlotLocatorId()
+	public LocatorId getPickingSlotLocatorId()
 	{
 		return pickingSlotLocatorId;
 	}

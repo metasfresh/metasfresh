@@ -19,7 +19,6 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -103,7 +102,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 
 		pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
 				.qtyCU(qtyCU)
-				.targetHUId(pickingSlotRow.getHuId())
+				.packToHuId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())
 				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 				.allowOverDelivery(allowOverDelivery)

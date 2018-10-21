@@ -7,7 +7,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.util.Util;
 
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -20,6 +19,7 @@ import de.metas.pricing.conditions.PricingConditionsBreak.PricingConditionsBreak
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PriceChange;
+import de.metas.util.lang.Percent;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

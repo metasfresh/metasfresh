@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -68,7 +67,6 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 {
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private boolean allowMultipleReceiptsSchedules = true; // by default we shall allow multiple lines
 	private boolean allowNoQuantityAvailable = false; // by default we shall not allow lines which have no quantity available
@@ -106,7 +104,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 				.collect(ImmutableList.toImmutableList());
 		if (receiptSchedules.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject("nothing to receive");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to receive");
 		}
 
 		//
@@ -135,7 +133,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 					.count();
 			if (bpartnersCount != 1)
 			{
-				return ProcessPreconditionsResolution.reject("select only one BPartner");
+				return ProcessPreconditionsResolution.rejectWithInternalReason("select only one BPartner");
 			}
 		}
 
@@ -184,8 +182,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 		//
 		// Allocation Destination: HU producer which will create 1 VHU
-		final HUProducerDestination huProducer = HUProducerDestination.of(handlingUnitsDAO.retrieveVirtualPI(getCtx()))
-				.setMaxHUsToCreate(1); // we want one VHU
+		final HUProducerDestination huProducer = HUProducerDestination.ofVirtualPI();
 
 		//
 		// Transfer Qty

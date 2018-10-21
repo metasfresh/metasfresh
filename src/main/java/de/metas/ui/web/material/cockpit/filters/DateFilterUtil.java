@@ -13,6 +13,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
 import lombok.experimental.UtilityClass;
 
 /*

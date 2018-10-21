@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingV2;
 
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
@@ -31,4 +32,6 @@ public class PickingConstantsV2
 
 	public static final String WINDOWID_ProductsToPickView_String = "picking_v2_productsToPick";
 	public static final WindowId WINDOWID_ProductsToPickView = WindowId.fromJson(WINDOWID_ProductsToPickView_String);
+
+	public static final ViewProfileId PROFILE_ID_ProductsToPickView_Review = ViewProfileId.fromJson("review");
 }

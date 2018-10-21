@@ -18,9 +18,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.NonNull;
 
 /*

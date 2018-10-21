@@ -23,6 +23,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+
 import lombok.NonNull;
 
 /*
@@ -92,6 +93,11 @@ public interface IView
 	}
 
 	long size();
+	
+	default boolean isAllowClosingPerUserRequest()
+	{
+		return true;
+	}
 
 	default void close(final ViewCloseReason reason)
 	{

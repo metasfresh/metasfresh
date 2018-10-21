@@ -11,7 +11,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -139,6 +138,7 @@ public final class ProcessInstanceResult
 	{
 		@NonNull
 		private final ViewId viewId;
+		private final ViewProfileId profileId;
 	}
 
 	@lombok.Value
@@ -150,8 +150,7 @@ public final class ProcessInstanceResult
 		private final ViewProfileId profileId;
 	}
 
-	@lombok.Value
-	@AllArgsConstructor(staticName = "of")
+	@lombok.Value(staticConstructor = "of")
 	public static class CreateAndOpenIncludedViewAction implements ResultAction
 	{
 		@NonNull

@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.picking.PickingConstants;
@@ -30,7 +31,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -227,9 +227,9 @@ public final class PackageableRow implements IViewRow
 		return salesOrderLineId;
 	}
 
-	public int getProductId()
+	public ProductId getProductId()
 	{
-		return product != null ? product.getIdAsInt() : -1;
+		return product != null ? ProductId.ofRepoIdOrNull(product.getIdAsInt()) : null;
 	}
 
 	public Quantity getQtyOrderedWithoutPicked()

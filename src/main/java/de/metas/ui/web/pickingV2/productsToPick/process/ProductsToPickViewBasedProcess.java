@@ -4,12 +4,15 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,4 +54,17 @@ public abstract class ProductsToPickViewBasedProcess extends ViewBasedProcessTem
 				.streamByIds(rowIds)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	public final List<ProductsToPickRow> getAllRows()
+	{
+		return getView()
+				.streamByIds(DocumentIdsSelection.ALL)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	protected void updateViewRowFromPickingCandidate(@NonNull final DocumentId rowId, @NonNull final PickingCandidate pickingCandidate)
+	{
+		getView().changeRow(rowId, row -> row.withUpdatesFromPickingCandidateIfNotNull(pickingCandidate));
+	}
+
 }

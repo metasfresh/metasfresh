@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -13,6 +12,8 @@ import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

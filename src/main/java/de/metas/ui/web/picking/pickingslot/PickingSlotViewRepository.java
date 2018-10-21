@@ -3,6 +3,7 @@ package de.metas.ui.web.picking.pickingslot;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -65,6 +66,7 @@ import lombok.NonNull;
 @Component
 public class PickingSlotViewRepository
 {
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final PickingHURowsRepository pickingHUsRepo;
 
 	private final Supplier<LookupDataSource> warehouseLookup;
@@ -298,7 +300,7 @@ public class PickingSlotViewRepository
 				//
 				.pickingSlotName(pickingSlot.getPickingSlot())
 				.pickingSlotWarehouse(warehouseLookup.get().findById(pickingSlot.getM_Warehouse_ID()))
-				.pickingSlotLocatorId(pickingSlot.getM_Locator_ID())
+				.pickingSlotLocatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(pickingSlot.getM_Locator_ID()))
 				.pickingSlotBPartner(bpartnerLookup.get().findById(pickingSlot.getC_BPartner_ID()))
 				.pickingSlotBPLocation(bpartnerLocationLookup.get().findById(pickingSlot.getC_BPartner_Location_ID()))
 				.includedHURows(pickedHuRows)

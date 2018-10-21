@@ -7,12 +7,12 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableListMultimap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
@@ -31,6 +31,7 @@ import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery.M
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.product.ProductId;
@@ -76,6 +77,7 @@ import lombok.NonNull;
 @Service
 public class PickingHURowsRepository
 {
+	private static final Logger logger = LogManager.getLogger(PickingHURowsRepository.class);
 	private final HUEditorViewRepository huEditorRepo;
 	private final PickingCandidateRepository pickingCandidatesRepo;
 
@@ -133,11 +135,11 @@ public class PickingHURowsRepository
 	static MatchingSourceHusQuery createMatchingSourceHusQuery(@NonNull final PickingSlotRepoQuery query)
 	{
 		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-		
+
 		final I_M_ShipmentSchedule currentShipmentSchedule = query.getCurrentShipmentScheduleId() != null
 				? shipmentSchedulesRepo.getById(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class)
 				: null;
-				
+
 		final Set<ProductId> productIds;
 		final Set<ShipmentScheduleId> allShipmentScheduleIds = query.getShipmentScheduleIds();
 		if (allShipmentScheduleIds.isEmpty())
@@ -179,13 +181,20 @@ public class PickingHURowsRepository
 	{
 		final Map<HuId, PickedHUEditorRow> huId2huRow = new HashMap<>();
 
-		final Builder<PickingSlotId, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
-
+		final ImmutableListMultimap.Builder<PickingSlotId, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
 		for (final PickingCandidate pickingCandidate : pickingCandidates)
 		{
-			final HuId huId = pickingCandidate.getHuId();
+			final HuId huId = pickingCandidate.getPickFromHuId();
 			if (huId2huRow.containsKey(huId))
 			{
+				continue;
+			}
+
+			final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
+			if (pickingSlotId == null)
+			{
+				logger.warn("Skip picking candidate because it has no picking slot set: {}."
+						+ "\n Usually that happening because it was picked with some other picking terminal.", pickingCandidate);
 				continue;
 			}
 
@@ -194,8 +203,6 @@ public class PickingHURowsRepository
 			final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRow, pickingCandidateProcessed);
 
 			huId2huRow.put(huId, row);
-
-			final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
 			builder.put(pickingSlotId, row);
 		}
 
