@@ -1,5 +1,6 @@
 package org.adempiere.ad.migration.logger;
 
+import java.nio.file.Path;
 import java.util.Set;
 
 import org.compiere.util.Ini;
@@ -37,11 +38,11 @@ public class MigrationScriptFileLoggerHolder
 
 	public static void logMigrationScript(final String sql)
 	{
-		if(sql == null)
+		if (sql == null)
 		{
 			return;
 		}
-		
+
 		// Check AdempiereSys
 		// check property Log migration script
 		final boolean logMigrationScript = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
@@ -56,6 +57,11 @@ public class MigrationScriptFileLoggerHolder
 		}
 
 		pgMigrationScriptWriter.appendSqlStatement(sql);
+	}
+
+	public static Path getCurrentScriptPathOrNull()
+	{
+		return pgMigrationScriptWriter.getFilePathOrNull();
 	}
 
 	public static final void closeMigrationScriptFiles()
