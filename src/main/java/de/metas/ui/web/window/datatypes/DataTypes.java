@@ -668,6 +668,11 @@ public final class DataTypes
 		{
 			return (Timestamp)value;
 		}
+		else if (value instanceof String)
+		{
+			final java.util.Date date = JSONDate.fromJson((String)value, widgetType);
+			return TimeUtil.asTimestamp(date);
+		}
 		else
 		{
 			return TimeUtil.asTimestamp(value);
