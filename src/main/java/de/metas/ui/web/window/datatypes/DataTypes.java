@@ -14,7 +14,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -26,6 +25,7 @@ import de.metas.ui.web.window.datatypes.json.JSONRange;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.experimental.UtilityClass;
 
 /*

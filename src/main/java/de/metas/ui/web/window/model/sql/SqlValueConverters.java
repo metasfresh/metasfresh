@@ -6,7 +6,6 @@ import java.util.Map;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -18,6 +17,7 @@ import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.IColorRepository;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.experimental.UtilityClass;
 
 /*
