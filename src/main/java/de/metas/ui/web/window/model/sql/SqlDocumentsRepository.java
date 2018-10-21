@@ -62,8 +62,6 @@ import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 
 /*

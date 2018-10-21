@@ -229,7 +229,7 @@ public final class DataTypes
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> T cast(final Object value)
+	private static final <T> T cast(final Object value)
 	{
 		return (T)value;
 	}

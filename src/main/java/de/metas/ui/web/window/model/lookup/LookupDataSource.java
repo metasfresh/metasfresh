@@ -77,7 +77,6 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	List<CCacheStats> getCacheStats();
 
-	@Override
 	DocumentZoomIntoInfo getDocumentZoomInto(final int id);
 
 	/** @return optional WindowId to be used when zooming into */

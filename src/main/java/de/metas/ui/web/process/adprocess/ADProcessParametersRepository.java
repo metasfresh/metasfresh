@@ -24,8 +24,6 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.OrderedDocumentsList;
-import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
-import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
@@ -110,21 +108,7 @@ import de.metas.util.lang.RepoIdAware;
 
 		final Object parameterValue = processInfoParameter.getParameter();
 		final String parameterDisplay = processInfoParameter.getInfo();
-		final Object parameterValueConv = parameterDescriptor.convertToValueClass(parameterValue, new LookupValueByIdSupplier()
-		{
-
-			@Override
-			public DocumentZoomIntoInfo getDocumentZoomInto(final int id)
-			{
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public LookupValue findById(final Object id)
-			{
-				return LookupValue.fromObject(id, parameterDisplay);
-			}
-		});
+		final Object parameterValueConv = parameterDescriptor.convertToValueClass(parameterValue, id -> LookupValue.fromObject(id, parameterDisplay));
 		return parameterValueConv;
 	}
 

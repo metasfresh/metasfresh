@@ -38,6 +38,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
@@ -602,7 +603,7 @@ import lombok.NonNull;
 		{
 			final Class<?> valueClass = widgetType.getValueClass();
 			final LookupValueByIdSupplier lookupDataSource = null; // does not matter, we already excluded Lookups above
-			return DocumentFieldDescriptor.convertToValueClass(fieldName, autoFilterInitialValueStr, widgetType, valueClass, lookupDataSource);
+			return DataTypes.convertToValueClass(fieldName, autoFilterInitialValueStr, widgetType, valueClass, lookupDataSource);
 		}
 	}
 

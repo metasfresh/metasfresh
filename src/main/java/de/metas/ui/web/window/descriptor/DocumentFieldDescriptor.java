@@ -37,8 +37,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -357,7 +355,7 @@ public final class DocumentFieldDescriptor
 
 	public Object convertToValueClass(final Object value, final LookupValueByIdSupplier lookupDataSource)
 	{
-		return convertToValueClass(fieldName, value, widgetType, valueClass, lookupDataSource);
+		return DataTypes.convertToValueClass(fieldName, value, widgetType, valueClass, lookupDataSource);
 	}
 
 	/**
@@ -370,27 +368,6 @@ public final class DocumentFieldDescriptor
 	 * @return converted value
 	 */
 	public <T> T convertToValueClass(final Object value, final DocumentFieldWidgetType widgetType, final Class<T> targetType, final LookupValueByIdSupplier lookupDataSource)
-	{
-		return convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
-	}
-
-	/**
-	 * Converts given value to target class.
-	 *
-	 * @param fieldName field name, needed only for logging purposes
-	 * @param value value to be converted
-	 * @param widgetType widget type (optional)
-	 * @param targetType target type
-	 * @param lookupDataSource optional Lookup data source, if needed
-	 * @return converted value
-	 */
-	public static <T> T convertToValueClass( //
-			final String fieldName //
-			, final Object value //
-			, final DocumentFieldWidgetType widgetType //
-			, final Class<T> targetType //
-			, final LookupValueByIdSupplier lookupDataSource //
-	)
 	{
 		return DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
 	}

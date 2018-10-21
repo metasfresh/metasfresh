@@ -28,6 +28,7 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -601,7 +602,7 @@ public class SqlDocumentQueryBuilder
 			final String keyColumnName = keyField.getColumnName();
 
 			final Object valueObj = composedKeyParts.get(i);
-			final Object valueConv = DocumentFieldDescriptor.convertToValueClass(
+			final Object valueConv = DataTypes.convertToValueClass(
 					keyColumnName,
 					valueObj,
 					keyField.getWidgetType(),
