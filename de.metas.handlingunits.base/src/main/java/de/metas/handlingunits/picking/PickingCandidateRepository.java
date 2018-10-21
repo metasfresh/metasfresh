@@ -1,10 +1,12 @@
 package de.metas.handlingunits.picking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -124,13 +126,15 @@ public class PickingCandidateRepository
 		updateRecord(record, candidate);
 		saveRecord(record);
 
-		candidate.setId(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()));
+		candidate.markSaved(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()));
 	}
 
 	private PickingCandidate toPickingCandidate(final I_M_Picking_Candidate record)
 	{
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 		final Quantity qtyPicked = Quantity.of(record.getQtyPicked(), uom);
+
+		final BigDecimal qtyReview = !isNull(record, I_M_Picking_Candidate.COLUMNNAME_QtyReview) ? record.getQtyReview() : null;
 
 		return PickingCandidate.builder()
 				.id(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()))
@@ -141,6 +145,7 @@ public class PickingCandidateRepository
 				//
 				.pickFromHuId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
 				.qtyPicked(qtyPicked)
+				.qtyReview(qtyReview)
 				//
 				.packToInstructionsId(HuPackingInstructionsId.ofRepoIdOrNull(record.getPackTo_HU_PI_ID()))
 				.packedToHuId(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
@@ -161,6 +166,7 @@ public class PickingCandidateRepository
 
 		record.setQtyPicked(from.getQtyPicked().getAsBigDecimal());
 		record.setC_UOM_ID(from.getQtyPicked().getUOMId());
+		record.setQtyReview(from.getQtyReview());
 
 		record.setPackTo_HU_PI_ID(HuPackingInstructionsId.toRepoId(from.getPackToInstructionsId()));
 		record.setM_HU_ID(HuId.toRepoId(from.getPackedToHuId()));

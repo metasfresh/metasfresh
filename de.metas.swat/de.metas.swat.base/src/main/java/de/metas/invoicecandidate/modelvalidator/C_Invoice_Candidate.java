@@ -30,15 +30,21 @@ import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -54,36 +60,29 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_C_Invoice_Candidate.class)
+@Component("de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate")
 public class C_Invoice_Candidate
 {
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
 
-	// NOTE: set required=false because atm, for some reason junit tests are failing on jenkins
-	@Autowired(required = false)
-	private InvoiceCandidateGroupRepository groupsRepo;
+	private final AttachmentEntryService attachmentEntryService;
+
 	private InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
 
-	public C_Invoice_Candidate()
+	public C_Invoice_Candidate(
+			@NonNull final InvoiceCandidateGroupRepository groupsRepo,
+			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
-		Adempiere.autowire(this);
-
-		// NOTE: in unit test mode and while running tools like model generators,
-		// the groupsRepo is not Autowired because there is no spring context,
-		// so we have to instantiate it directly
-		if (groupsRepo == null && Adempiere.isUnitTestMode())
-		{
-			groupsRepo = new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory());
-		}
-
-		groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
+		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
+		this.attachmentEntryService = attachmentEntryService;
 	};
 
 	/**
@@ -427,5 +426,26 @@ public class C_Invoice_Candidate
 				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
 						.bpartnerId(ic.getBill_BPartner_ID())
 						.build());
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void shareAttachments(final I_C_Invoice_Candidate ic)
+	{
+		if (ic.getRecord_ID() <= 0)
+		{
+			return; // nothing to do
+		}
+
+		final TableRecordReference referencedRecord = TableRecordReference.ofReferenced(ic);
+		final TableRecordReference icRecord = TableRecordReference.of(ic);
+
+		// Invoke the method after commit to make sure that when we do it, the IC exists "globally"
+		// This prevents race conditions in case someone creates e.g. a C_OLCand and then adds an attachment which the ICs are created asynchronously
+		Services.get(ITrxManager.class)
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> attachmentEntryService.shareAttachmentLinks(
+						ImmutableList.of(referencedRecord),
+						ImmutableList.of(icRecord)));
 	}
 }

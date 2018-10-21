@@ -64,6 +64,7 @@ import de.metas.picking.service.PackingItemsMap;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 import net.miginfocom.swing.MigLayout;
 

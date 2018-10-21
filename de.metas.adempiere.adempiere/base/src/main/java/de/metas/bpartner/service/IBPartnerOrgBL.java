@@ -10,12 +10,12 @@ package de.metas.bpartner.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,15 +43,6 @@ public interface IBPartnerOrgBL extends ISingletonService
 
 	I_C_BPartner retrieveLinkedBPartner(int adOrgId);
 
-	/**
-	 * Returns the default location of the organization.
-	 * 
-	 * @param ctx
-	 * @param orgId
-	 * @param clazz
-	 * @param trxName
-	 * @return
-	 */
 	I_C_Location retrieveOrgLocation(Properties ctx, int orgId, String trxName);
 
 	default I_C_Location retrieveOrgLocation(final int orgId)
@@ -72,7 +63,7 @@ public interface IBPartnerOrgBL extends ISingletonService
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param orgId
 	 * @param trxName
@@ -83,7 +74,7 @@ public interface IBPartnerOrgBL extends ISingletonService
 	/**
 	 * Returns the default contact of the given <code>orgId</code>'s bpartner. If there is no bpartner and/or user, then the user with the ID defined in {@link #AD_User_In_Charge_DEFAULT_ID} is
 	 * returned.
-	 * 
+	 *
 	 * @param ctx
 	 * @param orgId
 	 * @param trxName

@@ -31,7 +31,13 @@
 			<artifactId>de.metas.swat.base</artifactId>
 			<version>10.0.0</version>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
@@ -39,7 +45,7 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 
 </project>

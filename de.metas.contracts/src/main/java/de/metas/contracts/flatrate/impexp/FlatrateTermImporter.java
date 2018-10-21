@@ -1,7 +1,9 @@
 /**
- * 
+ *
  */
 package de.metas.contracts.flatrate.impexp;
+
+import lombok.NonNull;
 
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -25,7 +27,6 @@ import de.metas.pricing.IPricingResult;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -37,12 +38,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,11 +63,11 @@ import lombok.NonNull;
 
 	// services
 	private final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	
+
 	private static final Logger logger = LogManager.getLogger(FlatrateTermImporter.class);
 
 	final private FlatrateTermImportProcess process;
-	
+
 
 	private FlatrateTermImporter(FlatrateTermImportProcess process)
 	{
@@ -77,19 +78,19 @@ import lombok.NonNull;
 	{
 		return process.getCtx();
 	}
-	
+
 	public I_C_Flatrate_Term importRecord(final I_I_Flatrate_Term importRecord)
 	{
 		final I_M_Product product = importRecord.getM_Product();
 
 		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
-				PlainContextAware.newWithThreadInheritedTrx(), 
-				importRecord.getC_BPartner(), 
+				PlainContextAware.newWithThreadInheritedTrx(),
+				importRecord.getC_BPartner(),
 				importRecord.getC_Flatrate_Conditions(),
-				importRecord.getStartDate(), 
+				importRecord.getStartDate(),
 				(I_AD_User)null, // userInCharge
-				product, 
-				false 
+				product,
+				false // completeIt
 		);
 		if (contract == null)
 		{
@@ -116,16 +117,16 @@ import lombok.NonNull;
 		{
 			flatrateBL.complete(contract);
 		}
-		
+
 		logger.trace("Insert FlaterateTerm - {}", contract);
-		
+
 		//
 		// Link back the contract to current import record
 		importRecord.setC_Flatrate_Term(contract);
-		
+
 		return contract;
 	}
-	
+
 	private static void setBillUser(@NonNull final I_C_Flatrate_Term contract, final Properties ctx)
 	{
 		final int billPartnerId = contract.getBill_BPartner_ID();
@@ -135,7 +136,7 @@ import lombok.NonNull;
 			contract.setBill_User(billUser);
 		}
 	}
-	
+
 	private void setDropShipBPartner(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
 	{
 		final int dropShipBPartnerId = importRecord.getDropShip_BPartner_ID() > 0 ? importRecord.getDropShip_BPartner_ID() : importRecord.getC_BPartner_ID();
@@ -155,7 +156,7 @@ import lombok.NonNull;
 			contract.setDropShip_User(dropShipUser);
 		}
 	}
-	
+
 	private static void setDropShipLocation(@NonNull final I_C_Flatrate_Term contract, final Properties ctx)
 	{
 		int dropShipBPartnerId = contract.getDropShip_BPartner_ID();
@@ -165,7 +166,7 @@ import lombok.NonNull;
 			contract.setDropShip_Location(dropShipBPLocation);
 		}
 	}
-	
+
 
 	private void setUOM(@NonNull final I_C_Flatrate_Term contract, @NonNull final I_M_Product product)
 	{
@@ -224,14 +225,14 @@ import lombok.NonNull;
 			contract.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		}
 	}
-	
+
 	private void setTaxCategoryAndIsTaxIncluded(@NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final IPricingResult pricingResult = calculateFlatrateTermPrice(newTerm);
 		newTerm.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
 		newTerm.setIsTaxIncluded(pricingResult.isTaxIncluded());
 	}
-	
+
 	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_Flatrate_Term newTerm)
 	{
 		return FlatrateTermPricing.builder()

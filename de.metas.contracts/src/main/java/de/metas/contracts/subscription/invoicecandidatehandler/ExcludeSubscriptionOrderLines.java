@@ -43,7 +43,7 @@ public class ExcludeSubscriptionOrderLines
 		final IQueryFilter<I_C_OrderLine> f = Services.get(IQueryBL.class)
 				.createCompositeQueryFilter(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.contracts.subscription.model.I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, null);
+				.addEqualsFilter(de.metas.contracts.order.model.I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, null);
 
 		Services.get(IC_OrderLine_HandlerDAO.class).addAdditionalFilter(f);
 	}

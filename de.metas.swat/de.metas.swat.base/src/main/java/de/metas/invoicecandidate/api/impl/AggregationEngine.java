@@ -1,5 +1,9 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -73,7 +77,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class AggregationEngine implements IAggregationEngine
 {
@@ -309,7 +312,7 @@ public class AggregationEngine implements IAggregationEngine
 		final IInvoiceLineAggregationRequest icAggregationRequest = icAggregationRequestBuilder.build();
 		lineAggregator.addInvoiceCandidate(icAggregationRequest);
 	}
-	
+
 	private void addToInvoiceHeader(final InvoiceHeaderImplBuilder invoiceHeader, final I_C_Invoice_Candidate ic, final int inoutId)
 	{
 
@@ -342,11 +345,10 @@ public class AggregationEngine implements IAggregationEngine
 			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()), ic.getBill_Location(), SOTrx.ofBoolean(ic.isSOTrx()));
 			if (pl == null)
 			{
-				final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 				throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
 						new Object[] {
-								InterfaceWrapperHelper.create(ctx, ic.getM_PricingSystem_ID(), I_M_PricingSystem.class, ITrx.TRXNAME_None).getName(),
-								InterfaceWrapperHelper.create(ctx, invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class, ITrx.TRXNAME_None).getName() });
+								ic.getM_PricingSystem_ID() > 0 ? loadOutOfTrx(ic.getM_PricingSystem_ID(), I_M_PricingSystem.class).getName() : "NO PRICING-SYTEM",
+								invoiceHeader.getBill_Location_ID() > 0 ? loadOutOfTrx(invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class).getName() : "NO BILL-TO-LOCATION" });
 			}
 			M_PriceList_ID = pl.getM_PriceList_ID();
 		}
@@ -372,16 +374,15 @@ public class AggregationEngine implements IAggregationEngine
 		// 06630: set shipment id to header
 		invoiceHeader.setM_InOut_ID(inoutId);
 	}
-	
 
 	private int getBill_Location_ID(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		return ic.getBill_Location_Override_ID() > 0 ? ic.getBill_Location_Override_ID() : ic.getBill_Location_ID(); 
+		return ic.getBill_Location_Override_ID() > 0 ? ic.getBill_Location_Override_ID() : ic.getBill_Location_ID();
 	}
-	
+
 	private int getBill_User_ID(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		return ic.getBill_User_ID_Override_ID() > 0 ? ic.getBill_User_ID_Override_ID() : ic.getBill_User_ID(); 
+		return ic.getBill_User_ID_Override_ID() > 0 ? ic.getBill_User_ID_Override_ID() : ic.getBill_User_ID();
 	}
 
 	@Override
@@ -445,8 +446,6 @@ public class AggregationEngine implements IAggregationEngine
 
 		// Set Invoice's DocBaseType
 		setDocBaseType(invoiceHeader);
-
-
 
 		return invoiceHeader;
 	}
@@ -530,9 +529,9 @@ public class AggregationEngine implements IAggregationEngine
 		}
 	}
 
-
 	/**
 	 * extract C_PaymentTerm_ID from invoice candidate
+	 *
 	 * @return
 	 */
 	private int extractC_PaymentTerm_IDFromLines(@NonNull final InvoiceHeaderImpl invoiceHeader)
@@ -544,7 +543,7 @@ public class AggregationEngine implements IAggregationEngine
 		}
 
 		final Map<Integer, IInvoiceLineRW> uniquePaymentTermLines = mapUniqueIInvoiceLineRWPerPaymentTerm(lines);
-		// extract payment term  if all lines have same C_PaymentTerm_ID
+		// extract payment term if all lines have same C_PaymentTerm_ID
 		if (uniquePaymentTermLines.size() == 1)
 		{
 			final Set<Integer> ids = uniquePaymentTermLines.keySet();

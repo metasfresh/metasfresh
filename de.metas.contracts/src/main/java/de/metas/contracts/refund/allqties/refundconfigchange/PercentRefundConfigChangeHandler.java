@@ -3,10 +3,11 @@ package de.metas.contracts.refund.allqties.refundconfigchange;
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
-import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

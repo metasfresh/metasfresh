@@ -1,14 +1,14 @@
 package de.metas.server.config;
 
+import static de.metas.util.web.MetasfreshRestAPIConstants.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER;
+import static de.metas.util.web.MetasfreshRestAPIConstants.createApiInfo;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.web.security.UserAuthTokenFilter;
-import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.schema.ModelRef;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -43,15 +43,12 @@ public class SwaggerConfig
 	public Docket api()
 	{
 		return new Docket(DocumentationType.SWAGGER_2)
-				.globalOperationParameters(ImmutableList.of(new ParameterBuilder()
-						.name(UserAuthTokenFilter.HEADER_Authorization)
-						.description("Authorization token")
-						.modelRef(new ModelRef("string"))
-						.parameterType("header")
-						.required(false)
-						.build()))
+				.globalOperationParameters(ImmutableList.of(SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER))
 				.select()
 				.paths(PathSelectors.any())
-				.build();
+				.build()
+				.apiInfo(createApiInfo(
+						"metasfresh application server REST API" /* title */,
+						"metasfresh REST API"/* description */));
 	}
 }

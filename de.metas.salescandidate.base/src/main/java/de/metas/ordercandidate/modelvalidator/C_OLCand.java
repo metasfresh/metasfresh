@@ -10,12 +10,12 @@ package de.metas.ordercandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,6 +52,7 @@ import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 // Note: this model validator used to have the class name 'OLCand'
 
@@ -91,10 +92,10 @@ public class C_OLCand
 
 	/**
 	 * Calls {@link IOLCandValidatorBL#validate(I_C_OLCand)}.<br>
-	 * 
+	 *
 	 * Before that it resets the pricing system if there is a new C_BPartner or C_BPartner_Override.<br>
 	 * The {@link de.metas.ordercandidate.spi.IOLCandValidator} framework is then supposed to call {@link de.metas.ordercandidate.api.IOLCandBL} to come up with the then-correct pricing system.
-	 * 
+	 *
 	 * @param olCand
 	 * @task http://dewiki908/mediawiki/index.php/09686_PricingSystem_sometimes_not_updated_in_C_OLCand_%28105127201494%29
 	 */
@@ -243,12 +244,12 @@ public class C_OLCand
 	}
 
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID })
-	public void onHandOverPartnerOverride(final I_C_OLCand olCand)
+	public void onHandOverPartnerOverride(@NonNull final I_C_OLCand olCand)
 	{
 		updateHandoverLocationOverride(olCand);
 	}
 
-	private void updateHandoverLocationOverride(I_C_OLCand olCand)
+	private void updateHandoverLocationOverride(@NonNull final I_C_OLCand olCand)
 	{
 		final I_C_BPartner handOverPartnerOverride = olCand.getHandOver_Partner_Override();
 		if (handOverPartnerOverride == null)
@@ -271,19 +272,18 @@ public class C_OLCand
 			// but I will leave this condition here as extra safety
 			olCand.setHandOver_Location_Override(null);
 		}
-
-		org.compiere.model.I_C_BPartner_Location handOverLocation = handoverRelation.getC_BPartnerRelation_Location();
-
-		if (handOverLocation == null)
+		else
 		{
-			// this should also not happen because C_BPartnerRelation_Location is mandatory
-			olCand.setHandOver_Location_Override(null);
+			org.compiere.model.I_C_BPartner_Location handOverLocation = handoverRelation.getC_BPartnerRelation_Location();
+			if (handOverLocation == null)
+			{
+				// this should also not happen because C_BPartnerRelation_Location is mandatory
+				olCand.setHandOver_Location_Override(null);
 
-			return;
+				return;
+			}
+			olCand.setHandOver_Location_Override(handOverLocation);
 		}
-
-		olCand.setHandOver_Location_Override(handOverLocation);
-
 	}
 
 	@Init

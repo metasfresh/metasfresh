@@ -166,11 +166,12 @@ public class MInventory extends X_M_Inventory implements IDocument
 		if (getC_DocType_ID() <= 0)
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-			final int docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 					.adClientId(getAD_Client_ID())
 					.adOrgId(getAD_Org_ID())
-					.build());
+					.build();
+			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 			setC_DocType_ID(docTypeId);
 		}
 		return true;

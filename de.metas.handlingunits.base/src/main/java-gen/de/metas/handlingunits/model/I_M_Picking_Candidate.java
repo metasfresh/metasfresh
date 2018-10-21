@@ -372,6 +372,29 @@ public interface I_M_Picking_Candidate
     public static final String COLUMNNAME_QtyPicked = "QtyPicked";
 
 	/**
+	 * Set Qty Review.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyReview (java.math.BigDecimal QtyReview);
+
+	/**
+	 * Get Qty Review.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyReview();
+
+    /** Column definition for QtyReview */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_QtyReview = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "QtyReview", null);
+    /** Column name QtyReview */
+    public static final String COLUMNNAME_QtyReview = "QtyReview";
+
+	/**
 	 * Set Status.
 	 *
 	 * <br>Type: List

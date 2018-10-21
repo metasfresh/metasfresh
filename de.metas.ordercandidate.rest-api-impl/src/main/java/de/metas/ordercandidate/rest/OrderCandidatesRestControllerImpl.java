@@ -1,12 +1,18 @@
 package de.metas.ordercandidate.rest;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,14 +21,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
+import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.util.Services;
-import lombok.NonNull;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -46,6 +57,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 @RestController
 @RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
@@ -59,16 +71,19 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 	@PostMapping
 	@Override
-	public JsonOLCand createOrder(@RequestBody final JsonOLCandCreateRequest request)
+	public JsonOLCand createOrderLineCandidate(@RequestBody final JsonOLCandCreateRequest request)
 	{
-		return createOrders(JsonOLCandCreateBulkRequest.of(request)).getSingleResult();
+		return createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request)).getSingleResult();
 	}
 
 	@PostMapping(PATH_BULK)
 	@Override
-	public JsonOLCandCreateBulkResponse createOrders(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
+
+	public JsonOLCandCreateBulkResponse createOrderLineCandidates(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
-		final MasterdataProvider masterdataProvider = MasterdataProvider.newInstance(Env.getCtx());
+		bulkRequest.validate();
+
+		final MasterdataProvider masterdataProvider = MasterdataProvider.createInstance(Env.getCtx());
 
 		createOrUpdateMasterdata(bulkRequest, masterdataProvider);
 
@@ -76,20 +91,26 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		return trxManager.call(() -> creatOrdersInTrx(bulkRequest, masterdataProvider));
 	}
 
-	private void assertCanCreate(final JsonOLCandCreateRequest request, final MasterdataProvider masterdataProvider)
+	private void assertCanCreate(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
 		masterdataProvider.assertCanCreateNewOLCand(orgId);
 	}
 
-	private void createOrUpdateMasterdata(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
+	private void createOrUpdateMasterdata(
+			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		bulkRequest.getRequests()
 				.stream()
 				.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider));
 	}
 
-	private void createOrUpdateMasterdata(final JsonOLCandCreateRequest json, final MasterdataProvider masterdataProvider)
+	private void createOrUpdateMasterdata(
+			@NonNull final JsonOLCandCreateRequest json,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
@@ -99,7 +120,9 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
 	}
 
-	private JsonOLCandCreateBulkResponse creatOrdersInTrx(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
+	private JsonOLCandCreateBulkResponse creatOrdersInTrx(
+			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final List<OLCandCreateRequest> requests = bulkRequest
 				.getRequests()
@@ -113,25 +136,94 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	}
 
 	private OLCandCreateRequest fromJson(
-			final JsonOLCandCreateRequest request,
-			final MasterdataProvider masterdataProvider)
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		return jsonConverters.fromJson(request, masterdataProvider)
-				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
+		final String dataSourceInternalNameToUse = Util.coalesce(
+				request.getDataSourceInternalName(),
+				DATA_SOURCE_INTERNAL_NAME);
+
+		return jsonConverters
+				.fromJson(request, masterdataProvider)
+				.adInputDataSourceInternalName(dataSourceInternalNameToUse)
 				.build();
 	}
 
-	@PostMapping("/{externalId}/attachments")
+	@PostMapping("/{dataSourceName}/{externalReference}/attachments")
 	@Override
-	public void attachFile(
-			@PathVariable("externalId") final String olCandExternalId,
-			@RequestParam("file") @NonNull final MultipartFile file)
-			throws IOException
+	public JsonAttachment attachFile(
+			@PathVariable("dataSourceName") final String dataSourceName,
+
+			@ApiParam(value = "External reference of the order line candidates to which the given file shall be attached", allowEmptyValue = false) //
+			@PathVariable("externalReference") final String externalReference,
+
+			@ApiParam(value = "List with an even number of items;\n"
+					+ "transformed to a map of key-value pairs and added to the new attachment as tags.\n"
+					+ "If the number of items is odd, the last item is discarded", allowEmptyValue = true) //
+			@RequestParam("tags") //
+			@Nullable final List<String> tagKeyValuePairs,
+
+			@ApiParam(value = "The file to attach; the attachment's MIME type will be determined from the file extenstion", allowEmptyValue = false) //
+			@RequestBody @NonNull final MultipartFile file) throws IOException
 	{
 		final IOLCandBL olCandsService = Services.get(IOLCandBL.class);
 
-		final String filename = file.getOriginalFilename();
+		final OLCandQuery query = OLCandQuery
+				.builder()
+				.inputDataSourceName(dataSourceName)
+				.externalReference(externalReference)
+				.build();
+
+		final String fileName = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
-		olCandsService.addAttachment(olCandExternalId, filename, data);
+
+		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest
+				.builderFromByteArray(fileName, data)
+				.tags(extractTags(tagKeyValuePairs))
+				.build();
+
+		final AttachmentEntry attachmentEntry = olCandsService.addAttachment(query, request);
+
+		return toJsonAttachment(
+				externalReference,
+				dataSourceName,
+				attachmentEntry);
+	}
+
+	@VisibleForTesting
+	ImmutableMap<String, String> extractTags(@Nullable final List<String> tagKeyValuePairs)
+	{
+		if (tagKeyValuePairs == null)
+		{
+			return ImmutableMap.of();
+		}
+		final ImmutableMap.Builder<String, String> tags = ImmutableMap.builder();
+
+		final int listSize = tagKeyValuePairs.size();
+		final int maxIndex = listSize % 2 == 0 ? listSize : listSize - 1;
+
+		for (int i = 0; i < maxIndex; i += 2)
+		{
+			tags.put(tagKeyValuePairs.get(i), tagKeyValuePairs.get(i + 1));
+		}
+		return tags.build();
+	}
+
+	private JsonAttachment toJsonAttachment(
+			@NonNull final String externalReference,
+			@NonNull final String dataSourceName,
+			@NonNull final AttachmentEntry entry)
+	{
+		final String attachmentId = Integer.toString(entry.getId().getRepoId());
+
+		return JsonAttachment.builder()
+				.externalReference(externalReference)
+				.dataSourceName(dataSourceName)
+				.attachmentId(attachmentId)
+				.type(entry.getType())
+				.filename(entry.getFilename())
+				.contentType(entry.getContentType())
+				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)
+				.build();
 	}
 }

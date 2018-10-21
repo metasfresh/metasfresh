@@ -83,7 +83,6 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				term,
 				taxCategoryId,
 				term.getM_Product_ID(),
-				ic.getDateOrdered(), // billDate
 				ic.getDateOrdered(), // shipDate
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				(WarehouseId)null,

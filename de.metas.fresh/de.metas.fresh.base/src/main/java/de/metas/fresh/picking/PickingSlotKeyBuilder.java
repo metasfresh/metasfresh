@@ -50,6 +50,7 @@ import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
+
 import lombok.NonNull;
 
 public class PickingSlotKeyBuilder

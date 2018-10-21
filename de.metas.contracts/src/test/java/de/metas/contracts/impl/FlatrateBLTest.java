@@ -238,7 +238,6 @@ public class FlatrateBLTest extends ContractsTestBase
 						taxCategoryId,
 						currentTerm.getM_Product_ID(),
 						dataEntry.getDate_Reported(),
-						dataEntry.getDate_Reported(),
 						OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
 						(WarehouseId)null,
 						Util.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),

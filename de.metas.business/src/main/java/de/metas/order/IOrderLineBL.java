@@ -30,12 +30,12 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.lang.Percent;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.Percent;
 
 public interface IOrderLineBL extends ISingletonService
 {

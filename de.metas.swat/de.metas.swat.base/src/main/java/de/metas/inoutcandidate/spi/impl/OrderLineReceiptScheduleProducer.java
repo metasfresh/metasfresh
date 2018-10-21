@@ -51,6 +51,7 @@ import org.eevolution.model.X_PP_Product_Planning;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -419,13 +420,14 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Fallback: get standard Material Receipt document type
-		return Services.get(IDocTypeDAO.class)
-				.getDocTypeIdOrNull(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-						.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
-						.adClientId(orderLine.getAD_Client_ID())
-						.adOrgId(orderLine.getAD_Org_ID())
-						.build());
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(orderLine.getAD_Client_ID())
+				.adOrgId(orderLine.getAD_Org_ID())
+				.build();
+		return DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
 	}
 
 	/** Wraps {@link I_C_OrderLine} as {@link IReceiptScheduleWarehouseDestProvider.IContext} */

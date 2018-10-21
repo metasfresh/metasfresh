@@ -23,7 +23,7 @@ import java.sql.Timestamp;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
 
 /**
  * Immutable Process Parameter

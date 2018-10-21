@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
@@ -28,6 +27,8 @@ import de.metas.pricing.conditions.service.PricingConditionsResult.PricingCondit
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

@@ -43,6 +43,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -1581,7 +1582,7 @@ public class TimeUtil
 		}
 	}
 
-	public static Instant asInstant(final Object obj)
+	public static Instant asInstant(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1609,6 +1610,12 @@ public class TimeUtil
 		{
 			final LocalTime localTime = (LocalTime)obj;
 			return localTime.atDate(DATE_1970_01_01).atZone(ZoneId.systemDefault()).toInstant();
+		}
+		else if (obj instanceof XMLGregorianCalendar)
+		{
+			return ((XMLGregorianCalendar)obj)
+					.toGregorianCalendar()
+					.toInstant();
 		}
 		else if (obj instanceof ZonedDateTime)
 		{

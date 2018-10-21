@@ -26,6 +26,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocumentLocationBL;
@@ -50,8 +51,8 @@ public class C_DunningDoc
 				.docBaseType(Dunning_Constants.DocBaseType_Dunnig)
 				.build();
 
-		final int docTypeId = docTypeDAO.getDocTypeId(query);
-		dunningDoc.setC_DocType_ID(docTypeId);
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(query);
+		dunningDoc.setC_DocType_ID(docTypeId.getRepoId());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //

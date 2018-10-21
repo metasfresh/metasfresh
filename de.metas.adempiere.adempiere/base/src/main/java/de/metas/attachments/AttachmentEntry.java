@@ -1,23 +1,30 @@
 package de.metas.attachments;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.ToString;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 import java.io.File;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.MimeType;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.ToString;
-import lombok.Value;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  * Attachment entry
@@ -40,6 +47,8 @@ public final class AttachmentEntry
 	private final String contentType;
 	private final URI url;
 
+	private final ImmutableMap<String, String> tags;
+
 	/** The records to which this instance is attached. */
 	private final Set<ITableRecordReference> linkedRecords;
 
@@ -51,12 +60,16 @@ public final class AttachmentEntry
 			@Nullable final String filename,
 			@Nullable final String contentType,
 			@Nullable final URI url,
+			@Singular final Map<String, String> tags,
 			@Singular final Set<ITableRecordReference> linkedRecords)
 	{
 		this.id = id;
 		this.name = name == null ? "?" : name;
 		this.type = type;
 		this.filename = filename != null ? filename : new File(this.name).getName();
+
+		this.tags = ImmutableMap.copyOf(tags);
+
 		this.linkedRecords = linkedRecords;
 
 		if (type == Type.Data)
@@ -119,5 +132,57 @@ public final class AttachmentEntry
 	public AttachmentEntry withoutLinkedRecords()
 	{
 		return toBuilder().clearLinkedRecords().build();
+	}
+
+	/** @return {@code true} if this attachment has a tag with the given name; the label doesn't need to have a value though. */
+	public boolean hasTag(@NonNull final String tag)
+	{
+		return tags.containsKey(tag);
+	}
+
+	public boolean hasAllTagsSetToTrue(@NonNull final List<String> tagNames)
+	{
+		for (final String tagName : tagNames)
+		{
+			if (!hasTagSetToTrue(tagName))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean hasTagSetToTrue(@NonNull final String tagName)
+	{
+		return StringUtils.toBoolean(tags.get(tagName), false);
+	}
+
+	public boolean hasTagSetToString(@NonNull final String tagName, @NonNull final String tagValue)
+	{
+		return Objects.equals(tags.get(tagName), tagValue);
+	}
+
+	public String getTagValue(@NonNull final String tagName)
+	{
+		return Check.assumeNotEmpty(
+				getTagValueOrNull(tagName),
+				"This attachmentEntry needs to have a tag with name={} and a value; this={}", tagName, this);
+	}
+
+	public String getTagValueOrNull(String tagName)
+	{
+		return tags.get(tagName);
+	}
+
+	public boolean hasAllTagsSetToAnyValue(@NonNull final List<String> tagNames)
+	{
+		for (final String tagName : tagNames)
+		{
+			if (getTagValueOrNull(tagName) == null)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 }

@@ -4,8 +4,9 @@ import java.util.Optional;
 
 import org.compiere.util.Env;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Value;
 
 /*

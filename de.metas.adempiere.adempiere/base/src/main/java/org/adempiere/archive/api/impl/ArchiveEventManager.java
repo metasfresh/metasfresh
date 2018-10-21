@@ -1,5 +1,9 @@
 package org.adempiere.archive.api.impl;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,15 +17,14 @@ package org.adempiere.archive.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -30,21 +33,21 @@ import org.adempiere.archive.spi.IArchiveEventListener;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
-import de.metas.util.Check;
-
 public class ArchiveEventManager implements IArchiveEventManager
 {
 	private final CopyOnWriteArrayList<IArchiveEventListener> listeners = new CopyOnWriteArrayList<>();
 
 	@Override
-	public void registerArchiveEventListener(final IArchiveEventListener listener)
+	public void registerArchiveEventListener(@NonNull final IArchiveEventListener listener)
 	{
-		Check.assumeNotNull(listener, "listener not null");
 		listeners.addIfAbsent(listener);
 	}
 
 	@Override
-	public void firePdfUpdate(final I_AD_Archive archive, final I_AD_User user, final String action)
+	public void firePdfUpdate(
+			@NonNull final I_AD_Archive archive,
+			@Nullable final I_AD_User user,
+			@NonNull final String action)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{

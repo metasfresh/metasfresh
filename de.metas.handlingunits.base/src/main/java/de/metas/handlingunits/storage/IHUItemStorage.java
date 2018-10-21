@@ -51,9 +51,6 @@ import de.metas.quantity.CapacityInterface;
 public interface IHUItemStorage extends IGenericHUStorage
 {
 	@Override
-	IHUStorageFactory getHUStorageFactory();
-
-	@Override
 	IHUStorage getParentStorage();
 
 	/**

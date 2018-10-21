@@ -153,7 +153,7 @@ public class ShipperGatewayFacade
 				"The given shipper with M_Shipper_ID={} has an empty ShipperGateway value; shipper={}", shipperId, shipper);
 	}
 
-	public boolean hasServiceSupport(String shipperGatewayId)
+	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
 	{
 		return shipperRegistry.hasServiceSupport(shipperGatewayId);
 	}

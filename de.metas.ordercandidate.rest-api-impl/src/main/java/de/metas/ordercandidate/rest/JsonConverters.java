@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -21,6 +21,8 @@ import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilde
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*
@@ -33,12 +35,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,16 +61,23 @@ public class JsonConverters
 			throw new AdempiereException("@FillMandatory@ @POReference@: " + request);
 		}
 
-		final ProductId productId = masterdataProvider.getProductIdByValue(request.getProductCode());
+		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+
+		final ProductId productId = masterdataProvider.getCreateProductId(request.getProduct(), orgId);
+
 		final UomId uomId = masterdataProvider.getProductUOMId(productId, request.getUomCode());
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
-		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+		final CurrencyId currencyId = masterdataProvider.getCurrencyId(request.getCurrencyCode());
 
 		return OLCandCreateRequest.builder()
-				.externalId(request.getExternalId())
 				//
 				.orgId(orgId)
+				//
+				.dataSourceInternalName(request.getDataSourceInternalName())
+				.externalId(request.getExternalId())
+				//
+				.dataDestInternalName(request.getDataDestInternalName())
 				//
 				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
 				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
@@ -78,6 +87,10 @@ public class JsonConverters
 				.poReference(request.getPoReference())
 				//
 				.dateRequired(request.getDateRequired())
+				//
+				.dateInvoiced(request.getDateInvoiced())
+				.docTypeInvoiceId(masterdataProvider.getDocTypeId(request.getInvoiceDocType(), orgId))
+
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
 				.productId(productId)
@@ -88,6 +101,8 @@ public class JsonConverters
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
+				.currencyId(currencyId)
+
 				.discount(Percent.ofNullable(request.getDiscount()));
 	}
 
@@ -111,10 +126,20 @@ public class JsonConverters
 				.build();
 	}
 
+	public JsonOLCandCreateBulkResponse toJson(
+			@NonNull final List<OLCand> olCands,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		return JsonOLCandCreateBulkResponse.of(olCands.stream()
+				.map(olCand -> toJson(olCand, masterdataProvider))
+				.collect(ImmutableList.toImmutableList()));
+	}
+
 	private JsonOLCand toJson(final OLCand olCand, final MasterdataProvider masterdataProvider)
 	{
 		return JsonOLCand.builder()
 				.id(olCand.getId())
+				.poReference(olCand.getPOReference())
 				.externalId(olCand.getExternalId())
 				//
 				.org(masterdataProvider.getJsonOrganizationById(olCand.getAD_Org_ID()))
@@ -138,14 +163,5 @@ public class JsonConverters
 				.discount(olCand.getDiscount())
 				//
 				.build();
-	}
-
-	public JsonOLCandCreateBulkResponse toJson(
-			@NonNull final List<OLCand> olCands,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
-		return JsonOLCandCreateBulkResponse.of(olCands.stream()
-				.map(olCand -> toJson(olCand, masterdataProvider))
-				.collect(ImmutableList.toImmutableList()));
 	}
 }

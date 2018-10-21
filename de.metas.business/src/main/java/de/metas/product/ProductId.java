@@ -10,8 +10,9 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Value;
 
 /*

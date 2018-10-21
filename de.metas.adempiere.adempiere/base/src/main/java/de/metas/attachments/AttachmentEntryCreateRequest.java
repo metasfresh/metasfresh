@@ -1,9 +1,16 @@
 package de.metas.attachments;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.ToString;
+import lombok.Value;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
 
 import javax.activation.DataSource;
 
@@ -13,10 +20,6 @@ import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
 import com.google.common.collect.ImmutableList;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -42,6 +45,7 @@ import lombok.Value;
 
 @Value
 @Builder
+@ToString(exclude="data")
 public class AttachmentEntryCreateRequest
 {
 	public static AttachmentEntryCreateRequest fromURI(
@@ -62,13 +66,19 @@ public class AttachmentEntryCreateRequest
 			@NonNull final String fileName,
 			@NonNull final byte[] data)
 	{
-		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
+		final AttachmentEntryCreateRequest request = builderFromByteArray(fileName, data).build();
+		return request;
+	}
+
+	public static AttachmentEntryCreateRequestBuilder builderFromByteArray(
+			@NonNull final String fileName,
+			@NonNull final byte[] data)
+	{
+		return AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntry.Type.Data)
 				.filename(fileName)
 				.contentType(MimeType.getMimeType(fileName))
-				.data(data)
-				.build();
-		return request;
+				.data(data);
 	}
 
 	public static AttachmentEntryCreateRequest fromDataSource(final DataSource dataSource)
@@ -146,9 +156,14 @@ public class AttachmentEntryCreateRequest
 	}
 
 	@NonNull
-	private final AttachmentEntry.Type type;
-	private final String filename;
-	private final String contentType;
-	private final byte[] data;
-	private final URI url;
+	AttachmentEntry.Type type;
+
+	String filename;
+	String contentType;
+
+	byte[] data;
+	URI url;
+
+	@Singular
+	Map<String, String> tags;
 }

@@ -1,12 +1,18 @@
 package de.metas.attachments;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -18,9 +24,11 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService;
+import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
 import de.metas.attachments.migration.AttachmentMigrationService;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -50,6 +58,7 @@ public class AttachmentEntryService
 	private final AttachmentEntryRepository attachmentEntryRepository;
 	private final AttachmentEntryFactory attachmentEntryFactory;
 	private final AttachmentMigrationService attachmentMigrationService;
+	private final RecordToReferenceProviderService attachmentHandlerRegistry;
 
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
@@ -57,11 +66,13 @@ public class AttachmentEntryService
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
 		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
+		final RecordToReferenceProviderService attachmentHandlerRegistry = new RecordToReferenceProviderService(Optional.empty());
 
 		return new AttachmentEntryService(
 				attachmentEntryRepository,
 				attachmentEntryFactory,
-				attachmentMigrationService);
+				attachmentMigrationService,
+				attachmentHandlerRegistry);
 	}
 
 	/**
@@ -72,11 +83,13 @@ public class AttachmentEntryService
 	public AttachmentEntryService(
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
-			@NonNull final AttachmentMigrationService attachmentMigrationService)
+			@NonNull final AttachmentMigrationService attachmentMigrationService,
+			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
 		this.attachmentMigrationService = attachmentMigrationService;
+		this.attachmentHandlerRegistry = attachmentHandlerRegistry;
 	}
 
 	public AttachmentEntry createNewAttachment(
@@ -124,35 +137,120 @@ public class AttachmentEntryService
 		return result.build();
 	}
 
+	/**
+	 * @param referencedRecords may be a single model object, a a single {@link ITableRecordReference} or a collection of both.
+	 */
+	@SuppressWarnings("unchecked")
 	public AttachmentEntry createNewAttachment(
-			@NonNull final Object referencedRecord,
+			@NonNull final Object referencedRecords,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
+		if (referencedRecords instanceof Collection)
+		{
+			return createNewAttachmentLinkAndLinkToAllReferencedRecords(
+					(Collection<Object>)referencedRecords,
+					attachmentEntryCreateRequest);
+		}
+
 		final AttachmentEntry newEntry = attachmentEntryFactory.createAndSaveEntry(attachmentEntryCreateRequest);
-		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
+		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecords);
 
-		final Collection<AttachmentEntry> attachedEntries = linkAttachmentsToModels(ImmutableList.of(newEntry), ImmutableList.of(tableRecordReference));
-		final Collection<AttachmentEntry> attachedEntriesWithIds = attachmentEntryRepository.saveAll(attachedEntries);
+		final ImmutableList<TableRecordReference> tableRecordReferenceAsList = ImmutableList.of(tableRecordReference);
+		final Collection<AttachmentEntry> attachedEntries = createAttachmentLinks(
+				ImmutableList.of(newEntry),
+				tableRecordReferenceAsList);
 
-		return CollectionUtils.singleElement(attachedEntriesWithIds);
+		final ImmutableList<AttachmentEntry> attachedEntriesWithIds = attachmentEntryRepository.saveAll(attachedEntries);
+
+		return CollectionUtils.singleElement(expandAndSave(tableRecordReferenceAsList, attachedEntriesWithIds));
 	}
 
-	public Collection<AttachmentEntry> linkAttachmentsToModels(
+	private AttachmentEntry createNewAttachmentLinkAndLinkToAllReferencedRecords(
+			@NonNull final Collection<Object> referencedRecords,
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
+	{
+		final ImmutableList<Object> referencedRecordsList = ImmutableList.copyOf(referencedRecords);
+
+		Check.assumeNotEmpty(referencedRecordsList, "Parameter referencedRecords may not be empty");
+
+		final Object firstRecord = referencedRecordsList.get(0);
+
+		final AttachmentEntry entry = createNewAttachment(firstRecord, attachmentEntryCreateRequest);
+
+		final List<Object> otherRecords = referencedRecordsList.subList(1, referencedRecords.size());
+		final Collection<AttachmentEntry> entryWithReferencedRecords = createAttachmentLinks(ImmutableList.of(entry), otherRecords);
+
+		return CollectionUtils.singleElement(entryWithReferencedRecords);
+	}
+
+	/** Note: the given objects may be "record" models or {@link ITableRecordReference}s. */
+	public Collection<AttachmentEntry> createAttachmentLinks(
 			@NonNull final Collection<AttachmentEntry> entries,
-			@NonNull final Collection<? extends ITableRecordReference> modelRefs)
+			@NonNull final Collection<? extends Object> referencedRecords)
+	{
+		final ImmutableList<AttachmentEntry> unsavedAttachmentsWithLinks = createAttachmentLinksDontSave(entries, referencedRecords);
+
+		return expandAndSave(referencedRecords, unsavedAttachmentsWithLinks);
+	}
+
+	/** Note: the given objects may be "record" models or {@link ITableRecordReference}s. */
+	public Collection<AttachmentEntry> shareAttachmentLinks(
+			@NonNull final Collection<? extends Object> referencedRecordsSource,
+			@NonNull final Collection<? extends Object> referencedRecordsDest)
+	{
+		final ImmutableList.Builder<AttachmentEntry> destAttachmentEntries = ImmutableList.builder();
+
+		for (final Object referencedRecordSource : referencedRecordsSource)
+		{
+			final List<AttachmentEntry> sourceAttachmentEntries = //
+					attachmentEntryRepository.getByReferencedRecord(TableRecordReference.of(referencedRecordSource));
+
+			final ImmutableList<AttachmentEntry> destAttachmentEntriesForRecordSource = //
+					createAttachmentLinksDontSave(sourceAttachmentEntries, referencedRecordsDest);
+
+			destAttachmentEntries.addAll(destAttachmentEntriesForRecordSource);
+		}
+
+		return expandAndSave(referencedRecordsDest, destAttachmentEntries.build());
+	}
+
+	private Collection<AttachmentEntry> expandAndSave(
+			@NonNull final Collection<? extends Object> originalReferencedRecords,
+			@NonNull final ImmutableList<AttachmentEntry> attachmentEntriesToSave)
+	{
+		if (attachmentEntriesToSave.isEmpty())
+		{
+			return ImmutableList.of(); // no need to fire up the handler(s)
+		}
+		final ExpandResult additionalReferences = attachmentHandlerRegistry.expand(
+				attachmentEntriesToSave,
+				originalReferencedRecords);
+
+		final ImmutableList<AttachmentEntry> destAttachmentEntriesWithAdditionalRefs = //
+				createAttachmentLinksDontSave(
+						attachmentEntriesToSave,
+						additionalReferences.getAdditionalReferences());
+
+		final Collection<AttachmentEntry> result = attachmentEntryRepository.saveAll(destAttachmentEntriesWithAdditionalRefs);
+		return result;
+	}
+
+	private ImmutableList<AttachmentEntry> createAttachmentLinksDontSave(
+			@NonNull final Collection<AttachmentEntry> entries,
+			@NonNull final Collection<? extends Object> referencedRecords)
 	{
 		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
 
 		for (final AttachmentEntry entry : entries)
 		{
 			AttachmentEntry updatedEntry = entry;
-			for (final ITableRecordReference modelRef : modelRefs)
+			for (final Object referencedRecord : referencedRecords)
 			{
-				updatedEntry = updatedEntry.withAdditionalLinkedRecord(modelRef);
+				updatedEntry = updatedEntry.withAdditionalLinkedRecord(TableRecordReference.of(referencedRecord));
 			}
 			result.add(updatedEntry);
 		}
-		return attachmentEntryRepository.saveAll(result.build());
+		return result.build();
 	}
 
 	public AttachmentEntry unattach(
@@ -172,6 +270,20 @@ public class AttachmentEntryService
 
 	public List<AttachmentEntry> getByReferencedRecord(@NonNull final Object referencedRecord)
 	{
+		return getByQuery(AttachmentEntryQuery.builder().referencedRecord(referencedRecord).build());
+	}
+
+	public List<AttachmentEntry> getByQuery(@NonNull final AttachmentEntryQuery query)
+	{
+		return getByReferencedRecordMigrateIfNeeded(query.getReferencedRecord())
+				.stream()
+				.filter(e -> e.hasAllTagsSetToTrue(query.getTagsSetToTrue()))
+				.filter(e -> e.hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private List<AttachmentEntry> getByReferencedRecordMigrateIfNeeded(@NonNull final Object referencedRecord)
+	{
 		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
 		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
 
@@ -180,7 +292,7 @@ public class AttachmentEntryService
 		if (attachmentMigrationService.isExistRecordsToMigrate())
 		{
 			final List<AttachmentEntry> migratedEntries = attachmentMigrationService.migrateAndGetByReferencedRecord(referencedRecord);
-			final Collection<AttachmentEntry> migratedAndLinkedEntries = linkAttachmentsToModels(migratedEntries, ImmutableList.of(tableRecordReference));
+			final Collection<AttachmentEntry> migratedAndLinkedEntries = createAttachmentLinks(migratedEntries, ImmutableList.of(tableRecordReference));
 			result.addAll(migratedAndLinkedEntries);
 		}
 
@@ -223,6 +335,38 @@ public class AttachmentEntryService
 		}
 
 		entryRecord.setBinaryData(data);
-		save(entryRecord);
+		saveRecord(entryRecord);
+	}
+
+	/**
+	 * Persist the given {@code attachmentEntry} as-is.
+	 * Warning: e.g. tags or referenced records that are persisted before this method is called, but are not part of the given {@code attachmentEntry} are dropped.
+	 */
+	public void save(@NonNull final AttachmentEntry attachmentEntry)
+	{
+		attachmentEntryRepository.save(attachmentEntry);
+	}
+
+	@Value
+	public static class AttachmentEntryQuery
+	{
+		List<String> tagsSetToTrue;
+
+		List<String> tagsSetToAnyValue;
+
+		Object referencedRecord;
+
+		@Builder
+		private AttachmentEntryQuery(
+				@Singular("tagSetToTrue") final List<String> tagsSetToTrue,
+				@Singular("tagSetToAnyValue") final List<String> tagsSetToAnyValue,
+				@NonNull final Object referencedRecord)
+		{
+			this.referencedRecord = referencedRecord;
+
+			this.tagsSetToTrue = tagsSetToTrue;
+			this.tagsSetToAnyValue = tagsSetToAnyValue;
+		}
+
 	}
 }

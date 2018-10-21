@@ -52,7 +52,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -430,7 +431,7 @@ public interface IQuery<T>
 	{
 		return listIds().stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
 	}
-	
+
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.
 	 *
@@ -508,11 +509,8 @@ public interface IQuery<T>
 	 * "Appends" the given {@code query} to {@code this} query be joined as UNION ALL/DISTINCT.
 	 *
 	 * WARNING: atm, the implementation is minimal and was tested only with {@link #list()} methods.
-	 *
-	 * @param query
-	 * @param distinct
 	 */
-	void addUnion(IQuery<T> query, boolean distinct);
+	IQuery<T> addUnion(IQuery<T> query, boolean distinct);
 
 	default IQuery<T> addUnions(final Collection<IQuery<T>> queries, final boolean distinct)
 	{

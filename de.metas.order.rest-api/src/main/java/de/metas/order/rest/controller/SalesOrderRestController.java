@@ -96,11 +96,13 @@ public class SalesOrderRestController
 
 		if (!Check.isEmpty(request.getDocTypeName(), true))
 		{
-			final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
 					.adClientId(Env.getAD_Client_ID())
 					.name(request.getDocTypeName())
-					.build());
+					.build();
+			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 			salesOrderFactory.docType(docTypeId);
 		}
 

@@ -29,7 +29,7 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 
-import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.util.ISingletonService;
 
 /**

@@ -37,7 +37,6 @@ final class PackingItem implements IPackingItem
 {
 	private final PackingItemParts parts;
 	private final PackingItemGroupingKey groupingKey;
-	private final ProductId productId;
 	private final I_C_UOM uom;
 
 	PackingItem(final PackingItemParts parts)
@@ -46,7 +45,6 @@ final class PackingItem implements IPackingItem
 
 		this.parts = parts.copy();
 		this.groupingKey = parts.mapReduce(PackingItem::computeGroupingKey).get();
-		productId = parts.mapReduce(PackingItemPart::getProductId).get();
 		uom = parts.mapReduce(part -> part.getQty().getUOM()).get();
 	}
 
@@ -54,7 +52,6 @@ final class PackingItem implements IPackingItem
 	{
 		parts = copyFromItem.parts.copy();
 		groupingKey = copyFromItem.groupingKey;
-		productId = copyFromItem.productId;
 		uom = copyFromItem.uom;
 	}
 
@@ -78,10 +75,13 @@ final class PackingItem implements IPackingItem
 		// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
 		final BPartnerLocationId bpLocationId = part.getBpartnerLocationId();
 
+		final HUPIItemProductId packingMaterialId = part.getPackingMaterialId();
+
 		return PackingItemGroupingKey.builder()
 				.productId(productId)
 				.bpartnerLocationId(bpLocationId)
 				.documentLineRef(documentLineRef)
+				.packingMaterialId(packingMaterialId)
 				.build();
 	}
 
@@ -262,7 +262,7 @@ final class PackingItem implements IPackingItem
 	@Override
 	public final ProductId getProductId()
 	{
-		return productId;
+		return groupingKey.getProductId();
 	}
 
 	@Override
@@ -280,19 +280,19 @@ final class PackingItem implements IPackingItem
 	@Override
 	public BPartnerId getBPartnerId()
 	{
-		return parts.mapReduce(PackingItemPart::getBpartnerId).get();
+		return getBPartnerLocationId().getBpartnerId();
 	}
 
 	@Override
 	public BPartnerLocationId getBPartnerLocationId()
 	{
-		return parts.mapReduce(PackingItemPart::getBpartnerLocationId).get();
+		return groupingKey.getBpartnerLocationId();
 	}
 
 	@Override
 	public HUPIItemProductId getPackingMaterialId()
 	{
-		return parts.mapReduce(PackingItemPart::getPackingMaterialId).get();
+		return groupingKey.getPackingMaterialId();
 	}
 
 	@Override

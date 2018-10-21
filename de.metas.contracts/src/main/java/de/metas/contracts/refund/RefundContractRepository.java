@@ -26,12 +26,13 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
 import de.metas.document.engine.IDocument;
-import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

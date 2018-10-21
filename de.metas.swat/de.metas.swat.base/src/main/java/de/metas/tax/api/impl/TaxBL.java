@@ -90,8 +90,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final Object model,
 			final int taxCategoryId,
 			final int productId,
-			final Timestamp billDate,
-			final Timestamp shipDate,
+			@NonNull final Timestamp shipDate,
 			@NonNull final OrgId orgId,
 			final WarehouseId warehouseId,
 			final int shipC_BPartner_Location_ID,
@@ -124,7 +123,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					countryFromId,
 					orgId,
 					bpLocTo,
-					billDate,
+					shipDate,
 					taxCategoryId,
 					isSOTrx,
 					false // throwEx
@@ -137,12 +136,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final AdempiereException ex = new AdempiereException(StringUtils.formatMessage(
 				"Could not retrieve C_Tax_ID; will return the Tax-Not-Found-C_Tax_ID; Method paratmers:"
-						+ "model= {}, taxCategoryId={}, productId={}, billDate={}, shipDate={}, adOrgId={}, "
+						+ "model= {}, taxCategoryId={}, productId={}, shipDate={}, adOrgId={}, "
 						+ "warehouse={}, shipC_BPartner_Location_ID={}, isSOTrx={}, trxName={}",
 				model,
 				taxCategoryId,
 				productId,
-				billDate,
 				shipDate,
 				orgId,
 				warehouseId,
@@ -168,7 +166,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final CountryId countryFromId,
 			final OrgId orgId,
 			@NonNull final I_C_BPartner_Location bpLocTo,
-			final Timestamp date,
+			@NonNull final Timestamp date,
 			final int taxCategoryId,
 			final boolean isSOTrx,
 			final boolean throwEx)

@@ -70,7 +70,6 @@ public interface I_C_InvoiceCandidate_InOutLine
 
 	/**
 	 * Set Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -80,7 +79,6 @@ public interface I_C_InvoiceCandidate_InOutLine
 
 	/**
 	 * Get Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

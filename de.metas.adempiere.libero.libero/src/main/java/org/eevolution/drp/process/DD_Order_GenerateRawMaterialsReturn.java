@@ -10,12 +10,12 @@ package org.eevolution.drp.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -245,11 +245,12 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrder.setC_BPartner_Location(orgBPLocation);
 		ddOrder.setSalesRep_ID(salesRepId);
 
-		final int docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
 				.adClientId(ddOrder.getAD_Client_ID())
 				.adOrgId(ddOrder.getAD_Org_ID())
-				.build());
+				.build();
+		final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 		ddOrder.setC_DocType_ID(docTypeId);
 		ddOrder.setM_Warehouse_ID(warehouseInTrasitId.getRepoId());
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);

@@ -1,5 +1,7 @@
 package de.metas.document.archive.spi.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.document.archive.base
@@ -25,6 +27,7 @@ package de.metas.document.archive.spi.impl;
 
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,7 +35,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Test;
-import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,7 +46,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
-import de.metas.document.archive.DocOutboundLogMailRecipientRegistry;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
@@ -69,7 +72,7 @@ public class DocOutboundArchiveEventListenerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		archiveBL = new DocOutboundArchiveEventListener();
+		archiveBL = new DocOutboundArchiveEventListener(AttachmentEntryService.createInstanceForUnitTesting());
 		Services.get(IArchiveEventManager.class).registerArchiveEventListener(archiveBL);
 	}
 
@@ -117,12 +120,15 @@ public class DocOutboundArchiveEventListenerTest
 		Assert.assertEquals("Log line's DocumentNo shall be record's ID", documentNoExpected, docExchangeLine.getDocumentNo());
 	}
 
-	private I_AD_Archive createArchive(final Object model)
+	private I_AD_Archive createArchive(@NonNull final Object model)
 	{
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-		final int adTableId = MTable.getTable_ID(tableName);
+		final int adTableId = adTableDAO.retrieveTableId(tableName);
+
 		final int recordId = InterfaceWrapperHelper.getId(model);
 
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(ctx, I_AD_Archive.class, trxName);

@@ -7,10 +7,10 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.IBusinessDayMatcher;
 import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.NullBusinessDayMatcher;
 import de.metas.util.Services;
+import de.metas.util.calendar.IBusinessDayMatcher;
+import de.metas.util.calendar.NullBusinessDayMatcher;
 import de.metas.util.time.generator.BusinessDayShifter;
 import de.metas.util.time.generator.DateSequenceGenerator;
 import de.metas.util.time.generator.IDateShifter;

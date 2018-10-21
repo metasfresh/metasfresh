@@ -69,9 +69,9 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
@@ -82,6 +82,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.IInvoiceLineBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -559,15 +560,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.adClientId(invoice.getAD_Client_ID())
 				.adOrgId(invoice.getAD_Org_ID())
 				.build();
-		final int docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
-		if (docTypeId <= 0)
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeId == null)
 		{
 			log.error("Not found for {}", docTypeQuery);
 			return false;
 		}
 		else
 		{
-			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId);
+			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
 			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType);
 			invoice.setIsSOTrx(isSOTrx);
 			return true;

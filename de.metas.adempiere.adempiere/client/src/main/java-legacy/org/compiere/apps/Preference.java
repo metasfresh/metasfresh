@@ -53,7 +53,7 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.PLAFEditorPanel;
 import org.adempiere.plaf.UIDefaultsEditorDialog;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserDAO;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.grid.ed.VDate;
@@ -239,7 +239,7 @@ public final class Preference extends CDialog
 		adempiereSys.setText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", true));
 		adempiereSys.setToolTipText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", false));
 		logMigrationScript.setText(msgBL.getMsg(Env.getCtx(), "LogMigrationScript", true));
-		logMigrationScript.setToolTipText(MigrationScriptFileLogger.getMigrationScriptDirectory());
+		logMigrationScript.setToolTipText(MigrationScriptFileLogger.getMigrationScriptDirectory().toString());
 		printPreview.setText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", true));
 		printPreview.setToolTipText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", false));
 		validateConnectionOnStartup.setText(msgBL.getMsg(Env.getCtx(), "ValidateConnectionOnStartup", true));
@@ -523,7 +523,7 @@ public final class Preference extends CDialog
 		{
 			adempiereSys.setSelected(false);
 			adempiereSys.setEnabled(false);
-			if (Env.getAD_User_ID(Env.getCtx()) > IUserDAO.SUPERUSER_USER_ID)
+			if (Env.getAD_User_ID(Env.getCtx()) > UserId.METASFRESH.getRepoId())
 			{
 				// disable log migration scripts on clients non-GW for non-SuperUser
 				logMigrationScript.setSelected(false);

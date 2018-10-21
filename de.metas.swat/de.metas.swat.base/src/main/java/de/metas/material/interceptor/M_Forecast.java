@@ -23,6 +23,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 @Interceptor(I_M_Forecast.class)

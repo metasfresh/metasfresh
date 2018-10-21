@@ -38,13 +38,14 @@ import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeS
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

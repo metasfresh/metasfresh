@@ -84,16 +84,16 @@ public class HUItemStorage implements IHUItemStorage
 	 * @param storageFactory
 	 * @param item
 	 */
-	public HUItemStorage(final IHUStorageFactory storageFactory, final I_M_HU_Item item)
+	public HUItemStorage(
+			@NonNull final IHUStorageFactory storageFactory,
+			@NonNull final I_M_HU_Item item)
 	{
-		Check.assumeNotNull(storageFactory, "storageFactory not null");
 		this.storageFactory = storageFactory;
 
 		dao = storageFactory.getHUStorageDAO();
 		Check.assumeNotNull(dao, "dao not null");
 
-		Check.assumeNotNull(item, "item not null");
-		Check.assumeNotNull(item.getM_HU_Item_ID() > 0, "item is saved: {}", item);
+		Check.assume(item.getM_HU_Item_ID() > 0, "item is saved: {}", item);
 		this.item = item;
 		virtualHUItem = handlingUnitsBL.isVirtual(item);
 		pureVirtualHUItem = handlingUnitsBL.isPureVirtual(item);
@@ -116,12 +116,6 @@ public class HUItemStorage implements IHUItemStorage
 	public I_M_HU_Item getM_HU_Item()
 	{
 		return item;
-	}
-
-	@Override
-	public IHUStorageFactory getHUStorageFactory()
-	{
-		return storageFactory;
 	}
 
 	private I_M_HU_Item_Storage getCreateStorageLine(@NonNull final ProductId productId, @NonNull final I_C_UOM uom)

@@ -48,6 +48,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 @Interceptor(I_C_Flatrate_DataEntry.class)

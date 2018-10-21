@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.lang.ObjectUtils;
 
-import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.banking.model.I_C_Payment_Request;
 
 public class ReadPaymentPanelResult
 {

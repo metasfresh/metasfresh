@@ -28,11 +28,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
 import java.util.ResourceBundle;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -55,7 +50,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
 
-import org.adempiere.user.api.IUserDAO;
+import org.adempiere.user.UserId;
 import org.compiere.plaf.PlafRes;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
@@ -66,6 +61,11 @@ import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Look and feel selection panel.
@@ -157,7 +157,7 @@ public class PLAFEditorPanel extends CPanel
 
 		//
 		// Edit current UIDefaults button (task 09078)
-		if (Env.getAD_User_ID(Env.getCtx()) == IUserDAO.SUPERUSER_USER_ID)
+		if (Env.getAD_User_ID(Env.getCtx()) == UserId.METASFRESH.getRepoId())
 		{
 			final JButton btnEditUIDefaults = new JButton(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "UIDefaults.EditCurrent"));
 			btnEditUIDefaults.addActionListener(new ActionListener()

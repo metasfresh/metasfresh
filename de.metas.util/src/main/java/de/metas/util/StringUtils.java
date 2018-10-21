@@ -67,13 +67,13 @@ public final class StringUtils
 		return ImmutablePair.of(trim(street), trim(number));
 	}
 
-	public static String trim(@Nullable String untrimmerStringOrNull)
+	public static String trim(@Nullable String untrimmedStringOrNull)
 	{
-		if (untrimmerStringOrNull == null)
+		if (untrimmedStringOrNull == null)
 		{
-			return untrimmerStringOrNull;
+			return untrimmedStringOrNull;
 		}
-		return untrimmerStringOrNull.trim();
+		return untrimmedStringOrNull.trim();
 	}
 
 	public enum TruncateAt

@@ -14,7 +14,7 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -419460548L;
+	private static final long serialVersionUID = 1698712297L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Config (Properties ctx, int C_Doc_Outbound_Config_ID, String trxName)
@@ -223,6 +223,8 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
+	/** DunningDoc = DUN */
+	public static final String DOCBASETYPE_DunningDoc = "DUN";
 	/** Set Dokument Basis Typ.
 		@param DocBaseType Dokument Basis Typ	  */
 	@Override

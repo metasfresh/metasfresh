@@ -130,9 +130,9 @@ public interface I_C_Doc_Outbound_Log
 	 * Set Geschäftspartnergruppe.
 	 * Geschäftspartnergruppe
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -142,12 +142,15 @@ public interface I_C_Doc_Outbound_Log
 	 * Get Geschäftspartnergruppe.
 	 * Geschäftspartnergruppe
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getC_BP_Group_ID();
 
+	@Deprecated
 	public org.compiere.model.I_C_BP_Group getC_BP_Group();
 
 	@Deprecated
@@ -362,6 +365,29 @@ public interface I_C_Doc_Outbound_Log
     public static final String COLUMNNAME_DateLastPrint = "DateLastPrint";
 
 	/**
+	 * Set Zuletzt gespeichert.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDateLastStore (java.sql.Timestamp DateLastStore);
+
+	/**
+	 * Get Zuletzt gespeichert.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateLastStore();
+
+    /** Column definition for DateLastStore */
+    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DateLastStore = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "DateLastStore", null);
+    /** Column name DateLastStore */
+    public static final String COLUMNNAME_DateLastStore = "DateLastStore";
+
+	/**
 	 * Set Belegstatus.
 	 * The current status of the document
 	 *
@@ -416,7 +442,7 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -427,8 +453,10 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getEMailCount();
 
     /** Column definition for EMailCount */
@@ -466,7 +494,7 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -477,8 +505,10 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public boolean isEdiEnabled();
 
     /** Column definition for IsEdiEnabled */
@@ -514,7 +544,7 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -525,8 +555,10 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getPDFCount();
 
     /** Column definition for PDFCount */
@@ -540,7 +572,7 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -552,8 +584,10 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getPOReference();
 
     /** Column definition for POReference */
@@ -566,7 +600,7 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -577,8 +611,10 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getPrintCount();
 
     /** Column definition for PrintCount */
@@ -610,6 +646,33 @@ public interface I_C_Doc_Outbound_Log
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "Record_ID", null);
     /** Column name Record_ID */
     public static final String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Anz. gespeichert.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setStoreCount (int StoreCount);
+
+	/**
+	 * Get Anz. gespeichert.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getStoreCount();
+
+    /** Column definition for StoreCount */
+    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_StoreCount = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "StoreCount", null);
+    /** Column name StoreCount */
+    public static final String COLUMNNAME_StoreCount = "StoreCount";
 
 	/**
 	 * Get Aktualisiert.

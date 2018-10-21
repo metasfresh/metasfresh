@@ -9,7 +9,6 @@ import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
-import de.metas.lang.Percent;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.Discount;
@@ -18,6 +17,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

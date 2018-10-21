@@ -7,6 +7,8 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -131,7 +133,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * @author tsa
@@ -992,6 +993,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// 07814: setting both tax and tax-override to get an exact copy
 		splitCand.setC_Tax(ic.getC_Tax());
 		splitCand.setC_Tax_Override(ic.getC_Tax_Override());
+
+		splitCand.setExternalId(ic.getExternalId());
 
 		return splitCand;
 	}

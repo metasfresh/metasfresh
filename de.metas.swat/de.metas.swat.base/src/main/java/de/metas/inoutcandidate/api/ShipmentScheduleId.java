@@ -9,8 +9,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.NonNull;
 import lombok.Value;
 

@@ -25,7 +25,7 @@ package de.metas.util;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
 
 /**
  * Number Utils
@@ -173,6 +173,11 @@ public final class NumberUtils
 	 *         </ul>
 	 */
 	public static final int asInt(final Object value, final int defaultValue)
+	{
+		return asInteger(value, defaultValue);
+	}
+
+	public static final Integer asInteger(final Object value, final Integer defaultValue)
 	{
 		if (value == null)
 		{

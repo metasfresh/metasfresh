@@ -31,13 +31,17 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.lang.Percent;
+
+import lombok.NonNull;
 
 /**
  * Implementors of this class have the job to create and invalidate {@link I_C_Invoice_Candidate} records.
@@ -68,9 +72,14 @@ public interface IInvoiceCandidateHandler
 	}
 
 	/**
-	 * @return which action shall be performed when an invoice candidate invalidation was requested
+	 *
+	 * @return which action shall be performed when an invoice candidate invalidation was requested.
+	 *         default: {@link OnInvalidateForModelAction#REVALIDATE}.
 	 */
-	OnInvalidateForModelAction getOnInvalidateForModelAction();
+	default OnInvalidateForModelAction getOnInvalidateForModelAction()
+	{
+		return OnInvalidateForModelAction.REVALIDATE;
+	}
 
 	/**
 	 * Checks if this handler, in general, can create invoice candidates automatically. Returns {@code true} by default.
@@ -125,7 +134,10 @@ public interface IInvoiceCandidateHandler
 	 * @param request initial request
 	 * @return actual requests to be used. never returns null
 	 */
-	List<InvoiceCandidateGenerateRequest> expandRequest(InvoiceCandidateGenerateRequest request);
+	default List<InvoiceCandidateGenerateRequest> expandRequest(@NonNull final InvoiceCandidateGenerateRequest request)
+	{
+		return ImmutableList.of(request);
+	}
 
 	/**
 	 * Gets the model to be used when invoice candidate generation is scheduled.
@@ -133,7 +145,10 @@ public interface IInvoiceCandidateHandler
 	 * @param model (of {@link #getSourceTable()} type)
 	 * @return model to be used for IC generation scheduling.
 	 */
-	Object getModelForInvoiceCandidateGenerateScheduling(Object model);
+	default Object getModelForInvoiceCandidateGenerateScheduling(@NonNull final Object model)
+	{
+		return model;
+	}
 
 	/**
 	 * Create missing candidates for the given model. No need to save them, that's already done by the caller.
@@ -171,10 +186,11 @@ public interface IInvoiceCandidateHandler
 
 	/**
 	 * Returns the id of the user to notify in case of problems. A value below zero means "no user".
-	 *
-	 * @return
 	 */
-	int getAD_User_InCharge_ID(I_C_Invoice_Candidate ic);
+	default int getAD_User_InCharge_ID(final I_C_Invoice_Candidate ic)
+	{
+		return getHandlerRecord().getAD_User_InCharge_ID();
+	}
 
 	boolean isUserInChargeUserEditable();
 
@@ -237,7 +253,10 @@ public interface IInvoiceCandidateHandler
 	 */
 	void setBPartnerData(I_C_Invoice_Candidate ic);
 
-	void setInvoiceSchedule(I_C_Invoice_Candidate ic);
+	default void setInvoiceSchedule(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		ic.setC_InvoiceSchedule_ID(ic.getBill_BPartner().getC_InvoiceSchedule_ID());
+	}
 
 	/**
 	 * Method sets inherited C_UOM_ID opon IC creation

@@ -2,6 +2,8 @@ package de.metas.ordercandidate.api;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Check;
@@ -28,12 +31,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -108,6 +111,10 @@ public class OLCandRepository
 
 		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
+
+		olCandPO.setDateInvoiced(TimeUtil.asTimestamp(request.getDateInvoiced()));
+		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
+
 		olCandPO.setC_Flatrate_Conditions_ID(request.getFlatrateConditionsId());
 
 		olCandPO.setM_Product_ID(request.getProductId().getRepoId());
@@ -125,6 +132,7 @@ public class OLCandRepository
 		{
 			olCandPO.setIsManualPrice(true);
 			olCandPO.setPriceEntered(request.getPrice());
+			olCandPO.setC_Currency_ID(request.getCurrencyId().getRepoId());
 		}
 
 		if (request.getDiscount() != null)
@@ -134,7 +142,19 @@ public class OLCandRepository
 		}
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
-		olCandPO.setAD_InputDataSource_ID(Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceId(request.getAdInputDataSourceInternalName()));
+
+		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+		if (request.getDataSourceInternalName() != null)
+		{
+			final int inputDataSourceId = inputDataSourceDAO.retrieveInputDataSourceId(request.getDataSourceInternalName());
+			olCandPO.setAD_InputDataSource_ID(inputDataSourceId);
+		}
+		if (request.getDataDestInternalName() != null)
+		{
+			final int inputDataDestId = inputDataSourceDAO.retrieveInputDataSourceId(request.getDataDestInternalName());
+			olCandPO.setAD_DataDestination_ID(inputDataDestId);
+		}
+
 		olCandPO.setExternalId(request.getExternalId());
 
 		InterfaceWrapperHelper.save(olCandPO);
@@ -142,5 +162,28 @@ public class OLCandRepository
 		return OLCand.builder()
 				.candidate(olCandPO)
 				.build();
+	}
+
+	public List<OLCand> getByQuery(@NonNull final OLCandQuery olCandQuery)
+	{
+		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_OLCand.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (olCandQuery.getExternalReference() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_POReference, olCandQuery.getExternalReference());
+		}
+		if (olCandQuery.getInputDataSourceName() != null)
+		{
+			final int inputDataSourceId = Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceId(olCandQuery.getInputDataSourceName());
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_InputDataSource_ID, inputDataSourceId);
+		}
+
+		return queryBuilder
+				.create()
+				.stream()
+				.map(OLCand::of)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

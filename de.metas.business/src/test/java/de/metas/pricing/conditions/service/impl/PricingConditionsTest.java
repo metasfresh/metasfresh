@@ -64,7 +64,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
-import de.metas.lang.Percent;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -76,6 +75,7 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PaymentTermService.class })

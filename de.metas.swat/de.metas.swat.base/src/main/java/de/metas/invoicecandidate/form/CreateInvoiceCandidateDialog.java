@@ -451,7 +451,6 @@ public class CreateInvoiceCandidateDialog
 					null, // no model
 					taxCategoryId,
 					product.getM_Product_ID(), // productId
-					date, // billDate
 					date, // shipDate
 					OrgId.ofRepoId(product.getAD_Org_ID()), // orgId
 					(WarehouseId)null,

@@ -32,9 +32,9 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
-import de.metas.payment.model.I_C_Payment_Request;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessInfo;

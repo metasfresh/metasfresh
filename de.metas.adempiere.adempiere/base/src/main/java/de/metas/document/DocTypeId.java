@@ -2,8 +2,9 @@ package de.metas.document;
 
 import java.util.Optional;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Value;
 
 /*

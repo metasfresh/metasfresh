@@ -14,8 +14,6 @@ public class OrderCCAbleDocumentAdapter implements ICCAbleDocument
 			final String recipientName,
 			final String fax)
 	{
-		super();
-
 		fileName = StringUtils.formatMessage(OrderCCAbleDocumentAdapter.FILENAME_PATTERN,
 				documentTitle == null ? "" : documentTitle,
 				recipientName == null ? "" : recipientName,

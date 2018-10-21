@@ -11,7 +11,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
 
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
@@ -36,6 +35,8 @@ import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 

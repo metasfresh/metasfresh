@@ -4,8 +4,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.handlingunits.picking.PickingCandidate;
-import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
-import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
@@ -61,10 +59,7 @@ public class RejectPickingCommand
 		final PickingCandidate pickingCandidate = getOrCreatePickingCandidate();
 		pickingCandidate.assertDraft();
 
-		pickingCandidate.setQtyPicked(request.getQtyToReject());
-		pickingCandidate.setPickStatus(PickingCandidatePickStatus.WILL_NOT_BE_PICKED);
-		pickingCandidate.setApprovalStatus(PickingCandidateApprovalStatus.TO_BE_APPROVED);
-
+		pickingCandidate.rejectPicking(request.getQtyToReject());
 		pickingCandidateRepository.save(pickingCandidate);
 
 		return RejectPickingResult.of(pickingCandidate);
@@ -91,8 +86,7 @@ public class RejectPickingCommand
 					.status(PickingCandidateStatus.Draft)
 					.qtyPicked(request.getQtyToReject())
 					.shipmentScheduleId(request.getShipmentScheduleId())
-					// .huId(huId)
-					// .pickingSlotId(pickingSlotId)
+					.pickFromHuId(request.getRejectPickingFromHuId())
 					.build();
 		}
 	}

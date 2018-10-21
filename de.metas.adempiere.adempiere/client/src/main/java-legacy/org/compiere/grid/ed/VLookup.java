@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -55,7 +57,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
@@ -70,11 +71,11 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.Lookup;
-import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
@@ -1174,8 +1175,9 @@ public class VLookup extends JComponent
 			if (m_mField != null)
 			{
 				final int AD_Table_ID = m_mField.getAD_Table_ID();
-				multipleSelection = (InterfaceWrapperHelper.getTableId(I_C_OrderLine.class) == AD_Table_ID)
-						|| (MInvoiceLine.Table_ID == AD_Table_ID) || (InterfaceWrapperHelper.getTableId(I_PP_Product_BOMLine.class) == AD_Table_ID)
+				multipleSelection = (getTableId(I_C_OrderLine.class) == AD_Table_ID)
+						|| (getTableId(I_C_InvoiceLine.class) == AD_Table_ID)
+						|| (getTableId(I_PP_Product_BOMLine.class) == AD_Table_ID)
 						|| (I_M_ProductPrice.Table_Name.equals(m_mField.getTableName()));
 			}
 

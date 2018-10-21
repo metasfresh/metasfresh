@@ -10,12 +10,12 @@ package de.metas.edi.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,17 +30,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.InvoiceCandidateListenerAdapter;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
 
-public class EdiInvoiceCandidateListener extends InvoiceCandidateListenerAdapter
+public class EdiInvoiceCandidateListener implements IInvoiceCandidateListener
 {
 	public static final EdiInvoiceCandidateListener instance = new EdiInvoiceCandidateListener();
 
 	private EdiInvoiceCandidateListener()
 	{
-		super();
 	}
-	
+
 
 	@Override
 	public void onBeforeInvoiceComplete(final I_C_Invoice invoice, final List<I_C_Invoice_Candidate> fromCandidates)

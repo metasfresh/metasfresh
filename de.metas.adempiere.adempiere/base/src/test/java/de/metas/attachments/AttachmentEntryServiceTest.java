@@ -67,12 +67,13 @@ public class AttachmentEntryServiceTest
 	public void linkEntriesToModel()
 	{
 		// invoke the method under test
-		attachmentEntryService.linkAttachmentsToModels(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
+		attachmentEntryService.createAttachmentLinks(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
 
 		// assert that bpartnerRecord's attachments are unchanged
 		final List<AttachmentEntry> bpartnerRecordEntries = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
 		assertThat(bpartnerRecordEntries).hasSize(2);
-		assertThat(bpartnerRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry1);
+		// we need to compare them without linked records because productRecordEntries.get(0) now also has the product
+		assertThat(bpartnerRecordEntries.get(0).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
 		assertThat(bpartnerRecordEntries.get(1)).isEqualTo(bpartnerAttachmentEntry2);
 
 		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
@@ -84,7 +85,7 @@ public class AttachmentEntryServiceTest
 	@Test
 	public void getEntries()
 	{
-		attachmentEntryService.linkAttachmentsToModels(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
+		attachmentEntryService.createAttachmentLinks(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
 
 		attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment3", "bPartnerAttachment3.data".getBytes());
 
@@ -105,7 +106,7 @@ public class AttachmentEntryServiceTest
 
 		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(productRecord2, "productRecord2", "productRecord2.data".getBytes());
 
-		attachmentEntryService.linkAttachmentsToModels(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
+		attachmentEntryService.createAttachmentLinks(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
 
 		// invoke the method under test
 		attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);
@@ -117,4 +118,47 @@ public class AttachmentEntryServiceTest
 		assertThat(entriesOfProductRecord2.get(0)).isEqualTo(entry);
 	}
 
+	@Test
+	public void createNewAttachment_with_tags()
+	{
+		createNewAttachment_with_tags_performTest();
+	}
+
+	private AttachmentEntry createNewAttachment_with_tags_performTest()
+	{
+		final AttachmentEntryCreateRequest requestWithTags = AttachmentEntryCreateRequest
+				.builderFromByteArray(
+						"bPartnerAttachment_eith_tags",
+						"bPartnerAttachment_with_tags.data".getBytes())
+				.tag("tag1Name", "tag1Value")
+				.tag("tag2Name", "tag2Value")
+				.build();
+
+		// invoke the method under test
+		final AttachmentEntry newEntry = attachmentEntryService.createNewAttachment(bpartnerRecord, requestWithTags);
+
+		assertThat(newEntry.getTagValueOrNull("tag1Name")).isEqualTo("tag1Value");
+		assertThat(newEntry.getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
+
+		return newEntry;
+	}
+
+	@Test
+	public void save_with_additional_tags()
+	{
+		final AttachmentEntry attachmentEntry = createNewAttachment_with_tags_performTest();
+
+		final AttachmentEntry attachmentEntryWithAdditionalTag = attachmentEntry.toBuilder().tag("tag3Name", "tag3Value").build();
+
+		// invoke the method under test
+		attachmentEntryService.save(attachmentEntryWithAdditionalTag);
+
+		final AttachmentEntry result = attachmentEntryService.getById(attachmentEntryWithAdditionalTag.getId());
+
+		assertThat(result.getTagValueOrNull("tag1Name")).isEqualTo("tag1Value");
+		assertThat(result.getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
+		assertThat(result.getTagValueOrNull("tag3Name")).isEqualTo("tag3Value");
+
+		assertThat(attachmentEntryWithAdditionalTag.getLinkedRecords()).isEqualTo(attachmentEntry.getLinkedRecords());
+	}
 }

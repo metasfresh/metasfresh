@@ -30,7 +30,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
@@ -127,7 +127,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						, term1
 						, taxCategoryId
 						, term1.getM_Product_ID()
-						, term1.getStartDate()
 						, term1.getStartDate()
 						, OrgId.ofRepoId(term1.getAD_Org_ID())
 						, (WarehouseId)null

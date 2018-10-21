@@ -183,14 +183,15 @@ public class HUInternalUseInventoryProducer
 		return _docSubType;
 	}
 
-	private int getInventoryDocTypeId(final I_M_Warehouse warehouse)
+	private int getInventoryDocTypeId(@NonNull final I_M_Warehouse warehouse)
 	{
-		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 				.docSubType(getDocSubType())
 				.adClientId(warehouse.getAD_Client_ID())
 				.adOrgId(warehouse.getAD_Org_ID())
-				.build());
+				.build();
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**

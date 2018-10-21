@@ -162,11 +162,10 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 	/**
 	 * Schedule invoice candidates generation for given model (asynchronously).
-	 *
-	 * @param model
-	 * @param handler
 	 */
-	private final void scheduleCreateMissingCandidatesFor(final Object model, final IInvoiceCandidateHandler handler)
+	private final void scheduleCreateMissingCandidatesFor(
+			@NonNull final Object model,
+			@NonNull final IInvoiceCandidateHandler handler)
 	{
 		final Object modelToSchedule = handler.getModelForInvoiceCandidateGenerateScheduling(model);
 		CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(modelToSchedule);

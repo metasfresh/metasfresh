@@ -25,6 +25,7 @@ package de.metas.logging;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.Adempiere;
@@ -50,7 +51,7 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 	/**
 	 * Thread-local boolean to make sure that only one thread is within the {@link #customize(Logger)} method at a time
 	 */
-	private static final ThreadLocal<Boolean> withinCustomizeLogLevel = new ThreadLocal<Boolean>();
+	private static final ThreadLocal<Boolean> withinCustomizeLogLevel = new ThreadLocal<>();
 
 	/**
 	 * Holds the hostname which the logger uses. The value is set during before first use.<br>
@@ -127,6 +128,10 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 			{
 				logger.warn("SysConfig with name {} contained unparsable loglevel {} for logger {}", sysConfigName, logLevelStr, logger.getName());
 			}
+		}
+		catch(Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 		finally
 		{

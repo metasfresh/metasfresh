@@ -51,10 +51,10 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.document.engine.IDocument;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.api.impl.FreightCostBL;
+import de.metas.invoice.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
