@@ -29,11 +29,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IReference;
 import org.compiere.util.DisplayType;
@@ -44,10 +42,12 @@ import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessParams;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 
 public class WorkpackageParamDAO implements IWorkpackageParamDAO
 {
@@ -84,10 +84,9 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		//
 		// Load parameters from creator's AD_PInstance_ID
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
-			final int adPInstanceId = extractAD_PInstance_ID(workpackage);
+			final PInstanceId pinstanceId = extractAD_PInstance_ID(workpackage);
 			final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-			for (final ProcessInfoParameter param : adPInstanceDAO.retrieveProcessInfoParameters(ctx, adPInstanceId))
+			for (final ProcessInfoParameter param : adPInstanceDAO.retrieveProcessInfoParameters(pinstanceId))
 			{
 				workpackagesParamsMap.put(param.getParameterName(), param);
 			}
@@ -189,6 +188,13 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_Number(BigDecimal.valueOf(valueInt));
 		}
+		else if (parameterValue instanceof RepoIdAware)
+		{
+			final int valueInt = ((RepoIdAware)parameterValue).getRepoId();
+			workpackageParam.setAD_Reference_ID(DisplayType.Integer);
+			resetParameterValue(workpackageParam);
+			workpackageParam.setP_Number(BigDecimal.valueOf(valueInt));
+		}
 		else if (parameterValue instanceof Boolean)
 		{
 			final boolean valueBoolean = (boolean)parameterValue;
@@ -210,14 +216,14 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 	}
 
 
-	private static final int extractAD_PInstance_ID(final I_C_Queue_WorkPackage workpackage)
+	private static final PInstanceId extractAD_PInstance_ID(final I_C_Queue_WorkPackage workpackage)
 	{
 		//
 		// Get the AD_PInstance_ID from Workpackage
 		final int workpackageADPInstanceId = workpackage.getAD_PInstance_ID();
 		if (workpackageADPInstanceId > 0)
 		{
-			return workpackageADPInstanceId;
+			return PInstanceId.ofRepoId(workpackageADPInstanceId);
 		}
 
 		//
@@ -226,6 +232,6 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		// Also, JUnit tests are not setting this all the time, so, for now we can tollerate it.
 		final I_C_Queue_Block queueBlock = workpackage.getC_Queue_Block();
 		final int blockAD_PInstance_ID = queueBlock == null ? -1 : queueBlock.getAD_PInstance_Creator_ID();
-		return blockAD_PInstance_ID > 0 ? blockAD_PInstance_ID : -1;
+		return blockAD_PInstance_ID > 0 ? PInstanceId.ofRepoId(blockAD_PInstance_ID) : null;
 	}
 }

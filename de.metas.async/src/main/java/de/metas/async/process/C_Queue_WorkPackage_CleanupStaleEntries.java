@@ -48,7 +48,7 @@ public class C_Queue_WorkPackage_CleanupStaleEntries extends JavaProcess
 		final int staleWorkpackagesCount = new WorkpackageCleanupStaleEntries()
 				.setContext(getCtx())
 				.setLogger(this)
-				.setAD_PInstance_ID(getAD_PInstance_ID())
+				.setAD_PInstance_ID(getPinstanceId())
 				.runAndGetUpdatedCount();
 
 		//

@@ -100,7 +100,7 @@ public class InvoiceGenerateRMA extends JavaProcess
         {
             pstmt = DB.prepareStatement(sql, get_TrxName());
             pstmt.setInt(1, Env.getAD_Client_ID(getCtx()));
-            pstmt.setInt(2, getAD_PInstance_ID());
+            pstmt.setInt(2, getPinstanceId().getRepoId());
             ResultSet rs = pstmt.executeQuery();
             
             while (rs.next())

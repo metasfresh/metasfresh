@@ -70,7 +70,7 @@ public class ESR_Import_LoadFromAttachmentEntry
 				//
 				.asyncBatchName(p_AsyncBatchName)
 				.asyncBatchDesc(p_AsyncBatchDesc)
-				.adPInstanceId(getAD_PInstance_ID())
+				.pinstanceId(getPinstanceId())
 				//
 				.loggable(this)
 				//

@@ -52,7 +52,7 @@ public class C_Dunning_Candidate_MassWriteOff extends JavaProcess
 		}
 
 		final Properties ctx = getCtx();
-		final String writeOffDescription = getProcessInfo().getTitle() + " #" + getAD_PInstance_ID();
+		final String writeOffDescription = getProcessInfo().getTitle() + " #" + getPinstanceId().getRepoId();
 
 		final int writeOffCount = Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(ctx, writeOffDescription);
 

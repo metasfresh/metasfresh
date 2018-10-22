@@ -37,6 +37,7 @@ import org.compiere.util.DB;
 import com.google.common.base.Supplier;
 
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -78,7 +79,7 @@ public class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
 		{
 			throw new AdempiereException("@NotFound@ @Record_ID@");
 		}
-		final int selectionId = DB.createT_Selection(importRecordIds, ITrx.TRXNAME_None);
+		final PInstanceId selectionId = DB.createT_Selection(importRecordIds, ITrx.TRXNAME_None);
 
 		Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, AsyncImportWorkpackageProcessor.class)

@@ -2,8 +2,6 @@ package de.metas.invoicecandidate.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -62,10 +60,12 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  *
@@ -108,14 +108,14 @@ import de.metas.util.Services;
 	@Override
 	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Collection<Integer> invoiceCandidateIds)
 	{
-		final int invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, ITrx.TRXNAME_None);
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, ITrx.TRXNAME_None);
 
 		setWorkpackageADPInstanceCreatorId = false;
 		return enqueueSelection(invoiceCandidatesSelectionId);
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueueResult enqueueSelection(final int adPInstanceId)
+	public IInvoiceCandidateEnqueueResult enqueueSelection(@NonNull final PInstanceId pinstanceId)
 	{
 		final Mutable<IInvoiceCandidateEnqueueResult> resultRef = new Mutable<>();
 		final String trxNameInitial = getTrxNameInitial();
@@ -126,10 +126,10 @@ import de.metas.util.Services;
 			{
 				setTrxName(localTrxName);
 
-				final ILock icLock = lockInvoiceCandidatesForSelection(adPInstanceId);
+				final ILock icLock = lockInvoiceCandidatesForSelection(pinstanceId);
 				try (final ILockAutoCloseable l = icLock.asAutocloseableOnTrxClose(localTrxName))
 				{
-					final IInvoiceCandidateEnqueueResult result = enqueueSelection0(icLock, adPInstanceId);
+					final IInvoiceCandidateEnqueueResult result = enqueueSelection0(icLock, pinstanceId);
 					resultRef.setValue(result);
 				}
 			}
@@ -146,13 +146,12 @@ import de.metas.util.Services;
 
 	private final IInvoiceCandidateEnqueueResult enqueueSelection0(
 			@NonNull final ILock icLock,
-			final int adPInstanceId)
+			@NonNull final PInstanceId pinstanceId)
 	{
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
 		final Properties ctx = getCtx();
 		final String trxName = getTrxNameNotNull();
 
-		final Iterable<I_C_Invoice_Candidate> invoiceCandidates = retrieveSelection(adPInstanceId);
+		final Iterable<I_C_Invoice_Candidate> invoiceCandidates = retrieveSelection(pinstanceId);
 
 		//
 		// Create invoice candidates changes checker.
@@ -161,7 +160,7 @@ import de.metas.util.Services;
 
 		//
 		// Prepare
-		prepareSelectionForEnqueueing(adPInstanceId);
+		prepareSelectionForEnqueueing(pinstanceId);
 		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
 		// * the ones which are in our selection, we will update right now (see below)
 		// * the other ones will be updated later, asynchronously
@@ -189,7 +188,7 @@ import de.metas.util.Services;
 
 		if (setWorkpackageADPInstanceCreatorId)
 		{
-			workpackageAggregator.setAD_PInstance_Creator_ID(adPInstanceId);
+			workpackageAggregator.setAD_PInstance_Creator_ID(pinstanceId);
 		}
 
 		final int workpackageQueueSizeBeforeEnqueueing = workpackageAggregator.getQueueSize();
@@ -267,16 +266,16 @@ import de.metas.util.Services;
 	}
 
 	/** Lock all invoice candidates for selection and return an auto-closable lock. */
-	private final ILock lockInvoiceCandidatesForSelection(final int adPInstanceId)
+	private final ILock lockInvoiceCandidatesForSelection(final PInstanceId pinstanceId)
 	{
-		final LockOwner lockOwner = LockOwner.newOwner("ICEnqueuer", adPInstanceId);
+		final LockOwner lockOwner = LockOwner.newOwner("ICEnqueuer", pinstanceId.getRepoId());
 		return lockManager.lock()
 				.setOwner(lockOwner)
 				// allow these locks to be cleaned-up on server starts.
 				// NOTE: when we will add the ICs to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
 				.setAutoCleanup(true)
 				.setFailIfAlreadyLocked(true)
-				.setRecordsBySelection(I_C_Invoice_Candidate.class, adPInstanceId)
+				.setRecordsBySelection(I_C_Invoice_Candidate.class, pinstanceId)
 				.acquire();
 	}
 
@@ -320,7 +319,7 @@ import de.metas.util.Services;
 		return true;
 	}
 
-	private final void prepareSelectionForEnqueueing(final int selectionId)
+	private final void prepareSelectionForEnqueueing(final PInstanceId selectionId)
 	{
 		final Timestamp today = invoiceCandBL.getToday();
 
@@ -382,7 +381,7 @@ import de.metas.util.Services;
 		);
 	}
 
-	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final int adPInstanceId)
+	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
 		// NOTE: we designed this method for the case of enqueuing 1mio invoice candidates.
 
@@ -393,7 +392,7 @@ import de.metas.util.Services;
 			{
 				final Properties ctx = getCtx();
 				final String trxName = getTrxNameNotNull();
-				return invoiceCandDAO.retrieveIcForSelection(ctx, adPInstanceId, trxName);
+				return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, trxName);
 			}
 		};
 	}

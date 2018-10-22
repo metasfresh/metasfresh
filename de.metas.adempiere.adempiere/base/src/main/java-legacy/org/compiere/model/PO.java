@@ -103,6 +103,7 @@ import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -2511,7 +2512,7 @@ public abstract class PO
 		// FRESH-314: create a change log also if there is no AD_Session_ID; also store the AD_PInstance_ID
 		final MFSession session = get_Session();
 		final int adSessionId = session != null ? session.getAD_Session_ID() : 0;
-		final int adPInstanceId = Env.getContextAsInt(getCtx(), Env.CTXNAME_AD_PInstance_ID);
+		final PInstanceId adPInstanceId = PInstanceId.ofRepoIdOrNull(Env.getContextAsInt(getCtx(), Env.CTXNAME_AD_PInstance_ID));
 
 		final int adClientId = getAD_Client_ID();
 		final boolean isInsertChangeLogEvent = X_AD_ChangeLog.EVENTCHANGELOG_Insert.equals(changeLogType);

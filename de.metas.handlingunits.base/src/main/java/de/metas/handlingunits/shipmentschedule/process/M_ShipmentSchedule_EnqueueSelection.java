@@ -88,7 +88,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		Check.assumeNotNull(queryFilters, "Shipment Schedule queryFiletrs shall not be null");
 
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
-				.adPInstanceId(getAD_PInstance_ID())
+				.adPInstanceId(getPinstanceId())
 				.queryFilters(queryFilters)
 				.quantityType(quantityType)
 				.completeShipments(isCompleteShipments)

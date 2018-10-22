@@ -24,6 +24,7 @@ import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceRepositoryTests;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 
 /*
@@ -100,8 +101,8 @@ public class RetrieveDbRecordsUtilTest
 				.recursionMode(RecursionMode.BOTH)
 				.inOutId(20).build();
 
-		final int selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
-		assertThat(selectionId).isGreaterThan(0);
+		final PInstanceId selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
+		assertThat(selectionId).isNotNull();
 
 		final List<I_M_HU_Trace> result = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 				.setOnlySelection(selectionId)
@@ -126,8 +127,8 @@ public class RetrieveDbRecordsUtilTest
 
 	private List<I_M_HU_Trace> invoke_queryToSelection(final HUTraceEventQuery query)
 	{
-		final int selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
-		assertThat(selectionId).isGreaterThan(0);
+		final PInstanceId selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
+		assertThat(selectionId).isNotNull();
 
 		final List<I_M_HU_Trace> result = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Trace.class)

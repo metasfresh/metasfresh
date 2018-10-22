@@ -79,7 +79,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 		return asyncBatchBL.newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync)
-				.setAD_PInstance_Creator_ID(getAD_PInstance_ID())
+				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setName("Create Letters for Campaign " + campaignId)
 				.build();
 	}

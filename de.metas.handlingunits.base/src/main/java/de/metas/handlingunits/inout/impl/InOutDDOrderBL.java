@@ -64,7 +64,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 
 		if (effectiveLocatorToId == null || effectiveLocatorToId.getRepoId() == inOutLine.getM_Locator_ID())
 		{
-			Optional.empty();
+			return Optional.empty();
 		}
 
 		final I_DD_Order ddOrderHeader = createDDOrderHeader(inOutLine);

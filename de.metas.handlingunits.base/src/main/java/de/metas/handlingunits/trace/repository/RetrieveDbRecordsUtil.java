@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -63,7 +64,7 @@ public class RetrieveDbRecordsUtil
 				.collect(Collectors.toList());
 	}
 
-	public static int queryToSelection(@NonNull final HUTraceEventQuery query)
+	public static PInstanceId queryToSelection(@NonNull final HUTraceEventQuery query)
 	{
 		final SelectionResult resultOut = (SelectionResult)queryDbRecord(query, new SelectionResult());
 
@@ -155,7 +156,7 @@ public class RetrieveDbRecordsUtil
 	 */
 	private static class SelectionResult implements Result
 	{
-		private int selectionId = -1;
+		private PInstanceId selectionId;
 
 		@Override
 		public Result newEmptyResult()
@@ -166,7 +167,7 @@ public class RetrieveDbRecordsUtil
 		@Override
 		public void executeQueryAndAddAll(@NonNull final IQuery<I_M_HU_Trace> query)
 		{
-			if (selectionId <= 0)
+			if (selectionId == null)
 			{
 				selectionId = query.createSelection();
 			}
@@ -180,11 +181,12 @@ public class RetrieveDbRecordsUtil
 		public void addAll(@NonNull final Result resultToAdd)
 		{
 			final SelectionResult selectionResultToAdd = (SelectionResult)resultToAdd;
-			if (selectionResultToAdd.getSelectionId() <= 0)
+			if (selectionResultToAdd.getSelectionId() == null)
 			{
 				return; // result contains nothing to add
 			}
-			if (selectionId <= 0)
+			
+			if (selectionId == null)
 			{
 				// performance: we don't really need to add anything but can just take the "pointer" from selectionResultToAdd
 				selectionId = selectionResultToAdd.getSelectionId();
@@ -201,7 +203,7 @@ public class RetrieveDbRecordsUtil
 		@Override
 		public List<HuId> getVhuIds()
 		{
-			if (selectionId <= 0)
+			if (selectionId == null)
 			{
 				return ImmutableList.of();
 			}
@@ -218,7 +220,7 @@ public class RetrieveDbRecordsUtil
 		@Override
 		public List<HuId> getVhuSourceIds()
 		{
-			if (selectionId <= 0)
+			if (selectionId == null)
 			{
 				return ImmutableList.of();
 			}
@@ -232,7 +234,7 @@ public class RetrieveDbRecordsUtil
 					.collect(ImmutableList.toImmutableList());
 		}
 
-		public int getSelectionId()
+		public PInstanceId getSelectionId()
 		{
 			return selectionId;
 		}

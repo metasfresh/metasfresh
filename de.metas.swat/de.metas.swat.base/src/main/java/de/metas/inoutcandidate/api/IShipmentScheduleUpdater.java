@@ -26,6 +26,7 @@ package de.metas.inoutcandidate.api;
 import java.util.Properties;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -47,7 +48,7 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 	 * @param trxName
 	 * @return
 	 */
-	int updateShipmentSchedule(Properties ctx, int adUserId, int adPInstanceId, String trxName);
+	int updateShipmentSchedule(Properties ctx, int adUserId, PInstanceId adPInstanceId, String trxName);
 
 	/**
 	 *
@@ -61,7 +62,7 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 	 * @param trxName
 	 * @return the number of updated schedule entries.
 	 */
-	int updateShipmentSchedule(Properties ctx, int adUserId, int adPInstanceId, boolean updateOnlyLocked, String trxName);
+	int updateShipmentSchedule(Properties ctx, int adUserId, PInstanceId adPInstanceId, boolean updateOnlyLocked, String trxName);
 
 	/**
 	 *

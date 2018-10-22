@@ -90,7 +90,7 @@ public class DLM_Partition_Create_Async extends AbstractDLM_Partition_Create
 				.setDontReEnqueueAfter(dontReEnqueueAfter)
 				.build();
 
-		final I_C_Queue_WorkPackage newWorkpackage = DLMPartitionerWorkpackageProcessor.schedule(request, getAD_PInstance_ID());
+		final I_C_Queue_WorkPackage newWorkpackage = DLMPartitionerWorkpackageProcessor.schedule(request, getPinstanceId());
 		addLog("Scheduled " + newWorkpackage);
 
 		return MSG_OK;

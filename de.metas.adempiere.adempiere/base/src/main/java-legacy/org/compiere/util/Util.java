@@ -33,7 +33,6 @@ import java.text.AttributedCharacterIterator;
 import java.text.AttributedCharacterIterator.Attribute;
 import java.text.AttributedString;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1270,30 +1269,6 @@ public class Util
 		}
 
 		return out.toByteArray();
-	}
-
-	/***
-	 * insert selection into DB
-	 *
-	 * @deprecated Please use {@link DB#createT_Selection(int, java.util.Collection, String)}.
-	 */
-	@Deprecated
-	static public void insertSelection(final int[] selection, final int AD_PInstance_ID, final String trxName)
-	{
-		final ArrayList<Integer> results = new ArrayList<>(selection.length);
-
-		for (final int element : selection)
-		{
-			results.add(element);
-		}
-
-		if (results.size() == 0)
-			return;
-		log.info("Selected #" + results.size());
-
-		// insert selection
-		// use the same pinstance id as the process
-		DB.createT_Selection(AD_PInstance_ID, results, trxName);
 	}
 
 	// metas: 03749

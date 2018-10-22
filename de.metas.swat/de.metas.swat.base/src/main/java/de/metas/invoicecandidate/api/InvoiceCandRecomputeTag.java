@@ -1,10 +1,11 @@
 package de.metas.invoicecandidate.api;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
 
-import de.metas.util.Check;
+import de.metas.process.PInstanceId;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -19,11 +20,11 @@ import de.metas.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,14 +35,14 @@ import de.metas.util.Check;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@EqualsAndHashCode
 public final class InvoiceCandRecomputeTag
 {
-	public static final InvoiceCandRecomputeTag NULL = new InvoiceCandRecomputeTag(-1);
+	public static final InvoiceCandRecomputeTag NULL = new InvoiceCandRecomputeTag(null);
 
-	public static final InvoiceCandRecomputeTag ofAD_PInstance_ID(final int adPInstanceId)
+	public static final InvoiceCandRecomputeTag ofPInstanceId(@NonNull final PInstanceId pinstanceId)
 	{
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
-		return new InvoiceCandRecomputeTag(adPInstanceId);
+		return new InvoiceCandRecomputeTag(pinstanceId);
 	}
 
 	/**
@@ -55,8 +56,8 @@ public final class InvoiceCandRecomputeTag
 		// NOTE: keep in sync with toString()
 		try
 		{
-			final int adPInstanceId = Integer.parseInt(recomputeTagStr);
-			return ofAD_PInstance_ID(adPInstanceId);
+			final PInstanceId pinstanceId = PInstanceId.ofRepoId(Integer.parseInt(recomputeTagStr));
+			return ofPInstanceId(pinstanceId);
 		}
 		catch (NumberFormatException e)
 		{
@@ -73,22 +74,21 @@ public final class InvoiceCandRecomputeTag
 	 * @param recomputeTag
 	 * @return AD_PInstance_ID or null if the tag {@link #isNull(InvoiceCandRecomputeTag)}.
 	 */
-	public static final Integer getAD_PInstance_ID_OrNull(final InvoiceCandRecomputeTag recomputeTag)
+	public static final PInstanceId getPinstanceIdOrNull(final InvoiceCandRecomputeTag recomputeTag)
 	{
 		if (isNull(recomputeTag))
 		{
 			return null;
 		}
-		return recomputeTag.getAD_PInstance_ID();
+		return recomputeTag.getPinstanceId();
 	}
 
-	private final int adPInstanceId;
-	private Integer _hashCode;
+	@Getter
+	private final PInstanceId pinstanceId;
 
-	private InvoiceCandRecomputeTag(final int adPInstanceId)
+	private InvoiceCandRecomputeTag(final PInstanceId pinstanceId)
 	{
-		super();
-		this.adPInstanceId = adPInstanceId;
+		this.pinstanceId = pinstanceId;
 	}
 
 	@Override
@@ -104,46 +104,16 @@ public final class InvoiceCandRecomputeTag
 	public final String asString()
 	{
 		// NOTE: keep in sync with fromString()
-		return String.valueOf(adPInstanceId);
+		return String.valueOf(pinstanceId.getRepoId());
 	}
 
-	@Override
-	public int hashCode()
-	{
-		if (_hashCode == null)
-		{
-			_hashCode = new HashcodeBuilder()
-					.append(adPInstanceId)
-					.toHashcode();
-		}
-		return _hashCode;
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final InvoiceCandRecomputeTag other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(adPInstanceId, other.adPInstanceId)
-				.isEqual();
-	}
-
+	@Deprecated
 	public int getAD_PInstance_ID()
 	{
-		if (adPInstanceId <= 0)
+		if (pinstanceId == null)
 		{
 			throw new AdempiereException("Getting AD_PInstance_ID is not allowed for null/empty tags");
 		}
-		return adPInstanceId;
+		return pinstanceId.getRepoId();
 	}
 }

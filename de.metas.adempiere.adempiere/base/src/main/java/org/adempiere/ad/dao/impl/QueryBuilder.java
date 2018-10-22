@@ -43,6 +43,7 @@ import org.compiere.model.IQuery;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -59,7 +60,7 @@ import lombok.NonNull;
 	private QueryBuilderOrderByClause<T> orderByBuilder;
 	private final ICompositeQueryFilter<T> filters;
 
-	private int onlySelection_ID = -1;
+	private PInstanceId onlySelectionId;
 	private int limit = IQuery.NO_LIMIT;
 
 	private Map<String, Object> options = null;
@@ -105,7 +106,7 @@ import lombok.NonNull;
 		this.trxName = from.trxName;
 		this.filters = from.filters.copy();
 		this.orderByBuilder = from.orderByBuilder == null ? null : from.orderByBuilder.copy();
-		this.onlySelection_ID = from.onlySelection_ID;
+		this.onlySelectionId = from.onlySelectionId;
 		this.limit = from.limit;
 
 		this.options = from.options == null ? null : new HashMap<>(from.options);
@@ -265,15 +266,15 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IQueryBuilder<T> setOnlySelection(final int AD_PInstance_ID)
+	public IQueryBuilder<T> setOnlySelection(final PInstanceId pinstanceId)
 	{
-		this.onlySelection_ID = AD_PInstance_ID;
+		this.onlySelectionId = pinstanceId;
 		return this;
 	}
 
-	public int getSelectionId()
+	public PInstanceId getSelectionId()
 	{
-		return onlySelection_ID;
+		return onlySelectionId;
 	}
 
 	@Override

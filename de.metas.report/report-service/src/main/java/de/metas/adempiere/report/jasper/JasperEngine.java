@@ -52,6 +52,7 @@ import de.metas.adempiere.report.jasper.server.MetasJRXlsExporter;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
@@ -136,7 +137,7 @@ public class JasperEngine extends AbstractReportEngine
 			// Create jasper's JDBC connection
 			conn = getConnection();
 			final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
-					+ ", AD_PInstance_ID=" + reportContext.getAD_PInstance_ID();
+					+ ", AD_PInstance_ID=" + reportContext.getPinstanceId();
 
 			final String securityWhereClause;
 			if (reportContext.isApplySecuritySettings())
@@ -212,7 +213,7 @@ public class JasperEngine extends AbstractReportEngine
 	private final Map<String, Object> createJRParameters(final ReportContext reportContext)
 	{
 		final Properties ctx = reportContext.getCtx();
-		final int AD_PInstance_ID = reportContext.getAD_PInstance_ID();
+		final PInstanceId pinstanceId = reportContext.getPinstanceId();
 		final int Record_ID = reportContext.getRecord_ID();
 
 		final Map<String, Object> jrParameters = new HashMap<>(ctx.size() + 10);
@@ -235,7 +236,7 @@ public class JasperEngine extends AbstractReportEngine
 		// contribution from Ricardo (ralexsander)
 		// in iReports you can 'SELECT' AD_Client_ID, AD_Org_ID and
 		// AD_User_ID using only AD_PINSTANCE_ID
-		jrParameters.put(PARAM_AD_PINSTANCE_ID, AD_PInstance_ID);
+		jrParameters.put(PARAM_AD_PINSTANCE_ID, PInstanceId.toRepoId(pinstanceId));
 
 		final Language currLang = getParam_Language(jrParameters);
 		jrParameters.put(PARAM_REPORT_LOCALE, currLang.getLocale());
