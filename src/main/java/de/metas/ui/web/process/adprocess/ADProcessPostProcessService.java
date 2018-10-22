@@ -148,7 +148,7 @@ public class ADProcessPostProcessService
 	private static final DocumentId extractInstanceId(final ADProcessPostProcessRequest request)
 	{
 		final DocumentId instanceIdOverride = request.getInstanceIdOverride();
-		return instanceIdOverride != null ? instanceIdOverride : DocumentId.of(request.getProcessExecutionResult().getAD_PInstance_ID());
+		return instanceIdOverride != null ? instanceIdOverride : DocumentId.of(request.getProcessExecutionResult().getPinstanceId());
 	}
 
 	private static final String extractSummary(final ProcessExecutionResult processExecutionResult)
@@ -178,7 +178,7 @@ public class ADProcessPostProcessService
 		File reportFile = null;
 		try
 		{
-			final String reportFilePrefix = "report_" + processExecutionResult.getAD_PInstance_ID() + "_";
+			final String reportFilePrefix = "report_" + processExecutionResult.getPinstanceId().getRepoId() + "_";
 
 			final String reportContentType = processExecutionResult.getReportContentType();
 			final String reportFileExtension = MimeType.getExtensionByType(reportContentType);

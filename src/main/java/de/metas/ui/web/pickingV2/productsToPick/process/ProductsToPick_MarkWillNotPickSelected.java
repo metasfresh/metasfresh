@@ -46,7 +46,7 @@ public class ProductsToPick_MarkWillNotPickSelected extends ProductsToPickViewBa
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
 		}
 
-		if (!selectedRows.stream().allMatch(ProductsToPickRow::isToBePicked))
+		if (!selectedRows.stream().allMatch(ProductsToPickRow::isEligibleForPicking))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
@@ -59,7 +59,7 @@ public class ProductsToPick_MarkWillNotPickSelected extends ProductsToPickViewBa
 	{
 		getSelectedRows()
 				.stream()
-				.filter(ProductsToPickRow::isToBePicked)
+				.filter(ProductsToPickRow::isEligibleForPicking)
 				.forEach(this::markAsWillNotPick);
 
 		invalidateView();
@@ -72,6 +72,7 @@ public class ProductsToPick_MarkWillNotPickSelected extends ProductsToPickViewBa
 		final RejectPickingResult result = pickingCandidatesService.rejectPicking(RejectPickingRequest.builder()
 				.shipmentScheduleId(row.getShipmentScheduleId())
 				.qtyToReject(row.getQty())
+				.rejectPickingFromHuId(row.getHuId())
 				.existingPickingCandidateId(row.getPickingCandidateId())
 				.build());
 

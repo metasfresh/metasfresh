@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.requests.PickHURequest;
@@ -48,7 +47,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!selectedRows.stream().allMatch(ProductsToPickRow::isToBePicked))
+		if (!selectedRows.stream().allMatch(ProductsToPickRow::isEligibleForPicking))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
@@ -62,7 +61,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	{
 		getSelectedRows()
 				.stream()
-				.filter(ProductsToPickRow::isToBePicked)
+				.filter(ProductsToPickRow::isEligibleForPicking)
 				.forEach(this::pickRow);
 
 		invalidateView();
@@ -76,7 +75,6 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 				.shipmentScheduleId(row.getShipmentScheduleId())
 				.qtyToPick(row.getQty())
 				.pickFromHuId(row.getHuId())
-				.packToId(HuPackingInstructionsId.VIRTUAL)
 				.build());
 
 		updateViewRowFromPickingCandidate(row.getId(), result.getPickingCandidate());

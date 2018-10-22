@@ -33,6 +33,8 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout.Displayed;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
@@ -41,10 +43,12 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -137,6 +141,7 @@ public final class ViewColumnHelper
 
 		@NonNull
 		private final String fieldName;
+		private final WidgetSize widgetSize;
 		@Singular
 		private final ImmutableSet<MediaType> restrictToMediaTypes;
 	}
@@ -162,6 +167,10 @@ public final class ViewColumnHelper
 	{
 		final ClassViewColumnDescriptor.ClassViewColumnDescriptorBuilder columnBuilder = column.toBuilder();
 
+		if (overrides.getWidgetSize() != null)
+		{
+			columnBuilder.widgetSize(overrides.getWidgetSize());
+		}
 		if (overrides.getRestrictToMediaTypes() != null)
 		{
 			columnBuilder.restrictToMediaTypes(overrides.getRestrictToMediaTypes());
@@ -184,7 +193,6 @@ public final class ViewColumnHelper
 		}
 
 		return ClassViewDescriptor.builder()
-
 				.columns(columns)
 				.build();
 
@@ -205,6 +213,7 @@ public final class ViewColumnHelper
 				.fieldName(fieldName)
 				.caption(!Check.isEmpty(captionKey, true) ? msgBL.translatable(captionKey) : ImmutableTranslatableString.empty())
 				.widgetType(viewColumnAnn.widgetType())
+				.listReferenceId(viewColumnAnn.listReferenceId())
 				.editorRenderMode(viewColumnAnn.editor())
 				.allowSorting(viewColumnAnn.sorting())
 				.fieldReference(FieldReference.of(field))
@@ -340,11 +349,11 @@ public final class ViewColumnHelper
 			if (value instanceof Supplier<?>)
 			{
 				final Supplier<?> supplier = (Supplier<?>)value;
-				return Values.valueToJsonObject(supplier.get());
+				return convertValueToJson(supplier.get(), column);
 			}
 			else
 			{
-				return Values.valueToJsonObject(value);
+				return convertValueToJson(value, column);
 			}
 		}
 		catch (final Exception ex)
@@ -352,6 +361,39 @@ public final class ViewColumnHelper
 			throw AdempiereException.wrapIfNeeded(ex)
 					.setParameter("column", column)
 					.setParameter("row", row);
+		}
+	}
+
+	private static Object convertValueToJson(final Object valueParam, final ClassViewColumnDescriptor column)
+	{
+		Object result = valueParam;
+
+		if (column.getWidgetType().isLookup())
+		{
+			if (column.getListReferenceId() > 0)
+			{
+				result = resolveListValueByCode(column.getListReferenceId(), result);
+			}
+		}
+
+		return Values.valueToJsonObject(result);
+	}
+
+	private static LookupValue resolveListValueByCode(final int listReferenceId, final Object code)
+	{
+		if (code == null)
+		{
+			return null;
+		}
+
+		final LookupValue lookupValue = LookupDataSourceFactory.instance.listByAD_Reference_Value_ID(listReferenceId).findById(code);
+		if (lookupValue == null)
+		{
+			return StringLookupValue.unknown(code.toString());
+		}
+		else
+		{
+			return lookupValue;
 		}
 	}
 
@@ -371,10 +413,10 @@ public final class ViewColumnHelper
 		private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 
 		@Builder
-		private ClassViewDescriptor(@Singular ImmutableList<ClassViewColumnDescriptor> columns)
+		private ClassViewDescriptor(@Singular final ImmutableList<ClassViewColumnDescriptor> columns)
 		{
-			this.columnsByName = Maps.uniqueIndex(columns, ClassViewColumnDescriptor::getFieldName);
-			this.widgetTypesByFieldName = columns.stream()
+			columnsByName = Maps.uniqueIndex(columns, ClassViewColumnDescriptor::getFieldName);
+			widgetTypesByFieldName = columns.stream()
 					.collect(ImmutableMap.toImmutableMap(ClassViewColumnDescriptor::getFieldName, ClassViewColumnDescriptor::getWidgetType));
 		}
 
@@ -409,6 +451,8 @@ public final class ViewColumnHelper
 		@NonNull
 		private final DocumentFieldWidgetType widgetType;
 
+		private final int listReferenceId;
+
 		@Nullable
 		private final WidgetSize widgetSize;
 		@NonNull
@@ -433,7 +477,7 @@ public final class ViewColumnHelper
 				return Integer.MAX_VALUE;
 			}
 
-			int seqNo = layout.getSeqNo();
+			final int seqNo = layout.getSeqNo();
 			return seqNo >= 0 ? seqNo : Integer.MAX_VALUE;
 		}
 

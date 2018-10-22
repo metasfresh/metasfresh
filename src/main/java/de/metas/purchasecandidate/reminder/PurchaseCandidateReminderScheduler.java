@@ -47,6 +47,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

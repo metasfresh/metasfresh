@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessClassInfo;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -49,8 +50,8 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.util.Check;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Check;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 
@@ -338,6 +339,7 @@ public class ProcessRestController
 
 	public void cacheReset()
 	{
+		ProcessClassInfo.resetCache();
 		getAllRepositories().forEach(IProcessInstancesRepository::cacheReset);
 	}
 }

@@ -3,8 +3,8 @@ package de.metas.ui.web.login.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-import de.metas.hash.HashableString;
 import de.metas.util.Check;
+import de.metas.util.hash.HashableString;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -22,6 +22,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 

@@ -87,15 +87,22 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 		if (I_M_ShipmentSchedule.Table_Name.equals(tableName))
 		{
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(recordRef.getRecord_ID());
-			return ImmutableSet.<DocumentId> builder()
-					.addAll(getPackageableRowsIndex().getRowIdsByShipmentScheduleId(shipmentScheduleId))
-					.addAll(initialRowsIndex.getRowIdsByShipmentScheduleId(shipmentScheduleId))
-					.build()
-					.stream();
+			return streamDocumentIdsToInvalidate(shipmentScheduleId);
 		}
 		else
 		{
 			return Stream.empty();
 		}
+	}
+
+	private Stream<DocumentId> streamDocumentIdsToInvalidate(final ShipmentScheduleId shipmentScheduleId)
+	{
+		// TODO: handle the case when a row has to be added, when a how was deleted
+
+		return ImmutableSet.<DocumentId> builder()
+				.addAll(getPackageableRowsIndex().getRowIdsByShipmentScheduleId(shipmentScheduleId))
+				.addAll(initialRowsIndex.getRowIdsByShipmentScheduleId(shipmentScheduleId))
+				.build()
+				.stream();
 	}
 }

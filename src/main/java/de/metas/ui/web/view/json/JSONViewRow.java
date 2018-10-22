@@ -25,6 +25,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.util.GuavaCollectors;
+
 import lombok.Value;
 
 /*

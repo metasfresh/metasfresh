@@ -26,6 +26,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Check;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
