@@ -4,22 +4,27 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.Callable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.time.SimpleDateFormatThreadLocal;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -55,6 +60,38 @@ public final class JSONDate
 
 	private static final SimpleDateFormatThreadLocal TIMEZONE_FORMAT = new SimpleDateFormatThreadLocal("XXX");
 
+	private static ZoneId fixedSystemZoneId = null; // used for testing
+
+	private static ZoneId getSystemZoneId()
+	{
+		final ZoneId fixedSystemZoneId = JSONDate.fixedSystemZoneId;
+		if (fixedSystemZoneId != null)
+		{
+			return fixedSystemZoneId;
+		}
+
+		return ZoneId.systemDefault();
+	}
+
+	@VisibleForTesting
+	public synchronized static <T> T withFixedSystemZoneId(@NonNull final ZoneId zoneId, @NonNull final Callable<T> callable)
+	{
+		final ZoneId fixedSystemZoneIdBackup = fixedSystemZoneId;
+		fixedSystemZoneId = zoneId;
+		try
+		{
+			return callable.call();
+		}
+		catch (Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+		finally
+		{
+			fixedSystemZoneId = fixedSystemZoneIdBackup;
+		}
+	}
+
 	public static String toJson(final Date date)
 	{
 		return toJson(date.getTime());
@@ -62,20 +99,28 @@ public final class JSONDate
 
 	public static String toJson(final LocalDate date)
 	{
-		final long millis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		return toJson(millis);
+		return toJson(date.atStartOfDay(getSystemZoneId()));
 	}
 
 	public static String toJson(final LocalDateTime date)
 	{
-		final long millis = date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		return toJson(millis);
+		return toJson(date.atZone(getSystemZoneId()));
 	}
 
 	public static String toJson(final long millis)
 	{
-		final ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
-		return DATE_FORMAT.format(zdt);
+		final ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), getSystemZoneId());
+		return toJson(zdt);
+	}
+
+	public static String toJson(final LocalTime time)
+	{
+		return toJson(TimeUtil.asZonedDateTime(time));
+	}
+
+	public static String toJson(final ZonedDateTime date)
+	{
+		return DATE_FORMAT.format(date);
 	}
 
 	public static Date fromJson(final String valueStr, final DocumentFieldWidgetType widgetType)
