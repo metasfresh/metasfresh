@@ -110,6 +110,7 @@ Here come the actual release notes:
   * [#1990](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1990) QR code support
     * New Feature that allows to scan QR Codes now.
   * [#1999](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1999) Process execution result action: render QR code
+    * New Feature in WebUI that allows to scan QR Barcodes.
 
 ## Fixes
 
@@ -129,6 +130,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1060](https://github.com/metasfresh/metasfresh-webui-api/issues/1060) Allow parent-link relation to be set in AD_Tab
+    * Application Dictionary improvement, now allowing parent link relations to be set in Tab Configuration.
 
 * metasfresh-webui-frontend
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
