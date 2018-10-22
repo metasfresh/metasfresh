@@ -59,8 +59,8 @@ import { getData, openFile, patchRequest } from './GenericActions';
 import { initLayout } from '../api';
 import { setListIncludedView } from './ListActions';
 import { getWindowBreadcrumb } from './MenuActions';
-import { getScope, toggleFullScreen } from '../utils';
-import { parseToDisplay } from '../utils/documentListHelper';
+import { toggleFullScreen } from '../utils';
+import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 export function setLatestNewDocument(id) {
   return {

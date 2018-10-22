@@ -623,9 +623,12 @@ class DocumentList extends Component {
   // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
 
   setTableRowEdited = val => {
-    this.setState({
-      rowEdited: val,
-    });
+    this.setState(
+      {
+        rowEdited: val,
+      },
+      () => this.updateQuickActions()
+    );
   };
 
   adjustWidth = () => {

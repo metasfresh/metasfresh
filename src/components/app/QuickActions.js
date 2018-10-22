@@ -25,7 +25,7 @@ class QuickActions extends Component {
     dispatch: PropTypes.func.isRequired,
 
     // from <DocumentList>
-    rows: ImmutablePropTypes.List.isRequired,
+    rows: ImmutablePropTypes.list,
     childView: PropTypes.object.isRequired,
     parentView: PropTypes.object.isRequired,
     windowType: PropTypes.string.isRequired,
@@ -39,7 +39,7 @@ class QuickActions extends Component {
     processStatus: PropTypes.string,
   };
 
-  unmounted = false;
+  mounted = false;
 
   constructor(props) {
     super(props);
@@ -60,7 +60,7 @@ class QuickActions extends Component {
   }
 
   componentWillUnmount = () => {
-    this.unmounted = true;
+    this.mounted = false;
   };
 
   componentWillReceiveProps = nextProps => {
@@ -86,16 +86,9 @@ class QuickActions extends Component {
     return nextProps.shouldNotUpdate !== true;
   }
 
-  updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
-    const { windowType, viewId, selected, childView, parentView } = this.props;
-    this.fetchActions(
-      windowType,
-      viewId,
-      selected,
-      { ...childView, viewSelectedIds: childSelection },
-      parentView
-    );
-  };
+  componentDidMount = () => {
+    this.mounted = true;
+  }
 
   componentDidUpdate = prevProps => {
     const { inBackground, inModal } = this.props;
@@ -113,6 +106,17 @@ class QuickActions extends Component {
         loading: false,
       });
     }
+  };
+
+  updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
+    const { windowType, viewId, selected, childView, parentView } = this.props;
+    this.fetchActions(
+      windowType,
+      viewId,
+      selected,
+      { ...childView, viewSelectedIds: childSelection },
+      parentView
+    );
   };
 
   handleClickOutside = () => {
@@ -153,7 +157,7 @@ class QuickActions extends Component {
   };
 
   fetchActions = (windowType, viewId, selected, childView, parentView) => {
-    if (this.unmounted) {
+    if (!this.mounted) {
       return;
     }
 
