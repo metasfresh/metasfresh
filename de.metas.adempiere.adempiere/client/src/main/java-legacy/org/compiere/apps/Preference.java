@@ -239,7 +239,7 @@ public final class Preference extends CDialog
 		adempiereSys.setText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", true));
 		adempiereSys.setToolTipText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", false));
 		logMigrationScript.setText(msgBL.getMsg(Env.getCtx(), "LogMigrationScript", true));
-		logMigrationScript.setToolTipText(MigrationScriptFileLogger.getMigrationScriptDirectory());
+		logMigrationScript.setToolTipText(MigrationScriptFileLogger.getMigrationScriptDirectory().toString());
 		printPreview.setText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", true));
 		printPreview.setToolTipText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", false));
 		validateConnectionOnStartup.setText(msgBL.getMsg(Env.getCtx(), "ValidateConnectionOnStartup", true));

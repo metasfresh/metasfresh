@@ -10,11 +10,28 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.79
+## Features
+
+## Fixes
+
 # metasfresh 5.78
 ## Features
+
 * metasfresh
+  * [#4621](https://github.com/metasfresh/metasfresh/issues/4621) Support forum-datenaustausch.ch XML invoice
   * [#4653](https://github.com/metasfresh/metasfresh/issues/4653) WebUI: Add missing Translations for en_US in Businesspartner Window
     * Switched Translations to ad_element for Business Partner Window.
+  * [#4665](https://github.com/metasfresh/metasfresh/issues/4665) Show the Product No of Vendor in Purchase Order
+  * [#4673](https://github.com/metasfresh/metasfresh/issues/4673) Enlarge AD_Process.SQLStatement to fit large SQL queries
+  * [#4677](https://github.com/metasfresh/metasfresh/issues/4677) Enable zoom to invoice candidates
+  * [#4547](https://github.com/metasfresh/metasfresh/issues/4547) sales order based process for contract extension
+
+* metasfresh-webui-api
+  * [#1033](https://github.com/metasfresh/metasfresh-webui-api/issues/1033) API for "About" action in webui
+  * [#1055](https://github.com/metasfresh/metasfresh-webui-api/issues/1055) Include internalName in JSONDocumentAction
+  * [#1072](https://github.com/metasfresh/metasfresh-webui-api/issues/1072) Implement REST endpoints for managing migration scripts
+  * [#1069](https://github.com/metasfresh/metasfresh-webui-api/issues/1069) View: have a way to define if views support opening row details
 
 * metasfresh-webui-frontend
   * [#1989](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1989) Hourglass Overlay for pending Posts
@@ -27,6 +44,14 @@ Here come the actual release notes:
     * Improvement in Frontend, now refreshing quickacions after row changes.
 
 ## Fixes
+
+* metasfresh
+  * [#4671](https://github.com/metasfresh/metasfresh/issues/4671) WebUI Picking does not return filtered HU for selection
+
+* metasfresh-webui-api
+  * [#1067](https://github.com/metasfresh/metasfresh-webui-api/issues/1067) Attributes Filter in Picking shall work on load as before
+  * [#1068](https://github.com/metasfresh/metasfresh-webui-api/issues/1068) Cannot add orderline using "Add new", error when selecting product
+
 * metasfresh-webui-frontend
   * [#2016](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2016) Indicator bar not visible
     * Bugfix and Improvement for the Save Status Indicator.
