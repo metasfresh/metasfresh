@@ -182,7 +182,7 @@ public class ADProcessPostProcessService
 
 			final String reportContentType = processExecutionResult.getReportContentType();
 			final String reportFileExtension = MimeType.getExtensionByType(reportContentType);
-			final String reportFileSuffix = Check.isEmpty(reportFileExtension, true) ? "" : "." + reportFileExtension.trim();
+			final String reportFileSuffix = Check.isEmpty(reportFileExtension, true) ? "" : reportFileExtension.trim();
 			reportFile = File.createTempFile(reportFilePrefix, reportFileSuffix);
 		}
 		catch (final IOException e)
