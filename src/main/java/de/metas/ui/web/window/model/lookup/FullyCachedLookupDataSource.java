@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
@@ -16,6 +17,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,10 +54,8 @@ class FullyCachedLookupDataSource implements LookupDataSource
 
 	private final transient CCache<LookupDataSourceContext, LookupValuesList> cacheByPartition;
 
-	private FullyCachedLookupDataSource(final LookupDataSourceFetcher fetcher)
+	private FullyCachedLookupDataSource(@NonNull final LookupDataSourceFetcher fetcher)
 	{
-		super();
-		Check.assumeNotNull(fetcher, "Parameter fetcher is not null");
 		this.fetcher = fetcher;
 
 		final String cachePrefix = fetcher.getCachePrefix();
@@ -63,6 +63,9 @@ class FullyCachedLookupDataSource implements LookupDataSource
 		final int maxSize = 100;
 		final int expireAfterMinutes = 60 * 2;
 		cacheByPartition = CCache.newLRUCache(cachePrefix + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
+
+		// when the AvailableToPromiseRepository's SysConfig changes, we need to reset the cache. The same might apply to other cases.
+		cacheByPartition.addResetForTableName(I_AD_SysConfig.Table_Name);
 	}
 
 	@Override

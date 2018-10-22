@@ -521,12 +521,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return productLookupValues;
 		}
 		// Services.get(IWarehouseDAO.class).
-		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(AvailableToPromiseQuery.builder()
+		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productIds(productLookupValues.getKeysAsInt())
 				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
 				.date(TimeUtil.asLocalDateTime(dateOrNull))
 				.bpartnerId(bpartnerId)
-				.build());
+				.build();
+		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(query);
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
 		// process the query's result into those explodedProductValues

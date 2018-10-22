@@ -54,18 +54,18 @@ import lombok.NonNull;
 @Service
 public class AvailableToPromiseAdapter
 {
-	private final AvailableToPromiseRepository stockRepository;
+	private final AvailableToPromiseRepository availableToPromiseRepository;
 
 	public AvailableToPromiseAdapter(@NonNull final AvailableToPromiseRepository stockRepository)
 	{
-		this.stockRepository = stockRepository;
+		this.availableToPromiseRepository = stockRepository;
 	}
 
 	@NonNull
 	public AvailableToPromiseResultForWebui retrieveAvailableStock(@NonNull final AvailableToPromiseQuery query)
 	{
 		final de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult //
-		commonsAvailableStock = stockRepository.retrieveAvailableStock(query);
+		commonsAvailableStock = availableToPromiseRepository.retrieveAvailableStock(query);
 
 		final AvailableToPromiseResultForWebuiBuilder clientResultBuilder = AvailableToPromiseResultForWebui.builder();
 
@@ -162,6 +162,6 @@ public class AvailableToPromiseAdapter
 
 	public Set<AttributesKey> getPredefinedStorageAttributeKeys()
 	{
-		return stockRepository.getPredefinedStorageAttributeKeys();
+		return availableToPromiseRepository.getPredefinedStorageAttributeKeys();
 	}
 }
