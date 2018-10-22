@@ -1249,6 +1249,22 @@ public class TimeUtil
 		}
 	}
 
+	public static boolean isDateOrTimeObject(final Object value)
+	{
+		if (value == null)
+		{
+			return false;
+		}
+
+		return value instanceof java.util.Date
+				|| value instanceof Instant
+				|| value instanceof LocalDateTime
+				|| value instanceof LocalDate
+				|| value instanceof LocalTime
+				|| value instanceof ZonedDateTime
+				|| value instanceof XMLGregorianCalendar;
+	}
+
 	/** @return date as timestamp or null if the date is null */
 	public static Timestamp asTimestamp(final Date date)
 	{
