@@ -2,11 +2,9 @@ package de.metas.ui.web.process.adprocess;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-
-import org.compiere.util.Env;
 
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.WindowConstants;
@@ -159,24 +157,23 @@ import de.metas.util.lang.RepoIdAware;
 		processParameters.refreshFromSupplier(new ProcessInfoParameterDocumentValuesSupplier(adPInstanceId, processInfoParameters));
 	}
 
-	private final Map<String, ProcessInfoParameter> retrieveProcessInfoParameters(final DocumentId adPInstanceId)
+	private final Map<String, ProcessInfoParameter> retrieveProcessInfoParameters(final DocumentId adPInstanceDocumentId)
 	{
-		final Properties ctx = Env.getCtx();
-		final Map<String, ProcessInfoParameter> processInfoParameters = adPInstanceDAO.retrieveProcessInfoParameters(ctx, adPInstanceId.toInt())
+		final PInstanceId pinstanceId = adPInstanceDocumentId.toId(PInstanceId::ofRepoId);
+		return adPInstanceDAO.retrieveProcessInfoParameters(pinstanceId)
 				.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(ProcessInfoParameter::getParameterName));
-		return processInfoParameters;
 	}
 
 	@Override
 	public SaveResult save(final Document processParameters)
 	{
-		final int adPInstanceId = processParameters.getDocumentIdAsInt();
+		final PInstanceId pinstanceId = processParameters.getDocumentId().toId(PInstanceId::ofRepoId);
 		final List<ProcessInfoParameter> piParams = processParameters.getFieldViews()
 				.stream()
 				.map(field -> createProcessInfoParameter(field))
 				.collect(GuavaCollectors.toImmutableList());
-		adPInstanceDAO.saveParameterToDB(adPInstanceId, piParams);
+		adPInstanceDAO.saveParameterToDB(pinstanceId, piParams);
 
 		return SaveResult.SAVED;
 	}
