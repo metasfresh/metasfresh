@@ -787,9 +787,7 @@ class DocumentList extends Component {
       );
     }
 
-    const showQuickActions = Boolean(
-      !isModal || inBackground || selectionValid
-    );
+    const showQuickActions = true;
 
     return (
       <div

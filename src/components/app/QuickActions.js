@@ -44,6 +44,12 @@ class QuickActions extends Component {
   constructor(props) {
     super(props);
 
+    this.state = initialState;
+  }
+
+  componentDidMount = () => {
+    this.mounted = true;
+
     const {
       fetchOnInit,
       selected,
@@ -51,13 +57,12 @@ class QuickActions extends Component {
       viewId,
       childView,
       parentView,
-    } = props;
-    this.state = initialState;
+    } = this.props;
 
     if (fetchOnInit) {
       this.fetchActions(windowType, viewId, selected, childView, parentView);
     }
-  }
+  };
 
   componentWillUnmount = () => {
     this.mounted = false;
@@ -84,10 +89,6 @@ class QuickActions extends Component {
 
   shouldComponentUpdate(nextProps) {
     return nextProps.shouldNotUpdate !== true;
-  }
-
-  componentDidMount = () => {
-    this.mounted = true;
   }
 
   componentDidUpdate = prevProps => {
@@ -161,7 +162,7 @@ class QuickActions extends Component {
       return;
     }
 
-    if (windowType && viewId && selected && childView && parentView) {
+    if (windowType && viewId && childView && parentView) {
       quickActionsRequest(windowType, viewId, selected, childView, parentView)
         .then(response => {
           this.setState({

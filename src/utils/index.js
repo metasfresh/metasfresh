@@ -7,7 +7,7 @@ export const getQueryString = query =>
 
       if (Array.isArray(value) && value.length > 0) {
         parameters[key] = value.join(',');
-      } else {
+      } else if (value) {
         parameters[key] = value;
       }
 
