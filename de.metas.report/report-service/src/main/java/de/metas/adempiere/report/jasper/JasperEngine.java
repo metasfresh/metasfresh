@@ -16,11 +16,11 @@ import java.io.IOException;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,6 +43,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
@@ -119,7 +120,6 @@ public class JasperEngine extends AbstractReportEngine
 	private JasperPrint createJasperPrint(final ReportContext reportContext) throws JRException
 	{
 		log.info("{}", reportContext);
-
 
 		//
 		// Get the classloader to be used when loading jasper resources
@@ -348,13 +348,27 @@ public class JasperEngine extends AbstractReportEngine
 		}
 
 		// NOTE: just to be on the safe side, for each process info parameter we are setting the ParameterName even if it's a range parameter
-		jrParameters.put(processParam.getParameterName(), processParam.getParameter());
+		final Object parameterValue = normalizeParameterValue(processParam.getParameter());
+		jrParameters.put(processParam.getParameterName(), parameterValue);
 
 		// If we are dealing with a range parameter we are setting ParameterName1 and ParameterName2 too.
-		if (processParam.getParameter_To() != null)
+		final Object parameterValueTo = normalizeParameterValue(processParam.getParameter_To());
+		if (parameterValueTo != null)
 		{
-			jrParameters.put(processParam.getParameterName() + "1", processParam.getParameter());
-			jrParameters.put(processParam.getParameterName() + "2", processParam.getParameter_To());
+			jrParameters.put(processParam.getParameterName() + "1", parameterValue);
+			jrParameters.put(processParam.getParameterName() + "2", parameterValueTo);
+		}
+	}
+
+	private static Object normalizeParameterValue(final Object value)
+	{
+		if (TimeUtil.isDateOrTimeObject(value))
+		{
+			return TimeUtil.asTimestamp(value);
+		}
+		else
+		{
+			return value;
 		}
 	}
 
@@ -505,13 +519,13 @@ public class JasperEngine extends AbstractReportEngine
 		jasperPrint.setProperty(XlsReportConfiguration.PROPERTY_CELL_LOCKED, "true");
 
 		// there are cases when we don't want the cells to be blocked by password
-		// in those cases we put in jrxml the password property with empty value,  which will indicate we don't want password
+		// in those cases we put in jrxml the password property with empty value, which will indicate we don't want password
 		// if there is no such property we take default password. If empty we set no password and if set, we use that password from the report
-		if(jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD) == null)
+		if (jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD) == null)
 		{
-			//do nothing;
+			// do nothing;
 		}
-		else if(jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD).isEmpty())
+		else if (jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD).isEmpty())
 		{
 			exporter.setParameter(JRXlsAbstractExporterParameter.PASSWORD, null);
 		}
@@ -519,7 +533,7 @@ public class JasperEngine extends AbstractReportEngine
 		{
 			exporter.setParameter(JRXlsAbstractExporterParameter.PASSWORD, jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD));
 		}
-		
+
 		exporter.exportReport();
 	}
 }
