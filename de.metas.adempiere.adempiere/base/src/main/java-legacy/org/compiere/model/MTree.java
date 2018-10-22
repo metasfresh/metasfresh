@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -648,7 +650,7 @@ public class MTree extends MTree_Base
 	static public String getNodeTableName(final int AD_Table_ID)
 	{
 		String nodeTableName = "AD_TreeNode";
-		if (I_AD_Menu.Table_ID == AD_Table_ID)
+		if (getTableId(I_AD_Menu.class) == AD_Table_ID)
 		{
 			nodeTableName += "MM";
 		}
