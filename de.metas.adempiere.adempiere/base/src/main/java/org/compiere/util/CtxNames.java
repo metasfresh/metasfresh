@@ -66,7 +66,7 @@ public class CtxNames
 			.add(MODIFIER_QuotedIfNotDefault)
 			.build();
 
-	private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_\\-#$]+");
+	private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_\\-\\.#$|]+");
 
 	/**
 	 * Returns an immutable set of {@link CtxName}s that contains the results of {@link CtxNames#parse(String)}, applied to the strings of the given {@code stringsWithoutMarkers}.
