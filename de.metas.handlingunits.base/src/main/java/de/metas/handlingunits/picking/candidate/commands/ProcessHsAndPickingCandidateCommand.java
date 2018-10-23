@@ -122,7 +122,7 @@ public class ProcessHsAndPickingCandidateCommand
 
 	private List<I_M_HU> retrievePickFromHUsOutOfTrx()
 	{
-		return handlingUnitsRepo.getByIds(pickFromHuIds);
+		return handlingUnitsRepo.getByIdsOutOfTrx(pickFromHuIds);
 	}
 
 	private void allocateHUToShipmentSchedule(@NonNull final I_M_HU hu)
