@@ -170,7 +170,7 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LocalDate dateLastInOut;
 
-	@ViewColumn(captionKey = "Created", widgetType = DocumentFieldWidgetType.DateTime, layouts = {
+	@ViewColumn(captionKey = "Created", widgetType = DocumentFieldWidgetType.ZonedDateTime, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 120),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 120)
 	})

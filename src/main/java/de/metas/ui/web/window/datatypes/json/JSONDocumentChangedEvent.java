@@ -18,7 +18,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.Values;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import io.swagger.annotations.ApiModel;
 import lombok.Value;
 
@@ -140,11 +139,6 @@ public class JSONDocumentChangedEvent
 	public BigDecimal getValueAsBigDecimal(final BigDecimal defaultValueIfNull)
 	{
 		return value != null ? Values.toBigDecimal(value) : defaultValueIfNull;
-	}
-
-	public java.util.Date getValueAsDateTime()
-	{
-		return JSONDate.fromObject(value, DocumentFieldWidgetType.DateTime);
 	}
 
 	public LocalDateTime getValueAsLocalDateTime()

@@ -1,6 +1,10 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.compiere.util.DisplayType;
@@ -47,9 +51,10 @@ public enum DocumentFieldWidgetType
 
 	//
 	// Dates
-	, Date(LayoutAlign.Right, java.util.Date.class, DisplayType.Date) //
-	, Time(LayoutAlign.Right, java.util.Date.class, DisplayType.Time) //
-	, DateTime(LayoutAlign.Right, java.util.Date.class, DisplayType.DateTime) //
+	, Date(LayoutAlign.Right, LocalDate.class, DisplayType.Date) //
+	, Time(LayoutAlign.Right, LocalTime.class, DisplayType.Time) //
+	, DateTime(LayoutAlign.Right, LocalDateTime.class, DisplayType.DateTime) //
+	, ZonedDateTime(LayoutAlign.Right, ZonedDateTime.class, DisplayType.DateTime) //
 	, DateRange(LayoutAlign.Left, DateRangeValue.class, -1) //
 
 	// Numbers, Amounts, Prices
@@ -88,7 +93,7 @@ public enum DocumentFieldWidgetType
 	//
 	;
 
-	private static final Set<DocumentFieldWidgetType> TYPES_Date = Sets.immutableEnumSet(Date, Time, DateTime);
+	private static final Set<DocumentFieldWidgetType> TYPES_Date = Sets.immutableEnumSet(Date, Time, DateTime, ZonedDateTime);
 	private static final Set<DocumentFieldWidgetType> TYPES_Numeric = Sets.immutableEnumSet(Integer, Number, Amount, Quantity, CostPrice);
 
 	private final LayoutAlign gridAlign;
@@ -101,7 +106,7 @@ public enum DocumentFieldWidgetType
 		this.valueClass = valueClass;
 		this.displayType = displayType;
 	}
-	
+
 	public int getDisplayType()
 	{
 		return displayType;

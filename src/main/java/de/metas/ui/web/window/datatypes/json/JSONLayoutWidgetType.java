@@ -75,6 +75,7 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.Date, JSONLayoutWidgetType.Date)
 			.put(DocumentFieldWidgetType.Time, JSONLayoutWidgetType.Time)
 			.put(DocumentFieldWidgetType.DateTime, JSONLayoutWidgetType.DateTime)
+			.put(DocumentFieldWidgetType.ZonedDateTime, JSONLayoutWidgetType.DateTime)
 			.put(DocumentFieldWidgetType.DateRange, JSONLayoutWidgetType.DateRange)
 			.put(DocumentFieldWidgetType.Integer, JSONLayoutWidgetType.Integer)
 			.put(DocumentFieldWidgetType.Number, JSONLayoutWidgetType.Number)

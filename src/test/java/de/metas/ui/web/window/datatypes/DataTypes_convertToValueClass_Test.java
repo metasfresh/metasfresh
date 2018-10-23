@@ -1,8 +1,9 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.datatypes;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 /*
@@ -27,18 +28,18 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
  * #L%
  */
 
-public class DocumentFieldDescriptor_convertToValueClass_Test
+public class DataTypes_convertToValueClass_Test
 {
 	@Test
 	public void test_FromBigDecimalString_ToInteger()
 	{
 		final String fieldName = "MyInteger";
-		final Object value = "12345.00000000000";
+		final String value = "12345.00000000000";
 		final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.Integer;
 		final Class<?> targetType = widgetType.getValueClass();
-		final LookupValueByIdSupplier lookupDataSource= null;
-		
-		final Object valueConverted = DocumentFieldDescriptor.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
+		final LookupValueByIdSupplier lookupDataSource = null;
+
+		final Object valueConverted = DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
 		Assert.assertEquals(12345, valueConverted);
 	}
 }

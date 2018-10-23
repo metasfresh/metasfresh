@@ -238,7 +238,6 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 
 	private HuId performPickCU()
 	{
-
 		final HuId huIdToSplit = retrieveHUIdToSplit();
 		final List<I_M_HU> splitHUs = HUSplitBuilderCoreEngine.builder()
 				.huToSplit(handlingUnitsDAO.getById(huIdToSplit))

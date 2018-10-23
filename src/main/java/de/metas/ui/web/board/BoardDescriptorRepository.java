@@ -211,11 +211,9 @@ public class BoardDescriptorRepository
 		if (adValRuleId > 0)
 		{
 			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(
-					tableName
-					, adValRuleId
-					, null // ctx table name
+					tableName, adValRuleId, null // ctx table name
 					, null // ctx column name
-					);
+			);
 			final String sqlWhereClause = validationRule.getPrefilterWhereClause()
 					.evaluate(Evaluatees.ofCtx(Env.getCtx()), OnVariableNotFound.Fail);
 
@@ -617,13 +615,9 @@ public class BoardDescriptorRepository
 		{
 			return ITranslatableString.constant(value.toString());
 		}
-		else if (widgetType == DocumentFieldWidgetType.Date)
+		else if (widgetType.isDateOrTime())
 		{
-			return DateTimeTranslatableString.ofDate((java.util.Date)value);
-		}
-		else if (widgetType == DocumentFieldWidgetType.DateTime)
-		{
-			return DateTimeTranslatableString.ofDateTime((java.util.Date)value);
+			return DateTimeTranslatableString.ofObject(value, widgetType.getDisplayType());
 		}
 		else if (widgetType == DocumentFieldWidgetType.Integer)
 		{
