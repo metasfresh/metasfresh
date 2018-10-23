@@ -166,26 +166,37 @@ export class QuickActions extends Component {
     }
 
     if (windowType && viewId && childView && parentView) {
-      console.log('ATTACK')
-      await quickActionsRequest(windowType, viewId, selected, childView, parentView)
+      await quickActionsRequest(
+        windowType,
+        viewId,
+        selected,
+        childView,
+        parentView
+      )
         .then(response => {
-          console.log('1: ', response)
-          this.setState({
-            actions: response.data.actions,
-            loading: false,
-          });
+          return this.setState(
+            {
+              actions: response.data.actions,
+              loading: false,
+            },
+            () => Promise.resolve()
+          );
         })
-        .catch((e) => {
-          console.log('3: ', e);
-          this.setState({
-            loading: false,
-          });
+        .catch(() => {
+          return this.setState(
+            {
+              loading: false,
+            },
+            () => Promise.reject()
+          );
         });
     } else {
-      console.log(2)
-      this.setState({
-        loading: false,
-      }, () => Promise.resolve());
+      return this.setState(
+        {
+          loading: false,
+        },
+        () => Promise.resolve()
+      );
     }
   }
 
