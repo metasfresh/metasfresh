@@ -45,6 +45,8 @@ export class QuickActions extends Component {
     super(props);
 
     this.state = initialState;
+
+    this.fetchActions = this.fetchActions.bind(this);
   }
 
   componentDidMount = () => {
@@ -157,30 +159,35 @@ export class QuickActions extends Component {
     this.toggleDropdown();
   };
 
-  fetchActions = (windowType, viewId, selected, childView, parentView) => {
+  async fetchActions(windowType, viewId, selected, childView, parentView) {
     if (!this.mounted) {
-      return;
+      // return;
+      return Promise.resolve();
     }
 
     if (windowType && viewId && childView && parentView) {
-      quickActionsRequest(windowType, viewId, selected, childView, parentView)
+      console.log('ATTACK')
+      await quickActionsRequest(windowType, viewId, selected, childView, parentView)
         .then(response => {
+          console.log('1: ', response)
           this.setState({
             actions: response.data.actions,
             loading: false,
           });
         })
-        .catch(() => {
+        .catch((e) => {
+          console.log('3: ', e);
           this.setState({
             loading: false,
           });
         });
     } else {
+      console.log(2)
       this.setState({
         loading: false,
-      });
+      }, () => Promise.resolve());
     }
-  };
+  }
 
   toggleDropdown = option => {
     this.setState({
