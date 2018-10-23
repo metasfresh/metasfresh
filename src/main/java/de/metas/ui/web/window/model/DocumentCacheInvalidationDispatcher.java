@@ -15,7 +15,7 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.ICacheResetListener;
 import org.slf4j.Logger;
@@ -128,7 +128,7 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		}
 
 		//
-		final Set<TableRecordReference> rootRecords = request.getRootRecords();
+		final TableRecordReferenceSet rootRecords = request.getRootRecords();
 		viewsRepository.notifyRecordsChanged(rootRecords);
 	}
 

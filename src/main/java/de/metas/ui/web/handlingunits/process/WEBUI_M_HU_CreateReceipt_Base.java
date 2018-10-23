@@ -10,6 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,6 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -127,7 +127,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		// Reset the view's affected HUs
 		getView().invalidateAll();
 
-		viewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));
+		viewsRepo.notifyRecordsChanged(TableRecordReferenceSet.of(TableRecordReference.ofSet(receiptSchedules)));
 
 		return MSG_OK;
 	}

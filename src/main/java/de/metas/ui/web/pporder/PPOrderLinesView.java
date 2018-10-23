@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -38,7 +38,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.GuavaCollectors;
-
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -334,7 +333,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(final TableRecordReferenceSet recordRefs)
 	{
 		// TODO: notifyRecordsChanged: identify the sub-trees which could be affected and invalidate only those
 	}

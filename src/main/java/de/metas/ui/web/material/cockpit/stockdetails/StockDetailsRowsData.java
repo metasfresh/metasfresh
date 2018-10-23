@@ -4,13 +4,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.stock.HUStockInfo;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
 
 /*
@@ -67,9 +68,9 @@ public class StockDetailsRowsData implements IRowsData<StockDetailsRow>
 	}
 
 	@Override
-	public Stream<DocumentId> streamDocumentIdsToInvalidate(TableRecordReference recordRef)
+	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
-		return Stream.empty();
+		return DocumentIdsSelection.EMPTY;
 	}
 
 	@Override

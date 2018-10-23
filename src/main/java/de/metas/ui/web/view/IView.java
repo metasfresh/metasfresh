@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -23,7 +24,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-
 import lombok.NonNull;
 
 /*
@@ -196,7 +196,7 @@ public interface IView
 	/**
 	 * Notify the view that given record(s) has changed.
 	 */
-	void notifyRecordsChanged(Set<TableRecordReference> recordRefs);
+	void notifyRecordsChanged(TableRecordReferenceSet recordRefs);
 
 	/** @return actions which were registered particularly for this view instance */
 	default ViewActionDescriptorsList getActions()

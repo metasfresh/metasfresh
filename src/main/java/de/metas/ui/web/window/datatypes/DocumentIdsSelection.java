@@ -19,7 +19,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -133,7 +132,7 @@ public final class DocumentIdsSelection
 	public static Collector<DocumentId, ?, DocumentIdsSelection> toDocumentIdsSelection()
 	{
 		final Supplier<Set<DocumentId>> supplier = LinkedHashSet::new;
-		final BiConsumer<Set<DocumentId>, DocumentId> accumulator = (accum, documentId) -> accum.add(documentId);
+		final BiConsumer<Set<DocumentId>, DocumentId> accumulator = Set::add;
 		final BinaryOperator<Set<DocumentId>> combiner = (l, r) -> {
 			l.addAll(r);
 			return l;

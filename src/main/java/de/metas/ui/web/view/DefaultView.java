@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.CCache;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -52,7 +52,6 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -531,7 +530,7 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(final TableRecordReferenceSet recordRefs)
 	{
 		final Set<DocumentId> rowIds = viewInvalidationAdvisor.findAffectedRowIds(recordRefs, this);
 		if (rowIds.isEmpty())

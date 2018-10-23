@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -14,7 +13,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.MutableInt;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
@@ -387,7 +386,7 @@ public class ViewsRepository implements IViewsRepository
 
 	@Override
 	@Async
-	public void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(@NonNull final TableRecordReferenceSet recordRefs)
 	{
 		if (recordRefs.isEmpty())
 		{

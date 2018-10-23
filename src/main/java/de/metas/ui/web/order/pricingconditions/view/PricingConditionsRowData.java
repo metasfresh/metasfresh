@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -25,6 +25,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.Builder;
 import lombok.Getter;
@@ -150,9 +151,9 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 	}
 
 	@Override
-	public Stream<DocumentId> streamDocumentIdsToInvalidate(final TableRecordReference recordRef)
+	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
-		return Stream.empty();
+		return DocumentIdsSelection.EMPTY;
 	}
 
 	@Override

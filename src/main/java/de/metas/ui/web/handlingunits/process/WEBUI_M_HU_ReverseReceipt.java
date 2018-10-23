@@ -7,6 +7,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_M_InOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -124,7 +125,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 				getView().removeHUIdsAndInvalidate(huIdsToReverse);
 
 				// Notify all active views that given receipt schedules were changed
-				viewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));
+				viewsRepo.notifyRecordsChanged(TableRecordReferenceSet.of(TableRecordReference.ofSet(receiptSchedules)));
 			}
 		}
 

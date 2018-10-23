@@ -14,6 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -140,7 +141,7 @@ public class ADProcessPostProcessService
 
 			if (!viewInvalidateAllCalled && viewSupplier.get() != null)
 			{
-				viewSupplier.get().notifyRecordsChanged(ImmutableSet.of(recordToRefresh));
+				viewSupplier.get().notifyRecordsChanged(TableRecordReferenceSet.of(recordToRefresh));
 			}
 		}
 	}

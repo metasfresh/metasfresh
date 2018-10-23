@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -16,6 +17,7 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -87,18 +89,16 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	}
 
 	@Override
-	public Stream<DocumentId> streamDocumentIdsToInvalidate(final TableRecordReference recordRef)
+	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
-		final String tableName = recordRef.getTableName();
-		if (I_M_ShipmentSchedule.Table_Name.equals(tableName))
-		{
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(recordRef.getRecord_ID());
-			final TableRecordReference recordRefEffective = PackageableRow.createTableRecordReferenceFromShipmentScheduleId(shipmentScheduleId);
-			return initialDocumentIdsByRecordRef.get(recordRefEffective).stream();
-		}
-		else
-		{
-			return Stream.empty();
-		}
+		return recordRefs.streamIds(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId)
+				.flatMap(this::streamDocumentIdsForShipmentScheduleId)
+				.collect(DocumentIdsSelection.toDocumentIdsSelection());
+	}
+
+	private Stream<DocumentId> streamDocumentIdsForShipmentScheduleId(final ShipmentScheduleId shipmentScheduleId)
+	{
+		final TableRecordReference recordRefEffective = PackageableRow.createTableRecordReferenceFromShipmentScheduleId(shipmentScheduleId);
+		return initialDocumentIdsByRecordRef.get(recordRefEffective).stream();
 	}
 }

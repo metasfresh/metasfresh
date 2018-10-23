@@ -4,16 +4,16 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidate;
@@ -22,6 +22,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -164,29 +165,22 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 	}
 
 	@Override
-	public Stream<DocumentId> streamDocumentIdsToInvalidate(final TableRecordReference recordRef)
+	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
-		if (I_M_Picking_Candidate.Table_Name.equals(recordRef.getTableName()))
+		final Set<PickingCandidateId> pickingCandidateIds = recordRefs
+				.streamIds(I_M_Picking_Candidate.Table_Name, PickingCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		if (pickingCandidateIds.isEmpty())
 		{
-			final PickingCandidateId pickingCandidateId = PickingCandidateId.ofRepoId(recordRef.getRecord_ID());
-			ProductsToPickRow row = getByPickingCandidateId(pickingCandidateId).orElse(null);
-			if (row != null)
-			{
-				return Stream.of(row.getId());
-			}
+			return DocumentIdsSelection.EMPTY;
 		}
 
-		// fallback
-		return Stream.empty();
-	}
-
-	private Optional<ProductsToPickRow> getByPickingCandidateId(@NonNull final PickingCandidateId pickingCandidateId)
-	{
 		return getRowsById()
 				.values()
 				.stream()
-				.filter(row -> pickingCandidateId.equals(row.getPickingCandidateId()))
-				.findFirst();
+				.filter(row -> pickingCandidateIds.contains(row.getPickingCandidateId()))
+				.map(ProductsToPickRow::getId)
+				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 	}
 
 	@Override

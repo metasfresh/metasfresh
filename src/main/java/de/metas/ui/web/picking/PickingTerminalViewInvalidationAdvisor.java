@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,7 +58,7 @@ class PickingTerminalViewInvalidationAdvisor implements IViewInvalidationAdvisor
 	}
 
 	@Override
-	public Set<DocumentId> findAffectedRowIds(final Set<TableRecordReference> recordRefs, final IView view)
+	public Set<DocumentId> findAffectedRowIds(final TableRecordReferenceSet recordRefs, final IView view)
 	{
 		final Set<ShipmentScheduleId> shipmentScheduleIds = extractShipmentScheduleIds(recordRefs);
 		if (shipmentScheduleIds.isEmpty())
@@ -72,7 +73,7 @@ class PickingTerminalViewInvalidationAdvisor implements IViewInvalidationAdvisor
 				ShipmentScheduleId.toIntSet(shipmentScheduleIds));
 	}
 
-	private Set<ShipmentScheduleId> extractShipmentScheduleIds(final Set<TableRecordReference> recordRefs)
+	private Set<ShipmentScheduleId> extractShipmentScheduleIds(final TableRecordReferenceSet recordRefs)
 	{
 		if (recordRefs.isEmpty())
 		{
