@@ -1,17 +1,14 @@
 package de.metas.ui.web.pickingV2.packageable;
 
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
 
 /*
@@ -49,18 +46,10 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	}
 
 	private final ExtendedMemorizingSupplier<PackageableRowsIndex> rowsIndexSupplier;
-	private final PackageableRowsIndex initialRowsIndex;
 
 	private PackageableRowsData(@NonNull final PackageableRowsRepository repo)
 	{
 		rowsIndexSupplier = ExtendedMemorizingSupplier.of(() -> PackageableRowsIndex.of(repo.retrieveRows()));
-
-		//
-		// Remember initial rows
-		// We will use this map to figure out what we can invalidate,
-		// because we want to cover the case of rows which just vanished (e.g. everything was delivered)
-		// and the case of rows which appeared back (e.g. the picking candidate was reactivated so we still have QtyToDeliver).
-		initialRowsIndex = rowsIndexSupplier.get();
 	}
 
 	@Override
@@ -81,28 +70,8 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	}
 
 	@Override
-	public Stream<DocumentId> streamDocumentIdsToInvalidate(final TableRecordReference recordRef)
+	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
-		final String tableName = recordRef.getTableName();
-		if (I_M_ShipmentSchedule.Table_Name.equals(tableName))
-		{
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(recordRef.getRecord_ID());
-			return streamDocumentIdsToInvalidate(shipmentScheduleId);
-		}
-		else
-		{
-			return Stream.empty();
-		}
-	}
-
-	private Stream<DocumentId> streamDocumentIdsToInvalidate(final ShipmentScheduleId shipmentScheduleId)
-	{
-		// TODO: handle the case when a row has to be added, when a how was deleted
-
-		return ImmutableSet.<DocumentId> builder()
-				.addAll(getPackageableRowsIndex().getRowIdsByShipmentScheduleId(shipmentScheduleId))
-				.addAll(initialRowsIndex.getRowIdsByShipmentScheduleId(shipmentScheduleId))
-				.build()
-				.stream();
+		return recordRefs.matchesTableName(I_M_ShipmentSchedule.Table_Name) ? DocumentIdsSelection.ALL : DocumentIdsSelection.EMPTY;
 	}
 }
