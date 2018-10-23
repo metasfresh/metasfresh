@@ -14,9 +14,25 @@ BEGIN
 
 -- AD_Element_TRL via AD_Window
 
-INSERT INTO AD_Element_TRL
-(AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive, AD_Element_ID, AD_Language, Name, PrintName, Description, Help, CommitWarning , IsTranslated)
-(Select 
+ UPDATE AD_Element_TRL et SET
+		AD_Client_ID = x.AD_Client_ID,
+ 		AD_Org_ID = x.AD_Org_ID, 
+		Created = x.Created,
+		CreatedBy = x.CreatedBy, 
+		Updated = x.Updated, 
+		UpdatedBy = x.UpdatedBy, 
+		IsActive = x.IsActive,
+		AD_Element_ID = x.AD_Element_ID,
+		AD_Language = x.AD_Language, 
+		Name = x.Name, 
+		PrintName = x.PrintName,
+		Description = x.Description, 
+		Help = x.Help, 
+		IsTranslated = x.IsTranslated
+
+		FROM
+		
+	(Select 
 
 win.AD_Client_ID,
 win.AD_Org_ID,
@@ -31,15 +47,18 @@ update_ad_element_trl_from_ad_window_trl.ad_element_id,
 	wint.name as Printname,
 	wint.description,
 	wint.help,
-	wint.commitWarning,
 	wint.IsTranslated
 
 	FROM AD_Window win
 	JOIn AD_Window_TRL wint on win.ad_window_id = wint.ad_window_id 
-	WHERE win.ad_window_id = update_ad_element_trl_from_ad_window_trl.ad_window_id);
+	WHERE win.ad_window_id = update_ad_element_trl_from_ad_window_trl.ad_window_id) x
+		WHERE et.AD_Element_ID = x.AD_Element_ID AND et.AD_Language = x.AD_Language;
 
 
 
+		
+		
+		
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE SECURITY DEFINER
