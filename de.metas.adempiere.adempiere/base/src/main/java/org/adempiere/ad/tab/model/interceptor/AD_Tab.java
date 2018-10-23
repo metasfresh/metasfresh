@@ -71,7 +71,7 @@ public class AD_Tab
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	public void updateTranslationsForElement(final I_AD_Tab tab)
 	{
-		if (!IADWindowDAO.DYNATTR_AD_Tab_UpdateTranslations.getValue(tab))
+		if (!IADWindowDAO.DYNATTR_AD_Tab_UpdateTranslations.getValue(tab,true))
 		{
 			// do not copy translations from element to tab
 			return;

@@ -55,7 +55,7 @@ public class AD_Menu
 	@CalloutMethod(columnNames = I_AD_Menu.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Menu menu) throws SQLException
 	{
-		if (!IADMenuDAO.DYNATTR_AD_Menu_UpdateTranslations.getValue(menu))
+		if (!IADMenuDAO.DYNATTR_AD_Menu_UpdateTranslations.getValue(menu, true))
 		{
 			// do not copy translations from element to menu
 			return;

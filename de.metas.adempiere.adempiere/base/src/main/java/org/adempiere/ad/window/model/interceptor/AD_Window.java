@@ -54,7 +54,7 @@ public class AD_Window
 	public void onElementIDChanged(final I_AD_Window window) throws SQLException
 	{
 
-		if (!IADWindowDAO.DYNATTR_AD_Window_UpdateTranslations.getValue(window))
+		if (!IADWindowDAO.DYNATTR_AD_Window_UpdateTranslations.getValue(window, true))
 		{
 			// do not copy translations from element to window
 			return;
