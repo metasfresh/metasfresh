@@ -149,7 +149,8 @@ public class Order implements ModelValidator
 				if (order.getC_BPartner_Location_ID() > 0)
 				{
 					String BPartnerAddress = order.getBPartnerAddress();
-					if (Check.isEmpty(BPartnerAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_C_BPartner_ID))
+					if (Check.isEmpty(BPartnerAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_C_BPartner_ID)
+							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_AD_User_ID))
 					{
 						Services.get(IDocumentLocationBL.class).setBPartnerAddress(order);
 					}
@@ -160,7 +161,8 @@ public class Order implements ModelValidator
 				if (order.getBill_Location_ID() > 0)
 				{
 					String BillToAddress = order.getBillToAddress();
-					if (Check.isEmpty(BillToAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_Bill_BPartner_ID))
+					if (Check.isEmpty(BillToAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_Bill_BPartner_ID)
+							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_Bill_User_ID))
 					{
 						Services.get(IDocumentLocationBL.class).setBillToAddress(order);
 					}
@@ -171,7 +173,8 @@ public class Order implements ModelValidator
 				if ((order.getDropShip_Location_ID() > 0 || order.getM_Warehouse_ID() > 0) && !order.isSOTrx())
 				{
 					final String DeliveryToAddress = order.getDeliveryToAddress();
-					if (Check.isEmpty(DeliveryToAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_DropShip_BPartner_ID))
+					if (Check.isEmpty(DeliveryToAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_DropShip_BPartner_ID)
+							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_DropShip_User_ID))
 					{
 						Services.get(IDocumentLocationBL.class).setDeliveryToAddress(order);
 					}
