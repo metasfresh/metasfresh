@@ -34,6 +34,7 @@ import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -68,8 +69,7 @@ public interface IPrintJobBL extends ISingletonService
 	@Getter
 	public class ContextForAsyncProcessing
 	{
-		@Default
-		int adPInstanceId = -1;
+		PInstanceId adPInstanceId;
 
 		@Default
 		int parentAsyncBatchId = -1;

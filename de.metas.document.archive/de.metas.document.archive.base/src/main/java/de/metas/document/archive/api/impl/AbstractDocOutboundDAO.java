@@ -1,7 +1,5 @@
 package de.metas.document.archive.api.impl;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 /*
@@ -44,8 +42,10 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractDocOutboundDAO implements IDocOutboundDAO
 {
@@ -160,11 +160,11 @@ public abstract class AbstractDocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public final List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final Properties ctx, final int pInstanceId, final String trxName)
+	public final List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final Properties ctx, final PInstanceId pinstanceId, final String trxName)
 	{
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class, ctx, trxName)
-				.setOnlySelection(pInstanceId);
+				.setOnlySelection(pinstanceId);
 		final List<I_C_Doc_Outbound_Log> logs = queryBuilder.create()
 				.list(I_C_Doc_Outbound_Log.class);
 		return logs;

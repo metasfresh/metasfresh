@@ -44,6 +44,7 @@ import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfo.ProcessInfoBuilder;
 import de.metas.util.Services;
@@ -114,7 +115,7 @@ public final class JRClient
 		try
 		{
 			final Language language = extractLanguage(pi);
-			return createJasperPrint(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language);
+			return createJasperPrint(pi.getAD_Process_ID(), pi.getPinstanceId(), language);
 		}
 		catch (Exception e)
 		{
@@ -122,11 +123,11 @@ public final class JRClient
 		}
 	}
 
-	private JasperPrint createJasperPrint(final int AD_Process_ID, final int AD_PInstance_ID, final Language language)
+	private JasperPrint createJasperPrint(final int AD_Process_ID, final PInstanceId pinstanceId, final Language language)
 	{
 		try
 		{
-			return createJasperPrint0(AD_Process_ID, AD_PInstance_ID, language);
+			return createJasperPrint0(AD_Process_ID, pinstanceId, language);
 		}
 		catch (Exception e)
 		{
@@ -134,21 +135,21 @@ public final class JRClient
 		}
 	}
 
-	private JasperPrint createJasperPrint0(final int AD_Process_ID, final int AD_PInstance_ID, final Language language) throws Exception
+	private JasperPrint createJasperPrint0(final int AD_Process_ID, final PInstanceId pinstanceId, final Language language) throws Exception
 	{
 		final IJasperServer server = serverSupplier.get();
-		byte[] data = server.report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), OutputType.JasperPrint);
+		byte[] data = server.report(AD_Process_ID, pinstanceId.getRepoId(), language.getAD_Language(), OutputType.JasperPrint);
 		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
 		JasperPrint jasperPrint = (JasperPrint)ois.readObject();
 		return jasperPrint;
 	}
 
-	private byte[] report(final int AD_Process_ID, final int AD_PInstance_ID, final Language language, final OutputType outputType)
+	private byte[] report(final int AD_Process_ID, final PInstanceId pinstanceId, final Language language, final OutputType outputType)
 	{
 		try
 		{
 			final IJasperServer server = serverSupplier.get();
-			return server.report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), outputType);
+			return server.report(AD_Process_ID, PInstanceId.toRepoId(pinstanceId), language.getAD_Language(), outputType);
 		}
 		catch (Exception e)
 		{
@@ -166,14 +167,14 @@ public final class JRClient
 		try
 		{
 			// Make sure the ProcessInfo is persisted because we will need to access it's data (like AD_Table_ID/Record_ID etc)
-			if (pi.getAD_PInstance_ID() <= 0)
+			if (pi.getPinstanceId() == null)
 			{
 				Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(pi);
 			}
 
 			final Language language = extractLanguage(pi);
 			final OutputType outputTypeEffective = Util.coalesce(outputType, pi.getJRDesiredOutputType());
-			final byte[] data = report(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language, outputTypeEffective);
+			final byte[] data = report(pi.getAD_Process_ID(), pi.getPinstanceId(), language, outputTypeEffective);
 			return data;
 		}
 		catch (Exception e)

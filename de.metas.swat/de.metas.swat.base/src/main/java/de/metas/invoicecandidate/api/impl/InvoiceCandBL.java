@@ -7,8 +7,6 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -124,6 +122,7 @@ import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
+import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
@@ -133,6 +132,7 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author tsa
@@ -500,7 +500,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public IInvoiceGenerateResult generateInvoicesFromSelection(
 			final Properties ctx,
-			final int AD_PInstance_ID,
+			final PInstanceId AD_PInstance_ID,
 			final boolean ignoreInvoiceSchedule,
 			final ILoggable loggable,
 			final String trxName)

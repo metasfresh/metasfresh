@@ -41,6 +41,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Getter;
@@ -104,7 +105,7 @@ public interface IFlatrateBL extends ISingletonService
 		private final boolean forceExtend;
 		private final Boolean forceComplete;
 		private final Timestamp nextTermStartDate;
-		private final int AD_PInstance_ID;
+		private final PInstanceId AD_PInstance_ID;
 	}
 
 	/**

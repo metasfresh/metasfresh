@@ -79,6 +79,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -205,7 +206,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	 * Map of cached objects (TableName -> Record_ID -> Object)
 	 */
 	Map<String, Map<Integer, Object>> cachedObjects = new HashMap<>();
-	Map<Integer, ImmutableSet<Integer>> selectionId2selection = new HashMap<>();
+	Map<PInstanceId, ImmutableSet<Integer>> selectionId2selection = new HashMap<>();
 
 	private boolean copyOnSave = true;
 
@@ -1072,10 +1073,8 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return appliesToTableName(tableName);
 	}
 
-	public void createSelection(final int selectionId, final Collection<Integer> selection)
+	public void createSelection(@NonNull final PInstanceId selectionId, final Collection<Integer> selection)
 	{
-		Check.assume(selectionId > 0, "selectionId > 0");
-
 		final ImmutableSet<Integer> selectionSet = selection != null ? ImmutableSet.copyOf(selection) : ImmutableSet.of();
 
 		final ImmutableSet<Integer> existingSelectionSet = this.selectionId2selection.get(selectionId);
@@ -1092,25 +1091,25 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	public I_AD_PInstance createSelectionPInstance(final Properties ctx)
+	private I_AD_PInstance createSelectionPInstance()
 	{
 		final int adProcessId = 0; // N/A
 		final int adTableId = 0;
 		final int recordId = 0;
-		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, adProcessId, adTableId, recordId);
+		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(adProcessId, adTableId, recordId);
 		return adPInstance;
 	}
 
-	public int createSelection(final Collection<Integer> selection)
+	public PInstanceId createSelection(final Collection<Integer> selection)
 	{
-		final int selectionId = nextId(I_AD_PInstance.Table_Name);
+		final PInstanceId selectionId = PInstanceId.ofRepoId(nextId(I_AD_PInstance.Table_Name));
 		createSelection(selectionId, selection);
 		return selectionId;
 	}
 
 	public <T> I_AD_PInstance createSelectionFromModels(@SuppressWarnings("unchecked") T... models)
 	{
-		final I_AD_PInstance adPInstance = createSelectionPInstance(Env.getCtx());
+		final I_AD_PInstance adPInstance = createSelectionPInstance();
 
 		if (models != null)
 		{
@@ -1122,7 +1121,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public <T> I_AD_PInstance createSelectionFromModelsCollection(Collection<T> models)
 	{
-		final I_AD_PInstance adPInstance = createSelectionPInstance(Env.getCtx());
+		final I_AD_PInstance adPInstance = createSelectionPInstance();
 		createSelectionFromModelsCollection(adPInstance, models);
 		return adPInstance;
 	}
@@ -1141,16 +1140,16 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			selection.add(modelId);
 		}
 
-		final int selectionId = adPInstance.getAD_PInstance_ID();
+		final PInstanceId selectionId = PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID());
 		createSelection(selectionId, selection);
 	}
 
-	public boolean isInSelection(final int selectionId, final int id)
+	public boolean isInSelection(final PInstanceId selectionId, final int id)
 	{
 		return getSelectionIds(selectionId).contains(id);
 	}
 
-	public Set<Integer> getSelectionIds(final int selectionId)
+	public Set<Integer> getSelectionIds(final PInstanceId selectionId)
 	{
 		final Set<Integer> selection = selectionId2selection.get(selectionId);
 		return selection != null ? selection : ImmutableSet.of();

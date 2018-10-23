@@ -30,6 +30,7 @@ import java.util.Properties;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.PInstanceId;
 import de.metas.util.ILoggable;
 
 /**
@@ -48,10 +49,10 @@ public interface IInvoiceCandidateEnqueuer
 	/**
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
 	 * 
-	 * @param adPInstanceId
+	 * @param pinstanceId
 	 * @return enqueueing result
 	 */
-	IInvoiceCandidateEnqueueResult enqueueSelection(final int adPInstanceId);
+	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);
 
 	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Collection<Integer> invoiceCandidateIds);
 

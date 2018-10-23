@@ -1,6 +1,5 @@
 package de.metas.process.impl;
 
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -8,6 +7,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.process.PInstanceId;
 
 /*
  * #%L
@@ -34,13 +35,13 @@ import com.google.common.collect.ImmutableSet;
 public class PlainADPInstanceDAO extends ADPInstanceDAO
 {
 	@Override
-	public int createAD_PInstance_ID(final Properties ctx)
+	public PInstanceId createPInstanceId()
 	{
-		return POJOLookupMap.get().nextId(I_AD_PInstance.Table_Name);
+		return PInstanceId.ofRepoId(POJOLookupMap.get().nextId(I_AD_PInstance.Table_Name));
 	}
 
 	@Override
-	public Set<TableRecordReference> retrieveSelectedIncludedRecords(final int adPInstanceId)
+	public Set<TableRecordReference> retrieveSelectedIncludedRecords(final PInstanceId pinstanceId)
 	{
 		return ImmutableSet.of();
 	}

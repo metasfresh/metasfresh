@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
@@ -196,7 +197,7 @@ public final class ReportCtl
 		{
 			final Properties ctx = Env.getCtx();
 			final String TableName = Services.get(IADTableDAO.class).retrieveTableName(format.getAD_Table_ID());
-			final MQuery query = MQuery.get(ctx, pi.getAD_PInstance_ID(), TableName);
+			final MQuery query = MQuery.get(ctx, pi.getPinstanceId(), TableName);
 			final PrintInfo info = new PrintInfo(pi);
 			return new ReportEngine(ctx, format, query, info);
 		}
@@ -231,7 +232,7 @@ public final class ReportCtl
 		// Create Query from Parameters
 		final Properties ctx = Env.getCtx();
 		final String TableName = pi.getAD_Process_ID() == 202 ? "T_Report" : "T_ReportStatement";
-		final MQuery query = MQuery.get(ctx, pi.getAD_PInstance_ID(), TableName);
+		final MQuery query = MQuery.get(ctx, pi.getPinstanceId(), TableName);
 
 		// Get PrintFormat
 		final MPrintFormat format = pi.getResult().getPrintFormat();
@@ -253,7 +254,7 @@ public final class ReportCtl
 	)
 	{
 		final Properties ctx = Env.getCtx();
-		final int adPInstanceId = processInfo.getAD_PInstance_ID();
+		final PInstanceId adPInstanceId = processInfo.getPinstanceId();
 		final ReportEngine re = ReportEngine.get(ctx, reportEngineDocumentType, recordId, adPInstanceId, ITrx.TRXNAME_None);
 		if (re == null)
 		{

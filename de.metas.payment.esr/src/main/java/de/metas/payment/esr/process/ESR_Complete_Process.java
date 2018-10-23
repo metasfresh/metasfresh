@@ -69,7 +69,7 @@ public class ESR_Complete_Process extends JavaProcess
 
 		Check.errorUnless(esrImport.isValid(), "The document can not be processed, since it is not valid.");
 
-		final String description = getProcessInfo().getTitle() + " #" + getAD_PInstance_ID();
+		final String description = getProcessInfo().getTitle() + " #" + getPinstanceId().getRepoId();
 		esrImportBL.complete(esrImport, description);
 
 		return "";

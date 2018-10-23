@@ -351,7 +351,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		// We might want to access this information (currently in AD_ChangeLog)
 		// Note: using copyCtx because derviveCtx is not safe with Env.switchContext()
 		_ctx = Env.copyCtx(pi.getCtx());
-		Env.setContext(_ctx, Env.CTXNAME_AD_PInstance_ID, pi.getAD_PInstance_ID());
+		Env.setContext(_ctx, Env.CTXNAME_AD_PInstance_ID, PInstanceId.toRepoId(pi.getPinstanceId()));
 
 		//
 		// Load annotated parameters
@@ -856,15 +856,10 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getTitle();
 	}   // getName
 
-	/**
-	 * Get Process Instance
-	 *
-	 * @return Process Instance
-	 */
-	public final int getAD_PInstance_ID()
+	public final PInstanceId getPinstanceId()
 	{
-		return getProcessInfo().getAD_PInstance_ID();
-	}   // getAD_PInstance_ID
+		return getProcessInfo().getPinstanceId();
+	}
 
 	/**
 	 * Get Table_ID
@@ -1127,13 +1122,12 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		}
 	}
 
-	protected final <T> int createSelection(@NonNull final IQueryBuilder<T> queryBuilder, final int adPInstanceId)
+	protected final <T> int createSelection(@NonNull final IQueryBuilder<T> queryBuilder, @NonNull final PInstanceId pinstanceId)
 	{
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
 		return queryBuilder
 				.create()
 				.setApplyAccessFilterRW(false)
-				.createSelection(adPInstanceId);
+				.createSelection(pinstanceId);
 	}
 	
 	protected final UserId getLoggedUserId()

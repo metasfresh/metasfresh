@@ -30,17 +30,17 @@ import java.util.Properties;
 
 import org.adempiere.processing.exception.ProcessingException;
 import org.adempiere.processing.interfaces.IProcessablePO;
-import org.adempiere.processing.service.IProcessingService;
 import org.compiere.model.MTable;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class MADProcessablePO extends X_AD_ProcessablePO implements IProcessablePO
 {
@@ -221,9 +221,9 @@ public class MADProcessablePO extends X_AD_ProcessablePO implements IProcessable
 		final MTable table = MTable.get(getCtx(), tableId);
 		final String[] keyColumns = table.getKeyColumns();
 		if (keyColumns == null || keyColumns.length == 0)
-			throw new ProcessingException("Table "+table+" has no key columns defined", null, IProcessingService.NO_AD_PINSTANCE_ID);
+			throw new ProcessingException("Table "+table+" has no key columns defined", null, null);
 		if (keyColumns.length > 1)
-			throw new ProcessingException("Table "+table+" has more then one key column defined", null, IProcessingService.NO_AD_PINSTANCE_ID);
+			throw new ProcessingException("Table "+table+" has more then one key column defined", null, null);
 		final String keyColumn = keyColumns[0];
 		
 		PO po = new Query(getCtx(), table.getTableName(), keyColumn+"=?", get_TrxName())
@@ -235,7 +235,7 @@ public class MADProcessablePO extends X_AD_ProcessablePO implements IProcessable
 			if (throwEx)
 			{
 				// TODO -> AD_Message
-				throw new ProcessingException("Der referenzierte Datensatz existiert nicht mehr", null, IProcessingService.NO_AD_PINSTANCE_ID);
+				throw new ProcessingException("Der referenzierte Datensatz existiert nicht mehr", null, null);
 			}
 			else
 			{

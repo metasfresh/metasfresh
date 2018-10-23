@@ -66,10 +66,10 @@ import lombok.Singular;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ProcessHsAndPickingCandidateCommand
+public class ProcessHUsAndPickingCandidateCommand
 {
 
-	private static final Logger logger = LogManager.getLogger(ProcessHsAndPickingCandidateCommand.class);
+	private static final Logger logger = LogManager.getLogger(ProcessHUsAndPickingCandidateCommand.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
@@ -81,7 +81,7 @@ public class ProcessHsAndPickingCandidateCommand
 	private final boolean allowOverDelivery;
 
 	@Builder
-	private ProcessHsAndPickingCandidateCommand(
+	private ProcessHUsAndPickingCandidateCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			//
@@ -122,7 +122,7 @@ public class ProcessHsAndPickingCandidateCommand
 
 	private List<I_M_HU> retrievePickFromHUsOutOfTrx()
 	{
-		return handlingUnitsRepo.getByIds(pickFromHuIds);
+		return handlingUnitsRepo.getByIdsOutOfTrx(pickFromHuIds);
 	}
 
 	private void allocateHUToShipmentSchedule(@NonNull final I_M_HU hu)

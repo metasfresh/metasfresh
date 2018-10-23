@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 
@@ -40,7 +41,7 @@ public class PrintInfo
 		setAD_Process_ID(pi.getAD_Process_ID());
 		setAD_Table_ID(pi.getTable_ID());
 		setRecord_ID(pi.getRecord_ID());
-		setAD_PInstance_ID(pi.getAD_PInstance_ID());
+		setAD_PInstance_ID(pi.getPinstanceId());
 	}	//	PrintInfo
 	
 	
@@ -107,7 +108,7 @@ public class PrintInfo
 	private int m_C_BPartner_ID = 0;
 	
 	//FRESH-349: AD_PInstance is also needed
-	private int m_AD_PInstance_ID = 0;
+	private PInstanceId m_AD_PInstance_ID;
 	
 	
 	
@@ -290,13 +291,13 @@ public class PrintInfo
 		m_Record_ID = record_ID;
 	}
 	
-	public int getAD_PInstance_ID()
+	public PInstanceId getAD_PInstance_ID()
 	{
 		return m_AD_PInstance_ID;
 	}
 
 
-	public void setAD_PInstance_ID(int m_AD_PInstance_ID)
+	public void setAD_PInstance_ID(PInstanceId m_AD_PInstance_ID)
 	{
 		this.m_AD_PInstance_ID = m_AD_PInstance_ID;
 	}

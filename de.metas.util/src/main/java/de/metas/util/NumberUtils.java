@@ -144,6 +144,14 @@ public final class NumberUtils
 		{
 			return (BigDecimal)value;
 		}
+		else if (value instanceof Integer)
+		{
+			return BigDecimal.valueOf((int)value);
+		}
+		else if (value instanceof Long)
+		{
+			return BigDecimal.valueOf((long)value);
+		}
 		else
 		{
 			final String valueStr = value.toString();

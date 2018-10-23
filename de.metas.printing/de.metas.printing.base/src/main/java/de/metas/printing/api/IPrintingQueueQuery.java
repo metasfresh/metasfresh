@@ -24,6 +24,8 @@ package de.metas.printing.api;
 
 import org.adempiere.ad.dao.ISqlQueryFilter;
 
+import de.metas.process.PInstanceId;
+
 /**
  * Used in {@link IPrintingQueueBL#createPrintingQueueSources(java.util.Properties, IPrintingQueueQuery)} to specify which printing queue items shall be returned by the source.<br>
  * Use {@link IPrintingQueueBL#createPrintingQueueQuery()} to create an instance.
@@ -49,9 +51,9 @@ public interface IPrintingQueueQuery
 	 */
 	void setIsPrinted(Boolean printed);
 
-	int getOnlyAD_PInstance_ID();
+	PInstanceId getOnlyAD_PInstance_ID();
 
-	void setOnlyAD_PInstance_ID(int onlyAD_PInstance_ID);
+	void setOnlyAD_PInstance_ID(PInstanceId onlyPInstanceId);
 
 	int getAD_Client_ID();
 

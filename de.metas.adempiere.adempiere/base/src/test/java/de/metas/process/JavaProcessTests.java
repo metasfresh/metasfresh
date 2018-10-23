@@ -1,29 +1,5 @@
 package de.metas.process;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.PlainTrxManager;
@@ -163,7 +139,7 @@ public class JavaProcessTests
 			final ProcessInfo pi = getProcessInfo();
 			Assert.assertNotNull("ProcessInfo not null", pi);
 
-			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(Env.getCtx(), pi.getAD_PInstance_ID());
+			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).getById(pi.getPinstanceId());
 
 			// Make sure AD_PInstance record was created in database
 			Assert.assertNotNull("AD_PInstance record exists in database", pinstance);
@@ -179,7 +155,7 @@ public class JavaProcessTests
 			Assert.assertNotNull("ProcessInfo not null", pi);
 
 			final ProcessExecutionResult result = pi.getResult();
-			Assert.assertEquals("Result AD_PInstance_ID shall match ProcessInfo's AD_PInstance_ID", pi.getAD_PInstance_ID(), result.getAD_PInstance_ID());
+			Assert.assertEquals("Result AD_PInstance_ID shall match ProcessInfo's AD_PInstance_ID", pi.getPinstanceId(), result.getPinstanceId());
 
 			//
 			// Validate AD_PInstance values
@@ -255,18 +231,16 @@ public class JavaProcessTests
 
 	private <T extends JavaProcess> ProcessInfo createProcessInfo(final Class<T> processClass)
 	{
-		final Properties ctx = Env.getCtx();
-
 		// Create the AD_PInstance record
 		final int AD_Process_ID = 0; // N/A
 		final int AD_Table_ID = 0;
 		final int recordId = 0;
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, AD_Process_ID, AD_Table_ID, recordId);
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(AD_Process_ID, AD_Table_ID, recordId);
 
 		//
 		// Create ProcessInfo descriptor
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setCtx(ctx)
+				.setCtx(Env.getCtx())
 				.setAD_PInstance(pinstance)
 				.setTitle("Test")
 				.setClassname(processClass == null ? null : processClass.getName())

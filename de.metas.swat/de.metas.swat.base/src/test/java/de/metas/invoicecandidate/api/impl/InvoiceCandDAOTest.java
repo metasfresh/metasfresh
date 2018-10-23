@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -72,7 +73,7 @@ public class InvoiceCandDAOTest
 		invoiceCandidateWithPaymentTerm2.setC_PaymentTerm(paymentTerm2);
 		save(invoiceCandidateWithPaymentTerm2);
 
-		final int selectionId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
+		final PInstanceId selectionId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
 				.create()
 				.createSelection();
 

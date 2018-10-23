@@ -38,6 +38,7 @@ import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -344,7 +345,7 @@ public class DefaultModelArchiver
 		if (reportEngineDocumentType > -1)         // important: 0 is also fine! -1 means "not found"
 		{
 			// we are dealing with document reporting
-			final int pInstanceId = 0; // N/A
+			final PInstanceId pInstanceId = null; // N/A
 			final int printFormatId = getAD_PrintFormat_ID();
 			reportEngine = ReportEngine.get(ctx, reportEngineDocumentType, recordId, pInstanceId, printFormatId, trxName);
 		}

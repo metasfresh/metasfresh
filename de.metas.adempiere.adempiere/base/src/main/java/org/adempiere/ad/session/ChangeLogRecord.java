@@ -2,6 +2,8 @@ package org.adempiere.ad.session;
 
 import org.adempiere.util.lang.ObjectUtils;
 
+import de.metas.process.PInstanceId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -15,11 +17,11 @@ import org.adempiere.util.lang.ObjectUtils;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,7 +44,7 @@ public final class ChangeLogRecord
 	private final Object newValue;
 	private final String eventType;
 	private final int AD_User_ID;
-	private final int AD_PInstance_ID;
+	private final PInstanceId AD_PInstance_ID;
 
 	private ChangeLogRecord(final Builder builder)
 	{
@@ -121,7 +123,7 @@ public final class ChangeLogRecord
 		return AD_User_ID;
 	}
 
-	public int getAD_PInstance_ID()
+	public PInstanceId getAD_PInstance_ID()
 	{
 		return AD_PInstance_ID;
 	}
@@ -139,7 +141,7 @@ public final class ChangeLogRecord
 		private Object newValue;
 		private String eventType;
 		private int AD_User_ID;
-		private int AD_PInstance_ID;
+		private PInstanceId AD_PInstance_ID;
 
 		private Builder()
 		{
@@ -205,13 +207,13 @@ public final class ChangeLogRecord
 			return this;
 		}
 
-		public Builder setEventType(final String event)
+		public Builder setEventType(final String eventType)
 		{
-			this.eventType = event;
+			this.eventType = eventType;
 			return this;
 		}
 
-		public Builder setAD_User_ID(int AD_User_ID)
+		public Builder setAD_User_ID(final int AD_User_ID)
 		{
 			this.AD_User_ID = AD_User_ID;
 			return this;
@@ -223,7 +225,7 @@ public final class ChangeLogRecord
 		 * @return
 		 * @task https://metasfresh.atlassian.net/browse/FRESH-314
 		 */
-		public Builder setAD_PInstance_ID(int AD_PInstance_ID)
+		public Builder setAD_PInstance_ID(final PInstanceId AD_PInstance_ID)
 		{
 			this.AD_PInstance_ID = AD_PInstance_ID;
 			return this;

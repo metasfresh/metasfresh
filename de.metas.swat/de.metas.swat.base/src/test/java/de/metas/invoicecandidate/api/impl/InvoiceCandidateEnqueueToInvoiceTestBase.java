@@ -61,6 +61,7 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.ConsoleLoggable;
 import de.metas.util.ILoggable;
@@ -127,7 +128,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 	private final IInvoiceCandidateEnqueueResult step20_enqueueToInvoice()
 	{
 		final I_AD_PInstance adPInstance = POJOLookupMap.get().createSelectionFromModelsCollection(invoiceCandidates);
-		final int adPInstanceId = adPInstance.getAD_PInstance_ID();
+		final PInstanceId adPInstanceId = PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID());
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(true);

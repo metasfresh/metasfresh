@@ -228,7 +228,7 @@ public class CostBillOfMaterial extends JavaProcess
 			tboml.setC_AcctSchema_ID(p_C_AcctSchema_ID);
 			tboml.setM_CostType_ID(p_M_CostType_ID);
 			tboml.setCostingMethod(p_ConstingMethod);
-			tboml.setAD_PInstance_ID(getAD_PInstance_ID());
+			tboml.setAD_PInstance_ID(getPinstanceId().getRepoId());
 			tboml.setM_CostElement_ID(costElement.getM_CostElement_ID());
 			tboml.setM_Product_ID(product.get_ID());
 			tboml.setQtyBOM(qty);

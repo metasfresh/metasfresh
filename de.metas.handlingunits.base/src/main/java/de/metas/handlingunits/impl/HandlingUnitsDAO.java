@@ -2,6 +2,7 @@ package de.metas.handlingunits.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
@@ -137,6 +138,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds)
 	{
 		return loadByRepoIdAwares(ImmutableSet.copyOf(huIds), I_M_HU.class);
+	}
+
+	@Override
+	public List<I_M_HU> getByIdsOutOfTrx(@NonNull final Collection<HuId> huIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(ImmutableSet.copyOf(huIds), I_M_HU.class);
 	}
 
 	@Override

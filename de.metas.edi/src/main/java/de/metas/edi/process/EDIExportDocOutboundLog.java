@@ -47,6 +47,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Loggables;
@@ -97,8 +98,8 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 	{
 		final ProcessInfo pi = getProcessInfo();
 
-		final int pInstanceId = getAD_PInstance_ID();
-		logger.info("AD_Pinstance_ID={}", pInstanceId);
+		final PInstanceId pinstanceId = getPinstanceId();
+		logger.info("AD_Pinstance_ID={}", pinstanceId);
 
 		//
 		// Create selection for PInstance and make sure we're enqueuing something
@@ -107,7 +108,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 				.addOnlyActiveRecordsFilter()
 				.filter(pi.getQueryFilter())
 				.create()
-				.createSelection(pInstanceId);
+				.createSelection(pinstanceId);
 
 		if (selectionCount == 0)
 		{
@@ -130,8 +131,8 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 
 		//
 		// Enqueue selected archives as workpackages
-		final int pInstanceId = getAD_PInstance_ID();
-		final List<I_EDI_Document_Extension> ediDocuments = retrieveValidSelectedDocuments(pInstanceId);
+		final PInstanceId pinstanceId = getPinstanceId();
+		final List<I_EDI_Document_Extension> ediDocuments = retrieveValidSelectedDocuments(pinstanceId);
 		for (final I_EDI_Document_Extension ediDocument : ediDocuments)
 		{
 			final I_C_Queue_Block block = queue.enqueueBlock(ctx);
@@ -150,7 +151,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 		return MSG_OK;
 	}
 
-	private final List<I_EDI_Document_Extension> retrieveValidSelectedDocuments(final int pInstanceId)
+	private final List<I_EDI_Document_Extension> retrieveValidSelectedDocuments(final PInstanceId pinstanceId)
 	{
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();
@@ -165,7 +166,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 						InterfaceWrapperHelper.getTableId(I_C_Invoice.class)
 				// , I_M_InOut.Table_ID
 				) // currently only export Invoices; InOuts are aggregated into EDI_Desadv records and exported as such
-				.setOnlySelection(pInstanceId);
+				.setOnlySelection(pinstanceId);
 
 		final List<I_C_Doc_Outbound_Log> logs = queryBuilder.create()
 				.list(I_C_Doc_Outbound_Log.class);

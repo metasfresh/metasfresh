@@ -72,7 +72,7 @@ public class C_Print_Job_Create extends AbstractPrintJobCreate
 				.setParameters(params)
 				.setClient_ID()
 				.setOnlyActiveRecords(true);
-		final int count = query.createSelection(getAD_PInstance_ID());
+		final int count = query.createSelection(getPinstanceId());
 
 		log.info("Query: {}", query);
 		log.info("Count: {}", count);

@@ -42,8 +42,6 @@ import de.metas.util.ISingletonService;
  */
 public interface IProcessingService extends ISingletonService
 {
-	public static final int NO_AD_PINSTANCE_ID = 0;
-
 	/**
 	 * 
 	 * @throws InvokeCommissionTypeException

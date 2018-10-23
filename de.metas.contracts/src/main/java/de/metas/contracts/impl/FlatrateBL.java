@@ -98,6 +98,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
@@ -1052,7 +1053,7 @@ public class FlatrateBL implements IFlatrateBL
 				extendContractAndNotifyUserIfRequired(currentRequest);
 
 				final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
-				currentTerm.setAD_PInstance_EndOfTerm_ID(currentRequest.getAD_PInstance_ID());
+				currentTerm.setAD_PInstance_EndOfTerm_ID(PInstanceId.toRepoId(currentRequest.getAD_PInstance_ID()));
 				InterfaceWrapperHelper.save(currentTerm);
 				if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
 				{

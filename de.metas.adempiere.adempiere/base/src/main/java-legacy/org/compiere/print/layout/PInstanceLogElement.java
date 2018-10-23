@@ -25,6 +25,7 @@ import org.compiere.util.DB;
 
 import de.metas.i18n.Msg;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoLog;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -40,10 +41,10 @@ public class PInstanceLogElement extends GridElement {
 	{
 		super (calculateRowCount(query, ctx), 4);
 		//
-		final int AD_PInstance_ID = query.getAD_PInstance_ID();
-		if (AD_PInstance_ID > 0)
+		final PInstanceId pinstanceId = query.getPinstanceId();
+		if (pinstanceId != null)
 		{
-			final List<ProcessInfoLog> logs = Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(AD_PInstance_ID);
+			final List<ProcessInfoLog> logs = Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(pinstanceId);
 			for (int r = 0; r < logs.size(); r++)
 			{
 				final ProcessInfoLog logRecord = logs.get(r);
@@ -78,11 +79,11 @@ public class PInstanceLogElement extends GridElement {
 	}
 	
 	private static int calculateRowCount(MQuery query, Properties ctx) {
-		int AD_PInstance_ID = query.getAD_PInstance_ID();
-		if (AD_PInstance_ID > 0) {
+		PInstanceId pinstanceId = query.getPinstanceId();
+		if (pinstanceId != null) {
 			String sql = "SELECT COUNT(*) FROM "+X_AD_PInstance_Log.Table_Name
 							+" WHERE "+X_AD_PInstance_Log.COLUMNNAME_AD_PInstance_ID+"=?";
-			int no = DB.getSQLValue(null, sql, AD_PInstance_ID);
+			int no = DB.getSQLValue(null, sql, pinstanceId);
 			if (no > 0) {
 				return no;
 			}

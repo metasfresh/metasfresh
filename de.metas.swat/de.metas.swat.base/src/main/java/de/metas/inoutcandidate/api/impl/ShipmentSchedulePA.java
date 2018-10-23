@@ -87,6 +87,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageAttributeSegment;
 import de.metas.storage.IStorageSegment;
@@ -433,7 +434,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * Note: The {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
 	@Override
-	public List<OlAndSched> retrieveInvalid(final int adPinstanceId, final String trxName)
+	public List<OlAndSched> retrieveInvalid(@NonNull final PInstanceId pinstanceId, final String trxName)
 	{
 		// 1.
 		// Mark the M_ShipmentSchedule_Recompute records that point to the scheds which we will work with
@@ -443,7 +444,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
 		final String sqlUpdate = " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
-				"SET AD_Pinstance_ID=" + adPinstanceId +
+				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
 				"FROM (" +
 				"	SELECT s.M_ShipmentSchedule_ID " +
 				"	FROM M_ShipmentSchedule s " +
@@ -456,12 +457,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		;
 		final Object[] sqlUpdateParams = null;
 		final int countTagged = DB.executeUpdateEx(sqlUpdate, sqlUpdateParams, ITrx.TRXNAME_None);
-		logger.debug("Marked {} entries for AD_Pinstance_ID={}", countTagged, adPinstanceId);
+		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
 
 		// 2.
 		// Load the scheds the are pointed to by our marked M_ShipmentSchedule_Recompute records
 		final int alsoRetriveSchedsWhichHaveAnInOutLine = 1;
-		final Object[] params = new Object[] { adPinstanceId, alsoRetriveSchedsWhichHaveAnInOutLine };
+		final Object[] params = new Object[] { pinstanceId, alsoRetriveSchedsWhichHaveAnInOutLine };
 
 		final IDatabaseBL db = Services.get(IDatabaseBL.class);
 		final List<X_M_ShipmentSchedule> schedules = db.retrieveList(SQL_SCHED_INVALID_3P, params, X_M_ShipmentSchedule.class, trxName);
@@ -685,7 +686,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		}
 	}
 
-	protected void invalidateSchedulesForSelection(final int adPInstanceId, final String trxName)
+	protected void invalidateSchedulesForSelection(final PInstanceId pinstanceId, final String trxName)
 	{
 		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID) "
 				+ "\n SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID
@@ -693,8 +694,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				+ "\n WHERE " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'"
 				+ "\n AND EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID = ? AND s.T_Selection_ID = M_ShipmentSchedule_ID)";
 
-		final int count = DB.executeUpdateEx(sql, new Object[] { adPInstanceId }, trxName);
-		logger.debug("Invalidated {} M_ShipmentSchedules for AD_PInstance_ID={}", count, adPInstanceId);
+		final int count = DB.executeUpdateEx(sql, new Object[] { pinstanceId }, trxName);
+		logger.debug("Invalidated {} M_ShipmentSchedules for AD_PInstance_ID={}", count, pinstanceId);
 		//
 		if (count > 0)
 		{
@@ -973,12 +974,13 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public void deleteRecomputeMarkers(final int adPInstanceId, final String trxName)
+	public void deleteRecomputeMarkers(final PInstanceId pinstanceId, final String trxName)
 	{
-		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=" + adPInstanceId;
+		final Object[] sqlParams = new Object[] { pinstanceId };
+		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=?";
 
-		final int result = DB.executeUpdateEx(sql, trxName);
-		logger.debug("Deleted {} {} entries for AD_Pinstance_ID={}", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId);
+		final int result = DB.executeUpdateEx(sql, sqlParams, trxName);
+		logger.debug("Deleted {} {} entries for AD_Pinstance_ID={}", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
 
 		// invalidate the shipment schedule cache after commit
 		Services.get(ITrxManager.class)
@@ -999,12 +1001,13 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public void releaseRecomputeMarker(final int adPInstanceId, final String trxName)
+	public void releaseRecomputeMarker(final PInstanceId pinstanceId, final String trxName)
 	{
-		final String sql = "UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " SET AD_PInstance_ID=NULL WHERE AD_PInstance_ID=" + adPInstanceId;
+		final Object[] sqlParams = new Object[] { pinstanceId };
+		final String sql = "UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " SET AD_PInstance_ID=NULL WHERE AD_PInstance_ID=?";
 
-		final int result = DB.executeUpdateEx(sql, trxName);
-		logger.debug("Updated {} {} entries for AD_Pinstance_ID={} and released the marker.", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId);
+		final int result = DB.executeUpdateEx(sql, sqlParams, trxName);
+		logger.debug("Updated {} {} entries for AD_Pinstance_ID={} and released the marker.", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
 	}
 
 	@Override
@@ -1080,16 +1083,16 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return result;
 	}
 
-	private String appendPInstanceIdAndUserId(final int adPInstanceId, final int adUserId)
+	private String appendPInstanceIdAndUserId(final PInstanceId pinstanceId, final int adUserId)
 	{
 		final StringBuilder sql = new StringBuilder();
 
 		sql.append("AD_PInstance_ID");
 
 		// note: PreparedStatement.setNull() doesn't work
-		if (adPInstanceId > 0)
+		if (pinstanceId != null)
 		{
-			sql.append("=" + adPInstanceId);
+			sql.append("=" + pinstanceId.getRepoId());
 		}
 		else
 		{
@@ -1178,7 +1181,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final String inoutCandidateColumnName,
 			final ValueType value,
 			final boolean updateOnlyIfNull,
-			final int selectionId,
+			final PInstanceId selectionId,
 			final boolean invalidate,
 			final String trxName)
 	{
@@ -1197,8 +1200,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		{
 			selectionQueryBuilder.addEqualsFilter(inoutCandidateColumnName, null);
 		}
-		final int selectionToUpdateId = selectionQueryBuilder.create().createSelection();
-		if (selectionToUpdateId <= 0)
+		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection();
+		if (selectionToUpdateId == null)
 		{
 			// nothing to update
 			return;
@@ -1222,7 +1225,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public void updateDeliveryDate_Override(final Timestamp deliveryDate, final int ADPinstance_ID, final String trxName)
+	public void updateDeliveryDate_Override(final Timestamp deliveryDate, final PInstanceId pinstanceId, final String trxName)
 	{
 		// No need of invalidation after deliveryDate update because it is not used for anything else than preparation date calculation.
 		// In case this calculation is needed, the invalidation will be done on preparation date updating
@@ -1234,14 +1237,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override,               // inoutCandidateColumnName
 				deliveryDate,               // value
 				false,               // updateOnlyIfNull
-				ADPinstance_ID,               // selectionId
+				pinstanceId,               // selectionId
 				invalidate,               // invalidate schedules = false
 				trxName // trxName
 		);
 	}
 
 	@Override
-	public void updatePreparationDate_Override(final Timestamp preparationDate, final int ADPinstance_ID, final String trxName)
+	public void updatePreparationDate_Override(final Timestamp preparationDate, final PInstanceId pinstanceId, final String trxName)
 	{
 		// in case the preparation date is given, it will only be set. No Invalidation needed
 		// in case it is not given (null) an invalidation is needed because it will be calculated based on the delivery date
@@ -1256,7 +1259,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,               // inoutCandidateColumnName
 				preparationDate,               // value
 				false,               // updateOnlyIfNull
-				ADPinstance_ID,               // selectionId
+				pinstanceId,               // selectionId
 				invalidate,               // invalidate schedules
 				trxName // trxName
 		);

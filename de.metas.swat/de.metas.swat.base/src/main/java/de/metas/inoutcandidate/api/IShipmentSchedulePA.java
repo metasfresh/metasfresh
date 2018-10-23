@@ -20,6 +20,7 @@ import org.compiere.model.MOrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageSegment;
 import de.metas.util.ISingletonService;
@@ -119,7 +120,7 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 *
 	 * @return the {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
-	List<OlAndSched> retrieveInvalid(int adPinstanceId, String trxName);
+	List<OlAndSched> retrieveInvalid(PInstanceId adPinstanceId, String trxName);
 
 	/**
 	 * Returns <code>true</code> if there is a <code>M_ShipmentSchedule_Recompute</code> record pointing at the given <code>sched</code>.
@@ -191,10 +192,10 @@ public interface IShipmentSchedulePA extends ISingletonService
 	void invalidateAll(Properties ctx);
 
 	/** Delete M_ShipmentSchedule_Recompute records for given tag */
-	void deleteRecomputeMarkers(int adPInstanceId, String trxName);
+	void deleteRecomputeMarkers(PInstanceId adPInstanceId, String trxName);
 
 	/** Untag M_ShipmentSchedule_Recompute records which were tagged with given tag */
-	void releaseRecomputeMarker(int adPInstanceId, String trxName);
+	void releaseRecomputeMarker(PInstanceId adPInstanceId, String trxName);
 
 	void setIsDiplayedForProduct(int productId, boolean displayed, String trxName);
 
@@ -210,22 +211,14 @@ public interface IShipmentSchedulePA extends ISingletonService
 	/**
 	 * Mass update DeliveryDate_Override
 	 * No invalidation.
-	 *
-	 * @param deliveryDate
-	 * @param ADPinstance_ID
-	 * @param trxName
 	 */
-	void updateDeliveryDate_Override(Timestamp deliveryDate, int ADPinstance_ID, String trxName);
+	void updateDeliveryDate_Override(Timestamp deliveryDate, PInstanceId pinstanceId, String trxName);
 
 	/**
 	 * Mass update PreparationDate_Override
 	 * Invalidation in case preparationDate is null
-	 *
-	 * @param preparationDate
-	 * @param ADPinstance_ID
-	 * @param trxName
 	 */
-	void updatePreparationDate_Override(Timestamp preparationDate, int ADPinstance_ID, String trxName);
+	void updatePreparationDate_Override(Timestamp preparationDate, PInstanceId pinstanceId, String trxName);
 
 	/**
 	 * Create selection based on the userSelectionFilter and ad_Pinstance_ID

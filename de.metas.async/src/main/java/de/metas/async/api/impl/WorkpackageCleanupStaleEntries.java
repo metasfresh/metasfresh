@@ -34,6 +34,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
@@ -69,7 +70,7 @@ public class WorkpackageCleanupStaleEntries
 	private Properties _ctx;
 	private Date _staleDateFrom;
 	private String _staleErrorMsg;
-	private int _adPInstanceId = -1;
+	private PInstanceId _adPInstanceId;
 	private ILoggable logger = NullLoggable.instance;
 
 	// Status
@@ -179,10 +180,10 @@ public class WorkpackageCleanupStaleEntries
 		final String baseErrorMsg = getStaleErrorMsg();
 		errorMsg.append(baseErrorMsg);
 
-		final int adPInstanceId = getAD_PInstance_ID();
-		if (adPInstanceId > 0)
+		final PInstanceId adPInstanceId = getPinstanceId();
+		if (adPInstanceId != null)
 		{
-			errorMsg.append("; Updated by AD_PInstance_ID=").append(adPInstanceId);
+			errorMsg.append("; Updated by AD_PInstance_ID=").append(adPInstanceId.getRepoId());
 		}
 
 		return errorMsg.toString();
@@ -206,13 +207,13 @@ public class WorkpackageCleanupStaleEntries
 	 * 
 	 * @param adPInstanceId
 	 */
-	public WorkpackageCleanupStaleEntries setAD_PInstance_ID(final int adPInstanceId)
+	public WorkpackageCleanupStaleEntries setAD_PInstance_ID(final PInstanceId adPInstanceId)
 	{
 		this._adPInstanceId = adPInstanceId;
 		return this;
 	}
 
-	private int getAD_PInstance_ID()
+	private PInstanceId getPinstanceId()
 	{
 		return _adPInstanceId;
 	}
