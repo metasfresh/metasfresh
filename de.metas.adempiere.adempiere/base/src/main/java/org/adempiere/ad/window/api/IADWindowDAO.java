@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
@@ -83,4 +84,13 @@ public interface IADWindowDAO extends ISingletonService
 	void copyWindow(int targetWindowId, int sourceWindowId);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
+
+	List<I_AD_Tab> retrieveTabsWithMissingElements();
+
+	List<I_AD_Window> retrieveWindowsWithMissingElements();
+
+	public static final ModelDynAttributeAccessor<I_AD_Tab, Boolean> DYNATTR_AD_Tab_UpdateTranslations = new ModelDynAttributeAccessor<>("AD_Tab_UpdateTranslations", Boolean.class);
+
+	public static final ModelDynAttributeAccessor<I_AD_Window, Boolean> DYNATTR_AD_Window_UpdateTranslations = new ModelDynAttributeAccessor<>("AD_Window_UpdateTranslations", Boolean.class);
+
 }

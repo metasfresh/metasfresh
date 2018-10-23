@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.menu.api.IADMenuDAO;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -54,6 +55,12 @@ public class AD_Menu
 	@CalloutMethod(columnNames = I_AD_Menu.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Menu menu) throws SQLException
 	{
+		if (!IADMenuDAO.DYNATTR_AD_Menu_UpdateTranslations.getValue(menu))
+		{
+			// do not copy translations from element to menu
+			return;
+		}
+
 		final I_AD_Element menuElement = menu.getAD_Element();
 
 		if (menuElement == null)

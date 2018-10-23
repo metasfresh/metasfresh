@@ -8,6 +8,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.ModelValidator;
@@ -52,6 +53,13 @@ public class AD_Window
 	@CalloutMethod(columnNames = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Window window) throws SQLException
 	{
+
+		if (!IADWindowDAO.DYNATTR_AD_Window_UpdateTranslations.getValue(window))
+		{
+			// do not copy translations from element to window
+			return;
+		}
+
 		final I_AD_Element windowElement = window.getAD_Element();
 
 		if (windowElement == null)
@@ -70,7 +78,7 @@ public class AD_Window
 	public void updateTranslationsForElement(final I_AD_Window window)
 	{
 		final int windowElementId = window.getAD_Element_ID();
-		if(windowElementId <= 0)
+		if (windowElementId <= 0)
 		{
 			// nothing to do. It was not yet set
 			return;

@@ -36,6 +36,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -874,6 +875,32 @@ public class ADWindowDAO implements IADWindowDAO
 		return queryBuilder.orderBy()
 				.addColumn(I_AD_Field.COLUMNNAME_AD_Field_ID)
 				.endOrderBy();
+	}
+
+	@Override
+	public List<I_AD_Tab> retrieveTabsWithMissingElements()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.setJoinOr()
+				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Element_ID, null)
+				.addCompareFilter(I_AD_Tab.COLUMN_AD_Element_ID, Operator.LESS_OR_EQUAL, 0)
+				.create()
+				.list(I_AD_Tab.class);
+	}
+
+	@Override
+	public List<I_AD_Window> retrieveWindowsWithMissingElements()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.setJoinOr()
+				.addEqualsFilter(I_AD_Window.COLUMN_AD_Element_ID, null)
+				.addCompareFilter(I_AD_Window.COLUMN_AD_Element_ID, Operator.LESS_OR_EQUAL, 0)
+				.create()
+				.list(I_AD_Window.class);
 	}
 
 }
