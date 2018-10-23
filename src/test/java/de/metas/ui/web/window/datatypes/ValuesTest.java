@@ -45,7 +45,7 @@ public class ValuesTest
 		assertValueToJsonObject(LocalDate.of(2018, 10, 11)).isEqualTo("2018-10-11T00:00:00.000+02:00");
 		assertValueToJsonObject(LocalDateTime.of(2018, 10, 11, 3, 4, 5)).isEqualTo("2018-10-11T03:04:05.000+02:00");
 		assertValueToJsonObject(ZonedDateTime.of(2018, 10, 11, 3, 4, 5, 0, zoneId)).isEqualTo("2018-10-11T03:04:05.000+02:00");
-		assertValueToJsonObject(LocalTime.of(3, 4, 5)).isEqualTo("1970-01-01T03:04:05.000+02:00");
+		assertValueToJsonObject(LocalTime.of(3, 4, 5)).isEqualTo("1970-01-01T03:04:05.000+01:00");
 	}
 
 	private AbstractObjectAssert<?, Object> assertValueToJsonObject(final Object value)

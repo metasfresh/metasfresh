@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -60,6 +61,7 @@ public final class JSONDate
 
 	private static final SimpleDateFormatThreadLocal TIMEZONE_FORMAT = new SimpleDateFormatThreadLocal("XXX");
 
+	private static final LocalDate DATE_1970_01_01 = LocalDate.of(1970, Month.JANUARY, 1);
 	private static ZoneId fixedSystemZoneId = null; // used for testing
 
 	private static ZoneId getSystemZoneId()
@@ -115,7 +117,7 @@ public final class JSONDate
 
 	public static String toJson(final LocalTime time)
 	{
-		return toJson(TimeUtil.asZonedDateTime(time));
+		return toJson(time.atDate(DATE_1970_01_01).atZone(getSystemZoneId()));
 	}
 
 	public static String toJson(final ZonedDateTime date)
