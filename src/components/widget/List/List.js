@@ -40,7 +40,7 @@ class ListWidget extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { autoFocus: nextAutoFocus } = nextProps;
     const { autoFocus, isModal } = this.props;
 

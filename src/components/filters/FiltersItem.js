@@ -37,7 +37,7 @@ class FiltersItem extends Component {
     this.init();
   }
 
-  componentWillReceiveProps(props) {
+  UNSAFE_componentWillReceiveProps(props) {
     const { active } = this.props;
 
     if (JSON.stringify(active) !== JSON.stringify(props.active)) {

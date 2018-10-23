@@ -70,7 +70,7 @@ export class QuickActions extends Component {
     this.mounted = false;
   };
 
-  componentWillReceiveProps = nextProps => {
+  UNSAFE_componentWillReceiveProps = nextProps => {
     const { selected, viewId, windowType } = this.props;
 
     if (

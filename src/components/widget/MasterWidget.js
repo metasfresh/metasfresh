@@ -33,7 +33,7 @@ class MasterWidget extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { widgetData } = this.props;
     const { edited } = this.state;
 

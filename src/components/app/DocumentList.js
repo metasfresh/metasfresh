@@ -53,7 +53,7 @@ import Table from '../table/Table';
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 
-class DocumentList extends Component {
+export class DocumentList extends Component {
   constructor(props) {
     super(props);
 
@@ -97,7 +97,7 @@ class DocumentList extends Component {
     disconnectWS.call(this);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       defaultPage: nextDefaultPage,
       defaultSort: nextDefaultSort,

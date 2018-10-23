@@ -51,7 +51,7 @@ class Lookup extends Component {
     this.checkIfDefaultValue();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { defaultValue, selected } = this.props;
 
     if (

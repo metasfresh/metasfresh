@@ -38,7 +38,7 @@ class Translation extends Component {
     Translation.getMessages();
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.language !== this.props.language) {
       Translation.getMessages();
     }
