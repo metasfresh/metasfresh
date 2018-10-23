@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -137,18 +136,18 @@ public class CacheInvalidateMultiRequest
 		return Objects.equals(tableName, tableNameEffective);
 	}
 
-	public Set<TableRecordReference> getRecordsEffective()
+	public TableRecordReferenceSet getRecordsEffective()
 	{
 		return requests.stream()
 				.map(CacheInvalidateRequest::getRecordEffective)
-				.collect(ImmutableSet.toImmutableSet());
+				.collect(TableRecordReferenceSet.collect());
 	}
 
-	public Set<TableRecordReference> getRootRecords()
+	public TableRecordReferenceSet getRootRecords()
 	{
 		return requests.stream()
 				.map(CacheInvalidateRequest::getRootRecordOrNull)
 				.filter(Predicates.notNull())
-				.collect(ImmutableSet.toImmutableSet());
+				.collect(TableRecordReferenceSet.collect());
 	}
 }
