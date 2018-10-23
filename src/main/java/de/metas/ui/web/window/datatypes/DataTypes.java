@@ -250,6 +250,10 @@ public final class DataTypes
 			// this is not allowed for consistency. let it fail.
 			throw new AdempiereException("Converting Map to String is not allowed for consistency. Might be a development error");
 		}
+		else if (value instanceof LookupValue)
+		{
+			return ((LookupValue)value).getIdAsString();
+		}
 		// For any other case, blindly convert it to string
 		else
 		{
