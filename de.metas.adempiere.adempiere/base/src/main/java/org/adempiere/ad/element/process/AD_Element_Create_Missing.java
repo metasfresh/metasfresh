@@ -6,11 +6,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.List;
 
 import org.adempiere.ad.menu.api.IADMenuDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Window;
+import org.compiere.model.MColumn;
 
 import de.metas.process.JavaProcess;
 import de.metas.translation.api.IElementTranslationBL;
@@ -44,10 +48,11 @@ public class AD_Element_Create_Missing extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		createAndLinkElementsForTabs();
-		make_AD_Element_Mandatory_In_AD_Tab();
 		createAndLinkElementsForWindows();
-		make_AD_Element_Mandatory_In_AD_Window();
 		createAndLinkElementsForMenus();
+
+		make_AD_Element_Mandatory_In_AD_Tab();
+		make_AD_Element_Mandatory_In_AD_Window();
 		make_AD_Element_Mandatory_In_AD_Menu();
 
 		return MSG_OK;
@@ -55,19 +60,33 @@ public class AD_Element_Create_Missing extends JavaProcess
 
 	private void make_AD_Element_Mandatory_In_AD_Menu()
 	{
-		// TODO Auto-generated method stub
+		final I_AD_Column elementIdColumn = Services.get(IADTableDAO.class).retrieveColumn(I_AD_Menu.Table_Name, I_AD_Menu.COLUMNNAME_AD_Element_ID);
 
+		makeElementColumnMandatory (elementIdColumn);
 	}
 
 	private void make_AD_Element_Mandatory_In_AD_Window()
 	{
-		// TODO Auto-generated method stub
+		final I_AD_Column elementIdColumn = Services.get(IADTableDAO.class).retrieveColumn(I_AD_Window.Table_Name, I_AD_Window.COLUMNNAME_AD_Element_ID);
 
+		makeElementColumnMandatory (elementIdColumn);
 	}
 
 	private void make_AD_Element_Mandatory_In_AD_Tab()
 	{
-		// TODO Auto-generated method stub
+		final I_AD_Column elementIdColumn = Services.get(IADTableDAO.class).retrieveColumn(I_AD_Tab.Table_Name, I_AD_Tab.COLUMNNAME_AD_Element_ID);
+
+		makeElementColumnMandatory (elementIdColumn);
+	}
+
+
+	private void makeElementColumnMandatory(final I_AD_Column elementIdColumn)
+	{
+		elementIdColumn.setIsMandatory(true);
+		save(elementIdColumn);
+
+		final MColumn columnPO = LegacyAdapters.convertToPO(elementIdColumn);
+		columnPO.syncDatabase();
 
 	}
 
@@ -87,7 +106,7 @@ public class AD_Element_Create_Missing extends JavaProcess
 
 			final int elementId = element.getAD_Element_ID();
 
-			Services.get(IElementTranslationBL.class).updateElementTranslationsFromTab(elementId, tab.getAD_Window_ID());
+			Services.get(IElementTranslationBL.class).updateElementTranslationsFromTab(elementId, tab.getAD_Tab_ID());
 
 			IADWindowDAO.DYNATTR_AD_Tab_UpdateTranslations.setValue(tab, false);
 
