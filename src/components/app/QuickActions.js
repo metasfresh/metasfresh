@@ -19,7 +19,7 @@ const initialState = {
   loading: false,
 };
 
-class QuickActions extends Component {
+export class QuickActions extends Component {
   static propTypes = {
     // from @connect
     dispatch: PropTypes.func.isRequired,

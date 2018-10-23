@@ -1,11 +1,11 @@
 import React from 'react';
-// import { mount, shallow, render } from 'enzyme';
+import { mount, shallow, render } from 'enzyme';
 import nock from 'nock';
 import { connect } from 'react-redux';
 import { shallowWithStore } from 'enzyme-redux';
 import { createMockStore } from 'redux-test-utils';
 
-import QuickActions from '../../components/app/QuickActions';
+import { QuickActions } from '../../components/app/QuickActions';
 import fixtures from '../../../test_setup/fixtures/quickactions.json';
 
 const createDummyProps = function(props) {
@@ -47,36 +47,10 @@ describe('QuickActions standalone component', () => {
 
     it('renders nothing when no actions', () => {
       const props = createDummyProps({ viewId: '540485-a' });
-      const QAComponent = () => (<QuickActions {...props} />);
 
-      // const wrapper = mount(<QuickActions {...props} />);
-      const ConnectedComponent = connect(false, false)(QAComponent);
-      const component = shallowWithStore(<ConnectedComponent />, createMockStore('test'));
-      // expect(component.props().state).toBe(expectedState); 
+      const wrapper = shallow(<QuickActions {...props} />);
 
-      expect(component.html()).not.toContain('quick-actions-wrapper');
-      // expect(wrapper.find('input').length).toBe(1);
-      // expect(wrapper.find('input').html()).toContain(
-      //   'Testpreisliste Lieferanten'
-      // );
+      expect(wrapper.html()).toBe(null);
     });
-
-    // it('renders without errors', () => {
-    //   const props = createDummyProps(
-    //     {
-    //       ...fixtures.data1.widgetProps,
-    //       isFocused: true,
-    //     },
-    //     fixtures.data1.listData
-    //   );
-
-    //   const wrapper = mount(<RawList {...props} />);
-
-    //   expect(wrapper.html()).toContain('focused');
-    //   expect(wrapper.find('input').length).toBe(1);
-    //   expect(wrapper.find('input').html()).toContain(
-    //     'Testpreisliste Lieferanten'
-    //   );
-    // });
   });
 });
