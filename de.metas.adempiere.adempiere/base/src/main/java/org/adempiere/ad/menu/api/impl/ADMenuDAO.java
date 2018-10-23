@@ -3,7 +3,6 @@ package org.adempiere.ad.menu.api.impl;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.menu.api.IADMenuDAO;
 import org.compiere.model.I_AD_Menu;
 
@@ -40,9 +39,7 @@ public class ADMenuDAO implements IADMenuDAO
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Menu.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.setJoinOr()
 				.addEqualsFilter(I_AD_Menu.COLUMN_AD_Element_ID, null)
-				.addCompareFilter(I_AD_Menu.COLUMN_AD_Element_ID, Operator.LESS_OR_EQUAL, 0)
 				.create()
 				.list(I_AD_Menu.class);
 	}
