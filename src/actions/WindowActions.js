@@ -5,6 +5,9 @@ import SockJs from 'sockjs-client';
 import currentDevice from 'current-device';
 import Stomp from 'stompjs/lib/stomp.min.js';
 import Moment from 'moment';
+import { DateTime } from 'luxon';
+// import { isLuxonObject } from '../utils';
+
 import { Set } from 'immutable';
 
 import {
@@ -1286,18 +1289,24 @@ export function parseToDisplay(fieldsByName) {
 // i.e 2018-01-27T17:00:00.000-06:00
 export function parseDateWithCurrenTimezone(value) {
   if (value) {
-    if (value instanceof Date) {
-      return value;
-    } else if (Moment.isMoment(value)) {
-      return new Date(value);
+    let luxonOffset = 0;
+
+    if (!Moment.isMoment(value)) {
+      if (value instanceof Date) {
+        luxonOffset = DateTime.fromISO(value.toISOString()).offset;
+      } else {
+        luxonOffset = DateTime.fromISO(value).offset;
+      }
+
+      value = Moment(value);
     } else {
-      const TIMEZONE_STRING_LENGTH = 7;
-      const newValue = value.substring(
-        0,
-        value.length - TIMEZONE_STRING_LENGTH
-      );
-      return new Date(newValue);
+      luxonOffset = DateTime.fromISO(value.toISO()).offset;
     }
+
+    const tempDate = Moment(value);
+    tempDate.utcOffset(luxonOffset);
+
+    return tempDate;
   }
   return '';
 }

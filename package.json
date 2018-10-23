@@ -115,6 +115,7 @@
     "intro.js": "^2.7.0",
     "intro.js-react": "^0.1.5",
     "lodash": "^4.17.4",
+    "luxon": "^1.3.3",
     "moment": "~2.21.0",
     "node-uuid": "^1.4.8",
     "numeral": "^2.0.6",
