@@ -21,7 +21,7 @@ public class M_HU
 	}
 
 	@ModelChange( //
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = I_M_HU.COLUMNNAME_M_Locator_ID //
 	)
 	public void preventMovingSourceHu(@NonNull final I_M_HU hu)
