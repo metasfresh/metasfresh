@@ -28,6 +28,7 @@ import {
   PATCH_SUCCESS,
   REMOVE_TABLE_ITEMS_SELECTION,
   SELECT_TABLE_ITEMS,
+  DESELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
   TOGGLE_OVERLAY,
@@ -403,6 +404,13 @@ export function removeSelectedTableItems({ windowType, viewId }) {
 export function selectTableItems({ ids, windowType, viewId }) {
   return {
     type: SELECT_TABLE_ITEMS,
+    payload: { ids, windowType, viewId },
+  };
+}
+
+export function deselectTableItems(ids, windowType, viewId) {
+  return {
+    type: DESELECT_TABLE_ITEMS,
     payload: { ids, windowType, viewId },
   };
 }
