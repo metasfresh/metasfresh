@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute.impl;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -23,7 +25,6 @@ package de.metas.handlingunits.attribute.impl;
  */
 
 import java.util.Comparator;
-import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeId;
 
@@ -48,7 +49,7 @@ public final class HUAttributesBySeqNoComparator implements Comparator<I_M_HU_At
 	{
 		return new HUAttributesBySeqNoComparator(piAttributes);
 	}
-
+	
 	private final PIAttributes piAttributes;
 
 	private HUAttributesBySeqNoComparator(@NonNull final PIAttributes piAttributes)
@@ -88,7 +89,7 @@ public final class HUAttributesBySeqNoComparator implements Comparator<I_M_HU_At
 		return seqNo != 0 ? seqNo : Integer.MAX_VALUE;
 	}
 
-	public ImmutableList<I_M_HU_Attribute> sortAndCopy(List<I_M_HU_Attribute> huAttributes)
+	public ImmutableList<I_M_HU_Attribute> sortAndCopy(final Collection<I_M_HU_Attribute> huAttributes)
 	{
 		return huAttributes.stream()
 				.sorted(this)

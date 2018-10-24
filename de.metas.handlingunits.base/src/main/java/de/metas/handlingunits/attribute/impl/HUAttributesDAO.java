@@ -8,26 +8,21 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
-import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public final class HUAttributesDAO implements IHUAttributesDAO
 {
-	private static final Logger logger = LogManager.getLogger(HUAttributesDAO.class);
-
 	public static final HUAttributesDAO instance = new HUAttributesDAO();
 
 	private HUAttributesDAO()
@@ -55,13 +50,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	public void initHUAttributes(final I_M_HU hu)
-	{
-		// nothing
-	}
-
-	@Override
-	public List<I_M_HU_Attribute> retrieveAttributesOrdered(final I_M_HU hu)
+	public HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
 		// NOTE: don't cache on this level. Caching is handled on upper levels
 
@@ -79,20 +68,19 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 			huAttribute.setM_HU(hu);
 		}
 
-		final PIAttributes piAttributes;
-		final HuPackingInstructionsVersionId piVersionId = Services.get(IHandlingUnitsBL.class).getEffectivePIVersionId(hu);
-		if (piVersionId != null)
-		{
-			piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributes(piVersionId);
-		}
-		else
-		{
-			logger.warn("No PI Version found for {}", hu);
-			final ImmutableSet<Integer> piAttributeIds = huAttributes.stream().map(I_M_HU_Attribute::getM_HU_PI_Attribute_ID).collect(ImmutableSet.toImmutableSet());
-			piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributesByIds(piAttributeIds);
-		}
+		final PIAttributes piAttributes = createPIAttributes(huAttributes);
 
-		return HUAttributesBySeqNoComparator.of(piAttributes).sortAndCopy(huAttributes);
+		final ImmutableList<I_M_HU_Attribute> huAttributesSorted = HUAttributesBySeqNoComparator.of(piAttributes).sortAndCopy(huAttributes);
+		return HUAndPIAttributes.of(huAttributesSorted, piAttributes);
+	}
+
+	private PIAttributes createPIAttributes(final List<I_M_HU_Attribute> huAttributes)
+	{
+		final IHUPIAttributesDAO piAttributesRepo = Services.get(IHUPIAttributesDAO.class);
+
+		final ImmutableSet<Integer> piAttributeIds = huAttributes.stream().map(I_M_HU_Attribute::getM_HU_PI_Attribute_ID).collect(ImmutableSet.toImmutableSet());
+		final PIAttributes piAttributes = piAttributesRepo.retrievePIAttributesByIds(piAttributeIds);
+		return piAttributes;
 	}
 
 	private final List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)

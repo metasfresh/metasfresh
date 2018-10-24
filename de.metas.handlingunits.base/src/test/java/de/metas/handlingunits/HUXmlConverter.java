@@ -125,7 +125,7 @@ public class HUXmlConverter
 		//
 		// HU Attribute
 		final IHUAttributesDAO huAttributesDAO = HUAttributesDAO.instance;
-		final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu);
+		final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes();
 		for (final I_M_HU_Attribute attr : attrs)
 		{
 			createNodeFromModel(node, attr);

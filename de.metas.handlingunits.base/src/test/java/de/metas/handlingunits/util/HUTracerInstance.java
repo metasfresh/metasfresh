@@ -190,7 +190,7 @@ public class HUTracerInstance
 		// HU Attributes
 		final String linePrefix2 = linePrefix + linePrefixIncrement;
 		final IHUAttributesDAO huAttributesDAO = getHUAttributesDAO();
-		final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu);
+		final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes();
 		if (attrs != null && !attrs.isEmpty())
 		{
 			out.append(linePrefix2).append("Attributes: \n");

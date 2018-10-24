@@ -103,6 +103,11 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 	@Override
 	public PIAttributes retrievePIAttributesByIds(@NonNull final Set<Integer> piAttributeIds)
 	{
+		if (piAttributeIds.isEmpty())
+		{
+			return PIAttributes.EMPTY;
+		}
+		
 		List<I_M_HU_PI_Attribute> piAttributesList = loadByIdsOutOfTrx(piAttributeIds, I_M_HU_PI_Attribute.class);
 		return PIAttributes.of(piAttributesList);
 	}
