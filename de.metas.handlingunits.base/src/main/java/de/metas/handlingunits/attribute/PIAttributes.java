@@ -78,7 +78,7 @@ public final class PIAttributes implements Iterable<I_M_HU_PI_Attribute>
 		final I_M_HU_PI_Attribute piAttribute = getByAttributeIdOrNull(attributeId);
 		if (piAttribute == null)
 		{
-			throw new AdempiereException("No " + attributeId + "found in " + this);
+			throw new AdempiereException("No " + attributeId + " found. Available attributeIds are:  " + getAttributeIds());
 		}
 		return piAttribute;
 	}
