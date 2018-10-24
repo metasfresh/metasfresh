@@ -21,16 +21,18 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 
 /**
  *	Alert Processor
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MAlertProcessor.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
@@ -38,7 +40,7 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 	implements AdempiereProcessor
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 9060358751064718910L;
 
@@ -50,7 +52,7 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 	 */
 	public static MAlertProcessor[] getActive (Properties ctx)
 	{
-		ArrayList<MAlertProcessor> list = new ArrayList<MAlertProcessor>();
+		ArrayList<MAlertProcessor> list = new ArrayList<>();
 		String sql = "SELECT * FROM AD_AlertProcessor WHERE IsActive='Y'";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -78,7 +80,7 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MAlertProcessor.class);
 
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -102,12 +104,13 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 	}	//	MAlertProcessor
 
 	/** Cache: AD_AlertProcessor -> Alerts array */
-	private static CCache<Integer, MAlert[]> s_cacheAlerts = new CCache<Integer, MAlert[]>("AD_Alert_ForProcessor", 10);
+	private static CCache<Integer, MAlert[]> s_cacheAlerts = new CCache<>("AD_Alert_ForProcessor", 10);
 
 	/**
 	 * 	Get Server ID
 	 *	@return id
 	 */
+	@Override
 	public String getServerID ()
 	{
 		return "AlertProcessor" + get_ID();
@@ -118,6 +121,7 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 	 *	@param requery requery
 	 *	@return date next run
 	 */
+	@Override
 	public Timestamp getDateNextRun (boolean requery)
 	{
 		if (requery)
@@ -129,12 +133,13 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 	 * 	Get Logs
 	 *	@return logs
 	 */
+	@Override
 	public AdempiereProcessorLog[] getLogs ()
 	{
-		ArrayList<MAlertProcessorLog> list = new ArrayList<MAlertProcessorLog>();
+		ArrayList<MAlertProcessorLog> list = new ArrayList<>();
 		String sql = "SELECT * "
 			+ "FROM AD_AlertProcessorLog "
-			+ "WHERE AD_AlertProcessor_ID=? " 
+			+ "WHERE AD_AlertProcessor_ID=? "
 			+ "ORDER BY Created DESC";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -169,13 +174,13 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 		if (getKeepLogDays() < 1)
 			return 0;
 		String sql = "DELETE FROM AD_AlertProcessorLog "
-			+ "WHERE AD_AlertProcessor_ID=" + getAD_AlertProcessor_ID() 
+			+ "WHERE AD_AlertProcessor_ID=" + getAD_AlertProcessor_ID()
 			+ " AND (Created+" + getKeepLogDays() + ") < now()";
 		int no = DB.executeUpdate(sql, get_TrxName());
 		return no;
 	}	//	deleteLog
 
-	
+
 	/**
 	 * 	Get Alerts
 	 *	@param reload reload data
@@ -188,7 +193,7 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 			return alerts;
 		String sql = "SELECT * FROM AD_Alert "
 			+ "WHERE AD_AlertProcessor_ID=? AND IsActive='Y' ";
-		ArrayList<MAlert> list = new ArrayList<MAlert>();
+		ArrayList<MAlert> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -214,5 +219,11 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 		s_cacheAlerts.put(get_ID(), alerts);
 		return alerts;
 	}	//	getAlerts
+
+	@Override
+	public boolean saveOutOfTrx()
+	{
+		return save(ITrx.TRXNAME_None);
+	}
 
 }	//	MAlertProcessor

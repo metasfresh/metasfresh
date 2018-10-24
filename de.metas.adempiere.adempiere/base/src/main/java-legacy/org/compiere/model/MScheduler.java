@@ -24,6 +24,7 @@ import java.util.TreeSet;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.security.IRoleDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 
@@ -41,7 +42,7 @@ public class MScheduler extends X_AD_Scheduler
 	implements AdempiereProcessor, AdempiereProcessor2
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6563650236096742870L;
 
@@ -142,7 +143,7 @@ public class MScheduler extends X_AD_Scheduler
 
 	/**
 	 * Delete old Request Log
-	 * 
+	 *
 	 * @param trxName
 	 * @return number of records deleted
 	 */
@@ -179,7 +180,7 @@ public class MScheduler extends X_AD_Scheduler
 				}
 			}
 		}
-		
+
 		return _parameters;
 	}	//	getParameter
 
@@ -227,7 +228,7 @@ public class MScheduler extends X_AD_Scheduler
 			}
 		}
 		//	Add Updater
-		if (list.size() == 0 
+		if (list.size() == 0
 				&& getUpdatedBy() > 0 // avoid sending mails/notfications to the "System" user
 				)
 		{
@@ -279,5 +280,11 @@ public class MScheduler extends X_AD_Scheduler
 		sb.append (get_ID ()).append ("-").append (getName()).append ("]");
 		return sb.toString ();
 	}	//	toString
+
+	@Override
+	public boolean saveOutOfTrx()
+	{
+		return save(ITrx.TRXNAME_None);
+	}
 
 }	//	MScheduler

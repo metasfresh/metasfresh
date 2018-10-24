@@ -342,7 +342,7 @@ public abstract class AdempiereServer extends Thread
 		//
 		p_model.setDateLastRun(lastRun);
 		p_model.setDateNextRun(new Timestamp(m_nextWork));
-		save(p_model, ITrx.TRXNAME_None);
+		p_model.saveOutOfTrx();
 
 		log.debug(getName() + ": " + getStatistics());
 
