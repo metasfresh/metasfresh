@@ -93,7 +93,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 
 		if (attribute != null)
 		{
-			assertModelEquals(messageActual.expect("M_Attribute_ID"), attribute.getM_Attribute_ID(), huAttribute.getM_Attribute_ID());
+			assertEquals(messageActual.expect("M_Attribute_ID"), attribute.getM_Attribute_ID(), huAttribute.getM_Attribute_ID());
 		}
 		if (attributeKey != null)
 		{
@@ -103,7 +103,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		}
 		if (piAttribute != null)
 		{
-			assertModelEquals(messageActual.expect("M_HU_PI_Attribute_ID"), piAttribute.getM_HU_PI_Attribute_ID(), huAttribute.getM_HU_PI_Attribute_ID());
+			assertEquals(messageActual.expect("M_HU_PI_Attribute_ID"), piAttribute.getM_HU_PI_Attribute_ID(), huAttribute.getM_HU_PI_Attribute_ID());
 		}
 		if (valueStringSet)
 		{
