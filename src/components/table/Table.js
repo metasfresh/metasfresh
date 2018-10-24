@@ -43,6 +43,9 @@ class Table extends Component {
     onSelectionChanged: PropTypes.func,
     onRowEdited: PropTypes.func,
     defaultSelected: PropTypes.array,
+
+    disableOnClickOutside: PropTypes.func,
+    limitOnClickOutside: PropTypes.bool,
   };
 
   _isMounted = false;
@@ -474,6 +477,7 @@ class Table extends Component {
       windowType,
       inBackground,
       allowOutsideClick,
+      limitOnClickOutside,
     } = this.props;
 
     if (
@@ -481,7 +485,12 @@ class Table extends Component {
       event.target.parentNode !== document &&
       event.target.parentNode &&
       !event.target.parentNode.className.includes('notification') &&
-      !inBackground
+      !inBackground &&
+      (limitOnClickOutside &&
+        event.target.parentNode.className.includes('document-list-included') &&
+        event.target.parentNode.className.includes(
+          'document-list-has-included'
+        ))
     ) {
       const item = event.path || (event.composedPath && event.composedPath());
 

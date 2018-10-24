@@ -924,6 +924,7 @@ class DocumentList extends Component {
                 tabIndex={0}
                 indentSupported={layout.supportTree}
                 disableOnClickOutside={clickOutsideLock}
+                limitOnClickOutside={isIncluded && isModal}
                 defaultSelected={selected}
                 refreshSelection={refreshSelection}
                 queryLimitHit={data.queryLimitHit}
