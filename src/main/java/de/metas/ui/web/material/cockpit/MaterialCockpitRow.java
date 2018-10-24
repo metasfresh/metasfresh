@@ -2,6 +2,14 @@ package de.metas.ui.web.material.cockpit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -9,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -49,12 +55,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.collections.ListUtils;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.ToString;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -81,7 +81,8 @@ import lombok.ToString;
 @EqualsAndHashCode(of = "documentId")
 public class MaterialCockpitRow implements IViewRow
 {
-	private static final String SYSCFG_PREFIX = "de.metas.ui.web.material.cockpit.field";
+	/** Please keep its prefix in sync with {@link MaterialCockpitViewFactory#SYSCFG_DisplayIncludedRows} */
+	public static final String SYSCFG_PREFIX = "de.metas.ui.web.material.cockpit.field";
 
 	public static MaterialCockpitRow cast(final IViewRow row)
 	{

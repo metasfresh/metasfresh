@@ -1,8 +1,11 @@
 package de.metas.ui.web.material.cockpit;
 
+import lombok.NonNull;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 
 import com.google.common.collect.ImmutableList;
 
@@ -28,8 +31,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.DefaultDocumentDescriptorFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
-import lombok.NonNull;
 
 /*
  * #%L
@@ -57,6 +58,10 @@ import lombok.NonNull;
 public class MaterialCockpitViewFactory
 		implements IViewFactory
 {
+
+	/** Please keep its prefix in sync with {@link MaterialCockpitRow#SYSCFG_PREFIX} */
+	public static final String SYSCFG_DisplayIncludedRows = "de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.DisplayIncludedRows";
+
 	private final MaterialCockpitRowRepository materialCockpitRowRepository;
 
 	private final MaterialCockpitFilters materialCockpitFilters;
@@ -115,9 +120,11 @@ public class MaterialCockpitViewFactory
 				"The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
 				MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
 
+		final boolean displayIncludedRows = Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_DisplayIncludedRows, true);
+
 		final Builder viewlayOutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)
-				.setHasTreeSupport(true)
+				.setHasTreeSupport(displayIncludedRows)
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
 				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType)
