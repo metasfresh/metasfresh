@@ -172,7 +172,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 
 		logger.trace("Loading attributes for {}", this);
 
-		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
+		final HuPackingInstructionsVersionId piVersionId = Services.get(IHandlingUnitsBL.class).getEffectivePIVersionId(hu);
 		final PIAttributes piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributes(piVersionId);
 
 		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu);

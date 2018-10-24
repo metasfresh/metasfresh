@@ -12,6 +12,7 @@ import org.adempiere.util.lang.NullAutoCloseable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
@@ -58,8 +59,8 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	public List<I_M_HU_Attribute> retrieveAttributesOrdered(final I_M_HU hu)
 	{
 		// NOTE: don't cache on this level. Caching is handled on upper levels
-
-		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
+		
+		final HuPackingInstructionsVersionId piVersionId = Services.get(IHandlingUnitsBL.class).getEffectivePIVersionId(hu);
 		final PIAttributes piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributes(piVersionId);
 
 		// there are only some dozen attributes at most, so i think it'S fine to order them after loading

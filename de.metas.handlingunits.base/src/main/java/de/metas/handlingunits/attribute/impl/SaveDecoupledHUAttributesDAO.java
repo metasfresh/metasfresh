@@ -283,7 +283,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 			return ImmutableList.of();
 		}
 
-		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
+		final HuPackingInstructionsVersionId piVersionId = Services.get(IHandlingUnitsBL.class).getEffectivePIVersionId(hu);
 		final PIAttributes piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributes(piVersionId);
 		
 		return huAttributes.values()
