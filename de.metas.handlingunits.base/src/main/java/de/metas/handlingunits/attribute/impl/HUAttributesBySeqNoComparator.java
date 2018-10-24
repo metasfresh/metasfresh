@@ -13,20 +13,24 @@ package de.metas.handlingunits.attribute.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Comparator;
 
+import org.adempiere.mm.attributes.AttributeId;
+
+import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Comparator which is ordering {@link I_M_HU_Attribute} by their {@link I_M_HU_PI_Attribute#getSeqNo()}.
@@ -34,33 +38,32 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
  * @author tsa
  *
  */
+@ToString
 public final class HUAttributesBySeqNoComparator implements Comparator<I_M_HU_Attribute>
 {
-	public static final transient HUAttributesBySeqNoComparator instance = new HUAttributesBySeqNoComparator();
-
-	private HUAttributesBySeqNoComparator()
+	public static HUAttributesBySeqNoComparator of(PIAttributes piAttributes)
 	{
-		super();
+		return new HUAttributesBySeqNoComparator(piAttributes);
+	}
+
+	private final PIAttributes piAttributes;
+
+	private HUAttributesBySeqNoComparator(@NonNull final PIAttributes piAttributes)
+	{
+		this.piAttributes = piAttributes;
 	}
 
 	@Override
 	public int compare(final I_M_HU_Attribute o1, final I_M_HU_Attribute o2)
 	{
 		// Same instance
-		if(o1 == o2)
+		if (o1 == o2)
 		{
 			return 0;
 		}
-		
-		// note: M_HU_Attribute.M_HU_PI_Attribute_ID is "uber" mandatory and SeqNo is an integer,
-		// so i'm not checking for null and stuff
-		int seqNo1 = o1.getM_HU_PI_Attribute().getSeqNo();
-		int seqNo2 = o2.getM_HU_PI_Attribute().getSeqNo();
 
-		// if the seqNo is zero/null, the attribute shall be last
-		seqNo1 = seqNo1 == 0 ? Integer.MAX_VALUE : seqNo1;
-		seqNo2 = seqNo2 == 0 ? Integer.MAX_VALUE : seqNo2;
-
+		final int seqNo1 = getSeqNo(o1);
+		final int seqNo2 = getSeqNo(o2);
 		if (seqNo1 < seqNo2)
 		{
 			return -1;
@@ -72,5 +75,13 @@ public final class HUAttributesBySeqNoComparator implements Comparator<I_M_HU_At
 		}
 		// seqNo1 > seqNo2
 		return 1;
+	}
+
+	private int getSeqNo(final I_M_HU_Attribute huAttribute)
+	{
+		final AttributeId attributeId = AttributeId.ofRepoId(huAttribute.getM_Attribute_ID());
+		final int seqNo = piAttributes.getSeqNoByAttributeId(attributeId, 0);
+		// if the seqNo is zero/null, the attribute shall be last
+		return seqNo != 0 ? seqNo : Integer.MAX_VALUE;
 	}
 }

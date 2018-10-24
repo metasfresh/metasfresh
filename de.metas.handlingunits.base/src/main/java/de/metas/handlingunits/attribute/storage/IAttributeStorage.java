@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -147,7 +148,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @param defaultAttributesValue
 	 * @throws AdempiereException if attributes were already generated
 	 */
-	void generateInitialAttributes(final Map<I_M_Attribute, Object> defaultAttributesValue);
+	void generateInitialAttributes(final Map<AttributeId, Object> defaultAttributesValue);
 
 	/**
 	 * Updates given <code>huTrxAttribute</code> with storage settings and with underlying infos from <code>fromAttributeValue</code>.

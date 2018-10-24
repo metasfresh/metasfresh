@@ -503,7 +503,7 @@ public interface IHUQueryBuilder
 	 * @param huPIVersionId
 	 * @return this
 	 */
-	IHUQueryBuilder addPIVersionToInclude(int huPIVersionId);
+	IHUQueryBuilder addPIVersionToInclude(HuPackingInstructionsVersionId huPIVersionId);
 
 	/**
 	 * Check if given {@link IAttributeSet} is matching the attributes from our query.

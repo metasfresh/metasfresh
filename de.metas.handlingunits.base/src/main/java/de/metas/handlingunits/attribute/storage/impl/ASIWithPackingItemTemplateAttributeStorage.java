@@ -13,11 +13,11 @@ package de.metas.handlingunits.attribute.storage.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,19 +33,18 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -97,21 +96,15 @@ import lombok.NonNull;
 		stringHelper
 				.add("id", id)
 				.add("asi", asi)
-				// .add("huDisplayName", Services.get(IHandlingUnitsBL.class).getDisplayName(getM_HU())) // used only for debugging)
-				;
+		// .add("huDisplayName", Services.get(IHandlingUnitsBL.class).getDisplayName(getM_HU())) // used only for debugging)
+		;
 	}
 
 	@Override
 	protected List<IAttributeValue> loadAttributeValues()
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-		//
-		// Retrieve Template PI Attributes and build an M_Attribute_ID->M_HU_PI_Attribute map
-		final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
-		final I_M_HU_PI packingItemTemplatePI = handlingUnitsDAO.retrievePackingItemTemplatePI(ctx);
 
 		//
 		// Retrieve Attribute Instances for given ASI
@@ -127,11 +120,11 @@ import lombok.NonNull;
 		// Retrieve Template PI Attributes
 		// find it's matching M_AttributeInstance and create an AttributeValue for it
 		// If no M_AttributeInstance was found, create a plain one.
-		final List<I_M_HU_PI_Attribute> piAttributes = huPIAttributesDAO.retrievePIAttributes(packingItemTemplatePI);
-		final List<IAttributeValue> result = new ArrayList<>(piAttributes.size());
-		for (final I_M_HU_PI_Attribute piAttribute : piAttributes)
+		final PIAttributes piAttributes = huPIAttributesDAO.retrievePIAttributes(HuPackingInstructionsVersionId.TEMPLATE);
+		final List<IAttributeValue> result = new ArrayList<>();
+		for (final AttributeId attributeId : piAttributes.getAttributeIds())
 		{
-			final AttributeId attributeId = AttributeId.ofRepoId(piAttribute.getM_Attribute_ID());
+			final I_M_HU_PI_Attribute piAttribute = piAttributes.getByAttributeId(attributeId);
 			I_M_AttributeInstance attributeInstance = attributeId2attributeInstance.get(attributeId);
 			final boolean isGeneratedAttribute;
 			if (attributeInstance == null)
@@ -145,6 +138,7 @@ import lombok.NonNull;
 
 				// No M_AttributeInstance was found for our PI Attribute
 				// => create one but don't save
+				final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
 				final String trxName = InterfaceWrapperHelper.getTrxName(asi);
 				attributeInstance = attributeDAO.createNewAttributeInstance(ctx, asi, attributeId, trxName);
 				isGeneratedAttribute = true;
@@ -171,7 +165,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	protected List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, final Map<I_M_Attribute, Object> defaultAttributesValue)
+	protected List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, final Map<AttributeId, Object> defaultAttributesValue)
 	{
 		throw new UnsupportedOperationException("Generating initial attributes not supported for " + this);
 	}

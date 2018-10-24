@@ -33,8 +33,10 @@ import org.compiere.util.TimeUtil;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.AbstractHUAttributeValue;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Wraps a {@link I_M_HU_Attribute} to {@link IAttributeValue}
@@ -51,13 +53,14 @@ final class HUAttributeValue extends AbstractHUAttributeValue
 	private Date valueDate;
 
 	public HUAttributeValue(
-			final AbstractHUAttributeStorage attributeStorage,
-			final I_M_HU_Attribute huAttribute,
+			@NonNull final AbstractHUAttributeStorage attributeStorage,
+			@NonNull final I_M_HU_Attribute huAttribute,
+			@NonNull final I_M_HU_PI_Attribute piAttribute,
 			final boolean saveOnChange)
 	{
 		super(
 				attributeStorage,
-				huAttribute.getM_HU_PI_Attribute(),
+				piAttribute,
 				(Boolean)null // isTemplateAttribute = don't know; it will be evaluated when needed
 		);
 

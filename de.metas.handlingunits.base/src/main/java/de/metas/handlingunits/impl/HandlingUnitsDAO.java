@@ -76,6 +76,7 @@ import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -104,10 +105,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// NOTE: it's public only for testing purposes
-	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Version_ID = 100;
 	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Item_ID = 540004;
 
-	public static final int VIRTUAL_HU_PI_Version_ID = 101;
 	public static final int VIRTUAL_HU_PI_Item_ID = 101;
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
@@ -144,12 +143,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<I_M_HU> getByIdsOutOfTrx(@NonNull final Collection<HuId> huIds)
 	{
 		return loadByRepoIdAwaresOutOfTrx(ImmutableSet.copyOf(huIds), I_M_HU.class);
-	}
-
-	@Override
-	public I_M_HU_PI retrievePackingItemTemplatePI(final Properties ctx)
-	{
-		return retrievePI(ctx, HuPackingInstructionsId.TEMPLATE);
 	}
 
 	@Override
@@ -209,12 +202,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public int getPackingItemTemplate_HU_PI_Item_ID()
 	{
 		return PACKING_ITEM_TEMPLATE_HU_PI_Item_ID;
-	}
-
-	@Override
-	public int getVirtual_HU_PI_Version_ID()
-	{
-		return VIRTUAL_HU_PI_Version_ID;
 	}
 
 	@Override
@@ -524,6 +511,20 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId)
+	{
+		final I_M_HU_PI pi = getPackingInstructionById(piId);
+		return retrievePICurrentVersionId(pi);
+	}
+
+	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(I_M_HU_PI pi)
+	{
+		final I_M_HU_PI_Version piVersion = retrievePICurrentVersion(pi);
+		return HuPackingInstructionsVersionId.ofRepoId(piVersion.getM_HU_PI_Version_ID());
+	}
+
+	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersion(final I_M_HU_PI pi)
 	{
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(pi);
@@ -539,7 +540,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(pi);
 		final String trxName = InterfaceWrapperHelper.getTrxName(pi);
-		final int piId = pi.getM_HU_PI_ID();
+		final HuPackingInstructionsId piId = HuPackingInstructionsId.ofRepoId(pi.getM_HU_PI_ID());
 
 		return retrievePICurrentVersionOrNull(ctx, piId, trxName);
 	}
@@ -550,7 +551,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_IsCurrent)
 	/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
 			final @CacheCtx Properties ctx,
-			final int piId,
+			final HuPackingInstructionsId piId,
 			final @CacheTrx String trxName)
 	{
 		final I_M_HU_PI_Version version = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Version.class, ctx, trxName)

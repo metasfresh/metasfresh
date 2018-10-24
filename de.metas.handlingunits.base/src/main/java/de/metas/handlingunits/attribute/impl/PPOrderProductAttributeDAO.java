@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -121,6 +122,8 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 
 	private void addPPOrderProductAttributes(final I_PP_Order ppOrder, final List<I_M_HU_Attribute> huAttributes, final Consumer<I_PP_Order_ProductAttribute> beforeSave)
 	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		
 		//
 		// Fetch the existing PP_Order_ProductAttribute records matching given huAttributes (matched by M_HU_ID/M_Attribute_ID)
 		final Map<ArrayKey, I_PP_Order_ProductAttribute> existingPPOrderAttributes = streamProductAttributesForHUAttributes(ppOrder.getPP_Order_ID(), huAttributes)
@@ -130,7 +133,7 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 		// Iterate and create/update one PP_Order_ProductAttribute for each HU_Attribute
 		for (final I_M_HU_Attribute huAttribute : huAttributes)
 		{
-			final I_M_Attribute attribute = huAttribute.getM_Attribute();
+			final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttribute.getM_Attribute_ID());
 
 			//
 			// Find existing PP_Order_ProductAttribute or create a new one
@@ -140,7 +143,7 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 				ppOrderAttributeNew.setAD_Org_ID(ppOrder.getAD_Org_ID());
 				ppOrderAttributeNew.setPP_Order(ppOrder);
 				ppOrderAttributeNew.setM_Attribute(attribute);
-				ppOrderAttributeNew.setM_HU(huAttribute.getM_HU()); // provenance HU
+				ppOrderAttributeNew.setM_HU_ID(huAttribute.getM_HU_ID()); // provenance HU
 				return ppOrderAttributeNew;
 			});
 

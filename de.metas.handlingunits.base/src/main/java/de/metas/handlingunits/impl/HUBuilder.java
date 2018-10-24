@@ -31,11 +31,11 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -218,7 +218,7 @@ import lombok.NonNull;
 		return _huPlanningReceiptOwnerPM;
 	}
 
-	private final Map<I_M_Attribute, Object> getInitialAttributeValueDefaults()
+	private final Map<AttributeId, Object> getInitialAttributeValueDefaults()
 	{
 		return getHUContext().getProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue);
 	}

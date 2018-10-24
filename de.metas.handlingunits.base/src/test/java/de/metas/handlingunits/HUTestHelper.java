@@ -638,7 +638,7 @@ public class HUTestHelper
 
 		//
 		// No-PI
-		huDefNone = createNoPI();
+		huDefNone = createTemplatePI();
 
 		//
 		// Virtual PI
@@ -657,7 +657,7 @@ public class HUTestHelper
 		// nothing
 	}
 
-	private I_M_HU_PI createNoPI()
+	private I_M_HU_PI createTemplatePI()
 	{
 		final I_M_HU_PI huDefNone = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		huDefNone.setName("NoPI");
@@ -665,7 +665,7 @@ public class HUTestHelper
 		InterfaceWrapperHelper.save(huDefNone);
 
 		final String huUnitType = null; // any
-		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Version_ID);
+		createVersion(huDefNone, true, huUnitType, HuPackingInstructionsVersionId.TEMPLATE);
 
 		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Item_ID);
 		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID.getRepoId());
@@ -682,7 +682,7 @@ public class HUTestHelper
 
 		createVersion(huDefVirtual,
 				true, // isCurrent
-				X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
+				X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, HuPackingInstructionsVersionId.VIRTUAL);
 
 		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
 		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId());
@@ -991,7 +991,7 @@ public class HUTestHelper
 		// createVersion(hu, false);
 
 		// Create the current version
-		final Integer huPIVersionId = null;
+		final HuPackingInstructionsVersionId huPIVersionId = null;
 		createVersion(pi, true, huUnitType, huPIVersionId);
 
 		return pi;
@@ -1000,7 +1000,7 @@ public class HUTestHelper
 	public I_M_HU_PI_Version createVersion(final I_M_HU_PI handlingUnit, final boolean current)
 	{
 		final String huUnitType = null;
-		final Integer huPIVersionId = null;
+		final HuPackingInstructionsVersionId huPIVersionId = null;
 		return createVersion(handlingUnit, current, huUnitType, huPIVersionId);
 	}
 
@@ -1008,7 +1008,7 @@ public class HUTestHelper
 			final I_M_HU_PI pi,
 			final boolean current,
 			final String huUnitType,
-			final Integer huPIVersionId)
+			final HuPackingInstructionsVersionId huPIVersionId)
 	{
 		final I_M_HU_PI_Version version = InterfaceWrapperHelper.create(ctx, I_M_HU_PI_Version.class, ITrx.TRXNAME_None);
 		version.setName(pi.getName());
@@ -1020,7 +1020,7 @@ public class HUTestHelper
 		}
 		if (huPIVersionId != null)
 		{
-			version.setM_HU_PI_Version_ID(huPIVersionId);
+			version.setM_HU_PI_Version_ID(huPIVersionId.getRepoId());
 		}
 		InterfaceWrapperHelper.save(version);
 		return version;

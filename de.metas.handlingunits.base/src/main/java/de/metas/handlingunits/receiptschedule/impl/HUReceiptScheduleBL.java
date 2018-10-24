@@ -51,13 +51,13 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -540,22 +540,22 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		// Set PriceActual in HUContext
 		Check.assumeNotNull(priceActual, "priceActual not null");
 		final IHUContext huContext = request.getHUContext();
-		Map<I_M_Attribute, Object> initialAttributeValueDefaults = huContext.getProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue);
+		Map<AttributeId, Object> initialAttributeValueDefaults = huContext.getProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue);
 		if (initialAttributeValueDefaults == null)
 		{
 			initialAttributeValueDefaults = new HashMap<>();
 			huContext.setProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
 		}
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_CostPrice);
-		initialAttributeValueDefaults.put(attr_CostPrice, priceActual);
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final AttributeId attrId_CostPrice = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_CostPrice);
+		initialAttributeValueDefaults.put(attrId_CostPrice, priceActual);
 
 		//
 		// Set HU_PurchaseOrderLine_ID (task 09741)
 		if (purchaseOrderLineIds.size() == 1)
 		{
-			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_PurchaseOrderLine_ID);
-			initialAttributeValueDefaults.put(attr_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
+			final AttributeId attrId_PurchaseOrderLine = attributesRepo.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_PurchaseOrderLine_ID);
+			initialAttributeValueDefaults.put(attrId_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
 		}
 
 		return request;

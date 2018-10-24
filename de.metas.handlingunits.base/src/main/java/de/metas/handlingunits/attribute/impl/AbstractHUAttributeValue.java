@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
@@ -127,14 +128,16 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	@Override
 	public final I_C_UOM getC_UOM()
 	{
-		final I_C_UOM uom = huPIAttribute.getC_UOM();
-		if (uom != null && uom.getC_UOM_ID() > 0)
+		final int uomId = huPIAttribute.getC_UOM_ID();
+		if(uomId > 0)
 		{
-			return uom;
+			return Services.get(IUOMDAO.class).getById(uomId);
 		}
-
-		// fallback to M_Attribute's UOM
-		return super.getC_UOM();
+		else
+		{
+			// fallback to M_Attribute's UOM
+			return super.getC_UOM();
+		}
 	}
 
 	@Override

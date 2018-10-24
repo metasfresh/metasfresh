@@ -63,6 +63,7 @@ import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.exceptions.HUException;
@@ -156,7 +157,7 @@ import lombok.NonNull;
 	private Set<Integer> _onlyHUIds = null;
 
 	private final Set<Integer> _huIdsToExclude = new HashSet<>();
-	private final Set<Integer> _huPIVersionIdsToInclude = new HashSet<>();
+	private final Set<HuPackingInstructionsVersionId> _huPIVersionIdsToInclude = new HashSet<>();
 	private boolean _excludeHUsOnPickingSlot = false;
 
 	private OrderLineId _excludeReservedToOtherThanOrderLineId = null;
@@ -614,7 +615,7 @@ import lombok.NonNull;
 
 		//
 		// Include specified HU PI Versions
-		final Set<Integer> huPIVersionIdsToInclude = getPIVersionIdsToInclude();
+		final Set<HuPackingInstructionsVersionId> huPIVersionIdsToInclude = getPIVersionIdsToInclude();
 		if (!huPIVersionIdsToInclude.isEmpty())
 		{
 			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_PI_Version_ID, huPIVersionIdsToInclude);
@@ -1362,14 +1363,13 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public HUQueryBuilder addPIVersionToInclude(final int huPIVersionId)
+	public HUQueryBuilder addPIVersionToInclude(@NonNull final HuPackingInstructionsVersionId huPIVersionId)
 	{
-		Check.assume(huPIVersionId > 0, "huPIVersionId > 0");
 		_huPIVersionIdsToInclude.add(huPIVersionId);
 		return this;
 	}
 
-	private final Set<Integer> getPIVersionIdsToInclude()
+	private final Set<HuPackingInstructionsVersionId> getPIVersionIdsToInclude()
 	{
 		return _huPIVersionIdsToInclude;
 	}

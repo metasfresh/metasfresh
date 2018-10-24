@@ -1,7 +1,6 @@
 package de.metas.handlingunits.attribute.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,6 +14,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -25,8 +25,13 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -273,10 +278,18 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	{
 		final boolean retrieveIfNotFound = true;
 		final Map<Object, I_M_HU_Attribute> huAttributes = getHUAttributes(hu, retrieveIfNotFound);
+		if (huAttributes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
-		final List<I_M_HU_Attribute> result = new ArrayList<>(huAttributes.values());
-		Collections.sort(result, HUAttributesBySeqNoComparator.instance);
-		return result;
+		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
+		final PIAttributes piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributes(piVersionId);
+		
+		return huAttributes.values()
+				.stream()
+				.sorted(HUAttributesBySeqNoComparator.of(piAttributes))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private final Map<Object, I_M_HU_Attribute> getHUAttributes(final I_M_HU hu, final boolean retrieveIfNotFound)
@@ -465,7 +478,8 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		}
 
 		final I_M_HU_Attribute modelOld = InterfaceWrapperHelper.createOld(huAttribute, I_M_HU_Attribute.class);
-		final I_M_Attribute attribute = huAttribute.getM_Attribute();
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttribute.getM_Attribute_ID());
 		final String modelChangeInfo = ""
 				+ Services.get(IHandlingUnitsBL.class).getDisplayName(huAttribute.getM_HU())
 				+ " - "

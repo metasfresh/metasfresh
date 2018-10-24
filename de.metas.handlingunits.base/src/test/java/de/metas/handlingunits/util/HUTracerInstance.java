@@ -30,6 +30,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 
@@ -231,7 +232,9 @@ public class HUTracerInstance
 		{
 			return "(null attribute)";
 		}
-		final I_M_Attribute attribute = huAttr.getM_Attribute();
+		
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttr.getM_Attribute_ID());
 		final String attrName = attribute == null ? "(no name?)" : attribute.getName();
 
 		final StringBuilder sb = new StringBuilder();

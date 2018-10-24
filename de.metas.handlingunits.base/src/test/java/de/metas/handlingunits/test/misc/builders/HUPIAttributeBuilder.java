@@ -140,9 +140,9 @@ public class HUPIAttributeBuilder
 	public I_M_HU_PI_Attribute create(final Properties ctx)
 	{
 		final I_M_HU_PI_Attribute huPIAttr = InterfaceWrapperHelper.create(ctx, I_M_HU_PI_Attribute.class, ITrx.TRXNAME_None);
-		huPIAttr.setM_Attribute(attribute);
+		huPIAttr.setM_Attribute_ID(attribute.getM_Attribute_ID());
 
-		huPIAttr.setM_HU_PI_Version(huPIVersion);
+		huPIAttr.setM_HU_PI_Version_ID(huPIVersion.getM_HU_PI_Version_ID());
 
 		huPIAttr.setAD_Org_ID(huPIVersion.getAD_Org_ID());
 
