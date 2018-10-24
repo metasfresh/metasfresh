@@ -24,12 +24,11 @@ import {
 import {
   connectWS,
   disconnectWS,
-  getRowsData,
   indicatorState,
-  parseToDisplay,
   selectTableItems,
   removeSelectedTableItems,
 } from '../../actions/WindowActions';
+import { parseToDisplay, getRowsData } from '../../utils/documentListHelper';
 import { getSelectionDirect } from '../../reducers/windowHandler';
 import {
   DLpropTypes,
@@ -54,7 +53,7 @@ import Table from '../table/Table';
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 
-class DocumentList extends Component {
+export class DocumentList extends Component {
   constructor(props) {
     super(props);
 
@@ -98,7 +97,7 @@ class DocumentList extends Component {
     disconnectWS.call(this);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       defaultPage: nextDefaultPage,
       defaultSort: nextDefaultSort,
@@ -222,21 +221,25 @@ class DocumentList extends Component {
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
-            const rows = mergeRows({
-              toRows: this.state.data.result,
-              fromRows: [...response.data],
-              columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
-              changedIds,
-            });
+            const rows = List(
+              mergeRows({
+                toRows: this.state.data.result,
+                fromRows: [...response.data],
+                columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
+                changedIds,
+              })
+            );
 
-            this.setState({
-              data: {
-                ...this.state.data,
-                result: List(rows),
+            this.setState(
+              {
+                data: {
+                  ...this.state.data,
+                  result: rows,
+                  rowIds: rows.map(row => row.id),
+                },
               },
-            });
-
-            this.updateQuickActions();
+              () => this.updateQuickActions()
+            );
           }
         );
       }
@@ -400,7 +403,9 @@ class DocumentList extends Component {
       this.mounted &&
         this.setState(
           {
-            data: response.data,
+            data: {
+              ...response.data,
+            },
             viewId: response.data.viewId,
             triggerSpinner: false,
           },
@@ -430,7 +435,9 @@ class DocumentList extends Component {
       this.mounted &&
         this.setState(
           {
-            data: response.data,
+            data: {
+              ...response.data,
+            },
             viewId: viewId,
             triggerSpinner: false,
           },
@@ -506,6 +513,7 @@ class DocumentList extends Component {
           data: {
             ...response.data,
             result,
+            rowIds: List(result.map(row => row.id)),
           },
           pageColumnInfosByFieldName: pageColumnInfosByFieldName,
           triggerSpinner: false,
@@ -615,9 +623,12 @@ class DocumentList extends Component {
   // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
 
   setTableRowEdited = val => {
-    this.setState({
-      rowEdited: val,
-    });
+    this.setState(
+      {
+        rowEdited: val,
+      },
+      () => this.updateQuickActions()
+    );
   };
 
   adjustWidth = () => {
@@ -740,7 +751,7 @@ class DocumentList extends Component {
       rowEdited,
       initialValuesNulled,
     } = this.state;
-    const { selected, childSelected, parentSelected } = this.getSelected();
+    let { selected, childSelected, parentSelected } = this.getSelected();
     const modalType = modal ? modal.modalType : null;
     const stopShortcutPropagation =
       (isIncluded && !!selected) || (inModal && modalType === 'process');
@@ -762,6 +773,11 @@ class DocumentList extends Component {
       selected,
       hasIncluded,
     });
+
+    if (!selectionValid) {
+      selected = null;
+    }
+
     const blurWhenOpen =
       layout && layout.includedView && layout.includedView.blurWhenOpen;
 
@@ -771,9 +787,7 @@ class DocumentList extends Component {
       );
     }
 
-    const showQuickActions = Boolean(
-      !isModal || inBackground || selectionValid
-    );
+    const showQuickActions = true;
 
     return (
       <div
@@ -852,6 +866,7 @@ class DocumentList extends Component {
                       this.quickActionsComponent = c && c.getWrappedInstance();
                     }}
                     selected={selected}
+                    rows={data && data.rowIds ? data.rowIds : undefined}
                     viewId={viewId}
                     windowType={windowType}
                     fetchOnInit={fetchQuickActionsOnInit}

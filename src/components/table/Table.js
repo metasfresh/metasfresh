@@ -10,11 +10,8 @@ import currentDevice from 'current-device';
 
 import { deleteRequest } from '../../actions/GenericActions';
 import {
-  collapsedMap,
   deleteLocal,
-  getRowsData,
   getZoomIntoWindow,
-  mapIncluded,
   openModal,
   selectTableItems,
 } from '../../actions/WindowActions';
@@ -31,6 +28,11 @@ import {
   handleCopy,
   handleOpenNewTab,
 } from '../../utils/tableHelpers';
+import {
+  getRowsData,
+  mapIncluded,
+  collapsedMap,
+} from '../../utils/documentListHelper';
 
 class Table extends Component {
   static propTypes = {

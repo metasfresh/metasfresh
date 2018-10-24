@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types';
 import { push } from 'react-router-redux';
 import { Map } from 'immutable';
-import { getItemsByProperty, mapIncluded } from '../actions/WindowActions';
+import Moment from 'moment';
+import { DateTime } from 'luxon';
+// import { isLuxonObject } from './index';
+import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelection } from '../reducers/windowHandler';
 
 const DLpropTypes = {
@@ -223,4 +226,128 @@ export function mergeRows({
   const fromRowsById = indexRows(fromRows, {});
 
   return mapRows(toRows, fromRowsById, columnInfosByFieldName);
+}
+
+export function getScope(isModal) {
+  return isModal ? 'modal' : 'master';
+}
+
+export function parseToDisplay(fieldsByName) {
+  return parseDateToReadable(nullToEmptyStrings(fieldsByName));
+}
+
+// i.e 2018-01-27T17:00:00.000-06:00
+export function parseDateWithCurrenTimezone(value) {
+  if (value) {
+    let luxonOffset = 0;
+
+    if (!Moment.isMoment(value)) {
+      if (value instanceof Date) {
+        luxonOffset = DateTime.fromISO(value.toISOString()).offset;
+      } else {
+        luxonOffset = DateTime.fromISO(value).offset;
+      }
+
+      value = Moment(value);
+    } else {
+      luxonOffset = DateTime.fromISO(value.toISO()).offset;
+    }
+
+    const tempDate = Moment(value);
+    tempDate.utcOffset(luxonOffset);
+
+    return tempDate;
+  }
+  return '';
+}
+
+function parseDateToReadable(fieldsByName) {
+  const dateParse = ['Date', 'DateTime', 'Time'];
+
+  return Object.keys(fieldsByName).reduce((acc, fieldName) => {
+    const field = fieldsByName[fieldName];
+    const isDateField = dateParse.indexOf(field.widgetType) > -1;
+    acc[fieldName] =
+      isDateField && field.value
+        ? {
+            ...field,
+            value: parseDateWithCurrenTimezone(field.value),
+          }
+        : field;
+    return acc;
+  }, {});
+}
+
+/**
+ * flatten array with 1 level deep max(with fieldByName)
+ * from includedDocuments data
+ */
+export function getRowsData(rowData) {
+  let data = [];
+  rowData &&
+    rowData.map(item => {
+      data = data.concat(mapIncluded(item));
+    });
+
+  return data;
+}
+
+export function mapIncluded(node, indent, isParentLastChild = false) {
+  let ind = indent ? indent : [];
+  let result = [];
+
+  const nodeCopy = {
+    ...node,
+    indent: ind,
+  };
+
+  result = result.concat([nodeCopy]);
+
+  if (isParentLastChild) {
+    ind[ind.length - 2] = false;
+  }
+
+  if (node.includedDocuments) {
+    for (let i = 0; i < node.includedDocuments.length; i++) {
+      let copy = node.includedDocuments[i];
+      copy.fieldsByName = parseToDisplay(copy.fieldsByName);
+      if (i === node.includedDocuments.length - 1) {
+        copy = {
+          ...copy,
+          lastChild: true,
+        };
+      }
+
+      result = result.concat(
+        mapIncluded(copy, ind.concat([true]), node.lastChild)
+      );
+    }
+  }
+  return result;
+}
+
+export function collapsedMap(node, isCollapsed, initialMap) {
+  let collapsedMap = [];
+  if (initialMap) {
+    if (!isCollapsed) {
+      initialMap.splice(
+        initialMap.indexOf(node.includedDocuments[0]),
+        node.includedDocuments.length
+      );
+      collapsedMap = initialMap;
+    } else {
+      initialMap.map(item => {
+        collapsedMap.push(item);
+        if (item.id === node.id) {
+          collapsedMap = collapsedMap.concat(node.includedDocuments);
+        }
+      });
+    }
+  } else {
+    if (node.includedDocuments) {
+      collapsedMap.push(node);
+    }
+  }
+
+  return collapsedMap;
 }

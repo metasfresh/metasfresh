@@ -5,7 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 import { connect } from 'react-redux';
 
-import { getItemsByProperty } from '../../actions/WindowActions';
+import { getItemsByProperty } from '../../utils';
 import FiltersItem from './FiltersItem';
 
 class FiltersNotFrequent extends Component {

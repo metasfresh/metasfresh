@@ -21,7 +21,7 @@ class SideList extends Component {
     };
   }
 
-  componentWillReceiveProps(props) {
+  UNSAFE_componentWillReceiveProps(props) {
     const { defaultTab } = props;
 
     if (defaultTab !== this.props.defaultTab) {

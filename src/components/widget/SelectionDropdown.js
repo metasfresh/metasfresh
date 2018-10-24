@@ -44,7 +44,7 @@ export default class SelectionDropdown extends Component {
     window.removeEventListener('keyup', this.handleKeyUp);
   }
 
-  componentWillReceiveProps(propsNext) {
+  UNSAFE_componentWillReceiveProps(propsNext) {
     if (propsNext.options !== this.props.options) {
       this.optionToRef.clear();
     }

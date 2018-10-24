@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { patchViewAttributes } from '../actions/ViewAttributesActions';
-import { parseToDisplay } from '../actions/WindowActions';
+import { parseToDisplay } from '../utils/documentListHelper';
 
 class DataLayoutWrapper extends Component {
   constructor(props) {
