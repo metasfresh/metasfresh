@@ -534,15 +534,25 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(final I_M_HU_PI pi)
+	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)
 	{
-		Check.assumeNotNull(pi, "PI not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(pi);
 		final String trxName = InterfaceWrapperHelper.getTrxName(pi);
 		final HuPackingInstructionsId piId = HuPackingInstructionsId.ofRepoId(pi.getM_HU_PI_ID());
 
 		return retrievePICurrentVersionOrNull(ctx, piId, trxName);
+	}
+
+	@Override
+	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final HuPackingInstructionsId piId)
+	{
+		return retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);
+	}
+
+	@Override
+	public I_M_HU_PI_Version retrievePIVersionById(@NonNull final HuPackingInstructionsVersionId id)
+	{
+		return loadOutOfTrx(id, I_M_HU_PI_Version.class);
 	}
 
 	@Cached(cacheName = I_M_HU_PI_Version.Table_Name
