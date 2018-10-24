@@ -231,7 +231,7 @@ public class HUReportExecutor
 				// Execute report in a new transaction
 				.buildAndPrepareExecution()
 				.onErrorThrowException(request.isOnErrorThrowException())
-				.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), HuId.toRepoIds(huIdsToProcess), ITrx.TRXNAME_ThreadInherited))
+				.callBefore(processInfo -> DB.createT_Selection(processInfo.getPinstanceId(), HuId.toRepoIds(huIdsToProcess), ITrx.TRXNAME_ThreadInherited))
 				.executeSync();
 
 		return HUReportExecutorResult.builder()
@@ -333,7 +333,7 @@ public class HUReportExecutor
 				final ProcessInfo processInfo = result.getProcessInfo();
 				final Recipient recipient = Recipient.userAndRole(processInfo.getAD_User_ID(), processInfo.getAD_Role_ID());
 
-				final String plainMessage = StringUtils.formatMessage("AD_PInstance_ID={}\n Summary:\n{}", processInfo.getAD_PInstance_ID(), processExecutionResult.getSummary());
+				final String plainMessage = StringUtils.formatMessage("AD_PInstance_ID={}\n Summary:\n{}", processInfo.getPinstanceId().getRepoId(), processExecutionResult.getSummary());
 
 				final INotificationBL notificationBL = Services.get(INotificationBL.class);
 				final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()

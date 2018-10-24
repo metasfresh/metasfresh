@@ -84,7 +84,7 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 					try
 					{
 						final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
-								.adPInstanceId(getAD_PInstance_ID())
+								.adPInstanceId(getPinstanceId())
 								.build();
 
 						Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
@@ -125,7 +125,7 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 
 		final IPrintingQueueQuery query = printingQueueBL.createPrintingQueueQuery();
 		query.setIsPrinted(false);
-		query.setOnlyAD_PInstance_ID(getAD_PInstance_ID());
+		query.setOnlyAD_PInstance_ID(getPinstanceId());
 
 		return printingQueueBL.createPrintingQueueSources(ctxToUse, query);
 	}

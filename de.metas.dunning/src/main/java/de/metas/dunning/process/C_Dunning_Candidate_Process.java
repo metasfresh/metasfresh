@@ -106,7 +106,7 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType.getInternalName())
-				.setAD_PInstance_Creator_ID(getAD_PInstance_ID())
+				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setName(m_AsyncBatchName)
 				.setDescription(m_AsyncBatchDesc)
 				.build();

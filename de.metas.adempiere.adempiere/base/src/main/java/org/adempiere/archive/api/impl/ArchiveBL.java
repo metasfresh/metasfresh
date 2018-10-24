@@ -44,6 +44,7 @@ import org.compiere.print.layout.LayoutEngine;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerAware;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 
@@ -137,7 +138,7 @@ public class ArchiveBL implements IArchiveBL
 		
 		//FRESH-349: Set ad_pinstance
 		
-		archive.setAD_PInstance_ID(info.getAD_PInstance_ID());
+		archive.setAD_PInstance_ID(PInstanceId.toRepoId(info.getAD_PInstance_ID()));
 
 		if (save)
 		{

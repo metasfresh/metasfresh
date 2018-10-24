@@ -28,6 +28,8 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.process.PInstanceId;
+
 /**
  * In-memory database restore point.
  * 
@@ -40,7 +42,7 @@ public class POJOLookupMapRestorePoint
 {
 	private final POJOLookupMap db;
 	private final Map<String, Map<Integer, Object>> cachedObjects;
-	private final Map<Integer, ImmutableSet<Integer>> selectionId2selection;
+	private final Map<PInstanceId, ImmutableSet<Integer>> selectionId2selection;
 
 	POJOLookupMapRestorePoint(final POJOLookupMap db)
 	{
@@ -61,7 +63,7 @@ public class POJOLookupMapRestorePoint
 		return cachedObjectsCopy;
 	}
 
-	private static final Map<Integer, ImmutableSet<Integer>> copySelection(final Map<Integer, ImmutableSet<Integer>> selectionId2selection)
+	private static final Map<PInstanceId, ImmutableSet<Integer>> copySelection(final Map<PInstanceId, ImmutableSet<Integer>> selectionId2selection)
 	{
 		return new HashMap<>(selectionId2selection);
 	}

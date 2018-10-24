@@ -52,8 +52,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.process.PInstanceId;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -249,20 +249,18 @@ public interface IQuery<T>
 	/**
 	 * Only records that are in T_Selection with AD_PInstance_ID.
 	 *
-	 * NOTE: {@link #setOnlySelection(int)} and {@link #setNotInSelection(int)} are complementary and NOT exclusive.
-	 *
-	 * @param AD_PInstance_ID
+	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
 	 */
-	IQuery<T> setOnlySelection(int AD_PInstance_ID);
+	IQuery<T> setOnlySelection(PInstanceId pisntanceId);
 
 	/**
 	 * Only records that are NOT in T_Selection with AD_PInstance_ID.
 	 *
-	 * NOTE: {@link #setOnlySelection(int)} and {@link #setNotInSelection(int)} are complementary and NOT exclusive.
+	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
 	 *
 	 * @param AD_PInstance_ID
 	 */
-	IQuery<T> setNotInSelection(int AD_PInstance_ID);
+	IQuery<T> setNotInSelection(PInstanceId pinstanceId);
 
 	/**
 	 * Select only active records (i.e. IsActive='Y')
@@ -537,17 +535,17 @@ public interface IQuery<T>
 	/**
 	 * Creates a NEW selection from this query result.
 	 *
-	 * @return selection's AD_PInstance_ID or <code>-1</code> if there were no records matching
+	 * @return selection's or <code>null</code> if there were no records matching
 	 */
-	int createSelection();
+	PInstanceId createSelection();
 
 	/**
 	 * Appends this query result to an existing selection.
 	 *
-	 * @param AD_PInstance_ID selection ID to be used
+	 * @param pinstanceId selection ID to be used
 	 * @return number of records inserted in selection
 	 */
-	int createSelection(int AD_PInstance_ID);
+	int createSelection(PInstanceId pinstanceId);
 
 	/**
 	 * Use the result of this query and insert it in given <code>toModelClass</code>'s table.

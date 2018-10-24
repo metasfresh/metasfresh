@@ -47,6 +47,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -70,9 +71,9 @@ public final class MQuery implements Serializable
 	 * @param TableName table name
 	 * @return where clause
 	 */
-	static public MQuery get(Properties ctx, int AD_PInstance_ID, String TableName)
+	static public MQuery get(Properties ctx, PInstanceId pinstanceId, String TableName)
 	{
-		s_log.info("AD_PInstance_ID={}, TableName={}", AD_PInstance_ID, TableName);
+		s_log.info("AD_PInstance_ID={}, TableName={}", pinstanceId, TableName);
 		
 		final MQuery query = new MQuery(TableName);
 		// Temporary Tables - add qualifier (not displayed)
@@ -80,15 +81,15 @@ public final class MQuery implements Serializable
 		MTable table = null;
 		if (TableName.startsWith("T_"))
 		{
-			query.addRestriction(TableName + ".AD_PInstance_ID=" + AD_PInstance_ID);
+			query.addRestriction(TableName + ".AD_PInstance_ID=" + pinstanceId.getRepoId());
 			isTemporaryTable = true;
 			table = MTable.get(ctx, TableName);
 		}
-		query.m_AD_PInstance_ID = AD_PInstance_ID;
+		query.pinstanceId = pinstanceId;
 
 		// How many rows do we have?
 		String SQL = "SELECT COUNT(1) FROM AD_PInstance_Para WHERE AD_PInstance_ID=?";
-		final int rows = DB.getSQLValue(ITrx.TRXNAME_None, SQL, AD_PInstance_ID);
+		final int rows = DB.getSQLValue(ITrx.TRXNAME_None, SQL, pinstanceId);
 
 		if (rows < 1)
 			return query;
@@ -122,8 +123,8 @@ public final class MQuery implements Serializable
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(SQL, null);
-			pstmt.setInt(1, AD_PInstance_ID);
+			pstmt = DB.prepareStatement(SQL, ITrx.TRXNAME_None);
+			pstmt.setInt(1, pinstanceId.getRepoId());
 			if (trl)
 				pstmt.setString(2, Env.getAD_Language(ctx));
 			rs = pstmt.executeQuery();
@@ -406,7 +407,7 @@ public final class MQuery implements Serializable
 	/** Table Name */
 	private String m_TableName = "";
 	/** PInstance */
-	private int m_AD_PInstance_ID = 0;
+	private PInstanceId pinstanceId;
 	/** List of Restrictions */
 	private List<Restriction> m_list = new ArrayList<>();
 	/** Record Count */
@@ -1019,11 +1020,11 @@ public final class MQuery implements Serializable
 	}	// getDisplayName
 
 	/**
-	 * @return AD_PInstance_ID; this value is set if you created this query by using {@link #get(Properties, int, String)}
+	 * @return AD_PInstance_ID; this value is set if you created this query by using {@link #get(Properties, PInstanceId, String)}
 	 */
-	public int getAD_PInstance_ID()
+	public PInstanceId getPinstanceId()
 	{
-		return m_AD_PInstance_ID;
+		return pinstanceId;
 	}
 
 	/**
@@ -1109,7 +1110,7 @@ public final class MQuery implements Serializable
 	{
 		this();
 		this.m_TableName = query.m_TableName;
-		this.m_AD_PInstance_ID = query.m_AD_PInstance_ID;
+		this.pinstanceId = query.pinstanceId;
 		this.m_recordCount = query.m_recordCount;
 		this.m_newRecord = query.m_newRecord;
 		this.m_zoomTable = query.m_zoomTable;

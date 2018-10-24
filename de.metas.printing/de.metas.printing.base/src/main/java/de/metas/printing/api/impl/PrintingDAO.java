@@ -315,7 +315,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 		final TypedSqlQuery<I_C_Printing_Queue> query = new TypedSqlQuery<>(ctx, I_C_Printing_Queue.class, whereClause.toString(), trxName)
 				.setParameters(params);
 
-		if (queueQuery.getOnlyAD_PInstance_ID() > 0)
+		if (queueQuery.getOnlyAD_PInstance_ID() != null)
 		{
 			query.setOnlySelection(queueQuery.getOnlyAD_PInstance_ID());
 		}

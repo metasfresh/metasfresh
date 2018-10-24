@@ -63,6 +63,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /**
@@ -1585,6 +1586,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			// Case: C_BPartner.AD_OrgBP_ID
 			final int valueInt = Integer.parseInt(value.toString());
 			return Integer.max(valueInt, idForNewModel(columnName));
+		}
+		else if(value instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)value).getRepoId();
 		}
 		else
 		{

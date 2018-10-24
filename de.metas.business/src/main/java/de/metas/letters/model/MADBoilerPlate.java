@@ -97,10 +97,10 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
@@ -1013,7 +1013,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 * @param text
 	 * @param trxName
 	 */
-	public static void createSpoolRecord(final Properties ctx, final int AD_Client_ID, final int AD_PInstance_ID, final String text, final String trxName)
+	public static void createSpoolRecord(final Properties ctx, final int AD_Client_ID, final PInstanceId pinstanceId, final String text, final String trxName)
 	{
 		final String sql = "INSERT INTO " + I_T_BoilerPlate_Spool.Table_Name + "("
 				+ " " + I_T_BoilerPlate_Spool.COLUMNNAME_AD_Client_ID
@@ -1023,7 +1023,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_MsgText
 				+ ") VALUES (?,?,?,?,?)";
 		DB.executeUpdateEx(sql,
-				new Object[] { AD_Client_ID, 0, AD_PInstance_ID, 10, text },
+				new Object[] { AD_Client_ID, 0, pinstanceId, 10, text },
 				trxName);
 	}
 

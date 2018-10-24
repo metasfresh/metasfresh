@@ -55,6 +55,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
@@ -610,7 +611,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic1);
 
 		/* final IInvoiceGenerateResult result = */
-		invoiceCandBL.generateInvoicesFromSelection(ctx, 0, true, NullLoggable.instance, trxName);
+		invoiceCandBL.generateInvoicesFromSelection(ctx, PInstanceId.ofRepoIdOrNull(0), true, NullLoggable.instance, trxName);
 
 		// FIXME Commented out for now, as we need to persist the transaction between the order and invoice.
 		// assertThat(result.getInvoiceCount(), comparesEqualTo(2));

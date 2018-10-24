@@ -38,6 +38,7 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.jasper.client.JRClient;
@@ -177,7 +178,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 		final Language language = Services.get(ILanguageBL.class).getOrgLanguage(ctx, jobInstructions.getAD_Org_ID());
 		
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, SummaryPdfPrinting_AD_Process_ID, 0, 0);
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(SummaryPdfPrinting_AD_Process_ID, 0, 0);
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
 		
@@ -189,7 +190,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final List<ProcessInfoParameter> piParams = new ArrayList<>();
 		piParams.add(ProcessInfoParameter.ofValueObject(X_C_Print_Job_Instructions.COLUMNNAME_C_Print_Job_Instructions_ID, jobInstructions.getC_Print_Job_Instructions_ID()));
 		piParams.add(ProcessInfoParameter.ofValueObject("Title", msg.toString()));
-		Services.get(IADPInstanceDAO.class).saveParameterToDB(pinstance.getAD_PInstance_ID(), piParams);
+		Services.get(IADPInstanceDAO.class).saveParameterToDB(PInstanceId.ofRepoId(pinstance.getAD_PInstance_ID()), piParams);
 		
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(ctx)

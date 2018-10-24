@@ -33,7 +33,6 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -61,7 +60,6 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware
 {
@@ -422,16 +420,5 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		}
 
 		return locator.getM_Warehouse_ID();
-	}
-
-	@Override
-	public boolean isMandatory(@NonNull final I_M_Attribute attribute)
-	{
-		final IHUAttributesDAO huAttributesDAO = getHUAttributesDAO();
-
-		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(getM_HU(), AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
-		final I_M_HU_PI_Attribute huPiAttribute = huAttribute.getM_HU_PI_Attribute();
-
-		return huPiAttribute != null ? huPiAttribute.isMandatory() : false;
 	}
 }

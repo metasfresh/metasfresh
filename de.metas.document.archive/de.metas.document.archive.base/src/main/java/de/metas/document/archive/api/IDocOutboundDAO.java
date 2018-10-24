@@ -33,6 +33,7 @@ import org.compiere.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 
 public interface IDocOutboundDAO extends ISingletonService
@@ -98,9 +99,9 @@ public interface IDocOutboundDAO extends ISingletonService
 	/**
 	 * retrieve selected docoutbounds
 	 * @param ctx
-	 * @param pInstanceId
+	 * @param pinstanceId
 	 * @param trxName
 	 * @return
 	 */
-	List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(Properties ctx, int pInstanceId, String trxName);
+	List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(Properties ctx, PInstanceId pinstanceId, String trxName);
 }

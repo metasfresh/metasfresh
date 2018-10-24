@@ -24,11 +24,11 @@ import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.processor.impl.LoadESRImportFileWorkpackageProcessor;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -79,7 +79,7 @@ public class ESRImportEnqueuer
 
 	private String asyncBatchName = "ESR Import";
 	private String asyncBatchDesc = "ESR Import process";
-	private int adPInstanceId;
+	private PInstanceId pinstanceId;
 
 	private ESRImportEnqueuerDuplicateFilePolicy duplicateFilePolicy;
 
@@ -142,7 +142,7 @@ public class ESRImportEnqueuer
 			final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
 					.setContext(ctx)
 					.setC_Async_Batch_Type(ESRConstants.C_Async_Batch_InternalName)
-					.setAD_PInstance_Creator_ID(getAdPInstanceId())
+					.setAD_PInstance_Creator_ID(getPinstanceId())
 					.setName(getAsyncBatchName())
 					.setDescription(getAsyncBatchDesc())
 					.build();
@@ -284,15 +284,15 @@ public class ESRImportEnqueuer
 		return asyncBatchDesc;
 	}
 
-	public ESRImportEnqueuer adPInstanceId(final int adPInstanceId)
+	public ESRImportEnqueuer pinstanceId(final PInstanceId pinstanceId)
 	{
-		this.adPInstanceId = adPInstanceId;
+		this.pinstanceId = pinstanceId;
 		return this;
 	}
 
-	private int getAdPInstanceId()
+	private PInstanceId getPinstanceId()
 	{
-		return adPInstanceId;
+		return pinstanceId;
 	}
 
 	public ESRImportEnqueuer fromDataSource(final ESRImportEnqueuerDataSource fromDataSource)

@@ -26,7 +26,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.util.Check;
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
 
 /**
  * Accepts only the records which are in selection (see {@link POJOLookupMap#isInSelection(int, int)}.
@@ -39,25 +40,23 @@ import de.metas.util.Check;
  */
 public class POJOInSelectionQueryFilter<T> implements IQueryFilter<T>
 {
-	public static final <T> POJOInSelectionQueryFilter<T> inSelection(final int selectionId)
+	public static final <T> POJOInSelectionQueryFilter<T> inSelection(final PInstanceId selectionId)
 	{
 		final boolean include = true;
 		return new POJOInSelectionQueryFilter<>(selectionId, include);
 	}
 
-	public static final <T> POJOInSelectionQueryFilter<T> notInSelection(final int selectionId)
+	public static final <T> POJOInSelectionQueryFilter<T> notInSelection(final PInstanceId selectionId)
 	{
 		final boolean include = false;
 		return new POJOInSelectionQueryFilter<>(selectionId, include);
 	}
 
-	private final int selectionId;
+	private final PInstanceId selectionId;
 	private final boolean include;
 
-	private POJOInSelectionQueryFilter(final int selectionId, final boolean include)
+	private POJOInSelectionQueryFilter(@NonNull final PInstanceId selectionId, final boolean include)
 	{
-		super();
-		Check.assume(selectionId > 0, "selectionId > 0");
 		this.selectionId = selectionId;
 		this.include = include;
 	}
@@ -65,7 +64,7 @@ public class POJOInSelectionQueryFilter<T> implements IQueryFilter<T>
 	@Override
 	public String toString()
 	{
-		return (include ? "InSelection-" : "NotInSelection-") + selectionId;
+		return (include ? "InSelection-" : "NotInSelection-") + selectionId.getRepoId();
 	}
 
 	@Override
@@ -88,7 +87,7 @@ public class POJOInSelectionQueryFilter<T> implements IQueryFilter<T>
 		}
 	}
 
-	public int getSelectionId()
+	public PInstanceId getSelectionId()
 	{
 		return selectionId;
 	}

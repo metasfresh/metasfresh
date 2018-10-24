@@ -212,9 +212,15 @@ public class PickingCandidateRepository
 	private IQueryBuilder<I_M_Picking_Candidate> retrievePickingCandidatesByHUIdsQuery(@NonNull final Collection<HuId> huIds)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds);
+		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter();
+
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, huIds)
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds); // pack HUs
+
+		return queryBuilder;
 	}
 
 	public Stream<PickingCandidate> streamByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)

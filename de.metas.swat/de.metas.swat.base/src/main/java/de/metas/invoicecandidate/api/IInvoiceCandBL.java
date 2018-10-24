@@ -42,6 +42,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.process.PInstanceId;
 import de.metas.util.ILoggable;
 import de.metas.util.ISingletonService;
 
@@ -92,7 +93,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT:</b> Candidates with {@link I_C_Invoice_Candidate#isError()} are ignored, even if they are part of the selection!
 	 */
-	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, int AD_PInstance_ID, boolean ignoreInvoiceSchedule, ILoggable loggable, String trxName);
+	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, ILoggable loggable, String trxName);
 
 	/**
 	 * Creates <code>de.metas.async</code> work packages from for those invoice candidates that are selected via <code>T_Selection</code> with the given <code>AD_PInstance_ID</code>.

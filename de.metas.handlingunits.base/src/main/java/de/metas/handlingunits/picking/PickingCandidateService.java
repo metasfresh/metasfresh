@@ -19,7 +19,7 @@ import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
-import de.metas.handlingunits.picking.candidate.commands.ProcessHsAndPickingCandidateCommand;
+import de.metas.handlingunits.picking.candidate.commands.ProcessHUsAndPickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesResult;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingCommand;
@@ -154,7 +154,7 @@ public class PickingCandidateService
 
 		//
 		// Process those picking candidates
-		final ImmutableList<PickingCandidate> processedPickingCandidates = ProcessHsAndPickingCandidateCommand.builder()
+		final ImmutableList<PickingCandidate> processedPickingCandidates = ProcessHUsAndPickingCandidateCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidates(pickingCandidatesToProcess)
