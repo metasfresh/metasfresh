@@ -1,10 +1,15 @@
 package de.metas.material.cockpit.stock;
 
-import java.math.BigDecimal;
-
-import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+
+import java.math.BigDecimal;
+import java.util.Map;
+
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -29,7 +34,7 @@ import lombok.Value;
  */
 
 @Value
-public class StockDataRecord
+public class StockDataAggregateItem
 {
 	int productCategoryId;
 	int productId;
@@ -40,18 +45,18 @@ public class StockDataRecord
 	BigDecimal qtyOnHand;
 
 	@Builder
-	private StockDataRecord(
+	private StockDataAggregateItem(
 			final int productCategoryId,
 			final int productId,
 			final String productValue,
 			final int warehouseId,
-			final BigDecimal qtyOnHand)
+			@NonNull final BigDecimal qtyOnHand,
+			@Singular final Map<AttributesKey, BigDecimal> qtyOnHandDetails)
 	{
 		Check.assumeGreaterThanZero(productCategoryId, "productCategoryId");
 		Check.assumeGreaterThanZero(productId, "productId");
 		Check.assumeNotEmpty(productValue, "productValue is not empty");
 		// Check.assumeGreaterThanZero(warehouseId, "warehouseId");
-		Check.assumeNotNull(qtyOnHand, "Parameter qtyOnHand is not null");
 
 		this.productCategoryId = productCategoryId;
 		this.productId = productId;

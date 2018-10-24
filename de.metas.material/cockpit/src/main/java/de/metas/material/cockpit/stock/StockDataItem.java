@@ -1,12 +1,10 @@
 package de.metas.material.cockpit.stock;
 
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import java.util.Set;
+import java.math.BigDecimal;
 
 import org.adempiere.warehouse.WarehouseId;
 
@@ -37,16 +35,18 @@ import de.metas.product.ProductId;
 
 @Value
 @Builder
-public class StockDataQuery
+public class StockDataItem
 {
-	/** Empty list means "all warehouses" */
-	@Singular
-	Set<WarehouseId> warehouseIds;
-
 	@NonNull
 	ProductId productId;
 
 	@NonNull
-	@Default
-	AttributesKey storageAttributesKey = AttributesKey.ALL;
+	WarehouseId warehouseId;
+
+	@NonNull
+	AttributesKey storageAttributesKey;
+
+	@NonNull
+	BigDecimal qtyOnHand;
+
 }

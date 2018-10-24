@@ -1,17 +1,10 @@
 package de.metas.material.cockpit.stock;
 
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.Set;
-
-import org.adempiere.warehouse.WarehouseId;
-
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.product.ProductId;
+import java.util.List;
 
 /*
  * #%L
@@ -37,16 +30,8 @@ import de.metas.product.ProductId;
 
 @Value
 @Builder
-public class StockDataQuery
+public class StockDataMultiQuery
 {
-	/** Empty list means "all warehouses" */
-	@Singular
-	Set<WarehouseId> warehouseIds;
-
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	@Default
-	AttributesKey storageAttributesKey = AttributesKey.ALL;
+	@Singular("stockDataQuery")
+	List<StockDataQuery> stockDataQueries;
 }

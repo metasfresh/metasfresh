@@ -25,43 +25,51 @@ import de.metas.shipping.ShipperId;
 
 public class ShipmentScheduleBLTest
 {
+	private static final int SHIPPER_ID = 20;
+	private static final int WAREHOUSE_ID = 35;
+
+	private ShipmentScheduleBL shipmentScheduleBL;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		this.shipmentScheduleBL = ShipmentScheduleBL.newInstanceForUnitTesting();
 	}
 
 	/**
 	 * Calls updateSchedule with an empty list.
 	 */
 	@Test
-	public void testEmpty()
+	public void updateSchedules_emptyList()
 	{
 		final List<OlAndSched> olAndScheds = new ArrayList<>();
 
-		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
 		shipmentScheduleBL.updateSchedules(Env.getCtx(), olAndScheds, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Test
-	public void createInout()
+	public void createGroup()
 	{
 		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
 		sched.setBPartnerAddress_Override("bPartnerAddress");
-		sched.setM_Warehouse_Override_ID(35);
+		sched.setM_Warehouse_Override_ID(WAREHOUSE_ID);
 		save(sched);
 
 		final ShipmentScheduleReferencedLine scheduleSourceDoc = ShipmentScheduleReferencedLine.builder()
 				.groupId(10)
-				.shipperId(ShipperId.optionalOfRepoId(20))
+				.shipperId(ShipperId.optionalOfRepoId(SHIPPER_ID))
 				.warehouseId(WarehouseId.ofRepoId(30)) // different from the sched's effective WH
 				.documentLineDescriptor(OrderLineDescriptor.builder().build()) // documentLineDescriptor is not relevant for this test
 				.build();
 
-		final DeliveryGroupCandidate result = new ShipmentScheduleBL().createGroup(scheduleSourceDoc, sched);
+		// invoke method under test
+		final DeliveryGroupCandidate result = shipmentScheduleBL.createGroup(scheduleSourceDoc, sched);
+
 		assertThat(result.getGroupId()).isEqualTo(10);
-		assertThat(result.getShipperId().get().getRepoId()).isEqualTo(20);
-		assertThat(result.getWarehouseId().getRepoId()).isEqualTo(35);
+		assertThat(result.getShipperId().get().getRepoId()).isEqualTo(SHIPPER_ID);
+		assertThat(result.getWarehouseId().getRepoId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(result.getBPartnerAddress()).isEqualTo("bPartnerAddress");
 	}
 
@@ -70,8 +78,6 @@ public class ShipmentScheduleBLTest
 	{
 		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
 		sched.setQtyReserved(BigDecimal.TEN);
-
-		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
 
 		shipmentScheduleBL.updateProcessedFlag(sched);
 		assertThat(sched.isProcessed()).isFalse();
@@ -82,16 +88,15 @@ public class ShipmentScheduleBLTest
 	}
 
 	@Test
-	public void close()
+	public void closeShipmentSchedule()
 	{
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
 		schedule.setQtyOrdered_Override(new BigDecimal("23"));
 		schedule.setQtyToDeliver_Override(new BigDecimal("24"));
 		assertThat(schedule.isClosed()).isFalse();
 
-		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
-
 		shipmentScheduleBL.closeShipmentSchedule(schedule);
+
 		save(schedule);
 		refresh(schedule);
 
@@ -114,7 +119,6 @@ public class ShipmentScheduleBLTest
 		schedule.setQtyOrdered_Override(new BigDecimal("23"));
 		schedule.setQtyToDeliver_Override(new BigDecimal("24"));
 
-		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
 		shipmentScheduleBL.openShipmentSchedule(schedule);
 
 		assertThat(schedule.isClosed()).isFalse();
@@ -139,7 +143,6 @@ public class ShipmentScheduleBLTest
 		schedule.setQtyOrdered_Override(new BigDecimal("23"));
 		schedule.setQtyOrdered_Calculated(new BigDecimal("24"));
 
-		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
 		shipmentScheduleBL.updateQtyOrdered(schedule);
 
 		assertThat(schedule.getQtyOrdered()).isEqualByComparingTo(BigDecimal.ONE);
@@ -150,7 +153,7 @@ public class ShipmentScheduleBLTest
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setC_Order_ID(0);
-		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
+
 		assertThat(shipmentScheduleBL.isConsolidateVetoedByOrderOfSched(shipmentSchedule)).isFalse();
 	}
 }

@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import lombok.NonNull;
+
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -16,7 +18,6 @@ import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -53,7 +54,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 	}
 
 	@Override
-	public ShipmentScheduleReferencedLine provideFor(I_M_ShipmentSchedule shipmentSchedule)
+	public ShipmentScheduleReferencedLine provideFor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return ShipmentScheduleReferencedLine.builder()
 				.groupId(shipmentSchedule.getC_Order_ID())
