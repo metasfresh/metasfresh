@@ -90,7 +90,8 @@
 		<!-- required for shipment schedules -->
 		<dependency>
 			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo-commons</artifactId>
+			<artifactId>metasfresh-material-cockpit</artifactId>
+			<!-- <artifactId>metasfresh-material-dispo-commons</artifactId>  -->
 			<version>10.0.0</version>
 		</dependency>
 

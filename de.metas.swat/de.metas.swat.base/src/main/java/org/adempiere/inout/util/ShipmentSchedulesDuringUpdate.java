@@ -1,5 +1,7 @@
 package org.adempiere.inout.util;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,7 +26,6 @@ package org.adempiere.inout.util;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +45,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
-import lombok.NonNull;
 
 /**
  * Helper class to manage the shipments that might actually be created in the end.
@@ -292,7 +292,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	/**
 	 * We only deliver if the line qty is same as the qty
 	 * ordered by the customer
-	 * 
+	 *
 	 * @param deliveryLineCandidate
 	 */
 	private static void discardLineCandidateIfIncomplete(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
@@ -309,7 +309,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	/**
 	 * We only deliver any line at all if all line qtys as the
 	 * same as the qty ordered by the customer
-	 * 
+	 *
 	 * @param deliveryLineCandidate
 	 */
 	private static void discardAllLinesFromSameGroupIfIncomplete(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
@@ -367,7 +367,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		return statusInfos.toString();
 	}
 
-	public Collection<DeliveryLineCandidate> getAllLines()
+	public ImmutableList<DeliveryLineCandidate> getAllLines()
 	{
 		return ImmutableList.copyOf(deliveryLineCandidates);
 	}

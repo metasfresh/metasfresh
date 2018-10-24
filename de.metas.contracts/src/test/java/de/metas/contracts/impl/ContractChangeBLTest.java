@@ -30,7 +30,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -76,8 +75,8 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 			.terminationMemo(terminationMemo)
 			.build();
 
-	@Before
-	public void before()
+	@Override
+	public void initialize()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
 		SystemTime.setTimeSource(today);

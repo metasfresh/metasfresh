@@ -47,6 +47,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.product.ProductId;
@@ -169,6 +171,8 @@ public abstract class AbstractHUTest
 
 		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
 
+		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
+
 		initialize();
 	}
 
@@ -185,7 +189,7 @@ public abstract class AbstractHUTest
 	protected void setupMasterData()
 	{
 		helper = createHUTestHelper();
-		
+
 		defaultLocatorId = createLocatorId();
 
 		attr_CountryMadeIn = helper.attr_CountryMadeIn;

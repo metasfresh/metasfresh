@@ -1,5 +1,7 @@
 package org.adempiere.server.rpl.api.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,40 +12,37 @@ package org.adempiere.server.rpl.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.AdempiereProcessorLog;
 import org.compiere.model.I_IMP_Processor;
 
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 public class IMPProcessorAdempiereProcessorAdapter implements AdempiereProcessor
 {
 	private final I_IMP_Processor impProcessor;
 
-	public IMPProcessorAdempiereProcessorAdapter(final I_IMP_Processor impProcessor)
+	public IMPProcessorAdempiereProcessorAdapter(@NonNull final I_IMP_Processor impProcessor)
 	{
-		super();
-		Check.assumeNotNull(impProcessor, "impProcessor not null");
 		this.impProcessor = impProcessor;
 	}
 
@@ -123,9 +122,9 @@ public class IMPProcessorAdempiereProcessorAdapter implements AdempiereProcessor
 	}
 
 	@Override
-	public boolean save()
+	public boolean saveOutOfTrx()
 	{
-		InterfaceWrapperHelper.save(impProcessor);
+		InterfaceWrapperHelper.save(impProcessor, ITrx.TRXNAME_None);
 		return true;
 	}
 

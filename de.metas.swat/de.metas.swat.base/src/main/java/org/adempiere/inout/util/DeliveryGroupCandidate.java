@@ -68,7 +68,7 @@ public class DeliveryGroupCandidate
 	@Default
 	private final List<DeliveryLineCandidate> lines = new ArrayList<>();
 
-	public DeliveryLineCandidate addLine(
+	public DeliveryLineCandidate createAndAddLineCandidate(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final CompleteStatus completeStatus)
 	{
