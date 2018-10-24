@@ -95,6 +95,8 @@ public class LUTUProducerDestinationTestSupport
 
 	public I_M_HU_PI piLU;
 
+	public I_M_HU_PI_Item piLU_Item_Virtual;
+
 	/**
 	 * The PI-Item with itemtype "HandlingUnit" that links from the LU's PI "downwards" to the {@link #piTU_IFCO} sub-PI.<br>
 	 * One LU can hold 5 IFCOs
@@ -158,6 +160,7 @@ public class LUTUProducerDestinationTestSupport
 			piLU = helper.createHUDefinition("LU_Palet", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 			piLU_Item_IFCO = helper.createHU_PI_Item_IncludedHU(piLU, piTU_IFCO, new BigDecimal("5"));
 			piLU_Item_Bag = helper.createHU_PI_Item_IncludedHU(piLU, piTU_Bag, new BigDecimal("2"));
+			piLU_Item_Virtual = helper.createHU_PI_Item_IncludedHU(piLU, helper.huDefVirtual, new BigDecimal("1"));
 
 			helper.createHU_PI_Item_PackingMaterial(piLU, helper.pmPalet);
 		}
