@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
+import org.springframework.stereotype.Component;
 
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.PostMaterialEventService;
@@ -42,6 +43,7 @@ import de.metas.util.Services;
  * #L%
  */
 
+@Component
 public class StockDataUpdateRequestHandler
 {
 	private final PostMaterialEventService postMaterialEventService;
