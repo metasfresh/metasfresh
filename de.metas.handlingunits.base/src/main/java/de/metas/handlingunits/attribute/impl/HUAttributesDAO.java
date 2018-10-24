@@ -8,8 +8,10 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -18,11 +20,14 @@ import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public final class HUAttributesDAO implements IHUAttributesDAO
 {
+	private static final Logger logger = LogManager.getLogger(HUAttributesDAO.class);
+
 	public static final HUAttributesDAO instance = new HUAttributesDAO();
 
 	private HUAttributesDAO()
@@ -59,9 +64,6 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	public List<I_M_HU_Attribute> retrieveAttributesOrdered(final I_M_HU hu)
 	{
 		// NOTE: don't cache on this level. Caching is handled on upper levels
-		
-		final HuPackingInstructionsVersionId piVersionId = Services.get(IHandlingUnitsBL.class).getEffectivePIVersionId(hu);
-		final PIAttributes piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributes(piVersionId);
 
 		// there are only some dozen attributes at most, so i think it'S fine to order them after loading
 		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
@@ -69,7 +71,6 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create()
 				.stream()
-				.sorted(HUAttributesBySeqNoComparator.of(piAttributes))
 				.collect(ImmutableList.toImmutableList());
 
 		// Optimization: set M_HU link
@@ -78,7 +79,20 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 			huAttribute.setM_HU(hu);
 		}
 
-		return huAttributes;
+		final PIAttributes piAttributes;
+		final HuPackingInstructionsVersionId piVersionId = Services.get(IHandlingUnitsBL.class).getEffectivePIVersionId(hu);
+		if (piVersionId != null)
+		{
+			piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributes(piVersionId);
+		}
+		else
+		{
+			logger.warn("No PI Version found for {}", hu);
+			final ImmutableSet<Integer> piAttributeIds = huAttributes.stream().map(I_M_HU_Attribute::getM_HU_PI_Attribute_ID).collect(ImmutableSet.toImmutableSet());
+			piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributesByIds(piAttributeIds);
+		}
+
+		return HUAttributesBySeqNoComparator.of(piAttributes).sortAndCopy(huAttributes);
 	}
 
 	private final List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)
