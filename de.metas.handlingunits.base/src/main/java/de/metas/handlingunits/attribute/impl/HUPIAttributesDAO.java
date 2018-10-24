@@ -1,6 +1,10 @@
 package de.metas.handlingunits.attribute.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
+
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -94,6 +98,13 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		}
 
 		return piAttributes;
+	}
+
+	@Override
+	public PIAttributes retrievePIAttributesByIds(@NonNull final Set<Integer> piAttributeIds)
+	{
+		List<I_M_HU_PI_Attribute> piAttributesList = loadByIdsOutOfTrx(piAttributeIds, I_M_HU_PI_Attribute.class);
+		return PIAttributes.of(piAttributesList);
 	}
 
 	@Override
