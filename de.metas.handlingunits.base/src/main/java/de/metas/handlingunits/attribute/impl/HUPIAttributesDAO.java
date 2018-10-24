@@ -40,6 +40,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -92,7 +94,7 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 				.addColumn(I_M_HU_PI_Attribute.COLUMNNAME_SeqNo, Direction.Ascending, Nulls.Last)
 				.addColumn(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, Direction.Ascending, Nulls.Last);
 
-		final List<I_M_HU_PI_Attribute> piAttributes = queryBuilder.create()
+		final ImmutableList<I_M_HU_PI_Attribute> piAttributes = queryBuilder.create()
 				// Retrieve all attributes, including those inactive
 				// .setOnlyActiveRecords(true)
 				.listImmutable(I_M_HU_PI_Attribute.class); // immutable because this is a cached method

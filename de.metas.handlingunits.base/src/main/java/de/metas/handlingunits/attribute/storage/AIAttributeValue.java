@@ -193,6 +193,12 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 	{
 		return true;
 	}
+	
+	@Override
+	public boolean isMandatory()
+	{
+		return false;
+	}
 
 	@Override
 	public boolean isOnlyIfInProductAttributeSet()

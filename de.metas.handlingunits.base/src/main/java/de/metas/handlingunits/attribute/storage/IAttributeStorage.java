@@ -202,6 +202,11 @@ public interface IAttributeStorage extends IAttributeSet
 
 	boolean isDisplayedUI(final ImmutableSet<ProductId> productIDs, final I_M_Attribute attribute);
 
+	default boolean isMandatory(@NonNull final I_M_Attribute attribute)
+	{
+		return getAttributeValue(attribute.getValue()).isMandatory();
+	}
+
 	/**
 	 * Set attribute's value with NO propagation.
 	 *
@@ -383,10 +388,5 @@ public interface IAttributeStorage extends IAttributeSet
 	default int getM_Warehouse_ID()
 	{
 		return -1;
-	}
-
-	default boolean isMandatory(I_M_Attribute attribute)
-	{
-		return false;
 	}
 }
