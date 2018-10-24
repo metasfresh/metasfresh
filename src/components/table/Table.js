@@ -167,7 +167,11 @@ class Table extends Component {
       }
     }
 
-    if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
+    if (
+      prevProps.viewId !== viewId &&
+      defaultSelected &&
+      defaultSelected.length === 0
+    ) {
       this.setState(
         {
           selected: defaultSelected,
