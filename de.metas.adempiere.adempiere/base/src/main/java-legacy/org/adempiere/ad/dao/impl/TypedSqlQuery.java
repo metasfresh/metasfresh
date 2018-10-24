@@ -814,10 +814,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		else
 		{
+			setLimit(1); // we don't need more than one row to decide if it matches
 			sqlSelect = new StringBuilder("SELECT 1 FROM ")
-					.append(getSqlFrom())
-					.append(" LIMIT 1");
-
+					.append(getSqlFrom());
 		}
 		final String sql = buildSQL(sqlSelect, false/*useOrderByClause*/);
 		PreparedStatement pstmt = null;
