@@ -1,13 +1,15 @@
 package de.metas.ui.web.devtools;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
@@ -32,7 +34,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
-import lombok.NonNull;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -208,7 +210,10 @@ public class MigrationScriptRestController
 
 	@GetMapping("/scripts/{filename}")
 	public ResponseEntity<byte[]> getScript(
+
 			@PathVariable("filename") final String filename,
+
+			@ApiParam("Decides over the reponse's " + HttpHeaders.CONTENT_DISPOSITION + " header value; If set to <code>false</code>, the file is returned as attachment (download)") //
 			@RequestParam(name = "inline", required = false, defaultValue = "true") final boolean inline)
 	{
 		assertAuth();
