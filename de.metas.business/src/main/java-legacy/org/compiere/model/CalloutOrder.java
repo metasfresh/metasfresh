@@ -27,6 +27,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.uom.api.UOMConversionContext;
@@ -57,7 +58,6 @@ import de.metas.product.IProductBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -85,10 +85,13 @@ public class CalloutOrder extends CalloutEngine
 	public String docType(final ICalloutField calloutField)
 	{
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+
+		final I_C_Order oldOrder = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
+
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(order.getC_DocTypeTarget())
-				.setOldDocType_ID(order.getC_DocType_ID())
+				.setOldDocType_ID(oldOrder.getC_DocTypeTarget_ID())
 				.setOldDocumentNo(order.getDocumentNo())
 				.setDocumentModel(order)
 				.buildOrNull();
