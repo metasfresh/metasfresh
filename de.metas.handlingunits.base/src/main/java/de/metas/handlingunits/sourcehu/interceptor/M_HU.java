@@ -5,6 +5,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.sourcehu.ISourceHuDAO;
 import de.metas.util.Services;
@@ -26,7 +27,7 @@ public class M_HU
 	public void preventMovingSourceHu(@NonNull final I_M_HU hu)
 	{
 		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
-		final boolean sourceHU = sourceHuDAO.isSourceHu(hu.getM_HU_ID());
+		final boolean sourceHU = sourceHuDAO.isSourceHu(HuId.ofRepoId(hu.getM_HU_ID()));
 		if (sourceHU)
 		{
 			throw new SourceHuMayNotBeRemovedException(hu);

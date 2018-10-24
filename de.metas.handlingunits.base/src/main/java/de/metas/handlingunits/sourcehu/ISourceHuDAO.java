@@ -48,7 +48,7 @@ public interface ISourceHuDAO extends ISingletonService
 	 * @param huId
 	 * @return
 	 */
-	boolean isSourceHu(int huId);
+	boolean isSourceHu(HuId huId);
 
 	I_M_Source_HU retrieveSourceHuMarkerOrNull(I_M_HU hu);
 

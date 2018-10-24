@@ -51,15 +51,14 @@ public class SourceHuDAO implements ISourceHuDAO
 {
 	@Override
 	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID)
-	public boolean isSourceHu(final int huId)
+	public boolean isSourceHu(@NonNull final HuId huId)
 	{
-		final boolean isSourceHU = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Source_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Source_HU.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.match();
-		return isSourceHU;
 	}
 
 	@Override
