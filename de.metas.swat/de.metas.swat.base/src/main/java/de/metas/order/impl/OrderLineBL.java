@@ -39,6 +39,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -71,6 +72,8 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductDescription;
+import de.metas.product.ProductDescriptionRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
@@ -78,7 +81,6 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 public class OrderLineBL implements IOrderLineBL
@@ -652,6 +654,30 @@ public class OrderLineBL implements IOrderLineBL
 	private boolean isSetBOMDescription()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SetBOMDescription, false);
+	}
+
+	
+	@Override
+	public void updateMProductDescriptionIDFromProductMProductDescriptionIfConfigured(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+	
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
+		{
+			return;
+		}
+		
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(orderLine.getC_BPartner_ID());
+
+		final ProductDescriptionRepository repo = Adempiere.getBean(ProductDescriptionRepository.class);
+		final ProductDescription description = repo.getByProductIdAndBPartner(productId, bpartnerId);
+		if (description == null)
+		{
+			return;
+		}
+
+		orderLine.setProductDescription(description.getName());
+		orderLine.setM_ProductDescription_ID(description.getId());
 	}
 
 }
