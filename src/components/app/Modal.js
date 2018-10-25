@@ -272,12 +272,14 @@ class Modal extends Component {
     });
   };
 
-  setFetchOnTrue = () => {
-    this.setState({ waitingFetch: true });
-  };
+  // setFetchOnTrue = () => {
+  //   this.setState({ waitingFetch: true });
+  // };
 
   handleStart = () => {
     const { dispatch, layout, windowType, indicator } = this.props;
+
+    console.log('handleStart')
 
     if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });
@@ -497,7 +499,7 @@ class Modal extends Component {
   };
 
   renderOverlay = () => {
-    const { data, layout, windowType } = this.props;
+    const { data, layout, windowType, modalType, isNewDoc } = this.props;
     const { pending } = this.state;
 
     return (
@@ -506,8 +508,16 @@ class Modal extends Component {
         disabled={pending}
         data={data}
         layout={layout}
-        handleSubmit={this.setFetchOnTrue}
-        closeOverlay={this.removeModal}
+        _handleSubmit={this.handleStart}
+        _closeOverlay={this.removeModal}
+        handleSubmit={
+          modalType === 'process' ? this.handleStart : this.handleClose
+        }
+        closeOverlay={
+          modalType === 'process'
+            ? this.handleClose
+            : isNewDoc ? this.removeModal : ''
+        }
       />
     );
   };
