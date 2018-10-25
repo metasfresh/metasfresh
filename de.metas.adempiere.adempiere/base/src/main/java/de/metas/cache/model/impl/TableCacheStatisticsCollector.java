@@ -13,20 +13,24 @@ package de.metas.cache.model.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.slf4j.Logger;
 
 import de.metas.cache.CacheMgt;
@@ -37,10 +41,6 @@ import de.metas.cache.model.jmx.JMXCacheStatisticsManager;
 import de.metas.cache.model.jmx.JMXTableCacheStatistics;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
 /* package */class TableCacheStatisticsCollector implements ITableCacheStatisticsCollector
 {
@@ -72,28 +72,25 @@ import javax.management.ObjectName;
 	}
 
 	@Override
-	public void record(final ITableCacheConfig cacheConfig, final boolean inTransaction, final Object cachedObject)
+	public void record(final ITableCacheConfig cacheConfig, final boolean hit, final boolean inTransaction)
 	{
 		if (!enabled)
 		{
 			return;
 		}
 
-		final boolean hit = cachedObject != null;
-
 		statisticsLock.lock();
 		try
 		{
-			record(statistics, hit, inTransaction, cachedObject);
+			record(statistics, hit, inTransaction);
 
 			//
 			// Record table statistics
-			if (!tableStatisticsEnabled)
+			if (tableStatisticsEnabled)
 			{
-				return;
+				final ITableCacheStatistics tableStatistics = getTableStatistics(cacheConfig);
+				record(tableStatistics, hit, inTransaction);
 			}
-			final ITableCacheStatistics tableStatistics = getTableStatistics(cacheConfig);
-			record(tableStatistics, hit, inTransaction, cachedObject);
 		}
 		finally
 		{
@@ -101,7 +98,7 @@ import javax.management.ObjectName;
 		}
 	}
 
-	private final void record(ITableCacheStatistics statistics, final boolean hit, final boolean inTransaction, final Object cachedObject)
+	private final void record(ITableCacheStatistics statistics, final boolean hit, final boolean inTransaction)
 	{
 		if (hit)
 		{

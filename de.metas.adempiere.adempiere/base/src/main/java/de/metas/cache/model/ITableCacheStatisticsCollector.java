@@ -35,12 +35,8 @@ public interface ITableCacheStatisticsCollector
 
 	/**
 	 * Record a cache "get" operation.
-	 * 
-	 * @param cacheConfig
-	 * @param inTransaction
-	 * @param cachedObject the object retrieved from cache or <code>null</code> if it was a cache miss
 	 */
-	void record(ITableCacheConfig cacheConfig, boolean inTransaction, Object cachedObject);
+	void record(ITableCacheConfig cacheConfig, boolean hit, boolean inTransaction);
 
 	void reset();
 

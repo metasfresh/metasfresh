@@ -1,32 +1,8 @@
 package de.metas.cache.model.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.Nullable;
 
@@ -34,31 +10,29 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.NullTrxPlaceholder;
 import org.adempiere.ad.trx.exceptions.TrxException;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
+import org.compiere.model.POInfo;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.MapMaker;
 
 import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.IDCache;
-import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.interceptor.CacheCtxParamDescriptor;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.IMutableTableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.ITableCacheConfigBuilder;
 import de.metas.cache.model.ITableCacheStatisticsCollector;
-import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,17 +43,9 @@ public class ModelCacheService implements IModelCacheService
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final LoadingCache<ITrx, TrxCacheMap> _cacheMapsByTrx = CacheBuilder.newBuilder()
+	private final ConcurrentMap<ITrx, TrxCacheMap> cacheMapsByTrx = new MapMaker()
 			.weakKeys()
-			.build(new CacheLoader<ITrx, TrxCacheMap>()
-			{
-				@Override
-				public TrxCacheMap load(final ITrx trx)
-				{
-					return new TrxCacheMap(trx);
-				}
-			});
-	private final ReentrantLock lock = new ReentrantLock();
+			.makeMap();
 
 	private final ConcurrentHashMap<String, ITableCacheConfig> tableName2cacheConfig = new ConcurrentHashMap<>();
 
@@ -172,7 +138,11 @@ public class ModelCacheService implements IModelCacheService
 
 	protected final void addTableCacheConfig(final ITableCacheConfig cacheConfig, final boolean override)
 	{
-		// TODO: allow caching config only for tables with single primary key
+		final POInfo poInfo = POInfo.getPOInfo(cacheConfig.getTableName());
+		if (!poInfo.isSingleKeyColumnName())
+		{
+			logger.warn("Skip adding {} because the table does not have a single primary key", cacheConfig);
+		}
 
 		tableName2cacheConfig.compute(cacheConfig.getTableName(), (tableName, previousConfig) -> {
 			if (previousConfig == null)
@@ -227,47 +197,31 @@ public class ModelCacheService implements IModelCacheService
 			return null;
 		}
 
-		lock.lock();
-		try
+		//
+		// Search cache on transaction level
+		// (at this point "trx" can be an actual transaction or out-of-transaction=None)
+		PO poCached = retrieveObjectFromTrx(cacheConfig, ctx, tableName, recordId, trx);
+
+		//
+		// If nothing found and we are not out-of-transaction
+		// then try searching on out-of-transaction level and if something found clone it and return it
+		if (poCached == null && inTransaction)
 		{
-			//
-			// Search cache on transaction level
-			// (at this point "trx" can be an actual transaction or out-of-transaction=None)
-			PO poToReturn = retrieveObjectFromTrx(cacheConfig, ctx, tableName, recordId, trx);
-
-			//
-			// If nothing found and we are not out-of-transaction
-			// then try searching on out-of-transaction level and if something found clone it and return it
-			if (poToReturn == null && inTransaction)
-			{
-				final PO poOutOfTrx = retrieveObjectFromTrx(cacheConfig, ctx, tableName, recordId, ITrx.TRX_None);
-				if (poOutOfTrx != null)
-				{
-					final PO poOutOfTrxCopy = copyPO(poOutOfTrx, trxName);
-					if (poOutOfTrxCopy != null)
-					{
-						addToCache(poOutOfTrxCopy);
-					}
-					poToReturn = poOutOfTrxCopy;
-				}
-			}
-
-			//
-			// Update statistics
-			statisticsCollector.record(cacheConfig, inTransaction, poToReturn);
-			// Logging
-			if (logger.isTraceEnabled())
-			{
-				logger.trace("Cache {} (inTrx={}) - tableName/recordId={}/{}", poToReturn != null ? "HIT" : "MISS", inTransaction, tableName, recordId);
-			}
-
-			// each caller gets their own copy because in case they loaded the PO from database, they would also have gotten an instance of their own.
-			return copyPO(poToReturn, trxName);
+			poCached = retrieveObjectFromTrx(cacheConfig, ctx, tableName, recordId, ITrx.TRX_None);
 		}
-		finally
+
+		//
+		// Update statistics & logging
+		final boolean hit = poCached != null;
+		statisticsCollector.record(cacheConfig, hit, inTransaction);
+		//
+		if (logger.isTraceEnabled())
 		{
-			lock.unlock();
+			logger.trace("Cache {} (inTrx={}) - tableName/recordId={}/{}", hit ? "HIT" : "MISS", inTransaction, tableName, recordId);
 		}
+
+		// each caller gets their own copy because in case they loaded the PO from database, they would also have gotten an instance of their own.
+		return copyPO(poCached, trxName);
 	}
 
 	/**
@@ -289,37 +243,27 @@ public class ModelCacheService implements IModelCacheService
 			return null;
 		}
 
-		PO poToReturn;
 		try
 		{
-			final PO poNoTrxCopy = originalPO.copy();
-			poNoTrxCopy.set_TrxName(trxName);
-			poToReturn = poNoTrxCopy;
+			final PO poCopy = originalPO.copy();
+			poCopy.set_TrxName(trxName);
+			return poCopy;
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Cannot create a copy of " + originalPO + ". Returning null.", e);
-			poToReturn = null;
+			logger.warn("Cannot create a copy of {}. Returning null.", originalPO, e);
+			return null;
 		}
-		return poToReturn;
 	}
 
 	private TrxCacheMap getTrxCacheMapIfPresent(final ITrx trx)
 	{
-		return _cacheMapsByTrx.getIfPresent(NullTrxPlaceholder.boxNotNull(trx));
+		return cacheMapsByTrx.get(NullTrxPlaceholder.boxNotNull(trx));
 	}
 
 	private TrxCacheMap getTrxCacheMap(final ITrx trx)
 	{
-		try
-		{
-			return _cacheMapsByTrx.get(NullTrxPlaceholder.boxNotNull(trx));
-		}
-		catch (final ExecutionException ex)
-		{
-			// shall not happen
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
+		return cacheMapsByTrx.computeIfAbsent(NullTrxPlaceholder.boxNotNull(trx), TrxCacheMap::new);
 	}
 
 	private final PO retrieveObjectFromTrx(final ITableCacheConfig cacheConfig, final Properties ctx, final String tableName, final int recordId, final ITrx trx)
@@ -465,61 +409,29 @@ public class ModelCacheService implements IModelCacheService
 			return;
 		}
 
-		lock.lock();
-		try
-		{
-			getTrxCacheMap(trx).put(po, cacheConfig);
-
-			//
-			// Our model's transaction is not null (i.e. it's in transaction)
-			// and for this table out-of-transaction caching is also enabled
-			// TODO: shall we do this only for "Master Data" tables?
-			// => create a copy in out-of-transaction cache too
-			final boolean inTransaction = trxManager.getTrxOrNull(trxName) != null;
-			if (inTransaction && isTrxLevelEnabled(cacheConfig, ITrx.TRX_None))
-			{
-				final PO poOutOfTrxCopy = copyPO(po, ITrx.TRXNAME_None);
-				if (poOutOfTrxCopy != null)
-				{
-					getTrxCacheMap(ITrx.TRX_None).put(poOutOfTrxCopy, cacheConfig);
-				}
-			}
-		}
-		finally
-		{
-			lock.unlock();
-		}
+		getTrxCacheMap(trx).put(po, cacheConfig);
 	}
 
 	@Override
 	public void invalidate(@NonNull final CacheInvalidateMultiRequest request)
 	{
 		final ITrx trx = trxManager.getTrxOrNull(ITrx.TRXNAME_ThreadInherited);
-
-		lock.lock();
-		try
+		for (final CacheInvalidateRequest singleRequest : request.getRequests())
 		{
-			for (final CacheInvalidateRequest singleRequest : request.getRequests())
+			if (singleRequest.isAll())
 			{
-				if (singleRequest.isAll())
-				{
-					invalidateAll(trx);
-					break;
-				}
-				else if (singleRequest.isAllRecords())
-				{
-					invalidateTable(singleRequest.getTableNameEffective(), trx);
-				}
-				else
-				{
-					final TableRecordReference record = singleRequest.getRecordEffective();
-					invalidateRecord(record, trx);
-				}
+				invalidateAll(trx);
+				break;
 			}
-		}
-		finally
-		{
-			lock.unlock();
+			else if (singleRequest.isAllRecords())
+			{
+				invalidateTable(singleRequest.getTableNameEffective(), trx);
+			}
+			else
+			{
+				final TableRecordReference record = singleRequest.getRecordEffective();
+				invalidateRecord(record, trx);
+			}
 		}
 	}
 
@@ -567,33 +479,24 @@ public class ModelCacheService implements IModelCacheService
 
 		logger.debug("Clearing all cache instances of {}", this);
 
-		final ImmutableList<TrxCacheMap> cacheMapsToInvalidate;
-
-		lock.lock();
-		try
-		{
-			cacheMapsToInvalidate = ImmutableList.copyOf(_cacheMapsByTrx.asMap().values());
-
-			// Full reset of our caching map
-			_cacheMapsByTrx.invalidateAll();
-			_cacheMapsByTrx.cleanUp();
-		}
-		finally
-		{
-			lock.unlock();
-		}
+		final ImmutableList<TrxCacheMap> cacheMapsToInvalidate = ImmutableList.copyOf(cacheMapsByTrx.values());
+		cacheMapsByTrx.clear();
 
 		cacheMapsToInvalidate.forEach(TrxCacheMap::invalidateAll);
 
 		return 1;
 	}
 
+	//
+	//
+	//
+	//
+	//
 	private static class TrxCacheMap
 	{
 		private final String trxName;
 
-		// TODO consider using guava cache
-		private final HashMap<String, IDCache<PO>> cachesByTableName = new HashMap<>(50);
+		private final ConcurrentMap<String, IDCache<PO>> cachesByTableName = new ConcurrentHashMap<>();
 
 		public TrxCacheMap(final ITrx trx)
 		{
@@ -687,12 +590,19 @@ public class ModelCacheService implements IModelCacheService
 			//
 			// Add our PO to cache
 			final int recordId = po.get_ID();
-			cache.put(recordId, po);
+			final PO poCopy = copyPO(po, trxName);
+			if (poCopy == null)
+			{
+				logger.warn("Failed to add {} to cache because copy failed. Ignored.", po);
+				return;
+			}
+
+			cache.put(recordId, poCopy);
 
 			// Logging
 			if (logger.isTraceEnabled())
 			{
-				logger.trace("Model added to cache {}: {} ", cache.getCacheName(), po);
+				logger.trace("Model added to cache {}: {} ", cache.getCacheName(), poCopy);
 			}
 		}
 	}
