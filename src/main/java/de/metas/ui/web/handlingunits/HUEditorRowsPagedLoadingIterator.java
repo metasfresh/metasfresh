@@ -8,12 +8,11 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.compiere.util.CCache;
-
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.GuavaCollectors;

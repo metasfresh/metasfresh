@@ -3,9 +3,9 @@ package de.metas.ui.web.material.cockpit;
 import java.util.stream.Stream;
 
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CacheMgt;
 import org.springframework.stereotype.Service;
 
+import de.metas.cache.CacheMgt;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.view.DefaultViewsRepositoryStorage;

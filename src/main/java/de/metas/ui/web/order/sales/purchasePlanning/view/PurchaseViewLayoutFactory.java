@@ -1,7 +1,6 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import org.compiere.util.CCache;
-
+import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;

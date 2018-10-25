@@ -7,7 +7,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ILocationBL;
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.address.AddressDescriptorFactory.AddressFieldBinding;
 import de.metas.ui.web.window.datatypes.DocumentId;

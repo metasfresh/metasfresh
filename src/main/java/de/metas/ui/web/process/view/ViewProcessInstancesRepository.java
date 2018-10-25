@@ -7,10 +7,10 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.metas.cache.CCache;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;

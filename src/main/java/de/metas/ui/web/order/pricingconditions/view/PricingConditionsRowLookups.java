@@ -7,11 +7,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CCache;
 import org.compiere.util.Evaluatees;
 
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.payment.paymentterm.PaymentTermId;

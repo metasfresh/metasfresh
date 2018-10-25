@@ -6,9 +6,9 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_AD_Window;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
+import de.metas.cache.CCache;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;

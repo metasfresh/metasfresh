@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +20,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.Builder;

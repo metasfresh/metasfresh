@@ -3,10 +3,9 @@ package de.metas.ui.web.window.model.lookup;
 import java.util.List;
 import java.util.Optional;
 
-import org.compiere.util.CCache.CCacheStats;
-
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;

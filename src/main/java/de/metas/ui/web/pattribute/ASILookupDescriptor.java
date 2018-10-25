@@ -8,12 +8,12 @@ import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.NamePair;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;

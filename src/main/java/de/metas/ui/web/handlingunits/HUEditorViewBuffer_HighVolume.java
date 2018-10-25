@@ -12,12 +12,12 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.lang.Mutables;
 import org.adempiere.util.lang.SynchronizedMutable;
-import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;

@@ -11,7 +11,6 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.document.filter.DocumentFilter;

@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Process;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Component;
 
 import com.google.common.cache.Cache;
@@ -19,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;

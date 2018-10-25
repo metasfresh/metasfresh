@@ -5,12 +5,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.api.PickingSlotQuery.PickingSlotQueryBuilder;
 import de.metas.process.IADProcessDAO;

@@ -18,11 +18,11 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MAttribute;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Component;
 
+import de.metas.cache.CCache;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;

@@ -5,12 +5,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;

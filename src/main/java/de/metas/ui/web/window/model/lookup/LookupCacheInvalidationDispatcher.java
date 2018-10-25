@@ -8,20 +8,20 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
-import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.compiere.util.CacheMgt;
-import org.compiere.util.ICacheResetListener;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CacheMgt;
+import de.metas.cache.ICacheResetListener;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.util.Services;
 
 /*

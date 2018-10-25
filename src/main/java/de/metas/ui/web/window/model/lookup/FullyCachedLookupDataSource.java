@@ -5,15 +5,15 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.compiere.model.I_AD_SysConfig;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CCacheStats;
-import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;

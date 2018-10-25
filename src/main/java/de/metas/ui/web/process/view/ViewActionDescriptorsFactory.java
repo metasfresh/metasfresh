@@ -11,10 +11,10 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.lang.MutableInt;
 import org.compiere.Adempiere;
-import org.compiere.util.CCache;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessInstanceResult;

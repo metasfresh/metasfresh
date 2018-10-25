@@ -17,7 +17,6 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Tab;
-import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;

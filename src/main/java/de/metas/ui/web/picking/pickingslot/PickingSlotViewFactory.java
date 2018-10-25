@@ -7,13 +7,13 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;

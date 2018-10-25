@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -34,6 +33,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;

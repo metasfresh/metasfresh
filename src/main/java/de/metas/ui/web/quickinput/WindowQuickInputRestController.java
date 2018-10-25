@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.cache.CCache;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;

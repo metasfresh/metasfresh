@@ -3,12 +3,11 @@ package de.metas.ui.web.order.pricingconditions.view;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.compiere.util.CCache;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;

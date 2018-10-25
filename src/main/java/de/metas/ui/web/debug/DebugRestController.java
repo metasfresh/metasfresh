@@ -13,7 +13,6 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -36,6 +35,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import ch.qos.logback.classic.Level;
+import de.metas.cache.CacheMgt;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
@@ -343,9 +343,9 @@ public class DebugRestController
 	public static enum LoggingModule
 	{
 		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()), view(de.metas.ui.web.view.IView.class.getPackage().getName()), cache(
-				org.compiere.util.CCache.class.getName() //
-				, org.compiere.util.CacheMgt.class.getName() //
-				, org.adempiere.ad.dao.cache.IModelCacheService.class.getName() // model caching
+				de.metas.cache.CCache.class.getName() //
+				, de.metas.cache.CacheMgt.class.getName() //
+				, de.metas.cache.model.IModelCacheService.class.getName() // model caching
 		) //
 		;
 

@@ -28,7 +28,6 @@ import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.compiere.model.I_AD_User;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -42,6 +41,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.currency.Amount;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.DateTimeTranslatableString;

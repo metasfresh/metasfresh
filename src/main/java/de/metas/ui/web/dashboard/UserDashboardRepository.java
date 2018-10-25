@@ -23,7 +23,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery.Aggregate;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -32,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.Language;
 import de.metas.i18n.po.POTrlInfo;

@@ -18,11 +18,11 @@ import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;

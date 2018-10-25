@@ -9,10 +9,10 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Region;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Postal;
+import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentType;

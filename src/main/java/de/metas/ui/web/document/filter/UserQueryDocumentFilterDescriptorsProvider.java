@@ -13,11 +13,11 @@ import org.compiere.apps.search.IUserQueryRestriction;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.I_AD_UserQuery;
-import org.compiere.util.CachedSuppliers;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.cache.CachedSuppliers;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;

@@ -3,9 +3,9 @@ package de.metas.ui.web.session;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
-import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.Language;
 import lombok.NonNull;
 import lombok.Value;
