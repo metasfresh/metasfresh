@@ -946,6 +946,7 @@ class Table extends Component {
       showIncludedViewOnSelect,
       openIncludedViewOnSelect,
       viewId,
+      supportOpenRecord,
     } = this.props;
 
     const { selected, rows, collapsedRows, collapsedParentsRows } = this.state;
@@ -983,9 +984,11 @@ class Table extends Component {
           }}
           rowId={item[keyProperty]}
           tabId={tabid}
-          onDoubleClick={() =>
-            onDoubleClick && onDoubleClick(item[keyProperty])
-          }
+          onDoubleClick={() => {
+            if (supportOpenRecord) {
+              onDoubleClick && onDoubleClick(item[keyProperty]);
+            }
+          }}
           onClick={e => {
             const selected = this.handleClick(e, keyProperty, item);
 

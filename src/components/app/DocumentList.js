@@ -924,6 +924,7 @@ export class DocumentList extends Component {
                 emptyText={layout.emptyResultText}
                 emptyHint={layout.emptyResultHint}
                 readonly={true}
+                supportOpenRecord={layout.supportOpenRecord}
                 rowEdited={rowEdited}
                 onRowEdited={this.setTableRowEdited}
                 keyProperty="id"
