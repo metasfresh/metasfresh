@@ -45,6 +45,7 @@ class Table extends Component {
     onSelectionChanged: PropTypes.func,
     onRowEdited: PropTypes.func,
     defaultSelected: PropTypes.array,
+    supportOpenRecord: PropTypes.bool,
   };
 
   _isMounted = false;
