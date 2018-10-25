@@ -30,7 +30,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-
 import lombok.NonNull;
 
 /*
@@ -60,7 +59,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 	private static final Logger logger = LogManager.getLogger(UserQueryDocumentFilterDescriptorsProvider.class);
 
 	private final UserQueryRepository repository;
-	private final Supplier<Map<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(() -> retrieveAllByFilterId());
+	private final Supplier<Map<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);
 
 	public UserQueryDocumentFilterDescriptorsProvider(final int adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
 	{
