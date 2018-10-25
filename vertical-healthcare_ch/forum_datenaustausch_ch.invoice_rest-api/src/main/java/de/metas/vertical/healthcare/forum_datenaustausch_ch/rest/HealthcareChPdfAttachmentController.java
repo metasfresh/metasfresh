@@ -66,13 +66,15 @@ public class HealthcareChPdfAttachmentController
 	@ApiOperation(value = "Attach a PDF document to an externalOrderId")
 	// TODO only allow PDF
 	public JsonAttachment attachPdfFile(
-			@ApiParam(value = "Reference string that was returned by the invoice-rest-controller", allowEmptyValue = false) @PathVariable("externalReference") final String externalReference,
+			@ApiParam(value = "Reference string that was returned by the invoice-rest-controller", allowEmptyValue = false) //
+			@PathVariable("externalReference") final String externalReference,
+
 			@RequestParam("file") @NonNull final MultipartFile file)
 			throws IOException
 	{
 		final ImmutableList<String> tags = ImmutableList.of(
-				ATTATCHMENT_TAGNAME_EXPORT_PROVIDER/*name*/, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/*value*/,
-				ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE/*name*/, externalReference/*value*/);
+				ATTATCHMENT_TAGNAME_EXPORT_PROVIDER/* name */, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/* value */,
+				ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE/* name */, externalReference/* value */);
 
 		return orderCandidatesRestEndpoint
 				.attachFile(
