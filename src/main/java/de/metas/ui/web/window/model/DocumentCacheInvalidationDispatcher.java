@@ -88,7 +88,7 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	}
 
 	@Override
-	public int reset(@NonNull final CacheInvalidateMultiRequest request)
+	public long reset(@NonNull final CacheInvalidateMultiRequest request)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 

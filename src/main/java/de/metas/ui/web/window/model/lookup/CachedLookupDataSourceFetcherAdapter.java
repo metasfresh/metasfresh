@@ -106,8 +106,8 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	@Override
 	public void cacheInvalidate()
 	{
-		cache_retrieveEntities.clear();
-		cache_retrieveLookupValueById.clear();
+		cache_retrieveEntities.reset();
+		cache_retrieveLookupValueById.reset();
 	}
 
 	@Override

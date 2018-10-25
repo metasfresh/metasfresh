@@ -82,7 +82,7 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	@Override
 	public void cacheInvalidate()
 	{
-		allCountriesCache.clear();
+		allCountriesCache.reset();
 	}
 
 	@Override

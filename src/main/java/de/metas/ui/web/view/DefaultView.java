@@ -316,7 +316,7 @@ public final class DefaultView implements IEditableView
 	@Override
 	public void invalidateAll()
 	{
-		cache_rowsById.clear();
+		cache_rowsById.reset();
 	}
 
 	@Override

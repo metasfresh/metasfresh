@@ -191,7 +191,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	@Override
 	public void cacheReset()
 	{
-		viewActionInstancesByViewId.clear();
+		viewActionInstancesByViewId.reset();
 	}
 
 	@ToString

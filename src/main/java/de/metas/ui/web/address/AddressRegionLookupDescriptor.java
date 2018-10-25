@@ -26,9 +26,9 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 
 /*
  * #%L
@@ -96,7 +96,7 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	@Override
 	public void cacheInvalidate()
 	{
-		regionsByCountryId.clear();
+		regionsByCountryId.reset();
 	}
 
 	@Override

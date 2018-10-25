@@ -155,7 +155,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		});
 
 		huEditorRepo.invalidateCache();
-		cache_huRowsById.clear();
+		cache_huRowsById.reset();
 	}
 
 	@Override

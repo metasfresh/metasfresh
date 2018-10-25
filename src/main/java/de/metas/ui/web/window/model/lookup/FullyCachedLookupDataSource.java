@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
+import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
@@ -62,10 +63,13 @@ class FullyCachedLookupDataSource implements LookupDataSource
 		Check.assumeNotEmpty(cachePrefix, "cachePrefix is not empty");
 		final int maxSize = 100;
 		final int expireAfterMinutes = 60 * 2;
-		cacheByPartition = CCache.newLRUCache(cachePrefix + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
-
-		// when the AvailableToPromiseRepository's SysConfig changes, we need to reset the cache. The same might apply to other cases.
-		cacheByPartition.addResetForTableName(I_AD_SysConfig.Table_Name);
+		cacheByPartition = CCache.<LookupDataSourceContext, LookupValuesList> builder()
+				.cacheName(cachePrefix + "#" + NAME + "#LookupByPartition")
+				.cacheMapType(CacheMapType.LRU)
+				.initialCapacity(maxSize)
+				.expireMinutes(expireAfterMinutes)
+				.additionalTableNameToResetFor(I_AD_SysConfig.Table_Name) // when the AvailableToPromiseRepository's SysConfig changes, we need to reset the cache. The same might apply to other cases.
+				.build();
 	}
 
 	@Override
@@ -147,6 +151,6 @@ class FullyCachedLookupDataSource implements LookupDataSource
 	@Override
 	public void cacheInvalidate()
 	{
-		cacheByPartition.clear();
+		cacheByPartition.reset();
 	}
 }

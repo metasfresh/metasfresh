@@ -80,8 +80,11 @@ public class UserDashboardRepository
 
 	private final CCache<UserDashboardKey, Integer> key2dashboardId = CCache.<UserDashboardKey, Integer> newLRUCache(I_WEBUI_Dashboard.Table_Name + "#key2DashboardId", Integer.MAX_VALUE, 0);
 
-	private final CCache<Integer, UserDashboard> dashboadsCache = CCache.<Integer, UserDashboard> newLRUCache(I_WEBUI_Dashboard.Table_Name + "#UserDashboard", Integer.MAX_VALUE, 0)
-			.addResetForTableName(I_WEBUI_DashboardItem.Table_Name);
+	private final CCache<Integer, UserDashboard> dashboadsCache = CCache.<Integer, UserDashboard> builder()
+			.cacheName(I_WEBUI_Dashboard.Table_Name + "#UserDashboard")
+			.tableName(I_WEBUI_Dashboard.Table_Name)
+			.additionalTableNameToResetFor(I_WEBUI_DashboardItem.Table_Name)
+			.build();
 
 	private UserDashboard getUserDashboardById(final int dashboardId)
 	{

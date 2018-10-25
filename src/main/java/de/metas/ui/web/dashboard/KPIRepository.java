@@ -39,11 +39,11 @@ import de.metas.util.Services;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -55,14 +55,15 @@ public class KPIRepository
 	private static final Logger logger = LogManager.getLogger(KPIRepository.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<Integer, KPI> kpisCache = CCache.<Integer, KPI> newLRUCache(I_WEBUI_KPI.Table_Name + "#KPIs", Integer.MAX_VALUE, 0)
-			.addResetForTableName(I_WEBUI_KPI_Field.Table_Name);
+	private final CCache<Integer, KPI> kpisCache = CCache.<Integer, KPI> builder()
+			.tableName(I_WEBUI_KPI.Table_Name)
+			.additionalTableNameToResetFor(I_WEBUI_KPI_Field.Table_Name)
+			.build();
 
 	public void invalidateKPI(final int id)
 	{
 		kpisCache.remove(id);
 	}
-
 
 	public Collection<KPI> getKPIs()
 	{
@@ -74,7 +75,7 @@ public class KPIRepository
 
 		return getKPIs(kpiIds);
 	}
-	
+
 	private Collection<KPI> getKPIs(final Collection<Integer> kpiIds)
 	{
 		return kpisCache.getAllOrLoad(kpiIds, this::retrieveKPIs);
@@ -182,11 +183,10 @@ public class KPIRepository
 	private static final KPIField createKPIField(final I_WEBUI_KPI_Field kpiFieldDef, final boolean isComputeOffset)
 	{
 		final I_AD_Element adElement = kpiFieldDef.getAD_Element();
-		
-		final String elementColumnName = adElement.getColumnName ();
+
+		final String elementColumnName = adElement.getColumnName();
 		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", adElement);
-		
-		
+
 		final String fieldName = elementColumnName;
 
 		//

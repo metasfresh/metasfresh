@@ -48,7 +48,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -274,7 +273,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	@Override
 	public void cacheReset()
 	{
-		processDescriptors.clear();
+		processDescriptors.reset();
 		instances.cleanUp();
 	}
 

@@ -74,7 +74,7 @@ public class LookupCacheInvalidationDispatcher implements ICacheResetListener
 	}
 
 	@Override
-	public int reset(final CacheInvalidateMultiRequest multiRequest)
+	public long reset(final CacheInvalidateMultiRequest multiRequest)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
