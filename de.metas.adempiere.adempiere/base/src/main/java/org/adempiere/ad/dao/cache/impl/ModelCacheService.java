@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.cache.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,12 +23,9 @@ package org.adempiere.ad.dao.cache.impl;
  */
 
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Nullable;
@@ -43,18 +40,23 @@ import org.adempiere.ad.dao.cache.ITableCacheConfigBuilder;
 import org.adempiere.ad.dao.cache.ITableCacheStatisticsCollector;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.NullTrxPlaceholder;
 import org.adempiere.ad.trx.exceptions.TrxException;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CacheMapType;
-import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.IDCache;
-import org.compiere.util.Trx;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.CacheCtxParamDescriptor;
 import de.metas.logging.LogManager;
@@ -63,14 +65,20 @@ import lombok.NonNull;
 
 public class ModelCacheService implements IModelCacheService
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final transient Logger logger = LogManager.getLogger(ModelCacheService.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	/**
-	 * Cache map: ITrx to TableName to RecordId to PO
-	 */
-	private final WeakHashMap<ITrx, HashMap<String, CCache<Object, PO>>> trx2tableName2cache = new WeakHashMap<>();
+	private final LoadingCache<ITrx, TrxCacheMap> _cacheMapsByTrx = CacheBuilder.newBuilder()
+			.weakKeys()
+			.build(new CacheLoader<ITrx, TrxCacheMap>()
+			{
+				@Override
+				public TrxCacheMap load(final ITrx trx)
+				{
+					return new TrxCacheMap(trx);
+				}
+			});
 	private final ReentrantLock lock = new ReentrantLock();
 
 	private final ConcurrentHashMap<String, ITableCacheConfig> tableName2cacheConfig = new ConcurrentHashMap<>();
@@ -79,28 +87,9 @@ public class ModelCacheService implements IModelCacheService
 
 	public ModelCacheService()
 	{
-		this.statisticsCollector = new TableCacheStatisticsCollector(getClass().getSimpleName());
+		statisticsCollector = new TableCacheStatisticsCollector(getClass().getSimpleName());
 
-		//
-		// Cache Management Listener
-		CacheMgt.get().register(new CacheInterface()
-		{
-
-			@Override
-			public int size()
-			{
-				// NOTE: for optimization purposes, we consider always size=1
-				return 1;
-			}
-
-			@Override
-			public int reset()
-			{
-				ModelCacheService.this.reset();
-				// NOTE: for optimization purposes, we consider always size=1
-				return 1;
-			}
-		});
+		CacheMgt.get().addCacheResetListener(this::onCacheResetRequest);
 	}
 
 	@Override
@@ -251,15 +240,15 @@ public class ModelCacheService implements IModelCacheService
 			// then try searching on out-of-transaction level and if something found clone it and return it
 			if (poToReturn == null && inTransaction)
 			{
-				final PO poNoTrx = retrieveObjectFromTrx(cacheConfig, ctx, tableName, recordId, ITrx.TRX_None);
-				if (poNoTrx != null)
+				final PO poOutOfTrx = retrieveObjectFromTrx(cacheConfig, ctx, tableName, recordId, ITrx.TRX_None);
+				if (poOutOfTrx != null)
 				{
-					final PO poNoTrxCopy = copyPO(poNoTrx, trxName);
-					if (poNoTrxCopy != null)
+					final PO poOutOfTrxCopy = copyPO(poOutOfTrx, trxName);
+					if (poOutOfTrxCopy != null)
 					{
-						addToCache(poNoTrxCopy);
+						addToCache(poOutOfTrxCopy);
 					}
-					poToReturn = poNoTrxCopy;
+					poToReturn = poOutOfTrxCopy;
 				}
 			}
 
@@ -283,7 +272,7 @@ public class ModelCacheService implements IModelCacheService
 
 	/**
 	 * Creates a copy of orginal PO, having given <code>trxName</code>.
-	 * 
+	 *
 	 * @param originalPO
 	 * @param trxName
 	 * @return
@@ -293,7 +282,7 @@ public class ModelCacheService implements IModelCacheService
 	 *         <li>if there is an error while cloning given PO, null will be returned but an warning will be logged (just to not stop the current execution)
 	 *         </ul>
 	 */
-	private final PO copyPO(final PO originalPO, final String trxName)
+	private static final PO copyPO(final PO originalPO, final String trxName)
 	{
 		if (originalPO == null)
 		{
@@ -307,12 +296,30 @@ public class ModelCacheService implements IModelCacheService
 			poNoTrxCopy.set_TrxName(trxName);
 			poToReturn = poNoTrxCopy;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			logger.warn("Cannot create a copy of " + originalPO + ". Returning null.", e);
 			poToReturn = null;
 		}
 		return poToReturn;
+	}
+
+	private TrxCacheMap getTrxCacheMapIfPresent(final ITrx trx)
+	{
+		return _cacheMapsByTrx.getIfPresent(NullTrxPlaceholder.boxNotNull(trx));
+	}
+
+	private TrxCacheMap getTrxCacheMap(final ITrx trx)
+	{
+		try
+		{
+			return _cacheMapsByTrx.get(NullTrxPlaceholder.boxNotNull(trx));
+		}
+		catch (final ExecutionException ex)
+		{
+			// shall not happen
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 
 	private final PO retrieveObjectFromTrx(final ITableCacheConfig cacheConfig, final Properties ctx, final String tableName, final int recordId, final ITrx trx)
@@ -324,13 +331,13 @@ public class ModelCacheService implements IModelCacheService
 			return null;
 		}
 
-		final Map<String, CCache<Object, PO>> tableName2cache = trx2tableName2cache.get(trx);
-		if (tableName2cache == null)
+		final TrxCacheMap trxCacheMap = getTrxCacheMapIfPresent(trx);
+		if (trxCacheMap == null)
 		{
 			return null;
 		}
 
-		final CCache<Object, PO> cache = tableName2cache.get(tableName);
+		final CCache<Object, PO> cache = trxCacheMap.getByTableNameIfExists(tableName);
 		if (cache == null)
 		{
 			return null;
@@ -382,7 +389,7 @@ public class ModelCacheService implements IModelCacheService
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param tableName
 	 * @param recordId
@@ -461,7 +468,7 @@ public class ModelCacheService implements IModelCacheService
 		lock.lock();
 		try
 		{
-			addToCache0(cacheConfig, trx, po);
+			getTrxCacheMap(trx).put(po, cacheConfig);
 
 			//
 			// Our model's transaction is not null (i.e. it's in transaction)
@@ -469,13 +476,12 @@ public class ModelCacheService implements IModelCacheService
 			// TODO: shall we do this only for "Master Data" tables?
 			// => create a copy in out-of-transaction cache too
 			final boolean inTransaction = trxManager.getTrxOrNull(trxName) != null;
-			if (inTransaction
-					&& isTrxLevelEnabled(cacheConfig, ITrx.TRX_None))
+			if (inTransaction && isTrxLevelEnabled(cacheConfig, ITrx.TRX_None))
 			{
-				final PO poNoTrxCopy = copyPO(po, ITrx.TRXNAME_None);
-				if (poNoTrxCopy != null)
+				final PO poOutOfTrxCopy = copyPO(po, ITrx.TRXNAME_None);
+				if (poOutOfTrxCopy != null)
 				{
-					addToCache0(cacheConfig, ITrx.TRX_None, poNoTrxCopy);
+					getTrxCacheMap(ITrx.TRX_None).put(poOutOfTrxCopy, cacheConfig);
 				}
 			}
 		}
@@ -485,88 +491,11 @@ public class ModelCacheService implements IModelCacheService
 		}
 	}
 
-	/**
-	 * Actually adds given PO to cache, nothing more, i.e.
-	 * <ul>
-	 * <li>it's not thread safe
-	 * <li>does not check if parameters are ok
-	 * <li>does not check if cacheConfig is configured to not cache
-	 * <li>etc
-	 * </ul>
-	 * All those checkings and orchestrations are done in it's caller {@link #addToCache(PO)}.
-	 * 
-	 * @param cacheConfig
-	 * @param trx transaction on which we cache
-	 * @param po
-	 */
-	private void addToCache0(
-			@NonNull final ITableCacheConfig cacheConfig,
-			@Nullable final ITrx trx,
-			@NonNull final PO po)
-	{
-		final int recordId = po.get_ID();
-
-		//
-		// Get current cache map for our transaction
-		HashMap<String, CCache<Object, PO>> tableName2cache = trx2tableName2cache.get(trx);
-
-		//
-		// If there is no cache map for our transaction, create one and register it
-		if (tableName2cache == null)
-		{
-			final int initialCapacity = 50;
-			tableName2cache = new HashMap<String, CCache<Object, PO>>(initialCapacity)
-			{
-				private static final long serialVersionUID = -2110362924896836989L;
-
-				@Override
-				protected final void finalize()
-				{
-					// NOTE: when this object is garbage-collected we need to clear all content inside
-					// If not, the CCache references won't be released so even if we have Weak references to them (in CacheMgt) those won't be collected.
-					this.clear();
-				}
-
-			};
-			trx2tableName2cache.put(trx, tableName2cache);
-		}
-
-		//
-		// Get table's cache map.
-		// If does not exist, create one.
-		final String tableName = cacheConfig.getTableName();
-		CCache<Object, PO> cache = tableName2cache.get(tableName);
-		if (cache == null)
-		{
-			final int expireMinutes = cacheConfig.getExpireMinutes();
-			final String trxName = trx == null ? ITrx.TRXNAME_None : trx.getTrxName();
-			final CacheMapType cacheMapType = cacheConfig.getCacheMapType();
-			final int initialCapacity = cacheConfig.getInitialCapacity();
-			int maxCapacity = cacheConfig.getMaxCapacity();
-			if (maxCapacity <= 0)
-			{
-				maxCapacity = initialCapacity;
-			}
-			cache = new IDCache<>(tableName, trxName, maxCapacity, expireMinutes, cacheMapType);
-			tableName2cache.put(tableName, cache);
-		}
-
-		//
-		// Add our PO to cache
-		cache.put(recordId, po);
-
-		// Logging
-		if (logger.isTraceEnabled())
-		{
-			logger.trace("Model added to cache {}: {} ", cache.getName(), po);
-		}
-	}
-
 	@Override
 	public void invalidate(@NonNull final CacheInvalidateMultiRequest request)
 	{
-		final ITrx trx = trxManager.getTrxOrNull(Trx.TRXNAME_ThreadInherited);
-		
+		final ITrx trx = trxManager.getTrxOrNull(ITrx.TRXNAME_ThreadInherited);
+
 		lock.lock();
 		try
 		{
@@ -596,113 +525,175 @@ public class ModelCacheService implements IModelCacheService
 
 	private void invalidateAll(@Nullable final ITrx trx)
 	{
-		final Map<String, CCache<Object, PO>> tableName2cache = trx2tableName2cache.get(trx);
-		if (tableName2cache == null)
+		final TrxCacheMap trxCacheMap = getTrxCacheMapIfPresent(trx);
+		if (trxCacheMap == null)
 		{
 			return;
 		}
-
-			//
-		// clear the whole cache
-		final Iterator<Entry<String, CCache<Object, PO>>> iterator = tableName2cache.entrySet().iterator();
-		while (iterator.hasNext())
-		{
-			final Entry<String, CCache<Object, PO>> next = iterator.next();
-			next.getValue().clear();
-		}
-		tableName2cache.clear();
-
-		// Logging
-		if (logger.isTraceEnabled())
-		{
-			logger.trace("Cleared all caches for trx={} ", trx);
-		}
+		trxCacheMap.invalidateAll();
 	}
 
 	private void invalidateTable(@NonNull final String tableName, @Nullable final ITrx trx)
 	{
-		//
-			// Get current cache map for our transaction
-			final Map<String, CCache<Object, PO>> tableName2cache = trx2tableName2cache.get(trx);
-			if(tableName2cache == null)
-			{
-				return;
-			}
-
-			//
-			// Get table's cache map.
-			final CCache<Object, PO> cache = tableName2cache.get(tableName);
-			if(cache == null)
-			{
-				return;
-			}
-			
-			// Invalidate the cache
-		cache.clear();
-
-			// Logging
-		if (logger.isTraceEnabled())
-			{
-			logger.trace("Cleared cache {} for tableName={}, trx={} ", cache.getName(), tableName, trx);
-			}
-		}
-
-	private void invalidateRecord(@NonNull final TableRecordReference record, @Nullable final ITrx trx)
-		{
-		//
-		// Get current cache map for our transaction
-		final Map<String, CCache<Object, PO>> tableName2cache = trx2tableName2cache.get(trx);
-		if (tableName2cache == null)
+		final TrxCacheMap trxCacheMap = getTrxCacheMapIfPresent(trx);
+		if (trxCacheMap == null)
 		{
 			return;
 		}
 
-		final String tableName = record.getTableName();
-		final int recordId = record.getRecord_ID();
-
-		//
-		// Get table's cache map.
-		final CCache<Object, PO> cache = tableName2cache.get(tableName);
-		if (cache == null)
-		{
-			return;
+		trxCacheMap.invalidateByTableName(tableName);
 	}
 
-		// Invalidate the cache
-		final boolean invalidated = cache.remove(recordId) != null;
-
-		// Logging
-		if (invalidated && logger.isTraceEnabled())
+	private void invalidateRecord(@NonNull final TableRecordReference recordRef, @Nullable final ITrx trx)
+	{
+		final TrxCacheMap trxCacheMap = getTrxCacheMapIfPresent(trx);
+		if (trxCacheMap == null)
 		{
-			logger.trace("Model removed from cache {}: record={}/{}, trx={} ", cache.getName(), tableName, recordId, trx);
+			return;
 		}
+
+		trxCacheMap.invalidateByRecord(recordRef);
 	}
 
 	/**
-	 * Cache Full Reset
+	 * Full cache reset
 	 */
-	public void reset()
+	private int onCacheResetRequest(final CacheInvalidateMultiRequest multiRequest)
 	{
+		if (!multiRequest.isResetAll())
+		{
+			return 0;
+		}
+
 		logger.debug("Clearing all cache instances of {}", this);
+
+		final ImmutableList<TrxCacheMap> cacheMapsToInvalidate;
 
 		lock.lock();
 		try
 		{
-			// Clean-up all tableName2cache maps
-			for (final Map<String, CCache<Object, PO>> tableName2cache : trx2tableName2cache.values())
-			{
-				if (tableName2cache != null)
-				{
-					tableName2cache.clear();
-				}
-			}
+			cacheMapsToInvalidate = ImmutableList.copyOf(_cacheMapsByTrx.asMap().values());
 
 			// Full reset of our caching map
-			trx2tableName2cache.clear();
+			_cacheMapsByTrx.invalidateAll();
+			_cacheMapsByTrx.cleanUp();
 		}
 		finally
 		{
 			lock.unlock();
+		}
+
+		cacheMapsToInvalidate.forEach(TrxCacheMap::invalidateAll);
+
+		return 1;
+	}
+
+	private static class TrxCacheMap
+	{
+		private final String trxName;
+
+		// TODO consider using guava cache
+		private final HashMap<String, IDCache<PO>> cachesByTableName = new HashMap<>(50);
+
+		public TrxCacheMap(final ITrx trx)
+		{
+			trxName = NullTrxPlaceholder.unboxToNull(trx) != null ? trx.getTrxName() : ITrx.TRXNAME_None;
+		}
+
+		public IDCache<PO> getByTableNameIfExists(final String tableName)
+		{
+			return cachesByTableName.get(tableName);
+		}
+
+		public IDCache<PO> getByTableNameOrCreate(final ITableCacheConfig cacheConfig)
+		{
+			final String tableName = cacheConfig.getTableName();
+			return cachesByTableName.computeIfAbsent(tableName, k -> create(cacheConfig));
+		}
+
+		private IDCache<PO> create(final ITableCacheConfig cacheConfig)
+		{
+			final String tableName = cacheConfig.getTableName();
+			final int expireMinutes = cacheConfig.getExpireMinutes();
+			final CacheMapType cacheMapType = cacheConfig.getCacheMapType();
+			final int initialCapacity = cacheConfig.getInitialCapacity();
+			int maxCapacity = cacheConfig.getMaxCapacity();
+			if (maxCapacity <= 0)
+			{
+				maxCapacity = initialCapacity;
+			}
+			return new IDCache<>(tableName, trxName, maxCapacity, expireMinutes, cacheMapType);
+		}
+
+		public void invalidateAll()
+		{
+			cachesByTableName.values().forEach(IDCache::clear);
+			cachesByTableName.clear();
+
+			if (logger.isTraceEnabled())
+			{
+				logger.trace("Cleared all caches for trx={} ", trxName);
+			}
+		}
+
+		public void invalidateByTableName(final String tableName)
+		{
+			final IDCache<PO> cache = getByTableNameIfExists(tableName);
+			if (cache == null)
+			{
+				return;
+			}
+
+			// Invalidate the cache
+			cache.clear();
+
+			// Logging
+			if (logger.isTraceEnabled())
+			{
+				logger.trace("Cleared cache {} for tableName={}, trx={} ", cache.getName(), tableName, trxName);
+			}
+		}
+
+		public void invalidateByRecord(final TableRecordReference recordRef)
+		{
+			final String tableName = recordRef.getTableName();
+			final int recordId = recordRef.getRecord_ID();
+
+			//
+			// Get table's cache map.
+			final IDCache<PO> cache = getByTableNameIfExists(tableName);
+			if (cache == null)
+			{
+				return;
+			}
+
+			// Invalidate the cache
+			final boolean invalidated = cache.remove(recordId) != null;
+
+			// Logging
+			if (invalidated && logger.isTraceEnabled())
+			{
+				logger.trace("Model removed from cache {}: record={}/{}, trx={} ", cache.getName(), tableName, recordId, trxName);
+			}
+		}
+
+		public void put(@NonNull final PO po, @NonNull final ITableCacheConfig cacheConfig)
+		{
+			//
+			// Get table's cache map.
+			// If does not exist, create one.
+			final IDCache<PO> cache = getByTableNameOrCreate(cacheConfig);
+
+			//
+			// Add our PO to cache
+			final int recordId = po.get_ID();
+			cache.put(recordId, po);
+
+			// Logging
+			if (logger.isTraceEnabled())
+			{
+				logger.trace("Model added to cache {}: {} ", cache.getName(), po);
+			}
 		}
 	}
 }

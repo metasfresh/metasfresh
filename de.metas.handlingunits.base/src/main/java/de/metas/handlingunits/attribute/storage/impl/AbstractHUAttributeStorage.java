@@ -48,6 +48,7 @@ import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
+import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
@@ -172,11 +173,8 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 
 		logger.trace("Loading attributes for {}", this);
 
-		final HuPackingInstructionsVersionId piVersionId = Services.get(IHandlingUnitsBL.class).getEffectivePIVersionId(hu);
-		final PIAttributes piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributes(piVersionId);
-
-		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu);
-		return toAttributeValues(huAttributes, piAttributes);
+		final HUAndPIAttributes huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu);
+		return toAttributeValues(huAttributes);
 	}
 
 	@Override
@@ -202,7 +200,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		final List<IAttributeValue> attributeValues = new ArrayList<>();
 		for (final I_M_HU_PI_Attribute piAttribute : piAttributes)
 		{
-			final AttributeId attributeId = AttributeId.ofRepoId(piAttribute.getM_Attribute_ID()) ;
+			final AttributeId attributeId = AttributeId.ofRepoId(piAttribute.getM_Attribute_ID());
 			final Object valueInitialDefault = getDefaultAttributeValue(defaultAttributesValue, attributeId);
 			final IAttributeValue attributeValue = generateAttributeValueOrNull(attributesCtx, hu, piAttribute, valueInitialDefault);
 			if (attributeValue == null)
@@ -326,15 +324,18 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		}
 	}
 
-	protected final List<IAttributeValue> toAttributeValues(final List<I_M_HU_Attribute> huAttributes, final PIAttributes piAttributes)
+	protected final List<IAttributeValue> toAttributeValues(final HUAndPIAttributes huAttributes)
 	{
-		if (huAttributes.isEmpty())
+		final List<I_M_HU_Attribute> huAttributesList = huAttributes.getHuAttributes();
+		final PIAttributes piAttributes = huAttributes.getPiAttributes();
+
+		if (huAttributesList.isEmpty())
 		{
 			return Collections.emptyList();
 		}
 
-		final List<IAttributeValue> attributeValues = new ArrayList<>(huAttributes.size());
-		for (final I_M_HU_Attribute huAttribute : huAttributes)
+		final List<IAttributeValue> attributeValues = new ArrayList<>(huAttributesList.size());
+		for (final I_M_HU_Attribute huAttribute : huAttributesList)
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(huAttribute.getM_Attribute_ID());
 			final I_M_HU_PI_Attribute piAttribute = piAttributes.getByAttributeId(attributeId);

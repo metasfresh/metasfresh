@@ -2,6 +2,7 @@ package de.metas.handlingunits.sourcehu;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -14,7 +15,11 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
@@ -50,6 +55,16 @@ public class ISourceHuService_SourceHusQueryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		I_M_HU_PI virtualPI = newInstance(I_M_HU_PI.class);
+		virtualPI.setM_HU_PI_ID(HuPackingInstructionsId.VIRTUAL.getRepoId());
+		saveRecord(virtualPI);
+
+		I_M_HU_PI_Version virtualPIVersion = newInstance(I_M_HU_PI_Version.class);
+		virtualPIVersion.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
+		virtualPIVersion.setM_HU_PI_ID(virtualPI.getM_HU_PI_ID());
+		virtualPIVersion.setIsCurrent(true);
+		saveRecord(virtualPIVersion);
 	}
 
 	@Test
@@ -94,6 +109,7 @@ public class ISourceHuService_SourceHusQueryTest
 		save(locator);
 
 		final I_M_HU hu = newInstance(I_M_HU.class);
+		hu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
 		hu.setM_Locator(locator);
 		save(hu);
 		return hu;

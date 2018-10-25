@@ -10,9 +10,9 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
@@ -50,18 +50,9 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	public void initHUAttributes(final I_M_HU hu)
-	{
-		// nothing
-	}
-
-	@Override
-	public List<I_M_HU_Attribute> retrieveAttributesOrdered(final I_M_HU hu)
+	public HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
 		// NOTE: don't cache on this level. Caching is handled on upper levels
-		
-		final HuPackingInstructionsVersionId piVersionId = Services.get(IHandlingUnitsBL.class).getEffectivePIVersionId(hu);
-		final PIAttributes piAttributes = Services.get(IHUPIAttributesDAO.class).retrievePIAttributes(piVersionId);
 
 		// there are only some dozen attributes at most, so i think it'S fine to order them after loading
 		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
@@ -69,7 +60,6 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create()
 				.stream()
-				.sorted(HUAttributesBySeqNoComparator.of(piAttributes))
 				.collect(ImmutableList.toImmutableList());
 
 		// Optimization: set M_HU link
@@ -78,7 +68,19 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 			huAttribute.setM_HU(hu);
 		}
 
-		return huAttributes;
+		final PIAttributes piAttributes = createPIAttributes(huAttributes);
+
+		final ImmutableList<I_M_HU_Attribute> huAttributesSorted = HUAttributesBySeqNoComparator.of(piAttributes).sortAndCopy(huAttributes);
+		return HUAndPIAttributes.of(huAttributesSorted, piAttributes);
+	}
+
+	private PIAttributes createPIAttributes(final List<I_M_HU_Attribute> huAttributes)
+	{
+		final IHUPIAttributesDAO piAttributesRepo = Services.get(IHUPIAttributesDAO.class);
+
+		final ImmutableSet<Integer> piAttributeIds = huAttributes.stream().map(I_M_HU_Attribute::getM_HU_PI_Attribute_ID).collect(ImmutableSet.toImmutableSet());
+		final PIAttributes piAttributes = piAttributesRepo.retrievePIAttributesByIds(piAttributeIds);
+		return piAttributes;
 	}
 
 	private final List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)

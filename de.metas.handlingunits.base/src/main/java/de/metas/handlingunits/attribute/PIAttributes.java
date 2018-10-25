@@ -44,8 +44,15 @@ public final class PIAttributes implements Iterable<I_M_HU_PI_Attribute>
 {
 	public static final PIAttributes of(@NonNull final Collection<I_M_HU_PI_Attribute> piAttributes)
 	{
+		if (piAttributes.isEmpty())
+		{
+			return EMPTY;
+		}
+
 		return new PIAttributes(piAttributes);
 	}
+
+	public static final PIAttributes EMPTY = new PIAttributes(ImmutableList.of());
 
 	private final ImmutableList<I_M_HU_PI_Attribute> list;
 	private final ImmutableMap<AttributeId, I_M_HU_PI_Attribute> attributesByAttributeId;
@@ -61,11 +68,6 @@ public final class PIAttributes implements Iterable<I_M_HU_PI_Attribute>
 	{
 		return list.iterator();
 	}
-
-	// public List<I_M_HU_PI_Attribute> toList()
-	// {
-	// return list;
-	// }
 
 	public boolean hasActiveAttribute(@NonNull final AttributeId attributeId)
 	{
@@ -96,10 +98,20 @@ public final class PIAttributes implements Iterable<I_M_HU_PI_Attribute>
 
 	public PIAttributes addIfAbsent(@NonNull final PIAttributes from)
 	{
+		if (from.isEmpty())
+		{
+			return this;
+		}
+
+		if (this.isEmpty())
+		{
+			return from;
+		}
+
 		final LinkedHashMap<AttributeId, I_M_HU_PI_Attribute> piAttributesNew = new LinkedHashMap<>(attributesByAttributeId);
 		from.attributesByAttributeId.forEach(piAttributesNew::putIfAbsent);
 
-		return new PIAttributes(piAttributesNew.values());
+		return of(piAttributesNew.values());
 	}
 
 	public int getSeqNoByAttributeId(final AttributeId attributeId, final int seqNoIfNotFound)
@@ -115,5 +127,10 @@ public final class PIAttributes implements Iterable<I_M_HU_PI_Attribute>
 	public ImmutableSet<AttributeId> getAttributeIds()
 	{
 		return attributesByAttributeId.keySet();
+	}
+
+	public boolean isEmpty()
+	{
+		return attributesByAttributeId.isEmpty();
 	}
 }

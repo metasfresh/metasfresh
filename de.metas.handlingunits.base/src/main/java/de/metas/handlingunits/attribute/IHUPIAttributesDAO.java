@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute;
 
+import java.util.Set;
+
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.util.ISingletonService;
@@ -23,6 +25,8 @@ public interface IHUPIAttributesDAO extends ISingletonService
 	 */
 	PIAttributes retrievePIAttributes(HuPackingInstructionsVersionId piVersionId);
 
+	PIAttributes retrievePIAttributesByIds(Set<Integer> piAttributeIds);
+
 	/**
 	 *
 	 * @param huPIAttribute
@@ -36,4 +40,5 @@ public interface IHUPIAttributesDAO extends ISingletonService
 	boolean isTemplateAttribute(I_M_HU_PI_Attribute huPIAttribute);
 
 	void deleteByVersionId(HuPackingInstructionsVersionId versionId);
+
 }

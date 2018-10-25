@@ -428,7 +428,6 @@ import lombok.NonNull;
 		// Notify Storage and Attributes DAO that a new HU was created
 		// NOTE: depends on their implementation, but they have a chance to do some optimizations
 		huContext.getHUStorageFactory().getHUStorageDAO().initHUStorages(hu);
-		huContext.getHUAttributeStorageFactory().getHUAttributesDAO().initHUAttributes(hu);
 
 		//
 		// Save HU
