@@ -1,5 +1,7 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -13,17 +15,16 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Util;
 
@@ -50,30 +51,20 @@ public class QualityBasedSpiProviderService implements IQualityBasedSpiProviderS
 
 	public QualityBasedSpiProviderService()
 	{
-		super();
-
-		CacheMgt.get().register(new CacheInterface()
-		{
-
-			@Override
-			public int size()
-			{
-				return 2;
-			}
-
-			@Override
-			public int reset()
-			{
-				QualityBasedSpiProviderService.this.resetDefaults();
-				return 2;
-			}
-		});
+		CacheMgt.get().addCacheResetListener(this::onCacheReset);
 	}
 
-	private final void resetDefaults()
+	private int onCacheReset(CacheInvalidateMultiRequest multiRequest)
 	{
+		if (!multiRequest.isResetAll())
+		{
+			return 0;
+		}
+
+		// reset defaults
 		qualityBasedConfigProviderDefault = null;
 		qualityInvoiceLineGroupsBuilderProviderDefault = null;
+		return 2;
 	}
 
 	private final <T> T getInstance(final String sysConfigName, final Class<T> interfaceClass)
