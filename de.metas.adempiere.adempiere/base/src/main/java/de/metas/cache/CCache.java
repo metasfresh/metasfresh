@@ -335,11 +335,6 @@ public class CCache<K, V> implements CacheInterface
 		return cacheName;
 	}	// getName
 
-	protected final String getTableName()
-	{
-		return tableName;
-	}
-
 	@Override
 	public Set<CacheLabel> getLabels()
 	{
@@ -404,14 +399,6 @@ public class CCache<K, V> implements CacheInterface
 	@Override
 	public long resetForRecordId(final TableRecordReference recordRef)
 	{
-		//
-		// Try matching by cache's TableName (if any)
-		final String cacheTableName = getTableName();
-		if (!cacheTableName.equals(recordRef.getTableName()))
-		{
-			return 0;
-		}
-
 		// NOTE: reseting only by "key" is not supported at this level, so we are reseting everything
 		return reset();
 	}

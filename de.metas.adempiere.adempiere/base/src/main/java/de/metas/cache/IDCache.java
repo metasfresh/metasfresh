@@ -51,14 +51,8 @@ public class IDCache<V> extends CCache<Object, V>
 	@Override
 	public long resetForRecordId(final TableRecordReference recordRef)
 	{
-		//
-		// Try matching by cache's TableName (if any)
-		final String cacheTableName = getTableName();
-		if (!cacheTableName.equals(recordRef.getTableName()))
-		{
-			return 0;
-		}
-
+		// NOTE: we assume record's table name is matching this cache.
+		
 		final int recordId = recordRef.getRecord_ID();
 		final V valueOld = remove(recordId);
 		return valueOld == null ? 0 : 1;

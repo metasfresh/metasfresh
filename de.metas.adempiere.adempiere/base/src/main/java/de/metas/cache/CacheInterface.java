@@ -31,11 +31,6 @@ public interface CacheInterface
 	long getCacheId();
 
 	/**
-	 * @return cache name; never null
-	 */
-	String getCacheName();
-
-	/**
 	 * @return cache reset labels; never return empty/null
 	 */
 	Set<CacheLabel> getLabels();
