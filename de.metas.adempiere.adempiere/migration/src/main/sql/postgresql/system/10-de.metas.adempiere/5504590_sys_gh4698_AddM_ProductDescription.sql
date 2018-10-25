@@ -1112,46 +1112,12 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 
 
-
-
-
-
----------------------------------------------------------
----------------------------------------------------------
----------------------------------------------------------
----------------------------------------------------------
-
-
-
-
-
-
--- 2018-10-24T15:46:07.741
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_Element_ID,AD_UI_ElementField_ID,Created,CreatedBy,IsActive,SeqNo,Type,Updated,UpdatedBy) VALUES (0,569727,0,1000051,540293,TO_TIMESTAMP('2018-10-24 15:46:07','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,'widget',TO_TIMESTAMP('2018-10-24 15:46:07','YYYY-MM-DD HH24:MI:SS'),100)
+-- 2018-10-25T12:06:51.927
+-- #298 changing anz. stellen
+UPDATE AD_Menu SET EntityType='D',Updated=TO_TIMESTAMP('2018-10-25 12:06:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541151
 ;
 
 
--- 2018-10-24T16:10:18.836
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2018-10-24 16:10:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000051
-;
-
-
--- 2018-10-24T17:43:04.640
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_UI_Element SET AD_Field_ID=569727,Updated=TO_TIMESTAMP('2018-10-24 17:43:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000051
-;
-
--- 2018-10-24T17:43:14.125
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_Element_ID,AD_UI_ElementField_ID,Created,CreatedBy,IsActive,SeqNo,Type,Updated,UpdatedBy) VALUES (0,504491,0,1000051,540294,TO_TIMESTAMP('2018-10-24 17:43:13','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,'widget',TO_TIMESTAMP('2018-10-24 17:43:13','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2018-10-25T11:07:23.858
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_UI_ElementField WHERE AD_UI_ElementField_ID=540294
-;
 
 
 
