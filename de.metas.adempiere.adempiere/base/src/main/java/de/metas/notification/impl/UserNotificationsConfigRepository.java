@@ -9,14 +9,14 @@ import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.X_AD_User_NotificationGroup;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CacheMapType;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.IUserNotificationsConfigRepository;
 import de.metas.notification.NotificationGroupName;

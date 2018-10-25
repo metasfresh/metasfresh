@@ -28,10 +28,11 @@ import java.util.Set;
 
 import org.adempiere.ad.persistence.EntityTypesCache.EntityTypeEntry;
 import org.compiere.model.I_AD_EntityType;
-import org.compiere.util.CacheMgt;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Ignore;
+
+import de.metas.cache.CacheMgt;
 
 /**
  * Helper class used to test {@link TableModelClassLoader}.

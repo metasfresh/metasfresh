@@ -4,15 +4,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
-import org.compiere.util.CacheMgt;
-import org.compiere.util.ICacheResetListener;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CacheMgt;
+import de.metas.cache.ICacheResetListener;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.inbound.mail.model.I_C_InboundMailConfig;
 import de.metas.logging.LogManager;
 import lombok.NonNull;

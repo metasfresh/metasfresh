@@ -29,7 +29,6 @@ package de.metas.invoicecandidate.modelvalidator;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -40,7 +39,6 @@ import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -50,6 +48,8 @@ import de.metas.aggregation.listeners.IAggregationListener;
 import de.metas.aggregation.listeners.IAggregationListeners;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.IModelCacheService;
 import de.metas.event.IEventBusFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;

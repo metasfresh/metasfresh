@@ -5,12 +5,12 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_NotificationGroup;
-import org.compiere.util.CCache;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.IRoleNotificationsConfigRepository;
 import de.metas.notification.NotificationGroupName;

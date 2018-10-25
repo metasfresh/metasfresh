@@ -22,7 +22,8 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.X_AD_WF_Responsible;
-import org.compiere.util.CCache;
+
+import de.metas.cache.CCache;
 
 
 /**

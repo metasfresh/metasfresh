@@ -14,9 +14,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;

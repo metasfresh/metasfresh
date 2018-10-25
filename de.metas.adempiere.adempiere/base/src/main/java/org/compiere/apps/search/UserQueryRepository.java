@@ -21,7 +21,6 @@ import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.I_AD_UserQuery;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -29,6 +28,7 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;

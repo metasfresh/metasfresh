@@ -72,7 +72,6 @@ import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.X_AD_Table_Access;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -84,6 +83,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;

@@ -27,12 +27,12 @@ import java.util.List;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.compiere.model.I_AD_Client;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.model.IModelCacheService;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.util.Check;

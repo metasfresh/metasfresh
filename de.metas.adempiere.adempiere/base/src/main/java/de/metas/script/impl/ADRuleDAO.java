@@ -7,8 +7,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Rule;
-import org.compiere.util.CCache;
 
+import de.metas.cache.CCache;
 import de.metas.script.IADRuleDAO;
 import de.metas.util.Services;
 

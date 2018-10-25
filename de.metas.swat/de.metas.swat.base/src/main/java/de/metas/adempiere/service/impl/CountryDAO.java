@@ -26,7 +26,6 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 import org.compiere.model.MCountry;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableBiMap;
@@ -36,7 +35,8 @@ import com.google.common.collect.Maps;
 
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;

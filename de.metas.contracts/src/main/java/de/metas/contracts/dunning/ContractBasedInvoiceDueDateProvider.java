@@ -10,10 +10,10 @@ import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import de.metas.cache.CCache;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.dunning.invoice.InvoiceDueDateProvider;
 import de.metas.invoice.InvoiceId;

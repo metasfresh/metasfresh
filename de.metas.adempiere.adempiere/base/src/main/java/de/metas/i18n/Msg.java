@@ -20,7 +20,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Message;
 import org.compiere.util.AmtInWords;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -30,6 +29,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;

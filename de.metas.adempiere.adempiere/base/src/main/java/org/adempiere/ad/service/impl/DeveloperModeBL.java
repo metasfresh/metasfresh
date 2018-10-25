@@ -14,12 +14,12 @@ import org.compiere.model.I_AD_Message;
 import org.compiere.model.M_Element;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Message;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
+import de.metas.cache.CacheMgt;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;

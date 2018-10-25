@@ -6,7 +6,7 @@ package org.eevolution.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.CCache;
+import de.metas.cache.CCache;
 
 /**
  * HR Period

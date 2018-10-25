@@ -9,12 +9,12 @@ import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.elasticsearch.model.I_ES_FTS_Index;
 import de.metas.elasticsearch.model.I_ES_FTS_IndexInclude;
 import de.metas.util.GuavaCollectors;

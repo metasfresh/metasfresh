@@ -32,7 +32,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.proxy.Cached;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.handlingunits.model.I_C_POS_HUEditor_Filter;
 import de.metas.handlingunits.pos.IPOSHUEditorFilterDAO;
 import de.metas.util.Check;

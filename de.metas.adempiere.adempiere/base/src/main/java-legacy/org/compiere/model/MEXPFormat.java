@@ -60,8 +60,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CCache;
 import org.compiere.util.Util;
+
+import de.metas.cache.CCache;
 
 
 /**

@@ -13,8 +13,8 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.CCache;
 
+import de.metas.cache.CCache;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;

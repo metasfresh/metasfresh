@@ -73,7 +73,6 @@ import org.compiere.model.MStore;
 import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerMgr;
 import org.compiere.util.CMemoryUsage;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
@@ -83,6 +82,7 @@ import org.springframework.context.annotation.Profile;
 
 import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 

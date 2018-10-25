@@ -1,7 +1,5 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
-
 /*
  * #%L
  * de.metas.materialtracking
@@ -25,9 +23,10 @@ import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
  */
 
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Util;
 
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfigProvider;

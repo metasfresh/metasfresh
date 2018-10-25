@@ -32,7 +32,6 @@ import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -45,14 +44,15 @@ import org.compiere.grid.VPanel;
 import org.compiere.model.GridField;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.ICacheResetListener;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.ICacheResetListener;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;

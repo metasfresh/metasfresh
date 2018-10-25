@@ -22,8 +22,9 @@ import java.util.ArrayList;
 import java.util.Properties;
 import org.compiere.sla.SLACriteria;
 import org.compiere.util.AdempiereSystemError;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
+
+import de.metas.cache.CCache;
 
 /**
  *	Service Level Agreement Criteria Model

@@ -38,8 +38,8 @@ import org.compiere.model.I_C_Country;
 import de.metas.adempiere.model.I_C_CountryArea;
 import de.metas.adempiere.model.I_C_CountryArea_Assign;
 import de.metas.adempiere.service.ICountryAreaBL;
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
 

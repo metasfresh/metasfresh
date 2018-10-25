@@ -22,8 +22,8 @@ import java.util.concurrent.Callable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CCache;
 
+import de.metas.cache.CCache;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

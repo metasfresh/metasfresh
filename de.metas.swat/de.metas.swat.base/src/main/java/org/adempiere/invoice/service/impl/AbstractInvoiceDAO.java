@@ -44,9 +44,9 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
 

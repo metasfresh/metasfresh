@@ -28,9 +28,10 @@ import java.util.List;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
+
+import de.metas.cache.CCache.CCacheStats;
 
 /**
  * Implementations of this interface are providing a fixed set of values for a given attribute.

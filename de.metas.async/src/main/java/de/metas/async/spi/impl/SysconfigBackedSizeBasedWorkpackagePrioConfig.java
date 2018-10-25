@@ -34,12 +34,12 @@ import java.util.function.Supplier;
 
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;

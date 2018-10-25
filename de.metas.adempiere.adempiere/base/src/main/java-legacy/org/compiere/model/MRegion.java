@@ -24,10 +24,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 
 /**

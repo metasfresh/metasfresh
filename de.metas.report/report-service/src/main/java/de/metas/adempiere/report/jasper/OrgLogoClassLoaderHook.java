@@ -32,7 +32,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
@@ -40,6 +39,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;

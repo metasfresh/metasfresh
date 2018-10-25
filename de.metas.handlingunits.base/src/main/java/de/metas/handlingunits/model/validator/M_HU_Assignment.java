@@ -26,7 +26,6 @@ package de.metas.handlingunits.model.validator;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -39,6 +38,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;

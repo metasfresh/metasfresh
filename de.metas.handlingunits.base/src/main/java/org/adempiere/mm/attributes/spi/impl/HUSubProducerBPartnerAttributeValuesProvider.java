@@ -15,8 +15,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
@@ -28,6 +26,8 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IMsgBL;

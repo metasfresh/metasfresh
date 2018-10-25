@@ -10,8 +10,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.net.IHostIdentifier;
 import org.compiere.model.I_AD_SysConfig;
-import org.compiere.util.CacheMgt;
-import org.compiere.util.ICacheResetListener;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -19,6 +17,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CacheMgt;
+import de.metas.cache.ICacheResetListener;
 import de.metas.device.adempiere.DeviceConfig;
 import de.metas.device.adempiere.DeviceConfigException;
 import de.metas.device.adempiere.IDeviceConfigPool;
