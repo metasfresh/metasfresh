@@ -225,7 +225,9 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
 
 Cypress.Commands.add('openAdvancedEdit', () => {
   describe('Open the advanced edit overlay via ALT+E shortcut', function() {
-    cy.get('body').type('{alt}E')
+    cy.get('body').type('{alt}N');
+    cy.get('body').type('{alt}E');
+    cy.get('.panel-modal').should('exist');
   })
 });
 
