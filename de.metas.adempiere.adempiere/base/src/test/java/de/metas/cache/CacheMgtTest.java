@@ -10,11 +10,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.cache.CCache;
-import de.metas.cache.CacheInterface;
-import de.metas.cache.CacheLabel;
-import de.metas.cache.CacheMgt;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -121,12 +116,6 @@ public class CacheMgtTest
 		public long size()
 		{
 			return 1;
-		}
-
-		@Override
-		public String getCacheName()
-		{
-			return tableName;
 		}
 
 		@Override

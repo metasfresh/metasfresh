@@ -128,7 +128,6 @@ public class CCache<K, V> implements CacheInterface
 	private final long cacheId;
 
 	private final String cacheName;
-	private final String tableName;
 	private final ImmutableSet<CacheLabel> labels;
 
 	/** Expire after minutes */
@@ -186,17 +185,18 @@ public class CCache<K, V> implements CacheInterface
 	{
 		this.cacheId = NEXT_CACHE_ID.getAndIncrement();
 
+		final String tableNameEffective;
 		if (cacheName == null)
 		{
 			if (tableName == null)
 			{
 				this.cacheName = "$NoCacheName$" + cacheId;
-				this.tableName = "$NoTableName$" + tableName;
+				tableNameEffective = "$NoTableName$" + tableName;
 			}
 			else
 			{
 				this.cacheName = tableName;
-				this.tableName = tableName;
+				tableNameEffective = tableName;
 			}
 		}
 		else // cacheName != null
@@ -208,20 +208,20 @@ public class CCache<K, V> implements CacheInterface
 				final String extractedTableName = extractTableNameForCacheName(cacheName);
 				if (extractedTableName != null)
 				{
-					this.tableName = extractedTableName;
+					tableNameEffective = extractedTableName;
 				}
 				else
 				{
-					this.tableName = cacheName;
+					tableNameEffective = cacheName;
 				}
 			}
 			else
 			{
-				this.tableName = tableName;
+				tableNameEffective = tableName;
 			}
 		}
 
-		this.labels = buildCacheLabels(this.tableName, additionalTableNamesToResetFor);
+		this.labels = buildCacheLabels(tableNameEffective, additionalTableNamesToResetFor);
 
 		this.expireMinutes = expireMinutes != null ? expireMinutes : EXPIREMINUTES_Never;
 		this.cache = buildGuavaCache(
@@ -329,7 +329,6 @@ public class CCache<K, V> implements CacheInterface
 		return cacheId;
 	}
 
-	@Override
 	public final String getCacheName()
 	{
 		return cacheName;
