@@ -1,5 +1,8 @@
 package de.metas.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -9,6 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.cache.CacheMgt.ResetMode;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
 
 /*
  * #%L
@@ -60,15 +67,38 @@ public class CacheMgtTest
 	{
 		final CacheMgt cacheManager = CacheMgt.get();
 
-		final CCache_resetForRecordId_Mocked<Object, Object> cache = new CCache_resetForRecordId_Mocked<>("Table1");
-		cacheManager.register(cache);
-		cacheManager.register(new CCache<>("Table2", 1));
+		final MockedCCache cache = MockedCCache.newForTableName("Table1");
+
+		// NOTE: cache instances are automatically registered
+		// cacheManager.register(cache);
+		// cacheManager.register(new CCache<>("Table2", 1));
 
 		cacheManager.reset("Table2", 100);
 		cache.assertResetForRecordIdWasNotCalled();
 
 		cacheManager.reset("Table1", 100);
 		cache.assertResetForRecordIdWasCalled();
+	}
+
+	@Test
+	public void resetRootAndChildRecord()
+	{
+		final CacheMgt cacheManager = CacheMgt.get();
+
+		final MockedCCache invoiceCache = MockedCCache.newForTableName("C_Invoice");
+		final MockedCCache invoiceLineCache = MockedCCache.newForTableName("C_InvoiceLine");
+
+		invoiceCache.assertResetForRecordIdWasNotCalled();
+		invoiceLineCache.assertResetForRecordIdWasNotCalled();
+
+		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.of(CacheInvalidateRequest.builder()
+				.rootRecord("C_Invoice", 1)
+				.childRecord("C_InvoiceLine", 2)
+				.build());
+		cacheManager.reset(request, ResetMode.LOCAL);
+
+		invoiceCache.assertRecordInvalidated(TableRecordReference.of("C_Invoice", 1));
+		invoiceLineCache.assertRecordInvalidated(TableRecordReference.of("C_InvoiceLine", 2));
 	}
 
 	private static class AssertTableName implements CacheInterface
@@ -90,7 +120,7 @@ public class CacheMgtTest
 		@Override
 		public long resetForRecordId(final TableRecordReference recordRef)
 		{
-			Assert.assertEquals("resetForRecordId shall not be invoked for table name", this.tableName, tableName);
+			Assert.assertEquals("resetForRecordId shall not be invoked for table name", tableName, tableName);
 
 			resetForRecordIdWasCalled = true;
 			return 1;
@@ -125,14 +155,18 @@ public class CacheMgtTest
 		}
 	}
 
-	private static final class CCache_resetForRecordId_Mocked<K, V> extends CCache<K, V>
+	private static final class MockedCCache extends CCache<Object, Object>
 	{
-
-		private boolean resetForRecordIdWasCalled;
-
-		public CCache_resetForRecordId_Mocked(final String name)
+		public static MockedCCache newForTableName(final String tableName)
 		{
-			super(name, 1);
+			return new MockedCCache(tableName);
+		}
+
+		private final LinkedHashSet<TableRecordReference> resetRecords = new LinkedHashSet<>();
+
+		private MockedCCache(final String tableName)
+		{
+			super(tableName, 1);
 		}
 
 		@Override
@@ -140,19 +174,24 @@ public class CacheMgtTest
 		{
 			final long count = super.resetForRecordId(recordRef);
 
-			resetForRecordIdWasCalled = true;
+			resetRecords.add(recordRef);
 
 			return count;
 		}
 
 		public void assertResetForRecordIdWasNotCalled()
 		{
-			Assert.assertFalse("resetForRecordIdWasCalled", resetForRecordIdWasCalled);
+			assertThat(resetRecords).as("reset record method was called").isEmpty();
 		}
 
 		public void assertResetForRecordIdWasCalled()
 		{
-			Assert.assertTrue("resetForRecordIdWasCalled", resetForRecordIdWasCalled);
+			assertThat(resetRecords).as("reset record method was NOT called").isNotEmpty();
+		}
+
+		public void assertRecordInvalidated(final TableRecordReference recordRef)
+		{
+			assertThat(resetRecords).as("reset record was called for given record").contains(recordRef);
 		}
 	}
 }

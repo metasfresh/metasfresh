@@ -164,6 +164,18 @@ public final class CacheInvalidateRequest
 		}
 	}
 
+	public TableRecordReference getChildRecordOrNull()
+	{
+		if (childTableName != null && childRecordId >= 0)
+		{
+			return TableRecordReference.of(childTableName, childRecordId);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	public TableRecordReference getRecordEffective()
 	{
 		if (childTableName != null && childRecordId >= 0)

@@ -307,7 +307,7 @@ public final class CacheMgt
 		final long resetCount;
 		if (mode.isResetLocal())
 		{
-			resetCount = resetCacheInstances(multiRequest);
+			resetCount = invalidateForMultiRequest(multiRequest);
 			fireGlobalCacheResetListeners(multiRequest);
 		}
 		else
@@ -326,7 +326,7 @@ public final class CacheMgt
 		return resetCount;
 	}	// reset
 
-	private final long resetCacheInstances(final CacheInvalidateMultiRequest multiRequest)
+	private final long invalidateForMultiRequest(final CacheInvalidateMultiRequest multiRequest)
 	{
 		if (multiRequest.isResetAll())
 		{
@@ -336,14 +336,14 @@ public final class CacheMgt
 		int total = 0;
 		for (final CacheInvalidateRequest request : multiRequest.getRequests())
 		{
-			final long totalPerRequest = resetCacheInterfaces(request);
+			final long totalPerRequest = invalidateForRequest(request);
 			total += totalPerRequest;
 		}
 
 		return total;
 	}
 
-	private final long resetCacheInterfaces(final CacheInvalidateRequest request)
+	private final long invalidateForRequest(final CacheInvalidateRequest request)
 	{
 		if (request.isAllRecords())
 		{
@@ -358,23 +358,33 @@ public final class CacheMgt
 		}
 		else
 		{
-			final TableRecordReference recordRef = request.getRecordEffective();
-			if (recordRef == null)
+			long resetCount = 0;
+
+			final TableRecordReference childRecordRef = request.getChildRecordOrNull();
+			if (childRecordRef != null)
 			{
-				// shall not happen
-				return 0;
+				resetCount += invalidateForRecord(childRecordRef);
+			}
+			final TableRecordReference rootRecordRef = request.getRootRecordOrNull();
+			if (rootRecordRef != null)
+			{
+				resetCount += invalidateForRecord(rootRecordRef);
 			}
 
-			final CacheLabel label = CacheLabel.ofTableName(recordRef.getTableName());
-			final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
-			if (cachesGroup == null)
-			{
-				return 0;
-			}
-
-			return cachesGroup.invalidateForRecordNoFail(recordRef);
-
+			return resetCount;
 		}
+	}
+
+	private final long invalidateForRecord(final TableRecordReference recordRef)
+	{
+		final CacheLabel label = CacheLabel.ofTableName(recordRef.getTableName());
+		final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
+		if (cachesGroup == null)
+		{
+			return 0;
+		}
+
+		return cachesGroup.invalidateForRecordNoFail(recordRef);
 	}
 
 	/**
