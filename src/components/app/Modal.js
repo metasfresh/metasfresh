@@ -272,14 +272,8 @@ class Modal extends Component {
     });
   };
 
-  // setFetchOnTrue = () => {
-  //   this.setState({ waitingFetch: true });
-  // };
-
   handleStart = () => {
     const { dispatch, layout, windowType, indicator } = this.props;
-
-    console.log('handleStart')
 
     if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });

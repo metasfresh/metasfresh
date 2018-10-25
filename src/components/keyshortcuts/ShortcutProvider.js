@@ -165,17 +165,17 @@ export default class ShortcutProvider extends Component {
       if (typeof handler === 'function') {
         return true;
       }
+
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Handler defined for key sequence "${serializedSequence}" is not a function.`
+      );
       return false;
     });
 
     if (validHandlers.length) {
       return this.fireHandlers(event, validHandlers);
     }
-
-    // eslint-disable-next-line no-console
-    console.warn(
-      `Handler defined for key sequence "${serializedSequence}" is not a function.`
-    );
   };
 
   handleKeyUp = event => {
