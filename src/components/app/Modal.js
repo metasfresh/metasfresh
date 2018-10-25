@@ -502,8 +502,6 @@ class Modal extends Component {
         disabled={pending}
         data={data}
         layout={layout}
-        _handleSubmit={this.handleStart}
-        _closeOverlay={this.removeModal}
         handleSubmit={
           modalType === 'process' ? this.handleStart : this.handleClose
         }
