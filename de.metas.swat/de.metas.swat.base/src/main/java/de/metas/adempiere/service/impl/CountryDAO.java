@@ -26,7 +26,6 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 import org.compiere.model.MCountry;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableBiMap;
@@ -36,13 +35,13 @@ import com.google.common.collect.Maps;
 
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /**
@@ -55,8 +54,12 @@ public class CountryDAO implements ICountryDAO
 	/** Country Cache */
 	private final CCache<Integer, IndexedCountries> countriesCache = CCache.newCache(I_C_Country.Table_Name + "_AllIndexed", 1, CCache.EXPIREMINUTES_Never);
 	/** C_Country_ID by AD_Client_ID */
-	private final CCache<Integer, String> countryCodeByADClientId = CCache.<Integer, String> newCache(I_C_Country.Table_Name + "_CountryCodeByAD_Client_ID", 3, CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_AD_Client.Table_Name);
+	private final CCache<Integer, String> countryCodeByADClientId = CCache.<Integer, String> builder()
+			.cacheName(I_C_Country.Table_Name + "#CountryCodeByAD_Client_ID")
+			.tableName(I_C_Country.Table_Name)
+			.initialCapacity(3)
+			.additionalTableNameToResetFor(I_AD_Client.Table_Name)
+			.build();
 
 	private static final CountryId DEFAULT_C_Country_ID = CountryId.ofRepoId(101); // Germany
 

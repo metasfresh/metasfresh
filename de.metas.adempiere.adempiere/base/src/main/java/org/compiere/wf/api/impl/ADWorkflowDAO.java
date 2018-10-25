@@ -37,8 +37,8 @@ import org.compiere.model.I_AD_WF_NodeNext;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.wf.api.IADWorkflowDAO;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.util.Services;
 
 public class ADWorkflowDAO implements IADWorkflowDAO

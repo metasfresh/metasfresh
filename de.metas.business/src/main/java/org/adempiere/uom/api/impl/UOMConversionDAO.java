@@ -39,7 +39,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -56,7 +56,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	/**
 	 * Task 09304: cache and never expire, but note that the cache will be invalidated if someone changes the master data remotely.
 	 * 
-	 * @see org.compiere.util.CacheMgt#enableRemoteCacheInvalidationForTableName(String)
+	 * @see de.metas.cache.CacheMgt#enableRemoteCacheInvalidationForTableName(String)
 	 */
 	// old javadoc, keeping it for reference: "task 09261: cache, but expire after 1 minute because the masterdata could be changed by another user."
 	@Cached(cacheName = I_C_UOM_Conversion.Table_Name

@@ -22,16 +22,16 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.X_AD_PrintFormatItem;
-import org.compiere.util.CCache;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 

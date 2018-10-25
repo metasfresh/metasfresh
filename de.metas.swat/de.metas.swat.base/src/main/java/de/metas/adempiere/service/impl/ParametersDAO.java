@@ -33,8 +33,8 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheIgnore;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheIgnore;
 
 public class ParametersDAO extends AbstractParametersDAO 
 {

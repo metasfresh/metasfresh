@@ -18,10 +18,10 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_SalesRegion;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.cache.CCache;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;

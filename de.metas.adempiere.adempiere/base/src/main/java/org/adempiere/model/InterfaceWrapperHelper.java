@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -69,6 +68,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.model.IModelCacheService;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;

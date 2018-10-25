@@ -13,8 +13,6 @@ import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.NamePair;
@@ -24,6 +22,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

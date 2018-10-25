@@ -19,7 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.CCache;
+import de.metas.cache.CCache;
 
 /**
  * 	Request Category Model

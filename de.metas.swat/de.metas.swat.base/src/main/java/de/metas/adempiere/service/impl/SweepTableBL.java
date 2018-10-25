@@ -52,7 +52,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.adempiere.service.ISweepTableBL;
-import de.metas.adempiere.util.CacheIgnore;
+import de.metas.cache.annotation.CacheIgnore;
 
 public class SweepTableBL implements ISweepTableBL
 {

@@ -11,7 +11,6 @@ import java.net.URI;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CCache;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +18,7 @@ import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.storeattachment.StoreAttachmentServiceImpl;
+import de.metas.cache.CCache;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.util.Check;

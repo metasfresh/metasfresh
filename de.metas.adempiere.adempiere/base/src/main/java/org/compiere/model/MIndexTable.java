@@ -38,7 +38,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
@@ -49,6 +48,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
+import de.metas.cache.CCache;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -61,8 +61,11 @@ import lombok.NonNull;
 @SuppressWarnings("serial")
 public class MIndexTable extends X_AD_Index_Table
 {
-	private static final CCache<Integer, TableIndexesMap> cache = CCache.<Integer, TableIndexesMap> newCache(I_AD_Index_Table.Table_Name, 1, CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_AD_Index_Column.Table_Name);
+	private static final CCache<Integer, TableIndexesMap> cache = CCache.<Integer, TableIndexesMap> builder()
+			.tableName(I_AD_Index_Table.Table_Name)
+			.initialCapacity(1)
+			.additionalTableNameToResetFor(I_AD_Index_Column.Table_Name)
+			.build();
 
 	private ImmutableList<MIndexColumn> indexColumns = null; // lazy
 

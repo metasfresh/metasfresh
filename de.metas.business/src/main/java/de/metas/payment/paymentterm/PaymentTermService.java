@@ -8,10 +8,10 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 

@@ -2,9 +2,9 @@ package de.metas.elasticsearch.config;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
+import de.metas.cache.CCache;
 import de.metas.elasticsearch.model.I_ES_FTS_Template;
 
 /*

@@ -47,8 +47,8 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

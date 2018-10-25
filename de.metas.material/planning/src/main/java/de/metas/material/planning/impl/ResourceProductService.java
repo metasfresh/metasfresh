@@ -14,7 +14,7 @@ import org.compiere.util.TimeUtil;
 
 import com.jgoodies.common.base.Objects;
 
-import de.metas.adempiere.util.CacheModel;
+import de.metas.cache.annotation.CacheModel;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.util.Services;
 import lombok.NonNull;

@@ -39,11 +39,11 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.cache.CacheMgt;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.process.ExportArchivePDF;
 import de.metas.document.archive.spi.impl.DocOutboundArchiveEventListener;

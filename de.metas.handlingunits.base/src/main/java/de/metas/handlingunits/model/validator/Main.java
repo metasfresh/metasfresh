@@ -25,9 +25,6 @@ package de.metas.handlingunits.model.validator;
 import java.util.Arrays;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
-import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
-import org.adempiere.ad.dao.cache.ITableCacheConfigBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -40,11 +37,14 @@ import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.CacheMgt;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfigBuilder;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
 import de.metas.handlingunits.ddorder.spi.impl.ForecastLineHUDocumentHandler;

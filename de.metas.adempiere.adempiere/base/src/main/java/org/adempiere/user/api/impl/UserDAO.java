@@ -47,8 +47,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.util.CacheCtx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;

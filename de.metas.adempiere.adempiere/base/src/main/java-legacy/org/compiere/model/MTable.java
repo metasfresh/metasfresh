@@ -30,7 +30,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.ad.persistence.TableModelLoader;
@@ -40,11 +39,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;

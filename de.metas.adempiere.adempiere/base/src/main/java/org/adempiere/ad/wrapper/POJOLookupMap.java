@@ -68,7 +68,6 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
@@ -76,6 +75,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 import de.metas.process.IADPInstanceDAO;

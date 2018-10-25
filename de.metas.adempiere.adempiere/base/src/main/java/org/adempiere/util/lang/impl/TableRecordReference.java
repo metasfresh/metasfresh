@@ -65,7 +65,7 @@ import de.metas.util.lang.RepoIdAware;
  * <li>start from known AD_Table_ID/Record_ID and will load the underlying model only when it's needed (if you use {@link #TableRecordReference(int, int)} constructor)
  * </ul>
  *
- * TODO: merge logic with {@link org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal}.
+ * TODO: merge logic with {@link de.metas.cache.model.impl.TableRecordCacheLocal}.
  *
  * @author tsa
  *

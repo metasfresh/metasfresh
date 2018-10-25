@@ -21,10 +21,11 @@ import java.util.List;
 import java.util.Properties;
 
 import org.compiere.model.Query;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+
+import de.metas.cache.CCache;
 
 /**
  *	Payroll Concept for HRayroll Module

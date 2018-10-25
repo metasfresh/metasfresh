@@ -42,7 +42,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;

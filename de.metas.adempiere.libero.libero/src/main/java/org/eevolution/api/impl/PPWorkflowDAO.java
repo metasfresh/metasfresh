@@ -36,7 +36,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_AD_Workflow;
 import org.eevolution.api.IPPWorkflowDAO;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
 
 public class PPWorkflowDAO implements IPPWorkflowDAO

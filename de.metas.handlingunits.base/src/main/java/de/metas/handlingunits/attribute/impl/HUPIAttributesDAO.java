@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsDAO;

@@ -1,8 +1,5 @@
 package org.adempiere.ad.security.model.validator;
 
-import org.adempiere.ad.dao.cache.IModelCacheService;
-import org.adempiere.ad.dao.cache.ITableCacheConfig;
-import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -17,10 +14,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.UserId;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_Role;
-import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.util.Services;
 
 @Interceptor(I_AD_Role.class)
