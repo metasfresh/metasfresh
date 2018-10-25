@@ -12,6 +12,7 @@ import org.adempiere.ad.trx.api.NullTrxPlaceholder;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.Util;
@@ -138,10 +139,13 @@ public class ModelCacheService implements IModelCacheService
 
 	protected final void addTableCacheConfig(final ITableCacheConfig cacheConfig, final boolean override)
 	{
-		final POInfo poInfo = POInfo.getPOInfo(cacheConfig.getTableName());
-		if (!poInfo.isSingleKeyColumnName())
+		if (!Adempiere.isUnitTestMode())
 		{
-			logger.warn("Skip adding {} because the table does not have a single primary key", cacheConfig);
+			final POInfo poInfo = POInfo.getPOInfo(cacheConfig.getTableName());
+			if (!poInfo.isSingleKeyColumnName())
+			{
+				logger.warn("Skip adding {} because the table does not have a single primary key", cacheConfig);
+			}
 		}
 
 		tableName2cacheConfig.compute(cacheConfig.getTableName(), (tableName, previousConfig) -> {
