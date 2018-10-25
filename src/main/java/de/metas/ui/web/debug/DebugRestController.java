@@ -165,7 +165,11 @@ public class DebugRestController
 	}
 
 	@RequestMapping(value = "/traceSqlQueries", method = RequestMethod.GET)
-	public void setTraceSqlQueries(@RequestParam("enabled") final boolean enabled)
+	public void setTraceSqlQueries(
+
+			@ApiParam(value = "If Enabled, all SQL queries are logged with loglevel=WARN, or if the system property <code>" + IQueryStatisticsLogger.SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR + "</code> is set to <code>true</code>, they will be written to std-err.", //
+					allowEmptyValue = false) //
+			@RequestParam("enabled") final boolean enabled)
 	{
 		if (enabled)
 		{
@@ -454,7 +458,7 @@ public class DebugRestController
 		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofCommaSeparatedString(rowIdsStr);
 
 		//
-		// Delete from DB selection 
+		// Delete from DB selection
 		String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
 				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(viewId.getViewId())
 				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1 + "=" + DB.buildSqlList(rowIds.toIntSet());
