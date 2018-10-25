@@ -38,8 +38,11 @@ import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConf
 @Repository
 public class MSV3ServerConfigRepository
 {
-	private final CCache<Integer, MSV3ServerConfig> serverConfigCache = CCache.<Integer, MSV3ServerConfig> newCache(I_MSV3_Server.Table_Name, 1, CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_MSV3_Server_Product_Category.Table_Name);
+	private final CCache<Integer, MSV3ServerConfig> serverConfigCache = CCache.<Integer, MSV3ServerConfig> builder()
+			.tableName(I_MSV3_Server.Table_Name)
+			.initialCapacity(1)
+			.additionalTableNameToResetFor(I_MSV3_Server_Product_Category.Table_Name)
+			.build();
 
 	public MSV3ServerConfig getServerConfig()
 	{

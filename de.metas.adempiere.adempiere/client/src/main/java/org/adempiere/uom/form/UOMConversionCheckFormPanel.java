@@ -10,18 +10,17 @@ package org.adempiere.uom.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -33,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -48,7 +48,7 @@ import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.ITableAwareCacheInterface;
+import org.compiere.util.ICacheResetListener;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -59,11 +59,11 @@ import de.metas.util.Services;
 
 /**
  * Form panel used to check and test UOM conversions.
- * 
+ *
  * @author tsa
  *
  */
-public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeListener
+public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeListener, ICacheResetListener
 {
 	// services
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -76,21 +76,17 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 	private GridField fieldQtyConv;
 	private GridField fieldDescription;
 
-	private Set<ConvertOnCacheResetListener> cacheListeners = ImmutableSet.<ConvertOnCacheResetListener> builder()
-			.add(new ConvertOnCacheResetListener(I_C_UOM.Table_Name))
-			.add(new ConvertOnCacheResetListener(I_C_UOM_Conversion.Table_Name))
-			.build();
+	private static final Set<String> CACHE_RESET_TABLE_NAMES = ImmutableSet.<String> of(
+			I_C_UOM.Table_Name,
+			I_C_UOM_Conversion.Table_Name);
 
 	@Override
 	public void init(final int windowNo, final FormFrame frame) throws Exception
 	{
 		initUI(windowNo, frame);
 
-		// Register cache listeners
-		for (final ConvertOnCacheResetListener cacheListener : cacheListeners)
-		{
-			CacheMgt.get().register(cacheListener);
-		}
+		final CacheMgt cacheManager = CacheMgt.get();
+		CACHE_RESET_TABLE_NAMES.forEach(tableName -> cacheManager.addCacheResetListener(tableName, this));
 	}
 
 	private final void initUI(final int windowNo, final FormFrame frame)
@@ -154,7 +150,7 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 
 		//
 		// Bottom: buttons
-		ConfirmPanel confirmPanel = ConfirmPanel.builder()
+		final ConfirmPanel confirmPanel = ConfirmPanel.builder()
 				.withCancelButton(false)
 				.withRefreshButton(true)
 				.build();
@@ -162,7 +158,7 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 		confirmPanel.setConfirmPanelListener(new ConfirmPanelListener()
 		{
 			@Override
-			public void refreshButtonPressed(ActionEvent e)
+			public void refreshButtonPressed(final ActionEvent e)
 			{
 				doConvert("refresh button pressed");
 			}
@@ -181,11 +177,15 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 	@Override
 	public void dispose()
 	{
-		// Unregister cache listeners
-		for (final ConvertOnCacheResetListener cacheListener : cacheListeners)
-		{
-			CacheMgt.get().unregister(cacheListener);
-		}
+		final CacheMgt cacheManager = CacheMgt.get();
+		CACHE_RESET_TABLE_NAMES.forEach(tableName -> cacheManager.removeCacheResetListener(tableName, this));
+	}
+
+	@Override
+	public long reset(final CacheInvalidateMultiRequest multiRequest)
+	{
+		doConvert("cache reset on " + multiRequest);
+		return 1;
 	}
 
 	private final Properties getCtx()
@@ -194,7 +194,7 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 	}
 
 	@Override
-	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException
+	public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException
 	{
 		// Try apply UOM conversion
 		doConvert("" + evt.getPropertyName() + " field changed");
@@ -293,56 +293,13 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 					+ "<br>Product: " + (product == null ? "-" : product.getName())
 					+ "<br>Reason: " + reason);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			setDescription(e.getLocalizedMessage());
 
 			// because this is a test form, printing the exception directly to console it's totally fine.
 			// More, if we would log it as WARNING/SEVERE, an AD_Issue would be created, but we don't want that.
 			e.printStackTrace();
-		}
-	}
-
-	private class ConvertOnCacheResetListener implements ITableAwareCacheInterface
-	{
-		private final String tableName;
-
-		public ConvertOnCacheResetListener(final String tableName)
-		{
-			super();
-			this.tableName = tableName;
-		}
-
-		@Override
-		public int reset()
-		{
-			doConvert("cache reset on " + tableName);
-			return 1;
-		}
-
-		@Override
-		public int resetForRecordId(String tableName, int recordId)
-		{
-			doConvert("cache reset on " + tableName + ", recordId=" + recordId);
-			return 1;
-		}
-
-		@Override
-		public int size()
-		{
-			return 1;
-		}
-
-		@Override
-		public String getName()
-		{
-			return tableName;
-		}
-
-		@Override
-		public String getTableName()
-		{
-			return tableName;
 		}
 	}
 }

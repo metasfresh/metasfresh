@@ -541,7 +541,7 @@ public class ServerMonitor extends HttpServlet
 				CacheMgt.get().reset();
 				m_message.addElement("Cache Reset: All");
 			}
-			else if (record_ID == null || record_ID.length() == 0)
+			else if (record_ID == null || record_ID.isEmpty())
 			{
 				CacheMgt.get().reset(tableName);
 				m_message.addElement("Cache Reset: " + tableName);

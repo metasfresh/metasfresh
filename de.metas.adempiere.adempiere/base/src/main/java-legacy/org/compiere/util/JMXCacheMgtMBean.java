@@ -14,15 +14,15 @@ public interface JMXCacheMgtMBean
 
 	String getLogLevel();
 
-	String[] getTableNames();
+	String[] getCacheLabels();
 
 	String[] getTableNamesToBroadcast();
 
 	void enableRemoteCacheInvalidationForTableName(String tableName);
 
-	int resetAll();
+	long resetAll();
 
-	int resetForTable(String tableName);
+	long resetForTable(String tableName);
 
-	int resetForRecordId(String tableName, int recordId);
+	long resetForRecordId(String tableName, int recordId);
 }

@@ -199,7 +199,7 @@ public class CCacheTest
 		assertSize(cache, 1);
 
 		// Clear
-		cache.clear();
+		cache.reset();
 		Assert.assertEquals("invalid isJustReset", true, cache.isReset());
 		assertEmpty(cache);
 	}

@@ -43,12 +43,12 @@ import lombok.NonNull;
 
 public class RoleNotificationsConfigRepository implements IRoleNotificationsConfigRepository
 {
-	private final CCache<Integer, RoleNotificationsConfig> roleNotificationsConfigsByRoleId = CCache.<Integer, RoleNotificationsConfig> newLRUCache(
-			I_AD_Role_NotificationGroup.Table_Name,
-			10,
-			CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_AD_Role.Table_Name)
-			.addResetForTableName(I_AD_Role_NotificationGroup.Table_Name);
+	private final CCache<Integer, RoleNotificationsConfig> roleNotificationsConfigsByRoleId = CCache.<Integer, RoleNotificationsConfig> builder()
+			.tableName(I_AD_Role_NotificationGroup.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_AD_Role.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Role_NotificationGroup.Table_Name)
+			.build();
 
 	@Override
 	public RoleNotificationsConfig getByRoleId(final int adRoleId)

@@ -56,7 +56,7 @@ public class InboundEMailConfigChangesDispatcher implements ICacheResetListener
 	}
 
 	@Override
-	public int reset(final CacheInvalidateMultiRequest multiRequest)
+	public long reset(final CacheInvalidateMultiRequest multiRequest)
 	{
 		if (listeners.isEmpty())
 		{

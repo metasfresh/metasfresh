@@ -627,7 +627,7 @@ public class ModelCacheService implements IModelCacheService
 
 		public void invalidateAll()
 		{
-			cachesByTableName.values().forEach(IDCache::clear);
+			cachesByTableName.values().forEach(IDCache::reset);
 			cachesByTableName.clear();
 
 			if (logger.isTraceEnabled())
@@ -645,12 +645,12 @@ public class ModelCacheService implements IModelCacheService
 			}
 
 			// Invalidate the cache
-			cache.clear();
+			cache.reset();
 
 			// Logging
 			if (logger.isTraceEnabled())
 			{
-				logger.trace("Cleared cache {} for tableName={}, trx={} ", cache.getName(), tableName, trxName);
+				logger.trace("Cleared cache {} for tableName={}, trx={} ", cache.getCacheName(), tableName, trxName);
 			}
 		}
 
@@ -673,7 +673,7 @@ public class ModelCacheService implements IModelCacheService
 			// Logging
 			if (invalidated && logger.isTraceEnabled())
 			{
-				logger.trace("Model removed from cache {}: record={}/{}, trx={} ", cache.getName(), tableName, recordId, trxName);
+				logger.trace("Model removed from cache {}: record={}/{}, trx={} ", cache.getCacheName(), tableName, recordId, trxName);
 			}
 		}
 
@@ -692,7 +692,7 @@ public class ModelCacheService implements IModelCacheService
 			// Logging
 			if (logger.isTraceEnabled())
 			{
-				logger.trace("Model added to cache {}: {} ", cache.getName(), po);
+				logger.trace("Model added to cache {}: {} ", cache.getCacheName(), po);
 			}
 		}
 	}

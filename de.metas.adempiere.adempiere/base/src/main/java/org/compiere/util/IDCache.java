@@ -1,6 +1,6 @@
 package org.compiere.util;
 
-import java.util.Objects;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.util.Check;
 
@@ -29,6 +29,7 @@ public class IDCache<V> extends CCache<Object, V>
 		super(
 				buildCacheName(tableName, trxName),
 				tableName,
+				null, // additionalTableNamesToResetFor
 				initialCapacity,
 				expireMinutes,
 				cacheMapType);
@@ -48,22 +49,18 @@ public class IDCache<V> extends CCache<Object, V>
 	}
 
 	@Override
-	public int resetForRecordId(final String tableName, final int recordId)
+	public long resetForRecordId(final TableRecordReference recordRef)
 	{
+		//
+		// Try matching by cache's TableName (if any)
 		final String cacheTableName = getTableName();
-		if (!cacheTableName.equals(tableName))
+		if (!cacheTableName.equals(recordRef.getTableName()))
 		{
 			return 0;
 		}
 
-		if (Objects.equals(recordId, CacheMgt.RECORD_ID_ALL))
-		{
-			return reset();
-		}
-		else
-		{
-			final V valueOld = remove(recordId);
-			return valueOld == null ? 0 : 1;
-		}
+		final int recordId = recordRef.getRecord_ID();
+		final V valueOld = remove(recordId);
+		return valueOld == null ? 0 : 1;
 	}
 }

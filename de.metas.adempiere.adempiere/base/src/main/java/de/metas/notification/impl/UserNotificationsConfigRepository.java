@@ -10,6 +10,7 @@ import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.X_AD_User_NotificationGroup;
 import org.compiere.util.CCache;
+import org.compiere.util.CCache.CacheMapType;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -49,12 +50,13 @@ import de.metas.util.Services;
 
 public class UserNotificationsConfigRepository implements IUserNotificationsConfigRepository
 {
-	private final CCache<Integer, UserNotificationsConfig> userNotificationsConfigsByUserId = CCache.<Integer, UserNotificationsConfig> newLRUCache(
-			I_AD_User_NotificationGroup.Table_Name,
-			100,
-			CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_AD_User.Table_Name)
-			.addResetForTableName(I_AD_NotificationGroup.Table_Name);
+	private final CCache<Integer, UserNotificationsConfig> userNotificationsConfigsByUserId = CCache.<Integer, UserNotificationsConfig> builder()
+			.tableName(I_AD_User_NotificationGroup.Table_Name)
+			.initialCapacity(100)
+			.cacheMapType(CacheMapType.LRU)
+			.additionalTableNameToResetFor(I_AD_User.Table_Name)
+			.additionalTableNameToResetFor(I_AD_NotificationGroup.Table_Name)
+			.build();
 
 	@Override
 	public UserNotificationsConfig getByUserId(final int adUserId)

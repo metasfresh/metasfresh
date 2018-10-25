@@ -48,8 +48,11 @@ public class FTSIndexRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<Integer, FTSIndexConfig> configsById = CCache.<Integer, FTSIndexConfig> newCache(I_ES_FTS_Index.Table_Name, 10, CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_ES_FTS_IndexInclude.Table_Name);
+	private final CCache<Integer, FTSIndexConfig> configsById = CCache.<Integer, FTSIndexConfig> builder()
+			.tableName(I_ES_FTS_Index.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_ES_FTS_IndexInclude.Table_Name)
+			.build();
 
 	private final FTSIndexTemplatesRepository indexTemplatesRepo;
 

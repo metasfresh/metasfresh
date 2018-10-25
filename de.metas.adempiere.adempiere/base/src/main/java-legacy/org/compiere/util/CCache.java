@@ -31,8 +31,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -46,8 +46,9 @@ import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Adempiere Cache.
@@ -58,7 +59,7 @@ import lombok.NonNull;
  * @author Jorg Janke
  * @version $Id: CCache.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
  */
-public class CCache<K, V> implements ITableAwareCacheInterface
+public class CCache<K, V> implements CacheInterface
 {
 	/**
 	 * Creates a new LRU cache
@@ -70,13 +71,12 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	 */
 	public static final <K, V> CCache<K, V> newLRUCache(final String cacheName, final int maxSize, final int expireAfterMinutes)
 	{
-		final String tableName = extractTableNameForCacheName(cacheName);
-		return new CCache<>(cacheName //
-				, tableName //
-				, maxSize // initialCapacity // FIXME this is confusing because in case of LRU, initialCapacity is used as maxSize
-				, expireAfterMinutes //
-				, CacheMapType.LRU //
-		);
+		return new CCache<>(cacheName,
+				null, // auto-detect tableName
+				null, // additionalTableNamesToResetFor
+				maxSize, // initialCapacity // FIXME this is confusing because in case of LRU, initialCapacity is used as maxSize
+				expireAfterMinutes,
+				CacheMapType.LRU);
 	}
 
 	/**
@@ -86,12 +86,12 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	 */
 	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
 	{
-		final String tableName = extractTableNameForCacheName(cacheName);
-		return new CCache<>(cacheName //
-				, tableName //
-				, initialCapacity, expireAfterMinutes //
-				, CacheMapType.HashMap //
-		);
+		return new CCache<>(cacheName,
+				null, // auto-detect tableName
+				null, // additionalTableNamesToResetFor
+				initialCapacity,
+				expireAfterMinutes,
+				CacheMapType.HashMap);
 	}
 
 	public static enum CacheMapType
@@ -117,55 +117,116 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	 */
 	private static final boolean DEBUG = false;
 
+	private static final Logger logger = LogManager.getLogger(CCache.class);
+
+	/** Internal map that is used as cache */
+	private final Cache<K, V> cache;
+
+	static final AtomicLong NEXT_CACHE_ID = new AtomicLong(1);
+	/** unique cache ID, mainly used for tracking, logging and debugging */
+	private final long cacheId;
+
+	private final String cacheName;
+	private final String tableName;
+	private final ImmutableSet<CacheLabel> labels;
+
+	/** Expire after minutes */
+	private final int expireMinutes;
+	public static final int EXPIREMINUTES_Never = 0;
+	/** Just reset */
+	private boolean m_justReset = true;
+
 	/**
-	 * Adempiere Cache - expires after 2 hours
+	 * If {@link #DEBUG} is enabled, this variable contains the object's identity code (see {@link System#identityHashCode(Object)}).
+	 */
+	private final String debugId;
+
+	/**
+	 * If {@link #DEBUG} is enabled, this variable contains the constructor's stack trace (when this object was created)
+	 */
+	private final String debugAquireStacktrace;
+
+	/**
+	 * Metasfresh Cache - expires after 2 hours
 	 *
 	 * @param name (table) name of the cache
 	 * @param initialCapacity initial capacity
 	 */
-	public CCache(String name, int initialCapacity)
+	public CCache(final String name, final int initialCapacity)
 	{
 		this(name, initialCapacity, 120);
 	}	// CCache
 
 	/**
-	 * Adempiere Cache
+	 * Metasfresh Cache
 	 *
 	 * @param name (table) name of the cache
 	 * @param initialCapacity initial capacity
 	 * @param expireMinutes expire after minutes (0=no expire)
 	 */
-	public CCache(String name, int initialCapacity, int expireMinutes)
+	public CCache(final String name, final int initialCapacity, final int expireMinutes)
 	{
 		this(name, // cache name
-				extractTableNameForCacheName(name), // tableName
+				null, // auto-detect tableName
+				null, // additionalTableNamesToResetFor
 				initialCapacity,
-				expireMinutes);
+				expireMinutes,
+				CacheMapType.HashMap);
 	}
 
+	@Builder
 	protected CCache(
-			final String name,
+			final String cacheName,
 			final String tableName,
-			final int initialCapacity,
-			final int expireMinutes)
-	{
-		this(name, tableName, initialCapacity, expireMinutes, CacheMapType.HashMap);
-	}
-
-	protected CCache(
-			final String name,
-			final String tableName,
-			final int initialCapacity,
-			final int expireMinutes,
+			@Singular("additionalTableNameToResetFor") final Set<String> additionalTableNamesToResetFor,
+			final Integer initialCapacity,
+			final Integer expireMinutes,
 			final CacheMapType cacheMapType)
 	{
 		this.cacheId = NEXT_CACHE_ID.getAndIncrement();
-		this.initialCapacity = initialCapacity;
-		this.m_name = name;
-		this.m_tableName = tableName;
-		this.expireMinutes = expireMinutes;
-		this.cacheMapType = cacheMapType;
-		this.cache = buildCache();
+
+		if (cacheName == null)
+		{
+			if (tableName == null)
+			{
+				this.cacheName = "$NoCacheName$" + cacheId;
+				this.tableName = "$NoTableName$" + tableName;
+			}
+			else
+			{
+				this.cacheName = tableName;
+				this.tableName = tableName;
+			}
+		}
+		else // cacheName != null
+		{
+			this.cacheName = cacheName;
+
+			if (tableName == null)
+			{
+				final String extractedTableName = extractTableNameForCacheName(cacheName);
+				if (extractedTableName != null)
+				{
+					this.tableName = extractedTableName;
+				}
+				else
+				{
+					this.tableName = cacheName;
+				}
+			}
+			else
+			{
+				this.tableName = tableName;
+			}
+		}
+
+		this.labels = buildCacheLabels(this.tableName, additionalTableNamesToResetFor);
+
+		this.expireMinutes = expireMinutes != null ? expireMinutes : EXPIREMINUTES_Never;
+		this.cache = buildGuavaCache(
+				cacheMapType != null ? cacheMapType : CacheMapType.HashMap,
+				initialCapacity != null ? initialCapacity : 0,
+				this.expireMinutes);
 
 		if (DEBUG)
 		{
@@ -214,40 +275,26 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		return tableName;
 	}
 
-	private static final Logger logger = LogManager.getLogger(CCache.class);
-
-	private final CacheMapType cacheMapType;
-	/** Internal map that is used as cache */
-	private final Cache<K, V> cache;
-
-	private static final AtomicLong NEXT_CACHE_ID = new AtomicLong(1);
-	/** unique cache ID, mainly used for tracking, logging and debugging */
-	private final long cacheId;
-
-	/** Name */
-	private final String m_name;
-	private final String m_tableName;
-	private final int initialCapacity;
-	/** Expire after minutes */
-	private final int expireMinutes;
-	public static final int EXPIREMINUTES_Never = 0;
-	/** Just reset */
-	private boolean m_justReset = true;
-
-	/**
-	 * If {@link #DEBUG} is enabled, this variable contains the object's identity code (see {@link System#identityHashCode(Object)}).
-	 */
-	private final String debugId;
-
-	/**
-	 * If {@link #DEBUG} is enabled, this variable contains the constructor's stack trace (when this object was created)
-	 */
-	private final String debugAquireStacktrace;
-
-	private final Cache<K, V> buildCache()
+	private static ImmutableSet<CacheLabel> buildCacheLabels(@NonNull final String tableName, final Set<String> additionalTableNamesToResetFor)
 	{
-		Check.assumeNotNull(cacheMapType, "cacheMapType not null");
+		final ImmutableSet.Builder<CacheLabel> builder = ImmutableSet.<CacheLabel> builder();
+		builder.add(CacheLabel.ofTableName(tableName));
 
+		if (additionalTableNamesToResetFor != null)
+		{
+			additionalTableNamesToResetFor.stream()
+					.map(CacheLabel::ofTableName)
+					.forEach(builder::add);
+		}
+
+		return builder.build();
+	}
+
+	private static final <K, V> Cache<K, V> buildGuavaCache(
+			@NonNull final CacheMapType cacheMapType,
+			final int initialCapacity,
+			final int expireMinutes)
+	{
 		CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
 		if (cacheMapType == CacheMapType.HashMap)
 		{
@@ -275,21 +322,27 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	/**
 	 * @return unique cache ID
 	 */
+	@Override
 	public final long getCacheId()
 	{
 		return cacheId;
 	}
 
 	@Override
-	public final String getName()
+	public final String getCacheName()
 	{
-		return m_name;
+		return cacheName;
 	}	// getName
 
-	@Override
-	public final String getTableName()
+	protected final String getTableName()
 	{
-		return m_tableName;
+		return tableName;
+	}
+
+	@Override
+	public Set<CacheLabel> getLabels()
+	{
+		return labels;
 	}
 
 	/**
@@ -327,59 +380,48 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	 * @see org.compiere.util.CacheInterface#reset()
 	 */
 	@Override
-	public int reset()
+	public long reset()
 	{
-		final int no = (int)cache.size();
+		final long no = cache.size();
 		clear();
 		if (no > 0)
 		{
 			logger.trace("Reset {} entries from {}", no, this);
 		}
 		return no;
-	}	// reset
+	}
+
+	private void clear()
+	{
+		// Clear
+		cache.invalidateAll();
+		cache.cleanUp();
+
+		m_justReset = true;
+	}	// clear
 
 	@Override
-	public int resetForRecordId(final String tableName, final int recordId)
+	public long resetForRecordId(final TableRecordReference recordRef)
 	{
-		if (tableName == null)
-		{
-			return reset();
-		}
-
 		//
 		// Try matching by cache's TableName (if any)
 		final String cacheTableName = getTableName();
-		if (cacheTableName != null && !cacheTableName.isEmpty() && !tableName.equals(cacheTableName))
-		{
-			return 0;
-		}
-
-		//
-		// Try matching by cache's name
-		final String cacheName = getName();
-		if (cacheName == null || !cacheName.startsWith(tableName))
+		if (!cacheTableName.equals(recordRef.getTableName()))
 		{
 			return 0;
 		}
 
 		// NOTE: reseting only by "key" is not supported at this level, so we are reseting everything
-		final int count = reset();
-		return count;
+		return reset();
 	}
 
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("CCache[");
-		sb.append(m_name)
-				.append(", id=").append(cacheId)
-				.append(", Exp=").append(expireMinutes)
-				.append(", #").append(cache.size());
+		final StringBuilder sb = new StringBuilder("CCache[")
+				.append(cacheName)
+				.append(", size").append(cache.size())
+				.append(", id=").append(cacheId);
 
 		if (DEBUG)
 		{
@@ -390,19 +432,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		sb.append("]");
 
 		return sb.toString();
-	}	// toString
-
-	/**
-	 * Clear cache
-	 */
-	public void clear()
-	{
-		// Clear
-		cache.invalidateAll();
-		cache.cleanUp();
-
-		m_justReset = true;
-	}	// clear
+	}
 
 	/**
 	 * @see java.util.Map#containsKey(java.lang.Object)
@@ -418,12 +448,11 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		cache.invalidate(key);
 		return value;
 	}
-	
+
 	public void removeAll(final Iterable<K> keys)
 	{
 		cache.invalidateAll(keys);
 	}
-
 
 	/**
 	 * @see java.util.Map#get(java.lang.Object)
@@ -585,7 +614,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	 * @return value; not null
 	 * @throws E
 	 */
-	public <E extends Throwable> V getOrElseThrow(final K key, Supplier<E> exceptionSupplier) throws E
+	public <E extends Throwable> V getOrElseThrow(final K key, final Supplier<E> exceptionSupplier) throws E
 	{
 		final V value = get(key);
 		if (value == null)
@@ -620,7 +649,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	 *
 	 * @param map key/value pairs
 	 */
-	public void putAll(Map<? extends K, ? extends V> map)
+	public void putAll(final Map<? extends K, ? extends V> map)
 	{
 		cache.putAll(map);
 	}
@@ -645,9 +674,9 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	 * @see java.util.Map#size()
 	 */
 	@Override
-	public int size()
+	public long size()
 	{
-		return (int)cache.size();
+		return cache.size();
 	}	// size
 
 	/**
@@ -669,44 +698,44 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		}
 	}
 
-	/**
-	 * Adds an additional table which when the cache is reset for that one, it also shall reset this cache.
-	 *
-	 * @param tableName
-	 * @return this
-	 */
-	public CCache<K, V> addResetForTableName(final String tableName)
-	{
-		Check.assumeNotEmpty(tableName, "tableName not empty");
-		CacheMgt.get().addCacheResetListener(tableName, new ICacheResetListener()
-		{
-			@Override
-			public int reset(final CacheInvalidateMultiRequest multiRequest)
-			{
-				if(!multiRequest.matchesTableNameEffective(tableName))
-				{
-					return 0;
-				}
-
-				return CCache.this.reset();
-			}
-
-			@Override
-			public String toString()
-			{
-				return "->" + CCache.this.toString();
-			}
-		});
-
-		return this;
-	}
+	// /**
+	// * Adds an additional table which when the cache is reset for that one, it also shall reset this cache.
+	// *
+	// * @param tableName
+	// * @return this
+	// */
+	// public CCache<K, V> addResetForTableName(final String tableName)
+	// {
+	// Check.assumeNotEmpty(tableName, "tableName not empty");
+	// CacheMgt.get().addCacheResetListener(tableName, new ICacheResetListener()
+	// {
+	// @Override
+	// public int reset(final CacheInvalidateMultiRequest multiRequest)
+	// {
+	// if (!multiRequest.matchesTableNameEffective(tableName))
+	// {
+	// return 0;
+	// }
+	//
+	// return CCache.this.reset();
+	// }
+	//
+	// @Override
+	// public String toString()
+	// {
+	// return "->" + CCache.this.toString();
+	// }
+	// });
+	//
+	// return this;
+	// }
 
 	/**
 	 * @return cache statistics
 	 */
 	public CCacheStats stats()
 	{
-		return new CCacheStats(cacheId, m_name, cache.size(), cache.stats());
+		return new CCacheStats(cacheId, cacheName, cache.size(), cache.stats());
 	}
 
 	@SuppressWarnings("serial")
@@ -719,7 +748,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		private final long size;
 		private final CacheStats guavaStats;
 
-		private CCacheStats(final long cacheId, final String name, final long size, CacheStats guavaStats)
+		private CCacheStats(final long cacheId, final String name, final long size, final CacheStats guavaStats)
 		{
 			super();
 			this.cacheId = cacheId;

@@ -83,18 +83,15 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 public class PricingConditionsRepository implements IPricingConditionsRepository
 {
-	private final CCache<PricingConditionsId, PricingConditions> //
-	pricingConditionsById = CCache
-			.<PricingConditionsId, PricingConditions> newCache(
-					I_M_DiscountSchema.Table_Name,
-					10,
-					CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_M_DiscountSchemaBreak.Table_Name);
+	private final CCache<PricingConditionsId, PricingConditions> pricingConditionsById = CCache.<PricingConditionsId, PricingConditions> builder()
+			.tableName(I_M_DiscountSchema.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_M_DiscountSchemaBreak.Table_Name)
+			.build();
 
 	@Override
 	public PricingConditions getPricingConditionsById(@NonNull final PricingConditionsId pricingConditionsId)

@@ -23,11 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Localtion Region Model (Value Object)
@@ -106,21 +107,6 @@ public final class MRegion extends X_C_Region
 			loadAllRegions(ctx);
 		return s_default;
 	}	//	get
-
-	/**
-	 *	Return Regions as Array
-	 * 	@param ctx context
-	 *  @return MCountry Array
-	 */
-	public static MRegion[] getRegions(Properties ctx)
-	{
-		if (s_regions == null || s_regions.size() == 0)
-			loadAllRegions(ctx);
-		MRegion[] retValue = new MRegion[s_regions.size()];
-		s_regions.values().toArray(retValue);
-		Arrays.sort(retValue, new MRegion(ctx, 0, null));
-		return retValue;
-	}	//	getRegions
 
 	/**
 	 *	Return Array of Regions of Country

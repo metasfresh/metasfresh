@@ -16,15 +16,14 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
@@ -34,19 +33,21 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.WeakList;
 import lombok.NonNull;
-import lombok.Value;
 
 /**
  * Adempiere Cache Management
@@ -56,48 +57,29 @@ import lombok.Value;
  */
 public final class CacheMgt
 {
-	/**
-	 * Get Cache Management
-	 *
-	 * @return Cache Manager
-	 */
 	public static final CacheMgt get()
 	{
-		return s_cache;
-	}	// get
+		return instance;
+	}
 
-	/** Singleton */
-	private static final CacheMgt s_cache = new CacheMgt();
+	private static final CacheMgt instance = new CacheMgt();
 
 	public static final String JMX_BASE_NAME = "org.adempiere.cache";
 
-	/**
-	 * Private Constructor
-	 */
+	private final ConcurrentHashMap<CacheLabel, CachesGroup> cachesByLabel = new ConcurrentHashMap<>();
+
+	private final CopyOnWriteArrayList<ICacheResetListener> globalCacheResetListeners = new CopyOnWriteArrayList<>();
+	private final ConcurrentMap<String, CopyOnWriteArrayList<ICacheResetListener>> cacheResetListenersByTableName = new ConcurrentHashMap<>();
+
+	/* package */ static final transient Logger logger = LogManager.getLogger(CacheMgt.class);
+
+	private final AtomicBoolean cacheResetRunning = new AtomicBoolean();
+	private final AtomicLong lastCacheReset = new AtomicLong();
+
 	private CacheMgt()
 	{
 		JMXRegistry.get().registerJMX(new JMXCacheMgt(), OnJMXAlreadyExistsPolicy.Replace);
 	}
-
-	public static final int RECORD_ID_ALL = -1;
-
-	/** List of Instances */
-	private final WeakList<CacheInterface> cacheInstances = new WeakList<>();
-	private final ReentrantLock cacheInstancesLock = cacheInstances.getReentrantLock();
-
-	private CopyOnWriteArrayList<ICacheResetListener> globalCacheResetListeners = new CopyOnWriteArrayList<>();
-
-	/**
-	 * List of Table Names.
-	 *
-	 * i.e. map of TableName to "how many cache instances do we have for that table name"
-	 */
-	private final Map<String, AtomicInteger> tableNames = new HashMap<>();
-
-	/* package */ static final transient Logger log = LogManager.getLogger(CacheMgt.class);
-
-	private final AtomicBoolean cacheResetRunning = new AtomicBoolean();
-	private final AtomicLong lastCacheReset = new AtomicLong();
 
 	/**
 	 * Enable caches for the given table to be invalidated by remote events.<br>
@@ -108,160 +90,45 @@ public final class CacheMgt
 		CacheInvalidationRemoteHandler.instance.enableForTableName(tableName);
 	}
 
-	/**************************************************************************
-	 * Register Cache Instance
-	 *
-	 * @param instance Cache
-	 * @return true if added
-	 */
-	public boolean register(final CacheInterface instance)
+	private CachesGroup getCachesGroup(@NonNull final CacheLabel label)
+	{
+		return cachesByLabel.computeIfAbsent(label, CachesGroup::new);
+	}
+
+	private CachesGroup getCachesGroupIfPresent(@NonNull final CacheLabel label)
+	{
+		return cachesByLabel.get(label);
+	}
+
+	public void register(@NonNull final CacheInterface instance)
 	{
 		final Boolean registerWeak = null; // auto
-		return register(instance, registerWeak);
+		register(instance, registerWeak);
 	}
 
-	private boolean register(final CacheInterface instance, final Boolean registerWeak)
+	private void register(@NonNull final CacheInterface cache, final Boolean registerWeak)
 	{
-		if (instance == null)
-		{
-			return false;
-		}
+		// FIXME: consider register weak flag
 
-		//
-		// Extract cache instance's tableName (if any)
-		final String tableName = getTableNameOrNull(instance);
+		final Set<CacheLabel> labels = cache.getLabels();
+		Check.assumeNotEmpty(labels, "labels is not empty");
 
-		//
-		// Determine if we shall register the cache instance weakly or not.
-		final boolean registerWeakEffective;
-		if (tableName != null)
-		{
-			registerWeakEffective = registerWeak == null ? true : registerWeak;
-		}
-		else
-		{
-			// NOTE: if the cache is not providing an TableName, we register them with a hard-reference because probably is a cache listener
-			registerWeakEffective = registerWeak == null ? false : registerWeak;
-		}
-
-		cacheInstancesLock.lock();
-		try
-		{
-			if (tableName != null)
-			{
-				//
-				// Increment tableName counter
-				tableNames
-						.computeIfAbsent(tableName, k -> new AtomicInteger(0))
-						.incrementAndGet();
-			}
-
-			return cacheInstances.add(instance, registerWeakEffective);
-		}
-		finally
-		{
-			cacheInstancesLock.unlock();
-		}
-	}	// register
-
-	/**
-	 * Un-Register Cache Instance
-	 *
-	 * @param instance Cache
-	 * @return true if removed
-	 */
-	public boolean unregister(final CacheInterface instance)
-	{
-		if (instance == null)
-		{
-			return false;
-		}
-
-		final String tableName = getTableNameOrNull(instance);
-
-		cacheInstancesLock.lock();
-		try
-		{
-			int countRemoved = 0;
-
-			// Could be included multiple times
-			final int size = cacheInstances.size();
-			for (int i = size - 1; i >= 0; i--)
-			{
-				final CacheInterface stored = cacheInstances.get(i);
-				if (instance.equals(stored))
-				{
-					cacheInstances.remove(i);
-					countRemoved++;
-				}
-			}
-
-			//
-			// Remove it from tableNames
-			if (tableName != null)
-			{
-				final AtomicInteger count = tableNames.remove(tableName);
-				if (count == null)
-				{
-					// let it removed
-				}
-				else
-				{
-					final int countNew = count.get() - countRemoved;
-					if (countNew > 0)
-					{
-						count.set(countNew);
-						tableNames.put(tableName, count);
-					}
-				}
-			}
-
-			final boolean found = countRemoved > 0;
-			return found;
-		}
-		finally
-		{
-			cacheInstancesLock.unlock();
-		}
-	}	// unregister
-
-	/**
-	 * Extracts the TableName from given cache instance.
-	 *
-	 * @param instance
-	 * @return table name or <code>null</code> if table name could not be extracted
-	 */
-	private static final String getTableNameOrNull(final CacheInterface instance)
-	{
-		if (instance instanceof ITableAwareCacheInterface)
-		{
-			final ITableAwareCacheInterface recordsCache = (ITableAwareCacheInterface)instance;
-
-			// Try cache TableName
-			final String tableName = recordsCache.getTableName();
-			if (tableName != null && !tableName.isEmpty())
-			{
-				return tableName;
-			}
-
-			// Try cache Name
-			final String cacheName = recordsCache.getName();
-			if (cacheName != null && !cacheName.isEmpty())
-			{
-				return cacheName;
-			}
-
-			// Fallback: return null because there is no table, no cache name
-			return null;
-		}
-
-		// Fallback for any other cache interfaces: return null because TableName is not available
-		return null;
+		labels.stream()
+				.map(this::getCachesGroup)
+				.forEach(cacheGroup -> cacheGroup.addCache(cache));
 	}
 
-	public Set<String> getTableNames()
+	public void unregister(final CacheInterface cache)
 	{
-		return ImmutableSet.copyOf(tableNames.keySet());
+		cache.getLabels()
+				.stream()
+				.map(this::getCachesGroup)
+				.forEach(cacheGroup -> cacheGroup.removeCache(cache));
+	}
+
+	public Set<CacheLabel> getCacheLabels()
+	{
+		return ImmutableSet.copyOf(cachesByLabel.keySet());
 	}
 
 	public Set<String> getTableNamesToBroadcast()
@@ -280,27 +147,22 @@ public final class CacheMgt
 	 *
 	 * @return how many cache entries were invalidated
 	 */
-	public int reset()
+	public long reset()
 	{
 		// Do nothing if already running (i.e. avoid recursion)
 		if (cacheResetRunning.getAndSet(true))
 		{
+			logger.trace("Avoid calling full cache reset again. We are currently doing it...");
 			return 0;
 		}
 
-		cacheInstancesLock.lock();
-		int counter = 0;
-		int total = 0;
+		long total = 0;
 		try
 		{
-			for (final CacheInterface cacheInstance : cacheInstances)
-			{
-				if (cacheInstance != null && cacheInstance.size() > 0)
-				{
-					total += resetNoFail(cacheInstance);
-					counter++;
-				}
-			}
+			total = cachesByLabel.values()
+					.stream()
+					.mapToLong(cachesGroup -> cachesGroup.invalidateAllNoFail())
+					.sum();
 
 			fireGlobalCacheResetListeners(CacheInvalidateMultiRequest.all());
 
@@ -308,27 +170,44 @@ public final class CacheMgt
 		}
 		finally
 		{
-			cacheInstancesLock.unlock();
 			cacheResetRunning.set(false);
 		}
 
-		log.info("Reset all: {} cache instances invalidated ({} cached items invalidated)", counter, total);
-
+		logger.info("Reset all: cache instances invalidated ({} cached items invalidated)", total);
 		return total;
 	}
 
 	private void fireGlobalCacheResetListeners(final CacheInvalidateMultiRequest multiRequest)
 	{
-		for (final ICacheResetListener globalCacheResetListener : globalCacheResetListeners)
+		globalCacheResetListeners.forEach(listener -> fireCacheResetListenerNoFail(listener, multiRequest));
+
+		if (multiRequest.isResetAll())
 		{
-			try
-			{
-				globalCacheResetListener.reset(multiRequest);
-			}
-			catch (final Exception ex)
-			{
-				log.warn("Failed reseting {}. Ignored.", globalCacheResetListener, ex);
-			}
+			cacheResetListenersByTableName.values()
+					.stream()
+					.flatMap(listeners -> listeners.stream())
+					.forEach(listener -> fireCacheResetListenerNoFail(listener, multiRequest));
+		}
+		else
+		{
+			multiRequest.getTableNamesEffective()
+					.stream()
+					.map(cacheResetListenersByTableName::get)
+					.filter(Predicates.notNull())
+					.flatMap(listeners -> listeners.stream())
+					.forEach(listener -> fireCacheResetListenerNoFail(listener, multiRequest));
+		}
+	}
+
+	private void fireCacheResetListenerNoFail(final ICacheResetListener listener, final CacheInvalidateMultiRequest multiRequest)
+	{
+		try
+		{
+			listener.reset(multiRequest);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed firing {} for {}. Ignored.", listener, multiRequest, ex);
 		}
 	}
 
@@ -338,9 +217,9 @@ public final class CacheMgt
 	 * @param tableName table name
 	 * @return how many cache entries were invalidated
 	 */
-	public int reset(final String tableName)
+	public long reset(final String tableName)
 	{
-		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
+		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.allRecordsForTable(tableName);
 		return reset(request, ResetMode.LOCAL_AND_BROADCAST);
 	}	// reset
 
@@ -352,9 +231,9 @@ public final class CacheMgt
 	 * @param tableName table name
 	 * @return how many cache entries were invalidated
 	 */
-	public int resetLocal(final String tableName)
+	public long resetLocal(final String tableName)
 	{
-		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
+		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.allRecordsForTable(tableName);
 		return reset(request, ResetMode.LOCAL);
 	}	// reset
 
@@ -362,10 +241,10 @@ public final class CacheMgt
 	 * Invalidate all cached entries for given TableName/Record_ID.
 	 *
 	 * @param tableName table name
-	 * @param recordId record if applicable or {@link #RECORD_ID_ALL} for all
+	 * @param recordId record if applicable or negative for all
 	 * @return how many cache entries were invalidated
 	 */
-	public int reset(final String tableName, final int recordId)
+	public long reset(final String tableName, final int recordId)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, recordId);
 
@@ -423,14 +302,12 @@ public final class CacheMgt
 	 * @param broadcast true if we shall also broadcast this remotely.
 	 * @return how many cache entries were invalidated (estimated!)
 	 */
-	final int reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
+	final long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
 	{
-		final int resetCount;
+		final long resetCount;
 		if (mode.isResetLocal())
 		{
 			resetCount = resetCacheInstances(multiRequest);
-
-			//
 			fireGlobalCacheResetListeners(multiRequest);
 		}
 		else
@@ -449,137 +326,67 @@ public final class CacheMgt
 		return resetCount;
 	}	// reset
 
-	private final int resetCacheInstances(final CacheInvalidateMultiRequest multiRequest)
+	private final long resetCacheInstances(final CacheInvalidateMultiRequest multiRequest)
 	{
 		if (multiRequest.isResetAll())
 		{
 			return reset();
 		}
 
-		cacheInstancesLock.lock();
-
-		final Map<String, AtomicInteger> tableNamesSnapshot;
-		final List<CacheInterface> cacheInstancesSnapshot;
-		try
-		{
-			tableNamesSnapshot = new HashMap<>(tableNames);
-			cacheInstancesSnapshot = cacheInstances.hardList();
-		}
-		finally
-		{
-			cacheInstancesLock.unlock();
-		}
-
 		int total = 0;
-
 		for (final CacheInvalidateRequest request : multiRequest.getRequests())
 		{
-			final int totalPerRequest = resetCacheInterfacesNoLock(
-					request,
-					tableNamesSnapshot,
-					cacheInstancesSnapshot);
+			final long totalPerRequest = resetCacheInterfaces(request);
 			total += totalPerRequest;
 		}
 
 		return total;
-
 	}
 
-	private static int resetCacheInterfacesNoLock(final CacheInvalidateRequest request,
-			final Map<String, AtomicInteger> tableNamesSnapshot,
-			final List<CacheInterface> cacheInstancesSnapshot)
+	private final long resetCacheInterfaces(final CacheInvalidateRequest request)
 	{
-		final String tableName = request.getTableNameEffective();
-		final int recordId = request.getRecordIdEffective();
-
-		// optimization: skip if there is no cache interface registered for request's tableName
-		if (!tableNamesSnapshot.containsKey(tableName))
+		if (request.isAllRecords())
 		{
-			return 0;
+			final CacheLabel label = CacheLabel.ofTableName(request.getTableNameEffective());
+			final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
+			if (cachesGroup == null)
+			{
+				return 0;
+			}
+
+			return cachesGroup.invalidateAllNoFail();
 		}
-
-		int total = 0;
-		int counter = 0;
-
-		//
-		// Invalidate local caches if we have at least one cache interface about our table
-		for (final CacheInterface cacheInstance : cacheInstancesSnapshot)
+		else
 		{
-			if (cacheInstance == null)
+			final TableRecordReference recordRef = request.getRecordEffective();
+			if (recordRef == null)
 			{
-				// nothing to reset
+				// shall not happen
+				return 0;
 			}
-			else if (cacheInstance instanceof CCache)
+
+			final CacheLabel label = CacheLabel.ofTableName(recordRef.getTableName());
+			final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
+			if (cachesGroup == null)
 			{
-				// NOTE: CCache requires all reset events, even if they were not it's table.
-				// inside checks if table matches OR if it's cache name starts with given table name.
-				// A total fucked up, not performant.
-				// FIXME at least we shall use ConcurrentSkipListMap and prepare the steps to switch to some well known cache frameworks.
-				final ITableAwareCacheInterface recordsCache = (ITableAwareCacheInterface)cacheInstance;
-				final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
-				if (itemsRemoved > 0)
-				{
-					log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
-					total += itemsRemoved;
-					counter++;
-				}
+				return 0;
 			}
-			else if (cacheInstance instanceof ITableAwareCacheInterface)
-			{
-				if (tableName.equals(((ITableAwareCacheInterface)cacheInstance).getTableName()))
-				{
-					final ITableAwareCacheInterface recordsCache = (ITableAwareCacheInterface)cacheInstance;
-					final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
-					if (itemsRemoved > 0)
-					{
-						log.debug("Reset cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
-						total += itemsRemoved;
-						counter++;
-					}
-				}
-			}
-			else
-			{
-				// NOTE: for other cache implementations we shall skip reseting by tableName/key because they don't support it.
-				// e.g. de.metas.adempiere.report.jasper.client.JRClient.cacheListener, org.adempiere.ad.dao.cache.impl.ModelCacheService.ModelCacheService()
-				log.debug("Unknown cache instance to reset: {}", cacheInstance);
-			}
+
+			return cachesGroup.invalidateForRecordNoFail(recordRef);
+
 		}
-
-		log.debug("Reset {}: {} cache interfaces affected ({} records invalidated)", tableName, counter, total);
-
-		return total;
 	}
 
 	/**
-	 * Total Cached Elements
-	 *
-	 * @return count
+	 * @return how many cached elements do we have in total
 	 */
-	public int getElementCount()
+	private long computeTotalSize()
 	{
-		int total = 0;
-		cacheInstancesLock.lock();
-		try
-		{
-			for (final CacheInterface cacheInstance : cacheInstances)
-			{
-				if (cacheInstance == null)
-				{
-					// do nothing
-				}
-				else
-				{
-					total += cacheInstance.size();
-				}
-			}
-		}
-		finally
-		{
-			cacheInstancesLock.unlock();
-		}
-		return total;
-	}	// getElementCount
+		return cachesByLabel.values()
+				.stream()
+				.mapToLong(CachesGroup::computeTotalSize)
+				.sum();
+	}
 
 	/**
 	 * String Representation
@@ -591,7 +398,7 @@ public final class CacheMgt
 	{
 		final StringBuilder sb = new StringBuilder("CacheMgt[");
 		sb.append("Instances=")
-				.append(cacheInstances.size())
+				.append(cachesByLabel.size())
 				.append("]");
 		return sb.toString();
 	}	// toString
@@ -605,90 +412,36 @@ public final class CacheMgt
 	{
 		final StringBuilder sb = new StringBuilder("CacheMgt[");
 		sb.append("Instances=")
-				.append(cacheInstances.size())
-				.append(", Elements=").append(getElementCount())
+				.append(cachesByLabel.size())
+				.append(", Elements=").append(computeTotalSize())
 				.append("]");
 		return sb.toString();
 	}	// toString
-
-	private int resetNoFail(final CacheInterface cacheInstance)
-	{
-		try
-		{
-			return cacheInstance.reset();
-		}
-		catch (final Exception e)
-		{
-			// log but don't fail
-			log.warn("Error while reseting {}. Ignored.", cacheInstance, e);
-			return 0;
-		}
-	}
-
-	/**
-	 * Adds an listener which will be fired when the cache for given table is about to be reset.
-	 *
-	 * @param tableName
-	 * @param cacheResetListener
-	 */
-	public void addCacheResetListener(@NonNull final String tableName, @NonNull final ICacheResetListener cacheResetListener)
-	{
-		final Boolean registerWeak = Boolean.FALSE;
-		register(CacheResetListener2CacheInterface.of(tableName, cacheResetListener), registerWeak);
-	}
 
 	public void addCacheResetListener(@NonNull final ICacheResetListener cacheResetListener)
 	{
 		globalCacheResetListeners.addIfAbsent(cacheResetListener);
 	}
 
-	@Value
-	private static final class CacheResetListener2CacheInterface implements ITableAwareCacheInterface
+	/**
+	 * Adds an listener which will be fired when the cache for given table is about to be reset.
+	 */
+	public void addCacheResetListener(@NonNull final String tableName, @NonNull final ICacheResetListener cacheResetListener)
 	{
-		public static final CacheResetListener2CacheInterface of(@NonNull final String tableName, @NonNull final ICacheResetListener listener)
+		cacheResetListenersByTableName
+				.computeIfAbsent(tableName, k -> new CopyOnWriteArrayList<>())
+				.addIfAbsent(cacheResetListener);
+	}
+
+	public boolean removeCacheResetListener(@NonNull final String tableName, @NonNull final ICacheResetListener cacheResetListener)
+	{
+		final CopyOnWriteArrayList<ICacheResetListener> cacheResetListeners = cacheResetListenersByTableName.get(tableName);
+		if (cacheResetListeners == null)
 		{
-			return new CacheResetListener2CacheInterface(tableName, listener);
+			return false;
 		}
 
-		private final String tableName;
-		private final ICacheResetListener listener;
-
-		private CacheResetListener2CacheInterface(@NonNull final String tableName, @NonNull final ICacheResetListener listener)
-		{
-			Check.assumeNotEmpty(tableName, "tableName not empty");
-			this.tableName = tableName;
-			this.listener = listener;
-		}
-
-		@Override
-		public int size()
-		{
-			return 1;
-		}
-
-		@Override
-		public String getName()
-		{
-			return tableName;
-		}
-
-		@Override
-		public String getTableName()
-		{
-			return tableName;
-		}
-
-		@Override
-		public int reset()
-		{
-			return listener.reset(CacheInvalidateMultiRequest.allRecordsForTable(tableName));
-		}
-
-		@Override
-		public int resetForRecordId(final String tableName, final int recordId)
-		{
-			return listener.reset(CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, recordId));
-		}
+		return cacheResetListeners.remove(cacheResetListener);
 	}
 
 	/** Collects records that needs to be removed from cache when a given transaction is committed */
@@ -728,7 +481,7 @@ public final class CacheMgt
 		{
 			multiRequest.getRequests()
 					.forEach(request -> request2resetMode.put(request, resetMode));
-			log.debug("Scheduled cache invalidation on transaction commit: {} ({})", multiRequest, resetMode);
+			logger.debug("Scheduled cache invalidation on transaction commit: {} ({})", multiRequest, resetMode);
 		}
 
 		/** Reset the cache for all enqueued records */
@@ -767,6 +520,99 @@ public final class CacheMgt
 			}
 
 			request2resetMode.clear();
+		}
+	}
+
+	private static class CachesGroup
+	{
+		private final CacheLabel label;
+		private final ConcurrentMap<Long, CacheInterface> caches = new MapMaker()
+				.weakValues()
+				.makeMap();
+
+		public CachesGroup(@NonNull final CacheLabel label)
+		{
+			this.label = label;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("label", label)
+					.add("size", caches.size())
+					.toString();
+		}
+
+		public void addCache(@NonNull final CacheInterface cache)
+		{
+			caches.put(cache.getCacheId(), cache);
+		}
+
+		public void removeCache(@NonNull final CacheInterface cache)
+		{
+			caches.remove(cache.getCacheId());
+		}
+
+		private final Stream<CacheInterface> streamCaches()
+		{
+			return caches.values()
+					.stream()
+					.filter(Predicates.notNull());
+		}
+
+		public long computeTotalSize()
+		{
+			return streamCaches()
+					.mapToLong(CacheInterface::size)
+					.sum();
+		}
+
+		public long invalidateAllNoFail()
+		{
+			return streamCaches()
+					.mapToLong(cache -> invalidateNoFail(cache))
+					.sum();
+		}
+
+		public long invalidateForRecordNoFail(final TableRecordReference recordRef)
+		{
+			return streamCaches()
+					.mapToLong(cache -> invalidateNoFail(cache, recordRef))
+					.sum();
+		}
+
+		private static final long invalidateNoFail(final CacheInterface cacheInstance, final TableRecordReference recordRef)
+		{
+			try
+			{
+				return cacheInstance.resetForRecordId(recordRef);
+			}
+			catch (final Exception ex)
+			{
+				// log but don't fail
+				logger.warn("Error while reseting {} for {}. Ignored.", cacheInstance, recordRef, ex);
+				return 0;
+			}
+		}
+
+		private static final long invalidateNoFail(final CacheInterface cacheInstance)
+		{
+			if (cacheInstance == null)
+			{
+				return 0;
+			}
+
+			try
+			{
+				return cacheInstance.reset();
+			}
+			catch (final Exception ex)
+			{
+				// log but don't fail
+				logger.warn("Error while reseting {}. Ignored.", cacheInstance, ex);
+				return 0;
+			}
 		}
 	}
 }

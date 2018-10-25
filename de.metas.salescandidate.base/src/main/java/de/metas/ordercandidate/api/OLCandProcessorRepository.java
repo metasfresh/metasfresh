@@ -46,8 +46,12 @@ import de.metas.util.Services;
 @Repository
 public class OLCandProcessorRepository
 {
-	private final CCache<Integer, OLCandProcessorDescriptor> processorsById = CCache.<Integer, OLCandProcessorDescriptor> newCache(I_C_OLCandProcessor.Table_Name + "#by#ID", 10, CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_C_OLCandAggAndOrder.Table_Name);
+	private final CCache<Integer, OLCandProcessorDescriptor> processorsById = CCache.<Integer, OLCandProcessorDescriptor> builder()
+			.cacheName(I_C_OLCandProcessor.Table_Name + "#by#ID")
+			.tableName(I_C_OLCandProcessor.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_C_OLCandAggAndOrder.Table_Name)
+			.build();
 
 	private static final Map<String, Granularity> granularityByADRefListValue = ImmutableMap.<String, Granularity> builder()
 			.put(X_C_OLCandAggAndOrder.GRANULARITY_Tag, Granularity.Day)

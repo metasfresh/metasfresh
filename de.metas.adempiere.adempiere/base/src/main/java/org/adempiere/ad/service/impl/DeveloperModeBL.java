@@ -1,37 +1,7 @@
 package org.adempiere.ad.service.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IADMessageDAO;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Set;
 
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -48,6 +18,13 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Developer Model BL Implementation
@@ -252,7 +229,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 			String entityType = null;
 			//
 			// Get EntityType by PackageName
-			final List<String> entityTypes = EntityTypesCache.instance.getEntityTypeNames();
+			final Set<String> entityTypes = EntityTypesCache.instance.getEntityTypeNames();
 			for (String et : entityTypes)
 			{
 				String modelPackage = EntityTypesCache.instance.getModelPackage(et);

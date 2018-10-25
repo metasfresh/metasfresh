@@ -1,9 +1,14 @@
 package org.compiere.util;
 
+import java.util.Set;
+
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -38,28 +43,35 @@ public class CacheMgtTest
 	@Test
 	public void resetByTableNameAndRecordId()
 	{
-		final AssertTableName assertTable1 = new AssertTableName("Table1");
-		CacheMgt.get().register(assertTable1);
-		CacheMgt.get().register(new CCache<>("Table2", 1));
+		final CacheMgt cacheManager = CacheMgt.get();
 
-		CacheMgt.get().reset("Table2", 100);
+		final AssertTableName assertTable1 = new AssertTableName("Table1");
+		cacheManager.register(assertTable1);
+		cacheManager.register(new CCache<>("Table2", 1));
+
+		cacheManager.reset("Table2", 100);
 		assertTable1.assertResetForRecordIdWasNotCalled();
-		CacheMgt.get().reset("Table1", 100);
+		cacheManager.reset("Table1", 100);
 		assertTable1.assertResetForRecordIdWasCalled();
 	}
 
 	@Test
 	public void resetByTableNameAndRecordId_CCache_alwaysCalled()
 	{
-		final CCache_resetForRecordId_Mocked<Object, Object> cache = new CCache_resetForRecordId_Mocked<>("Table1", 1);
-		CacheMgt.get().register(cache);
-		CacheMgt.get().register(new CCache<>("Table2", 1));
+		final CacheMgt cacheManager = CacheMgt.get();
 
-		CacheMgt.get().reset("Table2", 100);
+		final CCache_resetForRecordId_Mocked<Object, Object> cache = new CCache_resetForRecordId_Mocked<>("Table1");
+		cacheManager.register(cache);
+		cacheManager.register(new CCache<>("Table2", 1));
+
+		cacheManager.reset("Table2", 100);
+		cache.assertResetForRecordIdWasNotCalled();
+
+		cacheManager.reset("Table1", 100);
 		cache.assertResetForRecordIdWasCalled();
 	}
 
-	private static class AssertTableName implements ITableAwareCacheInterface
+	private static class AssertTableName implements CacheInterface
 	{
 		private final String tableName;
 		private boolean resetForRecordIdWasCalled;
@@ -70,7 +82,13 @@ public class CacheMgtTest
 		}
 
 		@Override
-		public int resetForRecordId(final String tableName, final int recordId)
+		public long getCacheId()
+		{
+			return 1;
+		}
+
+		@Override
+		public long resetForRecordId(final TableRecordReference recordRef)
 		{
 			Assert.assertEquals("resetForRecordId shall not be invoked for table name", this.tableName, tableName);
 
@@ -89,27 +107,27 @@ public class CacheMgtTest
 		}
 
 		@Override
-		public int reset()
+		public long reset()
 		{
 			return 1;
 		}
 
 		@Override
-		public int size()
+		public long size()
 		{
 			return 1;
 		}
 
 		@Override
-		public String getName()
-		{
-			return getTableName();
-		}
-
-		@Override
-		public String getTableName()
+		public String getCacheName()
 		{
 			return tableName;
+		}
+
+		@Override
+		public Set<CacheLabel> getLabels()
+		{
+			return ImmutableSet.of(CacheLabel.ofTableName(tableName));
 		}
 	}
 
@@ -118,19 +136,24 @@ public class CacheMgtTest
 
 		private boolean resetForRecordIdWasCalled;
 
-		public CCache_resetForRecordId_Mocked(final String name, final int initialCapacity)
+		public CCache_resetForRecordId_Mocked(final String name)
 		{
-			super(name, initialCapacity);
+			super(name, 1);
 		}
 
 		@Override
-		public int resetForRecordId(final String tableName, final int recordId)
+		public long resetForRecordId(final TableRecordReference recordRef)
 		{
-			final int count = super.resetForRecordId(tableName, recordId);
+			final long count = super.resetForRecordId(recordRef);
 
 			resetForRecordIdWasCalled = true;
 
 			return count;
+		}
+
+		public void assertResetForRecordIdWasNotCalled()
+		{
+			Assert.assertFalse("resetForRecordIdWasCalled", resetForRecordIdWasCalled);
 		}
 
 		public void assertResetForRecordIdWasCalled()

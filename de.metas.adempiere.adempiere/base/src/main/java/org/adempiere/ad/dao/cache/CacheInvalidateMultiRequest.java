@@ -136,6 +136,14 @@ public class CacheInvalidateMultiRequest
 		return Objects.equals(tableName, tableNameEffective);
 	}
 
+	public Set<String> getTableNamesEffective()
+	{
+		return requests.stream()
+				.filter(request -> !request.isAll())
+				.map(CacheInvalidateRequest::getTableNameEffective)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public TableRecordReferenceSet getRecordsEffective()
 	{
 		return requests.stream()

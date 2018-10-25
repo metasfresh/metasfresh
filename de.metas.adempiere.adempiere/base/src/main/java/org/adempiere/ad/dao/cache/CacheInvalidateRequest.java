@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.CacheMgt;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -13,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 import lombok.Value;
 
@@ -56,9 +54,9 @@ public final class CacheInvalidateRequest
 	public static CacheInvalidateRequest allRecordsForTable(@NonNull final String rootTableName)
 	{
 		final String id = UUID.randomUUID().toString();
-		final int rootRecordId = CacheMgt.RECORD_ID_ALL;
+		final int rootRecordId = RECORD_ID_ALL;
 		final String childTableName = null;
-		final int childRecordId = CacheMgt.RECORD_ID_ALL;
+		final int childRecordId = RECORD_ID_ALL;
 		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
 	}
 
@@ -68,7 +66,7 @@ public final class CacheInvalidateRequest
 
 		final String id = UUID.randomUUID().toString();
 		final String childTableName = null;
-		final int childRecordId = CacheMgt.RECORD_ID_ALL;
+		final int childRecordId = RECORD_ID_ALL;
 		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
 	}
 
@@ -82,7 +80,7 @@ public final class CacheInvalidateRequest
 		Check.assume(rootRecordId >= 0, "rootRecordId >= 0");
 
 		final String id = UUID.randomUUID().toString();
-		final int childRecordId = CacheMgt.RECORD_ID_ALL;
+		final int childRecordId = RECORD_ID_ALL;
 		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
 	}
 
@@ -102,7 +100,8 @@ public final class CacheInvalidateRequest
 		}
 	}
 
-	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest("ALL", null, CacheMgt.RECORD_ID_ALL, null, CacheMgt.RECORD_ID_ALL);
+	private static final int RECORD_ID_ALL = -1;
+	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest("ALL", null, RECORD_ID_ALL, null, RECORD_ID_ALL);
 
 	@JsonProperty("id")
 	private final String id;
@@ -127,9 +126,9 @@ public final class CacheInvalidateRequest
 	{
 		this.id = id;
 		this.rootTableName = rootTableName;
-		this.rootRecordId = rootRecordId >= 0 ? rootRecordId : CacheMgt.RECORD_ID_ALL;
+		this.rootRecordId = rootRecordId >= 0 ? rootRecordId : RECORD_ID_ALL;
 		this.childTableName = childTableName;
-		this.childRecordId = childRecordId >= 0 ? childRecordId : CacheMgt.RECORD_ID_ALL;
+		this.childRecordId = childRecordId >= 0 ? childRecordId : RECORD_ID_ALL;
 	}
 
 	public boolean isAll()
@@ -141,11 +140,11 @@ public final class CacheInvalidateRequest
 	{
 		if (!Check.isEmpty(childTableName))
 		{
-			return childRecordId == CacheMgt.RECORD_ID_ALL;
+			return childRecordId == RECORD_ID_ALL;
 		}
 		else if (!Check.isEmpty(rootTableName))
 		{
-			return rootRecordId == CacheMgt.RECORD_ID_ALL;
+			return rootRecordId == RECORD_ID_ALL;
 		}
 		else
 		{

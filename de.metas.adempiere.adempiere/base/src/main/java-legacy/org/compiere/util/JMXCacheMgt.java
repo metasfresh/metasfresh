@@ -34,12 +34,12 @@ public class JMXCacheMgt implements JMXCacheMgtMBean, IJMXNameAware
 	{
 		return CacheMgt.get();
 	}
-	
+
 	private final Logger getLogger()
 	{
-		return CacheMgt.log;
+		return CacheMgt.logger;
 	}
-	
+
 	@Override
 	public String getLogLevel()
 	{
@@ -59,12 +59,13 @@ public class JMXCacheMgt implements JMXCacheMgtMBean, IJMXNameAware
 	}
 
 	@Override
-	public String[] getTableNames()
+	public String[] getCacheLabels()
 	{
-		final Set<String> tableNames = getCacheMgt().getTableNames();
-		String[] tableNamesArray = tableNames.toArray(new String[tableNames.size()]);
-		Arrays.sort(tableNamesArray);
-		return tableNamesArray;
+		return getCacheMgt()
+				.getCacheLabels()
+				.stream()
+				.map(CacheLabel::toString)
+				.toArray(size -> new String[size]);
 	}
 
 	@Override
@@ -83,19 +84,19 @@ public class JMXCacheMgt implements JMXCacheMgtMBean, IJMXNameAware
 	}
 
 	@Override
-	public int resetAll()
+	public long resetAll()
 	{
 		return getCacheMgt().reset();
 	}
 
 	@Override
-	public int resetForTable(final String tableName)
+	public long resetForTable(final String tableName)
 	{
 		return getCacheMgt().reset(tableName);
 	}
 
 	@Override
-	public int resetForRecordId(final String tableName, final int recordId)
+	public long resetForRecordId(final String tableName, final int recordId)
 	{
 		return getCacheMgt().reset(tableName, recordId);
 	}
