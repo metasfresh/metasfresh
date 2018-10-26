@@ -659,8 +659,10 @@ class Table extends Component {
       const isAnySelected = selected.length > 0;
 
       let newSelection;
+      let mobileDevice =
+        currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-      if (selectMore) {
+      if (selectMore || mobileDevice) {
         if (isSelected) {
           newSelection = this.deselectProduct(id);
         } else {
