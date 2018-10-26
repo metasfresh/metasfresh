@@ -1,9 +1,11 @@
 package de.metas.handlingunits.model.validator;
 
+import lombok.NonNull;
+
 import java.util.List;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -20,12 +22,17 @@ import de.metas.logging.LogManager;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.spi.hu.impl.StorageSegmentFromHU;
 import de.metas.util.Services;
-import lombok.NonNull;
 
-@Validator(I_M_HU.class)
+@Interceptor(I_M_HU.class)
 public class M_HU
 {
+	public static final M_HU INSTANCE = new M_HU();
+
 	private final transient Logger logger = LogManager.getLogger(getClass());
+
+	private M_HU()
+	{
+	}
 
 	/**
 	 * Checks if HU is valid.

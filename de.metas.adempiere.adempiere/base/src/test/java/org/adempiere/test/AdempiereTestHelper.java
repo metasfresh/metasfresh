@@ -116,6 +116,9 @@ public class AdempiereTestHelper
 		// Make sure database is clean
 		POJOLookupMap.resetAll();
 
+		// we also don't want any model interceptors to interfere, unless we explicitly test them up to do so
+		POJOLookupMap.get().clear();
+
 		//
 		// POJOWrapper defaults
 		POJOWrapper.setAllowRefreshingChangedModels(false);
