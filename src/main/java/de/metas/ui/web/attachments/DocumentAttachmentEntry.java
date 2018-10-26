@@ -1,5 +1,8 @@
 package de.metas.ui.web.attachments;
 
+import lombok.NonNull;
+import lombok.ToString;
+
 import java.net.URI;
 
 import org.compiere.Adempiere;
@@ -7,8 +10,6 @@ import org.compiere.Adempiere;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -85,7 +86,7 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	@Override
 	public String getContentType()
 	{
-		return entry.getContentType();
+		return entry.getMimeType();
 	}
 
 	@Override
