@@ -55,7 +55,7 @@ class Table extends Component {
     const { defaultSelected, rowEdited } = props;
 
     this.state = {
-      selected: defaultSelected || [undefined],
+      selected: (defaultSelected && defaultSelected !== null) || [undefined],
       listenOnKeys: true,
       contextMenu: {
         open: false,
@@ -258,6 +258,7 @@ class Table extends Component {
         if (firstRow && selectFirst) {
           let selectedIndex = 0;
           if (
+            selected &&
             selected.length === 1 &&
             selected[0] &&
             firstRow.id !== selected[0]
