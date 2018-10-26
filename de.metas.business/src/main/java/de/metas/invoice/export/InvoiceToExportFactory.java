@@ -75,18 +75,18 @@ import de.metas.util.lang.SoftwareVersion;
 @Service
 public class InvoiceToExportFactory
 {
-	private final AttachmentEntryService attachmentEntryservice;
+	private final AttachmentEntryService attachmentEntryService;
 	private final ESRPaymentInfoProvider esrPaymentInfoProvider;
 
 	public InvoiceToExportFactory(
 			@NonNull final AttachmentEntryService attachmentEntryservice,
 			@NonNull final Optional<ESRPaymentInfoProvider> esrPaymentInfoProvider)
 	{
-		this.attachmentEntryservice = attachmentEntryservice;
+		this.attachmentEntryService = attachmentEntryservice;
 		this.esrPaymentInfoProvider = esrPaymentInfoProvider.orElse(null);
 	}
 
-	public InvoiceToExport getById(@NonNull final InvoiceId id)
+	public InvoiceToExport getCreateForId(@NonNull final InvoiceId id)
 	{
 		final I_C_Invoice invoiceRecord = load(id, I_C_Invoice.class);
 
@@ -95,11 +95,11 @@ public class InvoiceToExportFactory
 
 		final boolean reversal = invoiceBL.isReversal(invoiceRecord);
 
-		final String currentyStr = invoiceRecord.getC_Currency().getISO_Code();
-		final Money grandTotal = Money.of(invoiceRecord.getGrandTotal(), currentyStr);
+		final String currencyStr = invoiceRecord.getC_Currency().getISO_Code();
+		final Money grandTotal = Money.of(invoiceRecord.getGrandTotal(), currencyStr);
 
 		final BigDecimal allocatedAmt = Util.coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
-		final Money allocatedMoney = Money.of(allocatedAmt, currentyStr);
+		final Money allocatedMoney = Money.of(allocatedAmt, currencyStr);
 
 		final InvoiceToExport invoiceWithoutEsrInfo = InvoiceToExport
 				.builder()
@@ -110,7 +110,7 @@ public class InvoiceToExportFactory
 				.documentNumber(invoiceRecord.getDocumentNo())
 				.invoiceAttachments(createInvoiceAttachments(invoiceRecord))
 				.invoiceDate(createInvoiceDate(invoiceRecord))
-				.invoiceLines(createInvoiceLines(invoiceRecord, currentyStr))
+				.invoiceLines(createInvoiceLines(invoiceRecord, currencyStr))
 				.invoiceTaxes(createInvoiceTax(invoiceRecord))
 				.invoiceTimestamp(invoiceRecord.getCreated().toInstant())
 				.isReversal(reversal)
@@ -188,12 +188,12 @@ public class InvoiceToExportFactory
 				.referencedRecord(invoiceRecord)
 				.tagSetToAnyValue(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER)
 				.build();
-		final List<AttachmentEntry> attachments = attachmentEntryservice.getByQuery(query);
+		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(query);
 
 		final ImmutableList.Builder<InvoiceAttachment> invoiceAttachments = ImmutableList.builder();
 		for (final AttachmentEntry attachment : attachments)
 		{
-			final byte[] attachmentData = attachmentEntryservice.retrieveData(attachment.getId());
+			final byte[] attachmentData = attachmentEntryService.retrieveData(attachment.getId());
 
 			final boolean isSecondaryAttachment = attachment.getTagValueOrNull(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE) != null;
 
@@ -202,7 +202,7 @@ public class InvoiceToExportFactory
 					.mimeType(attachment.getContentType())
 					.data(attachmentData)
 					.invoiceExportProviderId(attachment.getTagValue(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER))
-					.primaryAttrachment(!isSecondaryAttachment)
+					.primaryAttachment(!isSecondaryAttachment)
 					.build();
 			invoiceAttachments.add(invoiceAttachment);
 		}

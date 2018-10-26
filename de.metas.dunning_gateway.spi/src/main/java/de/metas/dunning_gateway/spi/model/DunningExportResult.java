@@ -1,18 +1,16 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload;
+package de.metas.dunning_gateway.spi.model;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.io.InputStream;
 
-import java.math.BigInteger;
-
-import javax.xml.datatype.XMLGregorianCalendar;
+import de.metas.dunning_gateway.spi.DunningExportClientFactory;
 
 /*
  * #%L
- * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
+ * metasfresh-invoice_gateway.spi
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -33,21 +31,25 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class XmlReminder
+@Builder
+public class DunningExportResult
 {
 	@NonNull
-	BigInteger requestTimestamp;
+	String fileName;
 
 	@NonNull
-	XMLGregorianCalendar requestDate;
+	String mimeType;
 
 	@NonNull
-	String requestId;
+	InputStream data;
 
-	@Nullable
-	String reminderLevel;
+	/**
+	 * String that identifies the export client factory which created this result.
+	 * See {@link DunningExportClientFactory#getInvoiceExportProviderId()}.
+	 */
+	@NonNull
+	String dunningExportProviderId;
 
-	@Nullable
-	String reminderText;
+	@NonNull
+	BPartnerId recipientId;
 }

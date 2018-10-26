@@ -1,18 +1,14 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload;
+package de.metas.dunning_gateway.spi.model;
 
-import lombok.Builder;
+import java.math.BigDecimal;
+
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
-import java.math.BigInteger;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-
 /*
  * #%L
- * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
+ * metasfresh-invoice.gateway.spi
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -33,21 +29,29 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class XmlReminder
+public class Money
 {
-	@NonNull
-	BigInteger requestTimestamp;
+	public static Money of(
+			@NonNull final BigDecimal amount,
+			@NonNull final String currency)
+	{
+		return new Money(amount, currency);
+	}
 
-	@NonNull
-	XMLGregorianCalendar requestDate;
+	BigDecimal amount;
+	String currency;
 
-	@NonNull
-	String requestId;
+	public int signum()
+	{
+		return amount.signum();
+	}
 
-	@Nullable
-	String reminderLevel;
+	private Money(
+			@NonNull final BigDecimal amount,
+			@NonNull final String currency)
+	{
+		this.amount = amount;
+		this.currency = Check.assumeNotEmpty(currency, "The given currency may not be empty; amount={}", amount);
+	}
 
-	@Nullable
-	String reminderText;
 }

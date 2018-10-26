@@ -96,6 +96,9 @@
 		<module>de.metas.document.refid</module>
 		<module>de.metas.dunning</module>
 
+		<module>de.metas.dunning_gateway.api</module>
+		<module>de.metas.dunning_gateway.spi</module>
+		
 		<module>de.metas.dlm</module>
 
 		<module>de.metas.edi</module>
@@ -108,6 +111,7 @@
 
 		<module>de.metas.invoice_gateway.api</module>
 		<module>de.metas.invoice_gateway.spi</module>
+		
 		<module>de.metas.inbound.mail</module>
 
 		<module>de.metas.fresh</module>

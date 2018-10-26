@@ -91,6 +91,7 @@ public class XmlPayload
 
 		return builder
 				.invoice(invoice.withMod(payloadMod.getInvoiceMod()))
+				.reminder(payloadMod.getReminder())
 				.body(body.withMod(payloadMod.getBodyMod()))
 				.build();
 	}
@@ -113,6 +114,9 @@ public class XmlPayload
 
 		@Nullable
 		InvoiceMod invoiceMod;
+
+		@Nullable
+		XmlReminder reminder;
 
 		@Nullable
 		BodyMod bodyMod;
