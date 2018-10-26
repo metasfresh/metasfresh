@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,8 @@ import lombok.NonNull;
 public class HUReservationDocumentFilterService
 {
 	private final OrderLineRepository orderLineRepository;
+
+	private static final String SYSCONFIG_AllowSqlWhenFilteringHUAttributes = "de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.AllowSqlWhenFilteringHUAttributes";
 
 	public HUReservationDocumentFilterService(@NonNull final OrderLineRepository orderLineRepository)
 	{
@@ -120,6 +123,7 @@ public class HUReservationDocumentFilterService
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(asiId);
 			huQuery.addOnlyWithAttributes(attributeSet);
+			huQuery.allowSqlWhenFilteringAttributes(isAllowSqlWhenFilteringHUAttributes());
 		}
 
 		// Reservation
@@ -135,4 +139,8 @@ public class HUReservationDocumentFilterService
 		return huQuery;
 	}
 
+	private boolean isAllowSqlWhenFilteringHUAttributes()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_AllowSqlWhenFilteringHUAttributes, true);
+	}
 }
