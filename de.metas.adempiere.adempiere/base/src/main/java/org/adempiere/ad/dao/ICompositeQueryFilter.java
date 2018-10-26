@@ -419,4 +419,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * @return created composite filter
 	 */
 	ICompositeQueryFilter<T> addCompositeQueryFilter();
+
+	ICompositeQueryFilter<T> allowSqlFilters(boolean allowSqlFilters);
 }
