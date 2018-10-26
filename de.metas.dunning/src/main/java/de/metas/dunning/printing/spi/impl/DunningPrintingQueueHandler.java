@@ -1,4 +1,4 @@
-package de.metas.printing.spi.impl;
+package de.metas.dunning.printing.spi.impl;
 
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -14,21 +14,20 @@ import de.metas.printing.spi.PrintingQueueHandlerAdapter;
 import de.metas.util.Services;
 
 /**
- * 
+ *
  * This handler adds <code>ItemName</code> specific info to a given queueItem
- * 
+ *
  */
 public class DunningPrintingQueueHandler extends PrintingQueueHandlerAdapter
 {
 	public static final transient DunningPrintingQueueHandler instance = new DunningPrintingQueueHandler();
-	
+
 	private static final Logger logger = LogManager.getLogger(DunningPrintingQueueHandler.class);
-	
+
 	private DunningPrintingQueueHandler()
 	{
-		super();
 	}
-	
+
 	@Override
 	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive archive)
 	{
@@ -39,7 +38,7 @@ public class DunningPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			logger.debug("AD_Archive {} does not reference a PO; returning", archive);
 			return;
 		}
-		
+
 		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_DunningDoc.class))
 		{
 			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Mahnung);

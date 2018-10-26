@@ -30,13 +30,11 @@ import static org.junit.Assert.assertThat;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,19 +53,14 @@ import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 @SpringBootTest(classes = { StartupListener.class, PickingCandidateRepository.class, ShutdownListener.class })
 public class HUPickingSlotTest
 {
-	@BeforeClass
-	public final static void staticInit()
-	{
-		AdempiereTestHelper.get().staticInit();
-		POJOWrapper.setDefaultStrictValues(false);
-	}
-
 	/** Service under test */
 	private HUPickingSlotBL huPickingSlotBL;
 
 	@Before
 	public final void init()
 	{
+		AdempiereTestHelper.get().init();
+
 		huPickingSlotBL = new HUPickingSlotBL();
 	}
 

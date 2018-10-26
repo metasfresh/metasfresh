@@ -1,5 +1,9 @@
 package de.metas.ordercandidate.rest;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -9,9 +13,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.attachments.AttachmentEntry;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -61,7 +62,7 @@ public class JsonAttachment
 
 	String filename;
 
-	String contentType;
+	String mimeType;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String url;
@@ -74,7 +75,7 @@ public class JsonAttachment
 			@JsonProperty("attachmentId") @NonNull final String attachmentId,
 			@JsonProperty("type") final @NonNull AttachmentEntry.Type type,
 			@JsonProperty("filename") @NonNull final String filename,
-			@JsonProperty("contentType") @NonNull final String contentType,
+			@JsonProperty("mimeType") @NonNull final String mimeType,
 			@JsonProperty("url") final String url)
 	{
 		this.externalReference = externalReference;
@@ -82,7 +83,7 @@ public class JsonAttachment
 		this.attachmentId = attachmentId;
 		this.type = type;
 		this.filename = filename;
-		this.contentType = contentType;
+		this.mimeType = mimeType;
 		this.url = url;
 	}
 
