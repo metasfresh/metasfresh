@@ -1130,10 +1130,10 @@ class Table extends Component {
               {...{
                 docId,
                 type,
-                selected,
                 mainTable,
                 updateDocList,
               }}
+              selected={selected || []}
               blur={() => this.closeContextMenu()}
               tabId={tabid}
               deselect={() => this.deselectAllProducts()}
