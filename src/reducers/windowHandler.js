@@ -1,5 +1,6 @@
 import update from 'immutability-helper';
 import { Map, List, Set } from 'immutable';
+import _ from 'lodash';
 
 import {
   ACTIVATE_TAB,
@@ -30,6 +31,7 @@ import {
   PATCH_SUCCESS,
   REMOVE_TABLE_ITEMS_SELECTION,
   SELECT_TABLE_ITEMS,
+  DESELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
   TOGGLE_OVERLAY,
@@ -480,15 +482,6 @@ export default function windowHandler(state = initialState, action) {
       });
     // END OF SCOPED ACTIONS
 
-    // INDICATOR ACTIONS
-    case CHANGE_INDICATOR_STATE:
-      return {
-        ...state,
-        indicator: action.state,
-      };
-
-    // END OF INDICATOR ACTIONS
-
     case SELECT_TABLE_ITEMS: {
       const { windowType, viewId, ids } = action.payload;
 
@@ -499,6 +492,21 @@ export default function windowHandler(state = initialState, action) {
           [windowType]: {
             ...state.selections[windowType],
             [viewId]: ids,
+          },
+        },
+      };
+    }
+
+    case DESELECT_TABLE_ITEMS: {
+      const { windowType, viewId, ids } = action.payload;
+
+      return {
+        ...state,
+        selections: {
+          ...state.selections,
+          [windowType]: {
+            ...state.selections[windowType],
+            [viewId]: _.difference(state.selections[windowType][viewId], ids),
           },
         },
       };
@@ -647,6 +655,12 @@ export default function windowHandler(state = initialState, action) {
           },
           success: true,
         },
+      };
+    // INDICATOR ACTIONS
+    case CHANGE_INDICATOR_STATE:
+      return {
+        ...state,
+        indicator: action.state,
       };
 
     case SHOW_SPINNER: {
