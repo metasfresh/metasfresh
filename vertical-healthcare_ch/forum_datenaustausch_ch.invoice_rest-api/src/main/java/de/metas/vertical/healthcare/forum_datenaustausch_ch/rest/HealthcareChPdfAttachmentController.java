@@ -1,5 +1,6 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
+import static de.metas.attachments.AttachmentConstants.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
 
@@ -63,9 +64,12 @@ public class HealthcareChPdfAttachmentController
 	}
 
 	@PostMapping("/attachedPdfFiles/{externalReference}")
-	@ApiOperation(value = "Attach a PDF document to an externalOrderId")
+	@ApiOperation(value = "Attach a PDF document to order line candidates with the given externalOrderId. The attachment is tagged with\n"
+			+ TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF + "=true, so the PDF will eventually be appended to the invoice's PDF\n"
+			+ ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE + "=externalReference, so the base64-encoded PDF will eventually included in the invoice's forum-datenaustausch.ch-XML")
 	// TODO only allow PDF
 	public JsonAttachment attachPdfFile(
+
 			@ApiParam(value = "Reference string that was returned by the invoice-rest-controller", allowEmptyValue = false) //
 			@PathVariable("externalReference") final String externalReference,
 
@@ -74,7 +78,8 @@ public class HealthcareChPdfAttachmentController
 	{
 		final ImmutableList<String> tags = ImmutableList.of(
 				ATTATCHMENT_TAGNAME_EXPORT_PROVIDER/* name */, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/* value */,
-				ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE/* name */, externalReference/* value */);
+				ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE/* name */, externalReference/* value */,
+				TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF/* name */, Boolean.TRUE.toString()/* value */);
 
 		return orderCandidatesRestEndpoint
 				.attachFile(

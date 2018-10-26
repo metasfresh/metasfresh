@@ -275,7 +275,7 @@ public class LUTUProducerDestinationTestSupport
 
 		final I_M_HU createdTU = createdTUs.get(0);
 		huStatusBL.setHUStatus(helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
-		new M_HU().updateChildren(createdTU);
+		M_HU.INSTANCE.updateChildren(createdTU);
 		save(createdTU);
 
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
@@ -342,7 +342,7 @@ public class LUTUProducerDestinationTestSupport
 		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
 		assertThat(createdLU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
-		new M_HU().updateChildren(createdLU);
+		M_HU.INSTANCE.updateChildren(createdLU);
 		save(createdLU);
 
 		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));

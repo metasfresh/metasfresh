@@ -44,7 +44,7 @@ public final class AttachmentEntry
 	private final String name;
 	private final Type type;
 	private final String filename;
-	private final String contentType;
+	private final String mimeType;
 	private final URI url;
 
 	private final ImmutableMap<String, String> tags;
@@ -58,7 +58,7 @@ public final class AttachmentEntry
 			@Nullable final String name,
 			@NonNull final Type type,
 			@Nullable final String filename,
-			@Nullable final String contentType,
+			@Nullable final String mimeType,
 			@Nullable final URI url,
 			@Singular final Map<String, String> tags,
 			@Singular final Set<ITableRecordReference> linkedRecords)
@@ -74,12 +74,12 @@ public final class AttachmentEntry
 
 		if (type == Type.Data)
 		{
-			this.contentType = contentType != null ? contentType : MimeType.getMimeType(this.name);
+			this.mimeType = mimeType != null ? mimeType : MimeType.getMimeType(this.name);
 			this.url = null;
 		}
 		else if (type == Type.URL)
 		{
-			this.contentType = null;
+			this.mimeType = null;
 			this.url = Preconditions.checkNotNull(url, "url");
 		}
 		else
@@ -91,7 +91,7 @@ public final class AttachmentEntry
 	public String toStringX()
 	{
 		final StringBuilder sb = new StringBuilder(getName());
-		sb.append(" - ").append(getContentType());
+		sb.append(" - ").append(getMimeType());
 		return sb.toString();
 	}
 

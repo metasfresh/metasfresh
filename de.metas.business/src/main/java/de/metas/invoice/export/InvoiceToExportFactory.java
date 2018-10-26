@@ -199,7 +199,7 @@ public class InvoiceToExportFactory
 
 			final InvoiceAttachment invoiceAttachment = InvoiceAttachment.builder()
 					.fileName(attachment.getFilename())
-					.mimeType(attachment.getContentType())
+					.mimeType(attachment.getMimeType())
 					.data(attachmentData)
 					.invoiceExportProviderId(attachment.getTagValue(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER))
 					.primaryAttachment(!isSecondaryAttachment)
