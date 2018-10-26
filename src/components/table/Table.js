@@ -959,7 +959,12 @@ class Table extends Component {
     this.rowRefs = {};
 
     return rows
-      .filter(row => collapsedRows.indexOf(row[keyProperty]) === -1)
+      .filter(row => {
+        if (collapsedRows) {
+          return collapsedRows.indexOf(row[keyProperty]) === -1;
+        }
+        return true;
+      })
       .map((item, i) => (
         <TableItem
           {...item}
@@ -977,7 +982,10 @@ class Table extends Component {
             viewId,
           }}
           key={`${i}-${docId}`}
-          collapsed={collapsedParentsRows.indexOf(item[keyProperty]) > -1}
+          collapsed={
+            collapsedParentsRows &&
+            collapsedParentsRows.indexOf(item[keyProperty]) > -1
+          }
           odd={i & 1}
           ref={c => {
             if (c) {
@@ -1019,7 +1027,8 @@ class Table extends Component {
           changeListenOnFalse={() => this.changeListen(false)}
           newRow={i === rows.length - 1 ? newRow : false}
           isSelected={
-            selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all'
+            selected &&
+            (selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all')
           }
           handleSelect={this.selectRangeProduct}
           contextType={item.type}
@@ -1257,17 +1266,17 @@ class Table extends Component {
         {allowShortcut && (
           <DocumentListContextShortcuts
             handleAdvancedEdit={
-              selected.length > 0 && selected[0]
+              selected && selected.length > 0 && selected[0]
                 ? () => this.handleAdvancedEdit(type, tabid, selected)
                 : ''
             }
             handleOpenNewTab={
-              selected.length > 0 && selected[0] && mainTable
+              selected && selected.length > 0 && selected[0] && mainTable
                 ? () => handleOpenNewTab(selected, type)
                 : ''
             }
             handleDelete={
-              selected.length > 0 && selected[0]
+              selected && selected.length > 0 && selected[0]
                 ? () => this.handleDelete()
                 : ''
             }
