@@ -1239,12 +1239,12 @@ class Table extends Component {
               {...{
                 handleChangePage,
                 size,
-                selected,
                 page,
                 orderBy,
                 queryLimitHit,
                 disablePaginationShortcuts,
               }}
+              selected={selected || []}
               pageLength={pageLength}
               rowLength={rows ? rows.length : 0}
               handleSelectAll={this.selectAll}
