@@ -6,6 +6,10 @@ import classnames from 'classnames';
 import PaginationContextShortcuts from '../keyshortcuts/PaginationContextShortcuts';
 
 class TablePagination extends PureComponent {
+  static defaultProps = {
+    selected: [],
+  };
+
   constructor(props) {
     super(props);
     this.state = {

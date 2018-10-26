@@ -201,13 +201,19 @@ function mapRows(rows, map, columnInfosByFieldName) {
   });
 }
 
-function removeRows(toRows, changedRows) {
+export function removeRows(toRows, changedRows, returnRemoved) {
+  const removedRows = [];
+
   changedRows.forEach(id => {
     const idx = toRows.findIndex(row => row.id === id);
 
     toRows = toRows.delete(idx);
+    removedRows.push(id);
   });
 
+  if (returnRemoved) {
+    return removedRows;
+  }
   return toRows;
 }
 

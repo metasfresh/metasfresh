@@ -26,6 +26,7 @@ import {
   disconnectWS,
   indicatorState,
   selectTableItems,
+  deselectTableItems,
   removeSelectedTableItems,
 } from '../../actions/WindowActions';
 import { parseToDisplay, getRowsData } from '../../utils/documentListHelper';
@@ -43,6 +44,7 @@ import {
   filtersToMap,
   mergeColumnInfosIntoViewRows,
   mergeRows,
+  removeRows,
 } from '../../utils/documentListHelper';
 import Spinner from '../app/SpinnerOverlay';
 import BlankPage from '../BlankPage';
@@ -213,7 +215,7 @@ export class DocumentList extends Component {
   }
 
   connectWebSocket = viewId => {
-    const { windowType } = this.props;
+    const { windowType, dispatch } = this.props;
 
     connectWS.call(this, `/view/${viewId}`, msg => {
       const { fullyChanged, changedIds } = msg;
@@ -221,25 +223,28 @@ export class DocumentList extends Component {
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
+            const { data, pageColumnInfosByFieldName } = this.state;
+            const toRows = data.result;
+            const removedRows = removeRows(toRows, changedIds, true);
+
             const rows = List(
               mergeRows({
-                toRows: this.state.data.result,
+                toRows,
                 fromRows: [...response.data],
-                columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
+                columnInfosByFieldName: pageColumnInfosByFieldName,
                 changedIds,
               })
             );
 
-            this.setState(
-              {
-                data: {
-                  ...this.state.data,
-                  result: rows,
-                  rowIds: rows.map(row => row.id),
-                },
+            dispatch(deselectTableItems(removedRows, windowType, viewId));
+
+            this.setState({
+              data: {
+                ...this.state.data,
+                result: rows,
+                rowIds: rows.map(row => row.id),
               },
-              () => this.updateQuickActions()
-            );
+            });
           }
         );
       }
@@ -924,6 +929,7 @@ export class DocumentList extends Component {
                 emptyText={layout.emptyResultText}
                 emptyHint={layout.emptyResultHint}
                 readonly={true}
+                supportOpenRecord={layout.supportOpenRecord}
                 rowEdited={rowEdited}
                 onRowEdited={this.setTableRowEdited}
                 keyProperty="id"
