@@ -1,5 +1,7 @@
 package de.metas.order.rest.model;
 
+import lombok.NonNull;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,7 +13,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.attachments.AttachmentEntry;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -86,7 +87,7 @@ public class JsonSerializationDeserializationTest
 				.id(444)
 				.type(AttachmentEntry.Type.Data)
 				.filename("file.pdf")
-				.contentType("application/pdf")
+				.mimeType("application/pdf")
 				.build());
 	}
 }
