@@ -23,13 +23,10 @@ package de.metas.handlingunits.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -42,7 +39,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.ModelColumn;
@@ -54,14 +50,10 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_M_Attribute;
 
-import de.metas.dimension.DimensionSpec;
-import de.metas.dimension.IDimensionspecDAO;
-import de.metas.handlingunits.HUConstants;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHULockBL;
@@ -115,20 +107,7 @@ import lombok.NonNull;
 	private int parentHUItemId = -1;
 	private int parentHUId = -1;
 
-	private final Set<WarehouseId> _onlyInWarehouseIds = new HashSet<>();
-	private boolean _notInAnyWarehouse = false;
-
-	@ToStringBuilder(skip = true)
-	private final Set<WarehouseId> _onlyInWarehouseIdsRO = Collections.unmodifiableSet(_onlyInWarehouseIds);
-
-	private final Set<Integer> _onlyInLocatorIds = new HashSet<>();
-	private boolean _excludeAfterPickingLocator = false;
-	/**
-	 * Flag to set determine if the query shall only retrieve the HUs from AfterPicking locators or not
-	 *
-	 * Introduced in 08544
-	 */
-	private boolean _includeAfterPickingLocator = false;
+	private final HUQueryBuilder_Locator locators;
 
 	private boolean onlyIfAssignedToBPartner = false;
 	private final Set<Integer> _onlyInBpartnerIds = new HashSet<>();
@@ -138,14 +117,9 @@ import lombok.NonNull;
 	private final Set<Integer> _onlyWithProductIds = new HashSet<>();
 
 	private Boolean _emptyStorageOnly = null;
-
 	private boolean _allowEmptyStorage = false;
 
-	/** M_Attribute_ID to {@link HUAttributeQueryFilterVO} */
-	private final Map<Integer, HUAttributeQueryFilterVO> onlyAttributeId2values = new HashMap<>();
-
-	/** M_Attribute_ID to {@link HUAttributeQueryFilterVO} for barcode */
-	private final Map<Integer, HUAttributeQueryFilterVO> _barcodeAttributesIds2Value = new HashMap<>();
+	private final HUQueryBuilder_Attributes attributes;
 
 	private final Set<String> _huStatusesToInclude = new HashSet<>();
 	private final Set<String> _huStatusesToExclude = new HashSet<>();
@@ -170,11 +144,6 @@ import lombok.NonNull;
 	 */
 	private ICompositeQueryFilter<I_M_HU> otherFilters = null;
 
-	/**
-	 * Internal barcode
-	 */
-	private String barcode = null;
-
 	private Boolean locked = null;
 
 	//
@@ -186,20 +155,20 @@ import lombok.NonNull;
 	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository)
 	{
 		this.huReservationRepository = huReservationRepository;
+
+		this.locators = new HUQueryBuilder_Locator();
+		this.attributes = new HUQueryBuilder_Attributes();
 	}
 
 	private HUQueryBuilder(final HUQueryBuilder from)
 	{
 		this.huReservationRepository = from.huReservationRepository;
+
 		this._contextProvider = from._contextProvider;
 		this.huItemParentNull = from.huItemParentNull;
 		this.parentHUItemId = from.parentHUItemId;
 		this.parentHUId = from.parentHUId;
-		this._onlyInWarehouseIds.addAll(from._onlyInWarehouseIds);
-		this._notInAnyWarehouse = from._notInAnyWarehouse;
-		this._onlyInLocatorIds.addAll(from._onlyInLocatorIds);
-		this._excludeAfterPickingLocator = from._excludeAfterPickingLocator;
-		this._includeAfterPickingLocator = from._includeAfterPickingLocator;
+		this.locators = from.locators.copy();
 		this.onlyIfAssignedToBPartner = from.onlyIfAssignedToBPartner;
 
 		this._onlyInBpartnerIds.addAll(from._onlyInBpartnerIds);
@@ -207,23 +176,7 @@ import lombok.NonNull;
 		this._onlyWithProductIds.addAll(from._onlyWithProductIds);
 		this._emptyStorageOnly = from._emptyStorageOnly;
 
-		for (final Map.Entry<Integer, HUAttributeQueryFilterVO> e : from.onlyAttributeId2values.entrySet())
-		{
-			final Integer attributeId = e.getKey();
-			final HUAttributeQueryFilterVO attributeFilterVO = e.getValue();
-			final HUAttributeQueryFilterVO attributeFilterVOCopy = attributeFilterVO == null ? null : attributeFilterVO.copy();
-			this.onlyAttributeId2values.put(attributeId, attributeFilterVOCopy);
-		}
-
-		// task 827
-		// copy barcode attributes
-		for (final Map.Entry<Integer, HUAttributeQueryFilterVO> e : from._barcodeAttributesIds2Value.entrySet())
-		{
-			final Integer attributeId = e.getKey();
-			final HUAttributeQueryFilterVO attributeFilterVO = e.getValue();
-			final HUAttributeQueryFilterVO attributeFilterVOCopy = attributeFilterVO == null ? null : attributeFilterVO.copy();
-			this._barcodeAttributesIds2Value.put(attributeId, attributeFilterVOCopy);
-		}
+		this.attributes = from.attributes.copy();
 
 		this._huStatusesToInclude.addAll(from._huStatusesToInclude);
 		this._huStatusesToExclude.addAll(from._huStatusesToExclude);
@@ -241,7 +194,6 @@ import lombok.NonNull;
 
 		this.otherFilters = from.otherFilters == null ? null : from.otherFilters.copy();
 
-		this.barcode = from.barcode;
 		this.locked = from.locked;
 
 		this._errorIfNoHUs = from._errorIfNoHUs;
@@ -263,18 +215,13 @@ import lombok.NonNull;
 				.append(huItemParentNull)
 				.append(parentHUItemId)
 				.append(parentHUId)
-				.append(_onlyInWarehouseIds)
-				.append(_notInAnyWarehouse)
-				.append(_onlyInLocatorIds)
-				.append(_excludeAfterPickingLocator)
-				.append(_includeAfterPickingLocator)
+				.append(locators)
 				.append(onlyIfAssignedToBPartner)
 				.append(_onlyInBpartnerIds)
 				.append(_onlyWithBPartnerLocationIds)
 				.append(_onlyWithProductIds)
 				.append(_emptyStorageOnly)
-				.append(onlyAttributeId2values)
-				.append(_barcodeAttributesIds2Value)
+				.append(attributes)
 				.append(_huStatusesToInclude)
 				.append(_huStatusesToExclude)
 				.append(onlyActiveHUs)
@@ -286,7 +233,6 @@ import lombok.NonNull;
 				.append(_excludeReserved)
 				.append(otherFilters)
 				.append(huSubQueryFilter)
-				.append(barcode)
 				.append(locked)
 				.append(_errorIfNoHUs)
 				.append(_errorIfNoHUs_ADMessage)
@@ -312,17 +258,13 @@ import lombok.NonNull;
 				.append(huItemParentNull, other.huItemParentNull)
 				.append(parentHUItemId, other.parentHUItemId)
 				.append(parentHUId, other.parentHUId)
-				.append(_onlyInWarehouseIds, other._onlyInWarehouseIds)
-				.append(_notInAnyWarehouse, other._notInAnyWarehouse)
-				.append(_onlyInLocatorIds, other._onlyInLocatorIds)
-				.append(_excludeAfterPickingLocator, other._excludeAfterPickingLocator)
+				.append(locators, other.locators)
 				.append(onlyIfAssignedToBPartner, other.onlyIfAssignedToBPartner)
 				.append(_onlyInBpartnerIds, other._onlyInBpartnerIds)
 				.append(_onlyWithBPartnerLocationIds, other._onlyWithBPartnerLocationIds)
 				.append(_onlyWithProductIds, other._onlyWithProductIds)
 				.append(_emptyStorageOnly, other._emptyStorageOnly)
-				.append(onlyAttributeId2values, other.onlyAttributeId2values)
-				.append(_barcodeAttributesIds2Value, other._barcodeAttributesIds2Value)
+				.append(attributes, other.attributes)
 				.append(_huStatusesToInclude, other._huStatusesToInclude)
 				.append(_huStatusesToExclude, other._huStatusesToExclude)
 				.append(onlyActiveHUs, other.onlyActiveHUs)
@@ -334,7 +276,6 @@ import lombok.NonNull;
 				.append(_excludeReserved, other._excludeReserved)
 				.append(otherFilters, other.otherFilters)
 				.append(huSubQueryFilter, other.huSubQueryFilter)
-				.append(barcode, other.barcode)
 				.append(locked, other.locked)
 				.append(_errorIfNoHUs, other._errorIfNoHUs)
 				.append(_errorIfNoHUs_ADMessage, other._errorIfNoHUs_ADMessage)
@@ -350,26 +291,7 @@ import lombok.NonNull;
 	@Override
 	public String getAttributesSummary()
 	{
-		if (onlyAttributeId2values == null || onlyAttributeId2values.isEmpty())
-		{
-			return "";
-		}
-
-		final StringBuilder sb = new StringBuilder();
-		for (final HUAttributeQueryFilterVO attributeFilterVO : onlyAttributeId2values.values())
-		{
-			final String attributeSummary = attributeFilterVO.getSummary();
-			if (Check.isEmpty(attributeSummary, true))
-			{
-				continue;
-			}
-			if (sb.length() > 0)
-			{
-				sb.append("\n");
-			}
-			sb.append(attributeSummary);
-		}
-		return sb.toString();
+		return attributes.getAttributesSummary();
 	}
 
 	@Override
@@ -411,48 +333,10 @@ import lombok.NonNull;
 			filters.addOnlyActiveRecordsFilter();
 		}
 
-		//
-		// Filter by Warehouses
-		final Set<WarehouseId> onlyInWarehouseIds = getOnlyInWarehouseIds();
-		if (!onlyInWarehouseIds.isEmpty()
-				|| _excludeAfterPickingLocator
-				|| _includeAfterPickingLocator)
+		final ICompositeQueryFilter<I_M_HU> locatorFilters = locators.createQueryFilter();
+		if (!locatorFilters.isEmpty())
 		{
-			final IQueryBuilder<I_M_Locator> locatorsQueryBuilder = queryBL
-					.createQueryBuilder(I_M_Locator.class, getContextProvider());
-
-			if (!onlyInWarehouseIds.isEmpty())
-			{
-				locatorsQueryBuilder.addInArrayOrAllFilter(I_M_Locator.COLUMN_M_Warehouse_ID, onlyInWarehouseIds);
-			}
-			// Make sure _includeAfterPickingLocator and _excludeAfterPickingLocator are not both selected
-			Check.assume(!(_includeAfterPickingLocator && _excludeAfterPickingLocator), "Cannot both include and exclude AfterPickingLocator");
-
-			if (_excludeAfterPickingLocator)
-			{
-				locatorsQueryBuilder.addEqualsFilter(de.metas.handlingunits.model.I_M_Locator.COLUMNNAME_IsAfterPickingLocator, false);
-			}
-			if (_includeAfterPickingLocator)
-			{
-				locatorsQueryBuilder.addEqualsFilter(de.metas.handlingunits.model.I_M_Locator.COLUMNNAME_IsAfterPickingLocator, true);
-			}
-
-			final IQuery<I_M_Locator> locatorsQuery = locatorsQueryBuilder.create();
-			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_Locator_ID,
-					I_M_Locator.COLUMN_M_Locator_ID, locatorsQuery);
-		}
-
-		if (_notInAnyWarehouse)
-		{
-			filters.addEqualsFilter(I_M_HU.COLUMN_M_Locator_ID, null);
-		}
-
-		//
-		// Filter by Locators
-		final Set<Integer> onlyInLocatorIds = getOnlyInLocatorIds();
-		if (!onlyInLocatorIds.isEmpty())
-		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_M_Locator_ID, onlyInLocatorIds);
+			filters.addFilter(locatorFilters);
 		}
 
 		//
@@ -562,41 +446,10 @@ import lombok.NonNull;
 
 		//
 		// Filter by Attributes
-		if (!onlyAttributeId2values.isEmpty())
+		final ICompositeQueryFilter<I_M_HU> attributesFilter = attributes.createQueryFilter();
+		if (!attributesFilter.isEmpty())
 		{
-			// Iterate attribute filters and add a restriction for each of them
-			// because each of them needs to be individually valid
-			for (final HUAttributeQueryFilterVO attributeFilterVO : onlyAttributeId2values.values())
-			{
-				attributeFilterVO.appendQueryFilterTo(getContextProvider(), filters);
-			}
-		}
-
-		//
-		// Filter by internal barcode
-		if (!Check.isEmpty(barcode, true))
-		{
-			if (!_barcodeAttributesIds2Value.isEmpty())
-			{
-				final ICompositeQueryFilter<I_M_HU> barcodeFilter = queryBL.createCompositeQueryFilter(I_M_HU.class);
-
-				// an HU will be barcode-identified either if it has barcode attributes or value with the value inserted as barcode
-				barcodeFilter.setJoinOr();
-				barcodeFilter.addEqualsFilter(I_M_HU.COLUMN_Value, barcode.trim());
-
-				for (final HUAttributeQueryFilterVO attributeFilterVO : _barcodeAttributesIds2Value.values())
-				{
-					attributeFilterVO.appendQueryFilterTo(getContextProvider(), barcodeFilter);
-				}
-
-				filters.addFilter(barcodeFilter);
-			}
-			// task #827 filter by hu value, as before
-			else
-			{
-				filters.addEqualsFilter(I_M_HU.COLUMN_Value, barcode.trim());
-			}
-
+			filters.addFilter(attributesFilter);
 		}
 
 		//
@@ -828,76 +681,35 @@ import lombok.NonNull;
 	@Override
 	public IHUQueryBuilder addOnlyInWarehouseIds(final Collection<WarehouseId> warehouseIds)
 	{
-		if (warehouseIds != null && !warehouseIds.isEmpty())
-		{
-			_onlyInWarehouseIds.addAll(warehouseIds);
-		}
-
-		updateNotInAnyWarehouseFlag();
+		locators.addOnlyInWarehouseIds(warehouseIds);
 		return this;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyInWarehouseId(final WarehouseId warehouseId)
+	public IHUQueryBuilder addOnlyInWarehouseId(@NonNull final WarehouseId warehouseId)
 	{
-		_onlyInWarehouseIds.add(warehouseId);
-		updateNotInAnyWarehouseFlag();
+		locators.addOnlyInWarehouseIds(ImmutableSet.of(warehouseId));
 		return this;
-	}
-
-	private void updateNotInAnyWarehouseFlag()
-	{
-		_notInAnyWarehouse = _onlyInWarehouseIds.isEmpty();
-	}
-
-	@Override
-	public IHUQueryBuilder addOnlyInWarehouses(final Collection<? extends I_M_Warehouse> warehouses)
-	{
-		if (warehouses == null || warehouses.isEmpty())
-		{
-			return addOnlyInWarehouseIds(Collections.<WarehouseId> emptyList());
-		}
-
-		final Set<WarehouseId> warehouseIds = new HashSet<>(warehouses.size());
-		for (final I_M_Warehouse warehouse : warehouses)
-		{
-			if (warehouse == null)
-			{
-				continue;
-			}
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
-			warehouseIds.add(warehouseId);
-		}
-		return addOnlyInWarehouseIds(warehouseIds);
 	}
 
 	@Override
 	public Set<WarehouseId> getOnlyInWarehouseIds()
 	{
-		return _onlyInWarehouseIdsRO;
+		return locators.getOnlyInWarehouseIds();
 	}
 
 	@Override
 	public HUQueryBuilder addOnlyInLocatorId(final int locatorId)
 	{
-		Check.assume(locatorId > 0, "locatorId > 0");
-		_onlyInLocatorIds.add(locatorId);
+		locators.addOnlyInLocatorId(locatorId);
 		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder addOnlyInLocatorIds(final Collection<Integer> locatorIds)
 	{
-		if (locatorIds != null && !locatorIds.isEmpty())
-		{
-			_onlyInLocatorIds.addAll(locatorIds);
-		}
+		locators.addOnlyInLocatorIds(locatorIds);
 		return this;
-	}
-
-	private Set<Integer> getOnlyInLocatorIds()
-	{
-		return _onlyInLocatorIds;
 	}
 
 	@Override
@@ -1053,171 +865,80 @@ import lombok.NonNull;
 		return this;
 	}
 
-	/**
-	 * Retrieves an existing or new de.metas.handlingunits.impl.HUAttributeQueryFilterVO entry for the given attribute and type.
-	 * Note: The entry will be included in the onlyAttributeId2values and not in the barcode attributes list
-	 *
-	 * @param attribute
-	 * @param attributeValueType
-	 * @return
-	 */
-	private final HUAttributeQueryFilterVO getAttributeFilterVO(final I_M_Attribute attribute, final String attributeValueType)
-	{
-		return getAttributeFilterVO(onlyAttributeId2values, attribute, attributeValueType);
-	}
-
-	/**
-	 * Possibility to put the attribute in a given map.
-	 *
-	 * @param targetMap
-	 * @param attribute
-	 * @param attributeValueType
-	 * @return
-	 */
-	private final HUAttributeQueryFilterVO getAttributeFilterVO(final Map<Integer, HUAttributeQueryFilterVO> targetMap, final I_M_Attribute attribute, final String attributeValueType)
-	{
-		Check.assumeNotNull(attribute, "attribute not null");
-
-		final int attributeId = attribute.getM_Attribute_ID();
-		HUAttributeQueryFilterVO attributeFilterVO = targetMap.get(attributeId);
-		if (attributeFilterVO == null)
-		{
-			attributeFilterVO = new HUAttributeQueryFilterVO(attribute, attributeValueType);
-			targetMap.put(attributeId, attributeFilterVO);
-		}
-		else
-		{
-			attributeFilterVO.setAttributeValueType(attributeValueType);
-		}
-
-		return attributeFilterVO;
-	}
-
 	@Override
 	public IHUQueryBuilder addOnlyWithAttribute(final I_M_Attribute attribute, final Object value)
 	{
-		final HUAttributeQueryFilterVO attributeFilterVO = getAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown);
-		attributeFilterVO.addValue(value);
-
+		attributes.addOnlyWithAttribute(attribute, value);
 		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder addOnlyWithAttribute(final String attributeName, final Object value)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName, I_M_Attribute.class);
-		return addOnlyWithAttribute(attribute, value);
+		attributes.addOnlyWithAttribute(attributeName, value);
+		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder addOnlyWithAttribute(final AttributeId attributeId, final Object value)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
-		return addOnlyWithAttribute(attribute, value);
+		attributes.addOnlyWithAttribute(attributeId, value);
+		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeInList(final I_M_Attribute attribute, final String attributeValueType, final List<? extends Object> values)
 	{
-		Check.assumeNotNull(values, "values not null");
-		final HUAttributeQueryFilterVO attributeFilterVO = getAttributeFilterVO(attribute, attributeValueType);
-		attributeFilterVO.addValues(values);
-
+		attributes.addOnlyWithAttributeInList(attribute, attributeValueType, values);
 		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeInList(final String attributeName, final Object... values)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName);
-		final List<Object> valuesAsList = Arrays.asList(values);
-		addOnlyWithAttributeInList(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown, valuesAsList);
+		attributes.addOnlyWithAttributeInList(attributeName, values);
 		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeNotNull(final String attributeName)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName);
-		getAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
-				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.NotNull);
+		attributes.addOnlyWithAttributeNotNull(attributeName);
 		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeMissingOrNull(final String attributeName)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName);
-		getAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
-				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.MissingOrNull);
+		attributes.addOnlyWithAttributeMissingOrNull(attributeName);
 		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet)
 	{
-		for (final I_M_Attribute attribute : attributeSet.getAttributes())
-		{
-			final Object value = attributeSet.getValue(attribute);
-			addOnlyWithAttribute(attribute, value);
-		}
+		attributes.addOnlyWithAttributes(attributeSet);
 		return this;
 	}
 
 	@Override
 	public boolean matches(final IAttributeSet attributes)
 	{
-		Check.assumeNotNull(attributes, "attributes not null");
+		return this.attributes.matches(attributes);
+	}
 
-		// If there is no attribute restrictions we can accept this "attributes" right away
-		if (onlyAttributeId2values == null || onlyAttributeId2values.isEmpty())
-		{
-			return true;
-		}
-
-		for (final HUAttributeQueryFilterVO attributeFilter : onlyAttributeId2values.values())
-		{
-			if (!attributeFilter.matches(attributes))
-			{
-				return false;
-			}
-		}
-
-		return true;
+	@Override
+	public IHUQueryBuilder allowSqlWhenFilteringAttributes(final boolean allow)
+	{
+		this.attributes.setAllowSql(allow);
+		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder setOnlyWithBarcode(final String barcode)
 	{
-		this.barcode = barcode;
-		loadBarcodeAttributes(barcode);
+		attributes.setBarcode(barcode);
 		return this;
-	}
-
-	private void loadBarcodeAttributes(final String barcode)
-	{
-		final String dimBarcodeAttributesInternalName = HUConstants.DIM_Barcode_Attributes;
-
-		final DimensionSpec barcodeDimSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(dimBarcodeAttributesInternalName);
-		if (barcodeDimSpec == null)
-		{
-			return; // no barcode dimension spec. Nothing to do
-		}
-
-		final List<I_M_Attribute> barcodeAttributes = barcodeDimSpec.retrieveAttributes();
-
-		for (final I_M_Attribute attribute : barcodeAttributes)
-		{
-			// Barcode must be a String attribute. In the database, this is forced by a validation rule
-			if (!attribute.getAttributeValueType().equals(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40))
-			{
-				continue;
-			}
-
-			final HUAttributeQueryFilterVO barcodeAttributeFilterVO = getAttributeFilterVO(_barcodeAttributesIds2Value, attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown);
-			barcodeAttributeFilterVO.addValue(barcode);
-		}
-
 	}
 
 	@Override
@@ -1377,14 +1098,14 @@ import lombok.NonNull;
 	@Override
 	public HUQueryBuilder setExcludeAfterPickingLocator(final boolean excludeAfterPickingLocator)
 	{
-		_excludeAfterPickingLocator = excludeAfterPickingLocator;
+		locators.setExcludeAfterPickingLocator(excludeAfterPickingLocator);
 		return this;
 	}
 
 	@Override
 	public HUQueryBuilder setIncludeAfterPickingLocator(final boolean includeAfterPickingLocator)
 	{
-		_includeAfterPickingLocator = includeAfterPickingLocator;
+		locators.setIncludeAfterPickingLocator(includeAfterPickingLocator);
 		return this;
 	}
 

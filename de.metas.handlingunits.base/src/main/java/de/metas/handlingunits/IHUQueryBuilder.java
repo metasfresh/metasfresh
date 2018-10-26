@@ -36,7 +36,6 @@ import org.adempiere.model.ModelColumn;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -200,16 +199,6 @@ public interface IHUQueryBuilder
 	 * @return this
 	 */
 	IHUQueryBuilder addOnlyInWarehouseId(final WarehouseId warehouseId);
-
-	/**
-	 * Filter only those HUs which are in any of the given warehouse(s).
-	 *
-	 * NOTE: given warehouse(s) are appended to the list of previously specified ones
-	 *
-	 * @param warehouses
-	 * @return this
-	 */
-	IHUQueryBuilder addOnlyInWarehouses(Collection<? extends I_M_Warehouse> warehouses);
 
 	/**
 	 *
@@ -402,6 +391,8 @@ public interface IHUQueryBuilder
 	 * @param attributeName
 	 */
 	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
+	
+	IHUQueryBuilder allowSqlWhenFilteringAttributes(boolean allow);
 
 	/**
 	 * Filter the HUs by barcode.
