@@ -66,6 +66,7 @@ import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.ITerminalLoginDialog;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
+import de.metas.adempiere.form.terminal.ITerminalTextField.KeyboardDisplayMode;
 import de.metas.adempiere.form.terminal.ITerminalTextPane;
 import de.metas.adempiere.form.terminal.POSKeyLayout;
 import de.metas.adempiere.form.terminal.TerminalException;
@@ -446,7 +447,7 @@ public class SwingPickingTerminalPanel implements ITerminalBasePanel, IPickingTe
 		// Product Search panel
 		{
 			barcodeSearchField = terminalFactory.createTerminalTextField("Barcode");
-			barcodeSearchField.setShowKeyboardButton(false);
+			barcodeSearchField.setKeyboardDisplayMode(KeyboardDisplayMode.NEVER);
 			barcodeSearchField.setKeyLayout(null); // no keyboard
 			barcodeSearchField.addListener(barcodeSearchFieldListener);
 			// initComponents_ProductSearch();
