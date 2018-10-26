@@ -92,21 +92,12 @@ public interface ITerminalTextField extends ITerminalField<String>
 
 	<T> void registerFactory(Class<T> clazz, IFactory<T> factory);
 
-	/**
-	 *
-	 * @return true if keyboard button is displayed
-	 */
-	boolean isShowKeyboardButton();
+	public static enum KeyboardDisplayMode
+	{
+		NEVER, WHEN_TYPING, MANUAL,
+	}
 
-	/**
-	 * Configures if user shall see the keyboard button or not.
-	 *
-	 * NOTE: setting this value to false does not prevent the keyboard from popping up. If you don't want to the keyboard to be displayed please {@link #setKeyLayout(IKeyLayout)} with
-	 * <code>null</code> parameter.
-	 *
-	 * @param isShowKeyboardButton
-	 */
-	void setShowKeyboardButton(boolean isShowKeyboardButton);
+	void setKeyboardDisplayMode(KeyboardDisplayMode keyboardDisplayMode);
 
 	Format getFormat();
 

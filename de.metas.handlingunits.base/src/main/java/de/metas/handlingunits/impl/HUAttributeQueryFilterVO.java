@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,6 +29,8 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.ModelColumn;
@@ -46,6 +47,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 
 /**
  * Helper class used to filter/match {@link I_M_HU_Attribute}s, {@link IAttributeSet}s.
@@ -59,16 +61,14 @@ import de.metas.util.collections.CollectionUtils;
 
 	public static enum AttributeValueMatchingType
 	{
-		NotNull,
-		MissingOrNull,
-		ValuesList,
+		NotNull, MissingOrNull, ValuesList,
 	};
 
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-	private final int attributeId;
+	private final AttributeId attributeId;
 	@ToStringBuilder(skip = true)
 	private final I_M_Attribute attribute;
 	private final String attributeValueType;
@@ -77,11 +77,9 @@ import de.metas.util.collections.CollectionUtils;
 	private final Set<Object> _values = new HashSet<>();
 	private Set<Object> _valuesAndSubstitutes = null;
 
-	/* package */HUAttributeQueryFilterVO(final I_M_Attribute attribute, final String attributeValueType)
+	/* package */ HUAttributeQueryFilterVO(@NonNull final I_M_Attribute attribute, final String attributeValueType)
 	{
-		super();
-		Check.assumeNotNull(attribute, "attribute not null");
-		attributeId = attribute.getM_Attribute_ID();
+		attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 		this.attribute = attribute;
 
 		if (attributeValueType == ATTRIBUTEVALUETYPE_Unknown)
@@ -121,7 +119,6 @@ import de.metas.util.collections.CollectionUtils;
 
 	private HUAttributeQueryFilterVO(final HUAttributeQueryFilterVO from)
 	{
-		super();
 		attributeId = from.attributeId;
 		attribute = from.attribute;
 		attributeValueType = from.attributeValueType;
@@ -206,45 +203,45 @@ import de.metas.util.collections.CollectionUtils;
 	 * @param contextProvider
 	 * @param huFilters
 	 */
-	public final void appendQueryFilterTo(final Object contextProvider, final ICompositeQueryFilter<I_M_HU> huFilters)
+	public final void appendQueryFilterTo(final ICompositeQueryFilter<I_M_HU> huFilters)
 	{
 		switch (matchingType)
 		{
 			case NotNull:
-				appendQueryFilter_NotNull(contextProvider, huFilters);
+				appendQueryFilter_NotNull(huFilters);
 				return;
 			case MissingOrNull:
-				appendQueryFilter_MissingOrNull(contextProvider, huFilters);
+				appendQueryFilter_MissingOrNull(huFilters);
 				return;
 			case ValuesList:
-				appendQueryFilter_ValuesList(contextProvider, huFilters);
+				appendQueryFilter_ValuesList(huFilters);
 				return;
 			default:
-				throw new IllegalStateException("MatchingType not supported: " + matchingType); // shall not happen
+				throw new AdempiereException("MatchingType not supported: " + matchingType); // shall not happen
 		}
 	}
 
-	private final void appendQueryFilter_NotNull(final Object contextProvider, final ICompositeQueryFilter<I_M_HU> huFilters)
+	private final void appendQueryFilter_NotNull(final ICompositeQueryFilter<I_M_HU> huFilters)
 	{
-		final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
+		final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
+				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getAttributeId())
 				.addNotNull(getHUAttributeValueColumn())
 				.create();
 
 		huFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
 	}
 
-	private final void appendQueryFilter_MissingOrNull(final Object contextProvider, final ICompositeQueryFilter<I_M_HU> huFilters)
+	private final void appendQueryFilter_MissingOrNull(final ICompositeQueryFilter<I_M_HU> huFilters)
 	{
 		final ICompositeQueryFilter<I_M_HU> huFilterToAppend = queryBL.createCompositeQueryFilter(I_M_HU.class)
 				.setJoinOr();
 
 		// Attribute Missing
 		{
-			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
+			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
+					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getAttributeId())
 					.create();
 
 			huFilterToAppend.addNotInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
@@ -252,9 +249,9 @@ import de.metas.util.collections.CollectionUtils;
 
 		// Attribute value is null
 		{
-			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
+			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
+					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getAttributeId())
 					.addEqualsFilter(getHUAttributeValueColumn(), null)
 					.create();
 
@@ -264,11 +261,11 @@ import de.metas.util.collections.CollectionUtils;
 		huFilters.addFilter(huFilterToAppend);
 	}
 
-	private final void appendQueryFilter_ValuesList(final Object contextProvider, final ICompositeQueryFilter<I_M_HU> huFilters)
+	private final void appendQueryFilter_ValuesList(final ICompositeQueryFilter<I_M_HU> huFilters)
 	{
-		final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
+		final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
+				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getAttributeId())
 				.addInArrayOrAllFilter(getHUAttributeValueColumn(), getValuesAndSubstitutes())
 				.create();
 
@@ -276,7 +273,7 @@ import de.metas.util.collections.CollectionUtils;
 	}
 
 	/**
-	 * NOTE: keep in sync with {@link #createQueryFilter()}
+	 * NOTE: keep in sync with {@link #appendQueryFilterTo(Object, ICompositeQueryFilter)}
 	 */
 	public final boolean matches(final IAttributeSet attributes)
 	{
@@ -289,16 +286,16 @@ import de.metas.util.collections.CollectionUtils;
 			case ValuesList:
 				return matches_ValuesList(attributes);
 			default:
-				throw new IllegalStateException("MatchingType not supported: " + matchingType); // shall not happen
+				throw new AdempiereException("MatchingType not supported: " + matchingType); // shall not happen
 		}
 
 	}
 
-	private boolean matches_NotNull(IAttributeSet attributes)
+	private boolean matches_NotNull(final IAttributeSet attributes)
 	{
 		//
 		// Check if attribute set has our attribute
-		final int attributeId = getM_Attribute_ID();
+		final AttributeId attributeId = getAttributeId();
 		final I_M_Attribute attribute = attributes.getAttributeByIdIfExists(attributeId);
 		if (attribute == null)
 		{
@@ -311,11 +308,11 @@ import de.metas.util.collections.CollectionUtils;
 		return recordAttributeValue != null; // matched if NOT null
 	}
 
-	private boolean matches_MissingOrNull(IAttributeSet attributes)
+	private boolean matches_MissingOrNull(final IAttributeSet attributes)
 	{
 		//
 		// Check if attribute set has our attribute
-		final int attributeId = getM_Attribute_ID();
+		final AttributeId attributeId = getAttributeId();
 		final I_M_Attribute attribute = attributes.getAttributeByIdIfExists(attributeId);
 		if (attribute == null)
 		{
@@ -333,7 +330,7 @@ import de.metas.util.collections.CollectionUtils;
 	{
 		//
 		// Check if attribute set has our attribute
-		final int attributeId = getM_Attribute_ID();
+		final AttributeId attributeId = getAttributeId();
 		final I_M_Attribute attribute = attributes.getAttributeByIdIfExists(attributeId);
 		if (attribute == null)
 		{
@@ -388,7 +385,7 @@ import de.metas.util.collections.CollectionUtils;
 		return this;
 	}
 
-	private final int getM_Attribute_ID()
+	private final AttributeId getAttributeId()
 	{
 		return attributeId;
 	}
@@ -401,20 +398,12 @@ import de.metas.util.collections.CollectionUtils;
 		return attribute;
 	}
 
-	public HUAttributeQueryFilterVO setAttributeValueType(final String attributeValueType)
+	public HUAttributeQueryFilterVO assertAttributeValueType(@NonNull final String attributeValueType)
 	{
-		// NOTE: actually we are not setting it but just validate if it's the same
-
-		if (attributeValueType == ATTRIBUTEVALUETYPE_Unknown)
-		{
-			return this;
-		}
-
 		Check.assume(
 				Objects.equals(this.attributeValueType, attributeValueType),
 				"Invalid attributeValueType for {}. Expected: {}",
-				this, attributeValueType
-				);
+				this, attributeValueType);
 
 		return this;
 	}

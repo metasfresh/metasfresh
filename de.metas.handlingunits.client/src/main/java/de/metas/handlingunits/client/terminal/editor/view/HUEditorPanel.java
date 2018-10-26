@@ -52,6 +52,7 @@ import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
+import de.metas.adempiere.form.terminal.ITerminalTextField.KeyboardDisplayMode;
 import de.metas.adempiere.form.terminal.TerminalDialogListenerAdapter;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -363,7 +364,7 @@ public class HUEditorPanel
 			if (isDisplayBarcode)
 			{
 				barcodeField = factory.createTerminalTextField(MSG_BARCODE, DisplayType.String, HUEditorPanel.DEFAULT_FONT_SIZE);
-				barcodeField.setShowKeyboardButton(false);
+				barcodeField.setKeyboardDisplayMode(KeyboardDisplayMode.NEVER);
 				barcodeField.setKeyLayout(null);
 
 				barcodeLabel = factory.createLabel(MSG_BARCODE, true); // true = translated
