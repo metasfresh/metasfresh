@@ -1,8 +1,7 @@
 package de.metas.notification;
 
-import org.adempiere.util.Check;
-
 import de.metas.event.Topic;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

@@ -6,9 +6,6 @@ import java.util.List;
 
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.POInfo;
 import org.compiere.util.TimeUtil;
 
@@ -16,6 +13,9 @@ import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

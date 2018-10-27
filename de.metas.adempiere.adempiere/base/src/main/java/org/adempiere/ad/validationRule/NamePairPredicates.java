@@ -4,11 +4,12 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.util.GuavaCollectors;
 import org.compiere.util.NamePair;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
@@ -38,6 +36,8 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 {

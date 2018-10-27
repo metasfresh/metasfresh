@@ -1,9 +1,9 @@
 package de.metas.handlingunits;
 
-import org.adempiere.util.Services;
 import org.assertj.core.api.Condition;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Services;
 
 /*
  * #%L

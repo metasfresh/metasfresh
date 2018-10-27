@@ -24,10 +24,10 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Track {@link IHUKey} changes.

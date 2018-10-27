@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.DB;

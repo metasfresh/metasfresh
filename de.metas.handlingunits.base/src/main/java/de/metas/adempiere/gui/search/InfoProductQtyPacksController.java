@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.compiere.apps.search.IInfoQueryCriteria;
 import org.compiere.apps.search.IInfoSimple;
@@ -47,6 +46,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingGridRowBuilder;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Services;
 
 /**
  * Implements QtyPack editable column.

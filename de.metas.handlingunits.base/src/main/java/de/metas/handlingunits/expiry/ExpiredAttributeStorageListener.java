@@ -5,19 +5,20 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -65,21 +66,21 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 			return;
 		}
 
-		final boolean relevantAttributesArePresent = storage.hasAttribute(Constants.ATTR_Expired)
-				&& storage.hasAttribute(Constants.ATTR_BestBeforeDate);
+		final boolean relevantAttributesArePresent = storage.hasAttribute(HUAttributeConstants.ATTR_Expired)
+				&& storage.hasAttribute(HUAttributeConstants.ATTR_BestBeforeDate);
 		if (!relevantAttributesArePresent)
 		{
 			return;
 		}
 
 		final String attributeIdentifier = attributeValue.getM_Attribute().getValue();
-		final boolean relevantAttributeHasChanged = Constants.ATTR_BestBeforeDate.equals(attributeIdentifier);
+		final boolean relevantAttributeHasChanged = HUAttributeConstants.ATTR_BestBeforeDate.equals(attributeIdentifier);
 		if (!relevantAttributeHasChanged)
 		{
 			return;
 		}
 
-		final Date bestBefore = storage.getValueAsDate(Constants.ATTR_BestBeforeDate);
+		final Date bestBefore = storage.getValueAsDate(HUAttributeConstants.ATTR_BestBeforeDate);
 		final int warnInterval = getMinimalWarnIntervalInDays(huAttributeStorage);
 
 		final LocalDateTime warnDate = TimeUtil
@@ -88,11 +89,11 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 				.atStartOfDay();
 		if (warnDate.isBefore(LocalDateTime.now()))
 		{
-			storage.setValue(Constants.ATTR_Expired, Constants.ATTR_Expired_Value_Expired);
+			storage.setValue(HUAttributeConstants.ATTR_Expired, HUAttributeConstants.ATTR_Expired_Value_Expired);
 		}
 		else
 		{
-			storage.setValue(Constants.ATTR_Expired, null);
+			storage.setValue(HUAttributeConstants.ATTR_Expired, null);
 		}
 	}
 
@@ -108,7 +109,7 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 				.getProductStorages();
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final I_M_Product productRecord = productStorage.getM_Product();
+			final I_M_Product productRecord = Services.get(IProductDAO.class).getById(productStorage.getProductId());
 			final int currentDays;
 			if (productRecord.getGuaranteeDaysMin() > 0)
 			{

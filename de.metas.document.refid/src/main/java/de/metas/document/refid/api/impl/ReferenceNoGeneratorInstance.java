@@ -1,37 +1,15 @@
 package de.metas.document.refid.api.impl;
 
-/*
- * #%L
- * de.metas.document.refid
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import lombok.NonNull;
 
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
+import de.metas.util.Check;
 
 class ReferenceNoGeneratorInstance implements IReferenceNoGeneratorInstance
 {
@@ -39,19 +17,20 @@ class ReferenceNoGeneratorInstance implements IReferenceNoGeneratorInstance
 	private final List<Integer> assignedTableIds;
 	private final IReferenceNoGenerator generator;
 
-	public ReferenceNoGeneratorInstance(final I_C_ReferenceNo_Type type, final List<Integer> assignedTableIds, final IReferenceNoGenerator generator)
+	public ReferenceNoGeneratorInstance(
+			@NonNull final I_C_ReferenceNo_Type type,
+			@NonNull final List<Integer> assignedTableIds,
+			@NonNull final IReferenceNoGenerator generator)
 	{
-		Check.assume(type != null, "type not null");
-		Check.assume(assignedTableIds != null && !assignedTableIds.isEmpty(), "assignedTableIds not null and not empty");
-		Check.assume(generator != null, "generator not null");
+		Check.assume(!assignedTableIds.isEmpty(), "assignedTableIds not null and not empty");
 
 		this.type = type;
-		this.assignedTableIds = Collections.unmodifiableList(new ArrayList<Integer>(assignedTableIds));
+		this.assignedTableIds = ImmutableList.copyOf(assignedTableIds);
 		this.generator = generator;
 	}
 
 	@Override
-	public String generateReferenceNo(final Object sourceModel)
+	public String generateReferenceNo(@NonNull final Object sourceModel)
 	{
 		return generator.generateReferenceNo(sourceModel);
 	}

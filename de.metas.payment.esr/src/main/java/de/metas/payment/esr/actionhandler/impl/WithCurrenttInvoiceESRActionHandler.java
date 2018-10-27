@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
@@ -35,6 +34,7 @@ import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.util.Services;
 
 /**
  * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice}. Invokes {@link IESRImportBL#linkInvoiceToPayment(I_ESR_ImportLine)}.

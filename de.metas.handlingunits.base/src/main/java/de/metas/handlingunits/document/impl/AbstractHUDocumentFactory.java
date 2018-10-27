@@ -30,8 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.collections.SingletonIterator;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.document.IHUDocument;
@@ -39,6 +37,8 @@ import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import de.metas.quantity.Capacity;
+import de.metas.util.Check;
+import de.metas.util.collections.SingletonIterator;
 
 public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 {

@@ -25,6 +25,7 @@ package org.adempiere.ad.migration.executor.impl;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import org.adempiere.ad.migration.executor.IMigrationExecutor.Action;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -34,7 +35,6 @@ import org.adempiere.ad.migration.model.I_AD_MigrationStep;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.util.TrxRunnable2;
 
 class MigrationStepExecutorRunnable implements TrxRunnable2

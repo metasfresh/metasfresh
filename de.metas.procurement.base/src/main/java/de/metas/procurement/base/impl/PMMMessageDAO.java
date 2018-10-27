@@ -5,11 +5,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMMMessageDAO;
 import de.metas.procurement.base.model.I_PMM_Message;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

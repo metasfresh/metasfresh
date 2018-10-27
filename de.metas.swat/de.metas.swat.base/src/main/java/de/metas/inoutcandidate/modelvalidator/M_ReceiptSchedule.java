@@ -30,7 +30,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
@@ -41,6 +40,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.Services;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule

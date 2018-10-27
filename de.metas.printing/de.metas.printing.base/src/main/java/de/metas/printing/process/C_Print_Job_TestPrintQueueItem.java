@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -38,6 +37,7 @@ import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.api.impl.SingletonPrintingQueueSource;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.util.Check;
 
 /**
  * Process only selected {@link I_C_Printing_Queue} create corresponding {@link I_C_Print_Job}.

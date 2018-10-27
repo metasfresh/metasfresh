@@ -3,7 +3,6 @@ package de.metas.ordercandidate.spi.impl;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +10,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
+import de.metas.util.Services;
 
 /*
  * #%L

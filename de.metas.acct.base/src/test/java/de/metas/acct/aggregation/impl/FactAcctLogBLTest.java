@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
@@ -26,6 +25,7 @@ import de.metas.acct.aggregation.IFactAcctSummaryKey;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.acct.model.X_Fact_Acct_Log;
+import de.metas.util.Services;
 
 /*
  * #%L

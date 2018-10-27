@@ -2,9 +2,10 @@ package org.compiere.impexp;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.Check;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
 
 /**
  * A cell of {@link ImpDataCell}.

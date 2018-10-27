@@ -33,8 +33,6 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -43,6 +41,8 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.fresh.model.I_C_BPartner;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 {

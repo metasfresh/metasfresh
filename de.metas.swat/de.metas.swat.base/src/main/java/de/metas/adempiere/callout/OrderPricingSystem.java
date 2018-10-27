@@ -1,11 +1,11 @@
 package de.metas.adempiere.callout;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.IOrderBL;
+import de.metas.util.Services;
 
 public class OrderPricingSystem extends CalloutEngine
 {

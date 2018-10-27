@@ -1,7 +1,6 @@
 package de.metas.money;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

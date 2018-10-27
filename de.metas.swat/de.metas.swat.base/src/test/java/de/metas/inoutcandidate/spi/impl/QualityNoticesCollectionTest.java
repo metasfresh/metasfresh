@@ -28,9 +28,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import org.adempiere.util.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
+
+import de.metas.util.StringUtils;
 
 public class QualityNoticesCollectionTest
 {

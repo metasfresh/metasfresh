@@ -25,11 +25,11 @@ package de.metas.payment.esr;
 import static org.junit.Assert.assertTrue;
 
 import org.adempiere.ad.validationRule.impl.PlainValidationContext;
-import org.adempiere.util.Check;
 import org.compiere.util.NamePair;
 
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.validationRule.ESRPaymentActionValidationRule;
+import de.metas.util.Check;
 
 public final class ESRValidationRuleTools
 {

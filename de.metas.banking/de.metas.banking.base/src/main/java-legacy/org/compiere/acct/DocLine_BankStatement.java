@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MBankStatementLine;
@@ -34,6 +33,7 @@ import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Services;
 
 /**
  * Bank Statement Line

@@ -25,13 +25,13 @@ package de.metas.printing.api.impl;
 
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.model.I_AD_Print_Clients;
+import de.metas.util.Services;
 
 public class PrintClientsBLTest extends AbstractPrintingTest
 {

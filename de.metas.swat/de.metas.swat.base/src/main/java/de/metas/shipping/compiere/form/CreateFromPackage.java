@@ -42,8 +42,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Vector;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.grid.CreateFrom;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.GridTab;
@@ -55,6 +53,8 @@ import de.metas.i18n.Msg;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.MMShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *  Create Shipping Packages for Shipper Transportation

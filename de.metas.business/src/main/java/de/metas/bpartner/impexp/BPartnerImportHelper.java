@@ -5,10 +5,11 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
+
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -122,7 +123,7 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setIsActive(importRecord.isActiveStatus());
 		bpartner.setDebtorId(importRecord.getDebtorId());
 		bpartner.setCreditorId(importRecord.getCreditorId());
-		bpartner.setMemo(importRecord.getMemo());
+		bpartner.setMemo(importRecord.getC_BPartner_Memo());
 		bpartner.setDeliveryViaRule(importRecord.getDeliveryViaRule());
 		bpartner.setM_Shipper_ID(importRecord.getM_Shipper_ID());
 		bpartner.setVendorCategory(importRecord.getVendorCategory());
@@ -231,9 +232,9 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setIsActive(importRecord.isActiveStatus());
 		bpartner.setDebtorId(importRecord.getDebtorId());
 		bpartner.setCreditorId(importRecord.getCreditorId());
-		if (importRecord.getMemo() != null)
+		if (importRecord.getC_BPartner_Memo() != null)
 		{
-			bpartner.setMemo(importRecord.getMemo());
+			bpartner.setMemo(importRecord.getC_BPartner_Memo());
 		}
 
 		if (!Check.isEmpty(importRecord.getDeliveryViaRule(), true))

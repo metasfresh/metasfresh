@@ -26,11 +26,11 @@ package de.metas.contracts.pricing;
 import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.IPricingRule;
+import de.metas.util.lang.Percent;
 
 /**
  * This pricing discount rule applies if

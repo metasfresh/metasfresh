@@ -49,8 +49,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.TestClientUI;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Session;
@@ -99,6 +97,8 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 // there is high amount of methods because it's a helper...
 public class Helper

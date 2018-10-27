@@ -8,10 +8,11 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.api.TableCalloutsMap;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -16,6 +15,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

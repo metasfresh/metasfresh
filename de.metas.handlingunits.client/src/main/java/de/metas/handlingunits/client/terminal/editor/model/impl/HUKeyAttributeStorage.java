@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
 
 /**
  * An attribute storage that wraps an {@link IHUKey}.

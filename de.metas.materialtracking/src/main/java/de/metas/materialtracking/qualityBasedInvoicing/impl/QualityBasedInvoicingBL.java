@@ -26,8 +26,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
@@ -36,6 +34,8 @@ import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class QualityBasedInvoicingBL implements IQualityBasedInvoicingBL
 {

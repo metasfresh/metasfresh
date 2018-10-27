@@ -26,6 +26,8 @@ package org.compiere.grid;
 import java.awt.Component;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import javax.swing.JComponent;
 
@@ -35,8 +37,6 @@ import net.miginfocom.layout.ConstraintParser;
 import net.miginfocom.layout.LayoutCallback;
 import net.miginfocom.swing.MigLayout;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;

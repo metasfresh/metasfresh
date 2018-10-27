@@ -26,8 +26,9 @@ package org.adempiere.ad.dao.impl;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.util.Check;
 
 /**
  * Set the column in target model, using the value of a column from the source model.

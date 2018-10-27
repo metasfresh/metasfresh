@@ -29,8 +29,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ui.api.IGridTabSummaryInfo;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.DisplayType;
 
@@ -38,6 +36,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /** Represent a summary information (immutable) about a selection of invoice candidates */
 public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSummaryInfo

@@ -25,11 +25,6 @@ import java.util.List;
  */
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.column.callout.AD_Column;
-import org.adempiere.ad.dao.cache.IModelCacheService;
-import org.adempiere.ad.dao.cache.ITableCacheConfig;
-import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
-import org.adempiere.ad.dao.cache.WindowBasedCacheInvalidateRequestInitializer;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -37,7 +32,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Column;
@@ -73,8 +67,6 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.CCache.CacheMapType;
-import org.compiere.util.CacheMgt;
 
 import com.google.common.collect.ImmutableList;
 
@@ -82,11 +74,18 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.bpartner.product.callout.C_BPartner_Product;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
+import de.metas.util.Services;
 
 /**
  * ADempiere Base Module Activator
@@ -173,12 +172,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(de.metas.event.interceptor.Main.INSTANCE, client);
 
-		// Task 09548
-		engine.addModelValidator(de.metas.inout.model.validator.M_InOutLine.INSTANCE, client);
-
 		engine.addModelValidator(de.metas.order.model.interceptor.OrderModuleInterceptor.INSTANCE, client);
 
-		engine.addModelValidator(de.metas.invoice.model.interceptor.InvoiceModuleInterceptor.INSTANCE, client);
+		engine.addModelValidator(de.metas.invoice.interceptor.InvoiceModuleInterceptor.INSTANCE, client);
 
 		// gh-issue #288
 		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE, client);
@@ -214,8 +210,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type());
 
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.process.callout.AD_Process_Para()); // FRESH-727
-
-		calloutsRegistry.registerAnnotatedCallout(AD_Column.instance);
 
 		calloutsRegistry.registerAnnotatedCallout(new C_BPartner_Product());
 	}

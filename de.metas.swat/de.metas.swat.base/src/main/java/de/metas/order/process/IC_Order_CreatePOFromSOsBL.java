@@ -1,8 +1,7 @@
 package de.metas.order.process;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.order.process.spi.IC_Order_CreatePOFromSOsListener;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

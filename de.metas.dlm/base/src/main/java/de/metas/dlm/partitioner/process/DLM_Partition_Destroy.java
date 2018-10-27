@@ -4,8 +4,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.connection.IConnectionCustomizerService;
@@ -16,6 +14,8 @@ import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

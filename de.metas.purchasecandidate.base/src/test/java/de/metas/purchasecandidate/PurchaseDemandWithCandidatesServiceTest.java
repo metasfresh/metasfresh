@@ -15,7 +15,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_OrderLine;
@@ -34,7 +33,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
@@ -60,6 +59,7 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -270,7 +270,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 	{
 		// invoke the method under test
 		final ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> //
-		result = purchaseDemandWithCandidatesService.createMissingPurchaseCandidatesGroups(ImmutableList.of(purchaseDemand), ImmutableSet.of());
+		result = purchaseDemandWithCandidatesService.createMissingPurchaseCandidatesGroups(ImmutableList.of(purchaseDemand), ImmutableMap.of());
 
 		assertThat(result).isNotNull();
 
@@ -289,7 +289,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final PurchaseProfitInfo profitInfo = candidatesGroup.getProfitInfoOrNull();
 		assertThat(profitInfo).isNotNull();
 		assertThat(profitInfo.getCommonCurrency()).isEqualTo(currencyId);
-		assertThat(profitInfo.getPurchasePriceActual().isPresent());
+		assertThat(profitInfo.getPurchasePriceActual()).isPresent();
 		assertThat(profitInfo.getPurchasePriceActual()).hasValue(Money.of(TEN, currencyId)); // coming from the discount schema break
 		assertThat(profitInfo.getProfitSalesPriceActual()).isPresent();
 		assertThat(profitInfo.getProfitSalesPriceActual()).hasValue(Money.of(TWENTY, currencyId)); // coming from the sales order line record

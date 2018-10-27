@@ -6,11 +6,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_DD_Order;
 
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

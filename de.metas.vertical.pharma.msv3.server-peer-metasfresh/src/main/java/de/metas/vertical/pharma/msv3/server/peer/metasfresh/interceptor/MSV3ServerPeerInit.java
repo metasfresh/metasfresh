@@ -1,12 +1,12 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Component;
 
 import de.metas.Profiles;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.InputDataSourceCreateRequest;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.MSV3ServerPeerMetasfreshConfiguration;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.listeners.OrderCreateRequestRabbitMQListener;
 

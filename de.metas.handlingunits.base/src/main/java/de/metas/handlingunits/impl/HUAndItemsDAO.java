@@ -23,23 +23,22 @@ package de.metas.handlingunits.impl;
  */
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUPIInvalidConfigurationException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
@@ -175,23 +174,20 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 	{
 		final boolean huIsAggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		//
 		// make different sanity checks, based on the item type
+		HuPackingInstructionsVersionId huPIVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
 		if (huIsAggregateHU)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-			Check.errorUnless(hu.getM_HU_PI_Version_ID() == handlingUnitsDAO.retrieveVirtualPIItem(ctx).getM_HU_PI_Version_ID(),
-					"The M_HU_PI_Version_ID of the compressed hu={} has to be the one of the virtual M_HU_PI_Version");
+			Check.errorUnless(huPIVersionId.isVirtual(), "The M_HU_PI_Version_ID of the compressed hu={} has to be the one of the virtual M_HU_PI_Version");
 		}
 		else
 		{
 			// if the given HU is *not* an aggregate HU, then its M_HU_PI_Version_ID must match the item's M_HU_PI_Version_ID
-			final boolean huAndItemHaveSamePI = hu.getM_HU_PI_Version_ID() == piItem.getM_HU_PI_Version_ID();
+			final boolean huAndItemHaveSamePI = huPIVersionId.getRepoId() == piItem.getM_HU_PI_Version_ID();
 			Check.errorUnless(huAndItemHaveSamePI,
 					"The given hu has M_HU_PI_Version_ID={} while the given piItem has M_HU_PI_Version_ID={}; hu={}; piItem={}",
-					hu.getM_HU_PI_Version_ID(), piItem.getM_HU_PI_Version_ID(), hu, piItem);
+					huPIVersionId, piItem.getM_HU_PI_Version_ID(), hu, piItem);
 		}
 
 		final I_M_HU_Item item = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class, hu);

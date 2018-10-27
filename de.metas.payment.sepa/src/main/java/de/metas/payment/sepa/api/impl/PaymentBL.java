@@ -32,8 +32,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -46,6 +44,8 @@ import de.metas.payment.sepa.api.IPaymentBL;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 

@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.letters.model;
 
 
@@ -28,146 +12,269 @@ public interface I_AD_BoilerPlate
     public static final String Table_Name = "AD_BoilerPlate";
 
     /** AD_Table_ID=504410 */
-//    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 7 - System - Client - Org 
+    /** AccessLevel = 7 - System - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
 
     /** Load Meta Data */
 
+	/**
+	 * Set Textbaustein.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
+
+	/**
+	 * Get Textbaustein.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_BoilerPlate_ID();
+
+    /** Column definition for AD_BoilerPlate_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object> COLUMN_AD_BoilerPlate_ID = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object>(I_AD_BoilerPlate.class, "AD_BoilerPlate_ID", null);
     /** Column name AD_BoilerPlate_ID */
     public static final String COLUMNNAME_AD_BoilerPlate_ID = "AD_BoilerPlate_ID";
 
-	/** Set Textbaustein	  */
-	public void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
+	/**
+	 * Get Mandant.
+	 * Mandant für diese Installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
 
-	/** Get Textbaustein	  */
-	public int getAD_BoilerPlate_ID();
+	public org.compiere.model.I_AD_Client getAD_Client();
 
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_Client>(I_AD_BoilerPlate.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Get Mandant.
-	  * Mandant für diese Installation.
-	  */
-	public int getAD_Client_ID();
-
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
-
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/** Set Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_Org>(I_AD_BoilerPlate.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object>(I_AD_BoilerPlate.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Erstellt.
-	  * Datum, an dem dieser Eintrag erstellt wurde
-	  */
-	public java.sql.Timestamp getCreated();
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
 
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_User>(I_AD_BoilerPlate.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Get Erstellt durch.
-	  * Nutzer, der diesen Eintrag erstellt hat
-	  */
-	public int getCreatedBy();
+	/**
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
 
+	/**
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
+
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object>(I_AD_BoilerPlate.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
-	public void setIsActive (boolean IsActive);
-
-	/** Get Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
-	public boolean isActive();
-
-    /** Column name JasperProcess_ID */
-    public static final String COLUMNNAME_JasperProcess_ID = "JasperProcess_ID";
-
-	/** Set Jasper Process.
-	  * The Jasper Process used by the printengine if any process defined
-	  */
+	/**
+	 * Set Jasper Process.
+	 * The Jasper Process used by the printengine if any process defined
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setJasperProcess_ID (int JasperProcess_ID);
 
-	/** Get Jasper Process.
-	  * The Jasper Process used by the printengine if any process defined
-	  */
+	/**
+	 * Get Jasper Process.
+	 * The Jasper Process used by the printengine if any process defined
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getJasperProcess_ID();
 
-	public org.compiere.model.I_AD_Process getJasperProcess() throws RuntimeException;
+	public org.compiere.model.I_AD_Process getJasperProcess();
 
 	public void setJasperProcess(org.compiere.model.I_AD_Process JasperProcess);
 
+    /** Column definition for JasperProcess_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_Process> COLUMN_JasperProcess_ID = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_Process>(I_AD_BoilerPlate.class, "JasperProcess_ID", org.compiere.model.I_AD_Process.class);
+    /** Column name JasperProcess_ID */
+    public static final String COLUMNNAME_JasperProcess_ID = "JasperProcess_ID";
+
+	/**
+	 * Set Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getName();
+
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object>(I_AD_BoilerPlate.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (java.lang.String Name);
+	/**
+	 * Set Betreff.
+	 * Mail Betreff
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSubject (java.lang.String Subject);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public java.lang.String getName();
+	/**
+	 * Get Betreff.
+	 * Mail Betreff
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSubject();
 
+    /** Column definition for Subject */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object> COLUMN_Subject = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object>(I_AD_BoilerPlate.class, "Subject", null);
     /** Column name Subject */
     public static final String COLUMNNAME_Subject = "Subject";
 
-	/** Set Betreff.
-	  * Mail Betreff
-	  */
-	public void setSubject (java.lang.String Subject);
+	/**
+	 * Set Text.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTextSnippet (java.lang.String TextSnippet);
 
-	/** Get Betreff.
-	  * Mail Betreff
-	  */
-	public java.lang.String getSubject();
+	/**
+	 * Get Text.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTextSnippet();
 
-    /** Column name TextSnippext */
-    public static final String COLUMNNAME_TextSnippext = "TextSnippext";
+    /** Column definition for TextSnippet */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object> COLUMN_TextSnippet = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object>(I_AD_BoilerPlate.class, "TextSnippet", null);
+    /** Column name TextSnippet */
+    public static final String COLUMNNAME_TextSnippet = "TextSnippet";
 
-	/** Set TextSchnipsel	  */
-	public void setTextSnippext (java.lang.String TextSnippext);
+	/**
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getUpdated();
 
-	/** Get TextSchnipsel	  */
-	public java.lang.String getTextSnippext();
-
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, Object>(I_AD_BoilerPlate.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Aktualisiert.
-	  * Datum, an dem dieser Eintrag aktualisiert wurde
-	  */
-	public java.sql.Timestamp getUpdated();
+	/**
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getUpdatedBy();
 
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_BoilerPlate, org.compiere.model.I_AD_User>(I_AD_BoilerPlate.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/** Get Aktualisiert durch.
-	  * Nutzer, der diesen Eintrag aktualisiert hat
-	  */
-	public int getUpdatedBy();
 }

@@ -15,11 +15,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,7 +43,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.activation.DataSource;
 import javax.annotation.Nullable;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
@@ -58,10 +57,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.GridTab;
-import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_A_Asset;
 import org.compiere.model.I_C_BPartner;
@@ -83,7 +80,6 @@ import org.compiere.model.MRequest;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -93,13 +89,18 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.cache.CCache;
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
@@ -208,7 +209,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		if (withRequest)
 		{
 			createRequest(email, AD_Table_ID, Record_ID, context);
-	}
+		}
 	}
 
 	private static void createRequest(final EMail email,
@@ -228,7 +229,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		final MRequestTypeService rtService = new MRequestTypeService(Env.getCtx());
 		final Integer SalesRep_ID = context.getSalesRep_ID();
-		final MRequest request = new MRequest(Env.getCtx(),
+		final MRequest requestRecord = new MRequest(Env.getCtx(),
 				SalesRep_ID == null ? 0 : SalesRep_ID.intValue(),
 				rtService.getDefault(I_R_RequestType.COLUMNNAME_IsDefaultForEMail),
 				email.getSubject(),
@@ -240,27 +241,32 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			message = email.getMessageCRLF();
 		}
-		request.setResult(message);
-		updateRequestDetails(request, parent_table_id, parent_record_id, context);
-		request.saveEx();
+		requestRecord.setResult(message);
+		updateRequestDetails(requestRecord, parent_table_id, parent_record_id, context);
+		requestRecord.saveEx();
 
 		//
 		// Attach email attachments to this request
 		try
 		{
-			final List<DataSource> attachmentDataSources = email.getAttachments().stream()
+			final List<AttachmentEntryCreateRequest> attchmentRequests = email.getAttachments().stream()
 					.map(EMailAttachment::createDataSource)
+					.map(AttachmentEntryCreateRequest::fromDataSource)
 					.collect(ImmutableList.toImmutableList());
-			if (!attachmentDataSources.isEmpty())
+			if (attchmentRequests.isEmpty())
 			{
-				final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-				final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
-				attachmentBL.addEntriesFromDataSources(requestAttachment, attachmentDataSources);
+				return;
+			}
+
+			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			for (final AttachmentEntryCreateRequest attchmentRequest : attchmentRequests)
+			{
+				attachmentEntryService.createNewAttachment(requestRecord, attchmentRequest);
 			}
 		}
 		catch (final Exception ex)
 		{
-			log.warn("Failed attaching email attachments to request: {}", request, ex);
+			log.warn("Failed attaching email attachments to request: {}", requestRecord, ex);
 		}
 	}
 
@@ -270,23 +276,22 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	{
 		final MRequestTypeService rtService = new MRequestTypeService(Env.getCtx());
 		final Integer SalesRep_ID = context.getSalesRep_ID();
-		final MRequest request = new MRequest(Env.getCtx(),
+		final MRequest requestRecord = new MRequest(Env.getCtx(),
 				SalesRep_ID == null ? 0 : SalesRep_ID.intValue(),
 				rtService.getDefault(I_R_RequestType.COLUMNNAME_IsDefaultForLetter),
 				Services.get(IMsgBL.class).translate(Env.getCtx(), "de.metas.letter.RequestLetterSubject"),
 				false, // isSelfService,
 				ITrx.TRXNAME_ThreadInherited // trxName
 		);
-		updateRequestDetails(request, parent_table_id, parent_record_id, context);
-		InterfaceWrapperHelper.save(request);
+		updateRequestDetails(requestRecord, parent_table_id, parent_record_id, context);
+		InterfaceWrapperHelper.save(requestRecord);
 
 		//
 		// Attach printed letter
-		if(pdf != null)
+		if (pdf != null)
 		{
-			final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-			final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
-			attachmentBL.addEntry(requestAttachment, pdf);
+			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			attachmentEntryService.createNewAttachment(requestRecord, pdf);
 		}
 	}
 
@@ -436,7 +441,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 					windowNo,
 					0, // Column_ID
 					DisplayType.TableDir,
-					null, //tablename
+					null, // tablename
 					I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID,
 					0, // AD_Reference_Value_ID,
 					false, // IsParent,
@@ -459,9 +464,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		for (final MADBoilerPlate boilerPlate : getAll(Env.getCtx()))
 		{
-			if (boilerPlate.getTextSnippext() != null)
+			if (boilerPlate.getTextSnippet() != null)
 			{
-				result.put(boilerPlate.getName(), boilerPlate.getTextSnippext());
+				result.put(boilerPlate.getName(), boilerPlate.getTextSnippet());
 			}
 			else
 			{
@@ -512,7 +517,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public String getTextSnippetPlain()
 	{
-		return getPlainText(getTextSnippext());
+		return getPlainText(getTextSnippet());
 	}
 
 	public static String getPlainText(String html)
@@ -541,13 +546,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return text;
 	}
 
-	public String getTextSnippext(String AD_Language)
+	public String getTextSnippet(String AD_Language)
 	{
 		if (AD_Language == null)
 		{
 			AD_Language = Env.getAD_Language(getCtx());
 		}
-		return get_Translation(COLUMNNAME_TextSnippext, AD_Language);
+		return get_Translation(COLUMNNAME_TextSnippet, AD_Language);
 	}
 
 	/**
@@ -707,7 +712,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	public String getTextSnippetParsed(final boolean isEmbeded, final BoilerPlateContext context)
 	{
 		final String AD_Language = getAD_Language(Env.getCtx(), context);
-		final String text = getTextSnippext(AD_Language);
+		final String text = getTextSnippet(AD_Language);
 		return parseText(getCtx(), text, isEmbeded, context, get_TrxName());
 	}
 
@@ -844,7 +849,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			user = Services.get(IUserDAO.class).retrieveUserOrNull(ctx, AD_User_ID);
 			attributesBuilder.setUser(user);
-			if(Services.get(IUserBL.class).isEMailValid(user))
+			if (Services.get(IUserBL.class).isEMailValid(user))
 			{
 				email = user.getEMail();
 				attributesBuilder.setEmail(email);
@@ -867,7 +872,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				if (contact != null)
 				{
 					attributesBuilder.setUser(contact);
-					if(Services.get(IUserBL.class).isEMailValid(contact))
+					if (Services.get(IUserBL.class).isEMailValid(contact))
 					{
 						email = contact.getEMail();
 						attributesBuilder.setEmail(email);
@@ -876,11 +881,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 		}
 
-		if(C_BPartner_Location_ID <= 0)
+		if (C_BPartner_Location_ID <= 0)
 		{
 			C_BPartner_Location_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("C_BPartner_Location_ID", -1) : -1;
 		}
-		if(C_BPartner_Location_ID > 0)
+		if (C_BPartner_Location_ID > 0)
 		{
 			attributesBuilder.setC_BPartner_Location_ID(C_BPartner_Location_ID);
 		}
@@ -899,12 +904,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		attributesBuilder.setAD_Language(AD_Language);
 
 		int adOrgId = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_Org_ID", -1) : -1;
-		if(adOrgId < 0)
+		if (adOrgId < 0)
 		{
 			adOrgId = Env.getAD_Org_ID(ctx);
 		}
 		attributesBuilder.setAD_Org_ID(adOrgId);
-
 
 		//
 		//
@@ -941,26 +945,26 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		I_AD_User firstValidContact = null;
 		for (final I_AD_User contact : bpartner.getContacts(false))
 		{
-			if(contact.isDefaultContact())
+			if (contact.isDefaultContact())
 			{
 				return contact;
 			}
 
-			if(firstContact == null)
+			if (firstContact == null)
 			{
 				firstContact = contact;
 			}
 
 			if (userBL.isEMailValid(contact))
 			{
-				if(firstValidContact == null)
+				if (firstValidContact == null)
 				{
 					firstValidContact = contact;
 				}
 			}
 		}
 
-		if(firstValidContact != null)
+		if (firstValidContact != null)
 		{
 			return firstValidContact;
 		}
@@ -982,7 +986,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			if (adLanguage != null)
 			{
 				return adLanguage;
-		}
+			}
 		}
 		return Env.getAD_Language(ctx);
 	}
@@ -995,7 +999,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		result.append(' ');
 		result.append(getName());
 		result.append(" (");
-		result.append(getTextSnippext().substring(0, 20));
+		result.append(getTextSnippet().substring(0, 20));
 		result.append("...)");
 		return result.toString();
 	}
@@ -1009,7 +1013,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 * @param text
 	 * @param trxName
 	 */
-	public static void createSpoolRecord(final Properties ctx, final int AD_Client_ID, final int AD_PInstance_ID, final String text, final String trxName)
+	public static void createSpoolRecord(final Properties ctx, final int AD_Client_ID, final PInstanceId pinstanceId, final String text, final String trxName)
 	{
 		final String sql = "INSERT INTO " + I_T_BoilerPlate_Spool.Table_Name + "("
 				+ " " + I_T_BoilerPlate_Spool.COLUMNNAME_AD_Client_ID
@@ -1019,7 +1023,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_MsgText
 				+ ") VALUES (?,?,?,?,?)";
 		DB.executeUpdateEx(sql,
-				new Object[] { AD_Client_ID, 0, AD_PInstance_ID, 10, text },
+				new Object[] { AD_Client_ID, 0, pinstanceId, 10, text },
 				trxName);
 	}
 
@@ -1029,7 +1033,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		public static final Builder builder()
 		{
 			return new Builder(ImmutableMap.of());
-}
+		}
 
 		public static final BoilerPlateContext EMPTY = new BoilerPlateContext(ImmutableMap.of());
 
@@ -1110,7 +1114,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			return bpartnerLocationId != null ? bpartnerLocationId : defaultValue;
 		}
 
-
 		@Nullable
 		public Integer getAD_User_ID()
 		{
@@ -1167,7 +1170,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 			public BoilerPlateContext build()
 			{
-				if(attributes.isEmpty())
+				if (attributes.isEmpty())
 				{
 					return EMPTY;
 				}
@@ -1249,7 +1252,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				setAttribute(VAR_AD_Org_ID, adOrgId);
 				return this;
 			}
-
 
 			public Builder setCustomAttribute(final String attributeName, final Object value)
 			{

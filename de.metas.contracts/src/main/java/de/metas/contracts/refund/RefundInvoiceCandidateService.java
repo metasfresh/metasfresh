@@ -1,8 +1,8 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.collections.CollectionUtils.singleElement;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -24,10 +23,12 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository.RefundInvoiceCandidateQuery;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

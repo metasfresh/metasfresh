@@ -92,6 +92,35 @@ public interface I_M_HU_PI_Attribute
     public static final String COLUMNNAME_AggregationStrategy_JavaClass_ID = "AggregationStrategy_JavaClass_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+//	public org.compiere.model.I_C_UOM getC_UOM();
+//
+//	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.compiere.model.I_C_UOM>(I_M_HU_PI_Attribute.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -120,35 +149,6 @@ public interface I_M_HU_PI_Attribute
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.compiere.model.I_AD_User>(I_M_HU_PI_Attribute.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.compiere.model.I_C_UOM>(I_M_HU_PI_Attribute.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set HU Transfer Attribute Strategy.
@@ -343,9 +343,9 @@ public interface I_M_HU_PI_Attribute
 	 */
 	public int getM_Attribute_ID();
 
-	public org.compiere.model.I_M_Attribute getM_Attribute();
-
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute);
+//	public org.compiere.model.I_M_Attribute getM_Attribute();
+//
+//	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute);
 
     /** Column definition for M_Attribute_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.compiere.model.I_M_Attribute> COLUMN_M_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.compiere.model.I_M_Attribute>(I_M_HU_PI_Attribute.class, "M_Attribute_ID", org.compiere.model.I_M_Attribute.class);
@@ -393,9 +393,9 @@ public interface I_M_HU_PI_Attribute
 	 */
 	public int getM_HU_PI_Version_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version();
-
-	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version);
+//	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version();
+//
+//	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version);
 
     /** Column definition for M_HU_PI_Version_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.handlingunits.model.I_M_HU_PI_Version> COLUMN_M_HU_PI_Version_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.handlingunits.model.I_M_HU_PI_Version>(I_M_HU_PI_Attribute.class, "M_HU_PI_Version_ID", de.metas.handlingunits.model.I_M_HU_PI_Version.class);

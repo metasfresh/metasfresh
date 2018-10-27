@@ -25,11 +25,11 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.util.Services;
 
 /**
  * This validator makes sure that a <code>C_Invoice_Line_Alloc</code>'s candidate is invalidated on every creation,

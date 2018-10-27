@@ -24,8 +24,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -38,6 +36,8 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper class used to create the inital pricing context when invoicing.

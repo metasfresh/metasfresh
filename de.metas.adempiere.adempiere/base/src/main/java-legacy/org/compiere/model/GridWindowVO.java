@@ -34,8 +34,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.WindowLoadException;
 import org.adempiere.service.IRolePermLoggingBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -46,6 +44,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

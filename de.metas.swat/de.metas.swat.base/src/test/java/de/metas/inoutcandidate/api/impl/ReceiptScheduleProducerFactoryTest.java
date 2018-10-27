@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Assert;
@@ -36,6 +35,7 @@ import org.junit.Test;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.util.Services;
 
 public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 {
@@ -50,7 +50,7 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	@Test
 	public void createReceiptSchedulesTestNullPrev()
 	{
-		final I_C_Order order = createOrder();
+		final I_C_Order order = createOrder(warehouse1);
 		createOrderLine(order, product1_wh1);
 		IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
 		List<I_M_ReceiptSchedule> rcs = producer.createOrUpdateReceiptSchedules(order, Collections.<I_M_ReceiptSchedule> emptyList());
@@ -60,10 +60,10 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	@Test
 	public void createReceiptSchedulesTestOnePrev()
 	{
-		final I_C_Order order = createOrder();
+		final I_C_Order order = createOrder(warehouse1);
 		createOrderLine(order, product1_wh1);
 		
-		final List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<I_M_ReceiptSchedule>();
+		final List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<>();
 		final I_M_ReceiptSchedule rc = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 12);
 		receiptSchedules.add(rc);
 		
@@ -76,10 +76,10 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	@Test
 	public void createReceiptSchedulesTestMorePrev()
 	{
-		final I_C_Order order = createOrder();
+		final I_C_Order order = createOrder(warehouse1);
 		createOrderLine(order, product1_wh1);
 		
-		List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<I_M_ReceiptSchedule>();
+		List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<>();
 		I_M_ReceiptSchedule rc = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 12);
 		I_M_ReceiptSchedule rc2 = createReceiptSchedule(bpartner1, warehouse2, date, product1_wh1, 12);
 		I_M_ReceiptSchedule rc3 = createReceiptSchedule(bpartner1, warehouse1, date, product2_wh1, 12);
@@ -95,7 +95,7 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	@Test
 	public void dataInOrderLineValidateTest()
 	{
-		final I_C_Order order = createOrder();
+		final I_C_Order order = createOrder(warehouse1);
 		final I_C_OrderLine ol = createOrderLine(order, product1_wh1);
 		
 		IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
@@ -116,7 +116,7 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	@Test
 	public void dataInOrderValidateTest()
 	{
-		final I_C_Order order = createOrder();
+		final I_C_Order order = createOrder(warehouse1);
 		createOrderLine(order, product1_wh1);
 		
 		IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);

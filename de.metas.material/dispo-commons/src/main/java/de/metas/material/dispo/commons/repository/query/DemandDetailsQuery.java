@@ -4,13 +4,12 @@ import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

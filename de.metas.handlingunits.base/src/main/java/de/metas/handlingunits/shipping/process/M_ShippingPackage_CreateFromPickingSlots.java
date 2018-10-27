@@ -28,12 +28,9 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Shipper;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -41,8 +38,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.IQueueActionResult;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.process.IProcessPrecondition;
@@ -50,11 +47,14 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.shipping.api.IShipperDAO;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Moved from branch gastro_, /de.metas.handlingunits.base/src/main/java/de/metas/shipping/process/M_ShippingPackage_CreateFromPickingSlots.java.
@@ -86,7 +86,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 	private static final String CreateFromPickingSlots_MSG_DOC_PROCESSED = "CreateFromPickingSlots_Msg_Doc_Processed";
 
 	private I_M_ShipperTransportation shipperTransportation;
-	private I_M_Shipper shipper;
+	private ShipperId shipperId;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -137,8 +137,8 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			throw new AdempiereException(msgBL.getMsg(getCtx(), CreateFromPickingSlots_MSG_DOC_PROCESSED));
 		}
 
-		final I_C_BPartner shipperBPartner = shipperTransportation.getShipper_BPartner();
-		shipper = shipperDAO.retrieveForShipperBPartner(shipperBPartner);
+		final BPartnerId shipperPartnerId = BPartnerId.ofRepoId(shipperTransportation.getShipper_BPartner_ID());
+		shipperId = shipperDAO.getShipperIdByShipperPartnerId(shipperPartnerId);
 
 		// ts: not brilliant, but note there aren't that many picking slots to i guess it's OK to iterate them all
 		final List<I_M_PickingSlot> pickingSlots = InterfaceWrapperHelper.createList(
@@ -192,7 +192,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			return;
 		}
 
-		final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipper);
+		final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipperId);
 
 		final I_M_ShippingPackage shippingPackage = shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
 		if (shippingPackage == null)

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDAO;
@@ -30,7 +31,6 @@ import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 /**
  * Account Object Entity to maintain all segment values. C_ValidCombination

@@ -4,12 +4,12 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -20,7 +20,10 @@ import org.compiere.model.MOrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageSegment;
+import de.metas.util.ISingletonService;
 
 /**
  * Implementers give database access to {@link I_M_ShipmentSchedule} instances (DAO).
@@ -30,6 +33,14 @@ import de.metas.storage.IStorageSegment;
  */
 public interface IShipmentSchedulePA extends ISingletonService
 {
+	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
+
+	<T extends I_M_ShipmentSchedule> T getById(ShipmentScheduleId id, Class<T> modelClass);
+
+	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
+
+	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelClass);
+
 	/**
 	 * @return the shipment schedule entry that refers to the given order line or <code>null</code>
 	 */
@@ -109,7 +120,7 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 *
 	 * @return the {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
-	List<OlAndSched> retrieveInvalid(int adPinstanceId, String trxName);
+	List<OlAndSched> retrieveInvalid(PInstanceId adPinstanceId, String trxName);
 
 	/**
 	 * Returns <code>true</code> if there is a <code>M_ShipmentSchedule_Recompute</code> record pointing at the given <code>sched</code>.
@@ -181,10 +192,10 @@ public interface IShipmentSchedulePA extends ISingletonService
 	void invalidateAll(Properties ctx);
 
 	/** Delete M_ShipmentSchedule_Recompute records for given tag */
-	void deleteRecomputeMarkers(int adPInstanceId, String trxName);
+	void deleteRecomputeMarkers(PInstanceId adPInstanceId, String trxName);
 
 	/** Untag M_ShipmentSchedule_Recompute records which were tagged with given tag */
-	void releaseRecomputeMarker(int adPInstanceId, String trxName);
+	void releaseRecomputeMarker(PInstanceId adPInstanceId, String trxName);
 
 	void setIsDiplayedForProduct(int productId, boolean displayed, String trxName);
 
@@ -200,22 +211,14 @@ public interface IShipmentSchedulePA extends ISingletonService
 	/**
 	 * Mass update DeliveryDate_Override
 	 * No invalidation.
-	 *
-	 * @param deliveryDate
-	 * @param ADPinstance_ID
-	 * @param trxName
 	 */
-	void updateDeliveryDate_Override(Timestamp deliveryDate, int ADPinstance_ID, String trxName);
+	void updateDeliveryDate_Override(Timestamp deliveryDate, PInstanceId pinstanceId, String trxName);
 
 	/**
 	 * Mass update PreparationDate_Override
 	 * Invalidation in case preparationDate is null
-	 *
-	 * @param preparationDate
-	 * @param ADPinstance_ID
-	 * @param trxName
 	 */
-	void updatePreparationDate_Override(Timestamp preparationDate, int ADPinstance_ID, String trxName);
+	void updatePreparationDate_Override(Timestamp preparationDate, PInstanceId pinstanceId, String trxName);
 
 	/**
 	 * Create selection based on the userSelectionFilter and ad_Pinstance_ID
@@ -247,4 +250,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	Set<I_M_ShipmentSchedule> retrieveForInOutLine(de.metas.inout.model.I_M_InOutLine inoutLine);
 
 	void deleteAllForReference(TableRecordReference referencedRecord);
+
+	Set<ProductId> getProductIdsByShipmentScheduleIds(Collection<ShipmentScheduleId> shipmentScheduleIds);
 }

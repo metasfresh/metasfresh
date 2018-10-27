@@ -22,11 +22,6 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.UomId;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.MutableInt;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -41,13 +36,19 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -225,11 +226,6 @@ public class OrderGroupRepository implements GroupRepository
 		return ATTR_IsRepoUpdate.isSet(orderLine);
 	}
 
-	private static void markAsRepositoryUpdate(final I_C_OrderLine orderLine)
-	{
-		ATTR_IsRepoUpdate.setValue(orderLine, Boolean.TRUE);
-	}
-
 	private Group createGroupFromOrderLines(final List<I_C_OrderLine> groupOrderLines)
 	{
 		Check.assumeNotEmpty(groupOrderLines, "groupOrderLines is not empty");
@@ -394,7 +390,7 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setIsGroupCompensationLine(true);
 		compensationLinePO.setGroupCompensationType(compensationLine.getType().getAdRefListValue());
 		compensationLinePO.setGroupCompensationAmtType(compensationLine.getAmtType().getAdRefListValue());
-		compensationLinePO.setGroupCompensationPercentage(compensationLine.getPercentage() != null ? compensationLine.getPercentage().getValueAsBigDecimal() : null);
+		compensationLinePO.setGroupCompensationPercentage(compensationLine.getPercentage() != null ? compensationLine.getPercentage().getValue() : null);
 		compensationLinePO.setGroupCompensationBaseAmt(compensationLine.getBaseAmt());
 
 		compensationLinePO.setM_Product_ID(compensationLine.getProductId().getRepoId());
@@ -407,6 +403,8 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setPriceActual(compensationLine.getPrice());
 
 		compensationLinePO.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(compensationLine.getGroupTemplateLineId()));
+		
+		Services.get(IOrderLineBL.class).updateLineNetAmt(compensationLinePO);
 	}
 
 	@Override
@@ -597,7 +595,15 @@ public class OrderGroupRepository implements GroupRepository
 
 			if (performDatabaseChanges)
 			{
-				InterfaceWrapperHelper.save(compensationLinePO);
+				ATTR_IsRepoUpdate.setValue(compensationLinePO, Boolean.TRUE);
+				try
+				{
+					InterfaceWrapperHelper.save(compensationLinePO);
+				}
+				finally
+				{
+					ATTR_IsRepoUpdate.reset(compensationLinePO);
+				}
 			}
 		}
 
@@ -636,8 +642,15 @@ public class OrderGroupRepository implements GroupRepository
 
 		private void deleteOrderLineRecord(final I_C_OrderLine orderLine)
 		{
-			markAsRepositoryUpdate(orderLine);
-			InterfaceWrapperHelper.delete(orderLine);
+			ATTR_IsRepoUpdate.setValue(orderLine, Boolean.TRUE);
+			try
+			{
+				InterfaceWrapperHelper.delete(orderLine);
+			}
+			finally
+			{
+				ATTR_IsRepoUpdate.reset(orderLine);
+			}
 		}
 	}
 

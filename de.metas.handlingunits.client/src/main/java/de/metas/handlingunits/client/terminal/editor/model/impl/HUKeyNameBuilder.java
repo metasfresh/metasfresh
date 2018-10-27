@@ -31,17 +31,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_UOM;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.ITerminalFactory;
-
 import de.metas.handlingunits.IHUIteratorListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -58,13 +54,18 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class HUKeyNameBuilder extends AbstractHUKeyNameBuilder<HUKey>
 {
 	// Services
 	protected final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	private final DecimalFormat qtyFormat = DisplayType.getNumberFormat(DisplayType.Quantity);
 
@@ -230,13 +231,13 @@ import de.metas.quantity.Quantity;
 	{
 		final HUKey huKey = getKey();
 
-		BigDecimal qty = productStorage.getQty();
+		BigDecimal qty = productStorage.getQty().getAsBigDecimal();
 		if (qty.signum() == 0)
 		{
 			return null;
 		}
 
-		final I_M_Product product = productStorage.getM_Product();
+		final ProductId productId = productStorage.getProductId();
 		final I_C_UOM uom = productStorage.getC_UOM();
 
 		final String qtyStr;
@@ -258,7 +259,8 @@ import de.metas.quantity.Quantity;
 			qtyStr = "\u221e";
 		}
 
-		final String cuLineStr = createCULineStr(product.getName());
+		String productName = productBL.getProductName(productId);
+		final String cuLineStr = createCULineStr(productName);
 		final StringBuilder fullName = new StringBuilder(cuLineStr)
 				.append("<br>")
 				.append("- ").append(qtyStr).append(" x ").append(uom.getUOMSymbol()).append(" -"); // capacity on next line
@@ -429,7 +431,7 @@ import de.metas.quantity.Quantity;
 	private static class HUKeyDisplayNameBuilder extends HUDisplayNameBuilder
 	{
 		private final HUKey _huKey;
-		
+
 		private HUKeyDisplayNameBuilder(final HUKey huKey)
 		{
 			super(huKey == null ? null : huKey.getM_HU());
@@ -455,18 +457,18 @@ import de.metas.quantity.Quantity;
 
 			final HUKeyIncludedHUsCounter includedHUsCounter = new HUKeyIncludedHUsCounter(huKey, false); // countVHUs=false
 			huKey.iterate(includedHUsCounter);
-			
+
 			return includedHUsCounter.getHUsCount();
 		}
 	}
-	
+
 	private static final class HUKeyIncludedHUsCounter extends HUDisplayNameBuilder.AbstractIncludedHUsCounter<IHUKey> implements IHUKeyVisitor
 	{
 		private HUKeyIncludedHUsCounter(final IHUKey rootHUKey, final boolean countVHUs)
 		{
 			super(rootHUKey, countVHUs);
 		}
-		
+
 		@Override
 		public VisitResult beforeVisit(final IHUKey currentHUKeyObj)
 		{
@@ -493,7 +495,7 @@ import de.metas.quantity.Quantity;
 			final HUKey huKey = HUKey.cast(huKeyObj);
 			return huKey.isAggregateHU();
 		}
-		
+
 		@Override
 		protected int getAggregatedHUsCount(final IHUKey huKeyObj)
 		{

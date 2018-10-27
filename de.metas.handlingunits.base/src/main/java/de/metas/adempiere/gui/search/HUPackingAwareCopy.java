@@ -3,9 +3,9 @@ package de.metas.adempiere.gui.search;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

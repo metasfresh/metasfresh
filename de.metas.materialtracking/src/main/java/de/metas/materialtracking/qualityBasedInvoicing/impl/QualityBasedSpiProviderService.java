@@ -13,26 +13,26 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.util.CacheInterface;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Util;
 
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfigProvider;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGroupsBuilderProvider;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class QualityBasedSpiProviderService implements IQualityBasedSpiProviderService
 {
@@ -50,30 +50,20 @@ public class QualityBasedSpiProviderService implements IQualityBasedSpiProviderS
 
 	public QualityBasedSpiProviderService()
 	{
-		super();
-
-		CacheMgt.get().register(new CacheInterface()
-		{
-
-			@Override
-			public int size()
-			{
-				return 2;
-			}
-
-			@Override
-			public int reset()
-			{
-				QualityBasedSpiProviderService.this.resetDefaults();
-				return 2;
-			}
-		});
+		CacheMgt.get().addCacheResetListener(this::onCacheReset);
 	}
 
-	private final void resetDefaults()
+	private int onCacheReset(CacheInvalidateMultiRequest multiRequest)
 	{
+		if (!multiRequest.isResetAll())
+		{
+			return 0;
+		}
+
+		// reset defaults
 		qualityBasedConfigProviderDefault = null;
 		qualityInvoiceLineGroupsBuilderProviderDefault = null;
+		return 2;
 	}
 
 	private final <T> T getInstance(final String sysConfigName, final Class<T> interfaceClass)

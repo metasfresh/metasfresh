@@ -24,7 +24,6 @@ package org.compiere.apps.search;
 
 import java.awt.Window;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.grid.GridController;
 import org.compiere.model.GridField;
@@ -34,6 +33,7 @@ import org.compiere.model.MQuery;
 import org.compiere.util.Env;
 import org.compiere.util.SwingUtils;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

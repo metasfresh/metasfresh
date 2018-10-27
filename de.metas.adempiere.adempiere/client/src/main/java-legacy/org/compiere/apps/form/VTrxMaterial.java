@@ -31,7 +31,6 @@ import java.util.Properties;
 import javax.swing.JLabel;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.apps.ConfirmPanel;
@@ -48,6 +47,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.util.Services;
 
 /**
  * Material Transaction History

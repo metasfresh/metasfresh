@@ -26,10 +26,11 @@ package org.adempiere.mm.attributes.countryattribute;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
+
+import de.metas.util.ISingletonService;
 
 public interface ICountryAttributeDAO extends ISingletonService
 {

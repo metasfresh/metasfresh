@@ -4,17 +4,15 @@ import java.util.Collection;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.model.MClient;
 import org.compiere.model.MProduct;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.cache.CacheMgt;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -29,6 +27,8 @@ import de.metas.product.IProductBL;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.StorageListenerAdapter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Shipment Schedule / Receipt Schedule module activator
@@ -162,7 +162,7 @@ public final class InOutCandidateValidator implements ModelValidator
 	{
 		if (type == ModelValidator.TYPE_AFTER_NEW || type == ModelValidator.TYPE_AFTER_CHANGE)
 		{
-			final boolean isDiversechanged = productPO.is_ValueChanged(I_M_Product.COLUMNNAME_IS_DIVERSE);
+			final boolean isDiversechanged = productPO.is_ValueChanged(I_M_Product.COLUMNNAME_IsDiverse);
 			final boolean isProductTypeChanged = productPO.is_ValueChanged(org.compiere.model.I_M_Product.COLUMNNAME_ProductType);
 
 			if (isDiversechanged || isProductTypeChanged)

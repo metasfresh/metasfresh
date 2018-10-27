@@ -27,7 +27,8 @@ import org.adempiere.facet.IFacet;
 import org.adempiere.ui.sideactions.model.ISideAction;
 import org.adempiere.ui.sideactions.model.ISideActionExecuteDelegate;
 import org.adempiere.ui.sideactions.model.ToggableSideAction;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Wraps an {@link IFacet} to a toggable {@link ISideAction}.

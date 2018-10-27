@@ -30,13 +30,14 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.grid.ed.VNumber;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.swing.CLabel;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Swing factory used for easier creation of adempiere-specific fields in custom layouts. This interface is/was meant to replace <code>VEditorFactory</code>.

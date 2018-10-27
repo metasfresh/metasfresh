@@ -25,7 +25,6 @@ package de.metas.payment.esr.model.validator;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.banking.bankstatement.match.api.IPaymentBatchFactory;
@@ -44,6 +43,7 @@ import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.payment.esr.spi.impl.DefaultESRLineHandler;
 import de.metas.payment.spi.impl.ESRCreaLogixStringParser;
 import de.metas.payment.spi.impl.ESRRegularLineParser;
+import de.metas.util.Services;
 
 public class ESR_Main_Validator extends AbstractModuleInterceptor
 {

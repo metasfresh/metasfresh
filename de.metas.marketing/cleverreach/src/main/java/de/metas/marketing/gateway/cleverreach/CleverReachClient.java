@@ -20,11 +20,6 @@ import javax.annotation.Nullable;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
-import org.adempiere.util.collections.PagedIterator;
-import org.adempiere.util.collections.PagedIterator.Page;
-import org.adempiere.util.collections.PagedIterator.PageFetcher;
 import org.springframework.core.ParameterizedTypeReference;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -48,6 +43,11 @@ import de.metas.marketing.gateway.cleverreach.restapi.models.CreateGroupRequest;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Group;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
 import de.metas.marketing.gateway.cleverreach.restapi.models.UpdateGroupRequest;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import de.metas.util.collections.PagedIterator;
+import de.metas.util.collections.PagedIterator.Page;
+import de.metas.util.collections.PagedIterator.PageFetcher;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;

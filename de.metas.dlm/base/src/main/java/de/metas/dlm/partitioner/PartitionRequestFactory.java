@@ -4,7 +4,6 @@ import java.util.Date;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.TimeUtil;
 
@@ -13,6 +12,7 @@ import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
 import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
 import de.metas.dlm.partitioner.config.PartitionConfig;
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -2,7 +2,6 @@ package de.metas.handlingunits.process;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -10,6 +9,7 @@ import de.metas.handlingunits.model.I_M_HU_Snapshot;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Services;
 
 /*
  * #%L

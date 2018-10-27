@@ -1,8 +1,8 @@
 package de.metas.order.compensationGroup;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;

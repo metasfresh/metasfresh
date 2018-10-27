@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.junit.Before;
@@ -16,6 +15,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -5,16 +5,16 @@ import java.util.Properties;
 
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
 import ch.qos.logback.classic.Level;
+import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 @Service
 @ManagedResource(objectName = "de.metas:type=metasfresh", description = "Provides basic operations on the running metasfresh instance")

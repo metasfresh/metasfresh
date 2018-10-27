@@ -41,6 +41,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +50,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
@@ -64,10 +63,10 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -83,7 +82,10 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.order.DeliveryRule;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * PP Order Model.
@@ -551,9 +553,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		boolean forceIssue = false;
 		final I_C_OrderLine oline = getC_OrderLine();
-		final String orderDeliveryRule = oline.getC_Order().getDeliveryRule();
-		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_CompleteOrder.equals(orderDeliveryRule))
+		final DeliveryRule orderDeliveryRule = DeliveryRule.ofCode(oline.getC_Order().getDeliveryRule());
+		if (DeliveryRule.COMPLETE_LINE.equals(orderDeliveryRule) ||
+				DeliveryRule.COMPLETE_ORDER.equals(orderDeliveryRule))
 		{
 			final boolean isCompleteQtyDeliver = isQtyAvailable(this, issue, today);
 			if (!isCompleteQtyDeliver)
@@ -561,13 +563,13 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				throw new LiberoException("@NoQtyAvailable@");
 			}
 		}
-		else if (X_C_Order.DELIVERYRULE_Availability.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_AfterReceipt.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_Manual.equals(orderDeliveryRule))
+		else if (DeliveryRule.AVAILABILITY.equals(orderDeliveryRule) ||
+				DeliveryRule.AFTER_RECEIPT.equals(orderDeliveryRule) ||
+				DeliveryRule.MANUAL.equals(orderDeliveryRule))
 		{
 			throw new LiberoException("@ActionNotSupported@");
 		}
-		else if (X_C_Order.DELIVERYRULE_Force.equals(orderDeliveryRule))
+		else if (DeliveryRule.FORCE.equals(orderDeliveryRule))
 		{
 			forceIssue = true;
 		}
@@ -883,6 +885,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public String getSummary()
 	{
 		return "" + getDocumentNo() + "/" + getDatePromised();
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateOrdered());
 	}
 
 	@Override

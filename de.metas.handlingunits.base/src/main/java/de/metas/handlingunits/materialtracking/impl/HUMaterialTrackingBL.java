@@ -1,8 +1,6 @@
 package de.metas.handlingunits.materialtracking.impl;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 
@@ -15,6 +13,8 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

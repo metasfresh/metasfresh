@@ -25,7 +25,6 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.util.TimeUtil;
 
@@ -46,13 +45,13 @@ import lombok.NonNull;
 	private final boolean isGeneratedAttribute;
 
 	public AIWithHUPIAttributeValue(
-			final IAttributeStorage attributeStorage,
+			@NonNull final IAttributeStorage attributeStorage,
 			@NonNull final I_M_AttributeInstance attributeInstance,
-			final I_M_HU_PI_Attribute piAttribute,
+			@NonNull final I_M_HU_PI_Attribute piAttribute,
 			final boolean isGeneratedAttribute)
 	{
-		super(Check.assumeNotNull(attributeStorage, "attributeStorage"),
-				Check.assumeNotNull(piAttribute, "piAttribute"),
+		super(attributeStorage,
+				piAttribute,
 				Boolean.TRUE // ASI attributes are ALWAYS created from template attributes
 		);
 
@@ -144,6 +143,7 @@ import lombok.NonNull;
 	@Override
 	public boolean isOnlyIfInProductAttributeSet()
 	{
+		// FIXME tsa: figure out why this returns false instead of using the flag from M_HU_PI_Attribute?!
 		return false;
 	}
 }

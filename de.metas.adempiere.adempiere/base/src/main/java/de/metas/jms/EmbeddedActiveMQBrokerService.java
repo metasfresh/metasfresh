@@ -8,7 +8,6 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 
-import org.adempiere.util.Services;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
@@ -16,6 +15,7 @@ import org.slf4j.Logger;
 
 import de.metas.jms.impl.JMSService;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

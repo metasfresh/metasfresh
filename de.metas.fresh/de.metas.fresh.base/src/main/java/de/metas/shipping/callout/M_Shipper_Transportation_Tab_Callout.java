@@ -26,10 +26,10 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.util.Services;
 
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 
 public class M_Shipper_Transportation_Tab_Callout extends TabCalloutAdapter
 {

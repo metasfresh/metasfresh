@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
@@ -37,6 +36,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.ISingletonService;
 
 public interface IMaterialTrackingDAO extends ISingletonService
 {

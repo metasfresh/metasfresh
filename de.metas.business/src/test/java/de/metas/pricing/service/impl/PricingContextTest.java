@@ -28,7 +28,6 @@ import java.sql.Timestamp;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -44,6 +43,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 public class PricingContextTest
 {

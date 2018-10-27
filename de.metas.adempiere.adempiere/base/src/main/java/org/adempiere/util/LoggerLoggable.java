@@ -4,6 +4,7 @@ import org.adempiere.util.logging.LogbackLoggable;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.util.ILoggable;
 
 /*
  * #%L

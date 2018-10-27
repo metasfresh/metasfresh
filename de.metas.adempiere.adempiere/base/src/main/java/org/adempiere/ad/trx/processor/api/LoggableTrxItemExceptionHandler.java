@@ -1,7 +1,7 @@
 package org.adempiere.ad.trx.processor.api;
 
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 
 /**
  * An {@link ITrxItemProcessorExecutor}'s exception handler which just logs the exception to {@link ILoggable} and does nothing else.

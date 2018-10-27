@@ -46,8 +46,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.db.CConnectionEditor;
@@ -73,12 +71,14 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Throwables;
 
-import de.metas.hash.HashableString;
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
 
 /**
  * Application Login Window
@@ -219,7 +219,7 @@ public final class ALogin extends CDialog
 		//
 		final CLabel versionLabel = new CLabel();
 		versionLabel.setName("Login.versionLabel");
-		versionLabel.setText(Adempiere.getMainVersion());
+		versionLabel.setText(Adempiere.getBuildVersion().getFullVersion());
 		versionLabel.setToolTipText(Adempiere.getImplementationVersion());
 		versionLabel.setRequestFocusEnabled(false);
 		versionLabel.setHorizontalAlignment(SwingConstants.RIGHT);

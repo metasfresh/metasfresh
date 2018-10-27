@@ -25,12 +25,12 @@ package de.metas.printing.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.model.I_AD_PrinterHW_Calibration;
 import de.metas.printing.model.I_AD_PrinterTray_Matching;
+import de.metas.util.Services;
 
 /**
  * 

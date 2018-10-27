@@ -30,11 +30,11 @@ import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**
@@ -55,6 +55,11 @@ public final class Quantity implements Comparable<Quantity>
 	public static final Quantity of(final BigDecimal qty, final I_C_UOM uom)
 	{
 		return new Quantity(qty, uom);
+	}
+
+	public static final Quantity of(final int qty, final I_C_UOM uom)
+	{
+		return of(BigDecimal.valueOf(qty), uom);
 	}
 
 	public static boolean isInfinite(final BigDecimal qty)
@@ -332,7 +337,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return source quatity's C_UOM_ID
 	 */
-	private final int getSource_UOM_ID()
+	public final int getSource_UOM_ID()
 	{
 		return sourceUom.getC_UOM_ID();
 	}
@@ -564,6 +569,10 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity subtract(@NonNull final Quantity qtyToSubtract)
 	{
+		if (qtyToSubtract.isZero())
+		{
+			return this;
+		}
 		final Quantity qtyToAdd = qtyToSubtract.negate();
 		return add(qtyToAdd);
 	}

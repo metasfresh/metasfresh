@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.TimeUtil;
@@ -14,6 +13,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 
 /*

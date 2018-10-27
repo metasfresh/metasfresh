@@ -44,8 +44,6 @@ import javax.swing.WindowConstants;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.SwingEventNotifierUI;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
@@ -58,6 +56,8 @@ import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationUtils;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
 
 /**

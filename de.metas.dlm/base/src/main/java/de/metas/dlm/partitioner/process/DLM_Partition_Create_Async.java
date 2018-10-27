@@ -2,7 +2,6 @@ package de.metas.dlm.partitioner.process;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -16,6 +15,7 @@ import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.O
 import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.process.Param;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -90,7 +90,7 @@ public class DLM_Partition_Create_Async extends AbstractDLM_Partition_Create
 				.setDontReEnqueueAfter(dontReEnqueueAfter)
 				.build();
 
-		final I_C_Queue_WorkPackage newWorkpackage = DLMPartitionerWorkpackageProcessor.schedule(request, getAD_PInstance_ID());
+		final I_C_Queue_WorkPackage newWorkpackage = DLMPartitionerWorkpackageProcessor.schedule(request, getPinstanceId());
 		addLog("Scheduled " + newWorkpackage);
 
 		return MSG_OK;

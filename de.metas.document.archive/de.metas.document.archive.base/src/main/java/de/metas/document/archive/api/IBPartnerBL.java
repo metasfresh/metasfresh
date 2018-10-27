@@ -3,10 +3,9 @@
  */
 package de.metas.document.archive.api;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.document.archive.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

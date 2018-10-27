@@ -30,10 +30,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_BankAccount;
 
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.util.Services;
 
 
 public class BPBankAccountDAO implements IBPBankAccountDAO

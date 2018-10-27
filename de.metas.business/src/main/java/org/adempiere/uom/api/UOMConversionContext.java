@@ -1,14 +1,38 @@
 package org.adempiere.uom.api;
 
+import javax.annotation.Nullable;
+
+import org.compiere.model.I_M_Product;
+
+import de.metas.product.ProductId;
 import lombok.Value;
 
 @Value
-/* package */final class UOMConversionContext implements IUOMConversionContext
+public final class UOMConversionContext
 {
-	private final int productId;
-
-	public UOMConversionContext(final int productId)
+	public static UOMConversionContext of(final ProductId productId)
 	{
-		this.productId = productId > 0 ? productId : -1;
+		return new UOMConversionContext(productId);
+	}
+
+	public static UOMConversionContext of(final int productRepoId)
+	{
+		return of(ProductId.ofRepoIdOrNull(productRepoId));
+	}
+
+	/**
+	 * @deprecated please use {@link #of(ProductId)}.
+	 */
+	@Deprecated
+	public static UOMConversionContext of(final I_M_Product product)
+	{
+		return of(product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null);
+	}
+
+	private final ProductId productId;
+
+	private UOMConversionContext(@Nullable final ProductId productId)
+	{
+		this.productId = productId;
 	}
 }

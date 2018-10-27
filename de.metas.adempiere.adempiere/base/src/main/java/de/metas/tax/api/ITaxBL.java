@@ -28,9 +28,12 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
-import org.adempiere.util.ISingletonService;
+import org.adempiere.location.CountryId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_Warehouse;
+
+import de.metas.util.ISingletonService;
 
 public interface ITaxBL extends ISingletonService
 {
@@ -38,28 +41,15 @@ public interface ITaxBL extends ISingletonService
 	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, int, boolean, boolean)} first.<br>
 	 * If that doesn't work, try retrieving the German tax
 	 *
-	 * @param ctx
-	 * @param model
-	 * @param taxCategoryId
-	 * @param productId
-	 * @param chargeId
-	 * @param billDate
-	 * @param shipDate
-	 * @param adOrgId
-	 * @param warehouse
 	 * @param shipC_BPartner_Location_ID place where the service is provided
-	 * @param isSOTrx
-	 * @param trxName
-	 * @return taxId
 	 */
 	int getTax(Properties ctx,
 			Object model,
 			int taxCategoryId,
 			int productId,
-			Timestamp billDate,
 			Timestamp shipDate,
-			int adOrgId,
-			I_M_Warehouse warehouse,
+			OrgId orgId,
+			WarehouseId warehouse,
 			int shipC_BPartner_Location_ID,
 			boolean isSOTrx);
 
@@ -78,8 +68,8 @@ public interface ITaxBL extends ISingletonService
 	 * @return taxId
 	 */
 	int retrieveTaxIdForCategory(Properties ctx,
-			int countryFromId,
-			int orgId,
+			CountryId countryFromId,
+			OrgId orgId,
 			org.compiere.model.I_C_BPartner_Location bpLocTo,
 			Timestamp billDate,
 			int taxCategoryId,

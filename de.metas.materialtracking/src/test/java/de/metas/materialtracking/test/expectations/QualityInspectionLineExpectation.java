@@ -25,7 +25,6 @@ package de.metas.materialtracking.test.expectations;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.X_PP_Order_Report;
@@ -35,6 +34,7 @@ import de.metas.materialtracking.PPOrderReportUtil;
 import de.metas.materialtracking.model.I_PP_Order_Report;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLine;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
+import de.metas.util.Check;
 
 public class QualityInspectionLineExpectation extends AbstractExpectation
 {

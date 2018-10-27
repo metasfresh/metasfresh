@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 @Immutable
 public final class DocumentApprovalConstraint extends Constraint

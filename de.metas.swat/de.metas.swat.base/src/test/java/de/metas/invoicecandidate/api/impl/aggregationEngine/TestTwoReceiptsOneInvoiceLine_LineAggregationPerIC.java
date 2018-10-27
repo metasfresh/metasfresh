@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -49,6 +48,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.expectations.InvoiceLineAttributeExpectations;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.collections.CollectionUtils;
 
 /**
  * Test case:

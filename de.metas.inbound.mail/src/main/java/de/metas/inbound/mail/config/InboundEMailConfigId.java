@@ -2,8 +2,7 @@ package de.metas.inbound.mail.config;
 
 import java.util.UUID;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

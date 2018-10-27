@@ -51,9 +51,7 @@ import org.adempiere.process.rpl.api.IReplicationAccessContext;
 import org.adempiere.process.rpl.api.impl.ReplicationAccessContext;
 import org.adempiere.process.rpl.exp.ExportHelper;
 import org.adempiere.tools.AdempiereToolsHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.MReplicationStrategy;
 import org.compiere.model.ModelValidator;
@@ -67,6 +65,8 @@ import de.metas.esb.util.CanonicalXSDGenerator;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

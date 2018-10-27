@@ -7,11 +7,12 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.X_AD_Rule;
 
 import com.google.common.base.Suppliers;
+
+import de.metas.util.Check;
 
 /*
  * #%L

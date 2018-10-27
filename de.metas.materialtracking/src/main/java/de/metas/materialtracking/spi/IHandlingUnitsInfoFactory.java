@@ -24,10 +24,10 @@ package de.metas.materialtracking.spi;
 
 
 import org.adempiere.model.I_C_Invoice_Detail;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
+import de.metas.util.ISingletonService;
 
 /**
  * SPI factory for handling units aspect.

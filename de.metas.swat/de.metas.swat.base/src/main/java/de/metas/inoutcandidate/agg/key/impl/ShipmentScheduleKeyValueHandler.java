@@ -26,7 +26,6 @@ package de.metas.inoutcandidate.agg.key.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 import org.adempiere.util.lang.ObjectUtils;
 
@@ -34,6 +33,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 
 /**
  * AggregationKey value handler for shipment schedules.
@@ -51,12 +51,12 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-		final List<Object> values = new ArrayList<Object>();
+		final List<Object> values = new ArrayList<>();
 
 		values.add(VERSION);
 
 		values.add(sched.getC_DocType_ID());
-		values.add(shipmentScheduleEffectiveBL.getC_BPartner_ID(sched));
+		values.add(shipmentScheduleEffectiveBL.getBPartnerId(sched).getRepoId());
 		values.add(shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched));
 		if (!shipmentScheduleBL.isSchedAllowsConsolidate(sched))
 		{

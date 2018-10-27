@@ -25,8 +25,9 @@ package org.adempiere.ad.validationRule;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Val_Rule;
+
+import de.metas.util.ISingletonService;
 
 /**
  * DAO methods for retrieving {@link I_AD_Val_Rule}s

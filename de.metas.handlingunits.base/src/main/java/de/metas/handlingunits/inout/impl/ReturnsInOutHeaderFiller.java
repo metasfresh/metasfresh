@@ -2,11 +2,11 @@ package de.metas.handlingunits.inout.impl;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.inout.IInOutBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

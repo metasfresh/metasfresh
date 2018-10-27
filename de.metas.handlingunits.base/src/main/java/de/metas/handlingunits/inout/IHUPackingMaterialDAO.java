@@ -28,11 +28,11 @@ package de.metas.handlingunits.inout;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg

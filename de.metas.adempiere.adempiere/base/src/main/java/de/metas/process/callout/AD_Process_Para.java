@@ -5,10 +5,11 @@ package de.metas.process.callout;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
+
+import de.metas.util.Check;
 
 /**
  * @author tsa

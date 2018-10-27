@@ -1,10 +1,8 @@
 package de.metas.contracts.refund.allqties;
 
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 
 import java.util.List;
-
-import org.adempiere.util.Check;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -23,6 +21,7 @@ import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

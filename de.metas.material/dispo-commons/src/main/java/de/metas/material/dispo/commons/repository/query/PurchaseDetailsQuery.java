@@ -2,10 +2,10 @@ package de.metas.material.dispo.commons.repository.query;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 

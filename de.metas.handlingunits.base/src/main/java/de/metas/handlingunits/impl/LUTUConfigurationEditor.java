@@ -26,13 +26,13 @@ import java.util.function.Function;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.ILUTUConfigurationEditor;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class LUTUConfigurationEditor implements ILUTUConfigurationEditor
 {

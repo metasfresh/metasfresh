@@ -25,13 +25,14 @@ package org.adempiere.user.api;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 
-import de.metas.hash.HashableString;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
+import de.metas.util.ISingletonService;
+import de.metas.util.hash.HashableString;
 
 public interface IUserBL extends ISingletonService
 {
@@ -114,4 +115,7 @@ public interface IUserBL extends ISingletonService
 			throw new AdempiereException("User cannot send emails: " + errmsg.translate(Env.getAD_Language(Env.getCtx())));
 		}
 	}
+
+	/** @return the user's language or fallbacks; never returns {@code null}. */
+	Language getUserLanguage(I_AD_User userRecord);
 }

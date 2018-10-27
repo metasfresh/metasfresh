@@ -26,6 +26,7 @@ package de.metas.async.api;
 import java.util.Properties;
 
 import de.metas.async.model.I_C_Queue_Block;
+import de.metas.process.PInstanceId;
 
 /**
  * Build and enqueue a new queue block ({@link I_C_Queue_Block}).
@@ -44,7 +45,7 @@ public interface IWorkPackageBlockBuilder
 
 	IWorkPackageBlockBuilder setContext(final Properties ctx);
 
-	IWorkPackageBlockBuilder setAD_PInstance_Creator_ID(final int adPInstanceId);
+	IWorkPackageBlockBuilder setAD_PInstance_Creator_ID(final PInstanceId adPInstanceId);
 
 	/**
 	 * Start creating a new workpackage.

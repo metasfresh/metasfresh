@@ -3,8 +3,6 @@ package org.eevolution.api.impl;
 import java.util.stream.Collectors;
 
 import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMDAO;
@@ -15,6 +13,8 @@ import com.google.common.base.Predicates;
 
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

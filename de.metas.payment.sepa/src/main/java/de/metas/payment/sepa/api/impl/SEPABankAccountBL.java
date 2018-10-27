@@ -25,11 +25,11 @@ package de.metas.payment.sepa.api.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Bank;
 
 import de.metas.payment.sepa.api.ISEPABankAccountBL;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
+import de.metas.util.Check;
 
 public class SEPABankAccountBL implements ISEPABankAccountBL
 {

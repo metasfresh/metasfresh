@@ -23,16 +23,16 @@ package de.metas.handlingunits.ddorder.spi.impl;
  */
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * A handler for the <code>DD_OrderLine</code> table.
@@ -42,9 +42,9 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 public class ForecastLineHUDocumentHandler implements IHUDocumentHandler
 {
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document, final I_M_Product product)
+	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document, final ProductId productId)
 	{
-		if (product == null || product.getM_Product_ID() <= 0)
+		if (productId == null)
 		{
 			return null;
 		}
@@ -62,7 +62,7 @@ public class ForecastLineHUDocumentHandler implements IHUDocumentHandler
 			final I_M_Forecast forecast = forecastLine.getM_Forecast();
 			final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
-			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(product, forecast.getC_BPartner(), forecast.getDatePromised(), huUnitType,
+			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(productId, forecast.getC_BPartner(), forecast.getDatePromised(), huUnitType,
 					false);
 		}
 
@@ -73,8 +73,8 @@ public class ForecastLineHUDocumentHandler implements IHUDocumentHandler
 	public void applyChangesFor(final Object document)
 	{
 		final I_M_ForecastLine forecastLine = getForecastLine(document);
-		final I_M_Product product = forecastLine.getM_Product();
-		final I_M_HU_PI_Item_Product piip = getM_HU_PI_ItemProductFor(forecastLine, product);
+		final ProductId productId = ProductId.ofRepoIdOrNull(forecastLine.getM_Product_ID());
+		final I_M_HU_PI_Item_Product piip = getM_HU_PI_ItemProductFor(forecastLine, productId);
 		forecastLine.setM_HU_PI_Item_Product(piip);
 	}
 

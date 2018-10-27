@@ -32,7 +32,6 @@ import java.util.TreeSet;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
@@ -48,6 +47,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.util.Services;
 
 public class PPOrderCostBL implements IPPOrderCostBL
 {

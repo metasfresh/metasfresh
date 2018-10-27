@@ -26,8 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.apache.ecs.xhtml.code;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -36,6 +34,8 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerator
 {

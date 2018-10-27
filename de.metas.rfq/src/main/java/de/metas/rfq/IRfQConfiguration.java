@@ -1,8 +1,7 @@
 package de.metas.rfq;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

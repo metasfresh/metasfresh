@@ -24,10 +24,11 @@ package org.adempiere.ad.callout.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.util.Check;
 
 /**
  * Callout aware field

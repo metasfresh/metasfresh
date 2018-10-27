@@ -29,8 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -39,6 +37,9 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_C_InvoiceLine;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class InvoiceLineHUPackingAware implements IHUPackingAware
 {
@@ -101,7 +102,8 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 		invoiceLine.setQtyEntered(qty);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
-		final BigDecimal qtyInvoiced = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, getM_Product(), getC_UOM(), qty);
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
+		final BigDecimal qtyInvoiced = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, productId, getC_UOM(), qty);
 		invoiceLine.setQtyInvoiced(qtyInvoiced);
 	}
 

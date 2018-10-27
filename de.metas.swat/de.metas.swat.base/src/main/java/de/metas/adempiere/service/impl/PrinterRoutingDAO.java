@@ -28,15 +28,16 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.I_AD_PrinterRouting;
-import org.adempiere.util.Check;
 import org.compiere.model.Query;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Printer;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
 
 public class PrinterRoutingDAO implements IPrinterRoutingDAO

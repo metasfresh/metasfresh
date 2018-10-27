@@ -1,9 +1,9 @@
 package de.metas.dlm.partitioner;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.dlm.partitioner.config.PartitionConfig;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -1,5 +1,7 @@
 package de.metas.marketing.base;
 
+import static de.metas.i18n.Language.AD_Language_en_AU;
+import static de.metas.i18n.Language.asLanguage;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -15,18 +17,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.FixedTimeSource;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.DefaultAddressType;
 import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPersonRepository;
@@ -36,6 +35,9 @@ import de.metas.marketing.base.model.I_MKTG_Consent;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Platform;
 import de.metas.marketing.base.model.PlatformRepository;
+import de.metas.util.Services;
+import de.metas.util.time.FixedTimeSource;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -152,6 +154,7 @@ public class CampaignServiceTest
 		final User user = User.builder()
 				.name(name)
 				.emailAddress(mail)
+				.language(asLanguage(AD_Language_en_AU))
 				.build();
 		return userRepository.save(user);
 	}
@@ -459,6 +462,7 @@ public class CampaignServiceTest
 				.name(name)
 				.emailAddress(mail)
 				.bpartnerId(bpartnerId)
+				.language(asLanguage(AD_Language_en_AU))
 				.build();
 		return userRepository.save(user);
 	}

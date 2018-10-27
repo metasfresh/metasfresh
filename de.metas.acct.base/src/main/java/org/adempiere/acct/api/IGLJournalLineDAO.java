@@ -25,9 +25,10 @@ package org.adempiere.acct.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
+
+import de.metas.util.ISingletonService;
 
 public interface IGLJournalLineDAO extends ISingletonService
 {

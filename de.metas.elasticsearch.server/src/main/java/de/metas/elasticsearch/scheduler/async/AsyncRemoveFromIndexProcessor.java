@@ -3,9 +3,6 @@ package de.metas.elasticsearch.scheduler.async;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -15,6 +12,9 @@ import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.elasticsearch.scheduler.impl.ESModelIndexingScheduler;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

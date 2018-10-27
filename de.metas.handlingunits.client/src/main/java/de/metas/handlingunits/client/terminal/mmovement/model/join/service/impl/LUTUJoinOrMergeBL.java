@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -48,13 +47,14 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.util.Services;
 
 public class LUTUJoinOrMergeBL implements ILUTUJoinOrMergeBL
 {
 	@Override
 	public List<I_M_HU> joinOrMergeHUs(final ITerminalContext terminalCtx, final ILUTUJoinKey luKey, final List<? extends ILUTUJoinKey> tuKeys)
 	{
-		final List<I_M_HU> joinedHUs = new ArrayList<I_M_HU>();
+		final List<I_M_HU> joinedHUs = new ArrayList<>();
 
 		Services.get(IHUTrxBL.class)
 				.createHUContextProcessorExecutor(terminalCtx)
@@ -121,9 +121,9 @@ public class LUTUJoinOrMergeBL implements ILUTUJoinOrMergeBL
 				mergeBuilder.setSourceHUs(ImmutableList.of(tuHU));
 				mergeBuilder.setTargetTU(luHU);
 
-				mergeBuilder.setCUProduct(storage.getM_Product());
-				mergeBuilder.setCUUOM(storage.getC_UOM());
-				mergeBuilder.setCUQty(storage.getQty());
+				mergeBuilder.setCUProductId(storage.getProductId());
+				mergeBuilder.setCUUOM(storage.getQty().getUOM());
+				mergeBuilder.setCUQty(storage.getQty().getAsBigDecimal());
 				mergeBuilder.setCUTrxReferencedModel(storage.getM_HU());
 
 				mergeBuilder.mergeTUs();

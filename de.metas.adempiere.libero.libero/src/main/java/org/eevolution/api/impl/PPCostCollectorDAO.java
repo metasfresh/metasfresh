@@ -27,8 +27,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostDetail;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -37,6 +35,8 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Cost_Collector;
 
 import de.metas.document.engine.IDocument;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class PPCostCollectorDAO implements IPPCostCollectorDAO
 {

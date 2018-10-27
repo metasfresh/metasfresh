@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.slf4j.Logger;
 
@@ -35,6 +34,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.CompositeTerminalFieldConstraint;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 {

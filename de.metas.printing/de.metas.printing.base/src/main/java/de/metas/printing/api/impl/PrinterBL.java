@@ -36,8 +36,6 @@ import java.util.Properties;
 import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -54,6 +52,8 @@ import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_AD_Printer_Tray;
 import de.metas.printing.model.X_AD_PrinterHW;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class PrinterBL implements IPrinterBL

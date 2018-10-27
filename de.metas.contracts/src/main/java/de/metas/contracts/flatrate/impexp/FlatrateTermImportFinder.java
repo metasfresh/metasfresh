@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 
 import com.google.common.collect.Ordering;
@@ -15,6 +14,7 @@ import com.google.common.collect.Ordering;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 
 /*

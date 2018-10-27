@@ -1,20 +1,18 @@
 package de.metas.handlingunits;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.assertj.core.api.AbstractAssert;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -68,16 +66,14 @@ public class HUAssert extends AbstractAssert<HUAssert, I_M_HU>
 	{
 		final I_C_UOM uom = expectedQuantity.getUOM();
 
-		final I_M_Product productRecord = load(productId, I_M_Product.class);
-
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final IHUStorage huStorage = storageFactory.getStorage(actual);
-		final BigDecimal qtyActual = huStorage.getQty(productRecord, uom);
+		final BigDecimal qtyActual = huStorage.getQty(productId, uom);
 
 		if (qtyActual.compareTo(expectedQuantity.getAsBigDecimal()) != 0)
 		{
 			failWithMessage("Invalid HU Storage for product: <%s>; expected <%s>, but has <%s>",
-					productRecord.getValue(),
+					Services.get(IProductBL.class).getProductValueAndName(productId),
 					expectedQuantity,
 					Quantity.of(qtyActual, uom));
 		}

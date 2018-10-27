@@ -26,7 +26,6 @@ package de.metas.async.processor.impl;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -41,6 +40,7 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
+import de.metas.util.Services;
 
 /**
  * Test Queue Processor and Workpackage Processor counters/statistics

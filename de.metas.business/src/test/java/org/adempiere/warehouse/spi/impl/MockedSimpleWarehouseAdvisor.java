@@ -13,43 +13,42 @@ package org.adempiere.warehouse.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Warehouse;
+
+import de.metas.util.Services;
 
 public class MockedSimpleWarehouseAdvisor extends WarehouseAdvisor
 {
-	public static MockedSimpleWarehouseAdvisor createAndRegister(final I_M_Warehouse warehouse)
+	public static MockedSimpleWarehouseAdvisor createAndRegister(final WarehouseId warehouseId)
 	{
-		final MockedSimpleWarehouseAdvisor instance = new MockedSimpleWarehouseAdvisor(warehouse);
+		final MockedSimpleWarehouseAdvisor instance = new MockedSimpleWarehouseAdvisor(warehouseId);
 		Services.registerService(IWarehouseAdvisor.class, instance);
 
 		return instance;
 	}
 
-	private final I_M_Warehouse warehouse;
+	private final WarehouseId warehouseId;
 
-	private MockedSimpleWarehouseAdvisor(final I_M_Warehouse warehouse)
+	private MockedSimpleWarehouseAdvisor(final WarehouseId warehouseId)
 	{
-		super();
-		this.warehouse = warehouse;
+		this.warehouseId = warehouseId;
 	}
 
 	@Override
-	protected I_M_Warehouse findOrderWarehouse(final I_C_Order order)
+	protected WarehouseId findOrderWarehouseId(final I_C_Order order)
 	{
-		return warehouse;
+		return warehouseId;
 	}
 
 }

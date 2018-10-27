@@ -1,10 +1,11 @@
 package org.compiere.model;
 
 import org.adempiere.ad.ui.spi.ITabCallout;
-import org.adempiere.util.Check;
 import org.compiere.model.StateChangeEvent.StateChangeEventType;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /*
  * #%L

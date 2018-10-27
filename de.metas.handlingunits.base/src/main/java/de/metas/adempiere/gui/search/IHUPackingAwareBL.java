@@ -24,10 +24,10 @@ package de.metas.adempiere.gui.search;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.apps.search.IInfoSimple;
 
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
+import de.metas.util.ISingletonService;
 
 /**
  * Service used for manipulating {@link IHUPackingAware}.

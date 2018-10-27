@@ -30,6 +30,8 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PO;
 
+import de.metas.util.Check;
+
 /**
  * Helper methods that can be used when moving business logic out of PO subclasses.
  * 

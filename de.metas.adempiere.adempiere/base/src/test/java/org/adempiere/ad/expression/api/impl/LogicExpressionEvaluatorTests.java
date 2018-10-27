@@ -38,8 +38,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.service.impl.PlainSysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
@@ -50,6 +48,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *

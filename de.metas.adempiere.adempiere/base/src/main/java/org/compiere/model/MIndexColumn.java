@@ -29,7 +29,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * AD Index Column

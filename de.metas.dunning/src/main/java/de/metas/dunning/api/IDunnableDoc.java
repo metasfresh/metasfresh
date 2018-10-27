@@ -26,7 +26,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 /**
  * Dunnable document.

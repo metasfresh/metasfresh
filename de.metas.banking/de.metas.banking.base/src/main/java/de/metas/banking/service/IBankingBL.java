@@ -3,8 +3,9 @@ package de.metas.banking.service;
 import java.util.List;
 
 import org.adempiere.banking.model.I_C_Invoice;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_BankAccount;
+
+import de.metas.util.ISingletonService;
 
 public interface IBankingBL extends ISingletonService
 {

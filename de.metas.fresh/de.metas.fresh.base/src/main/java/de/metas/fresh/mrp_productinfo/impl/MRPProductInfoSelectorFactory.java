@@ -3,14 +3,13 @@ package de.metas.fresh.mrp_productinfo.impl;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
@@ -36,6 +35,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -234,15 +237,29 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 	 */
 	static class MRPProductInfoSelector implements IMRPProductInfoSelector
 	{
+		@Getter
 		private final int M_Product_ID;
+
+		@Getter
 		private final int M_AttributeSetInstance_ID;
+
 		private String asiKey;
+
+		@Getter
 		private final Timestamp date;
-		private final Object model;
+
 		private final String paramPrefix;
 
+		private final Map<String, Object> parametersMap;
+
+		@Getter
+		private final Properties ctx;
+
+		@Getter
+		private final String trxName;
+
 		/**
-		 * 
+		 *
 		 * @param M_Product_ID
 		 * @param M_AttributeSetInstance_ID
 		 * @param date
@@ -252,7 +269,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		private MRPProductInfoSelector(
 				final int M_Product_ID,
 				final int M_AttributeSetInstance_ID,
-				final Timestamp date,
+				@NonNull final Timestamp date,
 				final Object model,
 				final String paramPrefix)
 		{
@@ -263,40 +280,23 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			this.M_Product_ID = M_Product_ID;
 			this.M_AttributeSetInstance_ID = M_AttributeSetInstance_ID;
 			this.date = date;
-			this.model = model;
 
 			if (model == null)
 			{
 				this.paramPrefix = paramPrefix;
+				this.ctx = null;
+				this.trxName = null;
 			}
 			else
 			{
 				this.paramPrefix = createParamPrefix(model);
+				this.ctx = InterfaceWrapperHelper.getCtx(model);
+				this.trxName = InterfaceWrapperHelper.getTrxName(model);
 			}
-		}
-
-		@Override
-		public int getM_Product_ID()
-		{
-			return M_Product_ID;
-		}
-
-		@Override
-		public int getM_AttributeSetInstance_ID()
-		{
-			return M_AttributeSetInstance_ID;
-		}
-
-		@Override
-		public Timestamp getDate()
-		{
-			return date;
-		}
-
-		@Override
-		public Object getModelOrNull()
-		{
-			return model;
+			this.parametersMap = ImmutableMap.<String, Object> of(
+					mkProductParamKey(this.paramPrefix), getM_Product_ID(),
+					mkAttributeSetInstanceParamKey(this.paramPrefix), getM_AttributeSetInstance_ID(),
+					mkDateParamKey(this.paramPrefix), getDate());
 		}
 
 		@Override
@@ -312,13 +312,10 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		@Override
 		public Map<String, Object> asMap()
 		{
-			return ImmutableMap.<String, Object> of(
-					mkProductParamKey(model), getM_Product_ID(),
-					mkAttributeSetInstanceParamKey(model), getM_AttributeSetInstance_ID(),
-					mkDateParamKey(model), getDate());
+			return parametersMap;
 		}
 
-		private static String createParamPrefix(final Object model)
+		private static String createParamPrefix(@NonNull final Object model)
 		{
 			final ITableRecordReference record = TableRecordReference.of(model);
 
@@ -326,22 +323,19 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			return prefix;
 		}
 
-		private static String mkProductParamKey(final Object model)
+		private static String mkProductParamKey(@NonNull final String paramPrefix)
 		{
-			final String prefix = createParamPrefix(model);
-			return prefix + PRODUCT_PARAM_SUFFIX;
+			return paramPrefix + PRODUCT_PARAM_SUFFIX;
 		}
 
-		private static String mkAttributeSetInstanceParamKey(final Object model)
+		private static String mkAttributeSetInstanceParamKey(@NonNull final String paramPrefix)
 		{
-			final String prefix = createParamPrefix(model);
-			return prefix + ASI_PARAM_SUFFIX;
+			return paramPrefix + ASI_PARAM_SUFFIX;
 		}
 
-		private static String mkDateParamKey(final Object model)
+		private static String mkDateParamKey(@NonNull final String paramPrefix)
 		{
-			final String prefix = createParamPrefix(model);
-			return prefix + DATE_PARAM_SUFFIX;
+			return paramPrefix + DATE_PARAM_SUFFIX;
 		}
 
 		@Override

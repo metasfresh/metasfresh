@@ -25,14 +25,13 @@ package de.metas.handlingunits.allocation.impl;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Check;
 
 /**
  * Allocate over a list of {@link I_M_ShipmentSchedule}s using QtyPicked as storage level.

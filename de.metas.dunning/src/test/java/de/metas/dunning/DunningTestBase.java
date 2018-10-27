@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
+import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -43,9 +44,9 @@ import org.adempiere.document.service.impl.DummyDocumentLocationBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.PlainInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.junit.After;
@@ -55,6 +56,7 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
 import de.metas.document.IDocumentLocationBL;
+import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.dunning.api.IDunnableDoc;
@@ -74,6 +76,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.MockedCloseableIterator;
 import de.metas.dunning.spi.impl.MockedDunnableSource;
+import de.metas.util.Services;
 
 public class DunningTestBase
 {
@@ -104,6 +107,8 @@ public class DunningTestBase
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.get().setCopyOnSave(true); // FIXME : Adapt dunning tests to new behavior
 
+		Services.get(ISysConfigBL.class).setValue(IPostingService.SYSCONFIG_Enabled, false, 0);
+
 		dao = new PlainDunningDAO();
 		Services.registerService(IDunningDAO.class, dao);
 
@@ -119,6 +124,8 @@ public class DunningTestBase
 
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
+
+
 
 		MockedCloseableIterator.clear();
 
@@ -187,13 +194,14 @@ public class DunningTestBase
 	protected void processDunningDocs(final PlainDunningContext dunningContext)
 	{
 		final List<I_C_DunningDoc> dunningDocs = db.getRecords(I_C_DunningDoc.class);
-		for (I_C_DunningDoc dunningDoc : dunningDocs)
+		for (final I_C_DunningDoc dunningDoc : dunningDocs)
 		{
 			if (dunningDoc.isProcessed())
 			{
 				continue;
 			}
-			dunningBL.processDunningDoc(dunningContext, dunningDoc);
+			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+			documentBL.processEx(dunningDoc, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 	}
 

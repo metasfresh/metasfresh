@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.aggregate.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -36,10 +35,7 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.comparator.NullSafeComparator;
-import org.compiere.model.I_M_Shipper;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
 
@@ -49,9 +45,13 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.mmovement.model.ILTCUModel;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.tourplanning.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.model.I_M_Tour;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Verdichtung (POS) HU Editor Model (second window)
@@ -174,15 +174,19 @@ public class AggregateHUEditorModel extends HUEditorModel
 			displayName.append(tourName);
 		}
 
-		final I_M_Shipper shipper = shipperTransportation.getM_Shipper();
-		if (shipper != null)
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(shipperTransportation.getM_Shipper_ID());
+		if (shipperId != null)
 		{
 			if (displayName.length() > 0)
 			{
 				displayName.append("-");
 
 			}
-			displayName.append(shipper.getName());
+
+			final String shipperName = Services.get(IShipperDAO.class)
+					.getShipperName(shipperId)
+					.translate(getAD_Language());
+			displayName.append(shipperName);
 		}
 
 		final KeyNamePair knp = new KeyNamePair(shipperTransportation.getM_ShipperTransportation_ID(), displayName.toString());

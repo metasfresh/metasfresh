@@ -1,7 +1,7 @@
 package de.metas.contracts.refund;
 
-import static org.adempiere.util.collections.CollectionUtils.extractSingleElement;
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
+import static de.metas.util.collections.CollectionUtils.extractSingleElement;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -30,6 +28,8 @@ import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeS
 import de.metas.contracts.refund.exceedingqty.CandidateAssignServiceExceedingQty;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Singular;
 

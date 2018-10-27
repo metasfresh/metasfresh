@@ -58,7 +58,7 @@ public class OrderGroupCompensationChangesHandler
 		}
 		else
 		{
-			group.updateAllPercentageLines();
+			group.updateAllCompensationLines();
 			groupsRepo.saveGroup(group);
 		}
 	}
@@ -144,7 +144,7 @@ public class OrderGroupCompensationChangesHandler
 		}
 		else
 		{
-			group.updateAllPercentageLines();
+			group.updateAllCompensationLines();
 			groupsRepo.saveGroup(group);
 		}
 	}
@@ -152,7 +152,7 @@ public class OrderGroupCompensationChangesHandler
 	public void updateCompensationLineNoSave(final I_C_OrderLine orderLine)
 	{
 		final Group group = groupsRepo.createPartialGroupFromCompensationLine(orderLine);
-		group.updateAllPercentageLines();
+		group.updateAllCompensationLines();
 
 		final OrderLinesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(orderLine);
 		groupsRepo.saveGroup(group, orderLinesStorage);

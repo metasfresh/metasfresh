@@ -37,8 +37,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
@@ -63,6 +61,8 @@ import de.metas.printing.spi.IPrintingQueueHandler;
 import de.metas.printing.spi.impl.C_Printing_Queue_RecipientHandler;
 import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg
@@ -249,9 +249,9 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		// 03870 R2
 		// if possible, use the AD_User_ID of the user that started the process which is calling this method
-		if (printingQueueQuery.getOnlyAD_PInstance_ID() > 0)
+		if (printingQueueQuery.getOnlyAD_PInstance_ID() != null)
 		{
-			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, printingQueueQuery.getOnlyAD_PInstance_ID());
+			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).getById(printingQueueQuery.getOnlyAD_PInstance_ID());
 			final int printJobUserId = pinstance.getAD_User_ID();
 			if (printJobUserId > 0)
 			{

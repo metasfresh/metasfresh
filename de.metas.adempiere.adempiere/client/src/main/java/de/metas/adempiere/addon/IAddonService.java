@@ -25,9 +25,10 @@ package de.metas.adempiere.addon;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.apps.APanel;
 import org.compiere.apps.AppsAction;
+
+import de.metas.util.ISingletonService;
 
 public interface IAddonService extends ISingletonService {
 

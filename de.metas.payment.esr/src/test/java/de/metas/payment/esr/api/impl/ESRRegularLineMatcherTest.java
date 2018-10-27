@@ -36,7 +36,6 @@ import java.math.BigDecimal;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.X_C_DocType;
@@ -56,6 +55,7 @@ import de.metas.payment.esr.ESRTestUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.util.Services;
 
 public class ESRRegularLineMatcherTest extends ESRTestBase
 {

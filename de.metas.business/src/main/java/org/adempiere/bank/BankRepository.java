@@ -2,10 +2,11 @@ package org.adempiere.bank;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Bank;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
+
+import de.metas.util.Services;
 
 @Repository
 public class BankRepository

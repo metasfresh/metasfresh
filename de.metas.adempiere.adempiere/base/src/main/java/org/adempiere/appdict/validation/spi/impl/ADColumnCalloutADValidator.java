@@ -29,13 +29,14 @@ import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ColumnCallout;
 import org.compiere.model.I_AD_Table;
 import org.compiere.util.Util;
+
+import de.metas.util.Check;
 
 public class ADColumnCalloutADValidator extends AbstractADValidator<I_AD_ColumnCallout>
 {

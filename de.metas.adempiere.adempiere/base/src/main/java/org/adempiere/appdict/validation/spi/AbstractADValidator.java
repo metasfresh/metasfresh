@@ -26,7 +26,8 @@ package org.adempiere.appdict.validation.spi;
 import java.lang.reflect.Method;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public abstract class AbstractADValidator<T> implements IADValidator<T>
 {

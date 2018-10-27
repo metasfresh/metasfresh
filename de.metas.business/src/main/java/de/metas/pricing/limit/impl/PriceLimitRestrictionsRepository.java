@@ -4,16 +4,16 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PriceLimit_Restriction;
-import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
 import de.metas.pricing.limit.PriceLimitRestrictions;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

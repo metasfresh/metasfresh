@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,17 +26,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.InvoiceCandidateListenerAdapter;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Assign created invoice to the same material tracking as the invoice candidates were assigned.
@@ -44,13 +44,12 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
  * @author tsa
  *
  */
-public class MaterialTrackingInvoiceCandidateListener extends InvoiceCandidateListenerAdapter
+public class MaterialTrackingInvoiceCandidateListener implements IInvoiceCandidateListener
 {
 	public static final MaterialTrackingInvoiceCandidateListener instance = new MaterialTrackingInvoiceCandidateListener();
 
 	private MaterialTrackingInvoiceCandidateListener()
 	{
-		super();
 	}
 
 	@Override

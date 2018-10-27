@@ -9,13 +9,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -135,32 +136,33 @@ public class Group
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("None or more then one compensation lines found for id=" + id + " in group " + this)));
 	}
 
-	public void updateAllPercentageLines()
+	public void updateAllCompensationLines()
 	{
-		BigDecimal previousNetAmt = getRegularLinesNetAmt();
+		moveAllManualCompensationLinesToEnd();
 
+		BigDecimal previousNetAmt = getRegularLinesNetAmt();
 		for (final GroupCompensationLine compensationLine : compensationLines)
 		{
-			if (compensationLine.isPercentage())
-			{
-				updatePercentageLine(compensationLine, previousNetAmt);
-			}
+			updateCompensationLine(compensationLine, previousNetAmt);
 
 			previousNetAmt = previousNetAmt.add(compensationLine.getLineNetAmt());
 		}
 	}
 
-	private void updatePercentageLine(final GroupCompensationLine compensationLine, final BigDecimal baseAmt)
+	private void updateCompensationLine(final GroupCompensationLine compensationLine, final BigDecimal baseAmt)
 	{
 		compensationLine.setBaseAmt(baseAmt);
 
-		final Percent percentage = compensationLine.getPercentage();
-		final GroupCompensationType compensationType = compensationLine.getType();
+		if (compensationLine.isPercentage())
+		{
+			final Percent percentage = compensationLine.getPercentage();
+			final GroupCompensationType compensationType = compensationLine.getType();
 
-		final BigDecimal compensationAmt = percentage.multiply(baseAmt, precision);
-		final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
+			final BigDecimal compensationAmt = percentage.multiply(baseAmt, precision);
+			final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
 
-		compensationLine.setPriceAndQty(amt, BigDecimal.ONE, precision);
+			compensationLine.setPriceAndQty(amt, BigDecimal.ONE, precision);
+		}
 	}
 
 	public void addNewCompensationLine(final GroupCompensationLineCreateRequest request)
@@ -180,10 +182,7 @@ public class Group
 				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.build();
 
-		if (compensationLine.isPercentage())
-		{
-			updatePercentageLine(compensationLine, getTotalNetAmt());
-		}
+		updateCompensationLine(compensationLine, getTotalNetAmt());
 
 		compensationLines.add(compensationLine);
 	}
@@ -200,7 +199,7 @@ public class Group
 		}
 	}
 
-	public void moveAllManualCompensationLinesToEnd()
+	private void moveAllManualCompensationLinesToEnd()
 	{
 		final ArrayList<GroupCompensationLine> manualCompensationLines = new ArrayList<>();
 		for (final Iterator<GroupCompensationLine> it = compensationLines.iterator(); it.hasNext();)
@@ -214,8 +213,6 @@ public class Group
 		}
 
 		compensationLines.addAll(manualCompensationLines);
-
-		updateAllPercentageLines();
 	}
 
 	public boolean isBasedOnGroupTemplate()

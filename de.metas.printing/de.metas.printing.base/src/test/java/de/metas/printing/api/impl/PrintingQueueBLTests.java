@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -26,8 +26,9 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 /**
  * Invoice Line Model
@@ -581,13 +583,12 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		//
 		// From
-		final int fromOrgId = getAD_Org_ID();
-		final I_C_Location fromLocation = Services.get(IBPartnerOrgBL.class).retrieveOrgLocation(getCtx(), fromOrgId, get_TrxName());
-		if (fromLocation == null)
+		final OrgId fromOrgId = OrgId.ofRepoId(getAD_Org_ID());
+		final CountryId fromCountryId = Services.get(IBPartnerOrgBL.class).getOrgCountryId(fromOrgId);
+		if (fromCountryId == null)
 		{
-			throw new OrgHasNoBPartnerLinkException(getAD_Org_ID());
+			throw new OrgHasNoBPartnerLinkException(fromOrgId);
 		}
-		final int fromCountryId = fromLocation.getC_Country_ID();
 
 		//
 		// To
@@ -609,7 +610,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					.taxCategoryId(taxCategoryId)
 					.isSOTrx(isSOTrx)
 					.billDate(billDate)
-					.billFromC_Location_ID(fromLocation.getC_Location_ID())
+					.billFromCountryId(fromCountryId)
 					.billToC_Location_ID(toBPLocation.getC_Location_ID())
 					.build();
 			log.error("No Tax found", ex);

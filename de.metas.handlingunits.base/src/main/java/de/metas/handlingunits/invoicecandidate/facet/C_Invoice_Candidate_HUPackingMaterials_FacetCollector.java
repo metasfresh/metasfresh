@@ -36,8 +36,6 @@ import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.impl.Facet;
 import org.adempiere.facet.impl.FacetCategory;
 import org.adempiere.facet.impl.SingleFacetCategoryCollectorTemplate;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 
@@ -45,6 +43,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 
 /**
  * Collects packing material product facets.

@@ -34,7 +34,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.StringUtils;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
@@ -42,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
+import de.metas.util.StringUtils;
 
 /**
  * @author ad

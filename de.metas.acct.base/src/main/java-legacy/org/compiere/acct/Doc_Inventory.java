@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.MAccount;
@@ -34,6 +33,7 @@ import org.compiere.util.Env;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /**
  *  Post Inventory Documents.

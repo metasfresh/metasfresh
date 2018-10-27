@@ -1,11 +1,15 @@
 package de.metas.bpartner;
 
-import org.adempiere.util.Check;
+import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Value;
 
 /*
@@ -30,6 +34,7 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class BPartnerId implements RepoIdAware
 {
@@ -46,6 +51,16 @@ public class BPartnerId implements RepoIdAware
 		return repoId > 0 ? new BPartnerId(repoId) : null;
 	}
 
+	public static Optional<BPartnerId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	public static int toRepoId(final BPartnerId bpartnerId)
+	{
+		return toRepoIdOr(bpartnerId, -1);
+	}
+
 	public static int toRepoIdOr(final BPartnerId bpartnerId, final int defaultValue)
 	{
 		return bpartnerId != null ? bpartnerId.getRepoId() : defaultValue;
@@ -53,7 +68,7 @@ public class BPartnerId implements RepoIdAware
 
 	private BPartnerId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "bpartnerId");
 	}
 
 	@JsonValue

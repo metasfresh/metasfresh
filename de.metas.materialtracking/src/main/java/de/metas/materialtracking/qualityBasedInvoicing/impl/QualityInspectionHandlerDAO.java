@@ -28,8 +28,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
@@ -46,6 +44,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandler
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 {

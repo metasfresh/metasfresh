@@ -1,5 +1,7 @@
 package de.metas.handlingunits.model.validator;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -25,27 +27,26 @@ package de.metas.handlingunits.model.validator;
 import java.util.Arrays;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
-import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
-import org.adempiere.ad.dao.cache.ITableCacheConfigBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
 import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.CacheMgt;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+import de.metas.cache.model.ITableCacheConfigBuilder;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
 import de.metas.handlingunits.ddorder.spi.impl.ForecastLineHUDocumentHandler;
@@ -103,7 +104,7 @@ import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
-import lombok.NonNull;
+import de.metas.util.Services;
 
 public final class Main extends AbstractModuleInterceptor
 {
@@ -111,7 +112,7 @@ public final class Main extends AbstractModuleInterceptor
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		super.onInit(engine, client);
-		
+
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 
 		registerFactories();
@@ -135,7 +136,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order_Line_Alloc(), client);
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance, client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU(), client);
+		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU.INSTANCE, client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute(), client);
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU_Storage.INSTANCE, client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Assignment(), client);

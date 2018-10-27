@@ -4,13 +4,13 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.compensationGroup.GroupId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

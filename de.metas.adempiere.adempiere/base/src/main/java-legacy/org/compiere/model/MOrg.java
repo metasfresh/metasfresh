@@ -22,9 +22,10 @@ import java.util.Properties;
 
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.util.Services;
 
 /**
  *	Organization Model

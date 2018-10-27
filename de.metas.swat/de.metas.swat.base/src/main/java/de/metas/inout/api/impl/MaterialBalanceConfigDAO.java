@@ -29,7 +29,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -39,6 +38,7 @@ import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inout.api.IMaterialBalanceConfigDAO;
 import de.metas.inout.model.I_M_Material_Balance_Config;
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
+import de.metas.util.Services;
 
 public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 {

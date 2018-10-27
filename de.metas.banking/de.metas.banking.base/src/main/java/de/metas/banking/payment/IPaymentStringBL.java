@@ -25,11 +25,11 @@ package de.metas.banking.payment;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_SysConfig;
 
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
+import de.metas.util.ISingletonService;
 
 /**
  * @author al

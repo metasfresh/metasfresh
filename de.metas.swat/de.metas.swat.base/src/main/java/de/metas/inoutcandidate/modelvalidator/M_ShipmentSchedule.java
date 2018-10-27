@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -36,9 +37,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
@@ -50,6 +49,7 @@ import org.compiere.model.ModelValidator;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -62,6 +62,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -168,10 +170,9 @@ public class M_ShipmentSchedule
 		}
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final int newBPartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
-
-		final int oldBpartnerId = getOldBPartnerId(shipmentSchedule);
-		if (newBPartnerId == oldBpartnerId)
+		final BPartnerId newBPartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
+		final BPartnerId oldBpartnerId = getOldBPartnerId(shipmentSchedule);
+		if (Objects.equals(newBPartnerId, oldBpartnerId))
 		{
 			return;
 		}
@@ -179,29 +180,29 @@ public class M_ShipmentSchedule
 		invalidateForOldAndNewBPartners(shipmentSchedule, oldBpartnerId);
 	}
 
-	private int getOldBPartnerId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private BPartnerId getOldBPartnerId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
-		final int oldBpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(oldShipmentSchedule);
+		final BPartnerId oldBpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(oldShipmentSchedule);
 
 		return oldBpartnerId;
 	}
 
 	private void invalidateForOldAndNewBPartners(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			final int oldBpartnerId)
+			final BPartnerId oldBpartnerId)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final int newBPartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
+		final BPartnerId newBPartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
 
 		final IStorageBL storageBL = Services.get(IStorageBL.class);
 		final IStorageSegment storageSegment = storageBL.createStorageSegmentBuilder()
 				.addM_Product_ID(shipmentSchedule.getM_Product_ID())
-				.addC_BPartner_ID(newBPartnerId)
-				.addC_BPartner_ID(oldBpartnerId)
+				.addC_BPartner_ID(BPartnerId.toRepoId(newBPartnerId))
+				.addC_BPartner_ID(BPartnerId.toRepoId(oldBpartnerId))
 				.addM_AttributeSetInstance_ID(shipmentSchedule.getM_AttributeSetInstance_ID())
-				.addM_Warehouse(shipmentScheduleEffectiveBL.getWarehouse(shipmentSchedule))
+				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.build();
 
 		Services.get(IShipmentSchedulePA.class).invalidate(ImmutableList.of(storageSegment));
@@ -314,7 +315,7 @@ public class M_ShipmentSchedule
 
 		final I_C_Order order = orderLine.getC_Order();
 		final boolean orderNotCompleted = !Services.get(IDocumentBL.class).isDocumentCompleted(order);
-		if(orderNotCompleted)
+		if (orderNotCompleted)
 		{
 			// issue https://github.com/metasfresh/metasfresh/issues/3815
 			return; // don't update e.g. an order that was closed just now, while the async shipment-schedule creation took place.
@@ -322,7 +323,6 @@ public class M_ShipmentSchedule
 
 		// note: don't try to suppress shipment schedule invalidation, because maybe other scheds also need updating when this order's qtyOrdered changes.
 		orderLine.setQtyOrdered(qtyOrdered);
-
 
 		final MOrder orderPO = LegacyAdapters.convertToPO(order);
 		final MOrderLine orderLinePO = LegacyAdapters.convertToPO(orderLine);

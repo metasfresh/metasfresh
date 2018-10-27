@@ -1,10 +1,9 @@
 package de.metas.jax.rs.process;
 
-import org.adempiere.util.Services;
-
 import de.metas.jax.rs.IJaxRsBL;
 import de.metas.process.Param;
 import de.metas.process.Process;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /*

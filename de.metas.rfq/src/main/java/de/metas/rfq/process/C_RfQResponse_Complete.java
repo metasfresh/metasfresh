@@ -1,10 +1,9 @@
 package de.metas.rfq.process;
 
-import org.adempiere.util.Services;
-
 import de.metas.process.JavaProcess;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.util.Services;
 
 /*
  * #%L

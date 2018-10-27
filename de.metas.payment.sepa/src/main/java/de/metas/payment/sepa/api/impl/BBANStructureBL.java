@@ -27,8 +27,6 @@ package de.metas.payment.sepa.api.impl;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
 
@@ -38,6 +36,8 @@ import de.metas.payment.sepa.api.IBBANStructureBuilder;
 import de.metas.payment.sepa.wrapper.BBANStructure;
 import de.metas.payment.sepa.wrapper.BBANStructureEntry.BBANCodeEntryType;
 import de.metas.payment.sepa.wrapper.BBANStructureEntry.EntryCharacterType;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg

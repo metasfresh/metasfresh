@@ -33,7 +33,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
 import com.google.common.collect.ImmutableList;
@@ -53,6 +52,7 @@ import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

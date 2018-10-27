@@ -54,10 +54,7 @@ import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.warehouse.WarehouseId;
@@ -105,6 +102,9 @@ import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.

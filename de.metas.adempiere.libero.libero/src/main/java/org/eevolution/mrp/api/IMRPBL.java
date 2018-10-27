@@ -25,7 +25,6 @@ package org.eevolution.mrp.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alternative;
@@ -33,6 +32,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.ISingletonService;
 
 public interface IMRPBL extends ISingletonService
 {

@@ -26,9 +26,9 @@ package de.metas.banking.payment.paymentallocation.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 public class InvoicesTableModel extends AbstractAllocableDocTableModel<IInvoiceRow>
 {

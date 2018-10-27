@@ -27,11 +27,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.invoicecandidate.spi.IAggregator;
+import de.metas.util.Check;
 
 /* package */class InvoiceHeaderAndLineAggregators
 {

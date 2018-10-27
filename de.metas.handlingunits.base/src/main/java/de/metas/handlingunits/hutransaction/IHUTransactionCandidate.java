@@ -25,13 +25,13 @@ package de.metas.handlingunits.hutransaction;
 
 import java.util.Date;
 
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
+import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /**
@@ -109,15 +109,7 @@ public interface IHUTransactionCandidate
 	 *
 	 * @return transaction product; never returns null
 	 */
-	I_M_Product getProduct();
-
-	/**
-	 * @see #getProduct()
-	 */
-	default int getProductId()
-	{
-		return getProduct().getM_Product_ID();
-	}
+	ProductId getProductId();
 
 	/**
 	 * Gets transaction Qty/UOM. It's value is absolute and it means:
@@ -156,7 +148,7 @@ public interface IHUTransactionCandidate
 	/**
 	 * @return locator which shall be used in the HU Trx
 	 */
-	I_M_Locator getM_Locator();
+	LocatorId getLocatorId();
 
 	/**
 	 * @return HU status used in the HU Trx

@@ -1,8 +1,8 @@
 package de.metas.material.cockpit.view.mainrecord;
 
+import static de.metas.util.NumberUtils.stripTrailingDecimalZeros;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.util.NumberUtils.stripTrailingDecimalZeros;
 
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;

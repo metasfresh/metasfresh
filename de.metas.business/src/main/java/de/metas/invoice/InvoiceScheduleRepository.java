@@ -7,12 +7,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.DayOfWeek;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.springframework.stereotype.Repository;
 
 import de.metas.invoice.InvoiceSchedule.Frequency;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

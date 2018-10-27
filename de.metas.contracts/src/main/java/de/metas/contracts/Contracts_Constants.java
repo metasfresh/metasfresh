@@ -38,7 +38,7 @@ public final class Contracts_Constants
 	 *
 	 * @see de.metas.impex.api.IInputDataSourceDAO#retrieveInputDataSource(java.util.Properties, String, boolean, String)
 	 */
-	public static final String DATA_DESTINATION_INTERNAL_NAME = "DEST." + ENTITY_TYPE;
+	public static final String DATA_DESTINATION_INTERNAL_NAME = "DEST.de.metas.flatrate";
 
 	public static final int CONTRACTS_WINDOW_ID = 540359; // FIXME hardcoded
 

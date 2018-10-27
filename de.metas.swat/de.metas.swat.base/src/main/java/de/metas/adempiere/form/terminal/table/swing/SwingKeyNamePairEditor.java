@@ -33,7 +33,6 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-import org.adempiere.util.Check;
 import org.compiere.grid.ed.VHeaderRenderer;
 import org.compiere.model.Lookup;
 import org.compiere.model.POInfo;
@@ -45,6 +44,7 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.adempiere.form.terminal.table.ITableColumnInfo;
+import de.metas.util.Check;
 
 /* package */class SwingKeyNamePairEditor<T> extends AbstractCellEditor
 		implements TableCellRenderer, TableCellEditor

@@ -14,12 +14,12 @@
 package org.adempiere.exceptions;
 
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
 import de.metas.document.DocTypeQuery;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

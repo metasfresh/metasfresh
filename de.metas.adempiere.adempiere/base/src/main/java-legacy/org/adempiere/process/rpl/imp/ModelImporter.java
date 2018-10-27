@@ -31,11 +31,11 @@ package org.adempiere.process.rpl.imp;
 import org.adempiere.process.rpl.XMLHelper;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IImportHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

@@ -2,6 +2,7 @@ package de.metas.fresh.picking.form;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -26,14 +27,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.hamcrest.Matchers;
@@ -43,24 +45,28 @@ import org.junit.Test;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.MockedPackagingDAO;
-import de.metas.inoutcandidate.api.impl.Packageable;
-import de.metas.picking.legacy.form.TableRow;
-import de.metas.picking.legacy.form.TableRowKey;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 public class FreshPackingMdTest
 {
-	private final Timestamp date_2014_01_10 = TimeUtil.getDay(2014, 1, 10);
-	private final Timestamp date_2014_01_11 = TimeUtil.getDay(2014, 1, 11);
-	private final Timestamp date_2014_01_12 = TimeUtil.getDay(2014, 1, 12);
-	private final Timestamp date_2014_01_13 = TimeUtil.getDay(2014, 1, 13);
-	private final Timestamp date_2014_01_14 = TimeUtil.getDay(2014, 1, 14);
-	private final Timestamp date_2014_01_15 = TimeUtil.getDay(2014, 1, 15);
+	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(30);
+	private I_C_UOM uom;
+
+	private final LocalDateTime date_2014_01_10 = LocalDateTime.of(2014, Month.JANUARY, 10, 0, 0);
+	private final LocalDateTime date_2014_01_11 = LocalDateTime.of(2014, Month.JANUARY, 11, 0, 0);
+	private final LocalDateTime date_2014_01_12 = LocalDateTime.of(2014, Month.JANUARY, 12, 0, 0);
+	private final LocalDateTime date_2014_01_13 = LocalDateTime.of(2014, Month.JANUARY, 13, 0, 0);
+	private final LocalDateTime date_2014_01_14 = LocalDateTime.of(2014, Month.JANUARY, 14, 0, 0);
+	private final LocalDateTime date_2014_01_15 = LocalDateTime.of(2014, Month.JANUARY, 15, 0, 0);
 
 	private MockedPackagingDAO packagingDAO;
 
@@ -71,18 +77,21 @@ public class FreshPackingMdTest
 
 		this.packagingDAO = new MockedPackagingDAO();
 		Services.registerService(IPackagingDAO.class, packagingDAO);
+
+		uom = newInstance(I_C_UOM.class);
+		saveRecord(uom);
 	}
 
 	@Test
 	public void testTableRowAggregation_StandardCase() throws Exception
 	{
-		final List<IPackageable> packageables = Arrays.asList(
+		final List<Packageable> packageables = Arrays.asList(
 				createPackageable(1, date_2014_01_12, date_2014_01_13),
 				createPackageable(2, date_2014_01_10, date_2014_01_15),
 				createPackageable(3, date_2014_01_11, date_2014_01_14));
 		final int expectedQtyToDeliver = 1 + 2 + 3;
-		final Timestamp expectedDeliveryDate = date_2014_01_10;
-		final Timestamp expectedPreparationDate = date_2014_01_15;
+		final LocalDateTime expectedDeliveryDate = date_2014_01_10;
+		final LocalDateTime expectedPreparationDate = date_2014_01_15;
 
 		testTableRowAggregation(packageables, expectedQtyToDeliver, expectedDeliveryDate, expectedPreparationDate);
 	}
@@ -90,13 +99,13 @@ public class FreshPackingMdTest
 	@Test
 	public void testTableRowAggregation_Null_PreparationDate() throws Exception
 	{
-		final List<IPackageable> packageables = Arrays.asList(
+		final List<Packageable> packageables = Arrays.asList(
 				createPackageable(1, date_2014_01_12, date_2014_01_13),
 				createPackageable(2, date_2014_01_10, null),
 				createPackageable(3, date_2014_01_11, date_2014_01_14));
 		final int expectedQtyToDeliver = 1 + 2 + 3;
-		final Timestamp expectedDeliveryDate = date_2014_01_10;
-		final Timestamp expectedPreparationDate = null;
+		final LocalDateTime expectedDeliveryDate = date_2014_01_10;
+		final LocalDateTime expectedPreparationDate = null;
 
 		testTableRowAggregation(packageables, expectedQtyToDeliver, expectedDeliveryDate, expectedPreparationDate);
 	}
@@ -104,21 +113,21 @@ public class FreshPackingMdTest
 	@Test
 	public void testTableRowAggregation_Null_Same_DeliveryDate_Take_Min_PreparationDate() throws Exception
 	{
-		final List<IPackageable> packageables = Arrays.asList(
+		final List<Packageable> packageables = Arrays.asList(
 				createPackageable(1, date_2014_01_10, date_2014_01_15),
 				createPackageable(2, date_2014_01_11, null),
 				createPackageable(3, date_2014_01_10, date_2014_01_14));
 		final int expectedQtyToDeliver = 1 + 2 + 3;
-		final Timestamp expectedDeliveryDate = date_2014_01_10;
-		final Timestamp expectedPreparationDate = date_2014_01_14;
+		final LocalDateTime expectedDeliveryDate = date_2014_01_10;
+		final LocalDateTime expectedPreparationDate = date_2014_01_14;
 
 		testTableRowAggregation(packageables, expectedQtyToDeliver, expectedDeliveryDate, expectedPreparationDate);
 	}
 
-	private void testTableRowAggregation(final List<IPackageable> packageables,
+	private void testTableRowAggregation(final List<Packageable> packageables,
 			int expectedQtyToDeliver,
-			Timestamp expectedDeliveryDate,
-			Timestamp expectedPreparationDate)
+			LocalDateTime expectedDeliveryDate,
+			LocalDateTime expectedPreparationDate)
 			throws Exception
 	{
 		final FreshPackingMd model = createPackingModel();
@@ -146,8 +155,8 @@ public class FreshPackingMdTest
 				tableRowAgg.getQtyToDeliver(),
 				Matchers.comparesEqualTo(BigDecimal.valueOf(expectedQtyToDeliver)));
 
-		Assert.assertEquals("Invalid aggregated DeliveryDate", expectedDeliveryDate, tableRowAgg.getDeliveryDate());
-		Assert.assertEquals("Invalid aggregated PreparationDate", expectedPreparationDate, tableRowAgg.getPreparationDate());
+		Assert.assertEquals("Invalid aggregated DeliveryDate", expectedDeliveryDate, TimeUtil.asLocalDateTime(tableRowAgg.getDeliveryDate()));
+		Assert.assertEquals("Invalid aggregated PreparationDate", expectedPreparationDate, TimeUtil.asLocalDateTime(tableRowAgg.getPreparationDate()));
 	}
 
 	private FreshPackingMd createPackingModel()
@@ -155,24 +164,35 @@ public class FreshPackingMdTest
 		final ITerminalContext terminalContext = TerminalContextFactory.get().createContextAndRefs().getLeft();
 		terminalContext.setWindowNo(Env.WINDOW_None);
 
-		final FreshPackingMd model = new FreshPackingMd(terminalContext);
+		final FreshPackingMd model = new FreshPackingMd();
+		model.setWarehouseId(WAREHOUSE_ID);
 		return model;
 	}
 
-	private IPackageable createPackageable(int qtyToDeliver, Timestamp deliveryDate, Timestamp preparationDate)
+	private Packageable createPackageable(int qtyToDeliver, LocalDateTime deliveryDate, LocalDateTime preparationDate)
 	{
 		final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
 		save(shipmentScheduleRecord);
 
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(10);
+
 		return Packageable.builder()
-				.qtyToDeliver(BigDecimal.valueOf(qtyToDeliver))
+				.qtyOrdered(Quantity.zero(uom))
+				.qtyToDeliver(Quantity.of(qtyToDeliver, uom))
+				.qtyDelivered(Quantity.zero(uom))
+				.qtyPicked(Quantity.zero(uom))
+				.qtyPickedPlanned(Quantity.zero(uom))
+				//
+				.customerId(bpartnerId)
+				.customerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, 11))
+				//
 				.deliveryDate(deliveryDate)
 				.preparationDate(preparationDate)
 				.displayed(true)
-				.shipmentScheduleId(ShipmentScheduleId.offRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()))
 				.productId(ProductId.ofRepoId(20))
-				.warehouseId(WarehouseId.ofRepoId(30))
-				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(0))
+				.warehouseId(WAREHOUSE_ID)
+				.asiId(AttributeSetInstanceId.NONE)
 				.build();
 	}
 }

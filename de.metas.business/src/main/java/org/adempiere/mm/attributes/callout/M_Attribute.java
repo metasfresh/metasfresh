@@ -28,12 +28,13 @@ import java.util.Properties;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
+
+import de.metas.util.Services;
 
 public class M_Attribute extends CalloutEngine
 {

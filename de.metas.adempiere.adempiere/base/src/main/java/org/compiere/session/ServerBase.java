@@ -9,6 +9,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.session.jaxrs.IServerService;
@@ -44,18 +45,20 @@ public class ServerBase implements IServerService
 	}
 
 	@Override
-	public ProcessExecutionResult process(final int adPInstanceId)
+	public ProcessExecutionResult process(final int adPInstanceRepoId)
 	{
+		final PInstanceId pinstanceId = PInstanceId.ofRepoId(adPInstanceRepoId);
+		
 		processExecutionCount.incrementAndGet();
 
 		final Thread currentThread = Thread.currentThread();
 		final String threadNameBkp = currentThread.getName();
 		try
 		{
-			currentThread.setName("Server_process_" + adPInstanceId);
+			currentThread.setName("Server_process_" + pinstanceId.getRepoId());
 
 			final ProcessExecutionResult result = ProcessInfo.builder()
-					.setAD_PInstance_ID(adPInstanceId)
+					.setPInstanceId(pinstanceId)
 					.setCreateTemporaryCtx()
 					//
 					.buildAndPrepareExecution()

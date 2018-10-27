@@ -25,6 +25,7 @@ package de.metas.storage.spi.hu.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,11 +33,9 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -45,20 +44,22 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 import de.metas.storage.spi.hu.IHUStorageBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -82,11 +83,10 @@ import lombok.NonNull;
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final IHUQueryBuilder huQueryBuilder;
-	private Set<Integer> _availableAttributeIds;
-	private final Set<Integer> _productIds = new HashSet<>();
+	private ImmutableSet<AttributeId> _availableAttributeIds;
+	private final Set<ProductId> _productIds = new HashSet<>();
 	private final transient List<I_M_Product> _products = new ArrayList<>(); // needed only for summary info
 	private final transient List<I_C_BPartner> _bpartners = new ArrayList<>(); // needed only for summary info
-	private final transient List<I_M_Warehouse> _warehouses = new ArrayList<>(); // needed only for summary info
 
 	/* package */ HUStorageQuery()
 	{
@@ -101,7 +101,7 @@ import lombok.NonNull;
 
 		// consider only VHUs
 		huQueryBuilder.setOnlyTopLevelHUs(false);
-		huQueryBuilder.addPIVersionToInclude(handlingUnitsDAO.getVirtual_HU_PI_Version_ID());
+		huQueryBuilder.addPIVersionToInclude(HuPackingInstructionsVersionId.VIRTUAL);
 
 		// consider only those HUs which are supposed to be considered for (e.g. not "shipped")
 		final List<String> huStatusesQtyOnHand = Services.get(IHUStatusBL.class).getQtyOnHandStatuses();
@@ -150,72 +150,6 @@ import lombok.NonNull;
 		return ObjectUtils.toString(this);
 	}
 
-	@Override
-	public String getSummary()
-	{
-		final StringBuilder summary = new StringBuilder();
-
-		//
-		// Product names
-		final Set<String> productNames = new HashSet<>();
-		if (!_products.isEmpty())
-		{
-			for (final I_M_Product product : _products)
-			{
-				final String productName = product.getName();
-				productNames.add(productName);
-			}
-		}
-		final String productNamesStr = CollectionUtils.toString(productNames, ", ");
-		//
-		summary.append("\n");
-		summary.append("@M_Product_ID@: ").append(Check.isEmpty(productNamesStr, true) ? "*" : productNamesStr);
-
-		//
-		// Warehouse names
-		final Set<String> warehouseNames = new HashSet<>();
-		if (!_warehouses.isEmpty())
-		{
-			for (final I_M_Warehouse warehouse : _warehouses)
-			{
-				final String warehouseName = warehouse.getName();
-				warehouseNames.add(warehouseName);
-			}
-		}
-		final String warehouseNamesStr = CollectionUtils.toString(warehouseNames, ", ");
-		//
-		summary.append("\n");
-		summary.append("@M_Warehouse_ID@: ").append(Check.isEmpty(warehouseNamesStr, true) ? "*" : warehouseNamesStr);
-
-		//
-		// BPartner names
-		final Set<String> bpartnerNames = new HashSet<>();
-		if (!_bpartners.isEmpty())
-		{
-			for (final I_C_BPartner bpartner : _bpartners)
-			{
-				final String bpartnerName = bpartner.getName();
-				bpartnerNames.add(bpartnerName);
-			}
-		}
-		final String bpartnerNamesStr = CollectionUtils.toString(bpartnerNames, ", ");
-		//
-		summary.append("\n");
-		summary.append("@C_BPartner_ID@: ").append(Check.isEmpty(bpartnerNamesStr, true) ? "*" : bpartnerNamesStr);
-
-		//
-		// Attributes
-		final String attributesStr = huQueryBuilder.getAttributesSummary();
-		//
-		if (!Check.isEmpty(attributesStr, true))
-		{
-			summary.append("\n");
-			summary.append(attributesStr);
-		}
-
-		return summary.toString();
-	}
-
 	public final IHUQueryBuilder createHUQueryBuilder()
 	{
 		return huQueryBuilder.copy();
@@ -252,11 +186,10 @@ import lombok.NonNull;
 
 		//
 		// Check if Product matches
-		final Set<Integer> queryProductIds = getProductIds();
+		final Set<ProductId> queryProductIds = getProductIds();
 		if (!queryProductIds.isEmpty())
 		{
-			final I_M_Product recordProduct = storageRecord.getProduct();
-			final int recordProductId = recordProduct.getM_Product_ID();
+			final ProductId recordProductId = storageRecord.getProductId();
 			if (!queryProductIds.contains(recordProductId))
 			{
 				return false;
@@ -309,10 +242,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IStorageQuery addProduct(final I_M_Product product)
+	public IStorageQuery addProduct(@NonNull final I_M_Product product)
 	{
-		Check.assumeNotNull(product, "Product not null");
-		final int productId = product.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		if (!_productIds.add(productId))
 		{
 			return this;
@@ -323,7 +255,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final Set<Integer> getProductIds()
+	private final Set<ProductId> getProductIds()
 	{
 		return _productIds;
 	}
@@ -351,12 +283,16 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IStorageQuery addWarehouse(final I_M_Warehouse warehouse)
+	public IStorageQuery addWarehouseId(@NonNull final WarehouseId warehouseId)
 	{
-		Check.assumeNotNull(warehouse, "warehouse not null");
-		final int warehouseId = warehouse.getM_Warehouse_ID();
-		huQueryBuilder.addOnlyInWarehouseId(WarehouseId.ofRepoId(warehouseId));
-		_warehouses.add(warehouse);
+		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
+		return this;
+	}
+
+	@Override
+	public IStorageQuery addWarehouseIds(@NonNull final Collection<WarehouseId> warehouseIds)
+	{
+		huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
 		return this;
 	}
 
@@ -378,7 +314,7 @@ import lombok.NonNull;
 			final String attributeValueType,
 			@Nullable final Object attributeValue)
 	{
-			// Skip null values because in this case user filled nothing => so we accept any value
+		// Skip null values because in this case user filled nothing => so we accept any value
 		if (attributeValue == null)
 		{
 			return this;
@@ -387,8 +323,8 @@ import lombok.NonNull;
 		//
 		// Make sure given attribute available to be used by our HU Storage implementations.
 		// If we would filter by other attributes we would get NO result.
-		final int attributeId = attribute.getM_Attribute_ID();
-		final Set<Integer> availableAttributeIds = getAvailableAttributeIds();
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		final Set<AttributeId> availableAttributeIds = getAvailableAttributeIds();
 		if (!availableAttributeIds.contains(attributeId))
 		{
 			return this;
@@ -425,12 +361,12 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final Set<Integer> getAvailableAttributeIds()
+	private final Set<AttributeId> getAvailableAttributeIds()
 	{
 		if (_availableAttributeIds == null)
 		{
 			final IHUStorageBL huStorageBL = Services.get(IHUStorageBL.class);
-			_availableAttributeIds = huStorageBL.getAvailableAttributeIds(Env.getCtx());
+			_availableAttributeIds = ImmutableSet.copyOf(huStorageBL.getAvailableAttributeIds());;
 		}
 		return _availableAttributeIds;
 	}

@@ -1,6 +1,5 @@
 package de.metas.handlingunits.sourcehu;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -14,8 +13,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -34,6 +32,9 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Singular;
 
@@ -80,8 +81,9 @@ public class SourceHUsService
 		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
 
 		// this filter's real job is to collect those HUs that are flagged as "source"
+		// FIXME: avoid using filters in such a way...
 		final Predicate<I_M_HU> filter = hu -> {
-			if (sourceHuDAO.isSourceHu(hu.getM_HU_ID()))
+			if (sourceHuDAO.isSourceHu(HuId.ofRepoId(hu.getM_HU_ID())))
 			{
 				sourceHUs.add(hu);
 			}
@@ -102,7 +104,7 @@ public class SourceHUsService
 
 	public boolean isHuOrAnyParentSourceHu(final HuId huId)
 	{
-		if(isSourceHu(huId)) // check if there is a quick answer
+		if (isSourceHu(huId)) // check if there is a quick answer
 		{
 			return true;
 		}
@@ -116,7 +118,7 @@ public class SourceHUsService
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final Predicate<I_M_HU> filterToExcludeSourceHus = currentHu -> !isSourceHu(currentHu.getM_HU_ID());
+		final Predicate<I_M_HU> filterToExcludeSourceHus = currentHu -> !isSourceHu(HuId.ofRepoId(currentHu.getM_HU_ID()));
 
 		final TopLevelHusQuery query = TopLevelHusQuery.builder()
 				.includeAll(false)
@@ -138,7 +140,7 @@ public class SourceHUsService
 		return sourceHU;
 	}
 
-	public boolean deleteSourceHuMarker(final int huId)
+	public boolean deleteSourceHuMarker(@NonNull final HuId huId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -203,14 +205,9 @@ public class SourceHUsService
 		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHUIds(query);
 	}
 
-	public boolean isSourceHu(final int huId)
-	{
-		return Services.get(ISourceHuDAO.class).isSourceHu(huId);
-	}
-
 	public boolean isSourceHu(final HuId huId)
 	{
-		return Services.get(ISourceHuDAO.class).isSourceHu(huId.getRepoId());
+		return Services.get(ISourceHuDAO.class).isSourceHu(huId);
 	}
 
 	/**
@@ -225,21 +222,23 @@ public class SourceHUsService
 		 * Query for HUs that have any of the given product IDs. Empty means that no HUs will be found.
 		 */
 		@Singular
-		ImmutableSet<Integer> productIds;
+		ImmutableSet<ProductId> productIds;
 
-		int warehouseId;
+		WarehouseId warehouseId;
 
 		public static MatchingSourceHusQuery fromHuId(final HuId huId)
 		{
-			final I_M_HU hu = load(huId, I_M_HU.class);
+			final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(huId);
 			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 			final IHUStorage storage = storageFactory.getStorage(hu);
 
-			final ImmutableSet<Integer> productIds = storage.getProductStorages().stream()
+			final ImmutableSet<ProductId> productIds = storage.getProductStorages().stream()
 					.filter(productStorage -> !productStorage.isEmpty())
-					.map(IProductStorage::getM_Product_ID).collect(ImmutableSet.toImmutableSet());
+					.map(IProductStorage::getProductId)
+					.collect(ImmutableSet.toImmutableSet());
 
-			return new MatchingSourceHusQuery(productIds, hu.getM_Locator().getM_Warehouse_ID());
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(hu.getM_Locator().getM_Warehouse_ID());
+			return new MatchingSourceHusQuery(productIds, warehouseId);
 		}
 	}
 }

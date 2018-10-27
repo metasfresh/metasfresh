@@ -27,8 +27,8 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -41,6 +41,8 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.process.PInstanceId;
+import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -103,7 +105,7 @@ public interface IFlatrateBL extends ISingletonService
 		private final boolean forceExtend;
 		private final Boolean forceComplete;
 		private final Timestamp nextTermStartDate;
-		private final int AD_PInstance_ID;
+		private final PInstanceId AD_PInstance_ID;
 	}
 
 	/**
@@ -126,7 +128,7 @@ public interface IFlatrateBL extends ISingletonService
 
 	I_C_DocType getDocTypeFor(I_C_Flatrate_Term term);
 
-	int getWarehouseId(I_C_Flatrate_Term term);
+	WarehouseId getWarehouseId(I_C_Flatrate_Term term);
 
 	/**
 	 * Copy relevant columns from {@link I_C_Flatrate_Conditions} to given <code>term</code>.
@@ -151,7 +153,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT:</b> depending on the conditions type, this method may or may not work for you. It does for <code>flatrateConditions</code> which have the type <code>Refundable</code>.
 	 * <p>
-	 * Note: obtain a {@link org.adempiere.util.ILoggable} and log to it:
+	 * Note: obtain a {@link de.metas.util.ILoggable} and log to it:
 	 * <ul>
 	 * <li>the bpartner's value</li>
 	 * <li>whether a term was created</li>

@@ -12,8 +12,6 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
@@ -23,9 +21,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -145,7 +146,7 @@ public class XlsReportEngine extends AbstractReportEngine
 		// Add debugging query info
 		{
 			String sqlQueryInfo = "jxls report=" + reportContext.getReportTemplatePath()
-					+ ", AD_PInstance_ID=" + reportContext.getAD_PInstance_ID();
+					+ ", AD_PInstance_ID=" + reportContext.getPinstanceId();
 			sqlQueryInfo = "/* "
 					+ sqlQueryInfo.replace("/*", " ").replace("*/", " ")
 					+ " */ ";
@@ -179,7 +180,7 @@ public class XlsReportEngine extends AbstractReportEngine
 		final TreeMap<String, Object> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 		map.put("AD_Process_ID", reportContext.getAD_Process_ID());
-		map.put("AD_PInstance_ID", reportContext.getAD_PInstance_ID());
+		map.put("AD_PInstance_ID", PInstanceId.toRepoId(reportContext.getPinstanceId()));
 		map.put("AD_Table_ID", reportContext.getAD_Table_ID());
 		map.put("Record_ID", reportContext.getRecord_ID());
 		map.put("AD_Language", reportContext.getAD_Language());

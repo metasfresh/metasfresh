@@ -7,10 +7,11 @@ import java.io.OutputStream;
 
 import javax.activation.DataSource;
 
-import org.adempiere.util.Check;
 import org.compiere.util.MimeType;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /*
  * #%L

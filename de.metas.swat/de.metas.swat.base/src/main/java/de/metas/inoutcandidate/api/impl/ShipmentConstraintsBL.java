@@ -3,7 +3,6 @@ package de.metas.inoutcandidate.api.impl;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 
 import com.google.common.base.Preconditions;
@@ -11,6 +10,7 @@ import com.google.common.base.Preconditions;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
 import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
+import de.metas.util.Services;
 
 /*
  * #%L

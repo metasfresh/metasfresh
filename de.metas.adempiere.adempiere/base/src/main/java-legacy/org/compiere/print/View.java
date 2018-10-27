@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.PrintViewerUI;
-import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
 import org.compiere.print.layout.LayoutEngine;
 import org.compiere.print.layout.Page;

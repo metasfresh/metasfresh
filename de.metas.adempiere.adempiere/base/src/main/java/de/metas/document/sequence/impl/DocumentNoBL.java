@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.document.sequence.spi.IDocumentNoListener;
+import de.metas.util.Check;
 
 /*
  * #%L

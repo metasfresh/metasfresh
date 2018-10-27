@@ -4,16 +4,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -64,6 +66,8 @@ public class CtxNames
 			.add(MODIFIER_QuotedIfNotDefault)
 			.build();
 
+	private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_\\-\\.#$|]+");
+
 	/**
 	 * Returns an immutable set of {@link CtxName}s that contains the results of {@link CtxNames#parse(String)}, applied to the strings of the given {@code stringsWithoutMarkers}.
 	 *
@@ -101,7 +105,7 @@ public class CtxNames
 		return new CtxName(
 				name, ImmutableList.of(), // modifiers
 				defaultValue // defaultValue
-				);
+		);
 	}
 
 	public static CtxName parse(final String contextWithoutMarkers)
@@ -144,7 +148,24 @@ public class CtxNames
 
 			firstToken = false;
 		}
+
+		assertValidName(name);
+
 		return name;
+	}
+
+	private static void assertValidName(final String name)
+	{
+		if (name.isEmpty())
+		{
+			throw new AdempiereException("Empty name is not a valid name");
+		}
+
+		if (!NAME_PATTERN.matcher(name).matches())
+		{
+			throw new AdempiereException("Invalid name '" + name + "'. It shall match '" + NAME_PATTERN + "'");
+		}
+
 	}
 
 	private static String extractDefaultValue(final List<String> modifiers)

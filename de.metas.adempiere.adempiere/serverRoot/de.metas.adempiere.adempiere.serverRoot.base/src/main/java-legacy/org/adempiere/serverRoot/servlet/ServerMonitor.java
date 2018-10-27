@@ -43,7 +43,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.serverRoot.util.WebEnv;
 import org.adempiere.serverRoot.util.WebUtil;
-import org.adempiere.util.Services;
 import org.apache.ecs.Element;
 import org.apache.ecs.HtmlColor;
 import org.apache.ecs.xhtml.a;
@@ -74,7 +73,6 @@ import org.compiere.model.MStore;
 import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerMgr;
 import org.compiere.util.CMemoryUsage;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
@@ -84,7 +82,9 @@ import org.springframework.context.annotation.Profile;
 
 import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Server Monitor
@@ -541,7 +541,7 @@ public class ServerMonitor extends HttpServlet
 				CacheMgt.get().reset();
 				m_message.addElement("Cache Reset: All");
 			}
-			else if (record_ID == null || record_ID.length() == 0)
+			else if (record_ID == null || record_ID.isEmpty())
 			{
 				CacheMgt.get().reset(tableName);
 				m_message.addElement("Cache Reset: " + tableName);
@@ -597,7 +597,7 @@ public class ServerMonitor extends HttpServlet
 		//
 		tr line = new tr();
 		line.addElement(new th().addElement(Adempiere.getName()));
-		line.addElement(new td().addElement(Adempiere.getVersion()));
+		line.addElement(new td().addElement(Adempiere.getBuildAndDateVersion()));
 		table.addElement(line);
 		line = new tr();
 		line.addElement(new th().addElement(Adempiere.getImplementationVendor()));

@@ -40,9 +40,10 @@ import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.Services;
 
 public class TrxItemProcessorExecutorTest
 {

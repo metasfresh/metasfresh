@@ -25,11 +25,10 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.Check;
-
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
+import de.metas.util.Check;
 
 public class CompositeReceiptScheduleListener implements IReceiptScheduleListener
 {

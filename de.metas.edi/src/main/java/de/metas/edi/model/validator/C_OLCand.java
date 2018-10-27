@@ -26,11 +26,11 @@ package de.metas.edi.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.Services;
 
 @Validator(I_C_OLCand.class)
 public class C_OLCand

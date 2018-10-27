@@ -11,12 +11,12 @@ import static org.junit.Assert.assertThat;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.proxy.AroundInvoke;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.IInvocationContext;
 import org.junit.Test;
 
+import de.metas.util.ISingletonService;
 import javassist.util.proxy.Proxy;
 
 /*

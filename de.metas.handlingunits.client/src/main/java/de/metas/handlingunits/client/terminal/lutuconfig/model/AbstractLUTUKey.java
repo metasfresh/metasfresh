@@ -1,36 +1,13 @@
 package de.metas.handlingunits.client.terminal.lutuconfig.model;
 
-/*
- * #%L
- * de.metas.handlingunits.client
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 public class AbstractLUTUKey extends AbstractLUTUCUKey
 {
@@ -38,7 +15,7 @@ public class AbstractLUTUKey extends AbstractLUTUCUKey
 	private final I_M_HU_PI_Item huPIItemChildJoin;
 	private String _id;
 	private final KeyNamePair value;
-	private final boolean isNoPI;
+	private final boolean isTemplatePI;
 	private final boolean isVirtualPI;
 
 	public AbstractLUTUKey(final ITerminalContext terminalContext, final I_M_HU_PI huPI)
@@ -46,21 +23,19 @@ public class AbstractLUTUKey extends AbstractLUTUCUKey
 		this(terminalContext, huPI, null); // huPIItemChildJoin=null
 	}
 
-	public AbstractLUTUKey(final ITerminalContext terminalContext, final I_M_HU_PI huPI, final I_M_HU_PI_Item huPIItemChildJoin)
+	public AbstractLUTUKey(final ITerminalContext terminalContext, @NonNull final I_M_HU_PI huPI, final I_M_HU_PI_Item huPIItemChildJoin)
 	{
 		super(terminalContext);
 
-		Check.assumeNotNull(huPI, "huPI not null");
 		this.huPI = huPI;
 		this.huPIItemChildJoin = huPIItemChildJoin;
 
-		final int huPIId = huPI.getM_HU_PI_ID();
+		final HuPackingInstructionsId huPIId = HuPackingInstructionsId.ofRepoId(huPI.getM_HU_PI_ID());
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		isNoPI = huPIId == handlingUnitsDAO.getPackingItemTemplate_HU_PI_ID();
-		isVirtualPI = huPIId == handlingUnitsDAO.getVirtual_HU_PI_ID();
+		isTemplatePI = huPIId.isTemplate();
+		isVirtualPI = huPIId.isVirtual();
 
-		value = new KeyNamePair(huPIId, huPI.getName());
+		value = KeyNamePair.of(huPIId, huPI.getName());
 	}
 
 	@Override
@@ -114,7 +89,7 @@ public class AbstractLUTUKey extends AbstractLUTUCUKey
 
 	public final boolean isNoPI()
 	{
-		return isNoPI;
+		return isTemplatePI;
 	}
 
 	public final boolean isVirtualPI()

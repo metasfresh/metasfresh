@@ -27,8 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.async.api.IAsyncBatchBuilder;
@@ -36,6 +34,9 @@ import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 class AsyncBatchBuilder implements IAsyncBatchBuilder
 {
@@ -46,7 +47,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 
 	// Parameters
 	private Properties _ctx;
-	private int _adPInstanceId;
+	private PInstanceId adPInstanceId;
 	private int parentAsycnBatchId;
 	private int _countExpected;
 	private String _name;
@@ -69,7 +70,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	public I_C_Async_Batch build()
 	{
 		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.create(getCtx(), I_C_Async_Batch.class, ITrx.TRXNAME_None);
-		asyncBatch.setAD_PInstance_ID(getAD_PInstance_Creator_ID());
+		asyncBatch.setAD_PInstance_ID(PInstanceId.toRepoId(getAD_PInstance_Creator_ID()));
 		asyncBatch.setParent_Async_Batch_ID(getParentAsycnBatchId());
 		asyncBatch.setName(getName());
 		asyncBatch.setDescription(getDescription());
@@ -114,15 +115,15 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	}
 	
 	@Override
-	public IAsyncBatchBuilder setAD_PInstance_Creator_ID(final int adPInstanceId)
+	public IAsyncBatchBuilder setAD_PInstance_Creator_ID(final PInstanceId adPInstanceId)
 	{
-		_adPInstanceId = adPInstanceId;
+		this.adPInstanceId = adPInstanceId;
 		return this;
 	}
 
-	private final int getAD_PInstance_Creator_ID()
+	private final PInstanceId getAD_PInstance_Creator_ID()
 	{
-		return _adPInstanceId;
+		return adPInstanceId;
 	}
 
 	private int getParentAsycnBatchId()

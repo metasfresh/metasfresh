@@ -26,9 +26,10 @@ package org.compiere.grid;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
-import org.adempiere.util.Check;
 import org.compiere.model.FieldGroupVO;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
+
+import de.metas.util.Check;
 
 /**
  * {@link VPanelFieldGroup} factory.

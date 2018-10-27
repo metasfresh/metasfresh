@@ -28,10 +28,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
@@ -39,7 +37,12 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.storage.EmptyHUListener;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /* package */class AllocationRequestBuilder implements IAllocationRequestBuilder
@@ -112,6 +115,12 @@ import lombok.NonNull;
 		return this;
 	}
 
+	@Override
+	public IAllocationRequestBuilder setProduct(final ProductId productId)
+	{
+		return setProduct(productId != null ? Services.get(IProductDAO.class).getById(productId) : null);
+	}
+
 	public I_M_Product getProductToUse()
 	{
 		if (product != null)
@@ -176,6 +185,12 @@ import lombok.NonNull;
 		else if (baseAllocationRequest != null)
 		{
 			return baseAllocationRequest.getDate();
+		}
+
+		final Date contextDate = getHUContextToUse().getDate();
+		if (contextDate != null)
+		{
+			return contextDate;
 		}
 
 		throw new AdempiereException("Date not set in " + this);

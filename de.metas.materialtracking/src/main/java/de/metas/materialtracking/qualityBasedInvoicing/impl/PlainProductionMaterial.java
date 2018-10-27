@@ -25,12 +25,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
+import de.metas.util.Check;
 
 /* package */final class PlainProductionMaterial extends AbstractProductionMaterial
 {

@@ -24,7 +24,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MBPartner;
@@ -47,6 +46,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Services;
 
 /**
  * 	Create PO from Requisition 

@@ -2,8 +2,6 @@ package de.metas.contracts.subscription.process;
 
 import java.util.Objects;
 
-import org.adempiere.util.StringUtils;
-
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -12,6 +10,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*

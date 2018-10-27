@@ -11,7 +11,6 @@ import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchema;
@@ -20,6 +19,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchema;
 
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**

@@ -27,12 +27,12 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MInvoice;
 
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.util.Services;
 
 public class PlainInvoiceBL extends AbstractInvoiceBL
 {

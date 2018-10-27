@@ -2,9 +2,10 @@ package org.adempiere.mm.attributes;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.util.Check;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Value;
 
 /*

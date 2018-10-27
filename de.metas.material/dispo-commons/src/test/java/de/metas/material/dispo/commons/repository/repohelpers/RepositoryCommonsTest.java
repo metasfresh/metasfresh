@@ -14,7 +14,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.util.Services;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -24,6 +23,7 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

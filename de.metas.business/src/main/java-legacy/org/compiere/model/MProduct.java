@@ -24,12 +24,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 
 /**
  * Product Model

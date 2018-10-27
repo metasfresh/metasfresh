@@ -29,9 +29,10 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.IADColumnCalloutBL;
 import org.adempiere.ad.callout.api.IADColumnCalloutDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ColumnCallout;
+
+import de.metas.util.Services;
 
 public class ADColumnCalloutBL implements IADColumnCalloutBL
 {

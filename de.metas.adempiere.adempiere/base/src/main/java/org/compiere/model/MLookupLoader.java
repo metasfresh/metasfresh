@@ -33,7 +33,6 @@ import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.INamePairIterator;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.util.Services;
 import org.compiere.model.MLookup.ILookupData;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
@@ -42,6 +41,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Asynchronous lookup data loader

@@ -28,7 +28,8 @@ import java.lang.ref.WeakReference;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * @author tsa

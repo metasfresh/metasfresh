@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,29 +33,28 @@ import lombok.Value;
 @Value
 public class TransactionDetail
 {
-	public static TransactionDetail forTransactionDetailRecord(
-			@NonNull final I_MD_Candidate_Transaction_Detail transactionDetailRecord)
-	{
-		return new TransactionDetail(
-				transactionDetailRecord.getMovementQty(),
-				transactionDetailRecord.getM_Transaction_ID(),
-				true); // complete
-	}
-
-	public static TransactionDetail forCandidateOrQuery(@NonNull final BigDecimal quantity, final int transactionId)
+	public static TransactionDetail forCandidateOrQuery(
+			@NonNull final BigDecimal quantity,
+			@NonNull final AttributesKey storageAttributesKey,
+			final int attributeSetInstanceId,
+			final int transactionId)
 	{
 		return new TransactionDetail(
 				quantity,
+				storageAttributesKey,
+				attributeSetInstanceId,
 				transactionId,
-				true); // complete
+				true /*complete*/);
 	}
 
 	public static TransactionDetail forQuery(final int transactionId)
 	{
 		return new TransactionDetail(
-				null,
+				null /*quantity*/,
+				null /*storageAttributesKey*/,
+				-1 /*attributeSetInstanceId*/,
 				transactionId,
-				false); // complete
+				false /*complete*/);
 	}
 
 	boolean complete;
@@ -64,7 +63,16 @@ public class TransactionDetail
 
 	int transactionId;
 
-	public TransactionDetail(final BigDecimal quantity, final int transactionId, final boolean complete)
+	AttributesKey storageAttributesKey;
+
+	int attributeSetInstanceId;
+
+	public TransactionDetail(
+			final BigDecimal quantity,
+			final AttributesKey storageAttributesKey,
+			final int attributeSetInstanceId,
+			final int transactionId,
+			final boolean complete)
 	{
 		this.complete = complete;
 
@@ -73,5 +81,8 @@ public class TransactionDetail
 
 		Preconditions.checkArgument(!complete || quantity != null, "The given parameter quantity may not be null because complete=true; transactionId=%s", transactionId);
 		this.quantity = quantity;
+
+		this.storageAttributesKey = storageAttributesKey;
+		this.attributeSetInstanceId = attributeSetInstanceId;
 	}
 }

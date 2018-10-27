@@ -25,11 +25,11 @@ package de.metas.dunning.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.Services;
 
 @Validator(I_C_Dunning_Candidate.class)
 public class C_Dunning_Candidate

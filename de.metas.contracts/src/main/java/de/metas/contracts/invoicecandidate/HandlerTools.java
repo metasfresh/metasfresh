@@ -8,20 +8,22 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.CCache;
 
+import de.metas.cache.CCache;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -86,10 +88,11 @@ public class HandlerTools
 		ic.setM_PricingSystem_ID(term.getM_PricingSystem_ID());
 
 		// 07442 activity and tax
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
-
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), term.getM_Product());
-		ic.setC_Activity(activity);
+		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+				ClientId.ofRepoId(term.getAD_Client_ID()),
+				OrgId.ofRepoId(term.getAD_Org_ID()),
+				ProductId.ofRepoId(term.getM_Product_ID()));
+		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		ic.setIsTaxIncluded(term.isTaxIncluded());
 
 		if (term.getC_OrderLine_Term_ID() > 0)
@@ -102,7 +105,6 @@ public class HandlerTools
 		return ic;
 	}
 
-
 	public static boolean isCancelledContract(@NonNull final I_C_Flatrate_Term term)
 	{
 		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus())
@@ -110,11 +112,11 @@ public class HandlerTools
 	}
 
 	private static final CCache<Integer, I_C_Flatrate_Term> IC_2_TERM = CCache
-			.<Integer, I_C_Flatrate_Term> newCache(
-					I_C_Invoice_Candidate.Table_Name + "#by#" + I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID + "#" + I_C_Invoice_Candidate.COLUMNNAME_Record_ID,
-					0,
-					CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_C_Flatrate_Term.Table_Name);
+			.<Integer, I_C_Flatrate_Term> builder()
+			.cacheName(I_C_Invoice_Candidate.Table_Name + "#by#" + I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID + "#" + I_C_Invoice_Candidate.COLUMNNAME_Record_ID)
+			.tableName(I_C_Invoice_Candidate.Table_Name)
+			.additionalTableNameToResetFor(I_C_Flatrate_Term.Table_Name)
+			.build();
 
 	public static I_C_Flatrate_Term retrieveTerm(@NonNull final I_C_Invoice_Candidate ic)
 	{

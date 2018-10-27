@@ -15,8 +15,7 @@ import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Locator;
@@ -33,6 +32,8 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTe
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -131,12 +132,12 @@ public class HUMovementBuilderTests
 		assertThat(warehouseTo.getAD_Org_ID(), is(org.getAD_Org_ID()));
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
-		lutuProducer.setM_Locator(locatorFrom);
+		lutuProducer.setLocatorId(LocatorId.ofRecord(locatorFrom));
 		lutuProducer.setLUPI(testsupport.piLU);
 		lutuProducer.setLUItemPI(testsupport.piLU_Item_IFCO);
 		lutuProducer.setTUPI(testsupport.piTU_IFCO);
 
-		testsupport.helper.load(lutuProducer, testsupport.helper.pTomato, loadCuQty, testsupport.helper.uomKg);
+		testsupport.helper.load(lutuProducer, testsupport.helper.pTomatoProductId, loadCuQty, testsupport.helper.uomKg);
 		final List<I_M_HU> hus = lutuProducer.getCreatedHUs();
 
 		assertThat(hus.size(), is(1));

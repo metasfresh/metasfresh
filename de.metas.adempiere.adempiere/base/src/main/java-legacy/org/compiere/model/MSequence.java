@@ -32,9 +32,7 @@ import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
@@ -42,6 +40,8 @@ import org.slf4j.Logger;
 
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Sequence Model.

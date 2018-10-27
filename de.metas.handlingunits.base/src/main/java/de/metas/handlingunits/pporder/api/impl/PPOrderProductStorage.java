@@ -26,14 +26,15 @@ package de.metas.handlingunits.pporder.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.util.Services;
 
 /**
  * Product storage for {@link I_PP_Order} header (i.e. finished goods).
@@ -64,15 +65,15 @@ public class PPOrderProductStorage extends AbstractProductStorage
 	@Override
 	protected Capacity retrieveTotalCapacity()
 	{
-		final I_M_Product product = ppOrder.getM_Product();
-		final I_C_UOM uom = ppOrder.getC_UOM();
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(ppOrder.getC_UOM_ID());
 		// we allow negative qty because we want to allow receiving more then expected
 		final boolean allowNegativeCapacity = true;
 		final BigDecimal qtyCapacity = ppOrder.getQtyOrdered(); // i.e. target Qty To Receive
 
 		return Capacity.createCapacity(
 				qtyCapacity, // qty
-				product, // product
+				productId, // product
 				uom, // uom
 				allowNegativeCapacity // allowNegativeCapacity
 				);

@@ -25,9 +25,8 @@ package de.metas.handlingunits.order.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.util.ISingletonService;
 
 public interface IHUOrderLineDAO extends ISingletonService
 {

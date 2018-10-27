@@ -34,24 +34,23 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMBL;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeBL;
@@ -74,7 +73,12 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 public class OrderLineBL implements IOrderLineBL
@@ -191,24 +195,22 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			logger.debug("Looking for M_Shipper_ID via ship-to-bpartner of {}", order);
 
-			final int bPartnerID = order.getC_BPartner_ID();
-			if (bPartnerID <= 0)
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+			if (bpartnerId == null)
 			{
 				logger.warn("{} has no ship-to-bpartner", order);
 				return;
 			}
 
-			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(bPartnerID, ITrx.TRXNAME_None);
-			if (shipper == null)
+			final ShipperId shipperId = Services.get(IBPartnerDAO.class).getShipperId(bpartnerId);
+			if (shipperId == null)
 			{
 				// task 07034: nothing to do
 				return;
 			}
 
-			final int bPartnerShipperId = shipper.getM_Shipper_ID();
-
-			logger.debug("Setting M_Shipper_ID={} from ship-to-bpartner", bPartnerShipperId);
-			ol.setM_Shipper_ID(bPartnerShipperId);
+			logger.debug("Setting M_Shipper_ID={} from ship-to-bpartner", shipperId);
+			ol.setM_Shipper_ID(shipperId.getRepoId());
 		}
 	}
 
@@ -247,7 +249,7 @@ public class OrderLineBL implements IOrderLineBL
 			ol.setC_BPartner_ID(bpartnerId);
 
 			final BPartnerLocationId deliveryLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
-			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoIdOr(deliveryLocationId, -1));
+			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(deliveryLocationId));
 
 			final int contactId = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
 			ol.setAD_User_ID(contactId);
@@ -291,13 +293,13 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateLineNetAmt(@NonNull final I_C_OrderLine orderLine)
+	public void updateLineNetAmt(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		updateLineNetAmt(orderLine, getQtyEntered(orderLine));
 	}
 
 	void updateLineNetAmt(
-			@NonNull final I_C_OrderLine ol,
+			@NonNull final org.compiere.model.I_C_OrderLine ol,
 			@NonNull final Quantity qty)
 	{
 		final Quantity qtyInPriceUOM = convertToPriceUOM(qty, ol);
@@ -496,12 +498,14 @@ public class OrderLineBL implements IOrderLineBL
 
 		final BigDecimal qtyEntered = orderLine.getQtyEntered();
 
-		if (orderLine.getM_Product_ID() <= 0 || orderLine.getC_UOM_ID() <= 0)
+		ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		final I_C_UOM uom = orderLine.getC_UOM();
+		if (productId == null || uom == null)
 		{
 			return qtyEntered;
 		}
 
-		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(ctx, orderLine.getM_Product(), orderLine.getC_UOM(), qtyEntered);
+		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(ctx, productId, uom, qtyEntered);
 		return qtyOrdered;
 	}
 
@@ -521,7 +525,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IUOMConversionContext conversionCtx = uomConversionBL.createConversionContext(orderLine.getM_Product_ID());
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
 		return uomConversionBL.convertQuantityTo(qtyEntered, conversionCtx, priceUOM);
 	}
 
@@ -571,26 +575,30 @@ public class OrderLineBL implements IOrderLineBL
 		// link the line with the one from the counter document
 		line.setRef_OrderLine_ID(fromLine.getC_OrderLine_ID());
 
-		if (line.getM_Product_ID() > 0)      // task 09700
+		final ProductId lineProductId = ProductId.ofRepoIdOrNull(line.getM_Product_ID());
+		if (lineProductId != null)      // task 09700
 		{
-			final IProductDAO productDAO = Services.get(IProductDAO.class);
+			final IProductDAO productsRepo = Services.get(IProductDAO.class);
+			final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-			final I_AD_Org org = line.getAD_Org();
-			final org.compiere.model.I_M_Product lineProduct = line.getM_Product();
+			final I_AD_Org lineOrg = orgsRepo.getById(line.getAD_Org_ID());
+			final I_M_Product lineProduct = productsRepo.getById(lineProductId, I_M_Product.class);
 
-			if (lineProduct.getAD_Org_ID() != 0)
+			final OrgId productOrgId = OrgId.ofRepoIdOrAny(lineProduct.getAD_Org_ID());
+			if (!productOrgId.isAny())
 			{
 				// task 09700 the product from the original order is org specific, so we need to substitute it with the product from the counter-org.
-				final org.compiere.model.I_M_Product counterProduct = productDAO.retrieveMappedProductOrNull(lineProduct, org);
-				if (counterProduct == null)
+				final ProductId counterProductId = productsRepo.retrieveMappedProductIdOrNull(lineProductId, productOrgId);
+				if (counterProductId == null)
 				{
+					final I_AD_Org productOrg = orgsRepo.getById(productOrgId);
 					final String msg = msgBL.getMsg(InterfaceWrapperHelper.getCtx(line),
 							MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT,
-							new Object[] { lineProduct.getValue(), lineProduct.getAD_Org().getName(), org.getName() });
+							new Object[] { lineProduct.getValue(), productOrg.getName(), lineOrg.getName() });
 					throw new AdempiereException(msg);
 				}
-				line.setM_Product(counterProduct);
+				line.setM_Product_ID(counterProductId.getRepoId());
 			}
 		}
 

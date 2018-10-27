@@ -27,11 +27,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.proxy.AroundInvoke;
 import org.adempiere.util.proxy.IInterceptorInstance;
 import org.adempiere.util.proxy.IInvocationContext;
 import org.reflections.ReflectionUtils;
+
+import de.metas.util.Check;
 
 /* package */final class JavaAssistInterceptorInstance implements IInterceptorInstance
 {

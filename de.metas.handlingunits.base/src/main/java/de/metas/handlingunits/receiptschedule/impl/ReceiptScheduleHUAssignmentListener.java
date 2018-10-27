@@ -24,7 +24,6 @@ package de.metas.handlingunits.receiptschedule.impl;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -35,6 +34,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.util.Services;
 
 /**
  * Dedicated assignment listener used then HUs are assigned to receipt schedules.

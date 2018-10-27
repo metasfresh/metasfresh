@@ -5,10 +5,10 @@ package de.metas.i18n;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Language;
 
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
+import de.metas.util.ISingletonService;
 
 /**
  * {@link I_AD_Language} related helpers.

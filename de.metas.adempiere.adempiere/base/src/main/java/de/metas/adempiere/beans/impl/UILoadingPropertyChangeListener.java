@@ -27,10 +27,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.adempiere.form.IClientUI;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Property change listener for long operations (i.e display loading cursor)

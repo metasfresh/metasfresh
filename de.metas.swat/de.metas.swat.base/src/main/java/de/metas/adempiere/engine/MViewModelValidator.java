@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -40,6 +39,7 @@ import de.metas.adempiere.service.ITableMViewBL;
 import de.metas.adempiere.service.ITableMViewBL.RefreshMode;
 import de.metas.adempiere.service.impl.TableMViewBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public class MViewModelValidator implements ModelValidator
 {

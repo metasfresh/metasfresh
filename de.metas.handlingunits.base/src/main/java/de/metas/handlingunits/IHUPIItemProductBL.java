@@ -24,12 +24,12 @@ package de.metas.handlingunits;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.util.ISingletonService;
 
 public interface IHUPIItemProductBL extends ISingletonService
 {

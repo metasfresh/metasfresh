@@ -11,8 +11,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.FixedTimeSource;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
@@ -27,6 +25,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.StartupListener;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.util.time.FixedTimeSource;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 

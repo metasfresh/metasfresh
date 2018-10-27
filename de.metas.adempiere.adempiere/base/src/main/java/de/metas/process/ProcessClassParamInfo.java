@@ -7,13 +7,16 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.reflect.ClassReference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -68,7 +71,8 @@ public final class ProcessClassParamInfo
 	// NOTE: NEVER EVER store the process class as field because we want to have a weak reference to it to prevent ClassLoader memory leaks nightmare.
 	// Remember that we are caching this object.
 	private final ArrayKey fieldKey;
-	private final Class<?> fieldType; // FIXME: get rid of this to avoid class loader memory leaks
+	@Getter(AccessLevel.PRIVATE)
+	private final ClassReference<?> fieldTypeRef;
 
 	@Builder
 	private ProcessClassParamInfo(
@@ -84,9 +88,14 @@ public final class ProcessClassParamInfo
 		this.parameterKey = createParameterUniqueKey(parameterName, parameterTo);
 
 		this.fieldKey = createFieldUniqueKey(field);
-		this.fieldType = field.getType();
+		this.fieldTypeRef = ClassReference.of(field.getType());
 
 		this.mandatory = mandatory;
+	}
+	
+	public Class<?> getFieldType()
+	{
+		return fieldTypeRef.getReferencedClass();
 	}
 
 	/**
@@ -121,6 +130,8 @@ public final class ProcessClassParamInfo
 					return;
 				}
 			}
+			
+			final Class<?> fieldType = getFieldType();
 			if (fieldType.isPrimitive())
 			{
 				// don't set a primitive type to null

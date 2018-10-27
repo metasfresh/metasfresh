@@ -26,8 +26,9 @@ package org.adempiere.facet.impl;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.facet.IFacet;
 import org.adempiere.facet.IFacetCategory;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.util.Check;
 
 /**
  * {@link IFacet} implementation.

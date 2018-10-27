@@ -10,38 +10,62 @@ package org.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Services;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_TreeNode;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class OrgDAO implements IOrgDAO
 {
+	@Override
+	public void save(@NonNull final I_AD_Org orgRecord)
+	{
+		InterfaceWrapperHelper.save(orgRecord);
+	}
+
+	@Override
+	public Optional<OrgId> getOrgIdByValue(@NonNull final String value)
+	{
+		final String valueFixed = value.trim();
+
+		final int orgIdInt = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Org.class)
+				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, valueFixed)
+				.create()
+				.firstIdOnly();
+
+		return OrgId.optionalOfRepoId(orgIdInt);
+	}
+
 	@Override
 	@Cached(cacheName = I_AD_Org.Table_Name + "#by#" + I_AD_Org.COLUMNNAME_AD_Client_ID)
 	public List<I_AD_Org> retrieveClientOrgs(@CacheCtx final Properties ctx, final int adClientId)
@@ -65,14 +89,55 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_AD_OrgInfo.Table_Name)
-	public I_AD_OrgInfo retrieveOrgInfo(@CacheCtx final Properties ctx, final int adOrgId, @CacheTrx final String trxName)
+	public I_AD_OrgInfo retrieveOrgInfo(final Properties ctx, final int adOrgId, final String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_OrgInfo.class, ctx, trxName)
 				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, adOrgId)
 				.create()
 				.firstOnly(I_AD_OrgInfo.class);
+	}
+
+	@Override
+	public WarehouseId getOrgWarehouseId(@NonNull final OrgId orgId)
+	{
+		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+
+		if (orgInfo == null)
+		{
+			return null;
+		}
+
+		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_Warehouse_ID());
+	}
+
+	@Override
+	public WarehouseId getOrgPOWarehouseId(@NonNull final OrgId orgId)
+	{
+		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+
+		if (orgInfo == null)
+		{
+			return null;
+		}
+
+		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_WarehousePO_ID());
+	}
+
+	@Override
+	public WarehouseId getOrgDropshipWarehouseId(@NonNull final OrgId orgId)
+	{
+		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+
+		if (orgInfo == null)
+		{
+			return null;
+		}
+
+		return WarehouseId.ofRepoIdOrNull(orgInfo.getDropShip_Warehouse_ID());
 	}
 
 	@Override

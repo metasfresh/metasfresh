@@ -1,8 +1,7 @@
 package de.metas.elasticsearch.denormalizers;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

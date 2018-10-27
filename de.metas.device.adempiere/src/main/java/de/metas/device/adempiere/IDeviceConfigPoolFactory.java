@@ -1,7 +1,8 @@
 package de.metas.device.adempiere;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.net.IHostIdentifier;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

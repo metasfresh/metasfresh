@@ -25,7 +25,7 @@ package org.adempiere.ad.security;
 
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /**
  * API interface for a security engine with pluggable rules.

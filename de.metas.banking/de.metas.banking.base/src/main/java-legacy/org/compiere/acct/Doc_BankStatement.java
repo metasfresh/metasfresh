@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.acct.Fact.FactLineBuilder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
@@ -31,6 +30,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.util.Check;
 
 /**
  * Post Bank Statement Documents.

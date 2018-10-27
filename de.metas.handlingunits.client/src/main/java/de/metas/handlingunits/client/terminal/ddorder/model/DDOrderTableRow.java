@@ -33,8 +33,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
@@ -50,6 +48,8 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.client.terminal.ddorder.api.impl.DDOrderTableRowAggregationKey;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class DDOrderTableRow implements IDDOrderTableRow
 {

@@ -28,13 +28,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
 import org.adempiere.util.text.TokenizedStringBuilder;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
 
 public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChangesChecker
 {

@@ -1,9 +1,10 @@
 package de.metas.process;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
+
+import de.metas.util.time.SystemTime;
 
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
 public class ExecuteUpdateSQL extends JavaProcess

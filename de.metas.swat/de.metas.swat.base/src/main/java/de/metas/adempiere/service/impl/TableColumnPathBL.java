@@ -32,11 +32,12 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Services;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+
 import org.compiere.util.DB;
 import org.compiere.util.Util;
 

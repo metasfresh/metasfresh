@@ -26,10 +26,9 @@ package de.metas.adempiere.form.terminal.field.constraint;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.WrongValueException;
+import de.metas.util.Check;
 
 public class CompositeTerminalFieldConstraint<T> implements ITerminalFieldConstraint<T>
 {

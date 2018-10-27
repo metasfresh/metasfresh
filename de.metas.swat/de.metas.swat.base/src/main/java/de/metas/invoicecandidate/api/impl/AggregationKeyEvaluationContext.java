@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -40,6 +39,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
 
 /**
  * Evaluation context used to parse the header and line aggregation key right before aggregating to invoice or invoice lines

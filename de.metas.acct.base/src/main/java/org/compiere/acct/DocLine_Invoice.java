@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
@@ -36,6 +35,7 @@ import org.compiere.model.MTax;
 
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 public class DocLine_Invoice extends DocLine
 {

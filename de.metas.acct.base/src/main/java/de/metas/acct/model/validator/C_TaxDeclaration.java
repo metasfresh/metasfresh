@@ -26,9 +26,10 @@ package de.metas.acct.model.validator;
 import org.adempiere.acct.api.ITaxDeclarationDAO;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.model.ModelValidator;
+
+import de.metas.util.Services;
 
 @Interceptor(I_C_TaxDeclaration.class)
 public class C_TaxDeclaration

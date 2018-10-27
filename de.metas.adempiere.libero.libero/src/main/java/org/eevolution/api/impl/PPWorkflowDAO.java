@@ -30,14 +30,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_AD_Workflow;
 import org.eevolution.api.IPPWorkflowDAO;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Services;
 
 public class PPWorkflowDAO implements IPPWorkflowDAO
 {

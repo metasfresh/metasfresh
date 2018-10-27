@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -104,7 +103,7 @@ public class PlainAttributeValue extends AbstractAttributeValue
 		return attributeValueNew;
 	}
 
-	/* package */PlainAttributeValue(final IAttributeStorage attributeStorage,
+	/* package */ PlainAttributeValue(final IAttributeStorage attributeStorage,
 			final I_M_Attribute attribute,
 			// Propagation-specific attributes
 			final String propagationType, final Class<? extends IAttributeAggregationStrategy> aggregationStrategy, final Class<? extends IAttributeSplitterStrategy> splitterStrategy)
@@ -213,6 +212,12 @@ public class PlainAttributeValue extends AbstractAttributeValue
 	public boolean isDisplayedUI()
 	{
 		return true;
+	}
+
+	@Override
+	public boolean isMandatory()
+	{
+		return false;
 	}
 
 	@Override

@@ -2,10 +2,9 @@ package de.metas.shipper.gateway.spi.model;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;

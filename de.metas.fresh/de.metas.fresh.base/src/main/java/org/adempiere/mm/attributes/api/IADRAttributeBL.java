@@ -25,10 +25,10 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.fresh.model.I_C_BPartner;
+import de.metas.util.ISingletonService;
 
 public interface IADRAttributeBL extends ISingletonService, IBPartnerAwareAttributeService
 {

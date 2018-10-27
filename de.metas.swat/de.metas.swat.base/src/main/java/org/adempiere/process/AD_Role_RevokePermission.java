@@ -30,10 +30,10 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.RolePermRevokeAccess;
-import org.adempiere.util.Services;
 import org.compiere.model.MRolePermRequest;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * Revoke Permission

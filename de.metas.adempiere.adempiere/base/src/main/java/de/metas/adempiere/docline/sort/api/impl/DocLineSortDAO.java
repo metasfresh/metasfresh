@@ -29,16 +29,16 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_DocLine_Sort;
 import org.compiere.model.I_C_DocLine_Sort_Item;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.adempiere.docline.sort.api.IDocLineSortItemFinder;
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class DocLineSortDAO implements IDocLineSortDAO
 {

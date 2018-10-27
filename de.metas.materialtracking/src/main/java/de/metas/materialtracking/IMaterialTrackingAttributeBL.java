@@ -2,13 +2,13 @@ package de.metas.materialtracking;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.ISingletonService;
 
 /**
  * Models the relation between {@link I_M_Material_Tracking} and {@link I_M_Attribute}.

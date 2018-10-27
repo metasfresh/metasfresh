@@ -2,9 +2,9 @@ package org.adempiere.ad.field.model.interceptor;
 
 import java.sql.SQLException;
 
+import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
@@ -12,6 +12,8 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -93,4 +95,15 @@ public class AD_Field
 		// in the end, make sure the translation fields are also updated
 		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(fieldElement.getAD_Element_ID());
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_AD_Field.COLUMNNAME_DisplayLogic })
+	public void validateLogicExpressions(final I_AD_Field field)
+	{
+		if (!Check.isEmpty(field.getDisplayLogic(), true))
+		{
+			LogicExpressionCompiler.instance.compile(field.getDisplayLogic());
+		}
+	}
+
 }

@@ -3,7 +3,6 @@ package de.metas.material.event.eventbus;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
@@ -17,6 +16,7 @@ import de.metas.event.IEventListener;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandlerRegistry;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

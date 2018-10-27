@@ -10,7 +10,6 @@ import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Attribute;
@@ -39,6 +38,7 @@ import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.HUDescriptor.HUDescriptorBuilder;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -135,7 +135,7 @@ public class M_Transaction_HuDescriptor
 		{
 			final ProductDescriptor productDescriptor = ProductDescriptor
 					.forProductAndAttributes(
-							productStorage.getM_Product_ID(),
+							productStorage.getProductId().getRepoId(),
 							attributesKeyAndAsiId.getLeft(),
 							attributesKeyAndAsiId.getRight());
 

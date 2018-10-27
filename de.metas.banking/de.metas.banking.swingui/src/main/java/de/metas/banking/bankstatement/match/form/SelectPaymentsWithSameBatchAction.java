@@ -5,11 +5,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
-import org.adempiere.util.Check;
 import org.compiere.swing.table.AnnotatedTableModel;
 
 import de.metas.banking.bankstatement.match.model.IPayment;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
+import de.metas.util.Check;
 
 /*
  * #%L

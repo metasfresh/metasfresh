@@ -715,25 +715,25 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateContracted);
 	}
 
-	/** 
-	 * DeliveryRule AD_Reference_ID=151
-	 * Reference name: C_Order DeliveryRule
-	 */
-	public static final int DELIVERYRULE_AD_Reference_ID=151;
-	/** AfterReceipt = R */
-	public static final String DELIVERYRULE_AfterReceipt = "R";
-	/** Availability = A */
-	public static final String DELIVERYRULE_Availability = "A";
-	/** CompleteLine = L */
-	public static final String DELIVERYRULE_CompleteLine = "L";
-	/** CompleteOrder = O */
-	public static final String DELIVERYRULE_CompleteOrder = "O";
-	/** Force = F */
-	public static final String DELIVERYRULE_Force = "F";
-	/** Manual = M */
-	public static final String DELIVERYRULE_Manual = "M";
-	/** MitNaechsterAbolieferung = S */
-	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
+//	/** 
+//	 * DeliveryRule AD_Reference_ID=151
+//	 * Reference name: C_Order DeliveryRule
+//	 */
+//	public static final int DELIVERYRULE_AD_Reference_ID=151;
+//	/** AfterReceipt = R */
+//	public static final String DELIVERYRULE_AfterReceipt = "R";
+//	/** Availability = A */
+//	public static final String DELIVERYRULE_Availability = "A";
+//	/** CompleteLine = L */
+//	public static final String DELIVERYRULE_CompleteLine = "L";
+//	/** CompleteOrder = O */
+//	public static final String DELIVERYRULE_CompleteOrder = "O";
+//	/** Force = F */
+//	public static final String DELIVERYRULE_Force = "F";
+//	/** Manual = M */
+//	public static final String DELIVERYRULE_Manual = "M";
+//	/** MitNaechsterAbolieferung = S */
+//	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
 		Definiert die zeitliche Steuerung von Lieferungen

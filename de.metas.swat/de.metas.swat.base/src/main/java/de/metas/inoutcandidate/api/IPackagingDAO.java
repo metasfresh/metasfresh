@@ -1,12 +1,11 @@
 package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
-import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.util.ISingletonService;
-
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.ISingletonService;
 
 /**
  * Packaging related DAO
@@ -18,35 +17,14 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  */
 public interface IPackagingDAO extends ISingletonService
 {
-	@Deprecated
-	default List<I_M_PackagingContainer> retrieveContainers(int wareHouseId, String trxName)
-	{
-		throw new UnsupportedOperationException();
-	}
+	Stream<Packageable> stream(PackageableQuery query);
 
 	/**
-	 * Creates an empty {@link IPackageableQuery}.
-	 *
-	 * @return
+	 * @return The current QtyPickedPlanned (qty that was picked but not yet processed) for the given schedule if found, null otherwise
 	 */
-	IPackageableQuery createPackageableQuery();
+	BigDecimal retrieveQtyPickedPlannedOrNull(ShipmentScheduleId shipmentScheduleId);
 
-	/**
-	 * Retrieve all {@link IPackageable} items for given <code>query</code>
-	 *
-	 * @param ctx
-	 * @param query
-	 * @return
-	 */
-	List<IPackageable> retrievePackableLines(IPackageableQuery query);
+	Packageable getByShipmentScheduleId(ShipmentScheduleId shipmentScheduleId);
 
-	/**
-	 * The QtyPickedPlanned is the qty that was picked, but not yet processed.
-	 *
-	 * @param sched
-	 * @return The current PtyPickedPlanned for the given schedule if found, null otherwise
-	 */
-	BigDecimal retrieveQtyPickedPlannedOrNull(I_M_ShipmentSchedule sched);
-
-	IPackageable getByShipmentScheduleId(ShipmentScheduleId shipmentScheduleId);
+	List<Packageable> getByShipmentScheduleIds(Collection<ShipmentScheduleId> shipmentScheduleIds);
 }

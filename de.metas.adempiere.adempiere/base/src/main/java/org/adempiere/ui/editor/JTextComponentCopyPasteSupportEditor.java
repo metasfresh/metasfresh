@@ -28,7 +28,7 @@ import javax.swing.KeyStroke;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Wraps a component which is an {@link JTextComponent} extension and make it behave like an {@link ICopyPasteSupportEditor}.

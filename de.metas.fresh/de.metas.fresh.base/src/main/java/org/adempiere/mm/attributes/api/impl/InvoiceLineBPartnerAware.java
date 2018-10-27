@@ -27,11 +27,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IBPartnerAware;
 import org.adempiere.mm.attributes.api.IBPartnerAwareFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.fresh.model.I_C_BPartner;
+import de.metas.util.Check;
 
 public class InvoiceLineBPartnerAware implements IBPartnerAware
 {

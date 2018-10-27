@@ -28,14 +28,14 @@ import java.util.Properties;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class GridTabValidationContext implements IValidationContext
 {

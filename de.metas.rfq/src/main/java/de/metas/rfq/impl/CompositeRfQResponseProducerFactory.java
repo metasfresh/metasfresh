@@ -2,13 +2,13 @@ package de.metas.rfq.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.rfq.IRfQResponseProducer;
 import de.metas.rfq.IRfQResponseProducerFactory;
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.util.Check;
 
 /*
  * #%L

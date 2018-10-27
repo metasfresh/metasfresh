@@ -27,10 +27,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.adempiere.model.I_C_CountryArea;
 import de.metas.adempiere.model.I_C_CountryArea_Assign;
+import de.metas.util.ISingletonService;
 
 public interface ICountryAreaBL extends ISingletonService
 {

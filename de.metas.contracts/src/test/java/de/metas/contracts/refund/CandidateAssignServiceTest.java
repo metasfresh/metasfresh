@@ -1,13 +1,13 @@
 package de.metas.contracts.refund;
 
 import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -20,7 +20,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,12 +38,14 @@ import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeS
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -293,7 +294,7 @@ public class CandidateAssignServiceTest
 		assertThat(assignementToRefundCandidate.getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo(TWO); // guard
 
 		// guard: we work with 20%, so if the assignableInvoiceCandidate has 10, then 2 is assigned to the refundCandiate
-		assertThat(extractSingleConfig(assignementToRefundCandidate.getRefundInvoiceCandidate()).getPercent().getValueAsBigDecimal()).isEqualByComparingTo(TWENTY);
+		assertThat(extractSingleConfig(assignementToRefundCandidate.getRefundInvoiceCandidate()).getPercent().getValue()).isEqualByComparingTo(TWENTY);
 
 		// guard: we assume that the refund candidate has already 100 assigned, and btw, we know that 2 of those are "contributed" by 20% of 10 = 2 of our 'assignableCandidate'
 		assertThat(assignementToRefundCandidate.getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("100");
@@ -345,7 +346,7 @@ public class CandidateAssignServiceTest
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(THREE);
 
 		// guard: for quantities less than 15 we work with 10%, so if the assignableInvoiceCandidate has 10, then 1 is assigned to the refundCandiate
-		assertThat(extractSingleConfig(savedRefundCandidate).getPercent().getValueAsBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(extractSingleConfig(savedRefundCandidate).getPercent().getValue()).isEqualByComparingTo(TEN);
 
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableCandidate);

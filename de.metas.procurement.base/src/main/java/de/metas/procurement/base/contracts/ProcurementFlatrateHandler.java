@@ -4,8 +4,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.IFlatrateDAO;
@@ -14,6 +12,8 @@ import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

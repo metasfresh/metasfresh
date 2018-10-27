@@ -3,7 +3,6 @@ package de.metas.material.dispo.commons.process;
 import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.i18n.ITranslatableString;
@@ -14,6 +13,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /*
  * #%L

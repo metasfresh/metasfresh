@@ -10,12 +10,12 @@ package de.schaeffer.compiere.tools;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,27 +28,28 @@ import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.util.List;
 
 import javax.swing.TransferHandler;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.GridTab;
-import org.compiere.model.I_AD_Attachment;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.LogManager;
 
 public class AttachmentDnDTransferHandler extends TransferHandler
 {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4482233564492129396L;
 
@@ -110,6 +111,10 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 		Transferable t = support.getTransferable();
 
 		DataFlavor[] flavors = t.getTransferDataFlavors();
+		final TableRecordReference tableRecordReference =TableRecordReference.of(getTableId(), getRecordId());
+
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+
 		for (int i = 0; i < flavors.length; i++)
 		{
 			DataFlavor flavor = flavors[i];
@@ -118,10 +123,9 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 				if (flavor.equals(DataFlavor.javaFileListFlavor))
 				{
 					@SuppressWarnings("unchecked")
-					java.util.List<File> files = (java.util.List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
+					List<File> files = (List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
 
-					final I_AD_Attachment attachment = getAttachment();
-					Services.get(IAttachmentBL.class).addEntriesFromFiles(attachment, files);
+					attachmentEntryService.createNewAttachments(tableRecordReference, AttachmentEntryCreateRequest.fromFiles(files));
 				}
 				else if (flavor.getMimeType().startsWith("text"))
 				{
@@ -131,9 +135,8 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 					final String text = data.toString();
 					final DateFormat df = DisplayType.getDateFormat(DisplayType.DateTime);
 					final String name = "Text " + df.format(new Timestamp(System.currentTimeMillis()));
-					
-					final I_AD_Attachment attachment = getAttachment();
-					Services.get(IAttachmentBL.class).addEntry(attachment, name, text.getBytes());
+
+					attachmentEntryService.createNewAttachment(tableRecordReference, name, text.getBytes());
 				}
 			}
 			catch (Exception ex)
@@ -146,17 +149,18 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 		// inform APanel/.. -> dataStatus with row updated
 		gridTab.loadAttachments();
 
-		DataStatusEvent m_DataStatusEvent = new DataStatusEvent(gridTab, gridTab.getRowCount(), false, true, false);
-		m_DataStatusEvent.setCurrentRow(gridTab.getCurrentRow());
-		String status = m_DataStatusEvent.getAD_Message();
+		final DataStatusEvent dataStatusEvent = DataStatusEvent.builder()
+				.source(gridTab)
+				.totalRows(gridTab.getRowCount())
+				.changed(false)
+				.autoSave(true)
+				.inserting(false)
+				.build();
+		dataStatusEvent.setCurrentRow(gridTab.getCurrentRow());
+		final String status = dataStatusEvent.getAD_Message();
 		if (status == null || status.length() == 0)
-			m_DataStatusEvent.setInfo("NavigateOrUpdate", null, false, false);
-		gridTab.fireDataStatusChanged(m_DataStatusEvent);
+			dataStatusEvent.setInfo("NavigateOrUpdate", null, false, false);
+		gridTab.fireDataStatusChanged(dataStatusEvent);
 		return true;
-	}
-
-	private I_AD_Attachment getAttachment()
-	{
-		return Services.get(IAttachmentBL.class).getAttachment(TableRecordReference.of(getTableId(), getRecordId()));
 	}
 }

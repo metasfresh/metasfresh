@@ -35,8 +35,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -54,6 +52,8 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder
@@ -99,19 +99,19 @@ import lombok.NonNull;
 	{
 		setExecuted();
 
+		if (!postingService.isEnabled())
+		{
+			setPostedError("Accounting module is disabled");
+			postingComplete();
+			return this;
+		}
+
 		//
 		// Check if we shall post the document immediately by checking PostImmediate option
 		// If not, we will enqueue it.
 		if (!isPostImmediate())
 		{
 			postIt_Enqueue();
-			postingComplete();
-			return this;
-		}
-
-		if (!postingService.isEnabled())
-		{
-			setPostedError("Accounting module is disabled");
 			postingComplete();
 			return this;
 		}
@@ -495,7 +495,7 @@ import lombok.NonNull;
 
 		//
 		// Case: we are running in a transaction.
-		if (!trxManager.isNull(trxName))
+		if (trxManager.isActive(trxName))
 		{
 			trxManager.getTrxListenerManager(trxName)
 					.newEventListener(TrxEventTiming.AFTER_COMMIT)

@@ -29,7 +29,6 @@ package de.metas.invoicecandidate.modelvalidator;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -39,9 +38,7 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -51,6 +48,8 @@ import de.metas.aggregation.listeners.IAggregationListener;
 import de.metas.aggregation.listeners.IAggregationListeners;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.IModelCacheService;
 import de.metas.event.IEventBusFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -64,6 +63,7 @@ import de.metas.invoicecandidate.housekeeping.sqi.impl.Reset_C_Invoice_Candidate
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.ui.spi.impl.C_Invoice_Candidate_GridTabSummaryInfoProvider;
+import de.metas.util.Services;
 
 /**
  * Main Invoice Candidates validator
@@ -119,7 +119,6 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_BPartner(), client);
 		engine.addModelValidator(C_ILCandHandler.instance, client);
 		engine.addModelValidator(new C_Invoice_Candidate_Agg(), client);
-		engine.addModelValidator(new C_Invoice_Candidate(), client);
 		engine.addModelValidator(new C_Invoice_Line_Alloc(), client);
 		engine.addModelValidator(new C_InvoiceSchedule(), client);
 		engine.addModelValidator(new C_Invoice(), client);

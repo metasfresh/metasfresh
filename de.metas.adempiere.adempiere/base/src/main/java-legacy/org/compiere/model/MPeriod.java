@@ -32,18 +32,18 @@ import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Services;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.IPeriodBL;
 import de.metas.calendar.IPeriodDAO;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  *  Calendar Period Model

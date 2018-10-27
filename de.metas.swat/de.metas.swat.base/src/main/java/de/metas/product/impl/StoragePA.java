@@ -30,14 +30,16 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Storage;
-import org.compiere.model.MLocator;
 import org.compiere.model.MStorage;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.product.IStoragePA;
+import de.metas.util.Services;
 
 public final class StoragePA implements IStoragePA
 {
@@ -51,12 +53,6 @@ public final class StoragePA implements IStoragePA
 			+ " WHERE s." + I_M_Storage.COLUMNNAME_M_Product_ID + "=? " //
 			+ "AND l." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=?";
 
-	private static final String SQL_ALL_STORAGES = //
-	"SELECT s.* "//
-			+ " FROM M_Storage s " //
-			+ "   LEFT JOIN M_Locator l ON l.M_Locator_ID=s.M_Locator_ID" //
-			+ " WHERE s.IsActive='Y' AND s.M_Product_ID=? AND l.M_Warehouse_ID=?";
-
 	@Override
 	public Collection<I_M_Storage> retrieveStorages(final int productId,
 			final String trxName)
@@ -69,20 +65,10 @@ public final class StoragePA implements IStoragePA
 	}
 
 	@Override
-	public int retrieveWarehouseId(final I_M_Storage storage,
-			final String trxName)
+	public WarehouseId retrieveWarehouseId(final I_M_Storage storage)
 	{
-
 		final int locatorId = storage.getM_Locator_ID();
-		final I_M_Locator locator = retrieveLocator(locatorId, trxName);
-
-		return locator.getM_Warehouse_ID();
-	}
-
-	public I_M_Locator retrieveLocator(final int locatorId, final String trxName)
-	{
-
-		return new MLocator(Env.getCtx(), locatorId, trxName);
+		return Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(locatorId);
 	}
 
 	/**

@@ -21,15 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-
-import de.metas.document.engine.IDocument;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.util.Services;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoiceLine;
@@ -38,6 +31,11 @@ import org.compiere.model.MRMALine;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.document.engine.IDocument;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Generate shipment for Vendor RMA.
@@ -61,7 +59,8 @@ public class InOutGenerateRMA extends JavaProcess
     /** Movement Date           */
     private Timestamp   m_movementDate = null;
 
-    protected void prepare()
+    @Override
+	protected void prepare()
     {
         ProcessInfoParameter[] para = getParametersAsArray();
         for (int i = 0; i < para.length; i++)
@@ -86,7 +85,8 @@ public class InOutGenerateRMA extends JavaProcess
         }
     }
     
-    protected String doIt() throws Exception
+    @Override
+	protected String doIt() throws Exception
     {
         if (!p_Selection)
         {
@@ -104,7 +104,7 @@ public class InOutGenerateRMA extends JavaProcess
         {
             pstmt = DB.prepareStatement(sql, get_TrxName());
             pstmt.setInt(1, Env.getAD_Client_ID(getCtx()));
-            pstmt.setInt(2, getAD_PInstance_ID());
+            pstmt.setInt(2, getPinstanceId().getRepoId());
             ResultSet rs = pstmt.executeQuery();
             
             while (rs.next())

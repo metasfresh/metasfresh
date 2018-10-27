@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -17,6 +15,8 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.order.IOrderLineBL;
 import de.metas.procurement.base.order.model.I_C_OrderLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

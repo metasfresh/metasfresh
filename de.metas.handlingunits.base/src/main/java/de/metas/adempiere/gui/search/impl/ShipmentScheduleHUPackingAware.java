@@ -26,7 +26,6 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -35,6 +34,7 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ShipmentScheduleHUPackingAware implements IHUPackingAware

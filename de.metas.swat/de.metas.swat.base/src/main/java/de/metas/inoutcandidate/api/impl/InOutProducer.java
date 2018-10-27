@@ -36,8 +36,6 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
@@ -60,6 +58,8 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -418,11 +418,13 @@ public class InOutProducer implements IInOutProducer
 
 			// this is the doctype of the sched's source record (e.g. "Bestellung")
 			// receiptHeader.setC_DocType_ID(rs.getC_DocType_ID());
-			final int receiptDocTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
 					.adClientId(rs.getAD_Client_ID())
 					.adOrgId(rs.getAD_Org_ID())
-					.build());
+					.build();
+			final int receiptDocTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 			receiptHeader.setC_DocType_ID(receiptDocTypeId);
 		}
 

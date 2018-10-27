@@ -5,14 +5,14 @@ import java.util.Objects;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 

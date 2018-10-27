@@ -3,12 +3,11 @@ package de.metas.material.interceptor;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
@@ -26,6 +25,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
+import de.metas.util.Services;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import lombok.NonNull;
@@ -184,8 +184,8 @@ public class M_ShipmentSchedule
 		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
 				.date(preparationDate)
 				.productDescriptor(productDescriptor)
-				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
-				.customerId(shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule))
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId())
+				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule).getRepoId())
 				.quantity(orderedQuantity)
 				.build();
 		return orderedMaterial;

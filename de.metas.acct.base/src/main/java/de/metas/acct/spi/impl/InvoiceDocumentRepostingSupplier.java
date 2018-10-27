@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.util.Services;
 
 import de.metas.acct.spi.IDocumentRepostingSupplier;
+import de.metas.util.Services;
 
 /*
  * #%L

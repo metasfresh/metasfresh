@@ -28,15 +28,16 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper class used for grouping given TUs and build LUs from them.
@@ -46,6 +47,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
  */
 public class LULoader
 {
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	
 	private final IHUContext huContext;
 
 	private final List<LULoaderInstance> luInstances = new ArrayList<>();
@@ -106,10 +109,10 @@ public class LULoader
 	{
 		final I_C_BPartner bpartner = tuHU.getC_BPartner();
 		final int bpartnerLocationId = tuHU.getC_BPartner_Location_ID();
-		final I_M_Locator locator = tuHU.getM_Locator();
+		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(tuHU.getM_Locator_ID());
 		final String huStatus = tuHU.getHUStatus();
 		final I_M_HU_PI_Version tuPIVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(tuHU);
-		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartner, bpartnerLocationId, locator, huStatus, tuPIVersion);
+		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartner, bpartnerLocationId, locatorId, huStatus, tuPIVersion);
 
 		luInstances.add(luInstance);
 		return luInstance;

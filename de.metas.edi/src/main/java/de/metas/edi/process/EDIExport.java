@@ -25,14 +25,13 @@ package de.metas.edi.process;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * EDI-Exports a single document.

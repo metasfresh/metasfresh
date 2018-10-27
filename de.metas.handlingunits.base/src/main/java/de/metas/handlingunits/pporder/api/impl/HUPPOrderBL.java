@@ -2,7 +2,6 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
@@ -21,6 +20,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUPPOrderBL implements IHUPPOrderBL

@@ -25,11 +25,11 @@ package de.metas.handlingunits.pporder.api;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.util.ISingletonService;
 
 public interface IHUPPCostCollectorBL extends ISingletonService
 {

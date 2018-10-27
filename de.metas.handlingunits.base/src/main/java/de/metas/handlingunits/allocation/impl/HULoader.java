@@ -30,12 +30,9 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -61,7 +58,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HULoader
@@ -390,7 +390,7 @@ public class HULoader
 				trxs.add(unloadTrxPartial);
 				trxs.add(loadTrx);
 
-				final BigDecimal unloadTrxPartial_Qty = unloadTrxPartial.getQuantity().getQty().negate();
+				final BigDecimal unloadTrxPartial_Qty = unloadTrxPartial.getQuantity().getAsBigDecimal().negate();
 				qtyUnloaded = qtyUnloaded.add(unloadTrxPartial_Qty);
 			}
 
@@ -450,10 +450,10 @@ public class HULoader
 	// static
 	private IHUTransactionCandidate createPartialUnloadTransaction(final IHUTransactionCandidate unloadTrx, final IHUTransactionCandidate loadTrx)
 	{
-		final I_M_Product unloadTrx_Product = unloadTrx.getProduct();
+		final ProductId unloadTrx_ProductId = unloadTrx.getProductId();
 		final Quantity qtyUnloadFull = unloadTrx.getQuantity();
 
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(unloadTrx_Product.getM_Product_ID());
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(unloadTrx_ProductId);
 
 		final Quantity qtyUnloadPartial = uomConversionBL.convertQuantityTo(
 				loadTrx
@@ -466,7 +466,7 @@ public class HULoader
 				unloadTrx.getReferencedModel(),
 				unloadTrx.getM_HU_Item(),   // HU Item
 				unloadTrx.getVHU_Item(),   // VHU Item
-				unloadTrx_Product,
+				unloadTrx_ProductId,
 				qtyUnloadPartial,
 				unloadTrx.getDate());
 	}
@@ -543,7 +543,7 @@ public class HULoader
 		}
 
 		final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-				.setProduct(trxTo.getProduct())
+				.setProductId(trxTo.getProductId())
 				.setQuantity(trxTo.getQuantity())
 				.setAttributeStorageFrom(attributeStorageFrom)
 				.setAttributeStorageTo(attributeStorageTo)

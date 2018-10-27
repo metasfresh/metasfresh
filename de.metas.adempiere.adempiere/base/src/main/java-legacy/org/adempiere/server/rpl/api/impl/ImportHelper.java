@@ -75,8 +75,6 @@ import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxDAO;
 import org.adempiere.server.rpl.trx.api.impl.POReplicationTrxLineDraft;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -115,6 +113,8 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMeter;
 import de.metas.monitoring.api.IMonitoringBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

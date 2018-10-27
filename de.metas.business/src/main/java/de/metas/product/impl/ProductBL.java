@@ -33,10 +33,8 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
@@ -54,6 +52,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public final class ProductBL implements IProductBL
@@ -63,9 +63,8 @@ public final class ProductBL implements IProductBL
 	@Override
 	public int getUOMPrecision(final I_M_Product product)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		final int uomId = product.getC_UOM_ID();
-		return Services.get(IUOMConversionBL.class).getPrecision(ctx, uomId);
+		return Services.get(IUOMConversionBL.class).getPrecision(uomId);
 	}
 
 	@Override
@@ -114,11 +113,8 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public BigDecimal getWeight(final I_M_Product product, final I_C_UOM uomTo)
+	public BigDecimal getWeight(@NonNull final I_M_Product product, @NonNull final I_C_UOM uomTo)
 	{
-		Check.assumeNotNull(product, "product not null");
-		Check.assumeNotNull(uomTo, "uomTo not null");
-
 		final BigDecimal weightPerStockingUOM = product.getWeight();
 		if (weightPerStockingUOM.signum() == 0)
 		{
@@ -130,7 +126,7 @@ public final class ProductBL implements IProductBL
 		//
 		// Calculate the rate to convert from stocking UOM to "uomTo"
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(product.getM_Product_ID());
 		final BigDecimal stocking2uomToRate = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, stockingUom, uomTo);
 
 		//
@@ -163,7 +159,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isItem(final int productId)
+	public boolean isItem(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return isItem(product);
@@ -200,6 +196,14 @@ public final class ProductBL implements IProductBL
 		// NOTE: we rely on table cache config
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return isStocked(product);
+	}
+
+	@Override
+	public boolean isDiverse(@NonNull final ProductId productId)
+	{
+		return Services.get(IProductDAO.class)
+				.getById(productId, de.metas.adempiere.model.I_M_Product.class)
+				.isDiverse();
 	}
 
 	@Override

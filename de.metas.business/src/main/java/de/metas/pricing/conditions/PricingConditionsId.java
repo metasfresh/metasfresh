@@ -3,10 +3,9 @@ package de.metas.pricing.conditions;
 import java.util.Collection;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

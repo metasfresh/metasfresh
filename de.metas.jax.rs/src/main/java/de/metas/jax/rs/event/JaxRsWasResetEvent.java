@@ -1,6 +1,6 @@
 package de.metas.jax.rs.event;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /*
  * #%L

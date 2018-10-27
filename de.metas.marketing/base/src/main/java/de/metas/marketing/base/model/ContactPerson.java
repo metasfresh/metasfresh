@@ -6,11 +6,12 @@ import javax.annotation.Nullable;
 
 import org.adempiere.user.User;
 import org.adempiere.user.UserId;
-import org.adempiere.util.Check;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -46,7 +47,7 @@ public class ContactPerson implements DataRecord
 			@NonNull final PlatformId platformId,
 			@Nullable final BPartnerLocationId bpLocationId)
 	{
-		final EmailAddress emailaddress = Check.isEmpty(user.getEmailAddress(), true) ? null : EmailAddress.of(user.getEmailAddress());
+		final EmailAddress emailaddress = Check.isEmpty(user.getEmailAddress(), true) ? null : EmailAddress.ofString(user.getEmailAddress());
 
 		return ContactPerson.builder()
 				.platformId(platformId)
@@ -55,6 +56,7 @@ public class ContactPerson implements DataRecord
 				.bPartnerId(user.getBpartnerId())
 				.bpLocationId(bpLocationId)
 				.address(emailaddress)
+				.language(user.getLanguage())
 				.build();
 	}
 
@@ -93,6 +95,9 @@ public class ContactPerson implements DataRecord
 
 	@Nullable
 	BoilerPlateId boilerPlateId;
+
+	@Nullable
+	Language language;
 
 	public String getEmailAddessStringOrNull()
 	{

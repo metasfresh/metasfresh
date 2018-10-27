@@ -26,10 +26,9 @@ package de.metas.adempiere.form.terminal.table.swing;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.table.ITerminalTableModel;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModelListener;
+import de.metas.util.Check;
 
 /**
  * Wraps an {@link ITerminalTableModel} and behaves as a {@link javax.swing.table.TableModel}.

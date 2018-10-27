@@ -8,8 +8,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -19,7 +17,10 @@ import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Re-enqueue {@link I_C_Printing_Queue} items.
@@ -142,7 +143,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 
 		if (p_IsSelected)
 		{
-			final int selectionId = getAD_PInstance_ID();
+			final PInstanceId selectionId = getPinstanceId();
 			createWindowSelectionId(selectionId);
 			queueQuery.setOnlyAD_PInstance_ID(selectionId);
 		}
@@ -178,7 +179,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 		return it;
 	}
 
-	private int createWindowSelectionId(int selectionId)
+	private int createWindowSelectionId(final PInstanceId selectionId)
 	{
 		final IQueryFilter<I_C_Printing_Queue> processQueryFilter = getProcessInfo().getQueryFilter();
 

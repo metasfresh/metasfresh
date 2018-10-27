@@ -2,7 +2,6 @@ package de.metas.pricing.rules;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Loggables;
 import org.compiere.util.Trace;
 
 /*
@@ -32,6 +31,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.util.Loggables;
 
 public abstract class AbstractPriceListBasedRule implements IPricingRule
 {

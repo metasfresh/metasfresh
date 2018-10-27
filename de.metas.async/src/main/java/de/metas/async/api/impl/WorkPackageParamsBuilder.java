@@ -28,14 +28,14 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageParamsBuilder;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class WorkPackageParamsBuilder implements IWorkPackageParamsBuilder
 {

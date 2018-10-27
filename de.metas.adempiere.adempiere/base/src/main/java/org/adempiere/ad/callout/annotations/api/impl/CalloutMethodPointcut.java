@@ -28,7 +28,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.ad.callout.annotations.api.ICalloutMethodPointcut;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public final class CalloutMethodPointcut implements ICalloutMethodPointcut
 {

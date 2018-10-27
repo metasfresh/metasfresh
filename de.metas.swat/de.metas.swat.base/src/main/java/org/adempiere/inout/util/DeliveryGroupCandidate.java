@@ -2,10 +2,13 @@ package org.adempiere.inout.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
@@ -57,15 +60,15 @@ public class DeliveryGroupCandidate
 	private final String bPartnerAddress;
 
 	@NonNull
-	private final Integer warehouseId;
+	private final WarehouseId warehouseId;
 
 	@NonNull
-	private final Integer shipperId;
+	private final Optional<ShipperId> shipperId;
 
 	@Default
 	private final List<DeliveryLineCandidate> lines = new ArrayList<>();
 
-	public DeliveryLineCandidate addLine(
+	public DeliveryLineCandidate createAndAddLineCandidate(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final CompleteStatus completeStatus)
 	{

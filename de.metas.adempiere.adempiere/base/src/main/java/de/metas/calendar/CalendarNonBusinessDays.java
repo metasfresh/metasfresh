@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.calendar.IBusinessDayMatcher;
+
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;

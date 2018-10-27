@@ -38,12 +38,9 @@ import java.util.TreeMap;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
@@ -53,6 +50,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -72,6 +70,8 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 

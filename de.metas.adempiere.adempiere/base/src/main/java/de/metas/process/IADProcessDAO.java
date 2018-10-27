@@ -30,11 +30,11 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.ISingletonService;
 
 public interface IADProcessDAO extends ISingletonService
 {

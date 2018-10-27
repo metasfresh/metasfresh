@@ -30,11 +30,11 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.util.Services;
 
 @Interceptor(I_AD_Process.class)
 public class AD_Process

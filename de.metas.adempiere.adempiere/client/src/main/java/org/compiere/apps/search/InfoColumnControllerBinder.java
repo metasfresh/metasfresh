@@ -32,9 +32,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+
+import de.metas.util.Check;
 
 /**
  * Listen on grid table cell change and notifies corresponding {@link IInfoColumnController} and also all others {@link IInfoColumnController}s that depends on it

@@ -35,23 +35,23 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ProductDAO implements IProductDAO
@@ -84,11 +84,11 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public ProductId retrieveProductIdByValue(@NonNull final String value)
 	{
-		return retrieveProductIdByValue(Env.getCtx(), value);
+		return retrieveProductIdByValueOrNull(Env.getCtx(), value);
 	}
 
 	@Cached(cacheName = I_M_Product.Table_Name + "#ID#by#" + I_M_Product.COLUMNNAME_Value)
-	public ProductId retrieveProductIdByValue(@CacheCtx final Properties ctx, @NonNull final String value)
+	public ProductId retrieveProductIdByValueOrNull(@CacheCtx final Properties ctx, @NonNull final String value)
 	{
 		final int productRepoId = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
@@ -117,9 +117,9 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public I_M_Product retrieveMappedProductOrNull(final I_M_Product product,
-			final I_AD_Org org)
+	public ProductId retrieveMappedProductIdOrNull(final ProductId productId, final OrgId orgId)
 	{
+		final I_M_Product product = getById(productId);
 		final IProductMappingAware productMappingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(product, IProductMappingAware.class);
 		if (productMappingAware.getM_Product_Mapping_ID() <= 0)
 		{
@@ -130,12 +130,12 @@ public class ProductDAO implements IProductDAO
 			return null;
 		}
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, product)
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(IProductMappingAware.COLUMNNAME_M_Product_Mapping_ID, productMappingAware.getM_Product_Mapping_ID())
-				.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, org.getAD_Org_ID())
+				.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, orgId)
 				.create()
-				.firstOnly(I_M_Product.class);
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
 	}
 
 	@Override
@@ -209,5 +209,23 @@ public class ProductDAO implements IProductDAO
 	private ProductAndCategoryAndManufacturerId createProductAndCategoryAndManufacturerId(final I_M_Product product)
 	{
 		return ProductAndCategoryAndManufacturerId.of(product.getM_Product_ID(), product.getM_Product_Category_ID(), product.getManufacturer_ID());
+	}
+
+	@Override
+	public I_M_Product_Category getProductCategoryById(@NonNull final ProductCategoryId id)
+	{
+		return getProductCategoryById(id, I_M_Product_Category.class);
+	}
+
+	@Override
+	public <T extends I_M_Product_Category> T getProductCategoryById(@NonNull final ProductCategoryId id, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(id, modelClass);
+	}
+
+	@Override
+	public String getProductCategoryNameById(@NonNull final ProductCategoryId id)
+	{
+		return getProductCategoryById(id).getName();
 	}
 }

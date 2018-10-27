@@ -23,13 +23,13 @@ package de.metas.document.exceptions;
  */
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Exception thrown when document processing failed.

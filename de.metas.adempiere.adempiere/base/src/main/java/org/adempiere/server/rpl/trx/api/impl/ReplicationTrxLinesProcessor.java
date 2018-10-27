@@ -36,8 +36,9 @@ import org.adempiere.server.rpl.trx.api.IReplicationIssueSolverParams;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxLinesProcessorResult;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueAware;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueSolver;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ReplicationTrxLinesProcessor implements ITrxItemChunkProcessor<I_EXP_ReplicationTrxLine, IReplicationTrxLinesProcessorResult>
 {

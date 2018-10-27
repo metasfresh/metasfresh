@@ -19,14 +19,16 @@ package org.compiere.process;
 import java.sql.Timestamp;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MClient;
-import org.compiere.model.MWarehouse;
 import org.compiere.util.DB;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 
 /**
@@ -54,6 +56,7 @@ public class InventoryValue extends JavaProcess
 	/**
 	 *  Prepare - get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -86,6 +89,7 @@ public class InventoryValue extends JavaProcess
 	 * @return Message
 	 * @throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("M_Warehouse_ID=" + p_M_Warehouse_ID
@@ -94,7 +98,7 @@ public class InventoryValue extends JavaProcess
 			+ ",M_PriceList_Version_ID=" + p_M_PriceList_Version_ID
 			+ ",M_CostElement_ID=" + p_M_CostElement_ID);
 		
-		MWarehouse wh = MWarehouse.get(getCtx(), p_M_Warehouse_ID);
+		final I_M_Warehouse wh = Services.get(IWarehouseDAO.class).getById(WarehouseId.ofRepoId(p_M_Warehouse_ID));
 		MClient c = MClient.get(getCtx(), wh.getAD_Client_ID());
 
 		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(getCtx(), wh.getAD_Client_ID(), wh.getAD_Org_ID()); 
@@ -297,4 +301,9 @@ public class InventoryValue extends JavaProcess
 		return msg;
 	}   //  doIt
 
+	
+	private int getAD_PInstance_ID()
+	{
+		return getPinstanceId().getRepoId();
+	}
 }   //  InventoryValue

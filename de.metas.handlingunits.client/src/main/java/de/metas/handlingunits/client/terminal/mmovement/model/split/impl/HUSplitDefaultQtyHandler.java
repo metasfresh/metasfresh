@@ -31,12 +31,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -51,6 +49,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Handler for calculating CU-TU-LU quantities automatically for {@link HUSplitModel}.
@@ -223,16 +223,16 @@ import de.metas.quantity.Quantity;
 	{
 		// group luHU's trade units by their M_HU_PI_ID
 		// TODO: figure out how to also do the next step of getting maxOccurrencePIId in an more elegant way
-		final Map<Integer, Long> includedTUCounts = handlingUnitsDAO
+		final Map<HuPackingInstructionsId, Long> includedTUCounts = handlingUnitsDAO
 				.retrieveIncludedHUs(luHU)
 				.stream()
-				.map(tu -> handlingUnitsBL.getEffectivePIVersion(tu).getM_HU_PI_ID())
+				.map(tu -> HuPackingInstructionsId.ofRepoId(handlingUnitsBL.getEffectivePIVersion(tu).getM_HU_PI_ID()))
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
 		// find the M_HU_PI_ID that occurs most often
 		long maxOccurrences = 0;
-		Integer maxOccurrencePIId = null;
-		for (final Entry<Integer, Long> includedTUCount : includedTUCounts.entrySet())
+		HuPackingInstructionsId maxOccurrencePIId = null;
+		for (final Entry<HuPackingInstructionsId, Long> includedTUCount : includedTUCounts.entrySet())
 		{
 			final long occurrences = includedTUCount.getValue();
 			if (maxOccurrences < occurrences)
@@ -242,9 +242,6 @@ import de.metas.quantity.Quantity;
 			}
 		}
 		Check.assumeNotNull(maxOccurrencePIId, "maxOccurrencePI not null");
-
-		final I_M_HU_PI noPI = handlingUnitsDAO.retrievePackingItemTemplatePI(InterfaceWrapperHelper.getCtx(luHU));
-		final I_M_HU_PI virtualPI = handlingUnitsDAO.retrieveVirtualPI(InterfaceWrapperHelper.getCtx(luHU));
 
 		final IKeyLayout tuKeyLayout = model.getTUKeyLayout();
 
@@ -256,8 +253,10 @@ import de.metas.quantity.Quantity;
 		for (final ILUTUCUKey tuKey : tuKeyLayout.getKeys(ILUTUCUKey.class))
 		{
 			final I_M_HU_PI tuKeyPI = tuKey.getM_HU_PI();
-			if (tuKeyPI.getM_HU_PI_ID() != maxOccurrencePIId
-					&& tuKeyPI.getM_HU_PI_ID() != noPI.getM_HU_PI_ID() && maxOccurrencePIId != virtualPI.getM_HU_PI_ID())
+			final HuPackingInstructionsId tuKeyPIId = HuPackingInstructionsId.ofRepoId(tuKeyPI.getM_HU_PI_ID());
+			if (!tuKeyPIId.equals(maxOccurrencePIId)
+					&& !tuKeyPIId.isTemplate()
+					&& !maxOccurrencePIId.isVirtual())
 			{
 				continue;
 			}
@@ -274,7 +273,6 @@ import de.metas.quantity.Quantity;
 		final IKeyLayout luKeyLayout = model.getLUKeyLayout();
 		final List<ILUTUCUKey> lutuKeys = luKeyLayout.getKeys(ILUTUCUKey.class);
 
-		final int noHUPIId = handlingUnitsDAO.getPackingItemTemplate_HU_PI_ID();
 		final boolean isTopLevelHU = handlingUnitsBL.isTopLevel(tuHU);
 
 		final I_M_HU luHU = handlingUnitsDAO.retrieveParent(tuHU);
@@ -292,7 +290,7 @@ import de.metas.quantity.Quantity;
 		{
 			final I_M_HU_PI lutuPI = lutuKey.getM_HU_PI();
 
-			if (isTopLevelHU && lutuPI.getM_HU_PI_ID() == noHUPIId // No Handling Unit PI
+			if (isTopLevelHU && HuPackingInstructionsId.isTemplateRepoId(lutuPI.getM_HU_PI_ID())// No Handling Unit PI
 					|| !isTopLevelHU && lutuPI.getM_HU_PI_ID() == luPI.getM_HU_PI_ID())      // LU-PI matched
 			{
 				luKeyLayout.getKeyLayoutSelectionModel().onKeySelected(lutuKey);

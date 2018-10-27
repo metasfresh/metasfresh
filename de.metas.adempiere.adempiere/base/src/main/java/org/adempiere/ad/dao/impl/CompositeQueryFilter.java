@@ -37,9 +37,9 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**
@@ -73,6 +73,7 @@ import lombok.NonNull;
 	private String _sqlWhereClause = null;
 	private List<ISqlQueryFilter> _sqlFilters;
 	private List<IQueryFilter<T>> _nonSqlFilters;
+	private boolean _allowSqlFilters = true;
 
 	private final ISqlQueryFilter partialSqlQueryFilter = new ISqlQueryFilter()
 	{
@@ -188,7 +189,7 @@ import lombok.NonNull;
 		final StringBuilder resultSqlWhereClause = new StringBuilder();
 		final List<IQueryFilter<T>> resultNonSqlFilters = new ArrayList<>();
 		final List<IQueryFilter<T>> resultAllFiltersSoFar = new ArrayList<>(filters.size());
-		boolean allowSqlFilters = true; // do we allow SQL filter?
+		boolean allowSqlFilters = _allowSqlFilters; // do we allow SQL filter?
 
 		for (final IQueryFilter<T> filter : filters)
 		{
@@ -422,15 +423,15 @@ import lombok.NonNull;
 	public ICompositeQueryFilter<T> addFiltersUnboxed(final ICompositeQueryFilter<T> compositeFilter)
 	{
 		final List<IQueryFilter<T>> filtersToAdd = compositeFilter.getFilters();
-		if(filtersToAdd.isEmpty())
+		if (filtersToAdd.isEmpty())
 		{
 			return this;
 		}
-		else if(filtersToAdd.size() == 1)
+		else if (filtersToAdd.size() == 1)
 		{
 			return addFilters(filtersToAdd);
 		}
-		else if(isJoinAnd() == compositeFilter.isJoinAnd())
+		else if (isJoinAnd() == compositeFilter.isJoinAnd())
 		{
 			return addFilters(filtersToAdd);
 		}
@@ -1022,5 +1023,19 @@ import lombok.NonNull;
 		final ICompositeQueryFilter<T> filter = new CompositeQueryFilter<>(tableName);
 		addFilter(filter);
 		return filter;
+	}
+
+	@Override
+	public CompositeQueryFilter<T> allowSqlFilters(final boolean allowSqlFilters)
+	{
+		if (this._allowSqlFilters == allowSqlFilters)
+		{
+			return this;
+		}
+
+		this._allowSqlFilters = allowSqlFilters;
+		_compiled = false;
+		return this;
+
 	}
 }

@@ -29,13 +29,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.handlingunits.expectations.AbstractHUExpectation;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.util.Services;
 
 public class InOutLineExpectations<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

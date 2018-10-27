@@ -26,8 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -36,6 +34,9 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Workpackage used to update all invalid {@link I_M_ShipmentSchedule}s.
@@ -68,14 +69,14 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
 		final int adUserId = workpackage.getCreatedBy();
-		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(ctx);
+		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createPInstanceId();
 
 		final boolean updateOnlyLocked = true; // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
-		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, adPInstanceId, updateOnlyLocked, localTrxName);
+		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, pinstanceId, updateOnlyLocked, localTrxName);
 
-		Loggables.get().addLog("Updated " + updatedCount + " shipment schedule entries");
+		Loggables.get().addLog("Updated {} shipment schedule entries", updatedCount);
 		
-		Loggables.get().addLog("AD_PInstance_ID  = " + adPInstanceId);
+		Loggables.get().addLog("AD_PInstance_ID  = {}", pinstanceId);
 
 		return Result.SUCCESS;
 	}

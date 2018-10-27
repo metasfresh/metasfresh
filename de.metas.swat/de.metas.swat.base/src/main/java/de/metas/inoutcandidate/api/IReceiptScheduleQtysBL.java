@@ -25,10 +25,9 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.util.ISingletonService;
 
 /**
  * Implementations of this handler are responsible for maintaining following fields:

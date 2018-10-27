@@ -1,8 +1,6 @@
 package de.metas.banking.payment.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.banking.model.I_C_BankStatement;
@@ -14,6 +12,8 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class C_BankStatementLine_CreateFrom_C_PaySelection extends JavaProcess implements IProcessPrecondition
 {

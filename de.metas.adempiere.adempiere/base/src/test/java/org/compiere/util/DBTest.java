@@ -31,9 +31,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.junit.Assert;
 import org.junit.Test;
+
+import de.metas.util.Check;
 
 public class DBTest
 {

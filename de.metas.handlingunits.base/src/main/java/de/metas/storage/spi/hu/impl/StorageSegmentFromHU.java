@@ -31,8 +31,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
@@ -41,6 +39,8 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.storage.IStorageSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class StorageSegmentFromHU implements IStorageSegment
 {

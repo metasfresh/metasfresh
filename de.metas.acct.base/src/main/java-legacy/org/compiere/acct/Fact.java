@@ -25,7 +25,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
@@ -39,6 +38,7 @@ import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

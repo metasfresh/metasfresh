@@ -28,7 +28,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
@@ -51,6 +50,7 @@ import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
+import de.metas.util.Services;
 
 public class MainValidator extends AbstractModuleInterceptor
 {

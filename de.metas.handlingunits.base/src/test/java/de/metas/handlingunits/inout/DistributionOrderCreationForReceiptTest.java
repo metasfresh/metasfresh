@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
@@ -33,6 +32,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.util.Services;
 
 /*
  * #%L

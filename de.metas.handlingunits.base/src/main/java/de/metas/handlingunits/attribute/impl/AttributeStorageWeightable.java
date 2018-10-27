@@ -25,7 +25,6 @@ package de.metas.handlingunits.attribute.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.slf4j.Logger;
@@ -36,6 +35,7 @@ import de.metas.handlingunits.attribute.IWeightableBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.conversion.ConversionHelper;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

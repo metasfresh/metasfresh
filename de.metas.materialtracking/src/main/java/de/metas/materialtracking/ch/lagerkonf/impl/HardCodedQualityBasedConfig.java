@@ -34,10 +34,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -47,6 +44,9 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
 import de.metas.product.IProductPA;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 {

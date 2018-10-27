@@ -1,5 +1,9 @@
 package org.adempiere.util.lang.impl;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
@@ -31,15 +35,10 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -54,8 +53,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.lang.RepoIdAware;
-import lombok.NonNull;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
@@ -64,7 +65,7 @@ import lombok.NonNull;
  * <li>start from known AD_Table_ID/Record_ID and will load the underlying model only when it's needed (if you use {@link #TableRecordReference(int, int)} constructor)
  * </ul>
  *
- * TODO: merge logic with {@link org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal}.
+ * TODO: merge logic with {@link de.metas.cache.model.impl.TableRecordCacheLocal}.
  *
  * @author tsa
  *
@@ -133,7 +134,9 @@ public final class TableRecordReference implements ITableRecordReference
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final List<TableRecordReference> ofRecordIds(final String tableName, final Collection<Integer> recordIds)
+	public static final List<TableRecordReference> ofRecordIds(
+			@NonNull final String tableName,
+			@Nullable final Collection<Integer> recordIds)
 	{
 		if (recordIds == null || recordIds.isEmpty())
 		{
@@ -162,11 +165,8 @@ public final class TableRecordReference implements ITableRecordReference
 
 	/**
 	 * Creates an {@link TableRecordReference} from the given {@code model}'s {@code AD_Table_ID} and {@code Record_ID}.
-	 *
-	 * @param model
-	 * @return
 	 */
-	public static TableRecordReference ofReferenced(final Object model)
+	public static TableRecordReference ofReferenced(@NonNull final Object model)
 	{
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
@@ -174,13 +174,7 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId.orElse(-1), recordId.orElse(-1)); // the -1 shall cause an exception to be thrown
 	}
 
-	/**
-	 * See {@link ITableRecordReference#FromReferencedModelConverter}.
-	 *
-	 * @param model
-	 * @return
-	 */
-	public static ITableRecordReference ofReferencedOrNull(final Object model)
+	public static ITableRecordReference ofReferencedOrNull(@Nullable final Object model)
 	{
 		if (model == null)
 		{

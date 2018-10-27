@@ -27,13 +27,13 @@ import java.util.Properties;
 import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_R_MailText;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.ISingletonService;
 
 /**
  * Mail configuration

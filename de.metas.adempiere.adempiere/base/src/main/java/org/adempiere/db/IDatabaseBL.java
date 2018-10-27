@@ -28,8 +28,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
+
+import de.metas.util.ISingletonService;
 
 /**
  * 

@@ -8,13 +8,12 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

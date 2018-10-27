@@ -26,10 +26,11 @@ package org.adempiere.ui.impl;
 import java.util.Properties;
 
 import org.adempiere.ui.IContextMenuActionContext;
-import org.adempiere.util.Check;
 import org.compiere.grid.VTable;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
 
 /* package */final class DefaultContextMenuActionContext implements IContextMenuActionContext
 {

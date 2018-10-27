@@ -29,14 +29,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.Check;
-import org.compiere.model.I_M_Product;
-
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.IProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Comparator for HUKeys, generally used in key layouts when adding children (i.e on {@link RootHUKey})
@@ -51,7 +51,7 @@ public final class HUKeyComparator implements Comparator<IHUKey>
 	{
 		super();
 
-		keyFactoryRef = new WeakReference<IHUKeyFactory>(keyFactory);
+		keyFactoryRef = new WeakReference<>(keyFactory);
 	}
 
 	@Override
@@ -135,7 +135,7 @@ public final class HUKeyComparator implements Comparator<IHUKey>
 
 	private final String getFullProductName(final List<IHUProductStorage> productStorages)
 	{
-		final Set<String> uniqueProductNames = new TreeSet<String>(new Comparator<String>()
+		final Set<String> uniqueProductNames = new TreeSet<>(new Comparator<String>()
 		{
 			@Override
 			public int compare(final String o1, final String o2)
@@ -144,10 +144,11 @@ public final class HUKeyComparator implements Comparator<IHUKey>
 			}
 		});
 
+		final IProductBL productBL = Services.get(IProductBL.class);
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final I_M_Product product = productStorage.getM_Product();
-			uniqueProductNames.add(product.getName());
+			String productName = productBL.getProductName(productStorage.getProductId());
+			uniqueProductNames.add(productName);
 		}
 
 		final StringBuilder fullProductNameBuilder = new StringBuilder();

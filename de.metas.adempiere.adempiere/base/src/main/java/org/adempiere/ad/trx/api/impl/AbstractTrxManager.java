@@ -44,6 +44,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
+import org.adempiere.ad.trx.api.NullTrxPlaceholder;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.trx.exceptions.IllegalTrxRunStateException;
@@ -54,10 +55,6 @@ import org.adempiere.ad.trx.jmx.JMXTrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.lang.IContextAware;
@@ -74,6 +71,10 @@ import com.google.common.annotations.VisibleForTesting;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -476,7 +477,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public void run(final Runnable runnable)
+	public void runInNewTrx(final Runnable runnable)
 	{
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
 		call(callable);
@@ -486,9 +487,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 	 * Runs the given trx runnable in an internal transaction (the transaction name will start with <code>"TrxRun"</code>).
 	 */
 	@Override
-	public void run(final TrxRunnable r)
+	public void runInNewTrx(final TrxRunnable runnable)
 	{
-		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
 		call(callable);
 	}
 
@@ -1025,7 +1026,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	@Override
 	public final boolean isNull(final ITrx trx)
 	{
-		return trx == null;
+		return trx == null || trx == NullTrxPlaceholder.instance;
 	}
 
 	@Override

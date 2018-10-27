@@ -25,10 +25,10 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.banking.payment.paymentallocation.service.IPayableDocument.PayableDocumentType;
+import de.metas.util.Check;
 
 /**
  * Wraps a credit memo {@link IPayableDocument} and behaves like a {@link IPaymentDocument}.

@@ -29,9 +29,6 @@ import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.ImportProcessResult;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -42,6 +39,9 @@ import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Workpackage processor used to import records enqueued by {@link AsyncImportProcessBuilder}.

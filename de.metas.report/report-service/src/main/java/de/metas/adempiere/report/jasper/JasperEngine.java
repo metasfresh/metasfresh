@@ -16,11 +16,11 @@ import java.io.IOException;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,11 +40,10 @@ import java.util.Set;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
@@ -53,9 +52,13 @@ import de.metas.adempiere.report.jasper.server.MetasJRXlsExporter;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
+import de.metas.util.Check;
+import de.metas.util.FileUtil;
+import de.metas.util.Services;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
@@ -119,7 +122,6 @@ public class JasperEngine extends AbstractReportEngine
 	{
 		log.info("{}", reportContext);
 
-
 		//
 		// Get the classloader to be used when loading jasper resources
 		final Properties ctx = reportContext.getCtx();
@@ -135,7 +137,7 @@ public class JasperEngine extends AbstractReportEngine
 			// Create jasper's JDBC connection
 			conn = getConnection();
 			final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
-					+ ", AD_PInstance_ID=" + reportContext.getAD_PInstance_ID();
+					+ ", AD_PInstance_ID=" + reportContext.getPinstanceId();
 
 			final String securityWhereClause;
 			if (reportContext.isApplySecuritySettings())
@@ -211,7 +213,7 @@ public class JasperEngine extends AbstractReportEngine
 	private final Map<String, Object> createJRParameters(final ReportContext reportContext)
 	{
 		final Properties ctx = reportContext.getCtx();
-		final int AD_PInstance_ID = reportContext.getAD_PInstance_ID();
+		final PInstanceId pinstanceId = reportContext.getPinstanceId();
 		final int Record_ID = reportContext.getRecord_ID();
 
 		final Map<String, Object> jrParameters = new HashMap<>(ctx.size() + 10);
@@ -234,7 +236,7 @@ public class JasperEngine extends AbstractReportEngine
 		// contribution from Ricardo (ralexsander)
 		// in iReports you can 'SELECT' AD_Client_ID, AD_Org_ID and
 		// AD_User_ID using only AD_PINSTANCE_ID
-		jrParameters.put(PARAM_AD_PINSTANCE_ID, AD_PInstance_ID);
+		jrParameters.put(PARAM_AD_PINSTANCE_ID, PInstanceId.toRepoId(pinstanceId));
 
 		final Language currLang = getParam_Language(jrParameters);
 		jrParameters.put(PARAM_REPORT_LOCALE, currLang.getLocale());
@@ -347,13 +349,27 @@ public class JasperEngine extends AbstractReportEngine
 		}
 
 		// NOTE: just to be on the safe side, for each process info parameter we are setting the ParameterName even if it's a range parameter
-		jrParameters.put(processParam.getParameterName(), processParam.getParameter());
+		final Object parameterValue = normalizeParameterValue(processParam.getParameter());
+		jrParameters.put(processParam.getParameterName(), parameterValue);
 
 		// If we are dealing with a range parameter we are setting ParameterName1 and ParameterName2 too.
-		if (processParam.getParameter_To() != null)
+		final Object parameterValueTo = normalizeParameterValue(processParam.getParameter_To());
+		if (parameterValueTo != null)
 		{
-			jrParameters.put(processParam.getParameterName() + "1", processParam.getParameter());
-			jrParameters.put(processParam.getParameterName() + "2", processParam.getParameter_To());
+			jrParameters.put(processParam.getParameterName() + "1", parameterValue);
+			jrParameters.put(processParam.getParameterName() + "2", parameterValueTo);
+		}
+	}
+
+	private static Object normalizeParameterValue(final Object value)
+	{
+		if (TimeUtil.isDateOrTimeObject(value))
+		{
+			return TimeUtil.asTimestamp(value);
+		}
+		else
+		{
+			return value;
 		}
 	}
 
@@ -465,7 +481,7 @@ public class JasperEngine extends AbstractReportEngine
 			JasperExportManager.exportReportToHtmlFile(jasperPrint, file.getAbsolutePath());
 			// TODO: handle image links
 
-			JasperUtil.copy(file, out);
+			FileUtil.copy(file, out);
 		}
 		else if (OutputType.XML == outputType)
 		{
@@ -504,13 +520,13 @@ public class JasperEngine extends AbstractReportEngine
 		jasperPrint.setProperty(XlsReportConfiguration.PROPERTY_CELL_LOCKED, "true");
 
 		// there are cases when we don't want the cells to be blocked by password
-		// in those cases we put in jrxml the password property with empty value,  which will indicate we don't want password
+		// in those cases we put in jrxml the password property with empty value, which will indicate we don't want password
 		// if there is no such property we take default password. If empty we set no password and if set, we use that password from the report
-		if(jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD) == null)
+		if (jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD) == null)
 		{
-			//do nothing;
+			// do nothing;
 		}
-		else if(jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD).isEmpty())
+		else if (jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD).isEmpty())
 		{
 			exporter.setParameter(JRXlsAbstractExporterParameter.PASSWORD, null);
 		}
@@ -518,7 +534,7 @@ public class JasperEngine extends AbstractReportEngine
 		{
 			exporter.setParameter(JRXlsAbstractExporterParameter.PASSWORD, jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD));
 		}
-		
+
 		exporter.exportReport();
 	}
 }

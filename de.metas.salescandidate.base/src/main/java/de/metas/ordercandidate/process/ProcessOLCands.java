@@ -1,8 +1,6 @@
 package de.metas.ordercandidate.process;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -14,6 +12,8 @@ import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is mostly run from <code>AD_Scheduler</code>.

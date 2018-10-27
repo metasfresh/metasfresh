@@ -25,12 +25,12 @@ package de.metas.handlingunits.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Services;
 
 @Validator(I_M_ShippingPackage.class)
 public class M_ShippingPackage

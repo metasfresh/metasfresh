@@ -15,7 +15,7 @@ public class X_C_DunningDoc_Line extends org.compiere.model.PO implements I_C_Du
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1177959710L;
+	private static final long serialVersionUID = 1548067068L;
 
     /** Standard Constructor */
     public X_C_DunningDoc_Line (Properties ctx, int C_DunningDoc_Line_ID, String trxName)
@@ -271,7 +271,7 @@ public class X_C_DunningDoc_Line extends org.compiere.model.PO implements I_C_Du
 
 	/** Set Notiz.
 		@param Note 
-		Optional weitere Information für ein Dokument
+		Optional weitere Information
 	  */
 	@Override
 	public void setNote (java.lang.String Note)
@@ -280,7 +280,7 @@ public class X_C_DunningDoc_Line extends org.compiere.model.PO implements I_C_Du
 	}
 
 	/** Get Notiz.
-		@return Optional weitere Information für ein Dokument
+		@return Optional weitere Information
 	  */
 	@Override
 	public java.lang.String getNote () 

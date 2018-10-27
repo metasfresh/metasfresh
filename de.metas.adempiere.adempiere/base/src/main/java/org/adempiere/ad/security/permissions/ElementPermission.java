@@ -25,11 +25,12 @@ package org.adempiere.ad.security.permissions;
 
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /**
  * Application Dictionary element permission (e.g. Window, Process etc).

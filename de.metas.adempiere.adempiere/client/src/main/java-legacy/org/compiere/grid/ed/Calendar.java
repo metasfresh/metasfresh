@@ -57,8 +57,6 @@ import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.CalendarUI;
 import org.adempiere.plaf.VEditorUI;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
@@ -77,6 +75,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Calendar Date & Time picker.

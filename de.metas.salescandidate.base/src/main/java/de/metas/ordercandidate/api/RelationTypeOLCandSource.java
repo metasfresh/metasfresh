@@ -5,8 +5,6 @@ import java.util.stream.Stream;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RelationTypeZoomProvidersFactory;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
@@ -15,6 +13,8 @@ import com.google.common.base.MoreObjects;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

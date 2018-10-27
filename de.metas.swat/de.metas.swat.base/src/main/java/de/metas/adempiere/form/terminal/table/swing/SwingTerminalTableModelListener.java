@@ -27,11 +27,11 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
 import de.metas.adempiere.form.terminal.table.ITerminalTableModelListener;
+import de.metas.util.Check;
 
 /**
  * Wraps an {@link TableModelListener} and makes it behave like an {@link ITerminalTableModelListener}.

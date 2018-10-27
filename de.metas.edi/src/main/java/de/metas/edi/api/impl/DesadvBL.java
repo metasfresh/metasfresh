@@ -32,8 +32,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.DB;
 
@@ -57,7 +55,10 @@ import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class DesadvBL implements IDesadvBL
 {
@@ -188,9 +189,10 @@ public class DesadvBL implements IDesadvBL
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(desadvLine);
+		final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
 
 		desadvLine.setMovementQty(newMovementQty);
-		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(ctx, desadvLine.getM_Product(), desadvLine.getC_UOM(), newMovementQty));
+		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(ctx, productId, desadvLine.getC_UOM(), newMovementQty));
 	}
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)
@@ -423,7 +425,7 @@ public class DesadvBL implements IDesadvBL
 				.onErrorThrowException()
 				// Create a selection with the EDI_DesadvLine_SSCC_IDs that we need to print.
 				// The report will fetch it from selection.
-				.callBefore(pi -> DB.createT_Selection(pi.getAD_PInstance_ID(), desadvLineSSCC_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited))
+				.callBefore(pi -> DB.createT_Selection(pi.getPinstanceId(), desadvLineSSCC_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited))
 				.executeSync();
 	}
 

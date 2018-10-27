@@ -28,8 +28,6 @@ import java.util.Iterator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.adempiere.form.IClientUI;
@@ -43,6 +41,8 @@ import de.metas.tourplanning.api.impl.PlainTourInstanceQueryParams;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 {

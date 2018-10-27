@@ -23,12 +23,11 @@ package de.metas.handlingunits.storage.impl;
  */
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUCapacityBL;
@@ -36,9 +35,12 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.quantity.Bucket;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public abstract class AbstractProductStorage implements IProductStorage
 {
@@ -50,17 +52,6 @@ public abstract class AbstractProductStorage implements IProductStorage
 
 	/** NOTE: this flag was introduced for backward compatibility (support those storages which does not support considering ForceQtyAllocation) */
 	private boolean _considerForceQtyAllocationFromRequest = true;
-
-	protected static enum RequestType
-	{
-		ADD, REMOVE,
-	}
-
-	public AbstractProductStorage()
-	{
-		super();
-
-	}
 
 	protected abstract Capacity retrieveTotalCapacity();
 
@@ -108,22 +99,22 @@ public abstract class AbstractProductStorage implements IProductStorage
 	}
 
 	@Override
-	public final BigDecimal getQty()
+	public final Quantity getQty()
 	{
-		return getCapacity().getQty();
+		final BigDecimal qtyBD = getCapacity().getQty();
+		final I_C_UOM uom = getC_UOM();
+		return Quantity.of(qtyBD, uom);
 	}
 
 	@Override
 	public final Quantity getQty(final I_C_UOM uom)
 	{
-		final I_M_Product product = getM_Product();
-		final BigDecimal qty = getQty();
-		final I_C_UOM uomFrom = getC_UOM();
+		final ProductId productId = getProductId();
+		final Quantity qty = getQty();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal convertQty = uomConversionBL.convertQty(product.getM_Product_ID(), qty, uomFrom, uom);
-
-		return Quantity.of(convertQty, uom);
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+		return uomConversionBL.convertQuantityTo(qty, conversionCtx, uom);
 	}
 
 	@Override
@@ -135,9 +126,9 @@ public abstract class AbstractProductStorage implements IProductStorage
 	}
 
 	@Override
-	public I_M_Product getM_Product()
+	public ProductId getProductId()
 	{
-		return getTotalCapacity().getM_Product();
+		return getTotalCapacity().getProductId();
 	}
 
 	@Override
@@ -172,7 +163,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public final IAllocationRequest addQty(final IAllocationRequest request)
 	{
-		if (!isEligible(request, RequestType.ADD))
+		if (!isEligible(request))
 		{
 			return AllocationUtils.createZeroQtyRequest(request);
 		}
@@ -201,7 +192,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public final IAllocationRequest removeQty(final IAllocationRequest request)
 	{
-		if (!isEligible(request, RequestType.REMOVE))
+		if (!isEligible(request))
 		{
 			return AllocationUtils.createZeroQtyRequest(request);
 		}
@@ -231,16 +222,12 @@ public abstract class AbstractProductStorage implements IProductStorage
 		}
 	}
 
-	protected boolean isEligible(final IAllocationRequest request, final RequestType type)
+	private boolean isEligible(final IAllocationRequest request)
 	{
-		if (request.getProduct().getM_Product_ID() != getM_Product().getM_Product_ID())
-		{
-			// NOTE: don't throw exception but just return false,
-			// because we have the case where are multiple storages in a pool and each of them are asked if they can fullfill a given request
-			return false;
-		}
+		// NOTE: don't throw exception but just return false,
+		// because we have the case where are multiple storages in a pool and each of them are asked if they can fullfill a given request
 
-		return true;
+		return Objects.equals(request.getProductId(), getProductId());
 	}
 
 	protected final BigDecimal convertToStorageUOM(final BigDecimal qty, final I_C_UOM uom)
@@ -248,11 +235,11 @@ public abstract class AbstractProductStorage implements IProductStorage
 		Check.assumeNotNull(qty, "qty not null");
 		Check.assumeNotNull(uom, "uom not null");
 
-		final I_M_Product product = getM_Product();
+		final ProductId productId = getProductId();
 		final I_C_UOM storageUOM = getC_UOM();
 
 		final BigDecimal qtyConverted = Services.get(IUOMConversionBL.class)
-				.convertQty(product, qty, uom, storageUOM);
+				.convertQty(productId, qty, uom, storageUOM);
 
 		Check.assumeNotNull(qtyConverted,
 				"qtyConverted not null (Qty={}, FromUOM={}, ToUOM={}, Product={}",
@@ -264,24 +251,13 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public boolean isEmpty()
 	{
-		final BigDecimal qty = getQty();
-		if (qty.signum() == 0)
-		{
-			return true;
-		}
-
-		return false;
+		return getQty().isZero();
 	}
 
 	public boolean isFull()
 	{
 		final BigDecimal qtyFree = getQtyFree();
-		if (qtyFree.signum() == 0)
-		{
-			return true;
-		}
-
-		return false;
+		return qtyFree.signum() == 0;
 	}
 
 	@Override

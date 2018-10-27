@@ -1,6 +1,6 @@
 package org.adempiere.ad.callout.spi;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

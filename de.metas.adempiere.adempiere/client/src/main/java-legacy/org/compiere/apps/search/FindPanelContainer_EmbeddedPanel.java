@@ -6,7 +6,7 @@ import java.beans.PropertyChangeSupport;
 
 import javax.swing.JComponent;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /*
  * #%L

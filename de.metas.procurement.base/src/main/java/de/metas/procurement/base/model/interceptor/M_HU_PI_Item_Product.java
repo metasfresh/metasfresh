@@ -2,11 +2,11 @@ package de.metas.procurement.base.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.IPMMProductBL;
+import de.metas.util.Services;
 
 /*
  * #%L

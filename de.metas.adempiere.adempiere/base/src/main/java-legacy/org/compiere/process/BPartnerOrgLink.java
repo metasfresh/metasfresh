@@ -1,29 +1,32 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.process;
 
+import java.util.List;
+
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Role_OrgAccess;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartner;
-import org.compiere.model.MLocator;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MWarehouse;
@@ -31,35 +34,35 @@ import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
- *	Link Business Partner to Organization.
- *	Either to existing or create new one
+ * Link Business Partner to Organization.
+ * Either to existing or create new one
  *
- *  @author Jorg Janke
- *  @version $Id: BPartnerOrgLink.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: BPartnerOrgLink.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
 public class BPartnerOrgLink extends JavaProcess
 {
 	private final transient IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
-	/**	Existing Org			*/
-	private int			p_AD_Org_ID;
-	/** Info for New Org		*/
-	private int			p_AD_OrgType_ID;
-	/** Business Partner		*/
-	private int			p_C_BPartner_ID;
-	/** Role					*/
-	private int			p_AD_Role_ID;
+	/** Existing Org */
+	private int p_AD_Org_ID;
+	/** Info for New Org */
+	private int p_AD_OrgType_ID;
+	/** Business Partner */
+	private int p_C_BPartner_ID;
+	/** Role */
+	private int p_AD_Role_ID;
 
 	/**
 	 * Business partner location (03084)
 	 */
-	private int  p_C_BPartner_Location_ID;
-
+	private int p_C_BPartner_Location_ID;
 
 	/**
-	 *  Prepare - e.g., get Parameters.
+	 * Prepare - e.g., get Parameters.
 	 */
 	@Override
 	protected void prepare()
@@ -83,103 +86,99 @@ public class BPartnerOrgLink extends JavaProcess
 				log.error("prepare - Unknown Parameter: " + name);
 		}
 		p_C_BPartner_ID = getRecord_ID();
-	}	//	prepare
+	}	// prepare
 
 	/**
-	 *  Perform process.
-	 *  @return Message (text with variables)
-	 *  @throws Exception if not successful
+	 * Perform process.
+	 * 
+	 * @return Message (text with variables)
+	 * @throws Exception if not successful
 	 */
 	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("C_BPartner_ID=" + p_C_BPartner_ID
-			+ ", AD_Org_ID=" + p_AD_Org_ID
-			+ ", AD_OrgType_ID=" + p_AD_OrgType_ID
-			+ ", AD_Role_ID=" + p_AD_Role_ID
-			// 03084: add the C_BPartner_Location as parameter
-			+ ", C_BPartner_Location_ID=" + p_C_BPartner_Location_ID);
+				+ ", AD_Org_ID=" + p_AD_Org_ID
+				+ ", AD_OrgType_ID=" + p_AD_OrgType_ID
+				+ ", AD_Role_ID=" + p_AD_Role_ID
+				// 03084: add the C_BPartner_Location as parameter
+				+ ", C_BPartner_Location_ID=" + p_C_BPartner_Location_ID);
 		if (p_C_BPartner_ID == 0)
-			throw new AdempiereUserError ("No Business Partner ID");
-		MBPartner bp = new MBPartner (getCtx(), p_C_BPartner_ID, get_TrxName());
+			throw new AdempiereUserError("No Business Partner ID");
+		MBPartner bp = new MBPartner(getCtx(), p_C_BPartner_ID, get_TrxName());
 		if (bp.get_ID() == 0)
-			throw new AdempiereUserError ("Business Partner not found - C_BPartner_ID=" + p_C_BPartner_ID);
+			throw new AdempiereUserError("Business Partner not found - C_BPartner_ID=" + p_C_BPartner_ID);
 
-		//	Create Org
+		// Create Org
 		boolean newOrg = p_AD_Org_ID == 0;
-		MOrg org = new MOrg (getCtx(), p_AD_Org_ID, get_TrxName());
+		MOrg org = new MOrg(getCtx(), p_AD_Org_ID, get_TrxName());
 		if (newOrg)
 		{
-			org.setValue (bp.getValue());
-			org.setName (bp.getName());
-			org.setDescription (bp.getDescription());
+			org.setValue(bp.getValue());
+			org.setName(bp.getName());
+			org.setDescription(bp.getDescription());
 			if (!org.save())
-				throw new Exception ("Organization not saved");
+				throw new Exception("Organization not saved");
 		}
-		else	//	check if linked to already
+		else	// check if linked to already
 		{
 			int C_BPartner_ID = org.getLinkedC_BPartner_ID(get_TrxName());
 			if (C_BPartner_ID > 0)
-				throw new IllegalArgumentException ("Organization '" + org.getName()
-					+ "' already linked (to C_BPartner_ID=" + C_BPartner_ID + ")");
+				throw new IllegalArgumentException("Organization '" + org.getName()
+						+ "' already linked (to C_BPartner_ID=" + C_BPartner_ID + ")");
 		}
 		p_AD_Org_ID = org.getAD_Org_ID();
 
-		//	Update Org Info
+		// Update Org Info
 		MOrgInfo oInfo = org.getInfo();
-		oInfo.setAD_OrgType_ID (p_AD_OrgType_ID);
+		oInfo.setAD_OrgType_ID(p_AD_OrgType_ID);
 
 		// metas: 03084: We are no longer setting the location to AD_OrgInfo.
 		// Location is contained in linked bpartner's location
-		//if (newOrg)
-		//	oInfo.setC_Location_ID(C_Location_ID);
+		// if (newOrg)
+		// oInfo.setC_Location_ID(C_Location_ID);
 
-		//	Create Warehouse
-		MWarehouse wh = null;
+		// Create Warehouse
+		I_M_Warehouse wh = null;
 		if (!newOrg)
 		{
-			MWarehouse[] whs = MWarehouse.getForOrg(getCtx(), p_AD_Org_ID);
-			if (whs != null && whs.length > 0)
-				wh = whs[0];	//	pick first
+			List<I_M_Warehouse> whs = Services.get(IWarehouseDAO.class).getByOrgId(OrgId.ofRepoId(p_AD_Org_ID));
+			if (!whs.isEmpty())
+			{
+				wh = whs.get(0);	// pick first
+			}
 		}
-		//	New Warehouse
+		// New Warehouse
 		if (wh == null)
 		{
 			wh = new MWarehouse(org);
 			configureWarehouse(wh, bp, p_C_BPartner_Location_ID); // metas: 03084
-			if (!wh.save(get_TrxName()))
-				throw new Exception ("Warehouse not saved");
-		}
-		//	Create Locator
-
-		MLocator mLoc = wh.getDefaultLocator();
-		if (mLoc == null)
-		{
-			mLoc = new MLocator (wh, "Standard");
-			mLoc.setIsDefault(true);
-			mLoc.save(get_TrxName());
+			InterfaceWrapperHelper.save(wh);
 		}
 
-		//	Update/Save Org Info
+		// Get/Create Locator
+		Services.get(IWarehouseBL.class).getDefaultLocator(wh);
+
+		// Update/Save Org Info
 		oInfo.setM_Warehouse_ID(wh.getM_Warehouse_ID());
 		if (!oInfo.save(get_TrxName()))
-			throw new Exception ("Organization Info not saved");
+			throw new Exception("Organization Info not saved");
 
-		//	Update BPartner
+		// Update BPartner
 		bp.setAD_OrgBP_ID(p_AD_Org_ID);
 		if (bp.getAD_Org_ID() != 0)
-			bp.setClientOrg(bp.getAD_Client_ID(), 0);	//	Shared BPartner
+			bp.setClientOrg(bp.getAD_Client_ID(), 0);	// Shared BPartner
 
-		//	Save BP
+		// Save BP
 		if (!bp.save())
-			throw new Exception ("Business Partner not updated");
+			throw new Exception("Business Partner not updated");
 
 		//
-		//	Limit to specific Role
+		// Limit to specific Role
 		if (p_AD_Role_ID > 0)
 		{
 			boolean found = false;
-			//	delete all accesses except the specific
+			// delete all accesses except the specific
 			for (final I_AD_Role_OrgAccess orgAccess : permissionsDAO.retrieveRoleOrgAccessRecordsForOrg(p_AD_Org_ID))
 			{
 				if (orgAccess.getAD_Role_ID() == p_AD_Role_ID)
@@ -191,18 +190,18 @@ public class BPartnerOrgLink extends JavaProcess
 					InterfaceWrapperHelper.delete(orgAccess);
 				}
 			}
-			//	create access
+			// create access
 			if (!found)
 			{
 				permissionsDAO.createOrgAccess(p_AD_Role_ID, org.getAD_Org_ID());
 			}
 		}
 
-		//	Reset Client Role
+		// Reset Client Role
 		// FIXME: MRole.getDefault(getCtx(), true);
 
 		return "Business Partner - Organization Link created";
-	}	//	doIt
+	}	// doIt
 
 	/**
 	 * Configure/Update Warehouse from given linked BPartner
@@ -215,4 +214,4 @@ public class BPartnerOrgLink extends JavaProcess
 	{
 		warehouse.setC_BPartner_Location_ID(bPartnerLocationID);
 	}
-}	//	BPartnerOrgLink
+}	// BPartnerOrgLink

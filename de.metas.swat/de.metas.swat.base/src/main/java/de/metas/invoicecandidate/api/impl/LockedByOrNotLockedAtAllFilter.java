@@ -29,12 +29,12 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.util.Services;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
+import de.metas.util.Services;
 
 /**
  * Accepts all invoice candidates which are locked by a given lock.

@@ -6,12 +6,12 @@ import javax.annotation.concurrent.Immutable;
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /*
  * #%L

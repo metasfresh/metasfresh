@@ -26,11 +26,11 @@ package org.adempiere.mm.attributes.exceptions;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 public class AttributeRestrictedException extends AdempiereException
 {

@@ -25,8 +25,8 @@ package org.adempiere.service;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.ISingletonService;
+import de.metas.util.Check;
+import de.metas.util.ISingletonService;
 
 public interface ISysConfigBL extends ISingletonService
 {

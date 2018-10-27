@@ -3,11 +3,11 @@ package de.metas.purchasecandidate;
 import java.util.Collection;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Value;
 
 /*

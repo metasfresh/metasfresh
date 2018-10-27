@@ -5,13 +5,13 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>[1,10.0.0]</version>
+		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
 	</parent>
 
 	<artifactId>de.metas.parent</artifactId>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
-		can't set it to another version it -->
+		can't set it to another version -->
 	<version>10.0.0</version>
 
 	<packaging>pom</packaging>
@@ -46,8 +46,6 @@
 
 		<guava.version>21.0</guava.version>
 
-		<springfox-swagger.version>2.8.0</springfox-swagger.version>
-
 		<!-- The version to be used by metasfresh, as opposed to the ESB's. The 
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
@@ -70,26 +68,37 @@
 		<module>de.metas.monitoring</module>
 
 		<module>de.metas.adempiere.adempiere</module>
+		<module>de.metas.adempiere.libero.libero</module>
+		<module>de.metas.adempiere.libero.liberoHR</module>
+
+		<module>de.metas.acct.base</module>
+
+		<module>de.metas.async</module>
+
+		<module>de.metas.aggregation</module>
 
 		<module>de.metas.business</module>
-		
-		<module>de.metas.inbound.mail</module>
+
 
 		<module>de.metas.jax.rs</module>
 
 		<module>de.metas.report</module>
 
-		<module>de.metas.adempiere.libero.libero</module>
-		<module>de.metas.adempiere.libero.liberoHR</module>
-
-		<module>de.metas.async</module>
-		<module>de.metas.acct.base</module>
-
-		<module>de.metas.aggregation</module>
+		<module>de.metas.device.adempiere</module>
+		<module>de.metas.device.api</module>
+		<module>de.metas.device.scales</module>
 
 		<module>de.metas.dimension</module> <!-- task 08681 -->
+		
+		<module>de.metas.document.archive.api</module>
+		<module>de.metas.document.archive</module>
+
+		<module>de.metas.document.refid</module>
+		<module>de.metas.dunning</module>
 
 		<module>de.metas.dlm</module>
+
+		<module>de.metas.edi</module>
 
 		<module>de.metas.elasticsearch</module>
 		<module>de.metas.elasticsearch.server</module>
@@ -97,17 +106,9 @@
 		<module>de.metas.banking</module>
 		<module>de.metas.contracts</module>
 
-		<module>de.metas.device.adempiere</module>
-		<module>de.metas.device.api</module>
-		<module>de.metas.device.scales</module>
-
-		<module>de.metas.document.archive.api</module>
-		<module>de.metas.document.archive</module>
-
-		<module>de.metas.document.refid</module>
-		<module>de.metas.dunning</module>
-
-		<module>de.metas.edi</module>
+		<module>de.metas.invoice_gateway.api</module>
+		<module>de.metas.invoice_gateway.spi</module>
+		<module>de.metas.inbound.mail</module>
 
 		<module>de.metas.fresh</module>
 
@@ -172,7 +173,9 @@
 		<module>de.metas.vertical.pharma.msv3.server-peer-metasfresh</module>
 		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>		
 
-		<!-- commented out because we currently don't work with them <module>de.metas.reactor.ait</module> -->
+		<module>vertical-healthcare_ch</module>
+
+
 	</modules>
 
 
@@ -913,21 +916,6 @@
 			</activation>
 			<properties>
 				<BUILD_NUMBER_NUMERIC>${env.BUILD_NUMBER}</BUILD_NUMBER_NUMERIC>
-			</properties>
-		</profile>
-
-		<!-- This profile is analog to "build-number-env-missing" Note that unlike 
-			"BUILD_NUMBER", this "MF_BUILD_VERSION" is not a jenkins standard, but provided 
-			by our particular jenkins files. That's why we use the "MF_" prefix. -->
-		<profile>
-			<id>build-version-env-missing</id>
-			<activation>
-				<property>
-					<name>!env.MF_BUILD_VERSION</name>
-				</property>
-			</activation>
-			<properties>
-				<env.MF_BUILD_VERSION>1.0.0</env.MF_BUILD_VERSION>
 			</properties>
 		</profile>
 

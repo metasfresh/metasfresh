@@ -37,9 +37,6 @@ import org.adempiere.ad.trx.processor.spi.TrxItemChunkProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 
@@ -54,6 +51,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /* package */class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
@@ -107,7 +107,7 @@ import lombok.NonNull;
 			// Remove from "invoice candidates to recompute" all those which were tagged with our tag
 			// because now we consider them valid
 			// NOTE: usually, this method shall delete 0 records because the recompute records are deleted after each chunk is processed.
-			icTagger.deleteAllTagged();
+			icTagger.deleteAllTaggedAndInvalidateCache();
 		}
 		catch (final Exception updateException)
 		{
@@ -213,7 +213,7 @@ import lombok.NonNull;
 						@Override
 						public void completeChunk()
 						{
-							icTagger.deleteTagged(chunkInvoiceCandidateIds);
+							icTagger.deleteTaggedAndInvalidateCache(chunkInvoiceCandidateIds);
 							chunkInvoiceCandidateIds.clear();
 						}
 					})

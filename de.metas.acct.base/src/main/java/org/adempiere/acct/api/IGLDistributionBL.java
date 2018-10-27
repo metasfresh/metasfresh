@@ -1,7 +1,8 @@
 package org.adempiere.acct.api;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_GL_Distribution;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -26,10 +26,10 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.model.I_M_InOutLine;
+import de.metas.util.ISingletonService;
 
 public interface IMaterialTrackingPPOrderBL extends ISingletonService
 {

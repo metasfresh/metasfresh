@@ -1,13 +1,13 @@
 package de.metas.bpartner.service;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.util.Check;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BPartner_Stats;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
+import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

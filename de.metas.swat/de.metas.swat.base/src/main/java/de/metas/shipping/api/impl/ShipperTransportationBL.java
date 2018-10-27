@@ -1,7 +1,6 @@
 package de.metas.shipping.api.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Package;
 
 import de.metas.document.DocTypeQuery;
@@ -9,6 +8,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
@@ -24,7 +24,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 		return shippingPackage;
 	}
-	
+
 	private void updateShippingPackageFromPackage(final I_M_ShippingPackage shippingPackage, final I_M_Package mpackage)
 	{
 		shippingPackage.setM_Package_ID(mpackage.getM_Package_ID());
@@ -49,12 +49,15 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		final String docBaseType = de.metas.shipping.util.Constants.C_DocType_DocBaseType_ShipperTransportation;
 		final int adClientId = shipperTransportation.getAD_Client_ID();
 		final int adOrgId = shipperTransportation.getAD_Org_ID();
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(docBaseType)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(adClientId)
 				.adOrgId(adOrgId)
-				.build());
+				.build();
+		final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 
 		shipperTransportation.setC_DocType_ID(docTypeId);
 	}

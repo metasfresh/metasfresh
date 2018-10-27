@@ -11,7 +11,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -25,6 +24,8 @@ import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.process.PInstanceId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -88,7 +89,8 @@ public class SearialLetterService
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)
 				.create();
 
-		final int selectionLength = query.createSelection(asyncBatch.getAD_PInstance_ID());
+		final PInstanceId pinstanceId = PInstanceId.ofRepoId(asyncBatch.getAD_PInstance_ID());
+		final int selectionLength = query.createSelection(pinstanceId);
 
 		if (selectionLength <= 0)
 		{
@@ -99,7 +101,7 @@ public class SearialLetterService
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery printingQuery = printingQueueBL.createPrintingQueueQuery();
 		printingQuery.setIsPrinted(false);
-		printingQuery.setOnlyAD_PInstance_ID(asyncBatch.getAD_PInstance_ID());
+		printingQuery.setOnlyAD_PInstance_ID(pinstanceId);
 
 		final Properties ctx = Env.getCtx();
 
@@ -113,7 +115,7 @@ public class SearialLetterService
 	{
 
 		final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
-				.adPInstanceId(asyncBatch.getAD_PInstance_ID())
+				.adPInstanceId(PInstanceId.ofRepoIdOrNull(asyncBatch.getAD_PInstance_ID()))
 				.parentAsyncBatchId(asyncBatch.getC_Async_Batch_ID())
 				.build();
 

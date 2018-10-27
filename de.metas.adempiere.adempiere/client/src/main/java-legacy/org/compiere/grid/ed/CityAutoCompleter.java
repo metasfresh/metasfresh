@@ -26,8 +26,6 @@ import javax.swing.text.JTextComponent;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.swing.autocomplete.JTextComponentAutoCompleter;
 import org.compiere.swing.autocomplete.ResultItem;
 import org.compiere.swing.autocomplete.ResultItemSource;
@@ -37,6 +35,9 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 
 /**
  * 

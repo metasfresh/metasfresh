@@ -2,9 +2,7 @@ package de.metas.inout.invoicecandidate;
 
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -39,24 +37,20 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -66,6 +60,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
@@ -86,8 +81,12 @@ import de.metas.order.IOrderLineBL;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -280,8 +279,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setDeliveredData(ic);
 
-		final int adOrgId = inOutLine.getAD_Org_ID();
-		ic.setAD_Org_ID(adOrgId);
+		final ClientId clientId = ClientId.ofRepoId(inOutLine.getAD_Client_ID());
+
+		final OrgId orgId = OrgId.ofRepoId(inOutLine.getAD_Org_ID());
+		ic.setAD_Org_ID(orgId.getRepoId());
 
 		ic.setC_ILCandHandler(getHandlerRecord());
 
@@ -306,10 +307,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Product & Charge
-		final int productId = inOutLine.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
 		final int chargeId = inOutLine.getC_Charge_ID();
 		{
-			ic.setM_Product_ID(productId);
+			ic.setM_Product_ID(productId.getRepoId());
 			ic.setC_Charge_ID(chargeId);
 
 			setC_UOM_ID(ic);
@@ -346,29 +347,24 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Set C_Activity from Product (07442)
-		final IContextAware contextProvider = getContextAware(inOutLine);
-		final Properties ctx = getCtx(inOutLine);
-		final String trxName = getTrxName(inOutLine);
-		final I_AD_Org org = create(ctx, adOrgId, I_AD_Org.class, trxName);
-		final I_M_Product product = create(ctx, productId, I_M_Product.class, trxName);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, org, product);
-		ic.setC_Activity(activity);
+		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		//
 		// Set C_Tax from Product (07442)
+		final Properties ctx = getCtx(inOutLine);
 		final int taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : -1;
 		final Timestamp shipDate = inOut.getMovementDate();
-		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
+
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				ic,
 				taxCategoryId,
-				productId,
-				billDate,
+				productId.getRepoId(),
 				shipDate,
-				adOrgId,
-				inOut.getM_Warehouse(),
+				orgId,
+				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				locationId, // shipC_BPartner_Location_ID
 				isSOTrx);
 		ic.setC_Tax_ID(taxId);

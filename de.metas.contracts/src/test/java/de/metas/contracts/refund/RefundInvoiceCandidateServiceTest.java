@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +32,7 @@ import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*
@@ -194,12 +194,12 @@ public class RefundInvoiceCandidateServiceTest
 		final I_C_Flatrate_RefundConfig secondConfigRecord = refundConfigRecords.get(1);
 		assertThat(refundConfigs.get(0).getConditionsId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_Conditions_ID());
 		assertThat(refundConfigs.get(0).getMinQty()).isEqualByComparingTo(secondConfigRecord.getMinQty());
-		assertThat(refundConfigs.get(0).getPercent().getValueAsBigDecimal()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
+		assertThat(refundConfigs.get(0).getPercent().getValue()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
 
 		final I_C_Flatrate_RefundConfig firstConfigRecord = refundConfigRecords.get(0);
 		assertThat(refundConfigs.get(1).getConditionsId().getRepoId()).isEqualTo(firstConfigRecord.getC_Flatrate_Conditions_ID());
 		assertThat(refundConfigs.get(1).getMinQty()).isEqualByComparingTo(firstConfigRecord.getMinQty());
-		assertThat(refundConfigs.get(1).getPercent().getValueAsBigDecimal()).isEqualByComparingTo(firstConfigRecord.getRefundPercent());
+		assertThat(refundConfigs.get(1).getPercent().getValue()).isEqualByComparingTo(firstConfigRecord.getRefundPercent());
 
 
 		return refundCandidate;
@@ -266,7 +266,7 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(firstResultConfig.getId().getRepoId()).isEqualTo(firstConfigRecord.getC_Flatrate_RefundConfig_ID());
 		assertThat(firstResultConfig.getConditionsId().getRepoId()).isEqualTo(firstConfigRecord.getC_Flatrate_Conditions_ID());
 		assertThat(firstResultConfig.getMinQty()).isEqualByComparingTo(firstConfigRecord.getMinQty());
-		assertThat(firstResultConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(firstConfigRecord.getRefundPercent());
+		assertThat(firstResultConfig.getPercent().getValue()).isEqualByComparingTo(firstConfigRecord.getRefundPercent());
 
 		final RefundInvoiceCandidate secondResultElement = result.get(1);
 		final I_C_Flatrate_RefundConfig secondConfigRecord = refundConfigRecords.get(1);
@@ -279,7 +279,7 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(secondResultConfig.getId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_RefundConfig_ID());
 		assertThat(secondResultConfig.getConditionsId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_Conditions_ID());
 		assertThat(secondResultConfig.getMinQty()).isEqualByComparingTo(secondConfigRecord.getMinQty());
-		assertThat(secondResultConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
+		assertThat(secondResultConfig.getPercent().getValue()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
 
 		return result;
 	}
@@ -367,7 +367,7 @@ public class RefundInvoiceCandidateServiceTest
 
 		final RefundConfig refundConfig = extractSingleConfig(refundCandidate);
 		assertThat(refundConfig.getRefundBase()).isEqualTo(RefundBase.PERCENTAGE);
-		assertThat(refundConfig.getPercent().getValueAsBigDecimal()).isEqualTo("20");
+		assertThat(refundConfig.getPercent().getValue()).isEqualTo("20");
 
 		// invoke the method under test
 		final AssignmentToRefundCandidate result = refundInvoiceCandidateService.addAssignableMoney(refundCandidate, refundConfig, assignableCandidate);

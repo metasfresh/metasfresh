@@ -1,9 +1,8 @@
 package de.metas.printing.api;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Instructions_v;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

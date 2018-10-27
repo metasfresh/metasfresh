@@ -26,13 +26,13 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.fresh.mrp_productinfo.async.spi.impl.UpdateMRPProductInfoTableWorkPackageProcessor;
 import de.metas.inout.IInOutDAO;
+import de.metas.util.Services;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut

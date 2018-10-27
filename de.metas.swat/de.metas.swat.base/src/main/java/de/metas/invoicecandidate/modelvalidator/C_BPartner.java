@@ -25,11 +25,11 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_BPartner;
+import de.metas.util.Services;
 
 @Validator(I_C_BPartner.class)
 public class C_BPartner

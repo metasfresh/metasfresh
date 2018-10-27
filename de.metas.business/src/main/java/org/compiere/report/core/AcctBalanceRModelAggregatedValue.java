@@ -28,10 +28,11 @@ import java.util.List;
 
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IElementValueDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.KeyNamePair;
+
+import de.metas.util.Services;
 
 public class AcctBalanceRModelAggregatedValue extends AbstractRModelAggregatedValue
 {

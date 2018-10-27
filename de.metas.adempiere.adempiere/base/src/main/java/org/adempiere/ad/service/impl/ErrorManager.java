@@ -27,13 +27,14 @@ import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.IssueReportableExceptions;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.X_AD_Issue;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.compiere.util.Util;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ErrorManager implements IErrorManager
 {

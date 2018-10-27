@@ -50,17 +50,17 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Services;
 
 /**
  *	PP Order WorkFlow Model

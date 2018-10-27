@@ -42,10 +42,8 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -72,6 +70,8 @@ import de.metas.banking.payment.paymentallocation.model.InvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.PaymentRow;
 import de.metas.document.engine.IDocument;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class PaymentAllocationBuilderTest
 {

@@ -2,7 +2,7 @@ package de.metas.procurement.base;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

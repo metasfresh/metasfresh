@@ -27,22 +27,22 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_PrintTableFormat;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentBL;
-import de.metas.attachments.IAttachmentDAO;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 
 /**
@@ -56,13 +56,13 @@ import de.metas.logging.LogManager;
 public class MPrintTableFormat extends X_AD_PrintTableFormat
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -357529310875242899L;
 
 	/**
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_PrintTableFormat_ID table format
 	 * @param trxName transaction
@@ -84,7 +84,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set
 	 * @param trxName transaction
@@ -132,7 +132,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**************************************************************************
 	 * Set Standard Font to derive other fonts if not defined
-	 * 
+	 *
 	 * @param standardFont standard font
 	 */
 	public void setStandard_Font(final Font standardFont)
@@ -143,7 +143,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Get Stndard Font
-	 * 
+	 *
 	 * @return stndard font
 	 */
 	public Font getStandard_Font()
@@ -153,7 +153,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**************************************************************************
 	 * Get Table Header Font
-	 * 
+	 *
 	 * @return table header font or Bold standard font
 	 */
 	public Font getHeader_Font()
@@ -176,7 +176,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Get Header Foreground
-	 * 
+	 *
 	 * @return color or {@link #DEFAULT_HEADER_FG_COLOR}
 	 */
 	public Color getHeaderFG_Color()
@@ -193,7 +193,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Get Header BG Color
-	 * 
+	 *
 	 * @return color or cyan
 	 */
 	public Color getHeaderBG_Color()
@@ -210,7 +210,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Get Header Line Color
-	 * 
+	 *
 	 * @return color or {@link #DEFAULT_HEADER_FG_COLOR}
 	 */
 	public Color getHeaderLine_Color()
@@ -270,7 +270,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**************************************************************************
 	 * Get Function Font
-	 * 
+	 *
 	 * @return function font or BoldItalic standard font
 	 */
 	public Font getFunct_Font()
@@ -287,7 +287,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Get Function BG Color
-	 * 
+	 *
 	 * @return color or white
 	 */
 	public Color getFunctBG_Color()
@@ -304,7 +304,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Get Function FG Color
-	 * 
+	 *
 	 * @return color or green dark
 	 */
 	public Color getFunctFG_Color()
@@ -431,7 +431,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	/**************************************************************************
 	 * Get Horizontal Line Color.
 	 * (one db attribute for line color)
-	 * 
+	 *
 	 * @return color or gray light
 	 */
 	public Color getHLine_Color()
@@ -449,7 +449,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	/**
 	 * Get Verical Line Color.
 	 * (one db attribute for line color)
-	 * 
+	 *
 	 * @return color or gray light
 	 */
 	public Color getVLine_Color()
@@ -594,7 +594,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Get Table Format.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_PrintTableFormat_ID table format
 	 * @param standard_font standard font
@@ -626,7 +626,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Get Table Format
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_PrintTableFormat_ID table format
 	 * @param AD_PrintFont_ID standard font
@@ -639,7 +639,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	/**
 	 * Get Default Table Format.
-	 * 
+	 *
 	 * @param ctx context
 	 * @return Default Table Format (need to set standard font)
 	 */
@@ -687,25 +687,26 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 		//
 		if (isImageIsAttached())
 		{
-			final AttachmentEntry attachmentEntry = Services.get(IAttachmentBL.class).getFirstEntry(TableRecordReference.of(Table_Name, getAD_PrintTableFormat_ID()));
-			if (attachmentEntry == null)
+			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(TableRecordReference.of(Table_Name, getAD_PrintTableFormat_ID()));
+			if (entries.isEmpty())
 			{
 				log.warn("No Attachment entry - ID=" + get_ID());
 				return null;
 			}
-			
-			final byte[] imageData = Services.get(IAttachmentDAO.class).retrieveData(attachmentEntry);
+
+			final byte[] imageData = attachmentEntryService.retrieveData(entries.get(0).getId());
 			if (imageData != null)
 			{
 				m_image = Toolkit.getDefaultToolkit().createImage(imageData);
 			}
 			if (m_image != null)
 			{
-				log.debug(attachmentEntry.getFilename() + " - Size=" + imageData.length);
+				log.debug(entries.get(0).getFilename() + " - Size=" + imageData.length);
 			}
 			else
 			{
-				log.warn(attachmentEntry.getFilename() + " - not loaded (must be gif or jpg) - ID=" + get_ID());
+				log.warn(entries.get(0).getFilename() + " - not loaded (must be gif or jpg) - ID=" + get_ID());
 			}
 		}
 		else if (getImageURL() != null)

@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -31,6 +30,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -148,7 +149,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		}
 
 		final IHUTransactionCandidate trx = itemId2Trx.get(item.getM_HU_Item_ID());
-		final BigDecimal storageQty = storage.getQty(trx.getProduct(), trx.getQuantity().getUOM());
+		final BigDecimal storageQty = storage.getQty(trx.getProductId(), trx.getQuantity().getUOM());
 
 		// get the new TU quantity, which as TUs go needs to be an integer
 		final BigDecimal newTuQty = storageQty.divide(cuQtyBeforeLoad,
@@ -180,7 +181,11 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			final HULoader loader = HULoader.of(source, destination);
 
 			// Create allocation request
-			final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, trx.getProduct(), splitQty, trx.getQuantity().getUOM(), huContext.getDate());
+			final IAllocationRequest request = AllocationUtils.createQtyRequest(
+					huContext, 
+					trx.getProductId(), 
+					Quantity.of(splitQty, trx.getQuantity().getUOM()), 
+					huContext.getDate());
 			loader.load(request);
 		}
 

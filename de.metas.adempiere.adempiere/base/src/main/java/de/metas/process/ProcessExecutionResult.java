@@ -1,5 +1,6 @@
 package de.metas.process;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -12,13 +13,12 @@ import java.util.Set;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -34,6 +34,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.time.SystemTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -65,9 +69,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProcessExecutionResult
 {
-	public static ProcessExecutionResult newInstanceForADPInstanceId(final int adPInstanceId)
+	public static ProcessExecutionResult newInstanceForADPInstanceId(final PInstanceId pinstanceId)
 	{
-		return new ProcessExecutionResult(adPInstanceId);
+		return new ProcessExecutionResult(pinstanceId);
 	}
 
 	/**
@@ -85,7 +89,7 @@ public class ProcessExecutionResult
 
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
-	private int AD_PInstance_ID;
+	private PInstanceId pinstanceId;
 
 	/** Summary of Execution */
 	private String summary = "";
@@ -134,12 +138,17 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private WebuiViewToOpen webuiViewToOpen = null;
 
+	@Getter
+	@Setter
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private DisplayQRCode displayQRCode;
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String webuiViewId = null;
 
-	private ProcessExecutionResult(final int adPInstanceId)
+	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
-		this.AD_PInstance_ID = adPInstanceId;
+		this.pinstanceId = pinstanceId;
 		this.logs = new ArrayList<>();
 	}
 
@@ -152,21 +161,21 @@ public class ProcessExecutionResult
 				.add("error", error)
 				.add("printFormat", printFormat)
 				.add("logs.size", logs == null ? 0 : logs.size())
-				.add("AD_PInstance_ID", AD_PInstance_ID)
+				.add("AD_PInstance_ID", pinstanceId)
 				.add("recordToSelectAfterExecution", recordToSelectAfterExecution)
 				.add("recordsToOpen", recordsToOpen)
 				.add("viewToOpen", webuiViewToOpen)
 				.toString();
 	}
 
-	/* package */void setAD_PInstance_ID(final int AD_PInstance_ID)
+	/* package */void setPInstanceId(final PInstanceId pinstanceId)
 	{
-		this.AD_PInstance_ID = AD_PInstance_ID;
+		this.pinstanceId = pinstanceId;
 	}
 
-	public int getAD_PInstance_ID()
+	public PInstanceId getPinstanceId()
 	{
-		return AD_PInstance_ID;
+		return pinstanceId;
 	}
 
 	public String getSummary()
@@ -442,6 +451,13 @@ public class ProcessExecutionResult
 		reportContentType = contentType;
 	}
 
+	public void setReportData(@NonNull final File file)
+	{
+		reportData = Util.readBytes(file);
+		reportFilename = file.getName();
+		reportContentType = MimeType.getMimeType(reportFilename);
+	}
+
 	public byte[] getReportData()
 	{
 		return reportData;
@@ -553,7 +569,7 @@ public class ProcessExecutionResult
 		{
 			try
 			{
-				logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getAD_PInstance_ID()));
+				logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getPinstanceId()));
 			}
 			catch (final Exception ex)
 			{
@@ -601,6 +617,11 @@ public class ProcessExecutionResult
 	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
 		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
+	}	// addLog
+
+	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	{
+		addLog(new ProcessInfoLog(Log_ID != null ? Log_ID.getRepoId() : -1, P_Date, P_Number, P_Msg));
 	}	// addLog
 
 	/**
@@ -687,6 +708,12 @@ public class ProcessExecutionResult
 		recordToSelectAfterExecution = otherResult.recordToSelectAfterExecution;
 		recordsToOpen = otherResult.recordsToOpen;
 		webuiViewToOpen = otherResult.webuiViewToOpen;
+		displayQRCode = otherResult.displayQRCode;
+	}
+
+	public void setDisplayQRCodeFromString(final String qrCode)
+	{
+		setDisplayQRCode(DisplayQRCode.builder().code(qrCode).build());
 	}
 
 	//
@@ -822,6 +849,20 @@ public class ProcessExecutionResult
 			this.profileId = profileId;
 			this.target = target;
 		}
+	}
 
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Value
+	public static final class DisplayQRCode
+	{
+		@JsonProperty("code")
+		String code;
+
+		@lombok.Builder
+		@JsonCreator
+		private DisplayQRCode(@JsonProperty("code") @NonNull final String code)
+		{
+			this.code = code;
+		}
 	}
 }

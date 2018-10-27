@@ -5,8 +5,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -19,6 +17,8 @@ import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

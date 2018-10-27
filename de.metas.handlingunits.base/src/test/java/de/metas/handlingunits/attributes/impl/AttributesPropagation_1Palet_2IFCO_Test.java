@@ -30,7 +30,6 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
@@ -57,6 +56,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.util.Services;
 
 public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 {
@@ -78,7 +78,7 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, pTomato, AttributesPropagation_1Palet_2IFCO_Test.COUNT_TOMATOS_PER_IFCO, uomEach);
+			helper.assignProduct(itemMA, pTomatoId, AttributesPropagation_1Palet_2IFCO_Test.COUNT_TOMATOS_PER_IFCO, uomEach);
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 		}
 

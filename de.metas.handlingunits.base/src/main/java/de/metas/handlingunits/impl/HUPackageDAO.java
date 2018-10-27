@@ -32,8 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.IHUPackageDAO;
@@ -41,6 +39,8 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.shipping.interfaces.I_M_Package;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUPackageDAO implements IHUPackageDAO
 {

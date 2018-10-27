@@ -1,6 +1,5 @@
 package de.metas.handlingunits.materialtracking;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 
 import com.google.common.base.Optional;
@@ -8,6 +7,7 @@ import com.google.common.base.Optional;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

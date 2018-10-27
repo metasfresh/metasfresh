@@ -50,7 +50,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXImageView;
@@ -59,6 +58,7 @@ import org.jdesktop.swingx.JXTitledPanel;
 import org.jdesktop.swingx.painter.Painter;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  * Menu component that handles the functionality expected of a standard

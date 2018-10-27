@@ -33,9 +33,8 @@ import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
+import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
@@ -47,8 +46,8 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.util.CacheCtx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
@@ -73,6 +72,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class PricingBL implements IPricingBL
@@ -325,7 +326,7 @@ public class PricingBL implements IPricingBL
 			final I_C_UOM uomFrom = loadOutOfTrx(result.getPrice_UOM_ID(), I_C_UOM.class);
 
 			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(
-					ProductId.toRepoId(result.getProductId()),
+					result.getProductId(),
 					BigDecimal.ONE,
 					uomFrom,
 					uomTo);
@@ -357,8 +358,8 @@ public class PricingBL implements IPricingBL
 			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
 			if (productPrice == null)
 			{
-				final int uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
-				result.setPrice_UOM_ID(uomId);
+				final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+				result.setPriceUomId(uomId);
 			}
 			else
 			{
@@ -367,8 +368,8 @@ public class PricingBL implements IPricingBL
 		}
 		else
 		{
-			final int uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
-			result.setPrice_UOM_ID(uomId);
+			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			result.setPriceUomId(uomId);
 		}
 	}
 

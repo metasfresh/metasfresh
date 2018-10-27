@@ -2,11 +2,11 @@ package de.metas.request.callout;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.util.Services;
 import org.compiere.model.I_R_Request;
 
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.util.Services;
 
 /*
  * #%L

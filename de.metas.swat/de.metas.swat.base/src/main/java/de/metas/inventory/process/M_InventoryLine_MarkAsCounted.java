@@ -7,10 +7,10 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

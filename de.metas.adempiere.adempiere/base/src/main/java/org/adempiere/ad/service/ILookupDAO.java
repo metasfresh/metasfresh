@@ -26,13 +26,14 @@ import java.util.List;
 
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.util.ISingletonService;
-import org.adempiere.util.collections.BlindIterator;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.util.ISingletonService;
+import de.metas.util.collections.BlindIterator;
 
 /**
  * Field Lookup DAO methods

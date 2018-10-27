@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -36,6 +36,8 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -163,8 +165,8 @@ public class DDOrderPojoSupplier
 			}
 
 			// Get the warehouse in transit
-			final int warehouseInTrasitId = DDOrderUtil.retrieveInTransitWarehouseId(ctx, warehouseFrom.getAD_Org_ID());
-			if (warehouseInTrasitId <= 0)
+			final WarehouseId warehouseInTrasitId = DDOrderUtil.retrieveInTransitWarehouseIdIfExists(OrgId.ofRepoId(warehouseFrom.getAD_Org_ID())).orElse(null);
+			if (warehouseInTrasitId == null)
 			{
 				// DRP-010: Do not exist Transit Warehouse to this Organization
 				Loggables.get().addLog(
@@ -221,7 +223,7 @@ public class DDOrderPojoSupplier
 			//
 			// Crate DD order line
 			final Quantity qtyToMove = Quantity.of(
-					calculateQtyToMove(qtyToSupplyRemaining.getQty(), networkLine.getPercent()),
+					calculateQtyToMove(qtyToSupplyRemaining.getAsBigDecimal(), networkLine.getPercent()),
 					qtyToSupplyRemaining.getUOM());
 
 			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, supplyDateFinishSchedule, request);
@@ -288,13 +290,13 @@ public class DDOrderPojoSupplier
 
 		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
-		final Quantity qtyToMoveInProductUOM = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToMove, asiAware.getM_Product_ID());
+		final Quantity qtyToMoveInProductUOM = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToMove, asiAware.getProductId());
 
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
 				.salesOrderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId())
 				.productDescriptor(productDescriptor)
-				.qty(qtyToMoveInProductUOM.getQty())
+				.qty(qtyToMoveInProductUOM.getAsBigDecimal())
 				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())
 				.durationDays(durationDays)
 				.build();

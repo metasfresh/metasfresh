@@ -2,10 +2,11 @@ package de.metas.email;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_C_DocType;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

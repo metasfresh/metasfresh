@@ -2,10 +2,9 @@ package de.metas.procurement.base;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

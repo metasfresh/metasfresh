@@ -26,7 +26,6 @@ package de.metas.aggregation.api.impl;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableList;
@@ -34,6 +33,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.api.IAggregationItem;
 import de.metas.aggregation.api.IAggregationItem.Type;
+import de.metas.util.Check;
 
 /**
  * Immutable {@link IAggregation} implementation

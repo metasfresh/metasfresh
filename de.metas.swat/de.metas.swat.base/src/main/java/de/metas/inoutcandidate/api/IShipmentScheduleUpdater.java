@@ -25,9 +25,9 @@ package de.metas.inoutcandidate.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.PInstanceId;
+import de.metas.util.ISingletonService;
 
 /**
  * Implementors update invalid {@link I_M_ShipmentSchedule} instance and make them valid again.
@@ -48,7 +48,7 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 	 * @param trxName
 	 * @return
 	 */
-	int updateShipmentSchedule(Properties ctx, int adUserId, int adPInstanceId, String trxName);
+	int updateShipmentSchedule(Properties ctx, int adUserId, PInstanceId adPInstanceId, String trxName);
 
 	/**
 	 *
@@ -62,7 +62,7 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 	 * @param trxName
 	 * @return the number of updated schedule entries.
 	 */
-	int updateShipmentSchedule(Properties ctx, int adUserId, int adPInstanceId, boolean updateOnlyLocked, String trxName);
+	int updateShipmentSchedule(Properties ctx, int adUserId, PInstanceId adPInstanceId, boolean updateOnlyLocked, String trxName);
 
 	/**
 	 *

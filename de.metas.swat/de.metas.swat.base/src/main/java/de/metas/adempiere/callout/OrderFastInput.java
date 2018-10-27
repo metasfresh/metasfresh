@@ -34,8 +34,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.uom.UomId;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.compiere.apps.search.IInfoWindowGridRowBuilders;
 import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
@@ -43,7 +42,6 @@ import org.compiere.apps.search.impl.InfoWindowGridRowBuilders;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Shipper;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
@@ -66,6 +64,9 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * This callout's default behavior is determined by {@link ProductQtyOrderFastInputHandler}. To change the behavior, explicitly add further handlers using
@@ -143,13 +144,14 @@ public class OrderFastInput extends CalloutEngine
 			return true;
 		}
 
-		if (order.getC_BPartner_ID() > 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
 			// try to set the shipperId using BPartner
-			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID(), ITrx.TRXNAME_None);
-			if (shipper != null)
+			final ShipperId shipperId = Services.get(IBPartnerDAO.class).getShipperId(bpartnerId);
+			if (shipperId != null)
 			{
-				order.setM_Shipper(shipper);
+				order.setM_Shipper_ID(shipperId.getRepoId());
 				return true;
 			}
 		}
@@ -272,8 +274,8 @@ public class OrderFastInput extends CalloutEngine
 		if (ol.getC_UOM_ID() <= 0 && ol.getM_Product_ID() > 0)
 		{
 			// the builders did provide a product, but no UOM, so we take the product's stocking UOM
-			final int stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(ol.getM_Product_ID());
-			ol.setC_UOM_ID(stockingUOMId);
+			final UomId stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(ol.getM_Product_ID());
+			ol.setC_UOM_ID(stockingUOMId.getRepoId());
 		}
 
 		// start: cg: 01717
@@ -284,7 +286,7 @@ public class OrderFastInput extends CalloutEngine
 			ol.setC_BPartner_ID(C_BPartner_ID);
 
 			final BPartnerLocationId bpLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
-			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoIdOr(bpLocationId, -1));
+			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpLocationId));
 
 			final int AD_User_ID = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
 			ol.setAD_User_ID(AD_User_ID);

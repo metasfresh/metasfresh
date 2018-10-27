@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
@@ -38,6 +37,7 @@ import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.ISingletonService;
 
 public interface IADWindowDAO extends ISingletonService
 {

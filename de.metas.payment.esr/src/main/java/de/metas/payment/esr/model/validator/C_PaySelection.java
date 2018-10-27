@@ -7,14 +7,14 @@ import java.util.StringJoiner;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

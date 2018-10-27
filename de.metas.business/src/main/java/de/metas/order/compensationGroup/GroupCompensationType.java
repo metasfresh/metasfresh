@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.X_C_OrderLine;
 
+import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 

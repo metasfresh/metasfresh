@@ -39,11 +39,11 @@ import javax.swing.UIManager;
 import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.plaf.SwingEventNotifierUI;
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.gui.ADHyperlinkHandler;
+import de.metas.util.Check;
 
 /**
  * UI component for {@link NotificationItem}.

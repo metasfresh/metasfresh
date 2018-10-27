@@ -33,6 +33,8 @@ package org.adempiere.server.rpl.imp;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -53,8 +55,6 @@ import org.adempiere.server.rpl.IReplicationProcessor;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IImportHelper;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.apache.activemq.ActiveMQConnectionFactory;
 //import org.compiere.util.Trx;

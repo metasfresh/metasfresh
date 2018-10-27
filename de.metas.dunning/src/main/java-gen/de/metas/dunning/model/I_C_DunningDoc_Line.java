@@ -312,7 +312,7 @@ public interface I_C_DunningDoc_Line
 
 	/**
 	 * Set Notiz.
-	 * Optional weitere Information für ein Dokument
+	 * Optional weitere Information
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -322,7 +322,7 @@ public interface I_C_DunningDoc_Line
 
 	/**
 	 * Get Notiz.
-	 * Optional weitere Information für ein Dokument
+	 * Optional weitere Information
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false

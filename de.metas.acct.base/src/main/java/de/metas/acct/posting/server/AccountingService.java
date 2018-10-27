@@ -3,7 +3,6 @@ package de.metas.acct.posting.server;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -13,6 +12,7 @@ import de.metas.Profiles;
 import de.metas.acct.posting.DocumentPostRequest;
 import de.metas.acct.posting.DocumentPostRequestHandler;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

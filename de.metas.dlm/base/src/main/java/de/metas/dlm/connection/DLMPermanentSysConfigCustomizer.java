@@ -3,9 +3,9 @@ package de.metas.dlm.connection;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 
 import de.metas.dlm.migrator.IMigratorService;
+import de.metas.util.Services;
 
 /*
  * #%L

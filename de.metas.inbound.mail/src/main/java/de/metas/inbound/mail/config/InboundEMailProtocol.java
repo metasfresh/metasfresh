@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 
 import de.metas.inbound.mail.model.X_C_InboundMailConfig;
+import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 
 /*

@@ -2,11 +2,11 @@ package org.adempiere.location;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Repository;
 
 import de.metas.adempiere.service.ILocationBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

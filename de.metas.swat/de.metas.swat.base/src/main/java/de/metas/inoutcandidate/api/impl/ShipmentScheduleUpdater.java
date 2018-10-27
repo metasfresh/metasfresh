@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -39,6 +37,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
@@ -52,7 +53,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
 
 	@Override
-	public int updateShipmentSchedule(final Properties ctx, final int adUserId, final int adPInstanceId, final String trxName)
+	public int updateShipmentSchedule(final Properties ctx, final int adUserId, final PInstanceId adPInstanceId, final String trxName)
 	{
 		final boolean updateOnlyLocked = false;
 		return updateShipmentSchedule(ctx, adUserId, adPInstanceId, updateOnlyLocked, trxName);
@@ -62,7 +63,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	public int updateShipmentSchedule(
 			final Properties ctx,
 			final int adUserId,
-			final int adPInstanceId,
+			final PInstanceId adPInstanceId,
 			final boolean updateOnlyLocked,
 			final String trxName)
 	{
@@ -121,7 +122,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private final List<OlAndSched> retrieveOlsAndSchedsToProcess(
 			final Properties ctx,
-			final int adPinstanceId,
+			final PInstanceId adPinstanceId,
 			final String trxName)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);

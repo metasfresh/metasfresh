@@ -1,13 +1,13 @@
 package de.metas.purchasecandidate.material.event;
 
-import org.adempiere.util.Loggables;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.Loggables;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*

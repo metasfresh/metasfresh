@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIAsyncInvoker.IClientUIAsyncExecutor;
 import de.metas.adempiere.form.terminal.IContainer;
+import de.metas.adempiere.form.terminal.IInputMethod;
 import de.metas.adempiere.form.terminal.IPropertiesPanel;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModel;
 import de.metas.adempiere.form.terminal.ITerminalButton;
@@ -56,13 +57,13 @@ import de.metas.adempiere.form.terminal.ITerminalNumericField;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane.ScrollPolicy;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
+import de.metas.adempiere.form.terminal.ITerminalTextField.KeyboardDisplayMode;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.WrongValueException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.event.UIAsyncPropertyChangeListener;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 import de.metas.logging.LogManager;
-import de.metas.picking.legacy.form.IInputMethod;
 
 /* package */final class SwingPropertiesPanel implements IPropertiesPanel
 {
@@ -530,7 +531,7 @@ import de.metas.picking.legacy.form.IInputMethod;
 		{
 			final int displayTypeString = DisplayType.isText(displayType) ? displayType : DisplayType.String;
 			final ITerminalTextField editor = factory.createTerminalTextField(propertyName, displayTypeString, SwingPropertiesPanel.DEFAULT_FONT_SIZE);
-			editor.setShowKeyboardButton(true);
+			editor.setKeyboardDisplayMode(KeyboardDisplayMode.WHEN_TYPING);
 
 			// NOTE: in case user enters a value in editor and then clicks on other component, we want to commit the value right-away
 			editor.setCommitOnValidEdit(true);

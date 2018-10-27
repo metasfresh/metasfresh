@@ -39,9 +39,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_PA_ReportCube;
 import org.compiere.model.MAcctSchemaElement;
@@ -55,9 +52,11 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
-import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Pair;
+import de.metas.util.Services;
 
 /**
  * Financial Report Engine
@@ -365,7 +364,7 @@ public class FinReport extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		log.info("AD_PInstance_ID=" + getAD_PInstance_ID());
+		log.info("AD_PInstance_ID=" + getPinstanceId());
 
 		if (p_PA_ReportCube_ID > 0)
 		{
@@ -708,6 +707,8 @@ public class FinReport extends JavaProcess
 	 */
 	private void doCalculations()
 	{
+		final int adPInstanceRepoId = getPinstanceId().getRepoId();
+		
 		// for all lines ***************************************************
 		for (int line = 0; line < m_lines.length; line++)
 		{
@@ -745,7 +746,7 @@ public class FinReport extends JavaProcess
 						sb.append(",");
 					sb.append("COALESCE(SUM(r2.Col_").append(col).append("),0)");
 				}
-				sb.append(" FROM T_Report r2 WHERE r2.AD_PInstance_ID=").append(getAD_PInstance_ID())
+				sb.append(" FROM T_Report r2 WHERE r2.AD_PInstance_ID=").append(adPInstanceRepoId)
 						.append(" AND r2.PA_ReportLine_ID IN (");
 				if (m_lines[line].isCalculationTypeAdd())
 					// sb.append(oper_1).append(",").append(oper_2);
@@ -754,7 +755,7 @@ public class FinReport extends JavaProcess
 					sb.append(getAllLineIntervalIDsSQL(oper_1, oper_2)); // metas
 				// sb.append(getLineIDs (oper_1, oper_2)); // list of columns to add up
 				sb.append(") AND ABS(r2.LevelNo)<1) "		// 0=Line 1=Acct
-						+ "WHERE AD_PInstance_ID=").append(getAD_PInstance_ID())
+						+ "WHERE AD_PInstance_ID=").append(adPInstanceRepoId)
 						.append(" AND PA_ReportLine_ID=").append(m_lines[line].getPA_ReportLine_ID())
 						.append(" AND ABS(LevelNo)<1");		// not trx
 				int no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
@@ -788,11 +789,11 @@ public class FinReport extends JavaProcess
 						sb.append(",");
 					sb.append("COALESCE(r2.Col_").append(col).append(",0)");
 				}
-				sb.append(" FROM T_Report r2 WHERE r2.AD_PInstance_ID=").append(getAD_PInstance_ID())
+				sb.append(" FROM T_Report r2 WHERE r2.AD_PInstance_ID=").append(adPInstanceRepoId)
 						.append(" AND r2.PA_ReportLine_ID=").append(oper_1)
 						.append(" AND r2.Record_ID=0 AND r2.Fact_Acct_ID=0) "
 								//
-								+ "WHERE AD_PInstance_ID=").append(getAD_PInstance_ID())
+								+ "WHERE AD_PInstance_ID=").append(adPInstanceRepoId)
 						.append(" AND PA_ReportLine_ID=").append(m_lines[line].getPA_ReportLine_ID())
 						.append(" AND ABS(LevelNo)<1");			// 0=Line 1=Acct
 				int no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
@@ -834,11 +835,11 @@ public class FinReport extends JavaProcess
 					if (m_lines[line].isCalculationTypePercent())
 						sb.append(" *100");
 				}
-				sb.append(" FROM T_Report r2 WHERE r2.AD_PInstance_ID=").append(getAD_PInstance_ID())
+				sb.append(" FROM T_Report r2 WHERE r2.AD_PInstance_ID=").append(adPInstanceRepoId)
 						.append(" AND r2.PA_ReportLine_ID=").append(oper_2)
 						.append(" AND r2.Record_ID=0 AND r2.Fact_Acct_ID=0) "
 								//
-								+ "WHERE AD_PInstance_ID=").append(getAD_PInstance_ID())
+								+ "WHERE AD_PInstance_ID=").append(adPInstanceRepoId)
 						.append(" AND PA_ReportLine_ID=").append(m_lines[line].getPA_ReportLine_ID())
 						.append(" AND ABS(LevelNo)<1");			// 0=Line 1=Acct
 				no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
@@ -913,7 +914,7 @@ public class FinReport extends JavaProcess
 					sb.append("+COALESCE(Col_").append(ii).append(",0)");
 			}
 			//
-			sb.append(" WHERE AD_PInstance_ID=").append(getAD_PInstance_ID())
+			sb.append(" WHERE AD_PInstance_ID=").append(adPInstanceRepoId)
 					.append(" AND ABS(LevelNo)<2");			// 0=Line 1=Acct
 			int no = DB.executeUpdate(sb.toString(), get_TrxName());
 			if (no < 1)
@@ -1472,7 +1473,7 @@ public class FinReport extends JavaProcess
 			// Not Printed - Delete in T
 			if (!m_lines[line].isPrinted())
 			{
-				String sql = "DELETE FROM T_Report WHERE AD_PInstance_ID=" + getAD_PInstance_ID()
+				String sql = "DELETE FROM T_Report WHERE AD_PInstance_ID=" + getPinstanceId().getRepoId()
 						+ " AND PA_ReportLine_ID=" + m_lines[line].getPA_ReportLine_ID();
 				int no = DB.executeUpdate(sql, get_TrxName());
 				if (no > 0)
@@ -1917,5 +1918,10 @@ public class FinReport extends JavaProcess
 	protected final MReport getPA_Report()
 	{
 		return m_report;
+	}
+	
+	private int getAD_PInstance_ID()
+	{
+		return getPinstanceId().getRepoId();
 	}
 }	// FinReport

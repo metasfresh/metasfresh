@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -24,10 +26,11 @@ package de.metas.handlingunits.picking;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
@@ -37,6 +40,8 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.util.ISingletonService;
 import lombok.Builder.Default;
 import lombok.NonNull;
 
@@ -76,16 +81,11 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * <li>if any of the given HUs are included in some other HU, they will be taken out and parent HUs will be destroyed if they become empty
 	 * </ul>
 	 *
-	 * @param pickingSlot
-	 * @param hu
 	 * @return the results with the created picking slot trx and the picking-slot-hu-assignment that was created or updated
 	 */
-	List<IQueueActionResult> addToPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, List<I_M_HU> hus);
-
-	/**
-	 * @see #addToPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, List)
-	 */
 	IQueueActionResult addToPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, I_M_HU hu);
+	
+	IQueueActionResult addToPickingSlotQueue(PickingSlotId pickingSlotId, HuId huId);
 
 	/**
 	 * Removes the given <code>hu</code> from the picking slot queue by deleting its associating {@link I_M_PickingSlot_HU} record.<br>
@@ -99,6 +99,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @return the result with the created picking slot trx
 	 */
 	IQueueActionResult removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, I_M_HU hu);
+
+	IQueueActionResult removeFromPickingSlotQueue(PickingSlotId pickingSlotId, HuId huId);
 
 	/**
 	 *
@@ -117,7 +119,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 
 	/**
 	 * @return <code>true</code> if the given <code>itemProduct</code> references no <code>C_BPartner</code> or if the referenced BPartner fits with the given <code>pickingSlot</code>.
-	 * @see #isAvailableForBPartnerID(de.metas.picking.model.I_M_PickingSlot, int)
+	 * @see #isAvailableForBPartnerId(de.metas.picking.model.I_M_PickingSlot, int)
 	 */
 	boolean isAvailableForProduct(I_M_PickingSlot pickingSlot, I_M_HU_PI_Item_Product itemProduct);
 
@@ -131,9 +133,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @param bpartnerId
 	 * @param bpartnerLocationId
 	 */
-	void allocatePickingSlotIfPossible(I_M_PickingSlot pickingSlot, int bpartnerId, int bpartnerLocationId);
+	void allocatePickingSlotIfPossible(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId, BPartnerLocationId bpartnerLocationId);
 
-	void allocatePickingSlotIfPossible(int pickingSlotId, int bpartnerId, int bpartnerLocationId);
+	void allocatePickingSlotIfPossible(PickingSlotId pickingSlotId, BPartnerId bpartnerId, BPartnerLocationId bpartnerLocationId);
 
 	/**
 	 * Release the given dynamic picking slot.<br>
@@ -144,7 +146,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 */
 	void releasePickingSlotIfPossible(I_M_PickingSlot pickingSlot);
 
-	void releasePickingSlotIfPossible(int pickingSlotId);
+	void releasePickingSlotIfPossible(PickingSlotId pickingSlotId);
+
+	void releasePickingSlotsIfPossible(Collection<PickingSlotId> pickingSlotIds);
 
 	/**
 	 * Ad-Hoc and simple return type for above methods

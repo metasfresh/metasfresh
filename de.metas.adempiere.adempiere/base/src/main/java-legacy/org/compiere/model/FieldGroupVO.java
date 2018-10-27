@@ -1,9 +1,9 @@
 package org.compiere.model;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /**
  * Immutable Field group definition (value object).

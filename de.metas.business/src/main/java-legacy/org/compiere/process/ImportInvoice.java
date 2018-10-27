@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
@@ -38,6 +37,7 @@ import org.compiere.util.Env;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Import Invoice from I_Invoice

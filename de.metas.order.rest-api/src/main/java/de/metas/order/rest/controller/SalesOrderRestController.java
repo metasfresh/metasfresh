@@ -1,13 +1,13 @@
 package de.metas.order.rest.controller;
 
+import lombok.NonNull;
+
 import java.io.IOException;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -27,7 +27,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeQuery;
@@ -41,8 +42,9 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -54,12 +56,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -72,6 +74,13 @@ import lombok.NonNull;
 public class SalesOrderRestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/order";
+
+	private final AttachmentEntryService attachmentEntryService;
+
+	public SalesOrderRestController(@NonNull final AttachmentEntryService attachmentEntryService)
+	{
+		this.attachmentEntryService = attachmentEntryService;
+	}
 
 	@PostMapping
 	public JsonSalesOrder createOrder(@RequestBody final JsonSalesOrderCreateRequest request)
@@ -88,11 +97,13 @@ public class SalesOrderRestController
 
 		if (!Check.isEmpty(request.getDocTypeName(), true))
 		{
-			final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
 					.adClientId(Env.getAD_Client_ID())
 					.name(request.getDocTypeName())
-					.build());
+					.build();
+			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 			salesOrderFactory.docType(docTypeId);
 		}
 
@@ -138,12 +149,10 @@ public class SalesOrderRestController
 	@GetMapping("/{salesOrderId}/attachments")
 	public List<JsonSalesOrderAttachment> getAttachments(@PathVariable("salesOrderId") final String salesOrderIdStr)
 	{
-		final IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
-
 		final int salesOrderId = Integer.parseInt(salesOrderIdStr);
 		final TableRecordReference salesOrderRef = TableRecordReference.of(I_C_Order.Table_Name, salesOrderId);
 
-		return attachmentsBL.getEntries(salesOrderRef)
+		return attachmentEntryService.getByReferencedRecord(salesOrderRef)
 				.stream()
 				.map(entry -> toSalesOrderAttachment(salesOrderId, entry))
 				.collect(ImmutableList.toImmutableList());
@@ -155,15 +164,13 @@ public class SalesOrderRestController
 			@RequestParam("file") @NonNull final MultipartFile file)
 			throws IOException
 	{
-		final IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
-
 		final int salesOrderId = Integer.parseInt(salesOrderIdStr);
 		final TableRecordReference salesOrderRef = TableRecordReference.of(I_C_Order.Table_Name, salesOrderId);
 
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		final AttachmentEntry entry = attachmentsBL.addEntry(salesOrderRef, name, data);
+		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(salesOrderRef, name, data);
 		return toSalesOrderAttachment(salesOrderId, entry);
 	}
 
@@ -171,10 +178,10 @@ public class SalesOrderRestController
 	{
 		return JsonSalesOrderAttachment.builder()
 				.salesOrderId(String.valueOf(salesOrderId))
-				.id(entry.getId())
+				.id(AttachmentEntryId.getRepoId(entry.getId()))
 				.type(entry.getType())
 				.filename(entry.getFilename())
-				.contentType(entry.getContentType())
+				.mimeType(entry.getMimeType())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)
 				.build();
 	}

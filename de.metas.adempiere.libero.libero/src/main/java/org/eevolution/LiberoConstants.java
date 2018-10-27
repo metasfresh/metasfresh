@@ -24,7 +24,8 @@ package org.eevolution;
 
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 /**
  * Misc Libero module constants.

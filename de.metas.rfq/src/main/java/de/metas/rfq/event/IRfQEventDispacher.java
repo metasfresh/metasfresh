@@ -1,9 +1,8 @@
 package de.metas.rfq.event;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -35,11 +35,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.data.export.api.IExportDataSource;
 import de.metas.data.export.api.IExporter;
 import de.metas.data.export.api.IExporterMonitor;
+import de.metas.util.Check;
 
 /**
  * Execute asynchronously given {@link IExporter} and monitors it's state.

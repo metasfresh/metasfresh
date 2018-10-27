@@ -30,8 +30,9 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.jmx.IJMXNameAware;
+
+import de.metas.util.Check;
 
 public class JMXTrxManager implements JMXTrxManagerMBean, IJMXNameAware
 {

@@ -5,12 +5,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.util.Iterator;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

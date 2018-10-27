@@ -38,8 +38,6 @@ import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -82,6 +80,8 @@ import de.metas.logging.LogManager;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -201,8 +201,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 			// MI
 			piTU_Item = helper.createHU_PI_Item_Material(piTU);
-			helper.assignProduct(piTU_Item, pTomato, BigDecimal.TEN, productUOM);
-			helper.assignProduct(piTU_Item, pSalad, BigDecimal.TEN, productUOM);
+			helper.assignProduct(piTU_Item, pTomatoId, BigDecimal.TEN, productUOM);
+			helper.assignProduct(piTU_Item, pSaladId, BigDecimal.TEN, productUOM);
 
 		}
 
@@ -499,6 +499,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// FIXME: introduce M_ShipmentSchedule.C_UOM_ID
 		// See http://dewiki908/mediawiki/index.php/05565_Introduce_M_ShipmentSchedule.C_UOM_ID_%28107483088069%29
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class, helper.getContextProvider());
+		orderLine.setC_Order(order);
 		orderLine.setM_Product(product);
 		orderLine.setC_UOM(productUOM);
 		orderLine.setQtyOrdered(qtyOrdered);
@@ -516,6 +517,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		shipmentSchedule.setM_Warehouse(warehouse);
 
 		// Order line link
+		shipmentSchedule.setC_Order(order);
 		shipmentSchedule.setC_OrderLine(orderLine);
 		shipmentSchedule.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name));
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());

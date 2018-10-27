@@ -29,11 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.adempiere.util.Check;
 import org.reflections.ReflectionUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 class ModelClassInfo implements IModelClassInfo
 {

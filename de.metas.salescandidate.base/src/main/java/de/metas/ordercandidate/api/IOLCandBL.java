@@ -26,14 +26,16 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.ISingletonService;
 
 /**
  * @author RC
@@ -86,4 +88,6 @@ public interface IOLCandBL extends ISingletonService
 	 * @see IBPartnerDAO#retrievePricingSystemId(Properties, int, boolean, String)
 	 */
 	PricingSystemId getPricingSystemId(I_C_OLCand olCand, OLCandOrderDefaults orderDefaults);
+
+	AttachmentEntry addAttachment(OLCandQuery olCandQuery, AttachmentEntryCreateRequest attachmentEntryCreateRequest);
 }

@@ -25,10 +25,11 @@ package org.adempiere.ad.persistence.modelgen;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
 
 /**
  * AD_Reference/AD_Ref_List related meta data.

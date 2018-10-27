@@ -25,9 +25,8 @@ package de.metas.handlingunits.client.terminal.editor.model;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.ISingletonService;
 
 public interface IHUPOSLayoutConstants extends ISingletonService
 {

@@ -28,11 +28,11 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.model.IHUDeliveryQuantities;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

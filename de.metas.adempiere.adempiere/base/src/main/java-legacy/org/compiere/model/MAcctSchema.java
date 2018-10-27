@@ -25,7 +25,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.report.MReportTree;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -34,6 +33,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Services;
 
 /**
  *  Accounting Schema Model (base)

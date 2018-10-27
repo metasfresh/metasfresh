@@ -15,15 +15,14 @@ import java.util.List;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -34,9 +33,8 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 
 import de.metas.document.archive.api.IDocOutboundDAO;
@@ -44,6 +42,10 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractDocOutboundDAO implements IDocOutboundDAO
 {
@@ -133,40 +135,56 @@ public abstract class AbstractDocOutboundDAO implements IDocOutboundDAO
 		queryBuilder.orderBy()
 				.addColumn(I_C_Doc_Outbound_Log_Line.COLUMN_C_Doc_Outbound_Log_Line_ID, Direction.Descending, Nulls.Last);
 	}
-	
+
 	@Override
 	public I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID)
 	{
-		
 		//
 		// Services
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, contextProvider)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_AD_Table_ID, AD_Table_ID);
-		
+
 		// Order by
-		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_C_Doc_Outbound_Log.class)
-				.addColumn(I_C_Doc_Outbound_Log.COLUMNNAME_Created, false)
+		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
+				.createQueryOrderByBuilder(I_C_Doc_Outbound_Log.class)
+				.addColumnDescending(I_C_Doc_Outbound_Log.COLUMNNAME_Created)
 				.createQueryOrderBy();
 
 		return queryBuilder
 				.create()
 				.setOrderBy(queryOrderBy)
 				.first(I_C_Doc_Outbound_Log.class);
-		
 	}
-	
+
 	@Override
-	public final List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final Properties ctx, final int pInstanceId, final String trxName)
+	public final List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final Properties ctx, final PInstanceId pinstanceId, final String trxName)
 	{
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class, ctx, trxName)
-				.setOnlySelection(pInstanceId);
+				.setOnlySelection(pinstanceId);
 		final List<I_C_Doc_Outbound_Log> logs = queryBuilder.create()
 				.list(I_C_Doc_Outbound_Log.class);
 		return logs;
+	}
+
+	@Override
+	public final I_C_Doc_Outbound_Log retrieveLog(@NonNull final I_AD_Archive archive)
+	{
+		final int adTableId = archive.getAD_Table_ID();
+		final int recordId = archive.getRecord_ID();
+
+		final I_C_Doc_Outbound_Log docExchange = Services
+				.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Doc_Outbound_Log.class, archive)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, recordId)
+				.create()
+				.firstOnly(I_C_Doc_Outbound_Log.class);
+
+		return docExchange;
 	}
 }

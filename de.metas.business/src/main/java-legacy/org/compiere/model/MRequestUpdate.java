@@ -20,7 +20,8 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 /**
  * 	Request Update Model

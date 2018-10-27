@@ -24,11 +24,11 @@ package de.metas.javaclasses.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.util.Services;
 
 @Validator(I_AD_JavaClass.class)
 public class AD_JavaClass

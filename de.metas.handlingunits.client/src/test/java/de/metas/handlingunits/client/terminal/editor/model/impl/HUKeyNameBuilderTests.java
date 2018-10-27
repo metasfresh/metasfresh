@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
@@ -29,6 +28,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.util.Services;
 
 /*
  * #%L

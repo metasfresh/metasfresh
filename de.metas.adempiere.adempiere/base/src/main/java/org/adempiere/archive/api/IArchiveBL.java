@@ -24,12 +24,12 @@ package org.adempiere.archive.api;
 
 import java.io.InputStream;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
 
 import de.metas.process.ProcessInfo;
+import de.metas.util.ISingletonService;
 
 /**
  * Archive related business logic

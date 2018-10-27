@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 
 import de.metas.dlm.IDLMService;
@@ -13,6 +12,7 @@ import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
+import de.metas.util.Check;
 
 /*
  * #%L

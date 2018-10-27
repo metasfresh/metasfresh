@@ -26,9 +26,10 @@ package org.adempiere.archive.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Archive related DAO

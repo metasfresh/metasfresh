@@ -1,11 +1,15 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
@@ -38,6 +42,75 @@ import lombok.Value;
 @Value
 public class OrderResponsePackageItemPart
 {
+	/** Please keep in sync with the respective JAXB classes. */
+	public enum Type
+	{
+		NORMAL("Normal"),
+
+		VERBUND("Verbund"),
+
+		NACHLIEFERUNG("Nachlieferung"),
+
+		DISPO("Dispo"),
+
+		KEINE_LIEFERUNG_ABER_NORMAL_MOEGLICH("KeineLieferungAberNormalMoeglich"),
+
+		KEINE_LIEFERUNG_ABER_VERBUND_MOEGLICH("KeineLieferungAberVerbundMoeglich"),
+
+		KEINE_LIEFERUNG_ABER_NACHLIEFERUNG_MOEGLICH("KeineLieferungAberNachlieferungMoeglich"),
+
+		KEINE_LIEFERUNG_ABER_DISPO_MOEGLICH("KeineLieferungAberDispoMoeglich"),
+
+		NICHT_LIEFERBAR("NichtLieferbar");
+
+		private final String value;
+
+		private Type(@NonNull final String value)
+		{
+			this.value = value;
+		}
+
+		public boolean isNoDeliveryPossible()
+		{
+			return this.equals(KEINE_LIEFERUNG_ABER_DISPO_MOEGLICH)
+					|| this.equals(KEINE_LIEFERUNG_ABER_NACHLIEFERUNG_MOEGLICH)
+					|| this.equals(KEINE_LIEFERUNG_ABER_NORMAL_MOEGLICH)
+					|| this.equals(KEINE_LIEFERUNG_ABER_VERBUND_MOEGLICH)
+					|| this.equals(NICHT_LIEFERBAR);
+		}
+
+		private static final Map<String, Type> MAP = ImmutableMap
+				.<String, Type> builder()
+				.put("Normal", NORMAL)
+				.put("Verbund", VERBUND)
+				.put("Dispo", DISPO)
+				.put("KeineLieferungAberNormalMoeglich", KEINE_LIEFERUNG_ABER_NORMAL_MOEGLICH)
+				.put("KeineLieferungAberVerbundMoeglich", KEINE_LIEFERUNG_ABER_VERBUND_MOEGLICH)
+				.put("KeineLieferungAberNachlieferungMoeglich", KEINE_LIEFERUNG_ABER_NACHLIEFERUNG_MOEGLICH)
+				.put("KeineLieferungAberDispoMoeglich", KEINE_LIEFERUNG_ABER_DISPO_MOEGLICH)
+				.put("NichtLieferbar", NICHT_LIEFERBAR)
+				.build();
+
+		public static Type ofStringValueOrNull(@Nullable final String value)
+		{
+			if (value == null)
+			{
+				return null;
+			}
+			final Type result = MAP.get(value);
+			return result;
+		}
+
+		public static String getValueOrNull(@Nullable final Type type)
+		{
+			if (type == null)
+			{
+				return null;
+			}
+			return type.value;
+		}
+	}
+
 	@JsonProperty("id")
 	@NonNull
 	OrderResponsePackageItemPartId id;
@@ -47,7 +120,7 @@ public class OrderResponsePackageItemPart
 	Quantity qty;
 
 	@JsonProperty("type")
-	String type;
+	Type type;
 
 	@JsonProperty("deliveryDate")
 	LocalDateTime deliveryDate;
@@ -69,7 +142,7 @@ public class OrderResponsePackageItemPart
 	private OrderResponsePackageItemPart(
 			@JsonProperty("id") final OrderResponsePackageItemPartId id,
 			@JsonProperty("qty") @NonNull final Quantity qty,
-			@JsonProperty("type") final String type,
+			@JsonProperty("type") final Type type,
 			@JsonProperty("deliveryDate") final LocalDateTime deliveryDate,
 			@JsonProperty("defectReason") final OrderDefectReason defectReason,
 			@JsonProperty("tour") final String tour,

@@ -28,9 +28,10 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.time.SystemTime;
-import org.adempiere.util.time.TimeSource;
 import org.junit.Test;
+
+import de.metas.util.time.SystemTime;
+import de.metas.util.time.TimeSource;
 
 public class MeterTests
 {

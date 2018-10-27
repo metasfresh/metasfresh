@@ -212,7 +212,7 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -223,8 +223,10 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getBill_BPartner_Name();
 
     /** Column definition for Bill_BPartner_Name */
@@ -262,6 +264,35 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
+	 * Set Rechungsadresse abw..
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_Location_Override_ID (int Bill_Location_Override_ID);
+
+	/**
+	 * Get Rechungsadresse abw..
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_Location_Override_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getBill_Location_Override();
+
+	public void setBill_Location_Override(org.compiere.model.I_C_BPartner_Location Bill_Location_Override);
+
+    /** Column definition for Bill_Location_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner_Location> COLUMN_Bill_Location_Override_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner_Location>(I_C_Invoice_Candidate.class, "Bill_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name Bill_Location_Override_ID */
+    public static final String COLUMNNAME_Bill_Location_Override_ID = "Bill_Location_Override_ID";
+
+	/**
 	 * Set Rechnungskontakt.
 	 * Ansprechpartner des Geschäftspartners für die Rechnungsstellung
 	 *
@@ -289,6 +320,33 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User> COLUMN_Bill_User_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User>(I_C_Invoice_Candidate.class, "Bill_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name Bill_User_ID */
     public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
+	 * Set Rechnungskontakt abw..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_User_ID_Override_ID (int Bill_User_ID_Override_ID);
+
+	/**
+	 * Get Rechnungskontakt abw..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_User_ID_Override_ID();
+
+	public org.compiere.model.I_AD_User getBill_User_ID_Override();
+
+	public void setBill_User_ID_Override(org.compiere.model.I_AD_User Bill_User_ID_Override);
+
+    /** Column definition for Bill_User_ID_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User> COLUMN_Bill_User_ID_Override_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User>(I_C_Invoice_Candidate.class, "Bill_User_ID_Override_ID", org.compiere.model.I_AD_User.class);
+    /** Column name Bill_User_ID_Override_ID */
+    public static final String COLUMNNAME_Bill_User_ID_Override_ID = "Bill_User_ID_Override_ID";
 
 	/**
 	 * Set Kostenstelle.
@@ -630,7 +688,7 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -642,10 +700,13 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getC_Order_BPartner();
 
+	@Deprecated
 	public org.compiere.model.I_C_BPartner getC_Order_BPart();
 
 	@Deprecated
@@ -1323,6 +1384,29 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalId (java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalId();
+
+    /** Column definition for ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "ExternalId", null);
+    /** Column name ExternalId */
+    public static final String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
 	 * Set First ship location.
 	 * BParter location of first shipment/receipt
 	 *
@@ -1964,7 +2048,7 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -1976,8 +2060,10 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public boolean isToRecompute();
 
     /** Column definition for IsToRecompute */
@@ -2201,7 +2287,7 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -2213,10 +2299,13 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getM_Product_Category_ID();
 
+	@Deprecated
 	public org.compiere.model.I_M_Product_Category getM_Product_Category();
 
 	@Deprecated
@@ -2305,6 +2394,31 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_NetAmtToInvoice = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "NetAmtToInvoice", null);
     /** Column name NetAmtToInvoice */
     public static final String COLUMNNAME_NetAmtToInvoice = "NetAmtToInvoice";
+
+	/**
+	 * Set Notiz.
+	 * Optional weitere Information
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setNote (java.lang.String Note);
+
+	/**
+	 * Get Notiz.
+	 * Optional weitere Information
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getNote();
+
+    /** Column definition for Note */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Note = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "Note", null);
+    /** Column name Note */
+    public static final String COLUMNNAME_Note = "Note";
 
 	/**
 	 * Set Referenz.
@@ -2580,7 +2694,7 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -2591,8 +2705,10 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public boolean isProcessing();
 
     /** Column definition for Processing */
@@ -2606,7 +2722,7 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -2618,8 +2734,10 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getProductType();
 
     /** Column definition for ProductType */
@@ -3093,7 +3211,7 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -3104,8 +3222,10 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getTotalOfOrder();
 
     /** Column definition for TotalOfOrder */
@@ -3118,7 +3238,7 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -3129,8 +3249,10 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getTotalOfOrderExcludingDiscount();
 
     /** Column definition for TotalOfOrderExcludingDiscount */

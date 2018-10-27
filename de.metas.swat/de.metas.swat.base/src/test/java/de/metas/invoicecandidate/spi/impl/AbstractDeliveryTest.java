@@ -1,5 +1,8 @@
 package de.metas.invoicecandidate.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,46 +16,47 @@ package de.metas.invoicecandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Activity;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -69,9 +73,13 @@ public abstract class AbstractDeliveryTest
 	protected final I_C_ILCandHandler handler = InterfaceWrapperHelper.create(ctx, I_C_ILCandHandler.class, trxName);
 
 	// task 07442
-	private final I_AD_Org org = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, trxName);
-	private final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, trxName);
-	private final I_C_Activity activity = InterfaceWrapperHelper.create(ctx, I_C_Activity.class, trxName);
+	private final ClientId clientId = ClientId.ofRepoId(2);
+	private final OrgId orgId = OrgId.ofRepoId(2);
+	private ProductId productId;
+	private final ActivityId activityId = ActivityId.ofRepoId(4);
+	// private final I_AD_Org org = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, trxName);
+	// private final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, trxName);
+	// private final I_C_Activity activity = InterfaceWrapperHelper.create(ctx, I_C_Activity.class, trxName);
 	@Mocked
 	protected IProductAcctDAO productAcctDAO;
 	@Mocked
@@ -90,8 +98,13 @@ public abstract class AbstractDeliveryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, clientId.getRepoId());
 
 		initHandlers();
+
+		final I_M_Product product = newInstance(I_M_Product.class);
+		saveRecord(product);
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// initialize C_BPartner data
 		{
@@ -113,26 +126,28 @@ public abstract class AbstractDeliveryTest
 		Services.registerService(ITaxBL.class, taxBL);
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
+		//@formatter:off
 		new Expectations()
 		{{
-				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product);
-				minTimes = 0;
-				result = activity;
+			productAcctDAO.retrieveActivityForAcct(clientId, orgId, productId);
+			minTimes = 0;
+			result = activityId;
 
-				taxBL.getTax(
-						ctx
-						, order
-						, -1 // taxCategoryId
-						, orderLine.getM_Product_ID()
-						, order.getDatePromised()
-						, order.getDatePromised()
-						, order.getAD_Org_ID()
-						, order.getM_Warehouse()
-						, order.getC_BPartner_Location_ID()
-						, order.isSOTrx());
-				minTimes = 0;
-				result = 3;
+			taxBL.getTax(
+					ctx,
+					order,
+					-1, // taxCategoryId
+			 orderLine.getM_Product_ID(),
+			 order.getDatePromised(),
+			 OrgId.ofRepoId(order.getAD_Org_ID()),
+			 WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
+			 order.getC_BPartner_Location_ID(),
+			 order.isSOTrx());
+
+			minTimes = 0;
+			result = 3;
 		}};
+		//@formatter:on
 	}
 
 	private void initC_BPartner()
@@ -157,15 +172,15 @@ public abstract class AbstractDeliveryTest
 
 	private void initC_Order()
 	{
-		order.setAD_Org(org);
+		order.setAD_Org_ID(orgId.getRepoId());
 		order.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
 		InterfaceWrapperHelper.save(order);
 	}
 
 	private void initC_OrderLine()
 	{
-		orderLine.setAD_Org(org);
-		orderLine.setM_Product(product);
+		orderLine.setAD_Org_ID(orgId.getRepoId());
+		orderLine.setM_Product_ID(productId.getRepoId());
 
 		final BigDecimal qty = new BigDecimal(13);
 		orderLine.setQtyEntered(qty);

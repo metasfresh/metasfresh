@@ -1,13 +1,13 @@
 package de.metas.adempiere.engine;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
 
 import de.metas.adempiere.model.I_AD_Table_MView;
 import de.metas.adempiere.service.ITableMViewBL;
 import de.metas.adempiere.service.ITableMViewBL.RefreshMode;
 import de.metas.processor.spi.IPOProcessor;
+import de.metas.util.Services;
 
 public class MViewPOProcessor implements IPOProcessor
 {

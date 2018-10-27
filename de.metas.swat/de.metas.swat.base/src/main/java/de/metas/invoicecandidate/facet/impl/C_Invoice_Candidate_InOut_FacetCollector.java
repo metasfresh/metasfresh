@@ -33,13 +33,13 @@ import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.impl.Facet;
 import org.adempiere.facet.impl.FacetCategory;
 import org.adempiere.facet.impl.SingleFacetCategoryCollectorTemplate;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 /**
  * Collects shipment and receipt facets.

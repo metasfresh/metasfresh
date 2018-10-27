@@ -29,10 +29,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -55,6 +52,9 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class MRPBL implements IMRPBL
 {
@@ -178,11 +178,11 @@ public class MRPBL implements IMRPBL
 		final BigDecimal qtyTargetInStockingUOM;
 		if (uom != null)
 		{
-			final I_M_Product product = mrp.getM_Product();
+			final int productId = mrp.getM_Product_ID();
 			final I_C_UOM uomTo = getC_UOM(mrp);
 
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-			final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 			
 			qtyTargetInStockingUOM = uomConversionBL.convertQty(uomConversionCtx, qtyTarget, uom, uomTo);
 			qtyInStockingUOM = uomConversionBL.convertQty(uomConversionCtx, qty, uom, uomTo);
@@ -279,7 +279,7 @@ public class MRPBL implements IMRPBL
 		});
 	}
 
-	private final transient InheritableThreadLocal<IMaterialPlanningContext> mrpContextThreadLocal = new InheritableThreadLocal<IMaterialPlanningContext>();
+	private final transient InheritableThreadLocal<IMaterialPlanningContext> mrpContextThreadLocal = new InheritableThreadLocal<>();
 
 	@Override
 	public BigDecimal getQtyAbs(final I_PP_MRP mrp)

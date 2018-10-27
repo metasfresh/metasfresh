@@ -51,15 +51,13 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -81,7 +79,7 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
@@ -107,6 +105,8 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
@@ -540,22 +540,22 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		// Set PriceActual in HUContext
 		Check.assumeNotNull(priceActual, "priceActual not null");
 		final IHUContext huContext = request.getHUContext();
-		Map<I_M_Attribute, Object> initialAttributeValueDefaults = huContext.getProperty(Constants.CTXATTR_DefaultAttributesValue);
+		Map<AttributeId, Object> initialAttributeValueDefaults = huContext.getProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue);
 		if (initialAttributeValueDefaults == null)
 		{
 			initialAttributeValueDefaults = new HashMap<>();
-			huContext.setProperty(Constants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
+			huContext.setProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
 		}
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(Constants.ATTR_CostPrice);
-		initialAttributeValueDefaults.put(attr_CostPrice, priceActual);
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final AttributeId attrId_CostPrice = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_CostPrice);
+		initialAttributeValueDefaults.put(attrId_CostPrice, priceActual);
 
 		//
 		// Set HU_PurchaseOrderLine_ID (task 09741)
 		if (purchaseOrderLineIds.size() == 1)
 		{
-			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(Constants.ATTR_PurchaseOrderLine_ID);
-			initialAttributeValueDefaults.put(attr_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
+			final AttributeId attrId_PurchaseOrderLine = attributesRepo.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_PurchaseOrderLine_ID);
+			initialAttributeValueDefaults.put(attrId_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
 		}
 
 		return request;

@@ -3,10 +3,10 @@ package de.metas.procurement.base.balance;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
-import org.adempiere.util.ISingletonService;
 import org.apache.cxf.jaxrs.ext.Oneway;
 
 import de.metas.procurement.base.model.I_PMM_Balance;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

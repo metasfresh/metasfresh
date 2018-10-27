@@ -25,10 +25,10 @@ package de.metas.materialtracking.model.validator;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.materialtracking.IMaterialTrackingBL;
+import de.metas.util.Services;
 
 public class Main extends AbstractModuleInterceptor
 {

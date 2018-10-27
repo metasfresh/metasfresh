@@ -20,12 +20,12 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -38,17 +38,18 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Services;
 
 /**
  *	Cash Journal Model
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MCash.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- *  <li>FR [ 1866214 ]  
+ *  <li>FR [ 1866214 ]
  *  @see http://sourceforge.net/tracker/index.php?func=detail&aid=1866214&group_id=176962&atid=879335
- * 	<li> FR [ 2520591 ] Support multiples calendar for Org 
- *	@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 	
+ * 	<li> FR [ 2520591 ] Support multiples calendar for Org
+ *	@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *  @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			<li>BF [ 1831997 ] Cash journal allocation reversed
  * 			<li>BF [ 1894524 ] Pay an reversed invoice
@@ -58,7 +59,7 @@ import de.metas.logging.MetasfreshLastError;
 public class MCash extends X_C_Cash implements IDocument
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1221144207418749593L;
 
@@ -72,7 +73,7 @@ public class MCash extends X_C_Cash implements IDocument
 	 *	@param trxName transaction
 	 *	@return cash
 	 */
-	public static MCash get (Properties ctx, int AD_Org_ID, 
+	public static MCash get (Properties ctx, int AD_Org_ID,
 		Timestamp dateAcct, int C_Currency_ID, String trxName)
 	{
 		//	Existing Journal
@@ -87,10 +88,10 @@ public class MCash extends X_C_Cash implements IDocument
 			.setOrderBy(I_C_Cash.COLUMNNAME_C_Cash_ID)
 			.first()
 		;
-		
+
 		if (retValue != null)
 			return retValue;
-		
+
 		//	Get CashBook
 		MCashBook cb = MCashBook.get (ctx, AD_Org_ID, C_Currency_ID);
 		if (cb == null)
@@ -98,7 +99,7 @@ public class MCash extends X_C_Cash implements IDocument
 			s_log.warn("No CashBook for AD_Org_ID=" + AD_Org_ID + ", C_Currency_ID=" + C_Currency_ID);
 			return null;
 		}
-		
+
 		//	Create New Journal
 		retValue = new MCash (cb, dateAcct);
 		retValue.saveEx(trxName); // metas: tsa: use saveEx
@@ -113,21 +114,21 @@ public class MCash extends X_C_Cash implements IDocument
 	 *	@param trxName transaction
 	 *	@return cash
 	 */
-	public static MCash get (Properties ctx, int C_CashBook_ID, 
+	public static MCash get (Properties ctx, int C_CashBook_ID,
 		Timestamp dateAcct, String trxName)
 	{
 		String whereClause ="C_CashBook_ID=?"			//	#1
 				+ " AND TRUNC(StatementDate)=?"			//	#2
 				+ " AND Processed='N'";
-		
+
 		MCash retValue = new Query(ctx, MCash.Table_Name, whereClause, trxName)
 			.setParameters(new Object[]{C_CashBook_ID, TimeUtil.getDay(dateAcct)})
 			.first()
 		;
-		
+
 		if (retValue != null)
 			return retValue;
-		
+
 		//	Get CashBook
 		MCashBook cb = new MCashBook (ctx, C_CashBook_ID, trxName);
 		if (cb.get_ID() ==0)
@@ -135,7 +136,7 @@ public class MCash extends X_C_Cash implements IDocument
 			s_log.warn("Not found C_CashBook_ID=" + C_CashBook_ID);
 			return null;
 		}
-		
+
 		//	Create New Journal
 		retValue = new MCash (cb, dateAcct);
 		retValue.saveEx(trxName);
@@ -145,7 +146,7 @@ public class MCash extends X_C_Cash implements IDocument
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MCash.class);
 
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -169,7 +170,7 @@ public class MCash extends X_C_Cash implements IDocument
 			setDateAcct (today);	// @#Date@
 			String name = DisplayType.getDateFormat(DisplayType.Date).format(today)
 				+ " " + MOrg.get(ctx, getAD_Org_ID()).getValue();
-			setName (name);	
+			setName (name);
 			setIsApproved(false);
 			setPosted (false);	// N
 			setProcessed (false);
@@ -186,7 +187,7 @@ public class MCash extends X_C_Cash implements IDocument
 	{
 		super(ctx, rs, trxName);
 	}	//	MCash
-	
+
 	/**
 	 * 	Parent Constructor
 	 *	@param cb cash book
@@ -199,20 +200,20 @@ public class MCash extends X_C_Cash implements IDocument
 		setC_CashBook_ID(cb.getC_CashBook_ID());
 		if (today != null)
 		{
-			setStatementDate (today);	
+			setStatementDate (today);
 			setDateAcct (today);
 			String name = DisplayType.getDateFormat(DisplayType.Date).format(today)
 				+ " " + cb.getName();
-			setName (name);	
+			setName (name);
 		}
 		m_book = cb;
 	}	//	MCash
-	
+
 	/**	Lines					*/
 	private MCashLine[]		m_lines = null;
 	/** CashBook				*/
 	private MCashBook		m_book = null;
-	
+
 	/**
 	 * 	Get Lines
 	 *	@param requery requery
@@ -224,14 +225,14 @@ public class MCash extends X_C_Cash implements IDocument
 			set_TrxName(m_lines, get_TrxName());
 			return m_lines;
 		}
-		
-		String whereClause =MCashLine.COLUMNNAME_C_Cash_ID+"=?"; 
+
+		String whereClause =MCashLine.COLUMNNAME_C_Cash_ID+"=?";
 		List<MCashLine> list = new Query(getCtx(),MCashLine.Table_Name,  whereClause, get_TrxName())
 								.setParameters(new Object[]{getC_Cash_ID()})
 								.setOrderBy(MCashLine.COLUMNNAME_Line)
 								.setOnlyActiveRecords(true)
 								.list(MCashLine.class);
-		
+
 		m_lines =  list.toArray(new MCashLine[list.size()]);
 		return m_lines;
 	}	//	getLines
@@ -246,9 +247,9 @@ public class MCash extends X_C_Cash implements IDocument
 			m_book = MCashBook.get(getCtx(), getC_CashBook_ID());
 		return m_book;
 	}	//	getCashBook
-	
+
 	/**
-	 * 	Get Document No 
+	 * 	Get Document No
 	 *	@return name
 	 */
 	@Override
@@ -316,8 +317,8 @@ public class MCash extends X_C_Cash implements IDocument
 		setEndingBalance(getBeginningBalance().add(getStatementDifference()));
 		return true;
 	}	//	beforeSave
-	
-	
+
+
 	/**************************************************************************
 	 * 	Process document
 	 *	@param processAction document action
@@ -327,9 +328,9 @@ public class MCash extends X_C_Cash implements IDocument
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824 
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	//	process
-	
+
 	/**	Process Message 			*/
 	private String		m_processMsg = null;
 	/**	Just Prepared Flag			*/
@@ -337,7 +338,7 @@ public class MCash extends X_C_Cash implements IDocument
 
 	/**
 	 * 	Unlock Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean unlockIt()
@@ -346,10 +347,10 @@ public class MCash extends X_C_Cash implements IDocument
 		setProcessing(false);
 		return true;
 	}	//	unlockIt
-	
+
 	/**
 	 * 	Invalidate Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean invalidateIt()
@@ -358,10 +359,10 @@ public class MCash extends X_C_Cash implements IDocument
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	//	invalidateIt
-	
+
 	/**
 	 *	Prepare Document
-	 * 	@return new status (In Progress or Invalid) 
+	 * 	@return new status (In Progress or Invalid)
 	 */
 	@Override
 	public String prepareIt()
@@ -386,17 +387,17 @@ public class MCash extends X_C_Cash implements IDocument
 		//	Add up Amounts
 		BigDecimal difference = Env.ZERO;
 		int C_Currency_ID = getC_Currency_ID();
-		for (int i = 0; i < lines.length; i++)
+		for (MCashLine line2 : lines)
 		{
-			MCashLine line = lines[i];
+			MCashLine line = line2;
 			if (!line.isActive())
 				continue;
 			if (C_Currency_ID == line.getC_Currency_ID())
 				difference = difference.add(line.getAmount());
 			else
 			{
-				BigDecimal amt = Services.get(ICurrencyBL.class).convert(getCtx(), line.getAmount(), 
-					line.getC_Currency_ID(), C_Currency_ID, getDateAcct(), 0, 
+				BigDecimal amt = Services.get(ICurrencyBL.class).convert(getCtx(), line.getAmount(),
+					line.getC_Currency_ID(), C_Currency_ID, getDateAcct(), 0,
 					getAD_Client_ID(), getAD_Org_ID());
 				if (amt == null)
 				{
@@ -418,10 +419,10 @@ public class MCash extends X_C_Cash implements IDocument
 			setDocAction(DOCACTION_Complete);
 		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
-	
+
 	/**
 	 * 	Approve Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean  approveIt()
@@ -430,10 +431,10 @@ public class MCash extends X_C_Cash implements IDocument
 		setIsApproved(true);
 		return true;
 	}	//	approveIt
-	
+
 	/**
 	 * 	Reject Approval
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean rejectIt()
@@ -442,7 +443,7 @@ public class MCash extends X_C_Cash implements IDocument
 		setIsApproved(false);
 		return true;
 	}	//	rejectIt
-	
+
 	/**
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
@@ -457,22 +458,22 @@ public class MCash extends X_C_Cash implements IDocument
 			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
-		
+
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
 
-		
+
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
 		//
 		log.debug("Completed: {}", this);
-		
+
 		MCashLine[] lines = getLines(false);
-		for (int i = 0; i < lines.length; i++)
+		for (MCashLine line2 : lines)
 		{
-			MCashLine line = lines[i];
+			MCashLine line = line2;
 			if (MCashLine.CASHTYPE_Invoice.equals(line.getCashType()))
 			{
 				// Check if the invoice is completed - teo_sarca BF [ 1894524 ]
@@ -489,7 +490,7 @@ public class MCash extends X_C_Cash implements IDocument
 				//
 				String name = Msg.translate(getCtx(), "C_Cash_ID") + ": " + getName()
 								+ " - " + Msg.translate(getCtx(), "Line") + " " + line.getLine();
-				MAllocationHdr hdr = new MAllocationHdr(getCtx(), false, 
+				MAllocationHdr hdr = new MAllocationHdr(getCtx(), false,
 						getDateAcct(), line.getC_Currency_ID(),
 						name, get_TrxName());
 				hdr.setAD_Org_ID(getAD_Org_ID());
@@ -532,7 +533,7 @@ public class MCash extends X_C_Cash implements IDocument
 				//Modification for cash payment - Posterita
 				pay.setC_CashBook_ID(getC_CashBook_ID());
 				//End of modification - Posterita
-				
+
 				pay.setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
 				pay.setC_DocType_ID(true);	//	Receipt
 				pay.setDateTrx(getStatementDate());
@@ -543,13 +544,13 @@ public class MCash extends X_C_Cash implements IDocument
 				pay.setDocAction(MPayment.DOCACTION_None);
 				pay.setPosted(true);
 				pay.setIsAllocated(true);	//	Has No Allocation!
-				pay.setProcessed(true);		
+				pay.setProcessed(true);
 				if (!pay.save())
 				{
 					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not create Payment");
 					return IDocument.STATUS_Invalid;
 				}
-				
+
 				line.setC_Payment_ID(pay.getC_Payment_ID());
 				if (!line.save())
 				{
@@ -558,7 +559,7 @@ public class MCash extends X_C_Cash implements IDocument
 				}
 			}
 		}
-		
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -571,11 +572,11 @@ public class MCash extends X_C_Cash implements IDocument
 		setDocAction(DOCACTION_Close);
 		return IDocument.STATUS_Completed;
 	}	//	completeIt
-	
+
 	/**
 	 * 	Void Document.
 	 * 	Same as Close.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean voidIt()
@@ -588,25 +589,25 @@ public class MCash extends X_C_Cash implements IDocument
 
 		//FR [ 1866214 ]
 		boolean retValue = reverseIt();
-		
+
 		if (retValue) {
 			// After Void
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
 			if (m_processMsg != null)
-				return false;		
+				return false;
 			setDocAction(DOCACTION_None);
 		}
 
 		return retValue;
 	}	//	voidIt
-	
+
 	//FR [ 1866214 ]
 	/**************************************************************************
 	 * 	Reverse Cash
 	 * 	Period needs to be open
 	 *	@return true if reversed
 	 */
-	private boolean reverseIt() 
+	private boolean reverseIt()
 	{
 		if (DOCSTATUS_Closed.equals(getDocStatus())
 			|| DOCSTATUS_Reversed.equals(getDocStatus())
@@ -620,7 +621,7 @@ public class MCash extends X_C_Cash implements IDocument
 		//	Can we delete posting
 		if (!MPeriod.isOpen(getCtx(), this.getDateAcct(), X_C_DocType.DOCBASETYPE_CashJournal, getAD_Org_ID()))
 			throw new IllegalStateException("@PeriodClosed@");
-		
+
 		//	Reverse Allocations
 		MAllocationHdr[] allocations = MAllocationHdr.getOfCash(getCtx(), getC_Cash_ID(), get_TrxName());
 		for(MAllocationHdr allocation : allocations)
@@ -628,7 +629,7 @@ public class MCash extends X_C_Cash implements IDocument
 			allocation.reverseCorrectIt();
 			if(!allocation.save())
 				throw new IllegalStateException("Cannot reverse allocations");
-		}	
+		}
 
 		MCashLine[] cashlines = getLines(true);
 		for (MCashLine cashline : cashlines )
@@ -646,14 +647,14 @@ public class MCash extends X_C_Cash implements IDocument
 			{
 				if (cashline.getC_Payment_ID() == 0)
 					throw new IllegalStateException("Cannot reverse payment");
-					
+
 				MPayment payment = new MPayment(getCtx(), cashline.getC_Payment_ID(),get_TrxName());
 				payment.reverseCorrectIt();
 				payment.saveEx();
 			}
 			cashline.saveEx();
 		}
-		
+
 		setName(getName()+"^");
 		addDescription(Msg.getMsg(getCtx(), "Voided"));
 		setDocStatus(DOCSTATUS_Reversed);	//	for direct calls
@@ -661,13 +662,13 @@ public class MCash extends X_C_Cash implements IDocument
 		setPosted(true);
 		setDocAction(DOCACTION_None);
 		saveEx();
-			
+
 		//	Delete Posting
 		Services.get(IFactAcctDAO.class).deleteForDocument(this);
-		
+
 		return true;
 	}	//	reverse
-	
+
 	/**
 	 * 	Add to Description
 	 *	@param description text
@@ -684,7 +685,7 @@ public class MCash extends X_C_Cash implements IDocument
 	/**
 	 * 	Close Document.
 	 * 	Cancel not delivered Quantities
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean closeIt()
@@ -698,14 +699,14 @@ public class MCash extends X_C_Cash implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
 			return false;
-		
+
 		setDocAction(DOCACTION_None);
 		return true;
 	}	//	closeIt
-	
+
 	/**
 	 * 	Reverse Correction
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean reverseCorrectIt()
@@ -715,23 +716,23 @@ public class MCash extends X_C_Cash implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
 			return false;
-		
+
 		//FR [ 1866214 ]
 		boolean retValue = reverseIt();
-		
+
 		if (retValue) {
 			// After reverseCorrect
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSECORRECT);
 			if (m_processMsg != null)
-				return false;		
+				return false;
 		}
-		
+
 		return retValue;
 	}	//	reverseCorrectionIt
-	
+
 	/**
 	 * 	Reverse Accrual - none
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean reverseAccrualIt()
@@ -741,18 +742,18 @@ public class MCash extends X_C_Cash implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
 			return false;
-		
+
 		// After reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
 			return false;
-				
+
 		return false;
 	}	//	reverseAccrualIt
-	
-	/** 
+
+	/**
 	 * 	Re-activate
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean reActivateIt()
@@ -761,8 +762,8 @@ public class MCash extends X_C_Cash implements IDocument
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
-			return false;	
-				
+			return false;
+
 		setProcessed(false);
 		if (reverseCorrectIt())
 			return true;
@@ -770,10 +771,10 @@ public class MCash extends X_C_Cash implements IDocument
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
-			return false;		
+			return false;
 		return false;
 	}	//	reActivateIt
-	
+
 	/**
 	 * 	Set Processed
 	 *	@param processed processed
@@ -789,7 +790,7 @@ public class MCash extends X_C_Cash implements IDocument
 		m_lines = null;
 		log.debug(processed + " - Lines=" + noLine);
 	}	//	setProcessed
-	
+
 	/**
 	 * 	String Representation
 	 *	@return info
@@ -805,7 +806,7 @@ public class MCash extends X_C_Cash implements IDocument
 			.append ("]");
 		return sb.toString ();
 	}	//	toString
-	
+
 	/*************************************************************************
 	 * 	Get Summary
 	 *	@return Summary of Document
@@ -826,7 +827,13 @@ public class MCash extends X_C_Cash implements IDocument
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
 	}	//	getSummary
-	
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getStatementDate());
+	}
+
 	/**
 	 * 	Get Process Message
 	 *	@return clear text error message
@@ -836,7 +843,7 @@ public class MCash extends X_C_Cash implements IDocument
 	{
 		return m_processMsg;
 	}	//	getProcessMsg
-	
+
 	/**
 	 * 	Get Document Owner (Responsible)
 	 *	@return AD_User_ID
@@ -874,9 +881,9 @@ public class MCash extends X_C_Cash implements IDocument
 	public boolean isComplete()
 	{
 		String ds = getDocStatus();
-		return DOCSTATUS_Completed.equals(ds) 
+		return DOCSTATUS_Completed.equals(ds)
 			|| DOCSTATUS_Closed.equals(ds)
 			|| DOCSTATUS_Reversed.equals(ds);
 	}	//	isComplete
-	
+
 }	//	MCash

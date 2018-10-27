@@ -4,7 +4,6 @@ import static com.google.common.base.Predicates.not;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
@@ -18,6 +17,7 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

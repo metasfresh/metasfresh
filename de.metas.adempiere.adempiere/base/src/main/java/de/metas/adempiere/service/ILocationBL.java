@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 
 import de.metas.adempiere.model.I_C_Postal;
+import de.metas.util.ISingletonService;
 
 
 

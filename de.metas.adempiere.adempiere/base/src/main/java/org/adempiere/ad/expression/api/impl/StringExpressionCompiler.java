@@ -4,8 +4,9 @@ import java.util.List;
 
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
+
+import de.metas.util.Check;
 
 public final class StringExpressionCompiler extends AbstractChunkBasedExpressionCompiler<String, IStringExpression>
 {

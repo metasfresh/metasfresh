@@ -31,11 +31,11 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 
 import de.metas.adempiere.model.IPOReferenceAware;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Filter for records that reference a given PO via the {@code AD_Table_ID} and {@code Record_ID} columns.

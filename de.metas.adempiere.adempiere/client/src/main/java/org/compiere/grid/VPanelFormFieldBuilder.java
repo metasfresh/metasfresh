@@ -32,8 +32,6 @@ import java.util.EventListener;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
@@ -42,6 +40,9 @@ import org.compiere.model.GridFieldLayoutConstraints;
 import org.compiere.model.GridFieldVO;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Creates and adds a new form field to {@link VPanel}.

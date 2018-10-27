@@ -130,7 +130,6 @@
 			<artifactId>postgresql</artifactId>
 		</dependency>
 
-
 		<!-- Scripting support -->
 		<dependency>
 			<!-- required by AD_Rule scripts -->
@@ -172,7 +171,6 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 		</dependency>
-
 
 		<dependency>
 			<groupId>it.sauronsoftware.cron4j</groupId>
@@ -267,16 +265,16 @@
 			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 		
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.zafarkhaja</groupId>
+			<artifactId>java-semver</artifactId>
+			<version>0.9.0</version>
 		</dependency>
 
 		<dependency>

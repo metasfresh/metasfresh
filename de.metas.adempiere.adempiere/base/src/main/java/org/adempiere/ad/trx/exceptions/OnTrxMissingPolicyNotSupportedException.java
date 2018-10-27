@@ -24,7 +24,8 @@ package org.adempiere.ad.trx.exceptions;
 
 
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Exception thrown when an {@link OnTrxMissingPolicy} is not supported.

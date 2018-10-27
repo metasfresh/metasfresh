@@ -20,6 +20,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.awt.print.PrinterJob;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -53,8 +54,7 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.Document;
 import org.adempiere.print.export.PrintDataExcelExporter;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import org.apache.ecs.XhtmlDocument;
 import org.apache.ecs.xhtml.a;
 import org.apache.ecs.xhtml.link;
@@ -83,11 +83,19 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.print.IPrintService;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.FileUtil;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Report Engine.
@@ -955,7 +963,9 @@ public class ReportEngine implements PrintServiceAttributeListener
 			// 03744: begin
 			if (getPrintFormat().getJasperProcess_ID() > 0)
 			{
-				Services.get(IJasperReportEngineAdapter.class).createPDF(this, file);
+				final byte[] data = createPdfDataInvokeReportProcess();
+				final ByteArrayInputStream stream = new ByteArrayInputStream(data == null ? new byte[] {} : data);
+				FileUtil.copy(stream, file);
 			}
 			else
 			{
@@ -978,11 +988,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 		return file2.exists();
 	}	// createPDF
 
-	/**
-	 * Create PDF as Data array
-	 *
-	 * @return pdf data
-	 */
 	public byte[] createPDFData()
 	{
 		try
@@ -990,7 +995,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 			// 03744: begin
 			if (getPrintFormat().getJasperProcess_ID() > 0)
 			{
-				return Services.get(IJasperReportEngineAdapter.class).createPDFData(this);
+				return createPdfDataInvokeReportProcess();
 			}
 			else
 			{
@@ -1002,12 +1007,37 @@ public class ReportEngine implements PrintServiceAttributeListener
 		}
 		catch (Exception e)
 		{
-			// metas: throw exception instead of logging the error
-			throw new AdempiereException(e);
-			// log.error("PDF", e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 		// return null;
 	}	// createPDFData
+
+	private byte[] createPdfDataInvokeReportProcess()
+	{
+		final Properties ctx = Env.getCtx(); // ReportEngine.getCtx() fails, because the ctx would be taken from an "old-school" layout
+
+		final ProcessExecutor processExecutor = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_Process_ID(getPrintFormat().getJasperProcess_ID())
+				.setRecord(getPrintInfo().getAD_Table_ID(), getPrintInfo().getRecord_ID())
+				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(ctx))
+				.addParameter(IPrintService.PARAM_PrintCopies, getPrintInfo().getCopies())
+				.setPrintPreview(true) // don't archive it! just give us the PDF data
+				.buildAndPrepareExecution()
+				.onErrorThrowException(true)
+				.executeSync();
+		return processExecutor.getResult().getReportData();
+	}
+
+	public static String getBarcodeServlet(@NonNull final Properties ctx)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final String barcodeServlet = sysConfigBL.getValue(JasperConstants.SYSCONFIG_BarcodeServlet,
+				null,  // defaultValue,
+				Env.getAD_Client_ID(ctx),
+				Env.getAD_Org_ID(ctx));
+		return barcodeServlet;
+	}
 
 	/**************************************************************************
 	 * Create PostScript File
@@ -1077,13 +1107,12 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 *
 	 * @param outFile output file
 	 * @param language
-	 * @throws Exception if error
 	 */
 	public void createXLS(File outFile, Language language)
-			throws Exception
 	{
-		PrintDataExcelExporter exp = new PrintDataExcelExporter(getPrintData(), getPrintFormat());
-		exp.export(outFile, language);
+		final PrintDataExcelExporter exp = new PrintDataExcelExporter(getPrintData(), getPrintFormat());
+		exp.setLanguage(language);
+		exp.exportToFile(outFile);
 	}
 
 	/**************************************************************************
@@ -1119,9 +1148,8 @@ public class ReportEngine implements PrintServiceAttributeListener
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Client_ID);
-			pstmt.setInt(2, pi.getAD_PInstance_ID());
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, AD_Client_ID, pi.getPinstanceId());
 			rs = pstmt.executeQuery();
 			// Just get first
 			if (rs.next())
@@ -1160,8 +1188,8 @@ public class ReportEngine implements PrintServiceAttributeListener
 					+ "WHERE pi.AD_PInstance_ID=?";
 			try
 			{
-				pstmt = DB.prepareStatement(sql, null);
-				pstmt.setInt(1, pi.getAD_PInstance_ID());
+				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+				DB.setParameters(pstmt, pi.getPinstanceId());
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
@@ -1185,7 +1213,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 			}
 			if (AD_PrintFormat_ID <= 0)
 			{
-				log.error("Report Info NOT found AD_PInstance_ID=" + pi.getAD_PInstance_ID() + ",AD_Client_ID=" + AD_Client_ID);
+				log.error("Report Info NOT found AD_PInstance_ID=" + pi.getPinstanceId() + ",AD_Client_ID=" + AD_Client_ID);
 				return null;
 			}
 		}
@@ -1199,7 +1227,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		}
 		else
 		{
-			query = MQuery.get(ctx, pi.getAD_PInstance_ID(), TableName);
+			query = MQuery.get(ctx, pi.getPinstanceId(), TableName);
 		}
 
 		// metas 03915
@@ -1308,18 +1336,18 @@ public class ReportEngine implements PrintServiceAttributeListener
 	public static ReportEngine get(Properties ctx, int type, int Record_ID, String trxName)
 	{
 		final int adPrintFormatToUseId = -1; // auto-detect
-		final int pInstanceId = -1;
+		final PInstanceId pInstanceId = null;
 		return get(ctx, type, Record_ID, pInstanceId, adPrintFormatToUseId, trxName);
 	}
 
-	public static ReportEngine get(Properties ctx, int type, int Record_ID, int pInstanceId, String trxName)
+	public static ReportEngine get(Properties ctx, int type, int Record_ID, PInstanceId pInstanceId, String trxName)
 	{
 		final int adPrintFormatToUseId = -1; // auto-detect
 		return get(ctx, type, Record_ID, pInstanceId, adPrintFormatToUseId, trxName);
 	}
 
 	// metas: added adPrintFormatToUseId parameter
-	public static ReportEngine get(final Properties ctx, int type, int Record_ID, final int pInstanceId, final int adPrintFormatToUseId, final String trxName)
+	public static ReportEngine get(final Properties ctx, int type, int Record_ID, final PInstanceId pInstanceId, final int adPrintFormatToUseId, final String trxName)
 	{
 		if (Record_ID < 1)
 		{

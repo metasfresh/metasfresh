@@ -40,14 +40,15 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Map;
 
-import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
 import org.compiere.util.DisplayType;
 import org.junit.Assert;
+
+import de.metas.util.ISingletonService;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class UnitTestTools
 {

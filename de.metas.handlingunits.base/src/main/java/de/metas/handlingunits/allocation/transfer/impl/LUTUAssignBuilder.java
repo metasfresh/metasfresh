@@ -30,17 +30,14 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -71,7 +68,11 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Creates an LU (according to given parameters) and assigns given TUs to it (LU zuteilen).
@@ -97,7 +98,7 @@ public class LUTUAssignBuilder
 	private IHUDocumentLine _documentLine = null;
 	private I_C_BPartner _bpartner;
 	private int _bpLocationId = -1;
-	private I_M_Locator _locator;
+	private LocatorId _locatorId;
 	private String _huStatus;
 	private boolean _isHUPlanningReceiptOwnerPM = false;
 
@@ -169,7 +170,7 @@ public class LUTUAssignBuilder
 		huBuilder.setC_BPartner(getC_BPartner());
 		huBuilder.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
 		huBuilder.setDate(SystemTime.asDate());
-		huBuilder.setM_Locator(getM_Locator());
+		huBuilder.setLocatorId(getLocatorId());
 		huBuilder.setHUStatus(X_M_HU.HUSTATUS_Planning);
 
 		//
@@ -239,7 +240,7 @@ public class LUTUAssignBuilder
 
 		//
 		// Extract the data needed to create the HU Transactions
-		final I_M_Product mockProduct = mockProductStorage.getM_Product();
+		final ProductId mockProductId = mockProductStorage.getProductId();
 		final BigDecimal mockQty = BigDecimal.ZERO;
 		final I_C_UOM mockUOM = mockProductStorage.getC_UOM();
 		final Quantity mockQuantity = new Quantity(mockQty, mockUOM);
@@ -252,7 +253,7 @@ public class LUTUAssignBuilder
 		final IHUTransactionCandidate huTransactionFrom = new HUTransactionCandidate(referencedModel,
 				null, // huItem from
 				null, // vhuItem from
-				mockProduct,
+				mockProductId,
 				mockQuantity.negate(),
 				date,
 				null, // locator from
@@ -264,10 +265,10 @@ public class LUTUAssignBuilder
 		final IHUTransactionCandidate huTransactionTo = new HUTransactionCandidate(referencedModel,
 				luItem, // huItem
 				null, // vhuItem
-				mockProduct,
+				mockProductId,
 				mockQuantity,
 				date,
-				getM_Locator(),
+				getLocatorId(),
 				getHUStatus());
 		huTransactionTo.setSkipProcessing(); // i.e. don't change HU's storage
 		huTransactionTo.pair(huTransactionFrom);
@@ -321,8 +322,10 @@ public class LUTUAssignBuilder
 		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 		final IHUStorage huStorageFrom = storageFactory.getStorage(luHU);
 
+		final ProductId productId = documentLine.getProductId();
+		
 		final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-				.setProduct(documentLine.getM_Product())
+				.setProductId(productId)
 				.setQty(documentLine.getQty())
 				.setUOM(documentLine.getC_UOM())
 				.setAttributeStorageFrom(asiAttributeStorageFrom)
@@ -429,14 +432,14 @@ public class LUTUAssignBuilder
 	public LUTUAssignBuilder setM_Locator(final I_M_Locator locator)
 	{
 		assertConfigurable();
-		_locator = locator;
+		_locatorId = LocatorId.ofRecordOrNull(locator);
 		return this;
 	}
 
-	public I_M_Locator getM_Locator()
+	private LocatorId getLocatorId()
 	{
-		Check.assumeNotNull(_locator, "_locator not null");
-		return _locator;
+		Check.assumeNotNull(_locatorId, "_locatorId not null");
+		return _locatorId;
 	}
 
 	public LUTUAssignBuilder setHUStatus(final String huStatus)

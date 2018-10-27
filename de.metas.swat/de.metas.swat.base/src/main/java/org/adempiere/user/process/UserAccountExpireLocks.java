@@ -29,7 +29,6 @@ import java.sql.Timestamp;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.MSysConfig;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnable;
@@ -37,6 +36,7 @@ import org.compiere.util.TrxRunnable;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 public class UserAccountExpireLocks extends JavaProcess
 {

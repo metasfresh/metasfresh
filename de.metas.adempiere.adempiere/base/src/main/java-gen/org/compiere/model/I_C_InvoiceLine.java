@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -28,7 +12,7 @@ public interface I_C_InvoiceLine
     public static final String Table_Name = "C_InvoiceLine";
 
     /** AD_Table_ID=333 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -241,6 +225,33 @@ public interface I_C_InvoiceLine
     public static final String COLUMNNAME_A_Processed = "A_Processed";
 
 	/**
+	 * Set Base_PricingSystem_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID);
+
+	/**
+	 * Get Base_PricingSystem_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBase_PricingSystem_ID();
+
+	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem();
+
+	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem);
+
+    /** Column definition for Base_PricingSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_InvoiceLine, org.compiere.model.I_M_PricingSystem> COLUMN_Base_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_C_InvoiceLine, org.compiere.model.I_M_PricingSystem>(I_C_InvoiceLine.class, "Base_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
+    /** Column name Base_PricingSystem_ID */
+    public static final String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
+
+	/**
 	 * Set Kostenstelle.
 	 * Kostenstelle
 	 *
@@ -385,7 +396,7 @@ public interface I_C_InvoiceLine
 	 * Set Auftragsposition.
 	 * Sales Order Line
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -395,7 +406,7 @@ public interface I_C_InvoiceLine
 	 * Get Auftragsposition.
 	 * Sales Order Line
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -638,6 +649,37 @@ public interface I_C_InvoiceLine
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set External IDs.
+	 * List of external IDs from C_Invoice_Candidates;
+ delimited with ';
+,;
+'
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalIds (java.lang.String ExternalIds);
+
+	/**
+	 * Get External IDs.
+	 * List of external IDs from C_Invoice_Candidates;
+ delimited with ';
+,;
+'
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalIds();
+
+    /** Column definition for ExternalIds */
+    public static final org.adempiere.model.ModelColumn<I_C_InvoiceLine, Object> COLUMN_ExternalIds = new org.adempiere.model.ModelColumn<I_C_InvoiceLine, Object>(I_C_InvoiceLine.class, "ExternalIds", null);
+    /** Column name ExternalIds */
+    public static final String COLUMNNAME_ExternalIds = "ExternalIds";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *
@@ -688,7 +730,30 @@ public interface I_C_InvoiceLine
     public static final String COLUMNNAME_IsDescription = "IsDescription";
 
 	/**
-	 * Set Gedruckt.
+	 * Set IsOrderLineReadOnly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsOrderLineReadOnly (boolean IsOrderLineReadOnly);
+
+	/**
+	 * Get IsOrderLineReadOnly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isOrderLineReadOnly();
+
+    /** Column definition for IsOrderLineReadOnly */
+    public static final org.adempiere.model.ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsOrderLineReadOnly = new org.adempiere.model.ModelColumn<I_C_InvoiceLine, Object>(I_C_InvoiceLine.class, "IsOrderLineReadOnly", null);
+    /** Column name IsOrderLineReadOnly */
+    public static final String COLUMNNAME_IsOrderLineReadOnly = "IsOrderLineReadOnly";
+
+	/**
+	 * Set andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -698,7 +763,7 @@ public interface I_C_InvoiceLine
 	public void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get Gedruckt.
+	 * Get andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -811,8 +876,8 @@ public interface I_C_InvoiceLine
     public static final String COLUMNNAME_LineTotalAmt = "LineTotalAmt";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -821,8 +886,8 @@ public interface I_C_InvoiceLine
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true

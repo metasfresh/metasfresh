@@ -30,8 +30,6 @@ import java.util.concurrent.Future;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.adempiere.util.concurrent.FutureValue;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -43,6 +41,9 @@ import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.LockAlreadyClosedException;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.spi.ILockDatabase;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /* package */class LockCommand implements ILockCommand
@@ -241,9 +242,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public ILockCommand setRecordsBySelection(final Class<?> modelClass, final int adPIstanceId)
+	public ILockCommand setRecordsBySelection(final Class<?> modelClass, final PInstanceId pinstanceId)
 	{
-		_recordsToLock.setRecordsBySelection(modelClass, adPIstanceId);
+		_recordsToLock.setRecordsBySelection(modelClass, pinstanceId);
 		return this;
 	}
 
@@ -267,9 +268,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final int getSelectionToLock_AD_PInstance_ID()
+	public final PInstanceId getSelectionToLock_AD_PInstance_ID()
 	{
-		return _recordsToLock.getSelection_AD_PInstance_ID();
+		return _recordsToLock.getSelection_PInstanceId();
 	}
 
 	@Override

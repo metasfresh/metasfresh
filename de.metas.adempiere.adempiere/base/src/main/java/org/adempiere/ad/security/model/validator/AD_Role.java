@@ -1,8 +1,5 @@
 package org.adempiere.ad.security.model.validator;
 
-import org.adempiere.ad.dao.cache.IModelCacheService;
-import org.adempiere.ad.dao.cache.ITableCacheConfig;
-import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -14,14 +11,17 @@ import org.adempiere.ad.security.impl.AD_Role_POCopyRecordSupport;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
+import org.adempiere.user.UserId;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_Role;
-import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+import de.metas.util.Services;
 
 @Interceptor(I_AD_Role.class)
 public class AD_Role
@@ -75,11 +75,11 @@ public class AD_Role
 		if (changeType.isNew())
 		{
 			// Add Role to SuperUser
-			roleDAO.createUserRoleAssignmentIfMissing(IUserDAO.SUPERUSER_USER_ID, role.getAD_Role_ID());
+			roleDAO.createUserRoleAssignmentIfMissing(UserId.METASFRESH.getRepoId(), role.getAD_Role_ID());
 
 			// Add Role to User which created this record
 			final int createdByUserId = role.getCreatedBy();
-			if (createdByUserId != IUserDAO.SUPERUSER_USER_ID)
+			if (createdByUserId != UserId.METASFRESH.getRepoId())
 			{
 				roleDAO.createUserRoleAssignmentIfMissing(createdByUserId, role.getAD_Role_ID());
 			}

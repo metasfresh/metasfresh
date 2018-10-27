@@ -3,6 +3,8 @@ package de.metas.inoutcandidate.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,17 +27,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
-import static org.compiere.model.X_C_Order.DELIVERYRULE_Availability;
-import static org.compiere.model.X_C_Order.DELIVERYRULE_CompleteLine;
-import static org.compiere.model.X_C_Order.DELIVERYRULE_CompleteOrder;
-import static org.compiere.model.X_C_Order.DELIVERYRULE_Force;
-import static org.compiere.model.X_C_Order.DELIVERYRULE_Manual;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
@@ -44,14 +41,14 @@ import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
@@ -66,18 +63,17 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
@@ -93,16 +89,22 @@ import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
+import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 import de.metas.logging.LogManager;
+import de.metas.material.cockpit.stock.StockRepository;
+import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
-import lombok.NonNull;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * This service computes the quantities to be shipped to customers for a list of {@link I_C_OrderLine}s and their respective {@link I_M_ShipmentSchedule}s.
@@ -111,6 +113,7 @@ import lombok.NonNull;
  * @see OlAndSched
  *
  */
+@Service
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
 	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleBL.class.getName() + "#ProcessedByBackgroundProcess";
@@ -120,6 +123,30 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
+
+	// services
+	private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
+	private final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
+
+	@VisibleForTesting
+	public static ShipmentScheduleBL newInstanceForUnitTesting()
+	{
+		final StockRepository stockRepository = new StockRepository();
+		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = new ShipmentScheduleQtyOnHandStorageFactory(stockRepository);
+		final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory = new ShipmentScheduleReferencedLineFactory();
+		shipmentScheduleReferencedLineFactory.registerProviders(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider()));
+
+		return new ShipmentScheduleBL(shipmentScheduleQtyOnHandStorageFactory, shipmentScheduleReferencedLineFactory);
+
+	}
+
+	public ShipmentScheduleBL(
+			@NonNull final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory,
+			@NonNull final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory)
+	{
+		this.shipmentScheduleQtyOnHandStorageFactory = shipmentScheduleQtyOnHandStorageFactory;
+		this.shipmentScheduleReferencedLineFactory = shipmentScheduleReferencedLineFactory;
+	}
 
 	@Override
 	public boolean allMissingSchedsWillBeCreatedLater()
@@ -233,8 +260,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			if (olAndSched.getOl().isPresent())
 			{
 				final I_C_OrderLine ol = olAndSched.getOl().get();
-				final org.compiere.model.I_M_Product product = ol.getM_Product();
-				updateLineNewAmt(ctx, olAndSched.getOl().get(), sched, product);
+				final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
+				updateLineNetAmt(ctx, olAndSched.getOl().get(), sched, productId);
 			}
 			else
 			{
@@ -268,7 +295,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				// 04870 : Delivery rule force assumes we deliver full quantity ordered if qtyToDeliver_Override is null.
 				// 06019 : check both DeliveryRule, as DeliveryRule_Override
-				final boolean deliveryRuleIsForced = X_C_Order.DELIVERYRULE_Force.equals(shipmentScheduleEffectiveBL.getDeliveryRule(sched));
+				final boolean deliveryRuleIsForced = DeliveryRule.FORCE.equals(shipmentScheduleEffectiveBL.getDeliveryRule(sched));
 				if (deliveryRuleIsForced)
 				{
 					sched.setQtyToDeliver(BigDecimal.ZERO);
@@ -323,10 +350,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 				final IContextAware contextAwareSched = InterfaceWrapperHelper.getContextAware(sched);
-				final int bpLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched);
+				final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
 
 				final Timestamp dateOrdered = sched.getCreated();
-				final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(contextAwareSched, true, dateOrdered, deliveryDate, bpLocationId);
+				final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(
+						contextAwareSched,
+						true/* isSOTrx */,
+						dateOrdered,
+						deliveryDate,
+						bpLocationId.getRepoId());
 
 				// In case the DeliveryDate Override is set, also update the preparationDate override
 				sched.setPreparationDate_Override(preparationDate);
@@ -374,24 +406,19 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	/**
 	 * Try to get the given <code>ol</code>'s <code>qtyReservedInPriceUOM</code> and update the given <code>sched</code>'s <code>LineNetAmt</code>.
 	 *
-	 * @param ctx
-	 * @param ol
-	 * @param sched
-	 * @param product
-	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/298
 	 * @throws AdempiereException in developer mode, if there the <code>qtyReservedInPriceUOM</code> can't be obtained.
 	 */
-	private void updateLineNewAmt(final Properties ctx, final I_C_OrderLine ol, final I_M_ShipmentSchedule sched, final org.compiere.model.I_M_Product product)
+	private void updateLineNetAmt(final Properties ctx, final I_C_OrderLine ol, final I_M_ShipmentSchedule sched, final ProductId productId)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final de.metas.interfaces.I_C_OrderLine olEx = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, product, olEx.getPrice_UOM(), ol.getQtyReserved());
+		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, olEx.getPrice_UOM(), ol.getQtyReserved());
 
 		// qtyReservedInPriceUOM might be null. in that case, don't fail the whole updating, but set the value to null
 		if (qtyReservedInPriceUOM == null)
 		{
-			final String msg = "IUOMConversionBL.convertFromProductUOM() failed for M_Product=" + product + ", and C_OrderLine=" + olEx + "; \n"
+			final String msg = "IUOMConversionBL.convertFromProductUOM() failed for M_Product=" + productId + ", and C_OrderLine=" + olEx + "; \n"
 					+ "Therefore we can't set LineNetAmt for M_ShipmentSchedule=" + sched + "; \n"
 					+ "Note: if this exception was thrown and not just logged, then check for stale M_ShipmentSchedule_Recompute records";
 			new AdempiereException(msg).throwIfDeveloperModeOrLogWarningElse(logger);
@@ -403,7 +430,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 	}
 
-	private ShipmentSchedulesDuringUpdate generate(
+	ShipmentSchedulesDuringUpdate generate(
 			final Properties ctx,
 			final List<OlAndSched> lines,
 			final ShipmentSchedulesDuringUpdate firstRun,
@@ -420,7 +447,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		//
 		// Load QtyOnHand in scope for our lines
 		// i.e. iterate all lines to cache the required storage info and to subtract the quantities that can't be allocated from the storage allocation.
-		final ShipmentScheduleQtyOnHandStorage qtyOnHands = ShipmentScheduleQtyOnHandStorage.ofOlAndScheds(lines);
+		final ShipmentScheduleQtyOnHandStorage qtyOnHands = shipmentScheduleQtyOnHandStorageFactory.ofOlAndScheds(lines);
 
 		//
 		// Iterate again and:
@@ -430,9 +457,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
 			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
 
-			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
+			final DeliveryRule deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
 
-			final boolean ruleManual = DELIVERYRULE_Manual.equals(deliveryRule);
+			final boolean ruleManual = DeliveryRule.MANUAL.equals(deliveryRule);
 
 			final BigDecimal qtyRequired;
 			if (olAndSched.getQtyOverride() != null)
@@ -465,34 +492,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 
 			final I_M_Product product = create(olAndSched.getSched().getM_Product(), I_M_Product.class);
-
-			//
-			// Check if there is any point to continue calculating how much we can deliver and also create those internal M_InOutLines.
-			if (olAndSched.getOl().isPresent())
-			{
-				final de.metas.interfaces.I_C_OrderLine orderLine = olAndSched.getOl().get();
-				if (isNothingToDo(product, qtyRequired, orderLine))
-				{
-					continue;
-				}
-			}
 			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyPickList);
 
-			final boolean ruleCompleteOrder = DELIVERYRULE_CompleteOrder.equals(deliveryRule);
 
-			// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-			final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(sched);
-
-			// Comments & lines w/o product & services
-			if ((product == null || !productBL.isStocked(product))
-					&& (qtyOrdered.signum() == 0 // comments
-							|| qtyToDeliver.signum() != 0))         // lines w/o product
+			if (!productBL.isStocked(product))
 			{
-				if (!ruleCompleteOrder)
-				{
-					// note: the value of the second last parameter (completeStatus) is irrelevant here
-					createLine(ctx, olAndSched, qtyToDeliver, null, false, CompleteStatus.OK, candidates, trxName);
-				}
+				// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
+				createLine(ctx, olAndSched, qtyToDeliver,
+						null/* storages */,
+						true/* force */,
+						CompleteStatus.OK, candidates, trxName);
 				continue;
 			}
 
@@ -503,9 +512,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 			final CompleteStatus completeStatus = mkCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
-			final boolean ruleAvailable = DELIVERYRULE_Availability.equals(deliveryRule);
-			final boolean ruleCompleteLine = DELIVERYRULE_CompleteLine.equals(deliveryRule);
-			final boolean ruleForce = DELIVERYRULE_Force.equals(deliveryRule);
+			final boolean ruleCompleteOrder = DeliveryRule.COMPLETE_ORDER.equals(deliveryRule);
+			final boolean ruleAvailable = DeliveryRule.AVAILABILITY.equals(deliveryRule);
+			final boolean ruleCompleteLine = DeliveryRule.COMPLETE_LINE.equals(deliveryRule);
+			final boolean ruleForce = DeliveryRule.FORCE.equals(deliveryRule);
 
 			if (ruleForce)
 			{
@@ -561,33 +571,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return candidates;
 	} // generate
 
-	private boolean isNothingToDo(
-			final I_M_Product product,
-			final BigDecimal qtyRequired,
-			final I_C_OrderLine line)
-	{
-
-		if (product != null && qtyRequired.signum() <= 0)
-		{
-			return true;
-		}
-		// or it's a charge - Bug#: 1603966
-		if (line.getC_Charge_ID() != 0 && qtyRequired.signum() == 0)
-		{
-			return true;
-		}
-
-		// metas: guarding against a possible bug in the application
-		// dictionary that allows to enter invalid order lines
-		if (product == null && line.getQtyOrdered().signum() != 0)
-		{
-			logger.warn("Ignoring invalid order line " + line.getLine());
-			return true;
-		}
-
-		return false;
-	}
-
 	private CompleteStatus mkCompleteStatus(final BigDecimal toDeliver, final BigDecimal onHand)
 	{
 		CompleteStatus completeStatus = CompleteStatus.OK;
@@ -619,11 +602,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	/**
 	 * Creates one or more inOutLines for a given orderLine.
 	 *
-	 * @param olAndSched line
 	 * @param qty the quantity all created inOutLines' qtyEntered will sum up to
-	 * @param storages storage info
-	 * @param force force delivery
-	 * @param completeStatus
 	 */
 	private void createLine(
 			final Properties ctx,
@@ -643,19 +622,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-		final DeliveryGroupCandidate candidate = getOrCreateGroupCandidateForShipmentSchedule(sched, candidates);
+		final DeliveryGroupCandidate groupCandidate = getOrCreateGroupCandidateForShipmentSchedule(sched, candidates);
 
-		//
-		// Case: no Quantity on Hand storages
 		if (storages == null || storages.isEmpty())
 		{
-			final DeliveryLineCandidate inoutLine = candidate.addLine(sched, completeStatus);
-			if (force)
+			final DeliveryLineCandidate deliveryLineCandidate = groupCandidate.createAndAddLineCandidate(sched, completeStatus);
+			if (force) // Case: no Quantity on Hand storages and force => no need for allocations etc
 			{
-				inoutLine.setQtyToDeliver(qty);
+				deliveryLineCandidate.setQtyToDeliver(qty);
 			}
-
-			candidates.addLine(inoutLine);
+			candidates.addLine(deliveryLineCandidate);
 			return;
 		}
 
@@ -664,78 +640,75 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		//
 		// Iterate QtyOnHand storage records and try to allocate on current shipment schedule/order line.
-		BigDecimal toDeliver = qty; // how much still needs to be delivered; initially it's the whole qty required
+		BigDecimal toDeliverTargetQty = qty; // how much still needs to be delivered; initially it's the whole qty required
 		for (int i = 0; i < storages.size(); i++)
 		{
 			// Stop here is there is nothing remaining to be delivered
-			if (toDeliver.signum() == 0)
+			if (toDeliverTargetQty.signum() == 0)
 			{
 				break;
 			}
 
 			final ShipmentScheduleAvailableStockDetail storage = storages.get(i);
-			BigDecimal deliver = toDeliver; // initially try to deliver the entire quantity remaining to be delivered
+			BigDecimal toDeliverCurrentQty = toDeliverTargetQty; // initially try to deliver the entire quantity remaining to be delivered
 
 			//
 			// Adjust the quantity that can be delivered from this storage line
 			// Check: Not enough On Hand
 			final BigDecimal qtyOnHandAvailable = storage.getQtyOnHand();
-			if (deliver.compareTo(qtyOnHandAvailable) > 0
+			if (toDeliverCurrentQty.compareTo(qtyOnHandAvailable) > 0
 					&& qtyOnHandAvailable.signum() >= 0)         // positive storage
 			{
 				if (!force // Adjust to OnHand Qty
 						|| force && i + 1 != storages.size())         // if force not on last location
 				{
-					deliver = qtyOnHandAvailable;
+					toDeliverCurrentQty = qtyOnHandAvailable;
 				}
 			}
 			// Skip if we cannot deliver something for current storage line
-			if (deliver.signum() == 0)
+			if (toDeliverCurrentQty.signum() == 0)
 			{
 				// zero deliver
 				continue;
 			}
 
-			//
-			// Find existing line
-			DeliveryLineCandidate inoutLine = null;
-			for (final DeliveryLineCandidate inoutLineExisting : inoutLines)
+			// Find existing lineCandidate that was added in a previous iteration
+			DeliveryLineCandidate lineCandidate = null;
+			for (final DeliveryLineCandidate existingLineCandidate : inoutLines)
 			{
 				// skip if it's for a different order line
-				if (inoutLineExisting.getShipmentScheduleId() != sched.getM_ShipmentSchedule_ID())
+				if (existingLineCandidate.getShipmentScheduleId() != sched.getM_ShipmentSchedule_ID())
 				{
 					continue;
 				}
-
-				inoutLine = inoutLineExisting;
+				lineCandidate = existingLineCandidate;
 			}
 
-			//
 			// Case: No InOutLine found
 			// => create a new InOutLine
-			if (inoutLine == null)
+			if (lineCandidate == null)
 			{
-				inoutLine = new DeliveryLineCandidate(candidate, sched, completeStatus);
+				lineCandidate = groupCandidate.createAndAddLineCandidate(sched, completeStatus);
 
-				inoutLine.setQtyToDeliver(deliver);
+				lineCandidate.setQtyToDeliver(toDeliverCurrentQty);
 
-				inoutLines.add(inoutLine);
-				candidates.addLine(inoutLine);
+				inoutLines.add(lineCandidate);
+				candidates.addLine(lineCandidate);
 			}
 			//
 			// Case: existing InOutLine found
 			// => adjust the quantity
 			else
 			{
-				final BigDecimal inoutLineQtyOld = inoutLine.getQtyToDeliver();
-				final BigDecimal inoutLineQtyNew = inoutLineQtyOld.add(deliver);
-				inoutLine.setQtyToDeliver(inoutLineQtyNew);
+				final BigDecimal inoutLineQtyOld = lineCandidate.getQtyToDeliver();
+				final BigDecimal inoutLineQtyNew = inoutLineQtyOld.add(toDeliverCurrentQty);
+				lineCandidate.setQtyToDeliver(inoutLineQtyNew);
 			}
 
-			logger.debug("ToDeliver=" + qty + "/" + deliver + " - " + inoutLine);
-			toDeliver = toDeliver.subtract(deliver);
+			logger.debug("ToDeliver=" + qty + "/" + toDeliverCurrentQty + " - " + lineCandidate);
+			toDeliverTargetQty = toDeliverTargetQty.subtract(toDeliverCurrentQty);
 
-			storage.subtractQtyOnHand(deliver);
+			storage.subtractQtyOnHand(toDeliverCurrentQty);
 		}    // for each storage record
 	}
 
@@ -746,12 +719,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final I_C_BPartner partner = sched.getC_BPartner();
 
-		final ShipmentScheduleReferencedLine scheduleSourcedoc = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class).createFor(sched);
+		final ShipmentScheduleReferencedLine scheduleSourcedoc = shipmentScheduleReferencedLineFactory.createFor(sched);
 		final String bPartnerAddress = sched.getBPartnerAddress_Override();
 
 		DeliveryGroupCandidate candidate = null;
 
-		final int warehouseId = Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(sched);
+		final WarehouseId warehouseId = Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(sched);
 		final boolean consolidateAllowed = bpartnerBL.isAllowConsolidateInOutEffective(partner, true);
 		if (consolidateAllowed)
 		{
@@ -784,52 +757,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		candidateProcessors.addCandidateProcessor(processor);
 	}
 
-	@Override
-	public ArrayKey mkKeyForGrouping(final I_M_ShipmentSchedule sched)
-	{
-		final boolean includeBPartner = false;
-		return mkKeyForGrouping(sched, includeBPartner);
-	}
-
-	@Override
-	public ArrayKey mkKeyForGrouping(final I_M_ShipmentSchedule sched, final boolean includeBPartner)
-	{
-		final int productId = sched.getM_Product_ID();
-		final de.metas.adempiere.model.I_M_Product product = InterfaceWrapperHelper.create(sched.getM_Product(), de.metas.adempiere.model.I_M_Product.class);
-
-		final int adTableId;
-		final int recordId;
-		if (product.isDiverse())
-		{
-			// Diverse/misc products can't be merged into one pi because they could represent totally different products.
-			// So we are using (AD_Table_ID, Record_ID) (which are unique) to make the group unique.
-			adTableId = sched.getAD_Table_ID();
-			recordId = sched.getRecord_ID();
-		}
-		else
-		{
-			adTableId = 0;
-			recordId = 0;
-		}
-
-		final int bpartnerId;
-		final int bpLocId;
-		if (includeBPartner)
-		{
-			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-			bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
-			bpLocId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched);
-		}
-		else
-		{
-			bpartnerId = 0;
-			bpLocId = 0;
-		}
-
-		return Util.mkKey(productId, adTableId, recordId, bpartnerId, bpLocId);
-	}
-
 	/**
 	 * 07400 also update the M_Warehouse_ID; an order might have been reactivated and the warehouse might have been changed.
 	 *
@@ -837,10 +764,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 */
 	private static void updateWarehouseId(final I_M_ShipmentSchedule sched)
 	{
-		final int warehouseId = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class)
+		final WarehouseId warehouseId = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class)
 				.createFor(sched)
 				.getWarehouseId();
-		sched.setM_Warehouse_ID(warehouseId);
+		sched.setM_Warehouse_ID(warehouseId.getRepoId());
 	}
 
 	/**
@@ -858,18 +785,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final I_C_BPartner bPartner = shipmentScheduleEffectiveValuesBL.getBPartner(sched);
+		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(sched);
 		final I_C_BPartner_Location location = shipmentScheduleEffectiveValuesBL.getBPartnerLocation(sched);
 		final I_AD_User user = shipmentScheduleEffectiveValuesBL.getAD_User(sched);
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-		final String adress = bPartnerBL.mkFullAddress(
-				bPartner,
+		final String address = bPartnerBL.mkFullAddress(
+				bpartner,
 				location,
 				user,
 				InterfaceWrapperHelper.getTrxName(sched));
 
-		sched.setBPartnerAddress_Override(adress);
+		sched.setBPartnerAddress_Override(address);
 	}
 
 	@Override
@@ -893,7 +820,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		return DeliveryGroupCandidate.builder().warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
+		return DeliveryGroupCandidate.builder()
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
 				.bPartnerAddress(sched.getBPartnerAddress_Override())
 				.groupId(scheduleSourceDoc.getGroupId())
 				.shipperId(scheduleSourceDoc.getShipperId())
@@ -910,9 +838,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public I_C_UOM getUomOfProduct(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		return sched
-				.getM_Product()
-				.getC_UOM();
+		final IProductBL productBL = Services.get(IProductBL.class);
+		return productBL.getStockingUOM(sched.getM_Product_ID());
+	}
+
+	@Override
+	public UomId getUomIdOfProduct(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		return productBL.getStockingUOMId(sched.getM_Product_ID());
 	}
 
 	@Override
@@ -1022,15 +956,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// Create storage query
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
 
-		final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
-		Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID());
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 
-		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
-		final List<I_M_Warehouse> warehouses = warehouseIds
-				.stream()
-				.map(id -> InterfaceWrapperHelper.loadOutOfTrx(id, I_M_Warehouse.class))
-				.collect(ImmutableList.toImmutableList());
+		final Set<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
@@ -1038,7 +966,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
 
 		storageQuery.addProduct(sched.getM_Product());
-		warehouses.forEach(storageQuery::addWarehouse);
+		storageQuery.addWarehouseIds(warehouseIds);
 		storageQuery.addPartner(bpartner);
 
 		// Add query attributes
@@ -1062,4 +990,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 		return storageQuery;
 	}
+
+	@Override
+	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final BigDecimal qtyToDeliverBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(sched);
+		final I_C_UOM uom = getUomOfProduct(sched);
+		return Quantity.of(qtyToDeliverBD, uom);
+	}
+
 }

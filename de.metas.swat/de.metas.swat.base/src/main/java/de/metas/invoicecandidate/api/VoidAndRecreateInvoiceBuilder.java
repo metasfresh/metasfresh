@@ -9,10 +9,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
@@ -29,8 +26,12 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceVoidAndRecreateWorkpackageProcessor;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * @author cg
@@ -47,7 +48,7 @@ public class VoidAndRecreateInvoiceBuilder
 
 	private List<I_C_Invoice> invoices;
 
-	private int AD_PInstance_ID;
+	private PInstanceId AD_PInstance_ID;
 
 	private final Properties ctx;
 
@@ -103,7 +104,7 @@ public class VoidAndRecreateInvoiceBuilder
 	/**
 	 * @param aD_PInstance_ID the aD_PInstance_ID to set
 	 */
-	public VoidAndRecreateInvoiceBuilder setAD_PInstance_ID(int aD_PInstance_ID)
+	public VoidAndRecreateInvoiceBuilder setAD_PInstance_ID(final PInstanceId aD_PInstance_ID)
 	{
 		AD_PInstance_ID = aD_PInstance_ID;
 		return this;
@@ -169,13 +170,12 @@ public class VoidAndRecreateInvoiceBuilder
 	private void voidAndrecreate()
 	{
 		// Create Async Batch for tracking
-
-		Check.assume(AD_PInstance_ID > 0, "Process instance must be greater then 0");
+		Check.assumeNotNull(AD_PInstance_ID, "Process instance shall be set");
 		Check.assume(asyncBatchType != null, "Async batch type can not be null!");
 		Check.assume(m_pi != null, "ProcessInfo can not be null!");
 
 		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.create(ctx, I_C_Async_Batch.class, ITrx.TRXNAME_None);
-		asyncBatch.setAD_PInstance_ID(AD_PInstance_ID);
+		asyncBatch.setAD_PInstance_ID(AD_PInstance_ID.getRepoId());
 		asyncBatch.setName("Void and recreate invoices");
 		asyncBatch.setC_Async_Batch_Type(asyncBatchType);
 		queueDAO.save(asyncBatch);

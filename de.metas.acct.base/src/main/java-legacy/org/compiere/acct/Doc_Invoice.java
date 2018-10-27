@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import static java.math.BigDecimal.ZERO;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Constants;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceTax;
@@ -47,6 +48,8 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.util.Services;
 
 /**
  * Post Invoice Documents.
@@ -254,7 +257,7 @@ public class Doc_Invoice extends Doc
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal retValue = Env.ZERO;
+		BigDecimal retValue = ZERO;
 		StringBuilder sb = new StringBuilder(" [");
 		// Total
 		retValue = retValue.add(getAmount(Doc.AMTTYPE_Gross));
@@ -346,7 +349,7 @@ public class Doc_Invoice extends Doc
 				|| getDocumentType().equals(DOCTYPE_ARProForma))
 		{
 			BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
-			BigDecimal serviceAmt = Env.ZERO;
+			BigDecimal serviceAmt = ZERO;
 
 			// Header Charge CR
 			BigDecimal amt = getAmount(Doc.AMTTYPE_Charge);
@@ -409,12 +412,12 @@ public class Doc_Invoice extends Doc
 					|| receivables_ID == receivablesServices_ID)
 			{
 				grossAmt = getAmount(Doc.AMTTYPE_Gross);
-				serviceAmt = Env.ZERO;
+				serviceAmt = ZERO;
 			}
 			else if (m_allLinesService)
 			{
 				serviceAmt = getAmount(Doc.AMTTYPE_Gross);
-				grossAmt = Env.ZERO;
+				grossAmt = ZERO;
 			}
 		
 			// https://github.com/metasfresh/metasfresh/issues/4147
@@ -434,7 +437,7 @@ public class Doc_Invoice extends Doc
 		else if (getDocumentType().equals(DOCTYPE_ARCredit))
 		{
 			BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
-			BigDecimal serviceAmt = Env.ZERO;
+			BigDecimal serviceAmt = ZERO;
 
 			// Header Charge DR
 			BigDecimal amt = getAmount(Doc.AMTTYPE_Charge);
@@ -496,12 +499,12 @@ public class Doc_Invoice extends Doc
 					|| receivables_ID == receivablesServices_ID)
 			{
 				grossAmt = getAmount(Doc.AMTTYPE_Gross);
-				serviceAmt = Env.ZERO;
+				serviceAmt = ZERO;
 			}
 			else if (m_allLinesService)
 			{
 				serviceAmt = getAmount(Doc.AMTTYPE_Gross);
-				grossAmt = Env.ZERO;
+				grossAmt = ZERO;
 			}
 			// https://github.com/metasfresh/metasfresh/issues/4147
 			// we need this line later, even if it is zero
@@ -522,7 +525,7 @@ public class Doc_Invoice extends Doc
 				|| getDocumentType().equals(Constants.DOCBASETYPE_AVIinvoice))  // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
-			BigDecimal serviceAmt = Env.ZERO;
+			BigDecimal serviceAmt = ZERO;
 
 			// Charge DR
 			fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as),
@@ -629,12 +632,12 @@ public class Doc_Invoice extends Doc
 					|| payables_ID == payablesServices_ID)
 			{
 				grossAmt = getAmount(Doc.AMTTYPE_Gross);
-				serviceAmt = Env.ZERO;
+				serviceAmt = ZERO;
 			}
 			else if (m_allLinesService)
 			{
 				serviceAmt = getAmount(Doc.AMTTYPE_Gross);
-				grossAmt = Env.ZERO;
+				grossAmt = ZERO;
 			}
 			// https://github.com/metasfresh/metasfresh/issues/4147
 			// we need this line later, even if it is zero
@@ -654,7 +657,7 @@ public class Doc_Invoice extends Doc
 		else if (getDocumentType().equals(DOCTYPE_APCredit))
 		{
 			BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
-			BigDecimal serviceAmt = Env.ZERO;
+			BigDecimal serviceAmt = ZERO;
 			// Charge CR
 			fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as),
 					getC_Currency_ID(), null, getAmount(Doc.AMTTYPE_Charge));
@@ -757,12 +760,12 @@ public class Doc_Invoice extends Doc
 					|| payables_ID == payablesServices_ID)
 			{
 				grossAmt = getAmount(Doc.AMTTYPE_Gross);
-				serviceAmt = Env.ZERO;
+				serviceAmt = ZERO;
 			}
 			else if (m_allLinesService)
 			{
 				serviceAmt = getAmount(Doc.AMTTYPE_Gross);
-				grossAmt = Env.ZERO;
+				grossAmt = ZERO;
 			}
 			// https://github.com/metasfresh/metasfresh/issues/4147
 			// we need this line later, even if it is zero
@@ -844,7 +847,7 @@ public class Doc_Invoice extends Doc
 				|| getDocumentType().equals(Constants.DOCBASETYPE_AVIinvoice) // metas-ts: treating invoice for recurrent payment like AP invoice
 				|| getDocumentType().equals(Constants.DOCBASETYPE_AEInvoice) // metas-ts: treating commission/salary invoice like AP invoice
 				|| getDocumentType().equals(DOCTYPE_APCredit);
-		BigDecimal acctAmt = Env.ZERO;
+		BigDecimal acctAmt = ZERO;
 		FactLine fl = null;
 		// Revenue/Cost
 		for (int i = 0; i < p_lines.length; i++)

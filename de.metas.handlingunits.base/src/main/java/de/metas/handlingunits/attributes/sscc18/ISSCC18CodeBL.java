@@ -26,7 +26,8 @@ package de.metas.handlingunits.attributes.sscc18;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 public interface ISSCC18CodeBL extends ISingletonService
 {

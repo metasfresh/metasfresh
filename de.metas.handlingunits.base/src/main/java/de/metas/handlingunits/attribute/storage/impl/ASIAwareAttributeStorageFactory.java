@@ -25,12 +25,12 @@ package de.metas.handlingunits.attribute.storage.impl;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.util.Services;
 
 /**
  * Creates {@link IAttributeStorage} from an {@link IAttributeSetInstanceAware} model.

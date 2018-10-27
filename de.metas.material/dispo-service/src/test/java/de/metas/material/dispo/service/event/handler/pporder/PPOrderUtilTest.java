@@ -8,7 +8,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,6 +16,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

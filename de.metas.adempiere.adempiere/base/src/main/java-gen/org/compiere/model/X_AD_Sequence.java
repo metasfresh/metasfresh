@@ -1,36 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_Sequence
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_Sequence extends org.compiere.model.PO implements I_AD_Sequence, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -1937766211L;
 
     /** Standard Constructor */
     public X_AD_Sequence (Properties ctx, int AD_Sequence_ID, String trxName)
@@ -39,16 +23,12 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
       /** if (AD_Sequence_ID == 0)
         {
 			setAD_Sequence_ID (0);
-			setCurrentNext (0);
-// 1000000
-			setCurrentNextSys (0);
-// 100
-			setIncrementNo (0);
-// 1
+			setCurrentNext (0); // 1000000
+			setCurrentNextSys (0); // 100
+			setIncrementNo (0); // 1
 			setIsAutoSequence (false);
 			setName (null);
-			setStartNo (0);
-// 1000000
+			setStartNo (0); // 1000000
         } */
     }
 
@@ -58,32 +38,20 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Sequence[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Sequence.
+	/** Set Reihenfolge.
 		@param AD_Sequence_ID 
 		Document Sequence
 	  */
+	@Override
 	public void setAD_Sequence_ID (int AD_Sequence_ID)
 	{
 		if (AD_Sequence_ID < 1) 
@@ -92,9 +60,10 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_AD_Sequence_ID, Integer.valueOf(AD_Sequence_ID));
 	}
 
-	/** Get Sequence.
+	/** Get Reihenfolge.
 		@return Document Sequence
 	  */
+	@Override
 	public int getAD_Sequence_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Sequence_ID);
@@ -103,18 +72,20 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Current Next.
+	/** Set Aktuell nächster Wert.
 		@param CurrentNext 
 		The next number to be used
 	  */
+	@Override
 	public void setCurrentNext (int CurrentNext)
 	{
 		set_Value (COLUMNNAME_CurrentNext, Integer.valueOf(CurrentNext));
 	}
 
-	/** Get Current Next.
+	/** Get Aktuell nächster Wert.
 		@return The next number to be used
 	  */
+	@Override
 	public int getCurrentNext () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CurrentNext);
@@ -127,6 +98,7 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 		@param CurrentNextSys 
 		Next sequence for system use
 	  */
+	@Override
 	public void setCurrentNextSys (int CurrentNextSys)
 	{
 		set_Value (COLUMNNAME_CurrentNextSys, Integer.valueOf(CurrentNextSys));
@@ -135,9 +107,32 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Current Next (System).
 		@return Next sequence for system use
 	  */
+	@Override
 	public int getCurrentNextSys () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CurrentNextSys);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Abw. Sequenznummer-Implementierung.
+		@param CustomSequenceNoProvider_JavaClass_ID Abw. Sequenznummer-Implementierung	  */
+	@Override
+	public void setCustomSequenceNoProvider_JavaClass_ID (int CustomSequenceNoProvider_JavaClass_ID)
+	{
+		if (CustomSequenceNoProvider_JavaClass_ID < 1) 
+			set_Value (COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID, null);
+		else 
+			set_Value (COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID, Integer.valueOf(CustomSequenceNoProvider_JavaClass_ID));
+	}
+
+	/** Get Abw. Sequenznummer-Implementierung.
+		@return Abw. Sequenznummer-Implementierung	  */
+	@Override
+	public int getCustomSequenceNoProvider_JavaClass_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -147,7 +142,8 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 		@param DateColumn 
 		Fully qualified date column
 	  */
-	public void setDateColumn (String DateColumn)
+	@Override
+	public void setDateColumn (java.lang.String DateColumn)
 	{
 		set_Value (COLUMNNAME_DateColumn, DateColumn);
 	}
@@ -155,16 +151,18 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Date Column.
 		@return Fully qualified date column
 	  */
-	public String getDateColumn () 
+	@Override
+	public java.lang.String getDateColumn () 
 	{
-		return (String)get_Value(COLUMNNAME_DateColumn);
+		return (java.lang.String)get_Value(COLUMNNAME_DateColumn);
 	}
 
 	/** Set Decimal Pattern.
 		@param DecimalPattern 
 		Java Decimal Pattern
 	  */
-	public void setDecimalPattern (String DecimalPattern)
+	@Override
+	public void setDecimalPattern (java.lang.String DecimalPattern)
 	{
 		set_Value (COLUMNNAME_DecimalPattern, DecimalPattern);
 	}
@@ -172,32 +170,33 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Decimal Pattern.
 		@return Java Decimal Pattern
 	  */
-	public String getDecimalPattern () 
+	@Override
+	public java.lang.String getDecimalPattern () 
 	{
-		return (String)get_Value(COLUMNNAME_DecimalPattern);
+		return (java.lang.String)get_Value(COLUMNNAME_DecimalPattern);
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set Increment.
 		@param IncrementNo 
 		The number to increment the last document number by
 	  */
+	@Override
 	public void setIncrementNo (int IncrementNo)
 	{
 		set_Value (COLUMNNAME_IncrementNo, Integer.valueOf(IncrementNo));
@@ -206,6 +205,7 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Increment.
 		@return The number to increment the last document number by
 	  */
+	@Override
 	public int getIncrementNo () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_IncrementNo);
@@ -218,6 +218,7 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 		@param IsAudited 
 		Activate Audit Trail of what numbers are generated
 	  */
+	@Override
 	public void setIsAudited (boolean IsAudited)
 	{
 		set_Value (COLUMNNAME_IsAudited, Boolean.valueOf(IsAudited));
@@ -226,6 +227,7 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Activate Audit.
 		@return Activate Audit Trail of what numbers are generated
 	  */
+	@Override
 	public boolean isAudited () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAudited);
@@ -238,18 +240,20 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 		return false;
 	}
 
-	/** Set Auto numbering.
+	/** Set Automatische Nummerierung.
 		@param IsAutoSequence 
 		Automatically assign the next number
 	  */
+	@Override
 	public void setIsAutoSequence (boolean IsAutoSequence)
 	{
 		set_Value (COLUMNNAME_IsAutoSequence, Boolean.valueOf(IsAutoSequence));
 	}
 
-	/** Get Auto numbering.
+	/** Get Automatische Nummerierung.
 		@return Automatically assign the next number
 	  */
+	@Override
 	public boolean isAutoSequence () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAutoSequence);
@@ -266,6 +270,7 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 		@param IsTableID 
 		The document number  will be used as the record key
 	  */
+	@Override
 	public void setIsTableID (boolean IsTableID)
 	{
 		set_Value (COLUMNNAME_IsTableID, Boolean.valueOf(IsTableID));
@@ -274,6 +279,7 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Used for Record ID.
 		@return The document number  will be used as the record key
 	  */
+	@Override
 	public boolean isTableID () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsTableID);
@@ -290,7 +296,8 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
-	public void setName (String Name)
+	@Override
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -298,24 +305,18 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName () 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
 
 	/** Set Prefix.
 		@param Prefix 
 		Prefix before the sequence number
 	  */
-	public void setPrefix (String Prefix)
+	@Override
+	public void setPrefix (java.lang.String Prefix)
 	{
 		set_Value (COLUMNNAME_Prefix, Prefix);
 	}
@@ -323,23 +324,26 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Prefix.
 		@return Prefix before the sequence number
 	  */
-	public String getPrefix () 
+	@Override
+	public java.lang.String getPrefix () 
 	{
-		return (String)get_Value(COLUMNNAME_Prefix);
+		return (java.lang.String)get_Value(COLUMNNAME_Prefix);
 	}
 
-	/** Set Restart sequence every Year.
+	/** Set Nummernfolge jedes Jahr neu beginnen.
 		@param StartNewYear 
 		Restart the sequence with Start on every 1/1
 	  */
+	@Override
 	public void setStartNewYear (boolean StartNewYear)
 	{
 		set_Value (COLUMNNAME_StartNewYear, Boolean.valueOf(StartNewYear));
 	}
 
-	/** Get Restart sequence every Year.
+	/** Get Nummernfolge jedes Jahr neu beginnen.
 		@return Restart the sequence with Start on every 1/1
 	  */
+	@Override
 	public boolean isStartNewYear () 
 	{
 		Object oo = get_Value(COLUMNNAME_StartNewYear);
@@ -356,6 +360,7 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 		@param StartNo 
 		Starting number/position
 	  */
+	@Override
 	public void setStartNo (int StartNo)
 	{
 		set_Value (COLUMNNAME_StartNo, Integer.valueOf(StartNo));
@@ -364,6 +369,7 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Start No.
 		@return Starting number/position
 	  */
+	@Override
 	public int getStartNo () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_StartNo);
@@ -376,7 +382,8 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 		@param Suffix 
 		Suffix after the number
 	  */
-	public void setSuffix (String Suffix)
+	@Override
+	public void setSuffix (java.lang.String Suffix)
 	{
 		set_Value (COLUMNNAME_Suffix, Suffix);
 	}
@@ -384,16 +391,18 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Suffix.
 		@return Suffix after the number
 	  */
-	public String getSuffix () 
+	@Override
+	public java.lang.String getSuffix () 
 	{
-		return (String)get_Value(COLUMNNAME_Suffix);
+		return (java.lang.String)get_Value(COLUMNNAME_Suffix);
 	}
 
 	/** Set Value Format.
 		@param VFormat 
 		Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
 	  */
-	public void setVFormat (String VFormat)
+	@Override
+	public void setVFormat (java.lang.String VFormat)
 	{
 		set_Value (COLUMNNAME_VFormat, VFormat);
 	}
@@ -401,8 +410,9 @@ public class X_AD_Sequence extends PO implements I_AD_Sequence, I_Persistent
 	/** Get Value Format.
 		@return Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
 	  */
-	public String getVFormat () 
+	@Override
+	public java.lang.String getVFormat () 
 	{
-		return (String)get_Value(COLUMNNAME_VFormat);
+		return (java.lang.String)get_Value(COLUMNNAME_VFormat);
 	}
 }

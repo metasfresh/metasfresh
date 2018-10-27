@@ -33,8 +33,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBConnectionAcquireTimeoutException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
-import org.adempiere.util.Check;
-import org.adempiere.util.SystemUtils;
 import org.compiere.dbPort.Convert;
 import org.compiere.dbPort.Convert_PostgreSQL;
 import org.compiere.dbPort.Convert_PostgreSQL_Native;
@@ -49,6 +47,8 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import de.metas.connection.impl.DB_PostgreSQL_ConnectionCustomizer;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.SystemUtils;
 
 /**
  * PostgreSQL Database Port

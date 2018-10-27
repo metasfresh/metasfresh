@@ -34,8 +34,9 @@ import org.adempiere.plaf.VEditorUI;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.JComboBoxCopyPasteSupportEditor;
-import org.adempiere.util.Check;
 import org.compiere.util.Trace;
+
+import de.metas.util.Check;
 
 /**
  *  Adempiere Colored Combo Box.

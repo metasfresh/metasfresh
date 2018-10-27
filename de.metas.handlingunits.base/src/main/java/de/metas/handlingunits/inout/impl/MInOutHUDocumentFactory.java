@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Transaction;
@@ -39,7 +38,9 @@ import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
 import de.metas.inout.IInOutDAO;
 import de.metas.materialtransaction.IMTransactionDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.util.Services;
 
 public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut>
 {
@@ -83,7 +84,7 @@ public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut
 			throw new AdempiereException("@NoLines@ (@M_InOut_ID@: " + inOut.getDocumentNo() + ")");
 		}
 
-		final List<IHUDocumentLine> sourceLines = new ArrayList<IHUDocumentLine>(ioLines.size());
+		final List<IHUDocumentLine> sourceLines = new ArrayList<>(ioLines.size());
 		for (final I_M_InOutLine ioLine : ioLines)
 		{
 			//
@@ -99,7 +100,7 @@ public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut
 			// Create Target Qty
 			final Capacity targetCapacity = Capacity.createCapacity(
 					ioLine.getMovementQty(), // qty
-					ioLine.getM_Product(),
+					ProductId.ofRepoId(ioLine.getM_Product_ID()),
 					ioLine.getC_UOM(),
 					false // allowNegativeCapacity
 					);

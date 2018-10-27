@@ -36,8 +36,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
@@ -48,6 +46,8 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Creates outbound payments to match the given inbound payments.

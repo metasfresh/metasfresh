@@ -27,9 +27,7 @@ import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.util.CCache;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -39,9 +37,12 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -90,6 +91,39 @@ public class MLookupFactory
 			throw new AdempiereException("MLookup.create - no LookupInfo");
 		return new MLookup(ctx, Column_ID, info, 0);
 	}   // create
+
+	public static MLookup searchInTable(final String tableName)
+	{
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		final MLookupInfo lookupInfo = getLookupInfo(
+				Env.WINDOW_None,
+				DisplayType.Search,
+				null, // ctxTableName,
+				keyColumnName, // ctxColumnName
+				-1, // AD_Reference_Value_ID
+				false, // IsParent, not relevant
+				-1 // AD_Val_Rule_ID
+		);
+
+		final int adColumnId = -1;
+		return ofLookupInfo(Env.getCtx(), lookupInfo, adColumnId);
+	}
+
+	public static MLookup searchInList(final int adReferenceId)
+	{
+		final MLookupInfo lookupInfo = getLookupInfo(
+				Env.WINDOW_None,
+				DisplayType.List,
+				null, // ctxTableName,
+				null, // ctxColumnName
+				adReferenceId, // AD_Reference_Value_ID
+				false, // IsParent, not relevant
+				-1 // AD_Val_Rule_ID
+		);
+
+		final int adColumnId = -1;
+		return ofLookupInfo(Env.getCtx(), lookupInfo, adColumnId);
+	}
 
 	public static MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID, final String ctxTableName, final String ctxColumnName, final int AD_Reference_Value_ID,
 			final boolean IsParent, final int AD_Val_Rule_ID)
@@ -171,15 +205,21 @@ public class MLookupFactory
 			final boolean IsParent, final String ValidationCode)
 	{
 		final int adValRuleId = -1;
-		final MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ctxTableName,  ctxColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
+		final MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ctxTableName, ctxColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
 		Check.assumeNotNull(info, "lookupInfo not null for TableName={}, ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ctxTableName, ctxColumnName, AD_Reference_ID, AD_Reference_Value_ID);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(ValidationCode));
 		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 		return info;
 	}
 
-	static public MLookupInfo getLookupInfo(
-			final int WindowNo, final int AD_Reference_ID, final String ctxTableName, final String ctxColumnName,final int AD_Reference_Value_ID, final boolean IsParent, final int AD_Val_Rule_ID)
+	public static MLookupInfo getLookupInfo(
+			final int WindowNo,
+			final int AD_Reference_ID,
+			final String ctxTableName,
+			final String ctxColumnName,
+			final int AD_Reference_Value_ID,
+			final boolean IsParent,
+			final int AD_Val_Rule_ID)
 	{
 		final MLookupInfo info;
 		// List
@@ -952,18 +992,17 @@ public class MLookupFactory
 		{
 			return new LanguageInfo(language.getAD_Language());
 		}
-		
+
 		public static final LanguageInfo ofSpecificLanguage(final Properties ctx)
 		{
 			final String adLanguage = Env.getAD_Language(ctx);
 			return new LanguageInfo(adLanguage);
 		}
-		
+
 		public static final LanguageInfo ofSpecificLanguage(final String adLanguage)
 		{
 			return new LanguageInfo(adLanguage);
 		}
-
 
 		public static final LanguageInfo USE_BASE_LANGAUGE = new LanguageInfo(true);
 		public static final LanguageInfo USE_TRANSLATION_LANGUAGE = new LanguageInfo(false);
@@ -983,7 +1022,6 @@ public class MLookupFactory
 			this.useBaseLanguage = null; // N/A
 			this.adLanguage = adLanguage;
 		}
-
 
 		@Override
 		public String toString()

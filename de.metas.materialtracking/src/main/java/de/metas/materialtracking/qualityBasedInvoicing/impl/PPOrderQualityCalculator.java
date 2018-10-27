@@ -30,10 +30,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -52,6 +49,9 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Calculates and updates Quality related fields of a {@link I_PP_Order} (and it's BOM Lines).
@@ -183,7 +183,7 @@ public class PPOrderQualityCalculator
 		Check.assumeNotNull(product, "product not null");
 		final int receivedProductId = product.getM_Product_ID();
 		final I_C_UOM productUOM = product.getC_UOM();
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(receivedProductId);
 
 		BigDecimal qtyReceivedTotal = BigDecimal.ZERO;
 		final List<I_M_InOutLine> inoutLines = materialTrackingDAO.retrieveReferences(materialTracking, I_M_InOutLine.class);
@@ -319,8 +319,8 @@ public class PPOrderQualityCalculator
 				previousQtyDeliveredAvg = getQtyDeliveredAvg(previousProductionMaterial, qtyDelivered.getUOM());
 			}
 
-			final Quantity qtyDeliveredAvg = qtyDelivered.weightedAverage(previousQtyDeliveredAvg.getQty(), previousInspectionNumber);
-			productionMaterial.setQM_QtyDeliveredAvg(qtyDeliveredAvg.getQty());
+			final Quantity qtyDeliveredAvg = qtyDelivered.weightedAverage(previousQtyDeliveredAvg.getAsBigDecimal(), previousInspectionNumber);
+			productionMaterial.setQM_QtyDeliveredAvg(qtyDeliveredAvg.getAsBigDecimal());
 
 			save(productionMaterial);
 		}

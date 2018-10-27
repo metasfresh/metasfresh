@@ -24,7 +24,6 @@ package de.metas.fresh.ordercheckup;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -32,6 +31,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
+import de.metas.util.ISingletonService;
 
 public interface IOrderCheckupDAO extends ISingletonService
 {

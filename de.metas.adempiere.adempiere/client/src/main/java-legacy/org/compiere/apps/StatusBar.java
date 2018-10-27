@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -25,79 +25,79 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
+import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.compiere.util.SwingUtils;
 
-import de.metas.i18n.IMsgBL;
-
 /**
- *  Status Bar
+ * Status Bar
  *
- *  @author 	Jorg Janke
- *  @version 	$Id: StatusBar.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: StatusBar.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
 public class StatusBar extends CPanel implements IStatusBar
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 178093491294124862L;
 
 	/**
-	 *	Standard Status Bar
+	 * Standard Status Bar
 	 */
 	public StatusBar()
 	{
 		this(false);
-	}	//	StatusBar
+	}	// StatusBar
 
 	/**
-	 *	Status Bar with additional info
-	 *  @param withInfo with info
+	 * Status Bar with additional info
+	 *
+	 * @param withInfo with info
 	 */
-	public StatusBar (boolean withInfo)
+	public StatusBar(final boolean withInfo)
 	{
 		super();
 		try
 		{
 			jbInit();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 		}
-		
-		this.setName("statusBar");
-		
+
+		setName("statusBar");
+
 		if (!withInfo)
 		{
 			infoLine.setVisible(false);
 		}
-	}	//	StatusBar
+	}	// StatusBar
 
 	private final JLabel statusLine = new JLabel();
 	private final JLabel statusDB = new JLabel();
 	private final JLabel infoLine = new JLabel();
 	//
-	private boolean		mt_error;
-	private String		mt_text;
+	private boolean mt_error;
+	private String mt_text;
 	//
-	private String      m_text;
+	// private String m_text;
 	private DataStatusEvent m_dse = null;
 
 	/**
-	 *	Static Init
-	 *  @throws Exception
+	 * Static Init
+	 *
+	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
 	{
 		statusLine.setBorder(BorderFactory.createEtchedBorder());
 		statusLine.setText("statusLine");
 		statusLine.setOpaque(false);
-		
+
 		statusDB.setForeground(Color.blue);
 		statusDB.setBorder(BorderFactory.createEtchedBorder());
 		statusDB.setText("#");
@@ -105,12 +105,12 @@ public class StatusBar extends CPanel implements IStatusBar
 		statusDB.addMouseListener(new MouseAdapter()
 		{
 			@Override
-			public void mouseClicked(MouseEvent e)
+			public void mouseClicked(final MouseEvent e)
 			{
 				showRecordInfo();
 			}
 		});
-		
+
 		infoLine.setFont(AdempierePLAF.getFont_Label());
 		infoLine.setBorder(BorderFactory.createLineBorder(AdempierePLAF.getSecondary2()));
 		infoLine.setHorizontalAlignment(SwingConstants.CENTER);
@@ -122,42 +122,51 @@ public class StatusBar extends CPanel implements IStatusBar
 		final BorderLayout mainLayout = new BorderLayout();
 		mainLayout.setHgap(2);
 		mainLayout.setVgap(2);
-		this.setLayout(mainLayout);
+		setLayout(mainLayout);
 		this.add(statusLine, BorderLayout.CENTER);
 		this.add(statusDB, BorderLayout.EAST);
 		this.add(infoLine, BorderLayout.NORTH);
-	}	//	jbInit
+	}	// jbInit
 
-	
 	/**
-	 *	Set Standard Status Line (non error)
-	 *  @param text text
+	 * Set Standard Status Line (non error)
+	 *
+	 * @param text text
 	 */
 	@Override
 	public void setStatusLine(final String text)
 	{
 		if (text == null)
+		{
 			setStatusLine("", false);
+		}
 		else
+		{
 			setStatusLine(text, false);
-	}	//	setStatusLine
+		}
+	}	// setStatusLine
 
 	/**
-	 *	Set Status Line
-	 *  @param text text
-	 *  @param error error
+	 * Set Status Line
+	 *
+	 * @param text text
+	 * @param error error
 	 */
 	@Override
-	public void setStatusLine (String text, boolean error)
+	public void setStatusLine(final String text, final boolean error)
 	{
 		mt_error = error;
 		mt_text = text;
 		if (mt_error)
+		{
 			statusLine.setForeground(AdempierePLAF.getTextColor_Issue());
+		}
 		else
+		{
 			statusLine.setForeground(AdempierePLAF.getTextColor_OK());
-		
-		if(mt_text == null || mt_text.length() == 0)
+		}
+
+		if (mt_text == null || mt_text.length() == 0)
 		{
 			statusLine.setText("");
 		}
@@ -167,35 +176,38 @@ public class StatusBar extends CPanel implements IStatusBar
 		}
 		//
 		Thread.yield();
-	}	//	setStatusLine
+	}	// setStatusLine
 
 	/**
-	 *	Get Status Line text
-	 *  @return StatusLine text
+	 * Get Status Line text
+	 *
+	 * @return StatusLine text
 	 */
 	public String getStatusLine()
 	{
 		return statusLine.getText().trim();
-	}	//	setStatusLine
+	}	// setStatusLine
 
 	/**
-	 *  Set ToolTip of StatusLine
-	 *  @param tip tip
+	 * Set ToolTip of StatusLine
+	 *
+	 * @param tip tip
 	 */
-	public void setStatusToolTip (String tip)
+	public void setStatusToolTip(final String tip)
 	{
 		statusLine.setToolTipText(tip);
-	}   //  setStatusToolTip
+	}   // setStatusToolTip
 
 	/**
-	 *	Set Status DB Info
-	 *  @param text text
-	 *  @param dse data status event
+	 * Set Status DB Info
+	 *
+	 * @param text text
+	 * @param dse data status event
 	 */
 	@Override
-	public void setStatusDB (String text, DataStatusEvent dse)
+	public void setStatusDB(final String text, final DataStatusEvent dse)
 	{
-	//	log.info( "StatusBar.setStatusDB - " + text + " - " + created + "/" + createdBy);
+		// log.info( "StatusBar.setStatusDB - " + text + " - " + created + "/" + createdBy);
 		if (text == null || text.length() == 0)
 		{
 			statusDB.setText("");
@@ -203,63 +215,77 @@ public class StatusBar extends CPanel implements IStatusBar
 		}
 		else
 		{
-			StringBuilder sb = new StringBuilder(" ");
+			final StringBuilder sb = new StringBuilder(" ");
 			sb.append(text).append(" ");
 			statusDB.setText(sb.toString());
 			if (!statusDB.isVisible())
+			{
 				statusDB.setVisible(true);
+			}
 		}
 
-		//  Save
-		m_text = text;
+		// Save
+		// m_text = text;
 		m_dse = dse;
-	}	//	setStatusDB
+	}	// setStatusDB
 
 	/**
-	 *	Set Status DB Info
-	 *  @param text text
+	 * Set Status DB Info
+	 *
+	 * @param text text
 	 */
 	@Override
-	public void setStatusDB (String text)
+	public void setStatusDB(final String text)
 	{
-		setStatusDB (text, null);
-	}   //  setStatusDB
+		setStatusDB(text, null);
+	}   // setStatusDB
 
 	/**
-	 *	Set Status DB Info
-	 *  @param no no
+	 * Set Status DB Info
+	 *
+	 * @param no no
 	 */
-	public void setStatusDB (int no)
+	public void setStatusDB(final int no)
 	{
-		setStatusDB (String.valueOf(no), null);
-	}   //  setStatusDB
+		setStatusDB(String.valueOf(no), null);
+	}   // setStatusDB
 
 	/**
-	 *	Set Info Line
-	 *  @param text text
+	 * Set Info Line
+	 *
+	 * @param text text
 	 */
 	@Override
-	public void setInfo (String text)
+	public void setInfo(final String text)
 	{
 		infoLine.setVisible(true);
 		infoLine.setText(text);
-	}	//	setInfo
+	}	// setInfo
 
 	/**
 	 * Show {@link RecordInfo} dialog
 	 */
 	private void showRecordInfo()
 	{
-		if (m_dse == null 
-			|| m_dse.CreatedBy == null
-			|| !Env.getUserRolePermissions().isShowPreference())
+		if (m_dse == null)
 		{
 			return;
 		}
-		
+
+		final int adTableId = m_dse.getAdTableId();
+		final ComposedRecordId recordId = m_dse.getRecordId();
+		if (adTableId <= 0 || recordId == null)
+		{
+			return;
+		}
+
+		if (!Env.getUserRolePermissions().isShowPreference())
+		{
+			return;
+		}
+
 		//
-		final String title = Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Who") + m_text;
-		final RecordInfo info = new RecordInfo(SwingUtils.getFrame(this), title, m_dse);
+		final RecordInfo info = new RecordInfo(SwingUtils.getFrame(this), adTableId, recordId);
 		AEnv.showCenterScreen(info);
 	}
 

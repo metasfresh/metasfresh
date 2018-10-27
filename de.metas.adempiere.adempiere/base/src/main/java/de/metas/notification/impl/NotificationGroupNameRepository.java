@@ -3,14 +3,14 @@ package de.metas.notification.impl;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_NotificationGroup;
-import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableBiMap;
 
+import de.metas.cache.CCache;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.NotificationGroupName;
+import de.metas.util.Services;
 
 /*
  * #%L

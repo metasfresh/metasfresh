@@ -3,13 +3,13 @@ package de.metas.vertical.pharma;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.impexp.bpartner.PharmaImportPartnerInterceptor;
 import de.metas.impexp.product.PharmaImportProductInterceptor;
 import de.metas.impexp.product.PharmaProductImportProcess;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_I_Product;

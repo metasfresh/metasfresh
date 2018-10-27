@@ -2,9 +2,8 @@ package de.metas.material.cockpit.view.detailrecord;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

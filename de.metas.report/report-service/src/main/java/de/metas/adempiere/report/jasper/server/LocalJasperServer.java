@@ -27,8 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -40,17 +38,20 @@ import de.metas.adempiere.report.jasper.JasperEngine;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.report.engine.IReportEngine;
 import de.metas.report.engine.ReportContext;
 import de.metas.report.xls.engine.XlsReportEngine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class LocalJasperServer implements IJasperServer
 {
 	private static final Logger logger = LogManager.getLogger(LocalJasperServer.class);
 
 	@Override
-	public byte[] report(int processId, int pinstanceId, final String adLanguage, final OutputType outputType) throws Exception
+	public byte[] report(int processId, int pinstanceRepoId, final String adLanguage, final OutputType outputType) throws Exception
 	{
 		//
 		// Load process info
@@ -58,14 +59,14 @@ public class LocalJasperServer implements IJasperServer
 				.setCtx(Env.newTemporaryCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(processId)
-				.setAD_PInstance_ID(pinstanceId)
+				.setPInstanceId(PInstanceId.ofRepoIdOrNull(pinstanceRepoId))
 				.setReportLanguage(adLanguage)
 				.setJRDesiredOutputType(outputType)
 				.build();
 		
 		//
 		// If there is no AD_PInstance already, we need to create it now
-		if(processInfo.getAD_PInstance_ID() <= 0)
+		if(processInfo.getPinstanceId() == null)
 		{
 			Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(processInfo);
 		}
@@ -79,7 +80,7 @@ public class LocalJasperServer implements IJasperServer
 		final ReportContext reportContext = ReportContext.builder()
 				.setCtx(processInfo.getCtx())
 				.setAD_Process_ID(processInfo.getAD_Process_ID())
-				.setAD_PInstance_ID(processInfo.getAD_PInstance_ID())
+				.setPInstanceId(processInfo.getPinstanceId())
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
 				.setAD_Language(processInfo.getReportAD_Language())
 				.setOutputType(processInfo.getJRDesiredOutputType())

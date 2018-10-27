@@ -19,9 +19,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.IProcessor;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Supplier;
@@ -43,6 +40,9 @@ import de.metas.banking.payment.paymentallocation.model.PaymentsTableModel;
 import de.metas.banking.payment.paymentallocation.service.DifferenceRowBalancer;
 import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationFormDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.IProcessor;
+import de.metas.util.Services;
 
 /* package */abstract class AbstractPaymentAllocationForm extends AbstractPaymentForm
 {

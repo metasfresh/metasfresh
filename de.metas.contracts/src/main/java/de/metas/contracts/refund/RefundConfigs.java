@@ -1,16 +1,15 @@
 package de.metas.contracts.refund;
 
-import static org.adempiere.util.collections.CollectionUtils.extractSingleElement;
-import static org.adempiere.util.collections.CollectionUtils.hasDifferentValues;
+import static de.metas.util.collections.CollectionUtils.extractSingleElement;
+import static de.metas.util.collections.CollectionUtils.hasDifferentValues;
 
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

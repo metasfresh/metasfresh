@@ -25,11 +25,10 @@ package de.metas.dunning.writeoff.invoice.process;
 
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 public class C_Dunning_Candidate_MassWriteOff extends JavaProcess
 {
@@ -53,7 +52,7 @@ public class C_Dunning_Candidate_MassWriteOff extends JavaProcess
 		}
 
 		final Properties ctx = getCtx();
-		final String writeOffDescription = getProcessInfo().getTitle() + " #" + getAD_PInstance_ID();
+		final String writeOffDescription = getProcessInfo().getTitle() + " #" + getPinstanceId().getRepoId();
 
 		final int writeOffCount = Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(ctx, writeOffDescription);
 

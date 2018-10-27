@@ -16,9 +16,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.UserId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
@@ -37,6 +34,11 @@ import de.metas.email.Mailbox;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutor;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+
+import lombok.NonNull;
 
 /**
  * @author Cristina Ghita, Metas.RO
@@ -175,14 +177,13 @@ public class MailBL implements IMailBL
 
 	@Override
 	public EMail createEMail(final Properties ctx,
-			final Mailbox mailbox,
+			@NonNull final Mailbox mailbox,
 			final String to,
 			final String subject,
 			String message,
 			final boolean html)
 	{
 		Check.assumeNotEmpty(to, "Param 'to' is not empty (mailbox={}, subject={})", mailbox, subject);
-		Check.assumeNotNull(mailbox, "Param 'mailbox' is not null (mailbox={}, subject={})", mailbox, subject);
 
 		if (mailbox.getEmail() == null
 				// || mailbox.getUsername() == null

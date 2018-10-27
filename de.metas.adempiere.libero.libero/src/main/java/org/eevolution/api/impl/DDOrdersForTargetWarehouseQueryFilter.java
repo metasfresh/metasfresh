@@ -29,11 +29,12 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+
+import de.metas.util.Services;
 
 /**
  * Filters {@link I_DD_Order}s which have an {@link I_DD_OrderLine} having the specified target/destination warehouse.

@@ -25,12 +25,12 @@ package de.metas.inoutcandidate.process;
 
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 public final class UpdateShipmentScheds extends JavaProcess
 {
@@ -44,13 +44,13 @@ public final class UpdateShipmentScheds extends JavaProcess
 		{
 			Services.get(IShipmentSchedulePA.class).invalidateAll(getCtx());
 		}
-		return updateNow(getCtx(), getAD_User_ID(), getAD_PInstance_ID(), get_TrxName());
+		return updateNow(getCtx(), getAD_User_ID(), getPinstanceId(), get_TrxName());
 	}
 
 	private static String updateNow(
 			final Properties ctx,
 			final int adUserId,
-			final int adPInstanceId,
+			final PInstanceId adPInstanceId,
 			final String trxName)
 	{
 		final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);

@@ -3,7 +3,8 @@ package org.adempiere.ad.callout.api;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.spi.ICalloutProvider;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 public interface ICalloutFactory extends ISingletonService
 {

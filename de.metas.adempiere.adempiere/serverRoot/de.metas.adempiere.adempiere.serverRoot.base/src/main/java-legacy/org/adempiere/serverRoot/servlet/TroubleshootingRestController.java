@@ -2,7 +2,6 @@ package org.adempiere.serverRoot.servlet;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +12,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -17,11 +17,11 @@
 package org.compiere.process;
 
 import org.adempiere.ad.service.ISystemBL;
-import org.adempiere.util.Services;
 import org.compiere.model.MIssue;
 import org.compiere.util.AdempiereSystemError;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * 	Report System Issue

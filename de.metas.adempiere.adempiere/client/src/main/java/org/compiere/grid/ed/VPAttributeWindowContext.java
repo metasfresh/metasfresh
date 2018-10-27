@@ -25,7 +25,6 @@ package org.compiere.grid.ed;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.GridField;
 import org.compiere.util.Env;
@@ -34,6 +33,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 
 /**
  * Implementation of {@link IVPAttributeContext} which resolves all values by using window's context.

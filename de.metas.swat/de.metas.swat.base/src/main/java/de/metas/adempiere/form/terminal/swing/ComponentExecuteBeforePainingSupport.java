@@ -28,8 +28,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 import de.metas.adempiere.form.terminal.IExecuteBeforePainingSupport;
 
 /**

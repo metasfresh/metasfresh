@@ -25,7 +25,6 @@ package de.metas.product.async.spi.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.model.MStorage;
 
@@ -33,6 +32,7 @@ import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.product.IStorageBL;
+import de.metas.util.Services;
 
 /**
  * This workpackage processor invokes {@link MStorage#add(java.util.Properties, int, int, int, int, int, java.math.BigDecimal, java.math.BigDecimal, java.math.BigDecimal, String)}.

@@ -31,8 +31,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.api.ITourInstanceDAO;
@@ -40,6 +38,8 @@ import de.metas.tourplanning.api.ITourInstanceQueryParams;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class TourInstanceDAO implements ITourInstanceDAO
 {

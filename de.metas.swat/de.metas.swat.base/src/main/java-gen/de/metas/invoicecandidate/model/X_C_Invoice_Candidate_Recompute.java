@@ -14,7 +14,7 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -144565466L;
+	private static final long serialVersionUID = 1804681662L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Recompute (Properties ctx, int C_Invoice_Candidate_Recompute_ID, String trxName)
@@ -91,9 +91,7 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	}
 
 	/** Set Rechnungskandidat.
-		@param C_Invoice_Candidate_ID 
-		Eindeutige Identifikationsnummer eines Rechnungskandidaten
-	  */
+		@param C_Invoice_Candidate_ID Rechnungskandidat	  */
 	@Override
 	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID)
 	{
@@ -104,8 +102,7 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	}
 
 	/** Get Rechnungskandidat.
-		@return Eindeutige Identifikationsnummer eines Rechnungskandidaten
-	  */
+		@return Rechnungskandidat	  */
 	@Override
 	public int getC_Invoice_Candidate_ID () 
 	{

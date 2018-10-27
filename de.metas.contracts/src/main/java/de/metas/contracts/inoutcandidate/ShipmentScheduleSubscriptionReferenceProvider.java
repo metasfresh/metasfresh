@@ -2,8 +2,7 @@ package de.metas.contracts.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.IFlatrateBL;
@@ -12,6 +11,9 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -58,7 +60,7 @@ public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentSc
 
 		return ShipmentScheduleReferencedLine.builder()
 				.groupId(subscriptionLine.getC_Flatrate_Term_ID())
-				.shipperId(0)
+				.shipperId(ShipperId.optionalOfRepoId(1))
 				.deliveryDate(subscriptionLine.getEventDate())
 				.preparationDate(subscriptionLine.getEventDate())
 				.warehouseId(getWarehouseId(subscriptionLine))
@@ -66,7 +68,7 @@ public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentSc
 				.build();
 	}
 
-	public int getWarehouseId(@NonNull final I_C_SubscriptionProgress subscriptionLine)
+	public WarehouseId getWarehouseId(@NonNull final I_C_SubscriptionProgress subscriptionLine)
 	{
 		return Services.get(IFlatrateBL.class).getWarehouseId(subscriptionLine.getC_Flatrate_Term());
 	}

@@ -7,7 +7,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -19,6 +18,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.impl.SubscriptionService;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

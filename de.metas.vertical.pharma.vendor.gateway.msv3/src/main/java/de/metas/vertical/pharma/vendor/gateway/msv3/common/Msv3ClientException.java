@@ -3,8 +3,8 @@ package de.metas.vertical.pharma.vendor.gateway.msv3.common;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
+import de.metas.util.Check;
 import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 import lombok.Builder;
 import lombok.Getter;

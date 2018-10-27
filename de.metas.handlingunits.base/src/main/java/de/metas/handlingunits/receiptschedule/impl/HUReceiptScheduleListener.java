@@ -26,13 +26,13 @@ package de.metas.handlingunits.receiptschedule.impl;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.ReceiptScheduleListenerAdapter;
+import de.metas.util.Services;
 
 public class HUReceiptScheduleListener extends ReceiptScheduleListenerAdapter
 {

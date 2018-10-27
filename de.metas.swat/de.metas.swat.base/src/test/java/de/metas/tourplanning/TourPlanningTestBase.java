@@ -2,6 +2,7 @@ package de.metas.tourplanning;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 
@@ -15,18 +16,17 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -42,12 +42,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.time.SystemTime;
-import org.adempiere.util.time.TimeSource;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.junit.After;
 import org.junit.Assert;
@@ -56,6 +54,10 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
+import de.metas.product.ProductId;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IDeliveryDayDAO;
@@ -73,14 +75,17 @@ import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.tourplanning.model.validator.DeliveryDayAllocableInterceptor;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import de.metas.util.time.TimeSource;
 
 /**
  * Base class (to be extended) for all Tour Planning tests.
- * 
+ *
  * @author tsa
  *
  */
-public abstract class TourPlanningTestBase 
+public abstract class TourPlanningTestBase
 {
 	protected IContextAware contextProvider;
 	protected DateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSSS");
@@ -94,12 +99,13 @@ public abstract class TourPlanningTestBase
 	protected ITourDAO tourDAO;
 	protected ITourInstanceBL tourInstanceBL;
 	protected ITourInstanceDAO tourInstanceDAO;
-	
+
 	// Master data
 	protected I_M_Tour tour;
 	protected I_M_TourVersion tourVersion;
 	protected I_C_BPartner bpartner;
 	protected I_C_BPartner_Location bpLocation;
+	protected ProductId productId;
 
 	@Rule
 	public TestWatcher testWatchman = new AdempiereTestWatcher();
@@ -115,6 +121,8 @@ public abstract class TourPlanningTestBase
 
 		this.contextProvider = PlainContextAware.newWithThreadInheritedTrx();
 
+		Services.registerService(IShipmentScheduleBL.class,ShipmentScheduleBL.newInstanceForUnitTesting());
+
 		//
 		// Model Interceptors
 		Services.get(IModelInterceptorRegistry.class)
@@ -128,6 +136,14 @@ public abstract class TourPlanningTestBase
 		this.shipmentScheduleDeliveryDayBL = (ShipmentScheduleDeliveryDayBL)Services.get(IShipmentScheduleDeliveryDayBL.class);
 		this.tourInstanceBL = Services.get(ITourInstanceBL.class);
 		this.tourInstanceDAO = Services.get(ITourInstanceDAO.class);
+
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		saveRecord(uom);
+
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		saveRecord(product);
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		afterInit();
 	}
@@ -224,7 +240,7 @@ public abstract class TourPlanningTestBase
 
 	/**
 	 * Asserts given shipment schedule is allocated to expected delivery day.
-	 * 
+	 *
 	 * @param deliveryDayExpected
 	 * @param shipmentSchedule
 	 */
@@ -245,7 +261,7 @@ public abstract class TourPlanningTestBase
 
 	/**
 	 * sets the system time to a static value. Note that this is reset after each test by {@link #resetSystemTime()}.
-	 * 
+	 *
 	 * @param currentTime
 	 */
 	protected void setSystemTime(final String currentTime)
@@ -259,7 +275,7 @@ public abstract class TourPlanningTestBase
 			}
 		});
 	}
-	
+
 	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
 	{
 		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
@@ -282,30 +298,30 @@ public abstract class TourPlanningTestBase
 
 		return deliveryDay;
 	}
-	
+
 	/**
 	 * Create a shipment schedule for the given oder.
 	 * <p>
 	 * NOTE: we expect that the tests was set up such that {@link DeliveryDayAllocableInterceptor} is fired when the shipment schedule is stored.
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 */
 	protected I_M_ShipmentSchedule createShipmentSchedule(final I_C_Order order, final int qtyOrdered)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class, order);
-		shipmentSchedule.setC_Order(order);
-		shipmentSchedule.setC_BPartner(order.getC_BPartner());
-		shipmentSchedule.setC_BPartner_Location(order.getC_BPartner_Location());
+		shipmentSchedule.setC_Order_ID(order.getC_Order_ID());
+		shipmentSchedule.setC_BPartner_ID(order.getC_BPartner_ID());
+		shipmentSchedule.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
 
+		shipmentSchedule.setM_Product_ID(productId.getRepoId());
 		shipmentSchedule.setQtyOrdered_Calculated(BigDecimal.valueOf(qtyOrdered));
-		
+
 		shipmentSchedule.setDeliveryDate(order.getDatePromised());
 		shipmentSchedule.setPreparationDate(order.getPreparationDate());
 		save(shipmentSchedule);
 
 		return shipmentSchedule;
 	}
-
 
 }

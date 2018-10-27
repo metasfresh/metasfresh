@@ -75,8 +75,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.apps.AEnv;
 import org.compiere.swing.FontChooser;
@@ -86,6 +84,9 @@ import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.sort.TableSortController;
 
 import com.google.common.collect.Ordering;
+
+import de.metas.util.Check;
+import de.metas.util.collections.IdentityHashSet;
 
 /**
  * Dialog used to edit and persist {@link UIDefaults}.

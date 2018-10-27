@@ -13,15 +13,14 @@ package de.metas.fresh.picking.form;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,15 +32,14 @@ import java.util.Set;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_EDI_M_Product_Lookup_UPC_v;
-import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
-import de.metas.picking.legacy.form.TableRowKey;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Matchers all rows for given barcode. M_Product.UPC and M_Product.Value are matched.
@@ -62,13 +60,13 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 	/**
 	 * Always disallow multiple inserts in this map on the same key (our query should have one and only one partner-product association)
 	 */
-	private final Map<Integer, Integer> bpartnerId2productId = new HashMap<Integer, Integer>();
+	private final Map<Integer, ProductId> bpartnerId2productId = new HashMap<>();
 
 	/**
 	 * Last used C_BPartner_ID
 	 */
 	private int bpartnerId = -1;
-	private int productId = -1;
+	private ProductId productId = null;
 
 	/**
 	 * Is this matcher valid?
@@ -119,8 +117,7 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<I_EDI_M_Product_Lookup_UPC_v> upcProductCandidates =
-				queryBL.createQueryBuilder(I_EDI_M_Product_Lookup_UPC_v.class, ctx, ITrx.TRXNAME_None)
+		final List<I_EDI_M_Product_Lookup_UPC_v> upcProductCandidates = queryBL.createQueryBuilder(I_EDI_M_Product_Lookup_UPC_v.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_M_Product_Lookup_UPC_v.COLUMNNAME_UPC, barcode)
 				.addEqualsFilter(I_EDI_M_Product_Lookup_UPC_v.COLUMNNAME_UsedForCustomer, true)
@@ -137,10 +134,10 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 			// verify that we have just one product (per partner) for the given UPC
 			for (final I_EDI_M_Product_Lookup_UPC_v upcProductCand : upcProductCandidates)
 			{
-				final int productIdNew = upcProductCand.getM_Product_ID();
+				final ProductId productIdNew = ProductId.ofRepoId(upcProductCand.getM_Product_ID());
 				final int bpartnerId = upcProductCand.getC_BPartner_ID();
-				final Integer productIdOld = bpartnerId2productId.put(bpartnerId, productIdNew);
-				Check.assume(productIdOld == null || productIdNew == productIdOld,
+				final ProductId productIdOld = bpartnerId2productId.put(bpartnerId, productIdNew);
+				Check.assume(productIdOld == null || ProductId.equals(productIdNew, productIdOld),
 						"Different products found for same bpartner {}/upc {} combination: {}, {}",
 						bpartnerId, barcode, productIdOld, productIdNew);
 			}
@@ -187,7 +184,7 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 				// shall not happen
 				throw new IllegalStateException("Cannot detect matching type EAN/Value for " + product + ", barcode=" + barcode);
 			}
-			productId = product.getM_Product_ID();
+			productId = ProductId.ofRepoId(product.getM_Product_ID());
 		}
 
 		// return load ok
@@ -214,24 +211,16 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 
 		//
 		// Attempt to search for the productId in the selected UPCs first
-		final Integer registeredProductId = bpartnerId2productId.get(bpartnerId);
+		final ProductId registeredProductId = bpartnerId2productId.get(bpartnerId);
 		if (registeredProductId != null
-				&& registeredProductId == key.getProductId())
+				&& ProductId.equals(registeredProductId, key.getProductId()))
 		{
 			return true;
 		}
 
 		//
 		// Fallback, see if the product was retrieved individually (i.e it's own UPC or Value)
-		if (productId > 0)
-		{
-			if (productId == key.getProductId())
-			{
-				return true;
-			}
-			return false;
-		}
-		return false;
+		return productId != null && ProductId.equals(productId, key.getProductId());
 	}
 
 	@Override
@@ -253,13 +242,8 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 
 		//
 		// If there are no products, we consider it null
-		final Collection<Integer> productIds = bpartnerId2productId.values();
-		if (productIds.isEmpty() && productId <= 0)
-		{
-			return true;
-		}
-
-		return false;
+		final Collection<ProductId> productIds = bpartnerId2productId.values();
+		return productIds.isEmpty() && productId == null;
 	}
 
 	@Override
@@ -317,6 +301,5 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 	{
 		return "ProductTableRowSearchSelectionMatcher [initialized=" + initialized + ", barcode=" + barcode + ", matchingType=" + matchingType + ", bpartnerId2productId=" + bpartnerId2productId + ", bpartnerId=" + bpartnerId + ", productId=" + productId + ", valid=" + valid + "]";
 	}
-
 
 }

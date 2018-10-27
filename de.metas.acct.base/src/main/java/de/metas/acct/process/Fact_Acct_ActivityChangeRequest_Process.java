@@ -8,7 +8,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_GL_Journal;
@@ -22,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

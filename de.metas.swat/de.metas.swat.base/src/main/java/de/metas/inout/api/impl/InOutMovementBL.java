@@ -40,13 +40,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -62,6 +59,8 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.interfaces.I_M_MovementLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class InOutMovementBL implements IInOutMovementBL
@@ -254,9 +253,7 @@ public class InOutMovementBL implements IInOutMovementBL
 		movementLine.setM_Movement_ID(movement.getM_Movement_ID());
 		movementLine.setM_InOutLine(inoutLineFrom);
 
-		final I_M_Product product = inoutLineFrom.getM_Product();
-		movementLine.setM_Product(product);
-
+		movementLine.setM_Product_ID(inoutLineFrom.getM_Product_ID());
 		movementLine.setM_AttributeSetInstance_ID(inoutLineFrom.getM_AttributeSetInstance_ID());
 
 		movementLine.setMovementQty(inoutLineFrom.getMovementQty());

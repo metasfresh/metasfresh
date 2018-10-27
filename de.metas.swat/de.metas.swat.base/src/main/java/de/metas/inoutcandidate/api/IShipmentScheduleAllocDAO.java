@@ -26,12 +26,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleAllocDAO extends ISingletonService
 {

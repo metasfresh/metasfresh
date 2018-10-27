@@ -1,13 +1,13 @@
 package de.metas.ordercandidate.rest;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.util.Services;
 import org.compiere.util.Ini;
 import org.springframework.stereotype.Component;
 
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.InputDataSourceCreateRequest;
 import de.metas.ordercandidate.OrderCandidate_Constants;
+import de.metas.util.Services;
 
 /*
  * #%L

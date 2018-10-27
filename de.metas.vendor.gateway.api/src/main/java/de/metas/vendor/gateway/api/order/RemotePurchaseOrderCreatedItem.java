@@ -3,8 +3,9 @@ package de.metas.vendor.gateway.api.order;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import org.adempiere.util.Check;
+import javax.annotation.Nullable;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,23 +42,21 @@ public class RemotePurchaseOrderCreatedItem
 	@NonNull
 	PurchaseOrderRequestItem correspondingRequestItem;
 
-	@NonNull
 	BigDecimal confirmedOrderQuantity;
 
-	@NonNull
-	LocalDateTime confirmedDeliveryDate;
+	LocalDateTime confirmedDeliveryDateOrNull;
 
 	@Builder
 	private RemotePurchaseOrderCreatedItem(
 			@NonNull final PurchaseOrderRequestItem correspondingRequestItem,
 			@NonNull final BigDecimal confirmedOrderQuantity,
-			@NonNull final LocalDateTime confirmedDeliveryDate,
+			@Nullable final LocalDateTime confirmedDeliveryDateOrNull,
 			final String remotePurchaseOrderId,
 			final MSV3OrderResponsePackageItemPartRepoId internalItemId)
 	{
 		this.correspondingRequestItem = correspondingRequestItem;
 		this.confirmedOrderQuantity = confirmedOrderQuantity;
-		this.confirmedDeliveryDate = confirmedDeliveryDate;
+		this.confirmedDeliveryDateOrNull = confirmedDeliveryDateOrNull;
 		this.remotePurchaseOrderId = remotePurchaseOrderId;
 		this.internalItemId = internalItemId;
 

@@ -27,10 +27,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
 import de.metas.handlingunits.HUConstants;
@@ -38,7 +35,10 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MTransactionProductStorage extends AbstractProductStorage
 {
@@ -59,14 +59,14 @@ public class MTransactionProductStorage extends AbstractProductStorage
 		this.mtrx = mtrx;
 		inbound = MTransactionUtil.isInboundTransaction(mtrx);
 
-		final I_M_Product product = mtrx.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(mtrx.getM_Product_ID());
 
 		//
 		// Convert transaction qty to storage UOM
 		final BigDecimal qtyMTransactionSrc = mtrx.getMovementQty();
 		final I_C_UOM uomMTransaction = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
 		final BigDecimal qtyMTransaction = Services.get(IUOMConversionBL.class)
-				.convertQty(product, qtyMTransactionSrc, uomMTransaction, uom);
+				.convertQty(productId, qtyMTransactionSrc, uomMTransaction, uom);
 
 		BigDecimal qtyCapacity;
 		if (inbound)
@@ -85,8 +85,10 @@ public class MTransactionProductStorage extends AbstractProductStorage
 			qtyCapacity = qtyCapacity.negate();
 		}
 
-		capacityTotal = Capacity.createCapacity(qtyCapacity,
-				product, uomMTransaction,
+		capacityTotal = Capacity.createCapacity(
+				qtyCapacity,
+				productId,
+				uomMTransaction,
 				false// allowNegativeCapacity
 				);
 	}
@@ -108,7 +110,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 		//
 		// Iterate all HU transactions and adjust qtyAdd and qtyRemoved
 		Check.assume(HUConstants.DEBUG_07277_saveHUTrxLine, "Saving HU Trx Lines shall be active for MTransactionProductStorage to work");
-		final I_M_Product storageProduct = getM_Product();
+		final ProductId storageProductId = getProductId();
 		for (final I_M_HU_Trx_Line trxLine : Services.get(IHUTrxDAO.class).retrieveReferencingTrxLines(mtrx))
 		{
 			// Skip not processed lines
@@ -118,11 +120,11 @@ public class MTransactionProductStorage extends AbstractProductStorage
 			}
 
 			// Make sure we have the same product
-			if (mtrx.getM_Product_ID() != storageProduct.getM_Product_ID())
+			if (mtrx.getM_Product_ID() != storageProductId.getRepoId())
 			{
 				// NOTE: not sure but maybe a log message + continue would be enough
 				throw new AdempiereException("Invalid product for transaction " + mtrx + ": "
-						+ " Expected=" + storageProduct
+						+ " Expected=" + storageProductId
 						+ ", Actual=" + mtrx.getM_Product());
 			}
 

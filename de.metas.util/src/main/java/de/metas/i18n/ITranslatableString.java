@@ -1,12 +1,19 @@
 package de.metas.i18n;
 
+import lombok.NonNull;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 
-import lombok.NonNull;
 
 /*
  * #%L
@@ -18,12 +25,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +40,7 @@ import lombok.NonNull;
 /**
  * A string which can be translated to a given <code>AD_Language</code>.<br>
  * You can use e.g. {@link IMsgBL#getTranslatableMsgText(String, Object...)} to obtain an instance.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -106,6 +113,18 @@ public interface ITranslatableString
 		{
 			return new CompositeTranslatableString(trls, joiningString);
 		}
+	}
+
+	public static Collector<ITranslatableString, ?, ITranslatableString> joining(final String joiningString)
+	{
+		final Supplier<List<ITranslatableString>> supplier = ArrayList::new;
+		final BiConsumer<List<ITranslatableString>, ITranslatableString> accumulator = (accum, e) -> accum.add(e);
+		final BinaryOperator<List<ITranslatableString>> combiner = (accum1, accum2) -> {
+			accum1.addAll(accum2);
+			return accum1;
+		};
+		final Function<List<ITranslatableString>, ITranslatableString> finisher = accum -> compose(joiningString, accum);
+		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
 	public static ITranslatableString constant(final String value)

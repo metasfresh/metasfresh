@@ -4,19 +4,13 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -34,14 +28,15 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUDocumentSelectTestHelper;
-import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.impl.SaveDecoupledHUAttributesDAO;
-import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L
@@ -67,8 +62,6 @@ import de.metas.handlingunits.util.HUTopLevel;
 
 public class PPOrderMInOutLineRetrievalServiceTest
 {
-	private IContextAware context;
-
 	private HUDocumentSelectTestHelper helper;
 
 	/** Watches current test and dumps the database to console in case of failure */
@@ -79,20 +72,24 @@ public class PPOrderMInOutLineRetrievalServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		helper = new HUDocumentSelectTestHelper();
-
-		// note that the helper's constructor also sets up the ctx
-		context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		helper = new HUDocumentSelectTestHelper()
+		{
+			@Override
+			protected String createAndStartTransaction()
+			{
+				return ITrx.TRXNAME_None;
+			}
+		};
 
 		// register this listener to make sure that when the HUs are assigned, then also the ATTR_ReceiptInOutLine_ID HU-Attribute is set
 		Services.get(IHUAssignmentBL.class).registerHUAssignmentListener(ReceiptInOutLineHUAssignmentListener.instance);
 
 		//
 		// Create an AD_SysConfig for SaveDecoupledHUAttributesDAO.SYSCONFIG_AutoFlushEnabledInitial, to make sure that the HU_Attributes that are set by the ReceiptInOutLineHUAssignmentListener are actually stored.
-		final Properties deriveCtx = Env.deriveCtx(context.getCtx());
+		final Properties deriveCtx = Env.deriveCtx(Env.getCtx());
 		Env.setContext(deriveCtx, Env.CTXNAME_AD_Client_ID, 0);
 		Env.setContext(deriveCtx, Env.CTXNAME_AD_Org_ID, 0);
-		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class, new PlainContextAware(deriveCtx, ITrx.TRXNAME_None));
+		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
 		sysConfig.setName(SaveDecoupledHUAttributesDAO.SYSCONFIG_AutoFlushEnabledInitial);
 		sysConfig.setValue("Y");
 		InterfaceWrapperHelper.save(sysConfig);
@@ -102,8 +99,8 @@ public class PPOrderMInOutLineRetrievalServiceTest
 	public void test()
 	{
 		final List<I_M_InOutLine> reversedLines;
-		final List<I_M_HU> reversedLineTomatoHUs;
-		final List<I_M_HU> reversedLineSaladHUs;
+		final I_M_HU reversedLineTomatoHU;
+		final I_M_HU reversedLineSaladHU;
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -112,41 +109,41 @@ public class PPOrderMInOutLineRetrievalServiceTest
 			assertThat(reversedLines.get(0).getM_Product(), is(helper.pTomato));
 			assertThat(reversedLines.get(1).getM_Product(), is(helper.pSalad));
 
-			reversedLineTomatoHUs = createHUs(helper.pTomato, new BigDecimal("20"));
-			assertThat(handlingUnitsBL.isTopLevel(reversedLineTomatoHUs.get(0)), is(true));
+			reversedLineTomatoHU = createLU(helper.pTomatoProductId, new BigDecimal("20"));
+			assertThat(handlingUnitsBL.isTopLevel(reversedLineTomatoHU), is(true));
 
-			reversedLineSaladHUs = createHUs(helper.pSalad, new BigDecimal("20"));
+			reversedLineSaladHU = createLU(helper.pSaladProductId, new BigDecimal("20"));
 
 			createAssignments(
 					reversedLines.get(0), // the one with tomato
-					reversedLineTomatoHUs);
+					reversedLineTomatoHU);
 
 			createAssignments(
 					reversedLines.get(1), // the one with salad
-					reversedLineSaladHUs);
+					reversedLineSaladHU);
 		}
 
 		final List<I_M_InOutLine> completedLines;
-		final List<I_M_HU> completedLineTomatoHUs;
-		final List<I_M_HU> completedLineSaladHUs;
+		final I_M_HU completedLineTomatoHU;
+		final I_M_HU completedLineSaladHU;
 		{
 			completedLines = createReceiptInOutLines(IDocument.STATUS_Completed);
-			assertThat(completedLines.get(0).getM_Product(), is(helper.pTomato));
-			assertThat(completedLines.get(1).getM_Product(), is(helper.pSalad));
+			assertThat(completedLines.get(0).getM_Product_ID(), is(helper.pTomatoProductId.getRepoId()));
+			assertThat(completedLines.get(1).getM_Product_ID(), is(helper.pSaladProductId.getRepoId()));
 
-			completedLineTomatoHUs = createHUs(helper.pTomato, new BigDecimal("30"));
-			assertThat(handlingUnitsBL.isTopLevel(completedLineTomatoHUs.get(0)), is(true));
+			completedLineTomatoHU = createLU(helper.pTomatoProductId, new BigDecimal("30"));
+			assertThat(handlingUnitsBL.isTopLevel(completedLineTomatoHU), is(true));
 
-			completedLineSaladHUs = createHUs(helper.pSalad, new BigDecimal("30"));
-			assertThat(handlingUnitsBL.isTopLevel(completedLineSaladHUs.get(0)), is(true));
+			completedLineSaladHU = createLU(helper.pSaladProductId, new BigDecimal("30"));
+			assertThat(handlingUnitsBL.isTopLevel(completedLineSaladHU), is(true));
 
 			createAssignments(
-					completedLines.get(0), // the one with product1
-					completedLineTomatoHUs);
+					completedLines.get(0), // the one with tomato
+					completedLineTomatoHU);
 
 			createAssignments(
 					completedLines.get(1), // the one with salad
-					completedLineSaladHUs);
+					completedLineSaladHU);
 		}
 
 		final I_PP_Cost_Collector issueCostCollectorTomato;
@@ -155,11 +152,11 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 			createAssignments(
 					issueCostCollectorTomato,
-					reversedLineTomatoHUs);
+					reversedLineTomatoHU);
 
 			createAssignments(
 					issueCostCollectorTomato,
-					completedLineTomatoHUs);
+					completedLineTomatoHU);
 		}
 
 		final I_PP_Cost_Collector issueCostCollectorSalad;
@@ -168,11 +165,11 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 			createAssignments(
 					issueCostCollectorSalad,
-					reversedLineSaladHUs);
+					reversedLineSaladHU);
 
 			createAssignments(
 					issueCostCollectorSalad,
-					completedLineSaladHUs);
+					completedLineSaladHU);
 		}
 
 		final List<de.metas.materialtracking.model.I_M_InOutLine> provideIssuedInOutLinesTomato = new PPOrderMInOutLineRetrievalService().provideIssuedInOutLines(issueCostCollectorTomato);
@@ -187,53 +184,36 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 	private void createAssignments(
 			final Object model,
-			final List<I_M_HU> topLevelTuSingletonList)
+			final I_M_HU luHU)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final I_M_HU luHU = topLevelTuSingletonList.get(0);
 		assertThat(handlingUnitsBL.isTopLevel(luHU), is(true));
 		assertThat(handlingUnitsBL.isLoadingUnit(luHU), is(true));
 
-		final List<HUTopLevel> toTopLevels = new ArrayList<HUTopLevel>();
+		final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
 
-		final HUIterator huIterator = new HUIterator();
-		huIterator.setDate(SystemTime.asTimestamp());
-		huIterator.setListener(new HUIteratorListenerAdapter()
-		{
-			@Override
-			public Result beforeHU(final IMutable<I_M_HU> hu)
-			{
-				if (handlingUnitsBL.isTransportUnit(hu.getValue()))
-				{
-					toTopLevels.add(new HUTopLevel(luHU, luHU, hu.getValue(), null));
-				}
-				return Result.CONTINUE;
-			}
-		});
-		huIterator.iterate(luHU);
+		huAssignmentBL.assignHUs(model, ImmutableList.of(luHU));
 
-		huAssignmentBL.assignHUs(
-				model,
-				topLevelTuSingletonList);
-
-		for (final HUTopLevel huTopLevel : toTopLevels)
+		for (final I_M_HU tuHU : tuHUs)
 		{
 			huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(
-					context.getCtx(),
+					Env.getCtx(),
 					model,
-					huTopLevel.getM_HU_TopLevel(),
-					huTopLevel.getM_LU_HU(),
-					huTopLevel.getM_TU_HU(),
-					context.getTrxName())
+					luHU,
+					luHU,
+					tuHU,
+					ITrx.TRXNAME_ThreadInherited)
 					.build();
 		}
 	}
 
-	private List<I_M_HU> createHUs(final I_M_Product product, final BigDecimal qty)
+	private I_M_HU createLU(final ProductId productId, final BigDecimal qty)
 	{
-		return helper.createHUs(helper.getHUContext(), helper.huDefPalet2, product, qty, helper.uomKg);
+		List<I_M_HU> luHUs = helper.createHUs(helper.getHUContext(), helper.huDefPalet2, productId, qty, helper.uomKg);
+		return CollectionUtils.singleElement(luHUs);
 	}
 
 	/**
@@ -244,7 +224,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 	 */
 	private List<I_M_InOutLine> createReceiptInOutLines(final String docStatus)
 	{
-		final I_M_InOut io = InterfaceWrapperHelper.newInstance(I_M_InOut.class, context);
+		final I_M_InOut io = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		io.setDocStatus(docStatus);
 
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -255,13 +235,13 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 		InterfaceWrapperHelper.save(io);
 
-		final I_M_InOutLine iol1 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class, context);
+		final I_M_InOutLine iol1 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		iol1.setM_InOut(io);
 		iol1.setLine(10);
 		iol1.setM_Product(helper.pTomato);
 		InterfaceWrapperHelper.save(iol1);
 
-		final I_M_InOutLine iol2 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class, context);
+		final I_M_InOutLine iol2 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		iol2.setM_InOut(io);
 		iol2.setLine(20);
 		iol2.setM_Product(helper.pSalad);
@@ -272,7 +252,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 	private I_PP_Cost_Collector createCostCollector(final String costCollectorType, final I_M_Product product)
 	{
-		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class, context);
+		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class);
 		cc.setCostCollectorType(costCollectorType);
 		cc.setM_Product(product);
 		InterfaceWrapperHelper.save(cc);

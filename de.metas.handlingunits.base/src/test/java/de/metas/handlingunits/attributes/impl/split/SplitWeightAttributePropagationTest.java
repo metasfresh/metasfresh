@@ -477,7 +477,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final BigDecimal amountToSplit = BigDecimal.valueOf(25); // split off 25kg off the Paloxe x 430kg
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				amountToSplit,
@@ -523,7 +523,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final BigDecimal amountToSplit = BigDecimal.valueOf(25); // split off 25kg off the Paloxe x 430kg
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				amountToSplit,
@@ -568,7 +568,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(30), // CU Qty
 				uomKg,
 				BigDecimal.TEN, // cuPerTU
@@ -613,7 +613,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(30), // CU Qty
 				uomKg,
 				BigDecimal.TEN, // cuPerTU
@@ -658,7 +658,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final BigDecimal amountToSplit = BigDecimal.valueOf(430); // split off 25kg off the Paloxe x 430kg
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				amountToSplit,
@@ -706,7 +706,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final BigDecimal amountToSplit = BigDecimal.valueOf(430); // split off 25kg off the Paloxe x 430kg
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				amountToSplit,
@@ -753,7 +753,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				BigDecimal.TEN, // cuPerTU
@@ -803,7 +803,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				BigDecimal.TEN, // cuPerTU
@@ -854,7 +854,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final BigDecimal amountToSplit = BigDecimal.valueOf(25); // split off 25kg off the Paloxe x 430kg
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				amountToSplit,
@@ -903,7 +903,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final BigDecimal amountToSplit = BigDecimal.valueOf(25); // split off 25kg off the Paloxe x 430kg
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				amountToSplit,
@@ -952,7 +952,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final BigDecimal amountToSplit = BigDecimal.valueOf(25); // split off 25kg off the Paloxe x 430kg
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				amountToSplit,
@@ -1019,7 +1019,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final BigDecimal amountToSplit = BigDecimal.valueOf(25); // split off 25kg off the Paloxe x 430kg
 		final List<I_M_HU> tradingUnitsTarget = helper.splitHUs(huContext,
 				paloxeSource,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				amountToSplit,

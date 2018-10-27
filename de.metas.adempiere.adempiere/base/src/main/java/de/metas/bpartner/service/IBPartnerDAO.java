@@ -1,5 +1,9 @@
 package de.metas.bpartner.service;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,28 +28,36 @@ package de.metas.bpartner.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_M_Shipper;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
-import lombok.NonNull;
+import de.metas.shipping.ShipperId;
+import de.metas.util.ISingletonService;
 
 public interface IBPartnerDAO extends ISingletonService
 {
+	void save(I_C_BPartner bpartner);
+
+	void save(I_C_BPartner_Location bpartnerLocation);
+
+	void save(I_AD_User bpartnerContact);
+
 	I_C_BPartner getById(final int bpartnerId);
 
 	<T extends I_C_BPartner> T getById(int bpartnerId, Class<T> modelClass);
@@ -65,6 +77,14 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
+
+	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, String externalId);
+
+	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, String gln);
+
+	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
+
+	boolean exists(BPartnerLocationId bpartnerLocationId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
 
@@ -87,22 +107,18 @@ public interface IBPartnerDAO extends ISingletonService
 	}
 
 	/**
-	 * Contacts of the partner, ordered by ad_user_ID, ascending
-	 *
-	 * @param ctx
-	 * @param partnerId
-	 * @param trxName
-	 * @return
+	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */
 	List<I_AD_User> retrieveContacts(Properties ctx, int partnerId, String trxName);
 
 	/**
-	 * Contacts of the partner, ordered by ad_user_ID, ascending
-	 *
-	 * @param bpartner
-	 * @return
+	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
+
+	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, String externalId);
+
+	I_AD_User getContactById(BPartnerContactId contactId);
 
 	/**
 	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
@@ -124,7 +140,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	PricingSystemId retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
 
-	I_M_Shipper retrieveShipper(int bPartnerId, String trxName);
+	ShipperId getShipperId(BPartnerId bpartnerId);
 
 	/**
 	 * @param address
@@ -191,11 +207,10 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * Retrieve default/first ship to location.
 	 *
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param trxName
 	 * @return ship to location or null
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
+	@Deprecated
 	I_C_BPartner_Location retrieveShipToLocation(Properties ctx, int bPartnerId, String trxName);
 
 	/**
@@ -226,7 +241,9 @@ public interface IBPartnerDAO extends ISingletonService
 	 *            that relation's bPartner location.
 	 * @param trxName
 	 * @return bill to location or null
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
+	@Deprecated
 	I_C_BPartner_Location retrieveBillToLocation(Properties ctx,
 			int bPartnerId,
 			boolean alsoTryBilltoRelation,
@@ -253,4 +270,28 @@ public interface IBPartnerDAO extends ISingletonService
 	String getBPartnerNameById(BPartnerId bpartnerId);
 
 	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
+
+	Optional<BPartnerId> getBPartnerIdByValueIfExists(String bpartnerValue);
+
+	Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(String externalId, OrgId orgId);
+
+	public I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+
+	@Value
+	@Builder
+	public static class BPartnerLocationQuery
+	{
+		public enum Type
+		{
+			BILL_TO, SHIP_TO, REMIT_TO;
+		}
+
+		@NonNull
+		BPartnerId bpartnerId;
+
+		@NonNull
+		Type type;
+
+		boolean alsoTryRelation;
+	}
 }

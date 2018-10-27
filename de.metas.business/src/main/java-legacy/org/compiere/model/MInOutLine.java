@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -25,13 +25,16 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.WarehouseLocatorConflictException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  * InOut Line
@@ -276,10 +279,9 @@ public class MInOutLine extends X_M_InOutLine
 				getM_Product_ID(), getM_AttributeSetInstance_ID(),
 				Qty, get_TrxName());
 		// Get default Location
-		if (M_Locator_ID == 0)
+		if (M_Locator_ID <= 0)
 		{
-			MWarehouse wh = MWarehouse.get(getCtx(), getM_Warehouse_ID());
-			M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
+			M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(getM_Warehouse_ID())).getRepoId();
 		}
 		setM_Locator_ID(M_Locator_ID);
 	}	// setM_Locator_ID
@@ -559,11 +561,12 @@ public class MInOutLine extends X_M_InOutLine
 		// Validate Locator/Warehouse - teo_sarca, BF [ 2784194 ]
 		if (getM_Locator_ID() > 0)
 		{
-			MLocator locator = MLocator.get(getCtx(), getM_Locator_ID());
+			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+			final I_M_Locator locator = warehousesRepo.getLocatorByRepoId(getM_Locator_ID());
 			if (getM_Warehouse_ID() != locator.getM_Warehouse_ID())
 			{
 				throw new WarehouseLocatorConflictException(
-						MWarehouse.get(getCtx(), getM_Warehouse_ID()),
+						warehousesRepo.getById(WarehouseId.ofRepoId(getM_Warehouse_ID())),
 						locator,
 						getLine());
 			}

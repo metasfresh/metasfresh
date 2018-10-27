@@ -29,9 +29,9 @@ package de.metas.adempiere.service;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.process.ProcessInfo;
+import de.metas.util.ISingletonService;
 
 /**
  * @author tsa

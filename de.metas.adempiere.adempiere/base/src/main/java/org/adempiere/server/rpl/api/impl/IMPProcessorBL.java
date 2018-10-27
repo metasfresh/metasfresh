@@ -10,18 +10,17 @@ package org.adempiere.server.rpl.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -37,12 +36,8 @@ import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.adempiere.server.rpl.api.IImportHelper;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
+import org.compiere.Adempiere;
 import org.compiere.model.AdempiereProcessor;
-import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_EXP_FormatLine;
 import org.compiere.model.I_IMP_ProcessorLog;
@@ -57,8 +52,14 @@ import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 public class IMPProcessorBL implements IIMPProcessorBL
 {
@@ -113,23 +114,24 @@ public class IMPProcessorBL implements IIMPProcessorBL
 
 		if (!Check.isEmpty(text, true))
 		{
-			final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-			final I_AD_Attachment attachment = attachmentBL.getAttachment(pLog);
-			attachmentBL.addEntry(attachment, XMLATTACHMENT_NAME, text.getBytes());
+			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			attachmentEntryService.createNewAttachment(pLog, XMLATTACHMENT_NAME, text.getBytes());
 		}
 
 		return pLog;
 	}
 
 	@Override
-	public String getXmlMessage(final I_IMP_ProcessorLog pLog)
+	public String getXmlMessage(@NonNull final I_IMP_ProcessorLog pLog)
 	{
-		Check.assumeNotNull(pLog, "pLog not null");
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final AttachmentEntry entry = attachmentEntryService.getByFilenameOrNull(pLog, XMLATTACHMENT_NAME);
+		if (entry == null)
+		{
+			return null;
+		}
 
-		final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-		final I_AD_Attachment attachment = attachmentBL.getAttachment(pLog);
-
-		final byte[] data = attachmentBL.getEntryByFilenameAsBytesOrNull(attachment, XMLATTACHMENT_NAME);
+		final byte[] data = attachmentEntryService.retrieveData(entry.getId());
 		if (data == null || data.length == 0)
 		{
 			return null;
@@ -373,23 +375,22 @@ public class IMPProcessorBL implements IIMPProcessorBL
 			throw new ReplicationException(MSG_AD_Reference_Override_ID_Not_Handled);
 		}
 	}
-	
-	
+
 	@Override
 	public ITableAndColumn getTargetTableAndColumn(I_EXP_FormatLine line)
 	{
 		Check.errorUnless(
 				X_EXP_FormatLine.TYPE_ReferencedEXPFormat.equals(line.getType()) || X_EXP_FormatLine.TYPE_EmbeddedEXPFormat.equals(line.getType()),
-				"Given {} has wrong type {}", line.getType()); 
-		
+				"Given {} has wrong type {}", line.getType());
+
 		// start 03203 case handling for different replication linking
 		// almost copy-paste from ExportHelper
-		
-		//embeddedFormatLine
+
+		// embeddedFormatLine
 		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
-		
+
 		final I_AD_Column column = line.getAD_Column();
-		
+
 		final int displayType = getAD_Reference_ID(column, line);
 		final int adReferenceValueId = column.getAD_Reference_Value_ID();
 		final String embeddedTableName;
@@ -410,8 +411,8 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		else if (displayType == DisplayType.TableDir
 				|| displayType == DisplayType.Search && adReferenceValueId <= 0)
 		{
-		
-			final MTable embeddedTable = MTable.get(ctx,  line.getEXP_EmbeddedFormat().getAD_Table_ID());
+
+			final MTable embeddedTable = MTable.get(ctx, line.getEXP_EmbeddedFormat().getAD_Table_ID());
 			final String[] embeddedKeyColumns = embeddedTable.getKeyColumns();
 			if (embeddedKeyColumns == null || embeddedKeyColumns.length != 1)
 			{
@@ -438,7 +439,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		{
 			throw new IllegalStateException("Column's reference type not supported: " + column + " , DisplayType=" + displayType);
 		}
-		
+
 		return new ITableAndColumn()
 		{
 			@Override
@@ -446,7 +447,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 			{
 				return embeddedTableName;
 			}
-			
+
 			@Override
 			public String getColumnName()
 			{

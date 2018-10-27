@@ -23,9 +23,10 @@ package org.adempiere.archive.api;
  */
 
 import org.adempiere.archive.spi.IArchiveEventListener;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Can be called from different places to "inform" registered {@link IArchiveEventListener}s about events.
@@ -51,9 +52,6 @@ public interface IArchiveEventManager extends ISingletonService
 	void registerArchiveEventListener(IArchiveEventListener listener);
 
 	/**
-	 *
-	 * @param archive
-	 * @param user
 	 * @param action the value given as action is stored in the respective <code>C_Doc_Outbound_Log_Line</code> column.
 	 */
 	void firePdfUpdate(I_AD_Archive archive, I_AD_User user, String action);

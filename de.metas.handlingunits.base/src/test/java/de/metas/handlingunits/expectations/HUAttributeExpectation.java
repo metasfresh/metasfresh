@@ -29,8 +29,6 @@ import java.util.Date;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -43,6 +41,8 @@ import de.metas.handlingunits.attribute.storage.impl.ASIAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
@@ -93,17 +93,17 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 
 		if (attribute != null)
 		{
-			assertModelEquals(messageActual.expect("M_Attribute_ID"), attribute, huAttribute.getM_Attribute());
+			assertEquals(messageActual.expect("M_Attribute_ID"), attribute.getM_Attribute_ID(), huAttribute.getM_Attribute_ID());
 		}
 		if (attributeKey != null)
 		{
-			final I_M_Attribute attributeActual = huAttribute.getM_Attribute();
+			final I_M_Attribute attributeActual = Services.get(IAttributeDAO.class).getAttributeById(huAttribute.getM_Attribute_ID());
 			assertNotNull(messageActual.expect("M_Attribute_ID is null"), attributeActual);
 			assertEquals(messageActual.expect("M_Attribute.Value"), attributeKey, attributeActual.getValue());
 		}
 		if (piAttribute != null)
 		{
-			assertModelEquals(messageActual.expect("M_HU_PI_Attribute_ID"), piAttribute, huAttribute.getM_HU_PI_Attribute());
+			assertEquals(messageActual.expect("M_HU_PI_Attribute_ID"), piAttribute.getM_HU_PI_Attribute_ID(), huAttribute.getM_HU_PI_Attribute_ID());
 		}
 		if (valueStringSet)
 		{
@@ -318,10 +318,10 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		huAttribute.setM_HU(hu);
 		huAttribute.setAD_Org_ID(hu.getAD_Org_ID());
 
-		huAttribute.setM_Attribute(getAttributeNotNull());
+		huAttribute.setM_Attribute_ID(getAttributeNotNull().getM_Attribute_ID());
 
 		Check.assumeNotNull(piAttribute, "piAttribute not null");
-		huAttribute.setM_HU_PI_Attribute(piAttribute);
+		huAttribute.setM_HU_PI_Attribute_ID(piAttribute.getM_HU_PI_Attribute_ID());
 
 		if (valueStringSet)
 		{

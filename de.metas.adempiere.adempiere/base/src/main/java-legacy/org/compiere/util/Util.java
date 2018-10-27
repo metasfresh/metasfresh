@@ -33,7 +33,6 @@ import java.text.AttributedCharacterIterator;
 import java.text.AttributedCharacterIterator.Attribute;
 import java.text.AttributedString;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -50,8 +49,6 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
 import org.slf4j.Logger;
@@ -62,6 +59,8 @@ import com.google.common.base.Predicates;
 import com.google.common.io.BaseEncoding;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /**
@@ -1272,30 +1271,6 @@ public class Util
 		return out.toByteArray();
 	}
 
-	/***
-	 * insert selection into DB
-	 *
-	 * @deprecated Please use {@link DB#createT_Selection(int, java.util.Collection, String)}.
-	 */
-	@Deprecated
-	static public void insertSelection(final int[] selection, final int AD_PInstance_ID, final String trxName)
-	{
-		final ArrayList<Integer> results = new ArrayList<>(selection.length);
-
-		for (final int element : selection)
-		{
-			results.add(element);
-		}
-
-		if (results.size() == 0)
-			return;
-		log.info("Selected #" + results.size());
-
-		// insert selection
-		// use the same pinstance id as the process
-		DB.createT_Selection(AD_PInstance_ID, results, trxName);
-	}
-
 	// metas: 03749
 	public static String encodeBase64(final byte[] b)
 	{
@@ -1494,6 +1469,9 @@ public class Util
 		return 0;
 	}
 
+	/**
+	 * @return the first non-empty string or {@code null}.
+	 */
 	public static final String firstNotEmptyTrimmed(@NonNull final String... values)
 	{
 		for (int i = 0; i < values.length; i++)

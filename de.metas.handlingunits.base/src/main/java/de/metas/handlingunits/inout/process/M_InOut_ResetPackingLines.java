@@ -1,7 +1,6 @@
 package de.metas.handlingunits.inout.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -9,6 +8,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /**
  * Deletes and Recreates an inout's packing material lines. Supposed to be called via gear.

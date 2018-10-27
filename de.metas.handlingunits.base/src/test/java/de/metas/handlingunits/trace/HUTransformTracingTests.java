@@ -3,6 +3,7 @@ package de.metas.handlingunits.trace;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -10,15 +11,15 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformServiceTests;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
@@ -27,6 +28,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
 import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /*
  * #%L
@@ -83,7 +86,7 @@ public class HUTransformTracingTests
 		// this also invokes onAfterInit() which registers our IHUTrxListener
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
 		sysConfig.setName(HUTraceModuleInterceptor.SYSCONFIG_ENABLED);
-		sysConfig.setValue(StringUtils.toBooleanString(true));
+		sysConfig.setValue(StringUtils.ofBoolean(true));
 		save(sysConfig);
 		modelInterceptorRegistry.addModelInterceptor(HUTraceModuleInterceptor.INSTANCE);
 	}
@@ -100,9 +103,9 @@ public class HUTransformTracingTests
 			final HUTraceEvent huTraceEvent = traceEvents.get(0);
 			assertThat(huTraceEvent.getType(), is(HUTraceType.TRANSFORM_LOAD));
 
-			assertThat(huTraceEvent.getVhuId(), is(result.getInput().getM_HU_ID()));
-			assertThat(huTraceEvent.getVhuSourceId(), is(0));
-			assertThat(huTraceEvent.getTopLevelHuId(), is(result.getInititalParent().getM_HU_ID()));
+			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getInput().getM_HU_ID()));
+			assertThat(huTraceEvent.getVhuSourceId(), nullValue());
+			assertThat(huTraceEvent.getTopLevelHuId().getRepoId(), is(result.getInititalParent().getM_HU_ID()));
 			assertThat(huTraceEvent.getQty(), is(BigDecimal.ONE.negate()));
 		}
 
@@ -110,8 +113,8 @@ public class HUTransformTracingTests
 			final HUTraceEvent huTraceEvent = traceEvents.get(1);
 			assertThat(huTraceEvent.getType(), is(HUTraceType.TRANSFORM_LOAD));
 
-			assertThat(huTraceEvent.getVhuId(), is(result.getOutput().get(0).getM_HU_ID()));
-			assertThat(huTraceEvent.getVhuSourceId(), is(result.getInput().getM_HU_ID()));
+			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getOutput().get(0).getM_HU_ID()));
+			assertThat(huTraceEvent.getVhuSourceId().getRepoId(), is(result.getInput().getM_HU_ID()));
 			assertThat(huTraceEvent.getTopLevelHuId(), is(huTraceEvent.getVhuId()));
 			assertThat(huTraceEvent.getQty(), is(BigDecimal.ONE));
 		}
@@ -134,13 +137,13 @@ public class HUTransformTracingTests
 
 		// retrieve the events that were added to the repo and make sure they are as expected
 
-		final HUTraceEventQuery tuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(parentTU.getM_HU_ID()).build();
+		final HUTraceEventQuery tuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID())).build();
 		final List<HUTraceEvent> tuTraceEvents = huTraceRepository.query(tuTraceQuery);
 		assertThat(tuTraceEvents.size(), is(1));
 
 		final HUTraceEventBuilder common = HUTraceEvent.builder()
-				.orgId(cuToSplit.getAD_Org_ID())
-				.vhuId(cuToSplit.getM_HU_ID())
+				.orgId(OrgId.ofRepoIdOrAny(cuToSplit.getAD_Org_ID()))
+				.vhuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
 				.vhuStatus(cuToSplit.getHUStatus())
 				.eventTime(tuTraceEvents.get(0).getEventTime())
 				.productId(tuTraceEvents.get(0).getProductId())
@@ -151,10 +154,10 @@ public class HUTransformTracingTests
 		assertThat(tuTraceEventToCompareWith,
 				is(common
 						.qty(new BigDecimal("-3"))
-						.topLevelHuId(parentTU.getM_HU_ID())
+						.topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID()))
 						.build()));
 
-		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(cuToSplit.getM_HU_ID()).build();
+		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID())).build();
 		final List<HUTraceEvent> cuTraceEvents = huTraceRepository.query(cuTraceQuery);
 		assertThat(cuTraceEvents.size(), is(1));
 
@@ -163,7 +166,7 @@ public class HUTransformTracingTests
 		assertThat(cuTraceEventToCompareWith,
 				is(common
 						.qty(new BigDecimal("3"))
-						.topLevelHuId(cuToSplit.getM_HU_ID())
+						.topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
 						.build()));
 	}
 

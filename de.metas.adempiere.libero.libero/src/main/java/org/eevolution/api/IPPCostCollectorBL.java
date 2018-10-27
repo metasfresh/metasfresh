@@ -26,7 +26,6 @@ package org.eevolution.api;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate.ReceiptCostCollectorCandidateBuilder;
@@ -35,6 +34,8 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.validator.PP_Order_BOMLine;
+
+import de.metas.util.ISingletonService;
 
 public interface IPPCostCollectorBL extends ISingletonService
 {

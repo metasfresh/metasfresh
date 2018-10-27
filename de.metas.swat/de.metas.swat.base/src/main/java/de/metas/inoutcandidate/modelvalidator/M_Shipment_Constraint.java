@@ -7,13 +7,13 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.impl.ImmutableStorageSegment;
+import de.metas.util.Services;
 
 /*
  * #%L

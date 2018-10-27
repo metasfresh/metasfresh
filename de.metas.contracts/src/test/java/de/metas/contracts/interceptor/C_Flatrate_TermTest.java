@@ -8,12 +8,12 @@ import static org.assertj.core.api.Assertions.fail;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.util.Services;
 
 /*
  * #%L

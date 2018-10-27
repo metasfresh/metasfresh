@@ -31,8 +31,6 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.ad.wrapper.POModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.ProxyMethodsCache;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -45,6 +43,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

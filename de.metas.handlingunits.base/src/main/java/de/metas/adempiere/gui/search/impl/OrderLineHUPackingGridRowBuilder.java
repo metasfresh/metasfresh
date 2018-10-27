@@ -25,7 +25,6 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.slf4j.Logger;
@@ -35,6 +34,7 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * {@link IGridTabRowBuilder} which applies on {@link IHUPackingAware} object to wrapped {@link I_C_OrderLine}.

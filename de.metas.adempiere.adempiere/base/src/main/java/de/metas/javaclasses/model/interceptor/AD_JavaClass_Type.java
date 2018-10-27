@@ -29,7 +29,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.javaclasses.IJavaClassBL;
@@ -37,6 +36,7 @@ import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.IJavaClassTypeBL;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.Services;
 
 /**
  * Note: this class is both an interceptor and a callout.

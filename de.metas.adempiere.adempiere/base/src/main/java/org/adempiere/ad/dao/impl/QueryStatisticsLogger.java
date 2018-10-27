@@ -11,21 +11,30 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.sql.impl.StatementsFactory;
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.Trace;
+import org.slf4j.Logger;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Stopwatch;
 
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+
 @Service
 @ManagedResource(objectName = "org.adempiere.ad.dao.impl.QueryStatisticsLogger:type=Statistics", description = "SQL query statistics and tracing")
 public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStatisticsCollector
 {
+	private static final Logger logger = LogManager.getLogger(QueryStatisticsLogger.class);
+
 	private static final TimeUnit TIMEUNIT_Internal = TimeUnit.NANOSECONDS;
 	private static final TimeUnit TIMEUNIT_Display = TimeUnit.MILLISECONDS;
 
@@ -37,9 +46,22 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	private boolean traceSqlQueries = false;
 	private static final AtomicInteger traceSqlQueries_Count = new AtomicInteger(0);
 
+	private static final boolean logToSystemError = Boolean.getBoolean(SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR);
+
 	public QueryStatisticsLogger()
 	{
-		super();
+	}
+
+	private void logMessage(final String message)
+	{
+		if (logToSystemError)
+		{
+			System.err.println(message);
+		}
+		else
+		{
+			logger.warn(message);
+		}
 	}
 
 	@Override
@@ -118,14 +140,16 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		final int countPrev = traceSqlQueries_Count.get();
 		traceSqlQueries_Count.set(0);
 
-		System.err.println("\n");
-		System.err.println("*********************************************************************************************");
-		System.err.println("*** Enabled SQL Tracing in " + getClass());
-		System.err.println("");
-		System.err.println("Before calling this method it was " + (traceSqlQueriesOld ? "enabled" : "disabled"));
-		System.err.println("Previous SQLs counter was " + countPrev + " and now was reset to ZERO.");
-		System.err.println("*********************************************************************************************");
-		System.err.println("\n");
+		logMessage(new StringBuilder()
+				.append("\n\n")
+				.append("\n*********************************************************************************************")
+				.append("\n*** Enabled SQL Tracing in " + getClass())
+				.append("\n")
+				.append("\nBefore calling this method it was " + (traceSqlQueriesOld ? "enabled" : "disabled"))
+				.append("\nPrevious SQLs counter was " + countPrev + " and now was reset to ZERO.")
+				.append("\n*********************************************************************************************")
+				.append("\n\n")
+				.toString());
 	}
 
 	@Override
@@ -207,6 +231,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		final String threadName = thread.getName();
 		final StackTraceElement[] stacktrace = thread.getStackTrace();
 		final String durationStr = duration.getLastDurationAsString(TIMEUNIT_Display) + " (Avg. " + duration.getAverageDurationAsString(TIMEUNIT_Display) + ")";
+		final String trxNameInfo = extractTrxNameInfo(trxName);
 
 		final int count = traceSqlQueries_Count.incrementAndGet();
 		final String prefix = "-- SQL[" + count + "]-" + threadName + "-";
@@ -223,10 +248,10 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		// Dump the stacktrace as short as possible
 		final String stackTraceStr = Trace.toOneLineStackTraceString(stacktrace);
 		message.append(nl + "-- Stacktrace: ").append(stackTraceStr);
-		
+
 		//
 		// TrxName
-		message.append(nl + "-- TrxName: ").append(trxName);
+		message.append(nl + "-- TrxName: ").append(trxNameInfo);
 
 		//
 		// SQL query
@@ -251,11 +276,33 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		//
 		// Print the message
-		System.err.println("");
-		System.err.println(prefix + "-begin---------------------------------------------------------------------------");
-		System.err.println(prefixSQL + message.toString().replaceAll("\n", prefixSQL));
-		System.err.println(prefix + "-end-----------------------------------------------------------------------------");
-		System.err.println("");
+		logMessage(new StringBuilder()
+				.append("\n")
+				.append("\n" + prefix + "-begin---------------------------------------------------------------------------")
+				.append("\n" + prefixSQL + message.toString().replaceAll("\n", prefixSQL))
+				.append("\n" + prefix + "-end-----------------------------------------------------------------------------")
+				.append("\n")
+				.toString());
+
+	}
+
+	private String extractTrxNameInfo(final String trxName)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		if (ITrx.TRXNAME_ThreadInherited.equals(trxName))
+		{
+			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+			final String trxNameEffective = trxManager.isNull(trx) ? "out-of-transaction" : trx.getTrxName();
+			return "" + trxName + " (resolved as: " + trxNameEffective + ")";
+		}
+		else if (trxManager.isNull(trxName))
+		{
+			return "out-of-transaction";
+		}
+		else
+		{
+			return "" + trxName;
+		}
 	}
 
 	/**
@@ -325,7 +372,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 				.map(stat -> stat.toString())
 				.toArray(size -> new String[size]);
 	}
-
 
 	private static final class CountAndDuration
 	{

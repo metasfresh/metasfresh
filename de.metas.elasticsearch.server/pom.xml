@@ -53,23 +53,27 @@
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-elasticsearch</artifactId>
 		</dependency>
+		
+		<!-- spring boot-2.0 has 2.1.10 (provided) in its dependency tree; elasticsearch-5.6.8 has 2.1.9 (compile) -->
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
+			<!-- 
 			<exclusions>
-				<!-- spring boot-2.0 has 2.1.10 (provided) in its dependency tree; elasticsearch-5.6.8 has 2.1.9 (compile) -->
 				<exclusion>
 					<groupId>org.hdrhistogram</groupId>
 					<artifactId>HdrHistogram</artifactId>
 				</exclusion>
 			</exclusions>
+			 -->
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>org.hdrhistogram</groupId>
 			<artifactId>HdrHistogram</artifactId>
 			<version>2.1.10</version>
 		</dependency>
-		
+		 -->
 		<!--
 			Lombok
 			See https://github.com/metasfresh/metasfresh/issues/1125

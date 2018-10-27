@@ -37,7 +37,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -45,6 +44,8 @@ import org.slf4j.Logger;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * 	Product Cost Model
@@ -434,7 +435,7 @@ public class MCost extends X_M_Cost
 					{
 						final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 						price = uomConversionBL.convertFromProductUOM (Env.getCtx(),
-								product,
+								ProductId.ofRepoId(product.getM_Product_ID()),
 								pos[i].getC_UOM(),
 								price);
 						if (price == null) s_log.warn("@NoUOMConversion@ @M_Product_ID@:"+product.getValue()+", @To_UOM_ID@:"+pos[i].getC_UOM_ID()); // metas: 01428

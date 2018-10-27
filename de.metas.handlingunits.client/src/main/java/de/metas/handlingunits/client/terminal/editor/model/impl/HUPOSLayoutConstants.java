@@ -28,10 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants;
+import de.metas.util.Check;
 
 public final class HUPOSLayoutConstants implements IHUPOSLayoutConstants
 {

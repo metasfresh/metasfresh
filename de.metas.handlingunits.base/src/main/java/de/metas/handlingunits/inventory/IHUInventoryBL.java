@@ -4,10 +4,9 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

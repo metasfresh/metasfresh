@@ -8,8 +8,6 @@ import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.dao.impl.NullQueryFilterModifier;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
@@ -17,6 +15,8 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateDAO;
 import de.metas.procurement.base.order.PMMPurchaseCandidateSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

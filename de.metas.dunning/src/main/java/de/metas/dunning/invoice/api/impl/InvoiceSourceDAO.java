@@ -32,8 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -44,6 +42,8 @@ import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class InvoiceSourceDAO implements IInvoiceSourceDAO
@@ -99,29 +99,5 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false /* the result is not changing while the iterator is iterated */)
 				.create()
 				.iterate(I_C_Dunning_Candidate_Invoice_v1.class);
-
-		// final int adClientId = Env.getAD_Client_ID(ctx);
-		//
-		// final List<Object> params = new ArrayList<Object>();
-		// final StringBuilder whereClause = new StringBuilder();
-		//
-		// // Only for current tenant
-		// whereClause.append(" AD_Client_ID = ? ");
-		// params.add(adClientId);
-		//
-		// whereClause.append(" AND (")
-		// .append("DunningGrace IS NULL").append(" OR ").append("DunningGrace < ?")
-		// .append(")");
-		// params.add(dunningDate);
-		//
-		// whereClause.append(" AND EXISTS (SELECT 1 FROM C_DunningLevel dl WHERE dl.C_DunningLevel_ID = ? AND dl.C_Dunning_ID = " + I_C_Dunning_Candidate_Invoice_v1.Table_Name + "." + "C_Dunning_ID) ");
-		// params.add(dunningLevel.getC_DunningLevel_ID());
-		//
-		// return new Query(ctx, I_C_Dunning_Candidate_Invoice_v1.Table_Name, whereClause.toString(), trxName)
-		// .setParameters(params)
-		// .setOrderBy(I_C_Dunning_Candidate_Invoice_v1.COLUMNNAME_C_Invoice_ID
-		// + ", " + I_C_Dunning_Candidate_Invoice_v1.COLUMNNAME_C_InvoicePaySchedule_ID)
-		// .setOption(Query.OPTION_IteratorBufferSize, 1000) // iterator shall load 1000 records at a time
-		// .iterate(I_C_Dunning_Candidate_Invoice_v1.class, false); // guaranteed=false
 	}
 }

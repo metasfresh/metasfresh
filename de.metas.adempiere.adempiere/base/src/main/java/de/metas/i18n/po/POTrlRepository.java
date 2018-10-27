@@ -14,8 +14,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
@@ -30,6 +28,8 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.ModelTranslation;
 import de.metas.i18n.impl.NullModelTranslation;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

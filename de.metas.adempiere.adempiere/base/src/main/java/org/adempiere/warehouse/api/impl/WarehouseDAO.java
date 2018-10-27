@@ -1,6 +1,14 @@
 package org.adempiere.warehouse.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import lombok.NonNull;
 
 import java.util.Collection;
 
@@ -27,248 +35,349 @@ import java.util.Collection;
  */
 
 import java.util.List;
-import java.util.Properties;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.IOrgDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehousePickingGroup;
+import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.WarehouseType;
+import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.model.WarehousePickingGroup;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
-import org.compiere.util.Env;
+import org.compiere.model.I_M_Warehouse_Type;
 import org.eevolution.model.I_M_Warehouse_Routing;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
-import lombok.NonNull;
+import de.metas.cache.CCache;
+import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 public class WarehouseDAO implements IWarehouseDAO
 {
+	private static final Logger logger = LogManager.getLogger(WarehouseDAO.class);
+
+	private final CCache<WarehouseId, ImmutableList<LocatorId>> locatorIdsByWarehouseId = CCache.newCache(I_M_Locator.Table_Name + "#by#M_Warehouse_ID", 10, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, WarehouseRoutingsIndex> allWarehouseRoutings = CCache.newCache(I_M_Warehouse_Routing.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, WarehouseTypesIndex> allWarehouseTypes = CCache.newCache(I_M_Warehouse_Type.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+
+	@Override
+	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
+	{
+		return getById(warehouseId, I_M_Warehouse.class);
+	}
+
+	@Override
+	public <T extends I_M_Warehouse> T getById(@NonNull final WarehouseId warehouseId, @NonNull final Class<T> modelType)
+	{
+		final T outOfTrxWarehouseRecord = loadOutOfTrx(warehouseId, modelType);
+		if(outOfTrxWarehouseRecord != null)
+		{
+			return outOfTrxWarehouseRecord; // with is almost always the case
+		}
+
+		return load(warehouseId, modelType); // this fallback is needed if the WH was just created itself, within this very trx
+	}
+
 	@Override
 	public List<I_M_Warehouse> getByIds(final Collection<WarehouseId> warehouseIds)
 	{
-		return loadByIdsOutOfTrx(WarehouseId.toRepoIds(warehouseIds), I_M_Warehouse.class);
+		return getByIds(warehouseIds, I_M_Warehouse.class);
 	}
 
 	@Override
-	public boolean hasAvailableDocTypes(final Properties ctx, final int warehouseId, final String trxName)
+	public <T extends I_M_Warehouse> List<T> getByIds(final Collection<WarehouseId> warehouseIds, final Class<T> modelType)
 	{
-		final List<I_M_Warehouse_Routing> warehouseRoutings = retrieveWarehouseRoutings(ctx, warehouseId, trxName);
-		return !warehouseRoutings.isEmpty();
+		return loadByRepoIdAwaresOutOfTrx(warehouseIds, modelType);
 	}
 
-	@Cached(cacheName = I_M_Warehouse_Routing.Table_Name + "#By#M_Warehouse_ID")
-	public List<I_M_Warehouse_Routing> retrieveWarehouseRoutings(final @CacheCtx Properties ctx, final int warehouseId, final @CacheTrx String trxName)
+	@Override
+	public boolean isAllowAnyDocType(final WarehouseId warehouseId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse_Routing.class, ctx, trxName)
-				.filter(new EqualsQueryFilter<I_M_Warehouse_Routing>(I_M_Warehouse_Routing.COLUMNNAME_M_Warehouse_ID, warehouseId))
-				.filter(ActiveRecordQueryFilter.getInstance(I_M_Warehouse_Routing.class))
+		return getWarehouseRoutings().isAllowAnyDocType(warehouseId);
+	}
+
+	private WarehouseRoutingsIndex getWarehouseRoutings()
+	{
+		return allWarehouseRoutings.getOrLoad(0, this::retrieveWarehouseRoutingIndex);
+	}
+
+	private WarehouseRoutingsIndex retrieveWarehouseRoutingIndex()
+	{
+		final List<WarehouseRouting> routings = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Warehouse_Routing.class)
+				.addOnlyActiveRecordsFilter()
 				.create()
-				.list(I_M_Warehouse_Routing.class);
+				.stream(I_M_Warehouse_Routing.class)
+				.map(record -> toWarehouseRouting(record))
+				.collect(ImmutableList.toImmutableList());
+
+		return WarehouseRoutingsIndex.of(routings);
+	}
+
+	private static WarehouseRouting toWarehouseRouting(final I_M_Warehouse_Routing record)
+	{
+		return WarehouseRouting.builder()
+				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.docBaseType(record.getDocBaseType())
+				.build();
 	}
 
 	@Override
-	public boolean isDocTypeAllowed(final Properties ctx, final int warehouseId, final I_C_DocType docType, final String trxName)
+	public boolean isDocTypeAllowed(@NonNull final WarehouseId warehouseId, @NonNull final String docBaseType)
 	{
-		final List<I_M_Warehouse_Routing> validRoutings = retrieveWarehouseRoutings(ctx, warehouseId, trxName);
+		return getWarehouseRoutings().isDocTypeAllowed(warehouseId, docBaseType);
+	}
 
-		if (validRoutings.isEmpty())
+	@Override
+	public I_M_Locator getOrCreateLocatorByCoordinates(@NonNull final WarehouseId warehouseId, final String value, final String x, final String y, final String z)
+	{
+		final I_M_Locator existingLocator = getLocators(warehouseId)
+				.stream()
+				.filter(locator -> isLocatorMatchingCoordinates(locator, x, y, z))
+				.findFirst()
+				.orElse(null);
+
+		if (existingLocator != null)
 		{
-			// The warehouse is not type specific. Allowed for all doc types.
-			return true;
+			return existingLocator;
 		}
 
-		final String docBaseType = docType.getDocBaseType();
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		final I_M_Locator newLocator = newInstanceOutOfTrx(I_M_Locator.class);
+		newLocator.setAD_Org_ID(warehouse.getAD_Org_ID());
+		newLocator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		newLocator.setValue(value);
+		newLocator.setX(x);
+		newLocator.setY(y);
+		newLocator.setZ(z);
+		saveRecord(newLocator);
+		return newLocator;
+	}
 
-		for (final I_M_Warehouse_Routing routing : validRoutings)
+	private static boolean isLocatorMatchingCoordinates(final I_M_Locator locator, final String x, final String y, final String z)
+	{
+		return locator.isActive()
+				&& Objects.equals(x, locator.getX())
+				&& Objects.equals(y, locator.getY())
+				&& Objects.equals(z, locator.getZ());
+	}
+
+	@Override
+	public LocatorId createDefaultLocator(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		final I_M_Locator locatorNew = newInstance(I_M_Locator.class, warehouse);
+
+		locatorNew.setAD_Org_ID(warehouse.getAD_Org_ID());
+		locatorNew.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		locatorNew.setValue("Standard");
+		locatorNew.setX("0");
+		locatorNew.setY("0");
+		locatorNew.setZ("0");
+		locatorNew.setIsDefault(true);
+		saveRecord(locatorNew);
+		if (logger.isInfoEnabled())
 		{
-			if (docBaseType.equalsIgnoreCase(routing.getDocBaseType()))
-			{
-				return true;
-			}
+			logger.info("Created default locator for " + warehouse.getName());
 		}
 
-		return false;
+		return LocatorId.ofRecordOrNull(locatorNew);
 	}
 
 	@Override
-	public List<I_M_Locator> retrieveLocators(@NonNull final WarehouseId warehouseId)
+	public WarehouseId getWarehouseIdByLocatorRepoId(final int locatorId)
 	{
-		final Properties ctx =Env.getCtx();
-		final String trxName = ITrx.TRXNAME_None; // this is master data so let's load it out of trx
-
-		return retrieveLocators(ctx, warehouseId.getRepoId(), trxName);
-	}
-
-	@Cached(cacheName = I_M_Locator.Table_Name + "#By#M_Warehouse_ID")
-	/* package */List<I_M_Locator> retrieveLocators(@CacheCtx final Properties ctx, final int warehouseId, @CacheTrx final String trxName)
-	{
-		final IQueryOrderBy orderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_Locator.class)
-				.addColumn(I_M_Locator.COLUMNNAME_X)
-				.addColumn(I_M_Locator.COLUMNNAME_Y)
-				.addColumn(I_M_Locator.COLUMNNAME_Z)
-				.createQueryOrderBy();
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class, ctx, trxName)
-				.filter(new EqualsQueryFilter<I_M_Locator>(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId))
-				.create()
-				.setOrderBy(orderBy)
-				.list(I_M_Locator.class);
-	}
-
-	@Override
-	public List<I_M_Warehouse> retrieveWarehouses(final Properties ctx, final String docBaseType)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQuery<I_M_Warehouse_Routing> queryWarehouseRoutingForDocBaseType = queryBL.createQueryBuilder(I_M_Warehouse_Routing.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Warehouse_Routing.COLUMNNAME_DocBaseType, docBaseType)
-				.create();
-
-		final IQuery<I_M_Warehouse_Routing> queryWarehouseRoutingAllActive = queryBL
-				.createQueryBuilder(I_M_Warehouse_Routing.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.create();
-
-		final ICompositeQueryFilter<I_M_Warehouse> filterWarehouseRouting = queryBL.createCompositeQueryFilter(I_M_Warehouse.class)
-				.setJoinOr()
-				// warehouse shall have a routing to given DocBaseType
-				.addInSubQueryFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, I_M_Warehouse_Routing.COLUMNNAME_M_Warehouse_ID, queryWarehouseRoutingForDocBaseType)
-				// or warehouse shall have no routing at all
-				.addNotInSubQueryFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, I_M_Warehouse_Routing.COLUMNNAME_M_Warehouse_ID, queryWarehouseRoutingAllActive)
-		//
-		;
-
-		return queryBL.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.filter(filterWarehouseRouting)
-				//
-				.orderBy()
-				.addColumn(I_M_Warehouse.COLUMNNAME_Name)
-				.endOrderBy()
-				//
-				.create()
-				.list(I_M_Warehouse.class);
-	}
-
-	@Override
-	public I_M_Warehouse retrieveOrgWarehouse(final Properties ctx, final int adOrgId)
-	{
-		final I_AD_OrgInfo orgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, ITrx.TRXNAME_None);
-		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
-
-		if (orgInfo == null)
+		final I_M_Locator locator = getLocatorByRepoId(locatorId);
+		if (locator == null)
 		{
 			return null;
 		}
 
-		if (orgInfo.getM_Warehouse_ID() <= 0)
-		{
-			return null;
-		}
-
-		return orgInfo.getM_Warehouse();
+		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
 	}
 
 	@Override
-	public WarehouseId retrieveOrgWarehousePOId(@NonNull final OrgId orgId)
+	public Set<WarehouseId> getWarehouseIdsForLocatorRepoIds(@NonNull final Set<Integer> locatorRepoIds)
 	{
-		final I_AD_OrgInfo orgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
-		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
-		if (orgInfo == null)
+		if (locatorRepoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return getLocatorsByRepoIds(locatorRepoIds)
+				.stream()
+				.map(I_M_Locator::getM_Warehouse_ID)
+				.map(WarehouseId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public List<I_M_Locator> getLocatorByIds(final Collection<LocatorId> locatorIds)
+	{
+		return getLocatorByIds(locatorIds, I_M_Locator.class);
+	}
+
+	public <T extends I_M_Locator> List<T> getLocatorByIds(final Collection<LocatorId> locatorIds, final Class<T> modelType)
+	{
+		return loadByRepoIdAwaresOutOfTrx(locatorIds, modelType);
+	}
+
+	@Override
+	public I_M_Locator getLocatorByRepoId(final int locatorId)
+	{
+		return loadOutOfTrx(locatorId, I_M_Locator.class);
+	}
+
+	@Override
+	public LocatorId getLocatorIdByRepoIdOrNull(final int locatorId)
+	{
+		if (locatorId <= 0)
 		{
 			return null;
 		}
+		final I_M_Locator locator = getLocatorByRepoId(locatorId);
+		return LocatorId.ofRecord(locator);
+	}
 
-		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_WarehousePO_ID());
+	private List<I_M_Locator> getLocatorsByRepoIds(final Set<Integer> locatorIds)
+	{
+		return loadByIdsOutOfTrx(locatorIds, I_M_Locator.class);
+	}
+
+	@Override
+	public I_M_Locator getLocatorById(@NonNull final LocatorId locatorId)
+	{
+		return getLocatorById(locatorId, I_M_Locator.class);
+	}
+
+	@Override
+	public <T extends I_M_Locator> T getLocatorById(@NonNull final LocatorId locatorId, @NonNull Class<T> modelClass)
+	{
+		return loadOutOfTrx(locatorId, modelClass);
+	}
+
+	@Override
+	public List<I_M_Locator> getLocators(@NonNull final WarehouseId warehouseId)
+	{
+		final List<LocatorId> locatorIds = getLocatorIds(warehouseId);
+		return getLocatorByIds(locatorIds);
+	}
+
+	@Override
+	public <T extends I_M_Locator> List<T> getLocators(@NonNull final WarehouseId warehouseId, final Class<T> modelType)
+	{
+		final List<LocatorId> locatorIds = getLocatorIds(warehouseId);
+		return getLocatorByIds(locatorIds, modelType);
+	}
+
+	@Override
+	public List<LocatorId> getLocatorIds(@NonNull final WarehouseId warehouseId)
+	{
+		return locatorIdsByWarehouseId.getOrLoad(warehouseId, this::retrieveLocatorIds);
+	}
+
+	private ImmutableList<LocatorId> retrieveLocatorIds(final WarehouseId warehouseId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Locator.class)
+				.addEqualsFilter(I_M_Locator.COLUMN_M_Warehouse_ID, warehouseId)
+				.orderBy(I_M_Locator.COLUMN_X)
+				.orderBy(I_M_Locator.COLUMN_Y)
+				.orderBy(I_M_Locator.COLUMN_Z)
+				.orderBy(I_M_Locator.COLUMN_M_Locator_ID)
+				.create()
+				.listIds()
+				.stream()
+				.map(locatorRepoId -> LocatorId.ofRepoId(warehouseId, locatorRepoId))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public List<I_M_Warehouse> getWarehousesAllowedForDocBaseType(@NonNull final String docBaseType)
+	{
+		final Set<WarehouseId> allWarehouseIds = getAllWarehouseIds();
+		final Set<WarehouseId> warehouseIds = getWarehouseRoutings().getWarehouseIdsAllowedForDocType(allWarehouseIds, docBaseType);
+		return getByIds(warehouseIds);
+	}
+
+	@Override
+	public WarehouseId getInTransitWarehouseId(@NonNull final OrgId adOrgId)
+	{
+		return getInTransitWarehouseIdIfExists(adOrgId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsInTransit@, @AD_Org_ID@:" + adOrgId.getRepoId() + ")"));
 	}
 
 	@Override
 	@Cached(cacheName = I_M_Warehouse.Table_Name + "#InTransitForOrg")
-	public List<I_M_Warehouse> retrieveWarehousesInTransitForOrg(@CacheCtx final Properties ctx, final int adOrgId)
+	public Optional<WarehouseId> getInTransitWarehouseIdIfExists(@NonNull final OrgId adOrgId)
 	{
-		final IQueryBuilder<I_M_Warehouse> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None);
-
-		queryBuilder.getCompositeFilter()
+		final WarehouseId warehouseId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, adOrgId)
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsInTransit, true)
-				.addOnlyActiveRecordsFilter();
+				.orderBy(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID)
+				.create()
+				.firstId(WarehouseId::ofRepoIdOrNull);
 
-		queryBuilder.orderBy()
-				.addColumn(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID);
-
-		return queryBuilder.create()
-				.list(I_M_Warehouse.class);
+		return Optional.ofNullable(warehouseId);
 	}
 
 	@Override
-	public I_M_Warehouse retrieveWarehouseInTransitForOrg(final Properties ctx, final int adOrgId)
+	public List<I_M_Warehouse> getByOrgId(@NonNull final OrgId orgId)
 	{
-		final List<I_M_Warehouse> warehouses = retrieveWarehousesInTransitForOrg(ctx, adOrgId);
-		if (warehouses == null || warehouses.isEmpty())
-		{
-			return null;
-		}
-		else
-		{
-			return warehouses.get(0);
-		}
+		final Set<WarehouseId> warehouseIds = getWarehouseIdsByOrgId(orgId);
+
+		return getByIds(warehouseIds);
+	}
+
+	private Set<WarehouseId> getWarehouseIdsByOrgId(@NonNull final OrgId orgId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, orgId)
+				.orderBy(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID)
+				.create()
+				.listIds(WarehouseId::ofRepoId);
 	}
 
 	@Override
-	public List<I_M_Warehouse> retrieveForOrg(final Properties ctx, final int AD_Org_ID)
+	public List<I_M_Warehouse> getAllWarehouses()
 	{
-		final IQueryBuilder<I_M_Warehouse> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None);
-
-		queryBuilder.getCompositeFilter()
-				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, AD_Org_ID)
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID);
-
-		return queryBuilder.create()
-				.list(I_M_Warehouse.class);
+		final Set<WarehouseId> warehouseIds = getAllWarehouseIds();
+		return getByIds(warehouseIds);
 	}
 
-	@Override
-	public List<I_M_Warehouse> retrieveWarehousesForCtx(final Properties ctx)
+	private Set<WarehouseId> getAllWarehouseIds()
 	{
-		final List<I_M_Warehouse> warehouses = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
+		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.list(I_M_Warehouse.class);
-
-		return warehouses;
+				.listIds(WarehouseId::ofRepoId);
+		return warehouseIds;
 	}
 
 	// TODO: implement a way to reset a cache when I_M_Warehouse_PickingGroup is changed
 	@Cached(cacheName = I_M_Warehouse.Table_Name)
-	public ImmutableList<WarehousePickingGroup> retrieveWarehouseGroups()
+	public WarehousePickingGroupsIndex retrieveWarehouseGroups()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -285,43 +394,31 @@ public class WarehouseDAO implements IWarehouseDAO
 				})
 				.collect(GuavaCollectors.toImmutableSetMultimap());
 
-		return queryBL.createQueryBuilder(I_M_Warehouse_PickingGroup.class)
+		final List<WarehousePickingGroup> groups = queryBL.createQueryBuilder(I_M_Warehouse_PickingGroup.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
 				.map(warehousePickingGroupPO -> WarehousePickingGroup.builder()
-						.id(warehousePickingGroupPO.getM_Warehouse_PickingGroup_ID())
+						.id(WarehousePickingGroupId.ofRepoId(warehousePickingGroupPO.getM_Warehouse_PickingGroup_ID()))
 						.name(warehousePickingGroupPO.getName())
 						.description(warehousePickingGroupPO.getDescription())
 						.warehouseIds(warehouseIdsByPickingGroupId.get(warehousePickingGroupPO.getM_Warehouse_PickingGroup_ID()))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 
+		return WarehousePickingGroupsIndex.of(groups);
 	}
 
 	@Override
-	public WarehousePickingGroup getWarehousePickingGroupById(final int warehousePickingGroupId)
+	public WarehousePickingGroup getWarehousePickingGroupById(@NonNull final WarehousePickingGroupId warehousePickingGroupId)
 	{
-		return retrieveWarehouseGroups()
-				.stream()
-				.filter(warehousePickingGroup -> warehousePickingGroup.getId() == warehousePickingGroupId)
-				.findFirst().orElse(null);
+		return retrieveWarehouseGroups().getById(warehousePickingGroupId);
 	}
 
 	@Override
-	public List<WarehouseId> getWarehouseIdsOfSamePickingGroup(@NonNull final WarehouseId warehouseId)
+	public Set<WarehouseId> getWarehouseIdsOfSamePickingGroup(@NonNull final WarehouseId warehouseId)
 	{
-		final ImmutableList<WarehouseId> result = retrieveWarehouseGroups()
-				.stream()
-				.filter(warehousePickingGroup -> warehousePickingGroup.containsWarehouseId(warehouseId))
-				.flatMap(group -> group.getWarehouseIds().stream())
-				.collect(ImmutableList.toImmutableList());
-
-		if (result.isEmpty())
-		{
-			return ImmutableList.of(warehouseId);
-		}
-		return result;
+		return retrieveWarehouseGroups().getWarehouseIdsOfSamePickingGroup(warehouseId);
 	}
 
 	@Override
@@ -338,7 +435,7 @@ public class WarehouseDAO implements IWarehouseDAO
 			Check.assume(locatorId > 0, "locatorId > 0");
 			return locatorId;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Invalid locator barcode: " + barcode, ex);
 		}
@@ -346,12 +443,61 @@ public class WarehouseDAO implements IWarehouseDAO
 
 	@Override
 	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "#" + I_M_Locator.COLUMNNAME_Value)
-	public int retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorvalue, final int warehouseId)
+	public LocatorId retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorValue, final WarehouseId warehouseId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class)
+		final int locatorRepoId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Locator.class)
 				.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId)
-				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, locatorvalue)
+				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, locatorValue)
 				.create()
 				.firstIdOnly();
+		return LocatorId.ofRepoIdOrNull(warehouseId, locatorRepoId);
+	}
+
+	@Override
+	public String getWarehouseName(final WarehouseId warehouseId)
+	{
+		if (warehouseId == null)
+		{
+			return "?";
+		}
+
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		return warehouse != null ? warehouse.getName() : "<" + warehouseId.getRepoId() + ">";
+	}
+
+	@Override
+	public WarehouseType getWarehouseTypeById(final WarehouseTypeId id)
+	{
+		return getWarehouseTypesIndex().getById(id);
+	}
+
+	private WarehouseTypesIndex getWarehouseTypesIndex()
+	{
+		return allWarehouseTypes.getOrLoad(0, this::retrieveWarehouseTypesIndex);
+	}
+
+	private WarehouseTypesIndex retrieveWarehouseTypesIndex()
+	{
+		final List<WarehouseType> warehouseTypes = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Warehouse_Type.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::toWarehouseType)
+				.collect(ImmutableList.toImmutableList());
+
+		return WarehouseTypesIndex.of(warehouseTypes);
+	}
+
+	private WarehouseType toWarehouseType(final I_M_Warehouse_Type record)
+	{
+		final ITranslatableString name = InterfaceWrapperHelper.getModelTranslationMap(record)
+				.getColumnTrl(I_M_Warehouse_Type.COLUMNNAME_Name, record.getName());
+
+		return WarehouseType.builder()
+				.id(WarehouseTypeId.ofRepoId(record.getM_Warehouse_Type_ID()))
+				.name(name)
+				.build();
 	}
 }

@@ -2,11 +2,14 @@ package de.metas.handlingunits.trace.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.Adempiere;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.trace.HUTraceEventsService;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -31,18 +34,33 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_M_ShipmentSchedule_QtyPicked.class)
+@Component("de.metas.handlingunits.trace.interceptor.M_ShipmentSchedule_QtyPicked")
 /* package */ class M_ShipmentSchedule_QtyPicked
 {
 
-	@ModelChange(timings =
-		{
-				ModelValidator.TYPE_AFTER_CHANGE,
-				ModelValidator.TYPE_BEFORE_DELETE,
-				ModelValidator.TYPE_AFTER_NEW
-		})
-	public void addTraceEvent(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
+	private HUTraceEventsService huTraceEventsService;
+
+	public M_ShipmentSchedule_QtyPicked(@NonNull final HUTraceEventsService huTraceEventsService)
 	{
-		final HUTraceEventsService huTraceEventsService = Adempiere.getBean(HUTraceEventsService.class);
+		this.huTraceEventsService = huTraceEventsService;
+
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_CHANGE,
+			ModelValidator.TYPE_AFTER_NEW
+	})
+	public void addTraceEventForNewAndChange(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
+	{
+		Services.get(ITrxManager.class)
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> huTraceEventsService.createAndAddFor(shipmentScheduleQtyPicked));
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void addTraceEventForDelete(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
+	{
 		huTraceEventsService.createAndAddFor(shipmentScheduleQtyPicked);
 	}
 }

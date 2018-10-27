@@ -24,7 +24,6 @@ package de.metas.adempiere.modelvalidator;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -32,6 +31,7 @@ import org.compiere.model.PO;
 
 import de.metas.adempiere.model.I_C_CountryArea_Assign;
 import de.metas.adempiere.service.ICountryAreaBL;
+import de.metas.util.Services;
 
 //@Validator(I_C_CountryArea_Assign.class)
 public final class C_CountryArea_Assign implements ModelValidator

@@ -28,7 +28,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 
@@ -39,6 +38,7 @@ import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.spi.impl.listeners.InOutLineMaterialTrackingListener;
+import de.metas.util.Services;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut extends MaterialTrackableDocumentByASIInterceptor<I_M_InOut, I_M_InOutLine>

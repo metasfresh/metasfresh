@@ -29,7 +29,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_C_InvoiceLine;
@@ -37,6 +36,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.util.Services;
 
 @Validator(I_C_Invoice_Line_Alloc.class)
 public class C_Invoice_Line_Alloc

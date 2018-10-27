@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import javax.swing.JPopupMenu;
 
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_Request;
@@ -44,6 +43,7 @@ import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
+import de.metas.util.Services;
 
 public class AEMailLetter implements ActionListener
 {

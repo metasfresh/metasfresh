@@ -19,10 +19,10 @@ package org.compiere.process;
 
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.util.Services;
 import org.compiere.model.I_I_GLJournal;
 
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

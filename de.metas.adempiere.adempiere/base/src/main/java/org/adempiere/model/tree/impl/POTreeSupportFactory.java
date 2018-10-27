@@ -33,7 +33,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.adempiere.model.tree.spi.impl.DefaultPOTreeSupport;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * @author tsa

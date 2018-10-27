@@ -1,6 +1,6 @@
 package de.metas.pricing.rules;
 
-import org.adempiere.util.Services;
+import org.adempiere.uom.UomId;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -16,6 +16,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * Calculate Price using Price List Version
@@ -71,8 +72,8 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		// 06942 : use product price uom all the time
 		if (productPrice.getC_UOM_ID() <= 0)
 		{
-			final int uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
-			result.setPrice_UOM_ID(uomId);
+			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			result.setPriceUomId(uomId);
 		}
 		else
 		{

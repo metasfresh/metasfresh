@@ -8,8 +8,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import lombok.NonNull;
 
 /**
  * Handling Unit Instance Storage
@@ -22,7 +22,7 @@ public interface IHUStorage extends IGenericHUStorage
 	I_M_HU getM_HU();
 
 	List<IHUProductStorage> getProductStorages();
-	
+
 	default Stream<IHUProductStorage> streamProductStorages()
 	{
 		return getProductStorages().stream();
@@ -31,11 +31,11 @@ public interface IHUStorage extends IGenericHUStorage
 	/**
 	 * Gets product storage for given product.
 	 *
-	 * @param product
+	 * @param productId
 	 * @return product storage; never return null;
 	 * @throws AdempiereException in case product storage was not found
 	 */
-	IHUProductStorage getProductStorage(I_M_Product product);
+	IHUProductStorage getProductStorage(ProductId productId);
 
 	/**
 	 * Gets product storage for given product.
@@ -43,23 +43,17 @@ public interface IHUStorage extends IGenericHUStorage
 	 * @param productId
 	 * @return product storage; if no storage was found, null is returned
 	 */
-	IHUProductStorage getProductStorageOrNull(int productId);
-	
-	default IHUProductStorage getProductStorageOrNull(@NonNull I_M_Product product)
-	{
-		return getProductStorageOrNull(product.getM_Product_ID());
-	}
+	IHUProductStorage getProductStorageOrNull(ProductId productId);
 
 	/**
 	 * @return full qty of the {@link IHUProductStorage}s of this {@link IHUStorage}, in the given uom
 	 */
 	Quantity getQtyForProductStorages(I_C_UOM uom);
-	
+
 	/**
 	 * @return full qty of the {@link IHUProductStorage}s of this {@link IHUStorage}, in the storage uom
 	 */
 	Quantity getQtyForProductStorages();
-
 
 	/**
 	 * Propagate ALL storage products & quantities - UOM-based - to parent (incremental)
@@ -83,14 +77,18 @@ public interface IHUStorage extends IGenericHUStorage
 	boolean isSingleProductStorage();
 
 	/**
-	 * Gets the {@link I_M_Product} stored in this HU Storage.
+	 * Gets the {@link ProductId} stored in this HU Storage.
 	 * 
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li>single product stored in this storage
 	 *         <li><code>null</code> if the storage is empty or there are more then one products stored
 	 *         </ul>
 	 * @see #isSingleProductStorage()
 	 */
+	ProductId getSingleProductIdOrNull();
+
+	@Deprecated
 	I_M_Product getSingleProductOrNull();
 
 	/**

@@ -34,7 +34,6 @@ import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -43,6 +42,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.

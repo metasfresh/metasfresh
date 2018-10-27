@@ -5,10 +5,10 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 
 import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -31,13 +31,13 @@ import org.adempiere.exceptions.AdempiereException;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Flatrate_Matching.class)
 public class C_Flatrate_Matching

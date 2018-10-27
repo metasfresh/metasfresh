@@ -1,6 +1,8 @@
 package org.compiere.util;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,16 +11,22 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
+import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
+import groovy.transform.ToString;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -33,11 +41,11 @@ import com.google.common.collect.ImmutableMap;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -98,16 +106,19 @@ public final class Evaluatees
 		return InterfaceWrapperHelper.getEvaluatee(record);
 	}
 
-	public static final Evaluatee2 compose(final Evaluatee... evaluatees)
+	public static final Evaluatee2 ofRangeAwareParams(@NonNull final IRangeAwareParams params)
 	{
-		Check.assumeNotEmpty(evaluatees, "evaluatees not empty");
+		return new RangeAwareParamsAsEvaluatee(params);
+	}
 
-		final CompositeEvaluatee composite = new CompositeEvaluatee(evaluatees[0]);
-		for (int i = 1; i < evaluatees.length; i++)
-		{
-			composite.addEvaluatee(evaluatees[i]);
-		}
-		return composite;
+	public static final Evaluatee2 compose(@NonNull final List<Evaluatee> evaluatees)
+	{
+		return new CompositeEvaluatee(evaluatees);
+	}
+
+	public static final Evaluatee2 compose(@NonNull final Evaluatee... evaluatees)
+	{
+		return new CompositeEvaluatee(Arrays.asList(evaluatees));
 	}
 
 	/**
@@ -116,30 +127,12 @@ public final class Evaluatees
 	 * @param evaluatees
 	 * @return
 	 */
-	public static final Evaluatee2 composeNotNulls(final Evaluatee... evaluatees)
+	public static final Evaluatee2 composeNotNulls(@NonNull final Evaluatee... evaluatees)
 	{
-		Check.assumeNotEmpty(evaluatees, "evaluatees not empty");
-
-		CompositeEvaluatee composite = null;
-		for (final Evaluatee evaluatee : evaluatees)
-		{
-			if (evaluatee == null)
-			{
-				continue;
-			}
-
-			if (composite == null)
-			{
-				composite = new CompositeEvaluatee(evaluatee);
-			}
-			else
-			{
-				composite.addEvaluatee(evaluatee);
-			}
-		}
-
-		Check.assumeNotNull(composite, "At least one evaluatee shall be not null: {}", (Object)evaluatees);
-		return composite;
+		final ImmutableList<Evaluatee> evaluateesFiltered = Stream.of(evaluatees).filter(Predicates.notNull()).collect(ImmutableList.toImmutableList());
+		Check.assumeNotEmpty(evaluateesFiltered, "At least one evaluatee shall be not null: {}", (Object)evaluatees);
+		
+		return new CompositeEvaluatee(evaluateesFiltered);
 	}
 
 	/**
@@ -334,29 +327,15 @@ public final class Evaluatees
 	 *
 	 */
 	@VisibleForTesting
+	@lombok.ToString
 	static final class CompositeEvaluatee implements Evaluatee2
 	{
-		private final List<Evaluatee> sources = new ArrayList<>();
+		private final ImmutableList<Evaluatee> sources;
 
-		private CompositeEvaluatee(final Evaluatee source)
+		private CompositeEvaluatee(final List<Evaluatee> sources)
 		{
-			addEvaluatee(source);
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.addValue(sources)
-					.toString();
-		}
-
-		public CompositeEvaluatee addEvaluatee(final Evaluatee source)
-		{
-			Check.assume(source != null, "source is null");
-
-			sources.add(source);
-			return this;
+			Check.assumeNotEmpty(sources, "sources is not empty");
+			this.sources = ImmutableList.copyOf(sources);
 		}
 
 		@Override
@@ -444,7 +423,7 @@ public final class Evaluatees
 			this.value = value;
 			valueStr = value == null ? null : String.valueOf(value); // precompute because it's the most used one
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -646,4 +625,66 @@ public final class Evaluatees
 		}
 	};
 
+	@ToString
+	private static class RangeAwareParamsAsEvaluatee implements Evaluatee2
+	{
+		private final IRangeAwareParams params;
+
+		private RangeAwareParamsAsEvaluatee(@NonNull final IRangeAwareParams params)
+		{
+			this.params = params;
+		}
+
+		@Override
+		public boolean has_Variable(final String variableName)
+		{
+			return params.hasParameter(variableName);
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public <T> T get_ValueAsObject(final String variableName)
+		{
+			return (T)params.getParameterAsObject(variableName);
+		}
+
+		@Override
+		public BigDecimal get_ValueAsBigDecimal(final String variableName, final BigDecimal defaultValue)
+		{
+			final BigDecimal value = params.getParameterAsBigDecimal(variableName);
+			return value != null ? value : defaultValue;
+		}
+
+		@Override
+		public Boolean get_ValueAsBoolean(final String variableName, final Boolean defaultValue_IGNORED)
+		{
+			return params.getParameterAsBool(variableName);
+		}
+
+		@Override
+		public Date get_ValueAsDate(final String variableName, final Date defaultValue)
+		{
+			final Timestamp value = params.getParameterAsTimestamp(variableName);
+			return value != null ? value : defaultValue;
+		}
+
+		@Override
+		public Integer get_ValueAsInt(final String variableName, final Integer defaultValue_IGNORED)
+		{
+			final int value = params.getParameterAsInt(variableName);
+			return value;
+		}
+
+		@Override
+		public String get_ValueAsString(final String variableName)
+		{
+			return params.getParameterAsString(variableName);
+		}
+
+		@Override
+		public String get_ValueOldAsString(final String variableName)
+		{
+			return get_ValueAsString(variableName);
+		}
+	}
 }

@@ -1,9 +1,10 @@
 package de.metas.adempiere.util.cache;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.AvailableSingletonServicesTester;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.AvailableSingletonServicesTester;
 
 /*
  * #%L
@@ -46,11 +47,12 @@ public class Fresh_AvailableSingletonServices_Test
 				.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class) // JAX-RS
 				.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class) // skip for now because the impl it's coming from spring context
 				.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class) // skip for now because the impl it's coming from spring context
+				.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class) // skip for now because the impl it's coming from spring context
 				//
 				.skipServiceInterface(org.adempiere.util.testservice.ITestServiceWithFailingConstructor.class) // because it's supposed to fail
 				.skipServiceInterface(org.adempiere.util.testservice.ITestMissingService.class) // because it's supposed to fail
 				.skipServiceInterfaceIfStartsWith("org.adempiere.util.proxy.impl.JavaAssistInterceptorTests") // some test interface
-				.skipServiceInterface(de.metas.adempiere.util.cache.testservices.ITestServiceWithPrivateCachedMethod.class)
+				.skipServiceInterface(de.metas.cache.interceptor.testservices.ITestServiceWithPrivateCachedMethod.class)
 				.test();
 	}
 }

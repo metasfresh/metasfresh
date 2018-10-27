@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -162,7 +161,7 @@ public final class NullAttributeValue implements IAttributeValue
 	{
 		return false;
 	}
-	
+
 	@Override
 	public boolean isDateValue()
 	{
@@ -210,7 +209,7 @@ public final class NullAttributeValue implements IAttributeValue
 	{
 		return false;
 	}
-	
+
 	@Override
 	public boolean isDefinedByTemplate()
 	{
@@ -228,7 +227,7 @@ public final class NullAttributeValue implements IAttributeValue
 	{
 		throw new InvalidAttributeValueException("method not supported for " + this);
 	}
-	
+
 	@Override
 	public IAttributeValuesProvider getAttributeValuesProvider()
 	{
@@ -265,9 +264,15 @@ public final class NullAttributeValue implements IAttributeValue
 	{
 		return true;
 	}
-	
+
 	@Override
 	public boolean isDisplayedUI()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isMandatory()
 	{
 		return false;
 	}

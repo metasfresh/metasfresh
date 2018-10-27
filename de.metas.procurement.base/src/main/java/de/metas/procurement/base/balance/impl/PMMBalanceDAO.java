@@ -10,7 +10,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -19,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.procurement.base.balance.IPMMBalanceDAO;
 import de.metas.procurement.base.balance.PMMBalanceSegment;
 import de.metas.procurement.base.model.I_PMM_Balance;
+import de.metas.util.Services;
 
 /*
  * #%L

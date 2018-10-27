@@ -28,9 +28,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.proxy.IInterceptorInstance;
 import org.adempiere.util.proxy.IServiceInterceptor;
+
+import de.metas.util.Check;
 
 public abstract class AbstractBaseInterceptor implements IServiceInterceptor
 {

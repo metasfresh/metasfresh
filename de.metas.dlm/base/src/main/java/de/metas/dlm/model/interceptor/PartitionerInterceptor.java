@@ -11,7 +11,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
@@ -28,6 +27,8 @@ import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionAsyncRequ
 import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
+import de.metas.process.PInstanceId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -157,7 +158,8 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 					.setConfig(config)
 					.setRecordToAttach(TableRecordReference.ofOrNull(model))
 					.build();
-			DLMPartitionerWorkpackageProcessor.schedule(request, -1);
+			final PInstanceId pinstanceId = null;
+			DLMPartitionerWorkpackageProcessor.schedule(request, pinstanceId);
 		}
 	}
 
@@ -221,7 +223,8 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 					.setConfig(config)
 					.setRecordToAttach(TableRecordReference.ofOrNull(model))
 					.build();
-			DLMPartitionerWorkpackageProcessor.schedule(request, -1);
+			final PInstanceId pinstanceId = null;
+			DLMPartitionerWorkpackageProcessor.schedule(request, pinstanceId);
 		}
 	}
 }

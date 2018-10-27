@@ -31,10 +31,12 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
 
 /**
  * Pool of records to be processed (e.g. lock, unlock etc).
@@ -47,7 +49,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 	private Set<ITableRecordReference> _records = null;
 	//
 	private int _selection_AD_Table_ID = -1;
-	private int _selection_AD_PInstance_ID = -1;
+	private PInstanceId _selection_pinstanceId;
 
 	private IQueryFilter<?> _selection_filters = null;
 	
@@ -99,7 +101,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 		_records = new HashSet<>(records);
 		// Reset selection
 		_selection_AD_Table_ID = -1;
-		_selection_AD_PInstance_ID = -1;
+		_selection_pinstanceId = null;
 	}
 
 	public final void addRecords(final Collection<ITableRecordReference> records)
@@ -114,15 +116,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 		}
 
 		_selection_AD_Table_ID = -1;
-		_selection_AD_PInstance_ID = -1;
+		_selection_pinstanceId = null;
 	}
 
-	public void setRecordsBySelection(final Class<?> modelClass, final int adPIstanceId)
+	public void setRecordsBySelection(final Class<?> modelClass, @NonNull final PInstanceId pinstanceId)
 	{
-		Check.assume(adPIstanceId > 0, "adPIstanceId > 0");
-
 		_selection_AD_Table_ID = InterfaceWrapperHelper.getTableId(modelClass);
-		_selection_AD_PInstance_ID = adPIstanceId;
+		_selection_pinstanceId = pinstanceId;
 
 		_records = null;
 	}
@@ -144,9 +144,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 		return _selection_AD_Table_ID;
 	}
 
-	public final int getSelection_AD_PInstance_ID()
+	public final PInstanceId getSelection_PInstanceId()
 	{
-		return _selection_AD_PInstance_ID;
+		return _selection_pinstanceId;
 	}
 
 	public final Iterator<ITableRecordReference> getRecordsIterator()

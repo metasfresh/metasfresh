@@ -30,7 +30,8 @@ import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.BPartnerAwareAttributeUpdater;
 import org.adempiere.mm.attributes.api.impl.InvoiceLineBPartnerAware;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 public class InvoiceLineADRModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

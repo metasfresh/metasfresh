@@ -3,7 +3,6 @@ package de.metas.procurement.base.rfq;
 import java.util.function.Supplier;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.rfq.model.I_C_RfQLine;
@@ -13,6 +12,7 @@ import de.metas.rfq.IRfQResponseProducerFactory;
 import de.metas.rfq.impl.DefaultRfQResponseProducer;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.util.Services;
 
 /*
  * #%L

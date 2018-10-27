@@ -27,12 +27,12 @@ import java.util.Map.Entry;
  */
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.util.Check;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Watches current test and dumps the database to console in case of failure.

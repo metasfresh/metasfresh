@@ -26,11 +26,12 @@ package de.metas.shipping.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
-import org.compiere.model.I_M_Shipper;
 
-import de.metas.shipping.api.IShipperDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 
 @Callout(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation
@@ -50,12 +51,14 @@ public class M_ShipperTransportation
 			// new entry
 			return;
 		}
-		if (shipperTransportation.getShipper_BPartner() == null)
+		
+		final BPartnerId shipperPartnerId = BPartnerId.ofRepoIdOrNull(shipperTransportation.getShipper_BPartner_ID());
+		if (shipperPartnerId == null)
 		{
 			return;
 		}
 
-		final I_M_Shipper shipper = Services.get(IShipperDAO.class).retrieveForShipperBPartner(shipperTransportation.getShipper_BPartner());
-		shipperTransportation.setM_Shipper(shipper);
+		final ShipperId shipperId = Services.get(IShipperDAO.class).getShipperIdByShipperPartnerId(shipperPartnerId);
+		shipperTransportation.setM_Shipper_ID(shipperId.getRepoId());
 	}
 }

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.test.ErrorMessage;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -36,6 +35,7 @@ import de.metas.handlingunits.expectations.AbstractHUExpectation;
 import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
 
 public class TUWeightsExpectations<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

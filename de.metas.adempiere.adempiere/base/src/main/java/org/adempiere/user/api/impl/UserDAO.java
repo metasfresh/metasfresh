@@ -25,6 +25,11 @@ package org.adempiere.user.api.impl;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -34,10 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.user.UserId;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Query;
@@ -45,8 +47,12 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class UserDAO implements IUserDAO
@@ -191,25 +197,53 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public String retrieveUserFullname(final int adUserId)
+	public String retrieveUserFullname(final int userRepoId)
 	{
-		final String fullname = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User.class)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
-				.create()
-				.first(I_AD_User.COLUMNNAME_Name, String.class);
-		return !Check.isEmpty(fullname) ? fullname : "?";
+		final UserId userId = UserId.ofRepoIdOrNull(userRepoId);
+		if (userId == null)
+		{
+			return "?";
+		}
+		return retrieveUserFullname(userId);
 	}
 
 	@Override
-	public UserId retrieveUserIdByEMail(@NonNull final String email, @NonNull final ClientId adClientId)
+	public String retrieveUserFullname(final UserId userId)
 	{
-		final List<Integer> userIds = Services.get(IQueryBL.class)
+		if (userId == null)
+		{
+			return "?";
+		}
+		final String fullname = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, email)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.first(I_AD_User.COLUMNNAME_Name, String.class);
+
+		return !Check.isEmpty(fullname) ? fullname : "<" + userId.getRepoId() + ">";
+	}
+
+	@Override
+	public UserId retrieveUserIdByEMail(@Nullable final String email, @NonNull final ClientId adClientId)
+	{
+		if (Check.isEmpty(email, true))
+		{
+			return null;
+		}
+
+		final String emailNorm = extractEMailAddressOrNull(email);
+		if (emailNorm == null)
+		{
+			return null;
+		}
+
+		final Set<UserId> userIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, emailNorm)
 				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM, adClientId)
 				.create()
-				.listIds();
+				.listIds(UserId::ofRepoId);
 
 		if (userIds.isEmpty())
 		{
@@ -217,14 +251,27 @@ public class UserDAO implements IUserDAO
 		}
 		else if (userIds.size() == 1)
 		{
-			return UserId.ofRepoId(userIds.get(0));
+			return userIds.iterator().next();
 		}
 		else
 		{
 			// more than one user found for given mail.
 			// shall not happen but it's better to return null instead of returning to first/random one,
 			// because might be that some BL will link confidential infos to that (wrong) user/bpartner.
-			logger.info("Found more than one user for email={} and clientId={}: {}. Returning null", email, adClientId, userIds);
+			logger.info("Found more than one user for email={} (normalized: {}) and clientId={}: {}. Returning null", email, emailNorm, adClientId, userIds);
+			return null;
+		}
+	}
+
+	private static final String extractEMailAddressOrNull(final String email)
+	{
+		try
+		{
+			return new InternetAddress(email).getAddress();
+		}
+		catch (AddressException e)
+		{
+			logger.warn("Invalid email address `{}`. Returning null.", email, e);
 			return null;
 		}
 	}
@@ -240,5 +287,12 @@ public class UserDAO implements IUserDAO
 				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
 				.listIds();
+	}
+
+	@Override
+	public BPartnerId getBPartnerIdByUserId(@NonNull final UserId userId)
+	{
+		final I_AD_User userRecord = retrieveUser(userId.getRepoId());
+		return BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
 	}
 }

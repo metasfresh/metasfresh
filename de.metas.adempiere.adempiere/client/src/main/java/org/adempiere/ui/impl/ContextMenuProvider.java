@@ -32,6 +32,8 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -39,13 +41,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ui.IContextMenuAction;
 import org.adempiere.ui.IContextMenuActionContext;
 import org.adempiere.ui.IContextMenuProvider;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.grid.VTable;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Field_ContextMenu;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
@@ -53,7 +52,8 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
 
 public class ContextMenuProvider implements IContextMenuProvider
 {

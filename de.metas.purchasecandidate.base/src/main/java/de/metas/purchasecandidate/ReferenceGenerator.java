@@ -1,8 +1,6 @@
 package de.metas.purchasecandidate;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +8,8 @@ import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

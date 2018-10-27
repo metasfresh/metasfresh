@@ -28,12 +28,13 @@ import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /**
  * Organization permissions.

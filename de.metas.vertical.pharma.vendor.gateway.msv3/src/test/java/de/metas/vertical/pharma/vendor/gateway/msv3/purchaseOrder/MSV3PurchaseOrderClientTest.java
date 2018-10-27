@@ -19,7 +19,6 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ws.test.client.MockWebServiceServer;
@@ -29,17 +28,20 @@ import org.w3c.dom.Document;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.time.SystemTime;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated;
 import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderClientJAXBConverters;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.msv3.protocol.order.v1.OrderJAXBConvertersV1;
 import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderJAXBConvertersV2;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3TestingTools;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungRueckmeldungTyp;
 
 /*
  * #%L
@@ -80,6 +82,8 @@ public class MSV3PurchaseOrderClientTest
 
 		BigDecimal qtyToPurchase;
 		BigDecimal confirmedOrderQty;
+
+		Type responseItemType;
 	}
 
 	@Before
@@ -106,6 +110,7 @@ public class MSV3PurchaseOrderClientTest
 				.client(client)
 				.qtyToPurchase(new BigDecimal("23"))
 				.confirmedOrderQty(new BigDecimal("10"))
+				.responseItemType(Type.NORMAL)
 				.bestellenClass(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellen.class)
 				.responseProducer(this::createResponseV1)
 				.build());
@@ -129,6 +134,7 @@ public class MSV3PurchaseOrderClientTest
 				.client(client)
 				.qtyToPurchase(new BigDecimal("23"))
 				.confirmedOrderQty(new BigDecimal("10"))
+				.responseItemType(Type.NORMAL)
 				.bestellenClass(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellen.class)
 				.responseProducer(this::createResponseV2)
 				.build());
@@ -136,7 +142,6 @@ public class MSV3PurchaseOrderClientTest
 
 	private void placeOrder(final Context context) throws Exception
 	{
-
 		final PurchaseOrderRequestItem purchaseOrderRequestItem = PurchaseOrderRequestItem.builder()
 				.purchaseCandidateId(1)
 				.productAndQuantity(ProductAndQuantity.of("10055555", context.qtyToPurchase, UOM_ID))
@@ -207,11 +212,13 @@ public class MSV3PurchaseOrderClientTest
 			final XMLGregorianCalendar lieferzeitpunkt = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
 
 			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAnteil bestellungAnteil1 = objectFactory.createBestellungAnteil();
+			bestellungAnteil1.setTyp(BestellungRueckmeldungTyp.fromValue(Type.getValueOrNull(context.responseItemType)));
 			bestellungAnteil1.setLieferzeitpunkt(lieferzeitpunkt);
 			bestellungAnteil1.setGrund(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.KEINE_ANGABE);
 			bestellungAnteil1.setMenge(context.confirmedOrderQty.intValueExact());
 
 			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAnteil bestellungAnteil2 = objectFactory.createBestellungAnteil();
+			bestellungAnteil2.setTyp(BestellungRueckmeldungTyp.NICHT_LIEFERBAR);
 			bestellungAnteil2.setLieferzeitpunkt(null);
 			bestellungAnteil2.setGrund(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.NICHT_GEFUEHRT);
 			bestellungAnteil2.setMenge(context.qtyToPurchase.subtract(context.confirmedOrderQty).intValueExact());
@@ -267,11 +274,13 @@ public class MSV3PurchaseOrderClientTest
 			final XMLGregorianCalendar lieferzeitpunkt = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
 
 			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAnteil bestellungAnteil1 = objectFactory.createBestellungAnteil();
+			bestellungAnteil1.setTyp(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungRueckmeldungTyp.fromValue(Type.getValueOrNull(context.responseItemType)));
 			bestellungAnteil1.setLieferzeitpunkt(lieferzeitpunkt);
 			bestellungAnteil1.setGrund(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.KEINE_ANGABE);
 			bestellungAnteil1.setMenge(context.confirmedOrderQty.intValueExact());
 
 			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAnteil bestellungAnteil2 = objectFactory.createBestellungAnteil();
+			bestellungAnteil2.setTyp(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungRueckmeldungTyp.NICHT_LIEFERBAR);
 			bestellungAnteil2.setLieferzeitpunkt(null);
 			bestellungAnteil2.setGrund(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.NICHT_GEFUEHRT);
 			bestellungAnteil2.setMenge(context.qtyToPurchase.subtract(context.confirmedOrderQty).intValueExact());

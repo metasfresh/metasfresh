@@ -31,9 +31,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.model.I_C_Calendar;
@@ -42,10 +39,13 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.X_C_Period;
 import org.compiere.util.TimeUtil;
 
-import de.metas.calendar.ExcludeWeekendBusinessDayMatcher;
-import de.metas.calendar.IBusinessDayMatcher;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.TypedAccessor;
+import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
+import de.metas.util.calendar.IBusinessDayMatcher;
 
 public class CalendarBL implements ICalendarBL
 {

@@ -1,29 +1,5 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.handlingunits.document.IHUAllocations;
@@ -31,6 +7,8 @@ import de.metas.handlingunits.document.impl.AbstractHUDocumentLine;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 public class ReceiptScheduleHUDocumentLine extends AbstractHUDocumentLine
 {
@@ -67,8 +45,9 @@ public class ReceiptScheduleHUDocumentLine extends AbstractHUDocumentLine
 	{
 		if (displayName == null)
 		{
+			final String productName = Services.get(IProductBL.class).getProductName(getProductId());
 			displayName = new StringBuilder()
-					.append(getM_Product().getName())
+					.append(productName)
 					.append(" x ")
 					.append(getQty())
 					.append(getC_UOM().getUOMSymbol())

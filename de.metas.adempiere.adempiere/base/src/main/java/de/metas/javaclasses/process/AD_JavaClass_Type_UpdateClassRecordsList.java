@@ -1,10 +1,9 @@
 package de.metas.javaclasses.process;
 
-import org.adempiere.util.Services;
-
 import de.metas.javaclasses.IJavaClassTypeBL;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.process.Process;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /*

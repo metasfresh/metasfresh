@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -27,6 +25,8 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.inventory.event.InventoryUserNotificationsProducer;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -183,14 +183,15 @@ public class HUInternalUseInventoryProducer
 		return _docSubType;
 	}
 
-	private int getInventoryDocTypeId(final I_M_Warehouse warehouse)
+	private int getInventoryDocTypeId(@NonNull final I_M_Warehouse warehouse)
 	{
-		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 				.docSubType(getDocSubType())
 				.adClientId(warehouse.getAD_Client_ID())
 				.adOrgId(warehouse.getAD_Org_ID())
-				.build());
+				.build();
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**

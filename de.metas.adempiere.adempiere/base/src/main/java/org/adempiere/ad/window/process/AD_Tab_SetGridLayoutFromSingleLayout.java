@@ -28,11 +28,11 @@ import java.util.List;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * Copy Single Layout settings (one row layout) to grid layout.

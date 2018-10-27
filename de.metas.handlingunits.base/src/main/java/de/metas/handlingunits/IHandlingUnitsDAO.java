@@ -33,8 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.WarehouseId;
@@ -53,6 +51,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.util.ISingletonService;
+import de.metas.util.Services;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
@@ -76,10 +76,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 					item -> ITEM_TYPE_ORDERING.get(Services.get(IHandlingUnitsBL.class).getItemType(item)))
 			.thenComparing(
 					queryOrderBy.getComparator(I_M_HU_Item.class));
-	
+
 	I_M_HU getByIdOutOfTrx(HuId huId);
 
 	I_M_HU getById(HuId huId);
+
+	List<I_M_HU> getByIds(Collection<HuId> huIds);
+
+	List<I_M_HU> getByIdsOutOfTrx(Collection<HuId> huIds);
 
 	/**
 	 * Save the given {@code hu}
@@ -90,9 +94,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	void delete(I_M_HU hu);
 
-	I_M_HU_PI retrievePackingItemTemplatePI(Properties ctx);
-
 	I_M_HU_PI_Item retrievePackingItemTemplatePIItem(Properties ctx);
+
+	I_M_HU_PI getPackingInstructionById(HuPackingInstructionsId id);
 
 	/**
 	 * Gets Virtual PI
@@ -104,13 +108,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
 
-	int getPackingItemTemplate_HU_PI_ID();
-
 	int getPackingItemTemplate_HU_PI_Item_ID();
-
-	int getVirtual_HU_PI_ID();
-
-	int getVirtual_HU_PI_Version_ID();
 
 	int getVirtual_HU_PI_Item_ID();
 
@@ -210,11 +208,19 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU_PI_Version retrievePICurrentVersion(final I_M_HU_PI pi);
 
+	HuPackingInstructionsVersionId retrievePICurrentVersionId(final I_M_HU_PI pi);
+
+	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
+
 	/**
 	 * @param pi
 	 * @return current PI Version or null
 	 */
 	I_M_HU_PI_Version retrievePICurrentVersionOrNull(I_M_HU_PI pi);
+
+	I_M_HU_PI_Version retrievePICurrentVersionOrNull(final HuPackingInstructionsId piId);
+
+	I_M_HU_PI_Version retrievePIVersionById(final HuPackingInstructionsVersionId id);
 
 	List<I_M_HU_PI_Item> retrievePIItemsForPackingMaterial(final I_M_HU_PackingMaterial pm);
 
@@ -367,14 +373,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
-
-	/**
-	 * Retrieve all the warehouses that contain the HUs in the given list
-	 *
-	 * @param hus
-	 * @return
-	 */
-	List<I_M_Warehouse> retrieveWarehousesForHUs(List<I_M_HU> hus);
 
 	/**
 	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs

@@ -24,11 +24,11 @@ package de.metas.printing.client.impl;
 
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.client.IContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * {@link IContext} implementation which is forwarding the property requests to {@link ISysConfigBL#getValue(String)}.

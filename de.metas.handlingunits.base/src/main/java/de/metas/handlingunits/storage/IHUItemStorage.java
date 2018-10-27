@@ -27,13 +27,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 
@@ -51,28 +51,25 @@ import de.metas.quantity.CapacityInterface;
 public interface IHUItemStorage extends IGenericHUStorage
 {
 	@Override
-	IHUStorageFactory getHUStorageFactory();
-
-	@Override
 	IHUStorage getParentStorage();
 
 	/**
 	 * Retrieve or create the underlying {@link I_M_HU_Item_Storage} and add the given quantity to it.
 	 */
 	@Override
-	void addQty(I_M_Product product, BigDecimal qty, I_C_UOM uom);
+	void addQty(ProductId productId, BigDecimal qty, I_C_UOM uom);
 
 	/**
 	 * Retrieve the underlying {@link I_M_HU_Item_Storage} (if there is any) and return its quantity (or zero).
 	 */
 	@Override
-	BigDecimal getQty(I_M_Product product, I_C_UOM uom);
+	BigDecimal getQty(ProductId productId, I_C_UOM uom);
 
 	@Override
 	boolean isEmpty();
 
 	@Override
-	boolean isEmpty(I_M_Product product);
+	boolean isEmpty(ProductId productId);
 
 	I_M_HU_Item getM_HU_Item();
 
@@ -81,31 +78,31 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 *
 	 * If a custom capacity is set (see {@link #setCustomCapacity(IHUCapacityDefinition)}), that one will be considered first.
 	 *
-	 * @param product
+	 * @param productId
 	 * @param uom
 	 * @param date
 	 * @return total capacity
 	 */
-	CapacityInterface getCapacity(I_M_Product product, I_C_UOM uom, Date date);
+	CapacityInterface getCapacity(ProductId productId, I_C_UOM uom, Date date);
 
 	/**
 	 * Override current total capacity settings
 	 *
 	 * @param capacity
-	 * @see #getCapacity(I_M_Product, I_C_UOM, Date)
+	 * @see #getCapacity(ProductId, I_C_UOM, Date)
 	 */
 	void setCustomCapacity(Capacity capacity);
 
 	/**
 	 * Gets available capacity (i.e. how much is free)
 	 *
-	 * @param product
+	 * @param productId
 	 * @param uom
 	 * @param date
 	 * 
 	 * @return available capacity
 	 */
-	CapacityInterface getAvailableCapacity(I_M_Product product, I_C_UOM uom, Date date);
+	CapacityInterface getAvailableCapacity(ProductId productId, I_C_UOM uom, Date date);
 
 	/**
 	 * 
@@ -114,7 +111,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * @return the given <code>request</code>, if <code>this</code> storage instance is big enough for it.
 	 *         IF the requested quantity exceeds this storage's capacity, then return a new "smaller" request.
 	 * 
-	 * @see #getAvailableCapacity(I_M_Product, I_C_UOM, Date)
+	 * @see #getAvailableCapacity(ProductId, I_C_UOM, Date)
 	 */
 	IAllocationRequest requestQtyToAllocate(IAllocationRequest request);
 
@@ -124,7 +121,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * @param request
 	 * @return
 	 * 
-	 * @see #getQty(I_M_Product, I_C_UOM)
+	 * @see #getQty(ProductId, I_C_UOM)
 	 */
 	IAllocationRequest requestQtyToDeallocate(IAllocationRequest request);
 
@@ -142,7 +139,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 
 	int getHUCapacity();
 
-	IProductStorage getProductStorage(I_M_Product product, I_C_UOM uom, Date date);
+	IProductStorage getProductStorage(ProductId productId, I_C_UOM uom, Date date);
 
 	List<IProductStorage> getProductStorages(Date date);
 

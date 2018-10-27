@@ -69,7 +69,7 @@ public class StatusService implements IStatusService
 		if (connection != null)
 		{
 			r.setDateVersion(getDateVersionInternal());
-			r.setMainVersion(Adempiere.getMainVersion());
+			r.setMainVersion(Adempiere.getBuildVersion().toString());
 			r.setDbType(connection.getType());
 			r.setDbHost(getDbHostInternal(connection));
 			r.setDbPort(connection.getDbPort());

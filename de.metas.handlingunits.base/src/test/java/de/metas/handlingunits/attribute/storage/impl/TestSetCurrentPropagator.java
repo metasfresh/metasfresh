@@ -24,7 +24,6 @@ package de.metas.handlingunits.attribute.storage.impl;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.junit.After;
 import org.junit.Assert;
@@ -35,6 +34,7 @@ import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationConte
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagator;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagatorFactory;
 import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
+import de.metas.util.Services;
 
 public class TestSetCurrentPropagator
 {

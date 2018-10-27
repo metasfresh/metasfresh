@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -53,10 +52,7 @@ import org.adempiere.ad.wrapper.POJOInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
@@ -72,11 +68,18 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.model.IModelCacheService;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.lang.RepoIdAware;
-import de.metas.lang.RepoIdAwares;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -727,10 +730,17 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static void delete(final Object model)
+	/**
+	 * Does the same as {@link #delete(Object)},
+	 * but this method can be static-imported into repository implementations which usually have their own method named "delete()".
+	 */
+	public static void deleteRecord(@NonNull final Object model)
 	{
-		Check.assume(model != null, "model is null");
+		delete(model);
+	}
 
+	public static void delete(@NonNull final Object model)
+	{
 		if (POWrapper.isHandled(model))
 		{
 			POWrapper.delete(model);
@@ -743,6 +753,16 @@ public class InterfaceWrapperHelper
 		{
 			throw new IllegalStateException("delete is not supported for " + model);
 		}
+	}
+
+	public static void deleteAll(@NonNull final Collection<?> models)
+	{
+		if (models.isEmpty())
+		{
+			return;
+		}
+
+		models.forEach(InterfaceWrapperHelper::delete);
 	}
 
 	/**
@@ -986,13 +1006,8 @@ public class InterfaceWrapperHelper
 	 * @return table name
 	 * @throws AdempiereException if model is null or model is not supported
 	 */
-	public static String getModelTableName(final Object model)
+	public static String getModelTableName(@NonNull final Object model)
 	{
-		if (model == null)
-		{
-			throw new AdempiereException("Cannot get TableName for a null model. Possible development issue.");
-		}
-
 		final String modelTableName = getModelTableNameOrNull(model);
 		if (modelTableName == null)
 		{
@@ -1118,6 +1133,18 @@ public class InterfaceWrapperHelper
 			return POWrapper.hasColumnName(modelClass, columnName);
 		}
 
+	}
+
+	public static Optional<OrgId> getOrgId(final Object model)
+	{
+		final Object orgIdObj = getValue(model, "AD_Org_ID").orElse(null);
+		if (orgIdObj == null)
+		{
+			return Optional.empty();
+		}
+
+		final int orgIdInt = NumberUtils.asInt(orgIdObj, -1);
+		return OrgId.optionalOfRepoId(orgIdInt);
 	}
 
 	public static <T> T getValueByColumnId(final Object model, final int adColumnId)
@@ -1259,7 +1286,11 @@ public class InterfaceWrapperHelper
 		return isAllValuesSet;
 	}
 
-	private static boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound)
+	private static boolean setValue(
+			@NonNull final Object model,
+			@NonNull final String columnName,
+			@Nullable final Object value,
+			final boolean throwExIfColumnNotFound)
 	{
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");
@@ -1711,5 +1742,10 @@ public class InterfaceWrapperHelper
 	public static boolean isCopy(final Object model)
 	{
 		return helpers.isCopy(model);
+	}
+
+	public static boolean isCopying(final Object model)
+	{
+		return helpers.isCopying(model);
 	}
 }

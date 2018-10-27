@@ -27,7 +27,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Window Tab Customization

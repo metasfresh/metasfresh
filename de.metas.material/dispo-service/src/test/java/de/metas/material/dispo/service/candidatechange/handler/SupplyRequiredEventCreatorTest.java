@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -17,6 +16,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

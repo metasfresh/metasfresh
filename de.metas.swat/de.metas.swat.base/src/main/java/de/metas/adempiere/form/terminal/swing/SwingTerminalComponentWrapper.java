@@ -26,13 +26,12 @@ import java.awt.Component;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.DirectExecuteBeforePainingSupport;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IExecuteBeforePainingSupport;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 public class SwingTerminalComponentWrapper implements IComponent, IComponentSwing, IExecuteBeforePainingSupport
 {

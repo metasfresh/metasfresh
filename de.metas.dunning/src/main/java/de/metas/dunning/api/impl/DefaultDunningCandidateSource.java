@@ -25,10 +25,9 @@ package de.metas.dunning.api.impl;
 
 import java.util.Iterator;
 
-import org.adempiere.util.Services;
-
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.Services;
 
 /**
  * Default Dunning Candidates Source.

@@ -25,7 +25,6 @@ package org.eevolution.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
@@ -33,6 +32,8 @@ import org.eevolution.model.I_PP_Order_NodeNext;
 import org.eevolution.model.I_PP_Order_Node_Asset;
 import org.eevolution.model.I_PP_Order_Node_Product;
 import org.eevolution.model.I_PP_Order_Workflow;
+
+import de.metas.util.ISingletonService;
 
 public interface IPPOrderWorkflowDAO extends ISingletonService
 {

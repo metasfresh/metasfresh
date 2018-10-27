@@ -28,8 +28,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -40,6 +38,8 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 {

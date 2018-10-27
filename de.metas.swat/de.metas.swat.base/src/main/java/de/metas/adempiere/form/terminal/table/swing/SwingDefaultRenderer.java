@@ -30,9 +30,8 @@ import java.lang.ref.WeakReference;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 /* package */class SwingDefaultRenderer extends DefaultTableCellRenderer
 {

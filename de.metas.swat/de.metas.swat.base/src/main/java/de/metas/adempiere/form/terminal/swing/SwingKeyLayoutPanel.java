@@ -36,8 +36,6 @@ import javax.swing.JComponent;
 import javax.swing.border.Border;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IExecuteBeforePainingSupport;
@@ -51,6 +49,7 @@ import de.metas.adempiere.form.terminal.ITerminalScrollPane.ScrollPolicy;
 import de.metas.adempiere.form.terminal.POSKey;
 import de.metas.adempiere.form.terminal.POSKeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 /* package */class SwingKeyLayoutPanel
 		extends de.metas.adempiere.form.terminal.TerminalKeyPanel

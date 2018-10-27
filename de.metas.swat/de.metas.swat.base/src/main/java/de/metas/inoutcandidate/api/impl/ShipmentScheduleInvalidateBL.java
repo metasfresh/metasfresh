@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -47,6 +47,7 @@ import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.IStorageSegmentBuilder;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
@@ -171,7 +172,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final IStorageSegment storageSegment = storageSegmentBuilder
 				.addC_BPartner_ID(bpartnerId)
 				.addM_Product_ID(schedule.getM_Product_ID())
-				.addM_Warehouse(shipmentScheduleEffectiveBL.getWarehouse(schedule))
+				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
 				.addM_AttributeSetInstance_ID(schedule.getM_AttributeSetInstance_ID())
 				.build();
 		return storageSegment;
@@ -191,7 +192,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final IStorageSegment storageSegment = storageSegmentBuilder
 				.addC_BPartner_ID(bpartnerId)
 				.addM_Product_ID(orderLine.getM_Product_ID())
-				.addM_Warehouse(orderLine.getM_Warehouse())
+				.addWarehouseIdIfNotNull(WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID()))
 				.addM_AttributeSetInstance_ID(orderLine.getM_AttributeSetInstance_ID())
 				.build();
 		storageListeners.notifyStorageSegmentChanged(storageSegment);
@@ -202,7 +203,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		final I_M_ShipmentSchedule sched = shipmentSchedulePA.retrieveForOrderLine(orderLine);
-		if(sched == null)
+		if (sched == null)
 		{
 			return;
 		}

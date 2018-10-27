@@ -13,8 +13,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
@@ -31,10 +29,13 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*
@@ -256,7 +257,7 @@ public class RefundConfigRepository
 		{
 			case PERCENTAGE:
 				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
-				configRecord.setRefundPercent(refundConfig.getPercent().getValueAsBigDecimal());
+				configRecord.setRefundPercent(refundConfig.getPercent().getValue());
 				configRecord.setRefundAmt(null);
 				break;
 			case AMOUNT_PER_UNIT:

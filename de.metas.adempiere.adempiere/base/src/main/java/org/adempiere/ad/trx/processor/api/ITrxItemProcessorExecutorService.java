@@ -26,8 +26,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.api.IParams;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Item processor executor service

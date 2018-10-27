@@ -26,15 +26,15 @@ package de.metas.handlingunits.callout;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class C_Order extends OrderFastInput
 {
@@ -96,9 +96,9 @@ public class C_Order extends OrderFastInput
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 		Check.assumeNotNull(order, "Order cannot be null");
 		
-		final I_M_Product quickInputProduct = order.getM_Product();
+		final ProductId quickInputProductId = ProductId.ofRepoIdOrNull(order.getM_Product_ID());
 
-		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProduct, order::setM_HU_PI_Item_Product);
+		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProductId, order::setM_HU_PI_Item_Product);
 		return NO_ERROR;
 	}
 	

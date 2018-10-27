@@ -10,7 +10,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import com.google.common.cache.CacheBuilder;

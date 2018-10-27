@@ -15,10 +15,9 @@ import static org.hamcrest.Matchers.nullValue;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Assert;
 import org.w3c.dom.Node;
@@ -35,6 +34,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.trace.HUTransformTracingTests;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -88,7 +88,7 @@ public class HUTransformTestsBase
 		final I_C_BPartner_Location bPartnerLocation = createBPartnerLocation(bpartner);
 
 		final I_M_Warehouse warehouse = createWarehouse("testWarehouse");
-		final I_M_Locator locator = createLocator("testLocator", warehouse);
+		final LocatorId locatorId = LocatorId.ofRecord(createLocator("testLocator", warehouse));
 
 		final TestHUsBuilder testHUsBuilder = TestHUs.builder();
 
@@ -100,17 +100,17 @@ public class HUTransformTestsBase
 			lutuProducer.setNoLU();
 			lutuProducer.setTUPI(data.piTU_IFCO);
 			lutuProducer.setC_BPartner(bpartner);
-			lutuProducer.setM_Locator(locator);
+			lutuProducer.setLocatorId(locatorId);
 			lutuProducer.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 
-			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("2"), data.helper.uomKg);
+			data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("2"), data.helper.uomKg);
 			final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 
 			Assert.assertThat(createdTUs.size(), is(1));
 			sourceTU = createdTUs.get(0);
 
 			huStatusBL.setHUStatus(data.helper.getHUContext(), sourceTU, X_M_HU.HUSTATUS_Active);
-			new M_HU().updateChildren(sourceTU);
+			M_HU.INSTANCE.updateChildren(sourceTU);
 			save(sourceTU);
 
 			testHUsBuilder.inititalParent(sourceTU);
@@ -148,7 +148,7 @@ public class HUTransformTestsBase
 		Assert.assertThat(newCUXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 		Assert.assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		Assert.assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
-		Assert.assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(locator.getM_Locator_ID())))); // verify that the locator is propagated
+		Assert.assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(locatorId.getRepoId())))); // verify that the locator is propagated
 
 		return testHUsBuilder.input(cuToSplit).output(newCUs).build();
 	}

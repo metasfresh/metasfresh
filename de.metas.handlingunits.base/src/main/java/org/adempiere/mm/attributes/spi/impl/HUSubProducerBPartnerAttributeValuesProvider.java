@@ -11,15 +11,10 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ISubProducerAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
@@ -31,11 +26,16 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BP_Relation;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -70,13 +70,12 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	 *
 	 * NOTE: we use a static cache for optimization purposes
 	 */
-	private static final CCache<Integer, List<KeyNamePair>> bpartnerId2subProducers = new CCache<Integer, List<KeyNamePair>>(
-			CACHE_PREFIX + "#by#" + I_C_BP_Relation.COLUMNNAME_C_BPartner_ID + "#" + I_C_BP_Relation.COLUMNNAME_IsMainProducer,      // name
-			10,      // initial capacity
-			0 // expires 0min => never
-	)
-			.addResetForTableName(I_C_BPartner.Table_Name)
-			.addResetForTableName(I_C_BP_Relation.Table_Name);
+	private static final CCache<Integer, List<KeyNamePair>> bpartnerId2subProducers = CCache.<Integer, List<KeyNamePair>> builder()
+			.cacheName(CACHE_PREFIX + "#by#" + I_C_BP_Relation.COLUMNNAME_C_BPartner_ID + "#" + I_C_BP_Relation.COLUMNNAME_IsMainProducer)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
+			.additionalTableNameToResetFor(I_C_BP_Relation.Table_Name)
+			.build();
 
 	private static final ITranslatableString DISPLAYNAME_None = Services.get(IMsgBL.class).translatable("NoneOrEmpty");
 	private static final ConcurrentHashMap<String, KeyNamePair> adLanguage2keyNamePairNone = new ConcurrentHashMap<>();
@@ -94,12 +93,13 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	 *
 	 * Used for short term purposes.
 	 */
-	private final CCache<ArrayKey, List<KeyNamePair>> hu2subProducers = new CCache<ArrayKey, List<KeyNamePair>>(bpartnerId2subProducers.getName() + "#AndHU",
-			100,     // initial capacity
-			10  // expires in 10min
-	)
-			.addResetForTableName(I_C_BPartner.Table_Name)
-			.addResetForTableName(I_C_BP_Relation.Table_Name);
+	private final CCache<ArrayKey, List<KeyNamePair>> hu2subProducers = CCache.<ArrayKey, List<KeyNamePair>> builder()
+			.cacheName(bpartnerId2subProducers.getCacheName() + "#AndHU")
+			.initialCapacity(100)
+			.expireMinutes(10)
+			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
+			.additionalTableNameToResetFor(I_C_BP_Relation.Table_Name)
+			.build();
 
 	public HUSubProducerBPartnerAttributeValuesProvider(final I_M_Attribute attribute)
 	{

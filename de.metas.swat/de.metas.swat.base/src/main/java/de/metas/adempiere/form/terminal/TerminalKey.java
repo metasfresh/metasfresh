@@ -29,14 +29,14 @@ import java.beans.PropertyChangeListener;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  * Abstract {@link ITerminalKey} implementation.

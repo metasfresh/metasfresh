@@ -1,7 +1,6 @@
 package de.metas.contracts.refund;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

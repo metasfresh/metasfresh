@@ -19,6 +19,7 @@ package org.compiere.util;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
+import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -42,11 +43,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
@@ -59,9 +57,15 @@ import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.cache.CacheMgt;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * System Environment and static variables.
@@ -253,7 +257,7 @@ public final class Env
 	public static final String CTXNAME_AD_User_ID = "#AD_User_ID";
 	public static final String CTXNAME_AD_User_Name = "#AD_User_Name";
 	public static final String CTXNAME_SalesRep_ID = "#SalesRep_ID";
-	public static final int CTXVALUE_AD_User_ID_System = 0;
+	public static final int CTXVALUE_AD_User_ID_System = UserId.SYSTEM.getRepoId();
 
 	public static final String CTXNAME_Date = "#Date";
 	public static final String CTXNAME_IsAllowLoginDateOverride = "#" + I_AD_Role.COLUMNNAME_IsAllowLoginDateOverride;
@@ -1161,6 +1165,11 @@ public final class Env
 	{
 		return Env.getAD_User_ID(getCtx());
 	}
+	
+	public static UserId getLoggedUserId()
+	{
+		return UserId.ofRepoId(Env.getAD_User_ID(getCtx()));
+	}
 
 	/**
 	 * Get Login AD_Role_ID
@@ -1404,6 +1413,11 @@ public final class Env
 		// return Language.getBaseAD_Language();
 		return null;
 	}	// getLanguage
+
+	public static Language getLanguage()
+	{
+		return getLanguage(getCtx());
+	}
 
 	/**
 	 * Get Login Language
@@ -1698,6 +1712,12 @@ public final class Env
 		s_log.info("Starting browser using url={}", url);
 		Services.get(IClientUI.class).showURL(url);
 	}   // startBrowser
+	
+	public static void startBrowser(@NonNull final File file)
+	{
+		startBrowser(file.toURI().toString());
+	}
+
 
 	/**
 	 * Do we run on Apple

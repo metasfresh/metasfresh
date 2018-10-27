@@ -13,32 +13,33 @@ package de.metas.invoicecandidate.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.util.Services;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
+// Moved here from {@link de.metas.inout.model.validator.M_InOut}
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, //
+			ModelValidator.TIMING_AFTER_REVERSEACCRUAL, //
+			ModelValidator.TIMING_AFTER_REACTIVATE,
+			ModelValidator.TIMING_AFTER_COMPLETE // needed in case we complete an inout that was previously reactivated
+			})
 
-	// Moved here from {@link de.metas.inout.model.validator.M_InOut}
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT
-			, ModelValidator.TIMING_AFTER_REVERSEACCRUAL
-			, ModelValidator.TIMING_AFTER_REACTIVATE })
 	public void invalidateInvoiceCandidatesOnReversal(final I_M_InOut inout)
 	{
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);

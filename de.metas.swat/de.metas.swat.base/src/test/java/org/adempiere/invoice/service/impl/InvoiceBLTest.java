@@ -28,8 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -40,6 +38,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.invoicecandidate.AbstractICTestSupport;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class InvoiceBLTest extends AbstractICTestSupport
 {

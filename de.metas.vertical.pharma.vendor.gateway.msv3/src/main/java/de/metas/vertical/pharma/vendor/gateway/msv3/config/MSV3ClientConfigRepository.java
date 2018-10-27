@@ -12,16 +12,16 @@ import java.util.Optional;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_System;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig.MSV3ClientConfigBuilder;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;

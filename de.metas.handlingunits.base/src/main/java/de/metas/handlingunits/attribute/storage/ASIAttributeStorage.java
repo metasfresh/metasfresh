@@ -3,11 +3,9 @@ package de.metas.handlingunits.attribute.storage;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
@@ -18,6 +16,8 @@ import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.impl.AbstractAttributeStorage;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -92,7 +92,7 @@ public class ASIAttributeStorage extends AbstractAttributeStorage
 	}
 
 	@Override
-	protected List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, final Map<I_M_Attribute, Object> defaultAttributesValue)
+	protected List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, final Map<AttributeId, Object> defaultAttributesValue)
 	{
 		throw new UnsupportedOperationException("Generating initial attributes not supported for " + this);
 	}

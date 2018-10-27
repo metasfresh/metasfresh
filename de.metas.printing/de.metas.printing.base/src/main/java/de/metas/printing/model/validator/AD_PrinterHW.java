@@ -28,8 +28,6 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
@@ -41,6 +39,8 @@ import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_Calibration;
 import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 @Interceptor(I_AD_PrinterHW.class)
 public class AD_PrinterHW

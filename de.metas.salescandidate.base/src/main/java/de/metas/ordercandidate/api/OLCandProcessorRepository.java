@@ -7,19 +7,19 @@ import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.cache.CCache;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.model.I_C_OLCandAggAndOrder;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -46,8 +46,12 @@ import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
 @Repository
 public class OLCandProcessorRepository
 {
-	private final CCache<Integer, OLCandProcessorDescriptor> processorsById = CCache.<Integer, OLCandProcessorDescriptor> newCache(I_C_OLCandProcessor.Table_Name + "#by#ID", 10, CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_C_OLCandAggAndOrder.Table_Name);
+	private final CCache<Integer, OLCandProcessorDescriptor> processorsById = CCache.<Integer, OLCandProcessorDescriptor> builder()
+			.cacheName(I_C_OLCandProcessor.Table_Name + "#by#ID")
+			.tableName(I_C_OLCandProcessor.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_C_OLCandAggAndOrder.Table_Name)
+			.build();
 
 	private static final Map<String, Granularity> granularityByADRefListValue = ImmutableMap.<String, Granularity> builder()
 			.put(X_C_OLCandAggAndOrder.GRANULARITY_Tag, Granularity.Day)

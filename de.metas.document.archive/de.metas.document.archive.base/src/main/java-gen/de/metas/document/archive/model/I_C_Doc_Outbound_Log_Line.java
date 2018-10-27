@@ -24,7 +24,6 @@ public interface I_C_Doc_Outbound_Log_Line
 
 	/**
 	 * Set Aktion.
-	 * Zeigt die durchzuführende Aktion an
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -34,7 +33,6 @@ public interface I_C_Doc_Outbound_Log_Line
 
 	/**
 	 * Get Aktion.
-	 * Zeigt die durchzuführende Aktion an
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -588,6 +586,29 @@ public interface I_C_Doc_Outbound_Log_Line
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, Object>(I_C_Doc_Outbound_Log_Line.class, "Status", null);
     /** Column name Status */
     public static final String COLUMNNAME_Status = "Status";
+
+	/**
+	 * Set Speicherort.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setStoreURI (java.lang.String StoreURI);
+
+	/**
+	 * Get Speicherort.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStoreURI();
+
+    /** Column definition for StoreURI */
+    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, Object> COLUMN_StoreURI = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, Object>(I_C_Doc_Outbound_Log_Line.class, "StoreURI", null);
+    /** Column name StoreURI */
+    public static final String COLUMNNAME_StoreURI = "StoreURI";
 
 	/**
 	 * Get Aktualisiert.

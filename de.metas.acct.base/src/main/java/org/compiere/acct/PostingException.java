@@ -1,7 +1,6 @@
 package org.compiere.acct;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_Fact_Acct;
 
@@ -9,6 +8,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.Check;
 
 /**
  * Exception thrown by accounting engine on any document posting error.

@@ -2,16 +2,14 @@ package de.metas.shipper.gateway.derkurier.misc;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentBL;
-import de.metas.attachments.IAttachmentDAO;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
@@ -19,6 +17,9 @@ import de.metas.i18n.IMsgBL;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*
@@ -54,10 +55,14 @@ public class DerKurierDeliveryOrderEmailer
 
 	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
 
+	private final AttachmentEntryService attachmentEntryService;
+
 	public DerKurierDeliveryOrderEmailer(
-			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository)
+			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository,
+			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
 		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
+		this.attachmentEntryService = attachmentEntryService;
 	}
 
 	public void sendShipperTransportationAsEmail(@NonNull final ShipperTransportationId shipperTransportationId)
@@ -74,8 +79,9 @@ public class DerKurierDeliveryOrderEmailer
 			return;
 		}
 
-		final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-		final AttachmentEntry attachmentEntry = attachmentBL.getEntryByFilenameOrNull(shipperTransportationRecord, DerKurierDeliveryOrderService.SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME);
+		final AttachmentEntry attachmentEntry = attachmentEntryService.getByFilenameOrNull(
+				TableRecordReference.of(shipperTransportationRecord),
+				DerKurierDeliveryOrderService.SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME);
 
 		sendAttachmentAsEmail(shipperId, attachmentEntry);
 	}
@@ -106,7 +112,7 @@ public class DerKurierDeliveryOrderEmailer
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final IMailBL mailBL = Services.get(IMailBL.class);
 
-		final byte[] data = Services.get(IAttachmentDAO.class).retrieveData(attachmentEntry);
+		final byte[] data = attachmentEntryService.retrieveData(attachmentEntry.getId());
 		final String csvDataString = new String(data, DerKurierConstants.CSV_DATA_CHARSET);
 
 		final String subject = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject);

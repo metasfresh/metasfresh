@@ -38,16 +38,16 @@ import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_AD_InfoWindow_From;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheModel;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheModel;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.util.Services;
 
 public class ADInfoWindowDAO implements IADInfoWindowDAO
 {

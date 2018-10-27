@@ -31,15 +31,12 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
@@ -59,9 +56,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class LUTUProducerDestination
@@ -109,7 +109,7 @@ public class LUTUProducerDestination
 	/**
 	 * TU Capacities by M_Product_ID
 	 */
-	private final Map<Integer, Capacity> productId2tuCapacity = new HashMap<>();
+	private final Map<ProductId, Capacity> productId2tuCapacity = new HashMap<>();
 
 	/**
 	 * How many TUs to put into one LU
@@ -161,10 +161,10 @@ public class LUTUProducerDestination
 		luPI = splitDefinition.getLuPI();
 
 		tuPI = splitDefinition.getTuPI();
-		final I_M_Product cuProduct = splitDefinition.getCuProduct();
+		final ProductId cuProductId = splitDefinition.getCuProductId();
 		final I_C_UOM cuUOM = splitDefinition.getCuUOM();
 		final BigDecimal qtyCUPerTU = splitDefinition.getCuPerTU();
-		addCUPerTU(cuProduct, qtyCUPerTU, cuUOM);
+		addCUPerTU(cuProductId, qtyCUPerTU, cuUOM);
 
 		final int maxLUs = splitDefinition.getMaxLUToAllocate().intValueExact();
 		setMaxLUs(maxLUs);
@@ -427,7 +427,7 @@ public class LUTUProducerDestination
 	public void setTUPI(@NonNull final I_M_HU_PI tuPI)
 	{
 		// verify the tuPI's HU-type
-		final boolean tuPIisVirtual = tuPI.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_ID();
+		final boolean tuPIisVirtual = HuPackingInstructionsId.isVirtualRepoId(tuPI.getM_HU_PI_ID());
 		final String expectedHuType = tuPIisVirtual ? X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI : X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 		assertCorrectHuType(tuPI, expectedHuType);
 
@@ -455,19 +455,19 @@ public class LUTUProducerDestination
 	@Override
 	public void addCUPerTU(@NonNull final Capacity tuCapacity)
 	{
-		final int productId = tuCapacity.getM_Product().getM_Product_ID();
-		productId2tuCapacity.put(productId, tuCapacity);
+		productId2tuCapacity.put(tuCapacity.getProductId(), tuCapacity);
 	}
 
 	/**
 	 * Explicitly specify the quantity for a given product that fits onto one TU.
 	 */
 	@Override
-	public void addCUPerTU(final I_M_Product cuProduct, final BigDecimal qtyCUPerTU, final I_C_UOM cuUOM)
+	public void addCUPerTU(final ProductId cuProductId, final BigDecimal qtyCUPerTU, final I_C_UOM cuUOM)
 	{
-		final Capacity tuCapacity = createCapacity(cuProduct, qtyCUPerTU, cuUOM);
+		final Capacity tuCapacity = createCapacity(cuProductId, qtyCUPerTU, cuUOM);
 		addCUPerTU(tuCapacity);
 	}
+
 
 	@Override
 	public Capacity getSingleCUPerTU()
@@ -487,22 +487,20 @@ public class LUTUProducerDestination
 	}
 
 	@Override
-	public CapacityInterface getCUPerTU(final I_M_Product cuProduct)
+	public CapacityInterface getCUPerTU(@NonNull final ProductId cuProductId)
 	{
-		Check.assumeNotNull(cuProduct, "cuProduct not null");
-		final int cuProductId = cuProduct.getM_Product_ID();
 		final CapacityInterface tuCapacity = productId2tuCapacity.get(cuProductId);
 		return tuCapacity;
 	}
 
 	private final Capacity createCapacity(
-			@NonNull final I_M_Product cuProduct,
+			@NonNull final ProductId cuProductId,
 			@NonNull final BigDecimal qtyCUPerTU,
 			@NonNull final I_C_UOM cuUOM)
 	{
 		Check.assume(qtyCUPerTU.signum() > 0, "qtyCUPerTU > 0, but it was {}", qtyCUPerTU);
 
-		return Capacity.createCapacity(qtyCUPerTU, cuProduct, cuUOM, false); // allowNegativeCapacity=false;
+		return Capacity.createCapacity(qtyCUPerTU, cuProductId, cuUOM, false); // allowNegativeCapacity=false;
 	}
 
 	/**
@@ -681,7 +679,7 @@ public class LUTUProducerDestination
 
 		// 06902: Make sure we inherit the status and locator.
 		producer.setHUStatus(getHUStatus());
-		producer.setM_Locator(getM_Locator());
+		producer.setLocatorId(getLocatorId());
 		producer.setC_BPartner(getC_BPartner());
 		producer.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
 		producer.setIsHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
@@ -792,10 +790,10 @@ public class LUTUProducerDestination
 	}
 
 	@Override
-	public Quantity calculateTotalQtyCU(final I_M_Product cuProduct)
+	public Quantity calculateTotalQtyCU(final ProductId cuProductId)
 	{
-		final CapacityInterface tuCapacity = getCUPerTU(cuProduct);
-		Check.assumeNotNull(tuCapacity, "tuCapacity defined for {}", cuProduct);
+		final CapacityInterface tuCapacity = getCUPerTU(cuProductId);
+		Check.assumeNotNull(tuCapacity, "tuCapacity defined for {}", cuProductId);
 
 		return calculateTotalQtyCU(tuCapacity);
 	}

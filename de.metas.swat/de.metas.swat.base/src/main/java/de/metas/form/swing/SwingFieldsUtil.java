@@ -34,13 +34,13 @@ import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 
-import org.adempiere.util.Check;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CEditor;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * @author teo_sarca

@@ -32,14 +32,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_C_POS_Profile;
 import org.adempiere.model.I_C_POS_Profile_Warehouse;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IPOSAccessBL;
 import de.metas.adempiere.service.IPOSAccessDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class POSAccessBL implements IPOSAccessBL
 {

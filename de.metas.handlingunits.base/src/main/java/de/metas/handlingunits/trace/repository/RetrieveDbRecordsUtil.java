@@ -10,19 +10,22 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -61,7 +64,7 @@ public class RetrieveDbRecordsUtil
 				.collect(Collectors.toList());
 	}
 
-	public static int queryToSelection(@NonNull final HUTraceEventQuery query)
+	public static PInstanceId queryToSelection(@NonNull final HUTraceEventQuery query)
 	{
 		final SelectionResult resultOut = (SelectionResult)queryDbRecord(query, new SelectionResult());
 
@@ -84,14 +87,14 @@ public class RetrieveDbRecordsUtil
 		 *
 		 * @return
 		 */
-		List<Integer> getVhuIds();
+		List<HuId> getVhuIds();
 
 		/**
 		 * Get the {@code VHU_Source_ID} from the records we already found so far. Needed to recurse backwards.
 		 *
 		 * @return
 		 */
-		List<Integer> getVhuSourceIds();
+		List<HuId> getVhuSourceIds();
 	}
 
 	/**
@@ -122,24 +125,24 @@ public class RetrieveDbRecordsUtil
 		}
 
 		@Override
-		public List<Integer> getVhuIds()
+		public List<HuId> getVhuIds()
 		{
 			return set.stream()
-					.map(dbRecord -> dbRecord.getVHU_ID())
+					.map(dbRecord -> HuId.ofRepoId(dbRecord.getVHU_ID()))
 					.sorted()
 					.distinct()
 					.collect(ImmutableList.toImmutableList());
 		}
 
 		@Override
-		public List<Integer> getVhuSourceIds()
+		public List<HuId> getVhuSourceIds()
 		{
 			return set.stream()
-					.map(dbRecord -> dbRecord.getVHU_Source_ID())
-					.filter(vhuSourceId -> vhuSourceId > 0)
+					.map(dbRecord -> HuId.ofRepoIdOrNull(dbRecord.getVHU_Source_ID()))
+					.filter(Predicates.notNull())
 					.sorted()
 					.distinct()
-					.collect(Collectors.toList());
+					.collect(ImmutableList.toImmutableList());
 		}
 
 		public List<I_M_HU_Trace> getList()
@@ -153,7 +156,7 @@ public class RetrieveDbRecordsUtil
 	 */
 	private static class SelectionResult implements Result
 	{
-		private int selectionId = -1;
+		private PInstanceId selectionId;
 
 		@Override
 		public Result newEmptyResult()
@@ -164,7 +167,7 @@ public class RetrieveDbRecordsUtil
 		@Override
 		public void executeQueryAndAddAll(@NonNull final IQuery<I_M_HU_Trace> query)
 		{
-			if (selectionId <= 0)
+			if (selectionId == null)
 			{
 				selectionId = query.createSelection();
 			}
@@ -178,11 +181,12 @@ public class RetrieveDbRecordsUtil
 		public void addAll(@NonNull final Result resultToAdd)
 		{
 			final SelectionResult selectionResultToAdd = (SelectionResult)resultToAdd;
-			if (selectionResultToAdd.getSelectionId() <= 0)
+			if (selectionResultToAdd.getSelectionId() == null)
 			{
 				return; // result contains nothing to add
 			}
-			if (selectionId <= 0)
+			
+			if (selectionId == null)
 			{
 				// performance: we don't really need to add anything but can just take the "pointer" from selectionResultToAdd
 				selectionId = selectionResultToAdd.getSelectionId();
@@ -197,9 +201,9 @@ public class RetrieveDbRecordsUtil
 		}
 
 		@Override
-		public List<Integer> getVhuIds()
+		public List<HuId> getVhuIds()
 		{
-			if (selectionId <= 0)
+			if (selectionId == null)
 			{
 				return ImmutableList.of();
 			}
@@ -207,13 +211,16 @@ public class RetrieveDbRecordsUtil
 					.setOnlySelection(selectionId)
 					.addNotEqualsFilter(I_M_HU_Trace.COLUMN_VHU_ID, null)
 					.create()
-					.listDistinct(I_M_HU_Trace.COLUMNNAME_VHU_ID, Integer.class);
+					.listDistinct(I_M_HU_Trace.COLUMNNAME_VHU_ID, Integer.class)
+					.stream()
+					.map(HuId::ofRepoId)
+					.collect(ImmutableList.toImmutableList());
 		}
 
 		@Override
-		public List<Integer> getVhuSourceIds()
+		public List<HuId> getVhuSourceIds()
 		{
-			if (selectionId <= 0)
+			if (selectionId == null)
 			{
 				return ImmutableList.of();
 			}
@@ -221,10 +228,13 @@ public class RetrieveDbRecordsUtil
 					.setOnlySelection(selectionId)
 					.addNotEqualsFilter(I_M_HU_Trace.COLUMN_VHU_Source_ID, null)
 					.create()
-					.listDistinct(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, Integer.class);
+					.listDistinct(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, Integer.class)
+					.stream()
+					.map(HuId::ofRepoId)
+					.collect(ImmutableList.toImmutableList());
 		}
 
-		public int getSelectionId()
+		public PInstanceId getSelectionId()
 		{
 			return selectionId;
 		}
@@ -287,17 +297,17 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trace_ID, query.getHuTraceEventId().getAsInt());
 			queryIsEmpty = false;
 		}
-		if (query.getOrgId() > 0)
+		if (query.getOrgId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_AD_Org_ID, query.getOrgId());
 			queryIsEmpty = false;
 		}
-		if (query.getVhuId() > 0)
+		if (query.getVhuId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_ID, query.getVhuId());
 			queryIsEmpty = false;
 		}
-		if (query.getProductId() > 0)
+		if (query.getProductId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Product_ID, query.getProductId());
 			queryIsEmpty = false;
@@ -312,12 +322,12 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHUStatus, query.getVhuStatus());
 			queryIsEmpty = false;
 		}
-		if (query.getVhuSourceId() > 0)
+		if (query.getVhuSourceId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_Source_ID, query.getVhuSourceId());
 			queryIsEmpty = false;
 		}
-		if (query.getTopLevelHuId() > 0)
+		if (query.getTopLevelHuId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_ID, query.getTopLevelHuId());
 			queryIsEmpty = false;
@@ -342,14 +352,14 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Order_ID, query.getPpOrderId());
 			queryIsEmpty = false;
 		}
-		if (query.getShipmentScheduleId() > 0)
+		if (query.getShipmentScheduleId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_ShipmentSchedule_ID, query.getShipmentScheduleId());
 			queryIsEmpty = false;
 		}
 		if (query.getDocTypeId().isPresent())
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_C_DocType_ID, query.getDocTypeId().getAsInt());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_C_DocType_ID, query.getDocTypeId().get());
 			queryIsEmpty = false;
 		}
 		if (!Check.isEmpty(query.getDocStatus()))
@@ -402,8 +412,8 @@ public class RetrieveDbRecordsUtil
 	private Result recurseBackwards(@NonNull final Result resultIn)
 	{
 		final Result resultOut = resultIn.newEmptyResult();
-		final List<Integer> vhuSourceIDs = resultIn.getVhuSourceIds();
-		for (final int vhuSourceId : vhuSourceIDs)
+		final List<HuId> vhuSourceIds = resultIn.getVhuSourceIds();
+		for (final HuId vhuSourceId : vhuSourceIds)
 		{
 			resultOut.addAll(queryDbRecord(HUTraceEventQuery
 					.builder()
@@ -419,8 +429,8 @@ public class RetrieveDbRecordsUtil
 	{
 		final Result resultOut = resultIn.newEmptyResult();
 
-		final List<Integer> vhuIDs = resultIn.getVhuIds();
-		for (final int vhuId : vhuIDs)
+		final List<HuId> vhuIDs = resultIn.getVhuIds();
+		for (final HuId vhuId : vhuIDs)
 		{
 			resultOut.addAll(recuseForwardViaVhuLink(resultIn, vhuId));
 
@@ -431,7 +441,7 @@ public class RetrieveDbRecordsUtil
 
 	private Result recuseForwardViaVhuLink(
 			@NonNull final EmptyResultSupplier emptyResultSupplier,
-			final int vhuId)
+			final HuId vhuId)
 	{
 
 		final HUTraceEventQuery sameVhuIdRecordsQuery = HUTraceEventQuery.builder()
@@ -453,7 +463,7 @@ public class RetrieveDbRecordsUtil
 	 */
 	private Result recurseForwardViaSourceVhuLink(
 			@NonNull final EmptyResultSupplier emptyResultSupplier,
-			final int vhuId)
+			final HuId vhuId)
 	{
 		final HUTraceEventQuery directFollowUpRecordsQuery = HUTraceEventQuery.builder()
 				.vhuSourceId(vhuId)
@@ -462,10 +472,10 @@ public class RetrieveDbRecordsUtil
 		final Result directFollowUpRecordsResult = queryDbRecord(
 				directFollowUpRecordsQuery,
 				emptyResultSupplier.newEmptyResult());
-		final List<Integer> directFollowupVhuIDs = directFollowUpRecordsResult.getVhuIds();
+		final List<HuId> directFollowupVhuIDs = directFollowUpRecordsResult.getVhuIds();
 
 		final Result resultOut = emptyResultSupplier.newEmptyResult();
-		for (final int directFollowupVhuID : directFollowupVhuIDs)
+		for (final HuId directFollowupVhuID : directFollowupVhuIDs)
 		{
 			final Result forwardResult = queryDbRecord(
 					HUTraceEventQuery.builder()

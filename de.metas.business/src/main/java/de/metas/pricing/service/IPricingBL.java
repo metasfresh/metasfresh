@@ -25,8 +25,6 @@ package de.metas.pricing.service;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -34,6 +32,7 @@ import de.metas.pricing.limit.IPriceLimitRule;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.rules.IPricingRule;
+import de.metas.util.ISingletonService;
 
 public interface IPricingBL extends ISingletonService
 {

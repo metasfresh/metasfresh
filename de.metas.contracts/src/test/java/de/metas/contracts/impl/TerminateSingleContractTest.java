@@ -34,16 +34,20 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.C_Aggregation_Builder;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
+import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
@@ -57,6 +61,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
@@ -69,8 +74,14 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.process.PInstanceId;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+		ContractLibraryConfiguration.class })
 public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
@@ -119,7 +130,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)
@@ -148,7 +159,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)
@@ -159,6 +170,9 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
+
+		final I_C_Order order = InterfaceWrapperHelper.create(extendedContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 
 		createInvoiceCandidates(extendedContract);
 
@@ -185,6 +199,9 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertVoidedFlatrateTerm(extendedContract);
 		assertInvoiceCandidate(extendedContract);
 		assertSubscriptionProgress(extendedContract, 0);
+
+		InterfaceWrapperHelper.refresh(order);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}
 
 	private void config_InvoiceCand_HeaderAggregation()
@@ -250,8 +267,11 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertThat(flatrateTerm.getAD_PInstance_EndOfTerm()).isNull();
 
 		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(flatrateTerm);
-
 		assertThat(ancestor).isNull();
+
+		final I_C_Order order = InterfaceWrapperHelper.create(flatrateTerm.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		InterfaceWrapperHelper.refresh(order);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}
 
 	private void assertInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)

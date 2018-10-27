@@ -4,14 +4,15 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.X_C_DocType;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -50,14 +51,17 @@ public class HUInventoryBL implements IHUInventoryBL
 	@Override
 	public boolean isMaterialDisposal(final I_M_Inventory inventory)
 	{
-		final int disposalDocTypeId = Services.get(IDocTypeDAO.class)
-				.getDocTypeIdOrNull(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-						.docSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
-						.adClientId(inventory.getAD_Client_ID())
-						.adOrgId(inventory.getAD_Org_ID())
-						.build());
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-		return disposalDocTypeId > 0 && disposalDocTypeId == inventory.getC_DocType_ID();
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+				.docSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
+				.adClientId(inventory.getAD_Client_ID())
+				.adOrgId(inventory.getAD_Org_ID())
+				.build();
+
+		final DocTypeId disposalDocTypeId = docTypeDAO.getDocTypeIdOrNull(query);
+
+		return disposalDocTypeId != null && disposalDocTypeId.getRepoId() == inventory.getC_DocType_ID();
 	}
 }

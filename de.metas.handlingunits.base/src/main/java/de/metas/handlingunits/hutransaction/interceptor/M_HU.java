@@ -31,12 +31,9 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.IHUContextFactory;
@@ -54,7 +51,10 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 @Interceptor(I_M_HU.class)
 public final class M_HU
@@ -132,8 +132,9 @@ public final class M_HU
 
 
 		// Get Locator Old and New
-		final I_M_Locator locatorOld = vhuOld.getM_Locator();
-		final I_M_Locator locatorNew = vhu.getM_Locator();
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		final LocatorId locatorIdOld = warehousesRepo.getLocatorIdByRepoIdOrNull(vhuOld.getM_Locator_ID());
+		final LocatorId locatorIdNew = warehousesRepo.getLocatorIdByRepoIdOrNull(vhu.getM_Locator_ID());
 
 		//
 		// Services
@@ -164,10 +165,8 @@ public final class M_HU
 
 		//
 		// Extract the data needed to create the HU Transactions
-		final I_M_Product product = productStorage.getM_Product();
-		final BigDecimal qty = productStorage.getQty();
-		final I_C_UOM uom = productStorage.getC_UOM();
-		final Quantity quantity = new Quantity(qty, uom);
+		final ProductId productId = productStorage.getProductId();
+		final Quantity quantity = productStorage.getQty();
 		final Date date = huContext.getDate();
 		final Object referencedModel = vhu; // there's no document model for our HUTransactions
 
@@ -176,10 +175,10 @@ public final class M_HU
 		final IHUTransactionCandidate huTransactionFrom = new HUTransactionCandidate(referencedModel,
 				vhuItem, // huItem
 				vhuItem, // vhuItem
-				product,
+				productId,
 				quantity.negate(),
 				date,
-				locatorOld,
+				locatorIdOld,
 				huStatusOld);
 		huTransactionFrom.setSkipProcessing(); // i.e. don't change HU's storage
 
@@ -188,10 +187,10 @@ public final class M_HU
 		final IHUTransactionCandidate huTransactionTo = new HUTransactionCandidate(referencedModel,
 				vhuItem, // huItem
 				vhuItem, // vhuItem
-				product,
+				productId,
 				quantity,
 				date,
-				locatorNew,
+				locatorIdNew,
 				huStatusNew);
 		huTransactionTo.setSkipProcessing(); // i.e. don't change HU's storage
 

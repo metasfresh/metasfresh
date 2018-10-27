@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.time.SystemTime;
 import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -27,6 +26,7 @@ import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult.RemoteToLocalStatus;
 import de.metas.marketing.base.model.SyncResult;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -126,10 +126,10 @@ public class ManualTest
 	{
 		final Campaign campaign = Campaign.builder().remoteId(MANUAL_GROUP_REMOTE_ID).build();
 
-		final ContactPerson newPerson1 = ContactPerson.builder().address(EmailAddress.of("test10@newemail.com")).build();
-		final ContactPerson newPerson2 = ContactPerson.builder().address(EmailAddress.of("test2-invalidmail")).build();
-		final ContactPerson newPerson3 = ContactPerson.builder().address(EmailAddress.of("test30@newemail.com")).build();
-		final ContactPerson newPerson4 = ContactPerson.builder().address(EmailAddress.of("test4-invalidmail")).build();
+		final ContactPerson newPerson1 = ContactPerson.builder().address(EmailAddress.ofString("test10@newemail.com")).build();
+		final ContactPerson newPerson2 = ContactPerson.builder().address(EmailAddress.ofString("test2-invalidmail")).build();
+		final ContactPerson newPerson3 = ContactPerson.builder().address(EmailAddress.ofString("test30@newemail.com")).build();
+		final ContactPerson newPerson4 = ContactPerson.builder().address(EmailAddress.ofString("test4-invalidmail")).build();
 		final List<LocalToRemoteSyncResult> results = cleverReachClient.syncContactPersonsLocalToRemote(
 				campaign, ImmutableList.of(newPerson1, newPerson2, newPerson3, newPerson4));
 
@@ -164,15 +164,15 @@ public class ManualTest
 	{
 		final Campaign campaign = Campaign.builder().remoteId(MANUAL_GROUP_REMOTE_ID).build();
 
-		final ContactPerson newPerson1 = ContactPerson.builder().address(EmailAddress.of("test10@newemail.com")).build();
-		final ContactPerson newPerson3 = ContactPerson.builder().address(EmailAddress.of("test30@newemail.com")).build();
+		final ContactPerson newPerson1 = ContactPerson.builder().address(EmailAddress.ofString("test10@newemail.com")).build();
+		final ContactPerson newPerson3 = ContactPerson.builder().address(EmailAddress.ofString("test30@newemail.com")).build();
 		cleverReachClient.syncContactPersonsLocalToRemote(campaign, ImmutableList.of(newPerson1, newPerson3));
 
-		final ContactPerson person1 = ContactPerson.builder().address(EmailAddress.of("test1@email")).build();
-		final ContactPerson person2 = ContactPerson.builder().address(EmailAddress.of("test2@email")).remoteId("-10").build();
-		final ContactPerson person3 = ContactPerson.builder().address(EmailAddress.of("real-email1")).build();
-		final ContactPerson person4 = ContactPerson.builder().address(EmailAddress.of("real-email2")).build();
-		final ContactPerson person5 = ContactPerson.builder().address(EmailAddress.of("bounce-email1")).remoteId("5").build();
+		final ContactPerson person1 = ContactPerson.builder().address(EmailAddress.ofString("test1@email")).build();
+		final ContactPerson person2 = ContactPerson.builder().address(EmailAddress.ofString("test2@email")).remoteId("-10").build();
+		final ContactPerson person3 = ContactPerson.builder().address(EmailAddress.ofString("real-email1")).build();
+		final ContactPerson person4 = ContactPerson.builder().address(EmailAddress.ofString("real-email2")).build();
+		final ContactPerson person5 = ContactPerson.builder().address(EmailAddress.ofString("bounce-email1")).remoteId("5").build();
 
 		final List<RemoteToLocalSyncResult> result = cleverReachClient.syncContactPersonsRemoteToLocal(
 				campaign, ImmutableList.of(person1, person2, person3, person4, person5));

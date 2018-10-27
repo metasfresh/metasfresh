@@ -3,13 +3,13 @@ package de.metas.pricing.service.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

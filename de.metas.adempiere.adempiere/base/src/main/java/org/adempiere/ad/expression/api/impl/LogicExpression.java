@@ -9,13 +9,13 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator.BooleanEvaluator;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)

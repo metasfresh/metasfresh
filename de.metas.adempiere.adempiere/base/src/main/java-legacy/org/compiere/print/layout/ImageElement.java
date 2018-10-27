@@ -24,20 +24,20 @@ import java.awt.geom.Point2D;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PrintFormatItem;
 import org.compiere.model.MImage;
 import org.compiere.print.MPrintFormatItem;
 import org.compiere.print.PrintDataElement;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentBL;
-import de.metas.attachments.IAttachmentDAO;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.cache.CCache;
 
 /**
  *	Image Element
@@ -63,7 +63,7 @@ public class ImageElement extends PrintElement
 		}
 		return new ImageElement(image.getImage());
 	}	//	get
-	
+
 	/**
 	 *	Create Image from URL
 	 *  @param imageURL image url
@@ -80,7 +80,7 @@ public class ImageElement extends PrintElement
 		}
 		return new ImageElement(image.getImage());
 	}	//	get
-	
+
 	/**
 	 *	Create Image from Attachment
 	 * 	@param AD_PrintFormatItem_ID record id
@@ -119,11 +119,11 @@ public class ImageElement extends PrintElement
 		}
 		return new ImageElement(image.getImage());
 	}	//	get
-	
+
 	/**	60 minute Cache						*/
-	private static CCache<Object,ImageElement>	s_cache 
+	private static CCache<Object,ImageElement>	s_cache
 		= new CCache<>("ImageElement", 10, 60);
-	
+
 	/**************************************************************************
 	 *	Create from existing Image
 	 *  @param image image
@@ -248,33 +248,42 @@ public class ImageElement extends PrintElement
 		if (imageData != null)
 			m_image = Toolkit.getDefaultToolkit().createImage(imageData);
 		if (m_image != null)
-			log.debug(mimage.toString() 
+			log.debug(mimage.toString()
 				+ " - Size=" + imageData.length);
 		else
 			log.warn(mimage.toString()
 				+ " - not loaded (must be gif or jpg) - record_ID=" + record_ID);
 	}	//	loadFromDB
 
-	
+
 	/**
 	 * 	Load Attachment
 	 * 	@param AD_PrintFormatItem_ID record id
 	 */
 	private void loadAttachment(final int AD_PrintFormatItem_ID)
 	{
-		final AttachmentEntry attachmentEntry = Services.get(IAttachmentBL.class).getFirstEntry(TableRecordReference.of(I_AD_PrintFormatItem.Table_Name, AD_PrintFormatItem_ID));
-		if (attachmentEntry == null)
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(TableRecordReference.of(I_AD_PrintFormatItem.Table_Name, AD_PrintFormatItem_ID));
+		if(entries.isEmpty())
 		{
 			log.warn("No Attachment entry - AD_PrintFormatItem_ID={}", AD_PrintFormatItem_ID);
 			return;
 		}
-		final byte[] imageData = Services.get(IAttachmentDAO.class).retrieveData(attachmentEntry);
+
+		final byte[] imageData = attachmentEntryService.retrieveData(entries.get(0).getId());
 		if (imageData != null)
+		{
 			m_image = Toolkit.getDefaultToolkit().createImage(imageData);
+		}
+
 		if (m_image != null)
-			log.debug(attachmentEntry.getFilename() + " - Size=" + imageData.length);
+		{
+			log.debug(entries.get(0).getFilename() + " - Size=" + imageData.length);
+		}
 		else
-			log.warn(attachmentEntry.getFilename() + " - not loaded (must be gif or jpg) - AD_PrintFormatItem_ID=" + AD_PrintFormatItem_ID);
+		{
+			log.warn(entries.get(0).getFilename() + " - not loaded (must be gif or jpg) - AD_PrintFormatItem_ID=" + AD_PrintFormatItem_ID);
+		}
 	}	//	loadAttachment
 
 	/**************************************************************************
@@ -290,12 +299,12 @@ public class ImageElement extends PrintElement
 		if (m_image == null)
 			return true;
 		//	we have an image
-		// if the image was not loaded, consider that there is no image - teo_sarca [ 1674706 ] 
+		// if the image was not loaded, consider that there is no image - teo_sarca [ 1674706 ]
 		if (waitForLoad(m_image) && m_image != null)
 		{
 			p_width = m_image.getWidth(this);
 			p_height = m_image.getHeight(this);
-						
+
 			if (p_width * p_height == 0)
 				return true;	//	don't bother scaling and prevent div by 0
 
@@ -307,7 +316,7 @@ public class ImageElement extends PrintElement
 					// image "fatter" than available area
 					m_scaleFactor = p_maxWidth/p_width;
 				else
-					m_scaleFactor = p_maxHeight/p_height;			
+					m_scaleFactor = p_maxHeight/p_height;
 			}
 			*/
 			m_scaleFactor = 1;
@@ -315,7 +324,7 @@ public class ImageElement extends PrintElement
 				m_scaleFactor = p_maxWidth / p_width;
 			if (p_maxHeight != 0 && p_height > p_maxHeight && p_maxHeight/p_height < m_scaleFactor)
 				m_scaleFactor = p_maxHeight / p_height;
-			
+
 			p_width = (float) m_scaleFactor * p_width;
 			p_height = (float) m_scaleFactor * p_height;
 		}
@@ -324,7 +333,7 @@ public class ImageElement extends PrintElement
 		else {
 			m_image = null;
 		}
-		
+
 		return true;
 	}	//	calculateSize
 
@@ -336,10 +345,10 @@ public class ImageElement extends PrintElement
 	{
 		return m_image;
 	}	//	getImage
-	
+
 	/**
 	 * Get image scale factor.
-	 * 
+	 *
 	 * @author teo_sarca - [ 1673548 ] Image is not scaled in a report table cell
 	 * @return scale factor
 	 */
@@ -348,7 +357,7 @@ public class ImageElement extends PrintElement
 			p_sizeCalculated = calculateSize();
 		return m_scaleFactor;
 	}
-	
+
 	/**
 	 * 	Paint Image
 	 * 	@param g2D Graphics
@@ -375,7 +384,7 @@ public class ImageElement extends PrintElement
 		// 	map a scaled and shifted version of the image to device space
 		AffineTransform transform = new AffineTransform();
 		transform.translate(x,y);
-		transform.scale(m_scaleFactor, m_scaleFactor); 
+		transform.scale(m_scaleFactor, m_scaleFactor);
 		g2D.drawImage(m_image, transform, this);
 	}	//	paint
 

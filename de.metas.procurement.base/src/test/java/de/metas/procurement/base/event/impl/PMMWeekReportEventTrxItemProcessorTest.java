@@ -10,7 +10,6 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -28,6 +27,7 @@ import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 import de.metas.procurement.base.model.X_PMM_WeekReport_Event;
 import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.util.Services;
 
 /*
  * #%L

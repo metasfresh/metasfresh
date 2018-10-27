@@ -30,14 +30,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.impl.PlainMRPDAO;
 
 import de.metas.document.engine.IDocument;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MRPExpectationDocumentsCollector
 {

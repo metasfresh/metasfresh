@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Comparator which sorts the given set by using a partially specified order.

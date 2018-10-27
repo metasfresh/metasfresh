@@ -25,10 +25,11 @@ package org.adempiere.ad.security.permissions;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.util.Check;
 
 /**
  * Table Record resource.

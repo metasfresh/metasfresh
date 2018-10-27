@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
@@ -49,6 +48,7 @@ import org.eevolution.model.X_HR_Process;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Accounting Fact Reset

@@ -27,15 +27,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.POInfo;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
@@ -45,9 +42,13 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+
 import lombok.NonNull;
 
 /**

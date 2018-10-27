@@ -8,8 +8,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
+import de.metas.util.Check;
 import de.metas.vertical.pharma.model.I_AD_User;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_I_BPartner;

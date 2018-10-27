@@ -34,7 +34,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.collections.IdentityHashSet;
+
+import de.metas.util.collections.IdentityHashSet;
 
 /**
  * Used to fetch {@link IModelClassInfo}s from model classes.

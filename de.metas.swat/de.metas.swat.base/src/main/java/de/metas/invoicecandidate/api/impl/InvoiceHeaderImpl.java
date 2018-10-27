@@ -26,12 +26,12 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.util.Check;
 
 /**
  * Default implementation for {@link IInvoiceHeader}

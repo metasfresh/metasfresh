@@ -29,8 +29,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.spi.impl.PasswordResetWorkpackageProcessor;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.Query;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -40,6 +38,8 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * (async) Sends password reset emails to all users in selection.

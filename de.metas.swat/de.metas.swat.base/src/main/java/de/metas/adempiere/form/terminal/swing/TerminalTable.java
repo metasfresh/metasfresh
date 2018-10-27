@@ -36,7 +36,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.adempiere.util.Check;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
@@ -47,6 +46,7 @@ import de.metas.adempiere.form.terminal.ITerminalTable;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.ui.MiniTableUtil;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public class TerminalTable
 		extends MiniTable

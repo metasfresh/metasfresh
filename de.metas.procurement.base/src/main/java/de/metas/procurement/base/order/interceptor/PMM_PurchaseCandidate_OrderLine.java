@@ -6,7 +6,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
@@ -18,6 +17,7 @@ import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
+import de.metas.util.Services;
 
 /*
  * #%L

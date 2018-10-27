@@ -30,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -40,17 +41,19 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
+import org.adempiere.location.CountryId;
+import org.adempiere.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.X_C_Tax;
 import org.compiere.model.X_C_TaxCategory;
@@ -60,11 +63,14 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.adempiere.service.ILocationDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
@@ -84,39 +90,44 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final Object model,
 			final int taxCategoryId,
 			final int productId,
-			final Timestamp billDate,
-			final Timestamp shipDate,
-			final int adOrgId,
-			final I_M_Warehouse warehouse,
+			@NonNull final Timestamp shipDate,
+			@NonNull final OrgId orgId,
+			final WarehouseId warehouseId,
 			final int shipC_BPartner_Location_ID,
 			final boolean isSOTrx)
 	{
 		if (taxCategoryId > 0)
 		{
-			final int countryFromId;
-			if (warehouse != null)
+			final CountryId countryFromId;
+			if (warehouseId != null)
 			{
-				final I_C_Location locationFrom = Services.get(IWarehouseBL.class).getC_Location(warehouse);
-				countryFromId = locationFrom.getC_Country_ID();
+				countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 			}
 			else
 			{
-				// 03378 : retrieve default country ID for org_ID
 				final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-				if (bPartnerOrgBL.retrieveOrgLocation(ctx, adOrgId, null) != null) // 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
+				final CountryId orgCountryId = bPartnerOrgBL.getOrgCountryId(orgId);
+				if (orgCountryId != null)
 				{
-					countryFromId = bPartnerOrgBL.retrieveOrgLocation(ctx, adOrgId, null).getC_Country_ID();
+					countryFromId = orgCountryId;
 				}
 				else
 				{
-					// 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
-					countryFromId = Services.get(ICountryDAO.class).getDefault(ctx).getC_Country_ID();
+					countryFromId = Services.get(ICountryDAO.class).getDefaultCountryId();
 				}
 			}
 
 			final I_C_BPartner_Location bpLocTo = loadOutOfTrx(shipC_BPartner_Location_ID, I_C_BPartner_Location.class);
 
-			final int taxIdForCategory = retrieveTaxIdForCategory(ctx, countryFromId, adOrgId, bpLocTo, billDate, taxCategoryId, isSOTrx, false);
+			final int taxIdForCategory = retrieveTaxIdForCategory(ctx,
+					countryFromId,
+					orgId,
+					bpLocTo,
+					shipDate,
+					taxCategoryId,
+					isSOTrx,
+					false // throwEx
+			);
 			if (taxIdForCategory > 0)
 			{
 				return taxIdForCategory;
@@ -125,15 +136,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final AdempiereException ex = new AdempiereException(StringUtils.formatMessage(
 				"Could not retrieve C_Tax_ID; will return the Tax-Not-Found-C_Tax_ID; Method paratmers:"
-						+ "model= {}, taxCategoryId={}, productId={}, billDate={}, shipDate={}, adOrgId={}, "
+						+ "model= {}, taxCategoryId={}, productId={}, shipDate={}, adOrgId={}, "
 						+ "warehouse={}, shipC_BPartner_Location_ID={}, isSOTrx={}, trxName={}",
 				model,
 				taxCategoryId,
 				productId,
-				billDate,
 				shipDate,
-				adOrgId,
-				warehouse,
+				orgId,
+				warehouseId,
 				shipC_BPartner_Location_ID,
 				isSOTrx));
 		log.warn("getTax - error: ", ex);
@@ -153,10 +163,10 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 */
 	@Override
 	public int retrieveTaxIdForCategory(final Properties ctx,
-			final int countryFromId,
-			final int orgId,
+			final CountryId countryFromId,
+			final OrgId orgId,
 			@NonNull final I_C_BPartner_Location bpLocTo,
-			final Timestamp date,
+			@NonNull final Timestamp date,
 			final int taxCategoryId,
 			final boolean isSOTrx,
 			final boolean throwEx)
@@ -165,23 +175,22 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
 
-		final I_C_Location locationTo = loadOutOfTrx(bpLocTo.getC_Location_ID(), I_C_Location.class);
-
+		final I_C_Location locationTo = Services.get(ILocationDAO.class).getById(LocationId.ofRepoId(bpLocTo.getC_Location_ID()));
+		final CountryId countryToId = CountryId.ofRepoId(locationTo.getC_Country_ID());
+		final I_C_Country countryTo = Services.get(ICountryDAO.class).getById(countryToId);
 		final boolean toEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
 				ICountryAreaBL.COUNTRYAREAKEY_EU,
-				locationTo.getC_Country().getCountryCode(),
+				countryTo.getCountryCode(),
 				date);
 
-		final int countryToId = locationTo.getC_Country_ID();
-
-		final boolean toSameCountry = countryToId == countryFromId;
+		final boolean toSameCountry = Objects.equals(countryToId, countryFromId);
 
 		final IQueryBuilder<I_C_Tax> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
 				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter();
 
-		if (countryFromId > 0)
+		if (countryFromId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Country_ID, countryFromId);
 		}
@@ -225,9 +234,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
 		}
 
-		if (orgId > 0)
+		if (orgId != null)
 		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, 0);
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
 		}
 
 		final IQuery<I_C_Tax> query = queryBuilder
@@ -261,19 +270,19 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final int chargeId,
 			final Timestamp billDate,
 			final Timestamp shipDate,
-			final int org_ID,
-			final int warehouseId,
+			@NonNull final OrgId orgId,
+			final WarehouseId warehouseId,
 			final int billC_BPartner_Location_ID,
 			final int shipC_BPartner_Location_ID,
 			final boolean isSOTrx)
 	{
 		//
 		// If organization is tax exempted then we will return the Tax Exempt for that organization (03871)
-		final I_C_BPartner orgBPartner = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, org_ID, I_C_BPartner.class, ITrx.TRXNAME_None);
+		final I_C_BPartner orgBPartner = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		log.debug("Org BP: {}", orgBPartner);
 		if (Services.get(ITaxDAO.class).retrieveIsTaxExempt(orgBPartner, billDate))
 		{
-			final int taxExemptId = getExemptTax(ctx, org_ID);
+			final int taxExemptId = getExemptTax(ctx, orgId.getRepoId());
 			log.debug("Org is tax exempted => C_Tax_ID={}", taxExemptId);
 			return taxExemptId;
 		}
@@ -285,36 +294,35 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final I_C_BPartner_Location shipBPLocation = new MBPartnerLocation(ctx, shipC_BPartner_Location_ID, null);
 
-		final I_C_Location locationTo = shipBPLocation.getC_Location();
+		final I_C_Location shipToLocation = shipBPLocation.getC_Location();
 		final boolean isEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
 				ICountryAreaBL.COUNTRYAREAKEY_EU,
-				locationTo.getC_Country().getCountryCode(),
+				shipToLocation.getC_Country().getCountryCode(),
 				billDate);
+		final int shipToCountryRepoId = shipToLocation.getC_Country_ID();
 
-		int countryFromId = -1;
-		if (warehouseId > 0)
+		final CountryId shipFromCountryId;
+		if (warehouseId != null)
 		{
-			final I_M_Warehouse warehouse = InterfaceWrapperHelper.create(ctx, warehouseId, I_M_Warehouse.class, ITrx.TRXNAME_None);
-			final I_C_Location location = Services.get(IWarehouseBL.class).getC_Location(warehouse);
-			countryFromId = location.getC_Country_ID();
+			shipFromCountryId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 		}
-		if (countryFromId == -1)
+		else
 		{
-			// 03378 : retrieve default country ID for org_ID
 			final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-			if (bPartnerOrgBL.retrieveOrgLocation(ctx, org_ID, null) != null) // 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
+			final CountryId orgCountryId = bPartnerOrgBL.getOrgCountryId(orgId);
+			if (orgCountryId != null)
 			{
-				countryFromId = bPartnerOrgBL.retrieveOrgLocation(ctx, org_ID, null).getC_Country_ID();
+				shipFromCountryId = orgCountryId;
 			}
 			else
 			{
-				// 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
-				countryFromId = Services.get(ICountryDAO.class).getDefault(ctx).getC_Country_ID();
+				shipFromCountryId = Services.get(ICountryDAO.class).getDefaultCountryId();
 			}
 		}
+		final int shipFromCountryRepoId = CountryId.toRepoId(shipFromCountryId);
 
 		// bp has tax certificate?
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(ctx, shipBPLocation.getC_BPartner_ID(), I_C_BPartner.class, null);
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(shipBPLocation.getC_BPartner_ID());
 		final boolean hasTaxCertificate = !Check.isEmpty(bp.getVATaxID(), true);
 
 		// String sql = "SELECT DISTINCT t.C_Tax_ID,t.validFrom, t.To_Country_ID FROM C_Tax t,M_Product pr,C_Charge c " +
@@ -329,20 +337,18 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				"LEFT JOIN M_Pricelist_Version plv on pp.M_Pricelist_Version_ID = plv.M_Pricelist_Version_ID " +
 				"LEFT JOIN M_Pricelist pl on plv.M_Pricelist_ID = pl.M_Pricelist_ID " +
 				"LEFT JOIN C_Charge c ON c.C_TaxCategory_ID = t.C_TaxCategory_ID " +
-				"WHERE t.validFrom < ? AND t.isActive='Y' AND t.C_Country_ID = " + countryFromId + " ";
+				"WHERE t.validFrom < ? AND t.isActive='Y' AND t.C_Country_ID = " + shipFromCountryRepoId + " ";
 
-		if (locationTo.getC_Country_ID() == countryFromId)
+		if (shipToCountryRepoId == shipFromCountryRepoId)
 		{
-			sql += " AND t.To_Country_ID = " + locationTo.getC_Country_ID() + " ";
+			sql += " AND t.To_Country_ID = " + shipToCountryRepoId + " ";
 		}
 		else if (isEULocation)
 		{
 			// To_Country_ID should be null for all other taxes
-			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = ";
-			sql += locationTo.getC_Country().getC_Country_ID() + ") ";
-			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID = ";
+			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryRepoId + ") ";
 			// metas: Abweichungen zu EU finden wenn definiert
-			sql += locationTo.getC_Country().getC_Country_ID() + ") ";
+			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID = " + shipToCountryRepoId + ") ";
 			sql += " AND t.IsToEULocation = 'Y' ";
 			if (hasTaxCertificate)
 			{
@@ -356,28 +362,24 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		else
 		{
 			// rest of the world
-			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = ";
-			sql += locationTo.getC_Country().getC_Country_ID() + ") ";
-			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID =";
+			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryRepoId + ") ";
 			// Abweichungen zu Drittland finden finden wenn definiert
-			sql += locationTo.getC_Country().getC_Country_ID() + ") ";
+			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID =" + shipToLocation.getC_Country().getC_Country_ID() + ") ";
 			sql += " AND t.IsToEULocation = 'N' ";
 		}
 		// product or charge
 		if (productId != 0)
 		{
-			sql += " AND t.C_TaxCategory_ID = pp.C_TaxCategory_ID " +
-					" AND pp.M_Product_ID = ? ";
+			sql += " AND t.C_TaxCategory_ID = pp.C_TaxCategory_ID AND pp.M_Product_ID = ? ";
 		}
 		else
 		{
-			sql += " AND t.C_TaxCategory_ID = c.C_TaxCategory_ID " +
-					" AND c.C_Charge_ID = ? ";
+			sql += " AND t.C_TaxCategory_ID = c.C_TaxCategory_ID AND c.C_Charge_ID = ? ";
 		}
 
-		if (org_ID > 0)
+		if (orgId != null)
 		{
-			sql += " AND (t.AD_Org_ID=0 OR t.AD_Org_ID=" + org_ID + ") ";
+			sql += " AND (t.AD_Org_ID=0 OR t.AD_Org_ID=" + orgId.getRepoId() + ") ";
 		}
 
 		sql += " ORDER BY t.AD_Org_ID DESC, t.To_Country_ID, t.validFrom DESC ";
@@ -392,7 +394,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// metas end: rc: 03083
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setTimestamp(1, billDate);
 			if (productId != 0)
 			{
@@ -456,7 +458,17 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	{
 		if (M_Product_ID > 0 || C_Charge_ID > 0)
 		{
-			return getGermanTax(ctx, M_Product_ID, C_Charge_ID, billDate, shipDate, AD_Org_ID, M_Warehouse_ID, billC_BPartner_Location_ID, shipC_BPartner_Location_ID, IsSOTrx);
+			return getGermanTax(
+					ctx,
+					M_Product_ID,
+					C_Charge_ID,
+					billDate,
+					shipDate,
+					OrgId.ofRepoId(AD_Org_ID),
+					WarehouseId.ofRepoIdOrNull(M_Warehouse_ID),
+					billC_BPartner_Location_ID,
+					shipC_BPartner_Location_ID,
+					IsSOTrx);
 		}
 		else
 		{
@@ -498,7 +510,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// Null Tax
 		if (tax.getRate().signum() == 0)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 
 		BigDecimal multiplier = tax.getRate().divide(Env.ONEHUNDRED, 12, BigDecimal.ROUND_HALF_UP);
@@ -516,7 +528,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		else
 		// $106 - ($106 / (100+6)/100) == $6 == $106 - ($106/1.06)
 		{
-			multiplier = multiplier.add(Env.ONE);
+			multiplier = multiplier.add(BigDecimal.ONE);
 			final BigDecimal base = amount.divide(multiplier, 12, BigDecimal.ROUND_HALF_UP);
 			taxAmt = amount.subtract(base);
 		}

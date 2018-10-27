@@ -1,14 +1,13 @@
 package org.adempiere.ad.column.model.interceptor;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
+
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -23,11 +22,11 @@ import org.compiere.model.ModelValidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,18 +36,11 @@ public class AD_Column
 {
 	public static final transient AD_Column instance = new AD_Column();
 
-	@Init
-	public void init()
-	{
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		programaticCalloutProvider.registerAnnotatedCallout(new org.adempiere.ad.column.callout.AD_Column());
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Column.COLUMNNAME_ColumnSQL)
 	public void lowerCaseWhereClause(final I_AD_Column column)
 	{
 		final String columnSQL = column.getColumnSQL();
-		if(Check.isEmpty(columnSQL, true))
+		if (Check.isEmpty(columnSQL, true))
 		{
 			// nothing to do
 			return;
@@ -58,7 +50,20 @@ public class AD_Column
 		final String adaptedWhereClause = accessSqlParserInstance.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
 
 		column.setColumnSQL(adaptedWhereClause);
-
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_AD_Column.COLUMNNAME_MandatoryLogic, I_AD_Column.COLUMNNAME_ReadOnlyLogic })
+	public void validateLogicExpressions(final I_AD_Column column)
+	{
+		if (!Check.isEmpty(column.getReadOnlyLogic(), true))
+		{
+			LogicExpressionCompiler.instance.compile(column.getReadOnlyLogic());
+		}
+
+		if (!Check.isEmpty(column.getMandatoryLogic(), true))
+		{
+			LogicExpressionCompiler.instance.compile(column.getMandatoryLogic());
+		}
+	}
 }

@@ -3,9 +3,8 @@ package de.metas.procurement.base.balance;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.procurement.base.model.I_PMM_Balance;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -8,13 +8,14 @@ import java.util.Set;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicTuple extends AbstractLogicExpression

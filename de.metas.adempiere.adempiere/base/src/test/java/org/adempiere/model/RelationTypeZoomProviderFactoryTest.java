@@ -9,7 +9,6 @@ import org.adempiere.ad.service.impl.LookupDAO;
 import org.adempiere.ad.service.impl.LookupDAO.TableRefInfo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Reference;
@@ -19,6 +18,7 @@ import org.compiere.model.X_AD_Reference;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.util.Services;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Mocked;

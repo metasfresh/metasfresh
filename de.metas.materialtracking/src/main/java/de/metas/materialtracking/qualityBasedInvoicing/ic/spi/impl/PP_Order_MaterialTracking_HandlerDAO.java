@@ -8,13 +8,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.document.engine.IDocument;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.Services;
 
 /*
  * #%L

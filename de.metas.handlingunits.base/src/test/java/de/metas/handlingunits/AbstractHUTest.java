@@ -1,5 +1,8 @@
 package de.metas.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -27,25 +30,36 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
+import de.metas.notification.INotificationRepository;
+import de.metas.notification.impl.NotificationRepository;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 public abstract class AbstractHUTest
 {
 	protected I_C_UOM uomEach;
 	protected I_C_UOM uomKg;
+
+	public LocatorId defaultLocatorId;
 
 	/**
 	 * Value: Pallete
@@ -75,7 +89,9 @@ public abstract class AbstractHUTest
 	 * Value: Tomato
 	 */
 	protected I_M_Product pTomato;
+	protected ProductId pTomatoId;
 	protected I_M_Product pSalad;
+	protected ProductId pSaladId;
 
 	protected I_M_Attribute attr_CountryMadeIn;
 	protected I_M_Attribute attr_Volume;
@@ -150,6 +166,13 @@ public abstract class AbstractHUTest
 		setupMasterData();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+
+		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
+
 		initialize();
 	}
 
@@ -166,6 +189,8 @@ public abstract class AbstractHUTest
 	protected void setupMasterData()
 	{
 		helper = createHUTestHelper();
+
+		defaultLocatorId = createLocatorId();
 
 		attr_CountryMadeIn = helper.attr_CountryMadeIn;
 		attr_Volume = helper.attr_Volume;
@@ -201,7 +226,21 @@ public abstract class AbstractHUTest
 		pmBag = helper.pmBag;
 
 		pTomato = helper.pTomato;
+		pTomatoId = ProductId.ofRepoId(pTomato.getM_Product_ID());
 		pSalad = helper.pSalad;
+		pSaladId = ProductId.ofRepoId(pSalad.getM_Product_ID());
+	}
+
+	private LocatorId createLocatorId()
+	{
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		saveRecord(warehouse);
+
+		final I_M_Locator locator = newInstance(I_M_Locator.class);
+		locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		saveRecord(locator);
+
+		return LocatorId.ofRecord(locator);
 	}
 
 	/**

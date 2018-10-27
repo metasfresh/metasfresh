@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_InvoiceLine
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -541836067L;
+	private static final long serialVersionUID = 2111080187L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (Properties ctx, int C_InvoiceLine_ID, String trxName)
@@ -43,23 +26,19 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 			setC_Invoice_ID (0);
 			setC_InvoiceLine_ID (0);
 			setC_Tax_ID (0);
-			setIsDescription (false);
-// N
-			setIsPrinted (true);
-// Y
-			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_InvoiceLine WHERE C_Invoice_ID=@C_Invoice_ID@
-			setLineNetAmt (Env.ZERO);
+			setIsDescription (false); // N
+			setIsOrderLineReadOnly (true); // Y
+			setIsPrinted (true); // Y
+			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_InvoiceLine WHERE C_Invoice_ID=@C_Invoice_ID@
+			setLineNetAmt (BigDecimal.ZERO);
 			setM_AttributeSetInstance_ID (0);
-			setPriceActual (Env.ZERO);
-			setPriceEntered (Env.ZERO);
-			setPriceLimit (Env.ZERO);
-			setPriceList (Env.ZERO);
+			setPriceActual (BigDecimal.ZERO);
+			setPriceEntered (BigDecimal.ZERO);
+			setPriceLimit (BigDecimal.ZERO);
+			setPriceList (BigDecimal.ZERO);
 			setProcessed (false);
-			setQtyEntered (Env.ZERO);
-// 1
-			setQtyInvoiced (Env.ZERO);
-// 1
+			setQtyEntered (BigDecimal.ZERO); // 1
+			setQtyInvoiced (BigDecimal.ZERO); // 1
         } */
     }
 
@@ -262,6 +241,40 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Base_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
+	}
+
+	@Override
+	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem)
+	{
+		set_ValueFromPO(COLUMNNAME_Base_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, Base_PricingSystem);
+	}
+
+	/** Set Base_PricingSystem_ID.
+		@param Base_PricingSystem_ID Base_PricingSystem_ID	  */
+	@Override
+	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID)
+	{
+		if (Base_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_Base_PricingSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_Base_PricingSystem_ID, Integer.valueOf(Base_PricingSystem_ID));
+	}
+
+	/** Get Base_PricingSystem_ID.
+		@return Base_PricingSystem_ID	  */
+	@Override
+	public int getBase_PricingSystem_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Base_PricingSystem_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
@@ -454,9 +467,9 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public void setC_OrderLine_ID (int C_OrderLine_ID)
 	{
 		if (C_OrderLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
+			set_Value (COLUMNNAME_C_OrderLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
+			set_Value (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
 	}
 
 	/** Get Auftragsposition.
@@ -709,6 +722,25 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set External IDs.
+		@param ExternalIds 
+		List of external IDs from C_Invoice_Candidates; delimited with ';,;'
+	  */
+	@Override
+	public void setExternalIds (java.lang.String ExternalIds)
+	{
+		set_Value (COLUMNNAME_ExternalIds, ExternalIds);
+	}
+
+	/** Get External IDs.
+		@return List of external IDs from C_Invoice_Candidates; delimited with ';,;'
+	  */
+	@Override
+	public java.lang.String getExternalIds () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalIds);
+	}
+
 	/** Set Description Only.
 		@param IsDescription 
 		if true, the line is just description and no transaction
@@ -735,7 +767,30 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 		return false;
 	}
 
-	/** Set Gedruckt.
+	/** Set IsOrderLineReadOnly.
+		@param IsOrderLineReadOnly IsOrderLineReadOnly	  */
+	@Override
+	public void setIsOrderLineReadOnly (boolean IsOrderLineReadOnly)
+	{
+		set_Value (COLUMNNAME_IsOrderLineReadOnly, Boolean.valueOf(IsOrderLineReadOnly));
+	}
+
+	/** Get IsOrderLineReadOnly.
+		@return IsOrderLineReadOnly	  */
+	@Override
+	public boolean isOrderLineReadOnly () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsOrderLineReadOnly);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set andrucken.
 		@param IsPrinted 
 		Indicates if this document / line is printed
 	  */
@@ -745,7 +800,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 		set_Value (COLUMNNAME_IsPrinted, Boolean.valueOf(IsPrinted));
 	}
 
-	/** Get Gedruckt.
+	/** Get andrucken.
 		@return Indicates if this document / line is printed
 	  */
 	@Override
@@ -827,7 +882,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -849,7 +904,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineTotalAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -865,9 +920,9 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -878,8 +933,8 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -910,9 +965,9 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public void setM_InOutLine_ID (int M_InOutLine_ID)
 	{
 		if (M_InOutLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, null);
+			set_Value (COLUMNNAME_M_InOutLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
+			set_Value (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
 	}
 
 	/** Get Versand-/Wareneingangsposition.
@@ -1019,7 +1074,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1041,7 +1096,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1063,7 +1118,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceLimit);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1085,7 +1140,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceList);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1152,7 +1207,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1174,7 +1229,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1218,7 +1273,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RRAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1284,7 +1339,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TaxAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

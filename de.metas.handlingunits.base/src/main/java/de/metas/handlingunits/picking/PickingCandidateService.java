@@ -1,30 +1,43 @@
 package de.metas.handlingunits.picking;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Set;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.X_M_Picking_Candidate;
-import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlotCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand.AddQtyToHUCommandBuilder;
-import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand.ClosePickingCandidateCommandBuilder;
-import de.metas.handlingunits.picking.pickingCandidateCommands.ProcessPickingCandidateCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveHUFromPickingSlotCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCommand.RemoveQtyFromHUCommandBuilder;
-import de.metas.handlingunits.picking.pickingCandidateCommands.UnProcessPickingCandidateCommand;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
+import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
+import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
+import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
+import de.metas.handlingunits.picking.candidate.commands.ProcessHUsAndPickingCandidateCommand;
+import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesResult;
+import de.metas.handlingunits.picking.candidate.commands.RejectPickingCommand;
+import de.metas.handlingunits.picking.candidate.commands.RejectPickingResult;
+import de.metas.handlingunits.picking.candidate.commands.RemoveHUFromPickingSlotCommand;
+import de.metas.handlingunits.picking.candidate.commands.RemoveQtyFromHUCommand;
+import de.metas.handlingunits.picking.candidate.commands.ReviewQtyPickedCommand;
+import de.metas.handlingunits.picking.candidate.commands.SetHuPackingInstructionIdCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidateCommand;
+import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
+import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
+import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.RejectPickingRequest;
+import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -37,12 +50,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,7 +67,7 @@ public class PickingCandidateService
 {
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
-	
+
 	@Autowired
 	private PickingConfigRepository pickingConfigRepository;
 
@@ -66,31 +79,52 @@ public class PickingCandidateService
 		this.pickingCandidateRepository = pickingCandidateRepository;
 	}
 
-	public void addHUToPickingSlot(final int huId, final int pickingSlotId, final int shipmentScheduleId)
+	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
 	{
-		AddHUToPickingSlotCommand.builder()
+		return pickingCandidateRepository.getByIds(pickingCandidateIds);
+	}
+
+	public PickHUResult pickHU(final PickHURequest request)
+	{
+		return PickHUCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.huId(huId)
-				.pickingSlotId(pickingSlotId)
-				.shipmentScheduleId(shipmentScheduleId)
+				.request(request)
 				.build()
 				.perform();
 	}
 
-	public AddQtyToHUCommandBuilder addQtyToHU()
+	public RejectPickingResult rejectPicking(@NonNull final RejectPickingRequest request)
+	{
+		return RejectPickingCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.request(request)
+				.build()
+				.perform();
+	}
+
+	/**
+	 * @return the quantity which was effectively added
+	 */
+	public Quantity addQtyToHU(@NonNull final AddQtyToHURequest request)
 	{
 		return AddQtyToHUCommand.builder()
-				.pickingCandidateRepository(pickingCandidateRepository);
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.request(request)
+				.build()
+				.performAndGetQtyPicked();
 	}
 
-	public RemoveQtyFromHUCommandBuilder removeQtyFromHU()
+	public void removeQtyFromHU(final RemoveQtyFromHURequest request)
 	{
-		return RemoveQtyFromHUCommand.builder()
+		RemoveQtyFromHUCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
-				.pickingCandidateRepository(pickingCandidateRepository);
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.request(request)
+				.build()
+				.perform();
 	}
 
-	public void removeHUFromPickingSlot(final int huId)
+	public void removeHUFromPickingSlot(final HuId huId)
 	{
 		RemoveHUFromPickingSlotCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
@@ -103,35 +137,52 @@ public class PickingCandidateService
 	 * For the given {@code huIds}, this method does two things:
 	 * <ul>
 	 * <li>Retrieves the source HUs (if any) of the the given {@code huIds} and if they are empty creates a snapshot and destroys them</li>
-	 * <li>selects the {@link I_M_Picking_Candidate}s that reference those HUs
+	 * <li>selects the picking candidates that reference those HUs
 	 * and have {@code status == 'IP'} (in progress) and updates them to {@code status='PR'} (processed).
 	 * No model interceptors etc will be fired.</li>
 	 * </ul>
 	 */
-	public void processForHUIds(@NonNull final List<Integer> huIds, final int pickingSlotId, final OptionalInt shipmentScheduleId)
+	public void processForHUIds(
+			@NonNull final Set<HuId> pickFromHuIds,
+			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
+		final List<PickingCandidate> pickingCandidatesToProcess = pickingCandidateRepository.getByHUIds(pickFromHuIds)
+				.stream()
+				.filter(PickingCandidate::isDraft)
+				.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.equals(pc.getShipmentScheduleId()))
+				.collect(ImmutableList.toImmutableList());
+
 		//
 		// Process those picking candidates
-		final ProcessPickingCandidateCommand processCmd = ProcessPickingCandidateCommand.builder()
+		final ImmutableList<PickingCandidate> processedPickingCandidates = ProcessHUsAndPickingCandidateCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingConfigRepository(pickingConfigRepository)
-				.huIds(huIds)
-				.pickingSlotId(pickingSlotId)
-				.shipmentScheduleId(shipmentScheduleId.orElse(-1))
-				.build();
-		processCmd.perform();
+				.pickingCandidates(pickingCandidatesToProcess)
+				.additionalPickFromHuIds(pickFromHuIds)
+				.allowOverDelivery(pickingConfigRepository.getPickingConfig().isAllowOverDelivery())
+				.build()
+				.perform();
 
 		//
 		// Automatically close those processed picking candidates which are NOT on a rack system picking slot. (gh2740)
 		ClosePickingCandidateCommand.builder()
-				.pickingCandidates(processCmd.getProcessedPickingCandidates())
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidates(processedPickingCandidates)
 				.pickingSlotIsRackSystem(false)
 				.build()
 				.perform();
 	}
 
-	public void unprocessForHUId(final int huId)
+	public ProcessPickingCandidatesResult process(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
+	{
+		return ProcessPickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateIds(pickingCandidateIds)
+				.build()
+				.perform();
+	}
+
+	public void unprocessForHUId(final HuId huId)
 	{
 		UnProcessPickingCandidateCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
@@ -141,29 +192,60 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public ClosePickingCandidateCommandBuilder prepareCloseForShipmentSchedules(@NonNull final List<Integer> shipmentScheduleIds)
+	public void closeForShipmentSchedules(@NonNull final CloseForShipmentSchedulesRequest request)
 	{
-		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByShipmentScheduleIdsAndStatus(shipmentScheduleIds, X_M_Picking_Candidate.STATUS_PR);
-		return ClosePickingCandidateCommand.builder()
-				.pickingCandidates(pickingCandidates);
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(
+				request.getShipmentScheduleIds(),
+				PickingCandidateStatus.Processed);
+
+		ClosePickingCandidateCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidates(pickingCandidates)
+				.pickingSlotIsRackSystem(request.getPickingSlotIsRackSystem())
+				.failOnError(request.isFailOnError())
+				.build()
+				.perform();
 	}
 
-	public void inactivateForHUId(final int huId)
+	public void inactivateForHUId(@NonNull final HuId huId)
 	{
-		Check.assume(huId > 0, "huId > 0");
-		inactivateForHUIds(ImmutableList.of(huId));
+		inactivateForHUIds(ImmutableSet.of(huId));
 	}
 
-	public void inactivateForHUIds(final Collection<Integer> huIds)
+	public void inactivateForHUIds(final Collection<HuId> huIds)
 	{
-		pickingCandidateRepository.retrievePickingCandidatesByHUIds(huIds)
-				.forEach(this::inactivate);
+		// tolerate empty
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+
+		pickingCandidateRepository.inactivateForHUIds(huIds);
 	}
 
-	private void inactivate(final I_M_Picking_Candidate pickingCandidate)
+	public boolean isHuIdPicked(@NonNull final HuId huId)
 	{
-		pickingCandidate.setIsActive(false);
-		pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_CL);
-		InterfaceWrapperHelper.save(pickingCandidate);
+		return pickingCandidateRepository.isHuIdPicked(huId);
+	}
+
+	public PickingCandidate setQtyReviewed(@NonNull final PickingCandidateId pickingCandidateId, @NonNull final BigDecimal qtyReviewed)
+	{
+		return ReviewQtyPickedCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateId(pickingCandidateId)
+				.qtyReviewed(qtyReviewed)
+				.build()
+				.perform();
+	}
+
+	public List<PickingCandidate> setHuPackingInstructionId(final Set<PickingCandidateId> pickingCandidateIds, final HuPackingInstructionsId huPackingInstructionsId)
+	{
+		return SetHuPackingInstructionIdCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateIds(pickingCandidateIds)
+				.huPackingInstructionsId(huPackingInstructionsId)
+				.build()
+				.perform();
+
 	}
 }

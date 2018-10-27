@@ -1,8 +1,7 @@
 package de.metas.materialtracking;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Services;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRMA;
@@ -34,6 +33,7 @@ import org.compiere.util.Env;
 import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Generate invoice for Vendor RMA
@@ -100,7 +100,7 @@ public class InvoiceGenerateRMA extends JavaProcess
         {
             pstmt = DB.prepareStatement(sql, get_TrxName());
             pstmt.setInt(1, Env.getAD_Client_ID(getCtx()));
-            pstmt.setInt(2, getAD_PInstance_ID());
+            pstmt.setInt(2, getPinstanceId().getRepoId());
             ResultSet rs = pstmt.executeQuery();
             
             while (rs.next())

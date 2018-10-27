@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
@@ -44,7 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
@@ -54,6 +52,8 @@ import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.IOrderLineBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 {
@@ -128,7 +128,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices();
 		this.orderLineBL = Services.get(IOrderLineBL.class);
 
-		final AsyncBPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new AsyncBPartnerStatisticsUpdater();
+		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 		//
 		// Register C_Invoice_Candidate model interceptor

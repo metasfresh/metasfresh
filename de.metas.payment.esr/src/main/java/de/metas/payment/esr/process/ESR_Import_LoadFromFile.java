@@ -3,7 +3,6 @@ package de.metas.payment.esr.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 
@@ -19,6 +18,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -71,7 +71,7 @@ public class ESR_Import_LoadFromFile
 				//
 				.asyncBatchName(p_AsyncBatchName)
 				.asyncBatchDesc(p_AsyncBatchDesc)
-				.adPInstanceId(getAD_PInstance_ID())
+				.pinstanceId(getPinstanceId())
 				//
 				.loggable(this)
 				//

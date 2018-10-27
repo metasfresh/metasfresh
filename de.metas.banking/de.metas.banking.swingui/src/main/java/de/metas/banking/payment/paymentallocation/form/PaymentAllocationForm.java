@@ -70,8 +70,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.StatusBar;
 import org.compiere.apps.form.FormFrame;
@@ -97,6 +95,7 @@ import com.jgoodies.looks.Options;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.banking.payment.paymentallocation.model.AllocableDocType;
@@ -115,8 +114,9 @@ import de.metas.banking.payment.paymentallocation.service.WriteOffAmountTooBigPa
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.model.I_C_Payment_Request;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class PaymentAllocationForm
 		extends AbstractPaymentAllocationForm

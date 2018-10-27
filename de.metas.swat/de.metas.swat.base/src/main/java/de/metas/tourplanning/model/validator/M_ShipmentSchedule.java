@@ -25,11 +25,11 @@ package de.metas.tourplanning.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
 
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler;
 import de.metas.tourplanning.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 
 @Interceptor(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule

@@ -2,8 +2,6 @@ package org.eevolution.mrp.api.impl;
 
 import java.util.function.Predicate;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -12,6 +10,8 @@ import org.eevolution.model.I_AD_Note;
 
 import de.metas.i18n.IADMessageDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MRPNoteMatcher implements Predicate<I_AD_Note>
 {

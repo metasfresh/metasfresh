@@ -9,20 +9,23 @@ import java.util.OptionalInt;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceRepositoryTests;
+import de.metas.process.PInstanceId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -54,7 +57,6 @@ public class RetrieveDbRecordsUtilTest
 
 	private final Instant eventTime = Instant.now();
 
-
 	private HUTraceRepository huTraceRepository;
 
 	@Before
@@ -67,7 +69,7 @@ public class RetrieveDbRecordsUtilTest
 	@Test
 	public void configureQueryBuilder_orgId()
 	{
-		final HUTraceEventQuery query = HUTraceEventQuery.builder().orgId(30).build();
+		final HUTraceEventQuery query = HUTraceEventQuery.builder().orgId(OrgId.ofRepoId(30)).build();
 
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.createQueryBuilderOrNull(query);
 		assertThat(queryBuilder).isNotNull();
@@ -90,8 +92,8 @@ public class RetrieveDbRecordsUtilTest
 		final HUTraceEvent event1_1 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
 				.inOutId(10)
-				.topLevelHuId(101)
-				.vhuId(11)
+				.topLevelHuId(HuId.ofRepoId(101))
+				.vhuId(HuId.ofRepoId(11))
 				.build();
 		huTraceRepository.addEvent(event1_1);
 
@@ -99,8 +101,8 @@ public class RetrieveDbRecordsUtilTest
 				.recursionMode(RecursionMode.BOTH)
 				.inOutId(20).build();
 
-		final int selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
-		assertThat(selectionId).isGreaterThan(0);
+		final PInstanceId selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
+		assertThat(selectionId).isNotNull();
 
 		final List<I_M_HU_Trace> result = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 				.setOnlySelection(selectionId)
@@ -125,8 +127,8 @@ public class RetrieveDbRecordsUtilTest
 
 	private List<I_M_HU_Trace> invoke_queryToSelection(final HUTraceEventQuery query)
 	{
-		final int selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
-		assertThat(selectionId).isGreaterThan(0);
+		final PInstanceId selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
+		assertThat(selectionId).isNotNull();
 
 		final List<I_M_HU_Trace> result = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Trace.class)
@@ -161,16 +163,16 @@ public class RetrieveDbRecordsUtilTest
 		final HUTraceEvent event2_1 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
 				.inOutId(10)
-				.topLevelHuId(202)
-				.vhuId(21)
+				.topLevelHuId(HuId.ofRepoId(202))
+				.vhuId(HuId.ofRepoId(21))
 				.build();
 		huTraceRepository.addEvent(event2_1);
 
 		final HUTraceEvent event2_2 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
-				.topLevelHuId(202)
-				.vhuSourceId(21)
-				.vhuId(22)
+				.topLevelHuId(HuId.ofRepoId(202))
+				.vhuSourceId(HuId.ofRepoId(21))
+				.vhuId(HuId.ofRepoId(22))
 				.build();
 		huTraceRepository.addEvent(event2_2);
 	}
@@ -180,16 +182,16 @@ public class RetrieveDbRecordsUtilTest
 		final HUTraceEvent event1_1 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
 				.inOutId(10)
-				.topLevelHuId(101)
-				.vhuId(11)
+				.topLevelHuId(HuId.ofRepoId(101))
+				.vhuId(HuId.ofRepoId(11))
 				.build();
 		huTraceRepository.addEvent(event1_1);
 
 		final HUTraceEvent event1_2 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
-				.topLevelHuId(102)
-				.vhuSourceId(11)
-				.vhuId(12)
+				.topLevelHuId(HuId.ofRepoId(102))
+				.vhuSourceId(HuId.ofRepoId(11))
+				.vhuId(HuId.ofRepoId(12))
 				.build();
 		huTraceRepository.addEvent(event1_2);
 	}
@@ -225,15 +227,15 @@ public class RetrieveDbRecordsUtilTest
 		final HUTraceEvent event1_1 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
 				.inOutId(10)
-				.topLevelHuId(101)
-				.vhuId(11)
+				.topLevelHuId(HuId.ofRepoId(101))
+				.vhuId(HuId.ofRepoId(11))
 				.build();
 		huTraceRepository.addEvent(event1_1);
 
 		final HUTraceEvent event1_2 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(TimeUtil.addHours(new Date(eventTime.toEpochMilli()), 1).toInstant())
-				.topLevelHuId(102)
-				.vhuId(11)
+				.topLevelHuId(HuId.ofRepoId(102))
+				.vhuId(HuId.ofRepoId(11))
 				.build();
 		huTraceRepository.addEvent(event1_2);
 	}

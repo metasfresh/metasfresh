@@ -7,8 +7,6 @@ import java.time.LocalDateTime;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -18,11 +16,13 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -111,12 +111,12 @@ public class HUWithExpiryDatesService
 		huAttributes.setSaveOnChange(true);
 
 		final I_M_Attribute huExpiredAttribute = retrieveHU_Expired_Attribute();
-		huAttributes.setValue(huExpiredAttribute, Constants.ATTR_Expired_Value_Expired);
+		huAttributes.setValue(huExpiredAttribute, HUAttributeConstants.ATTR_Expired_Value_Expired);
 	}
 
 	private I_M_Attribute retrieveHU_Expired_Attribute()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		return attributeDAO.retrieveAttributeByValue(Constants.ATTR_Expired); // this is cached
+		return attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_Expired); // this is cached
 	}
 }

@@ -13,9 +13,10 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.util.Check;
 import org.compiere.model.MTreeNode;
 import org.jdesktop.swingx.JXTaskPane;
+
+import de.metas.util.Check;
 
 /*
  * #%L

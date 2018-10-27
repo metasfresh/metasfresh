@@ -25,8 +25,6 @@ import java.util.List;
  */
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable2;
 
 import de.metas.handlingunits.IHUContext;
@@ -38,6 +36,8 @@ import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.impl.HUTransactionAttributeBuilder;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUContextProcessorExecutor implements IHUContextProcessorExecutor

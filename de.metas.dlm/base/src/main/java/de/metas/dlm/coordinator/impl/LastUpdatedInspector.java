@@ -4,13 +4,13 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.TimeUtil;
 
 import de.metas.dlm.coordinator.IRecordInspector;
 import de.metas.dlm.migrator.IMigratorService;
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

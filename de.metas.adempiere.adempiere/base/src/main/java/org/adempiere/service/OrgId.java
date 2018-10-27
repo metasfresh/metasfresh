@@ -1,9 +1,12 @@
 package org.adempiere.service;
 
-import org.adempiere.util.Check;
+import java.util.Optional;
+
 import org.compiere.util.Env;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Value;
 
 /*
@@ -56,6 +59,27 @@ public class OrgId implements RepoIdAware
 		}
 	}
 
+	public static OrgId ofRepoIdOrAny(final int repoId)
+	{
+		if (repoId == ANY.repoId)
+		{
+			return ANY;
+		}
+		else if (repoId < 0)
+		{
+			return ANY;
+		}
+		else
+		{
+			return ofRepoId(repoId);
+		}
+	}
+
+	public static Optional<OrgId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
 	public static int toRepoId(final OrgId orgId)
 	{
 		return orgId != null ? orgId.getRepoId() : -1;
@@ -72,7 +96,7 @@ public class OrgId implements RepoIdAware
 
 	private OrgId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "orgId");
 	}
 
 	private OrgId()

@@ -2,11 +2,11 @@ package de.metas.event.log.impl;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.IAutoCloseable;
 
 import de.metas.event.log.EventLogUserService.EventLogEntryRequest;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*

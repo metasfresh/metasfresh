@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -40,6 +38,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Msg;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *

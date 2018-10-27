@@ -1,7 +1,5 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.apache.commons.lang.StringUtils;
 import org.compiere.util.Env;
 
@@ -11,6 +9,8 @@ import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;

@@ -13,8 +13,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
@@ -46,6 +44,8 @@ import de.metas.procurement.sync.protocol.SyncRfQPriceChangeEvent;
 import de.metas.procurement.sync.protocol.SyncRfQQtyChangeEvent;
 import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

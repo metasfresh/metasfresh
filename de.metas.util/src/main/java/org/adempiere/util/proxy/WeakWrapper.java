@@ -29,7 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Wraps a given object, all method calls will be forwarded to that object but inside we will keep a weak reference to the wrapped object.

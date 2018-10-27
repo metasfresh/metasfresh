@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -15,6 +14,7 @@ import org.compiere.model.I_M_AttributeValue;
 import com.google.common.base.Predicates;
 
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

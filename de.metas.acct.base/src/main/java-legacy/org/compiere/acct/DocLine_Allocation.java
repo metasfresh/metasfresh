@@ -25,8 +25,6 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Invoice;
@@ -38,6 +36,8 @@ import org.compiere.util.DB;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Allocation Line

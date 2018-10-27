@@ -2,30 +2,6 @@ package de.metas.order.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static org.compiere.model.X_C_Order.DELIVERYRULE_CompleteOrder;
-
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Iterator;
@@ -38,8 +14,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
@@ -50,8 +24,12 @@ import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -90,7 +68,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				"The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
 
 		// 04290
-		newSched.setM_Warehouse(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine));
+		newSched.setM_Warehouse_ID(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine).getRepoId());
 
 		final String bPartnerAddress;
 		if (!Check.isEmpty(orderLine.getBPartnerAddress()))
@@ -108,7 +86,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		newSched.setBPartnerAddress(bPartnerAddress);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, orderLine.getM_Product(), orderLine.getPrice_UOM(), orderLine.getQtyReserved());
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, orderLine.getPrice_UOM(), orderLine.getQtyReserved());
 		newSched.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
 
 		final String groupingOrderLineLabel = DB
@@ -125,7 +104,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		// 03152 end
 
 		// only display item products
-		final boolean display = Services.get(IProductBL.class).isItem(orderLine.getM_Product());
+		final boolean display = Services.get(IProductBL.class).isItem(productId);
 		newSched.setIsDisplayed(display);
 
 		InterfaceWrapperHelper.save(newSched);
@@ -199,7 +178,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 
-		if (DELIVERYRULE_CompleteOrder.equals(order.getDeliveryRule()))
+		final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(order.getDeliveryRule());
+		if (DeliveryRule.COMPLETE_ORDER.equals(deliveryRule))
 		{
 			for (final I_C_OrderLine ol : Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class))
 			{

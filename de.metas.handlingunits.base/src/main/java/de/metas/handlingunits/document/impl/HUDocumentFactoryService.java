@@ -31,7 +31,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.eevolution.model.I_DD_Order;
 
 import de.metas.handlingunits.ddorder.api.impl.DDOrderHUDocumentFactory;
@@ -40,6 +39,7 @@ import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
 
 public class HUDocumentFactoryService implements IHUDocumentFactoryService
 {

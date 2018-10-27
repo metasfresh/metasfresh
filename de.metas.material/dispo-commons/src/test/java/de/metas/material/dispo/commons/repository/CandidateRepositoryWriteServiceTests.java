@@ -10,7 +10,9 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -22,7 +24,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,7 +46,9 @@ import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -113,7 +116,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(candidateRecord.getM_AttributeSetInstance_ID()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
 		assertThat(candidateRecord.getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleId);
 		assertThat(candidateRecord.getC_OrderSO_ID()).isEqualTo(orderId);
-		assertThat(candidateRecord.getQty()).isEqualTo(BigDecimal.ZERO);
+		assertThat(candidateRecord.getQty()).isEqualTo(ZERO);
 	}
 
 	@Test
@@ -143,8 +146,8 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 15))
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.TEN, 16))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(ONE, AttributesKey.ALL, 0, 15))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(TEN, AttributesKey.ALL, 0, 16))
 				.build();
 
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -174,7 +177,7 @@ public class CandidateRepositoryWriteServiceTests
 				.addOrUpdateOverwriteStoredSeqNo(originalCandidate);
 
 		final Candidate originalCandidateWithZeroDelta = originalCandidate
-				.withMaterialDescriptor(originalCandidate.getMaterialDescriptor().withQuantity(BigDecimal.ZERO));
+				.withMaterialDescriptor(originalCandidate.getMaterialDescriptor().withQuantity(ZERO));
 		assertThat(candidateReturnedfromRepo)
 				.isEqualTo(originalCandidateWithZeroDelta);
 	}
@@ -200,7 +203,7 @@ public class CandidateRepositoryWriteServiceTests
 				repositoryTestHelper.laterStockCandidate);
 
 		final Candidate replacementCandidate = repositoryTestHelper.stockCandidate
-				.withQuantity(BigDecimal.ONE);
+				.withQuantity(ONE);
 		candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(replacementCandidate);
 
 		assertThat(candidateRepositoryRetrieval.retrieveLatestMatchOrNull(queryForStockUntilDate)).isEqualTo(replacementCandidate);
@@ -393,7 +396,7 @@ public class CandidateRepositoryWriteServiceTests
 				.materialDescriptor(createMaterialDescriptor()
 						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62, TEN))
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 33))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(ONE, AttributesKey.ALL, 0, 33))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 

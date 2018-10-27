@@ -4,16 +4,16 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.contracts.model.I_C_CompensationGroup_SchemaLine;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
+import de.metas.util.Check;
 import de.metas.order.compensationGroup.GroupMatcher;
 import de.metas.order.compensationGroup.GroupMatcherFactory;
 import de.metas.order.compensationGroup.OrderGroupRepositoryAdvisor;

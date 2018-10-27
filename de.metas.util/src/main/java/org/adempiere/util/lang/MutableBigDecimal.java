@@ -26,7 +26,7 @@ package org.adempiere.util.lang;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Wraps a {@link BigDecimal} and makes it mutable.

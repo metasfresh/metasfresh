@@ -30,8 +30,9 @@ import org.adempiere.mm.attributes.api.IInAusLandAttributeBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.countryattribute.impl.CountryAwareAttributeUpdater;
 import org.adempiere.mm.attributes.countryattribute.impl.OrderLineCountryAware;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
+
+import de.metas.util.Services;
 
 public class OrderLineInAusLandModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

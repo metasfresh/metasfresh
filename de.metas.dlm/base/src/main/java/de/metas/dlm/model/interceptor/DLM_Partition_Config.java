@@ -3,11 +3,11 @@ package de.metas.dlm.model.interceptor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -25,10 +25,9 @@ package de.metas.fresh.freshQtyOnHand.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.util.ISingletonService;
 
 public interface IFreshQtyOnHandDAO extends ISingletonService
 {

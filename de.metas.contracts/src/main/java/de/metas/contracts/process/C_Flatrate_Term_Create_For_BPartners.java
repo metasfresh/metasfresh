@@ -34,7 +34,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
@@ -52,6 +51,7 @@ import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 {

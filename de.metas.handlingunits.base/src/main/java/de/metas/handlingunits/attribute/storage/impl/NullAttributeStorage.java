@@ -111,7 +111,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public void generateInitialAttributes(final Map<I_M_Attribute, Object> defaultAttributesValue)
+	public void generateInitialAttributes(final Map<AttributeId, Object> defaultAttributesValue)
 	{
 		// do nothing
 	}

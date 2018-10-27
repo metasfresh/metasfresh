@@ -25,20 +25,20 @@ package de.metas.handlingunits.allocation.transfer.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.transfer.IHUSplitDefinition;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
 
 public class HUSplitDefinition implements IHUSplitDefinition
 {
 	private final I_M_HU_PI_Item luPIItem;
 	private final I_M_HU_PI_Item tuPIItem;
 
-	private final I_M_Product cuProduct;
+	private final ProductId cuProductId;
 	private final I_C_UOM cuUOM;
 
 	private final BigDecimal cuPerTU;
@@ -48,7 +48,7 @@ public class HUSplitDefinition implements IHUSplitDefinition
 
 	public HUSplitDefinition(final I_M_HU_PI_Item luPIItem,
 			final I_M_HU_PI_Item tuPIItem,
-			final I_M_Product cuProduct, 
+			final ProductId cuProductId, 
 			final I_C_UOM cuUOM,
 			final BigDecimal cuPerTU,
 			final BigDecimal tuPerLU,
@@ -62,8 +62,8 @@ public class HUSplitDefinition implements IHUSplitDefinition
 		Check.assumeNotNull(tuPIItem, "tuPIItem not null");
 		this.tuPIItem = tuPIItem;
 
-		Check.assumeNotNull(cuProduct, "cuProduct not null");
-		this.cuProduct = cuProduct;
+		Check.assumeNotNull(cuProductId, "cuProduct not null");
+		this.cuProductId = cuProductId;
 
 		Check.assumeNotNull(cuUOM, "cuUOM not null");
 		this.cuUOM = cuUOM;
@@ -101,9 +101,9 @@ public class HUSplitDefinition implements IHUSplitDefinition
 	}
 
 	@Override
-	public I_M_Product getCuProduct()
+	public ProductId getCuProductId()
 	{
-		return cuProduct;
+		return cuProductId;
 	}
 
 	@Override

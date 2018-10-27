@@ -30,7 +30,6 @@ import javax.swing.SwingUtilities;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.adempiere.ui.editor.IZoomableEditor;
-import org.adempiere.util.Check;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
@@ -45,6 +44,7 @@ import org.compiere.util.Ini;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Check;
 
 public class ZoomContextEditorAction extends AbstractContextMenuAction
 {

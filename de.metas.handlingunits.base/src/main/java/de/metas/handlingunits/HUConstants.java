@@ -23,9 +23,9 @@ package de.metas.handlingunits;
  */
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 
 import de.metas.materialtracking.process.M_Material_Tracking_CreateOrUpdate_ID;
+import de.metas.util.Services;
 
 /**
  * Misc HU related constants

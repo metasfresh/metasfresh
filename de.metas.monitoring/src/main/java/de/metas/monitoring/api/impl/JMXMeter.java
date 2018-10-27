@@ -25,7 +25,7 @@ package de.metas.monitoring.api.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 public class JMXMeter implements JMXMeterMBean
 {

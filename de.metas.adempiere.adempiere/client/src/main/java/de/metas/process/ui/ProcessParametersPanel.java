@@ -29,7 +29,6 @@ import java.util.Properties;
 import javax.swing.Box;
 import javax.swing.JLabel;
 
-import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.VImage;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
@@ -42,6 +41,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ui.ProcessParameterPanelModel;
+import de.metas.util.Services;
 
 /**
  * Process Parameter Panel, based on existing ProcessParameter dialog. - Embedded in ProcessDialog - checks, if parameters exist and inquires and saves them

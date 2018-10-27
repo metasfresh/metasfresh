@@ -25,10 +25,10 @@ package de.metas.quantity;
 import java.math.BigDecimal;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -308,7 +308,7 @@ public class Bucket
 		final I_C_UOM baseUOM = getC_UOM();
 
 		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(
-				capacity.getM_Product(),
+				capacity.getProductId(),
 				qty,
 				qtyUOM, // uomFrom,
 				baseUOM// uomTo
@@ -320,7 +320,7 @@ public class Bucket
 	{
 		final I_C_UOM baseUOM = getC_UOM();
 		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(
-				capacity.getM_Product(),
+				capacity.getProductId(),
 				qty,
 				baseUOM, // uomFrom,
 				uomTo// uomTo

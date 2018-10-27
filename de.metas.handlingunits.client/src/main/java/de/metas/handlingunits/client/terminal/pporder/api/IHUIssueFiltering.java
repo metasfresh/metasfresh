@@ -29,16 +29,16 @@ package de.metas.handlingunits.client.terminal.pporder.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.util.ISingletonService;
 
 public interface IHUIssueFiltering extends ISingletonService
 {
-	List<I_M_Warehouse> retrieveWarehouse(Properties ctx);
+	List<I_M_Warehouse> retrieveWarehouse();
 
 	/**
 	 * Gets manufacturing orders based on {@link I_M_Warehouse}s

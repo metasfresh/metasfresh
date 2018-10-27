@@ -29,14 +29,15 @@ import java.util.Properties;
 import org.adempiere.ad.service.IADInfoWindowBL;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_AD_InfoWindow_From;
 import org.compiere.model.MTable;
 import org.compiere.model.MTree;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ADInfoWindowBL implements IADInfoWindowBL
 {

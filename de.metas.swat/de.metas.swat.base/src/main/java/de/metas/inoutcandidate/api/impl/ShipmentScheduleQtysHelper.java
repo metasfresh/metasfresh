@@ -1,13 +1,13 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.compiere.model.X_C_Order.DELIVERYRULE_Force;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 import java.math.BigDecimal;
 
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -18,8 +18,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import de.metas.order.DeliveryRule;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -31,12 +31,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -122,9 +122,8 @@ import lombok.experimental.UtilityClass;
 	@VisibleForTesting
 	/* package */static void setQtyToDeliverForDiscardedShipmentSchedule(final I_M_ShipmentSchedule discardedShipmentSchedule)
 	{
-		final String deliveryRule = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryRule(discardedShipmentSchedule);
-		final boolean ruleForce = DELIVERYRULE_Force.equals(deliveryRule);
-
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final boolean ruleForce = DeliveryRule.FORCE.equals(shipmentScheduleEffectiveBL.getDeliveryRule(discardedShipmentSchedule));
 		if (!ruleForce)
 		{
 			discardedShipmentSchedule.setQtyToDeliver(BigDecimal.ZERO);
@@ -139,7 +138,7 @@ import lombok.experimental.UtilityClass;
 		else
 		{
 			// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-			final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(discardedShipmentSchedule);
+			final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(discardedShipmentSchedule);
 
 			// task 07884-IT1: even if the rule is force: if there is an unconfirmed qty, then *don't* deliver it again
 			discardedShipmentSchedule.setQtyToDeliver(mkQtyToDeliver(qtyOrdered, discardedShipmentSchedule.getQtyPickList()));
@@ -167,7 +166,9 @@ import lombok.experimental.UtilityClass;
 		return shipmentCandidates.getStatusInfos(deliveryLineCandidate);
 	}
 
-	public static BigDecimal mkQtyToDeliver(final BigDecimal qtyRequired, final BigDecimal unconfirmedShippedQty)
+	public static BigDecimal mkQtyToDeliver(
+			@NonNull final BigDecimal qtyRequired,
+			@NonNull final BigDecimal unconfirmedShippedQty)
 	{
 		final StringBuilder logInfo = new StringBuilder("Unconfirmed Qty=" + unconfirmedShippedQty + " - ToDeliver=" + qtyRequired + "->");
 

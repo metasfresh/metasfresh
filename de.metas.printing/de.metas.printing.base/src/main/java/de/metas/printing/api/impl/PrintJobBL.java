@@ -36,12 +36,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorChain;
-import org.adempiere.util.collections.IteratorUtils;
-import org.adempiere.util.collections.PeekIterator;
-import org.adempiere.util.collections.SingletonIterator;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
@@ -71,6 +65,13 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorChain;
+import de.metas.util.collections.IteratorUtils;
+import de.metas.util.collections.PeekIterator;
+import de.metas.util.collections.SingletonIterator;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -277,7 +278,7 @@ public class PrintJobBL implements IPrintJobBL
 	{
 		final String name = Check.isEmpty(printingAsyncBatch.getName(), true) ? "Print to pdf" : printingAsyncBatch.getName();
 		final int printJobCount = printingAsyncBatch.getPrintJobCount();
-		final int adPInstanceId = getAdPInstanceId(printingAsyncBatch);
+		final PInstanceId adPInstanceId = getAdPInstanceId(printingAsyncBatch);
 		final int parentAsyncBatchId = printingAsyncBatch.getParentAsyncBatchId();
 
 		return asyncBatchBL.newAsyncBatch()
@@ -290,10 +291,10 @@ public class PrintJobBL implements IPrintJobBL
 				.build();
 	}
 
-	private int getAdPInstanceId(@NonNull PrintingAsyncBatch printingAsyncBatch)
+	private PInstanceId getAdPInstanceId(@NonNull PrintingAsyncBatch printingAsyncBatch)
 	{
 		final I_C_Async_Batch parentAsyncBatch = getParentAsyncPatchIfExists(printingAsyncBatch.getParentAsyncBatchId());
-		return parentAsyncBatch == null ? printingAsyncBatch.getAdPInstanceId() : parentAsyncBatch.getAD_PInstance_ID();
+		return parentAsyncBatch == null ? printingAsyncBatch.getAdPInstanceId() : PInstanceId.ofRepoIdOrNull(parentAsyncBatch.getAD_PInstance_ID());
 	}
 
 	private I_C_Async_Batch getParentAsyncPatchIfExists(final int parentAsyncBatchId)

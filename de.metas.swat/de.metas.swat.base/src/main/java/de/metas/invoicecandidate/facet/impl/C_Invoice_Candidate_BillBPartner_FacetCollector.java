@@ -33,11 +33,11 @@ import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.impl.Facet;
 import org.adempiere.facet.impl.FacetCategory;
 import org.adempiere.facet.impl.SingleFacetCategoryCollectorTemplate;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 /**
  * Collects Bill BPartner facets from {@link I_C_Invoice_Candidate}s.

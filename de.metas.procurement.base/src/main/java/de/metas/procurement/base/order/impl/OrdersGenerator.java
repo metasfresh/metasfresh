@@ -4,11 +4,11 @@ import java.util.Iterator;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

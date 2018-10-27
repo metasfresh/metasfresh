@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocument;
@@ -21,6 +20,7 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.model.X_C_RfQ;
 import de.metas.rfq.model.X_C_RfQResponse;
 import de.metas.rfq.model.X_C_RfQResponseLine;
+import de.metas.util.Services;
 
 /*
  * #%L

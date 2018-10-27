@@ -22,8 +22,6 @@ import java.util.List;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
@@ -43,6 +41,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.product.IProductBL;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Post MatchInv Documents.

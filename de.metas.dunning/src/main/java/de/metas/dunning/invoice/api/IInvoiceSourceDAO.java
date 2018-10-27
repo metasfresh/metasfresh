@@ -26,12 +26,12 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.util.ISingletonService;
 
 /**
  * DAO methods related to {@link I_C_Invoice}s

@@ -9,17 +9,17 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import de.metas.cache.CCache;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.dunning.invoice.InvoiceDueDateProvider;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -47,14 +47,12 @@ import lombok.NonNull;
 @Component
 public class ContractBasedInvoiceDueDateProvider implements InvoiceDueDateProvider
 {
-	public final CCache<InvoiceId, List<I_C_Flatrate_Term>> invoiceId2flatrateTerms = CCache
-			.<InvoiceId, List<I_C_Flatrate_Term>> newCache(
-					I_C_Flatrate_Term.Table_Name,
-					0,
-					CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_C_Invoice_Candidate.Table_Name)
-			.addResetForTableName(I_C_Invoice_Line_Alloc.Table_Name)
-			.addResetForTableName(I_C_InvoiceLine.Table_Name);
+	public final CCache<InvoiceId, List<I_C_Flatrate_Term>> invoiceId2flatrateTerms = CCache.<InvoiceId, List<I_C_Flatrate_Term>> builder()
+			.tableName(I_C_Flatrate_Term.Table_Name)
+			.additionalTableNameToResetFor(I_C_Invoice_Candidate.Table_Name)
+			.additionalTableNameToResetFor(I_C_Invoice_Line_Alloc.Table_Name)
+			.additionalTableNameToResetFor(I_C_InvoiceLine.Table_Name)
+			.build();
 
 	@Override
 	public LocalDate provideDueDateOrNull(@NonNull final InvoiceId invoiceId)

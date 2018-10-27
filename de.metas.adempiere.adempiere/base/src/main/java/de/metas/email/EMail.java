@@ -41,8 +41,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
@@ -60,6 +58,8 @@ import com.sun.mail.smtp.SMTPMessage;
 
 import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

@@ -45,18 +45,14 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
@@ -73,9 +69,9 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
@@ -86,6 +82,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.IInvoiceLineBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -97,8 +94,12 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -559,15 +560,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.adClientId(invoice.getAD_Client_ID())
 				.adOrgId(invoice.getAD_Org_ID())
 				.build();
-		final int docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
-		if (docTypeId <= 0)
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeId == null)
 		{
 			log.error("Not found for {}", docTypeQuery);
 			return false;
 		}
 		else
 		{
-			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId);
+			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
 			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType);
 			invoice.setIsSOTrx(isSOTrx);
 			return true;
@@ -968,11 +969,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			fallback = true;
 		}
 
-		final I_M_Product product = invoiceLine.getM_Product();
-		if (product.getC_UOM_ID() < 0)
-		{
-			fallback = true;
-		}
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
+		// if (product.getC_UOM_ID() < 0)
+		// {
+		// fallback = true;
+		// }
+
 		if (fallback)
 		{
 			invoiceLine.setQtyEntered(qtyInvoiced);
@@ -986,11 +988,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(ctx, product, invoiceLine.getC_UOM(), qtyInvoiced);
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getC_UOM(), qtyInvoiced);
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
-		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, product, invoiceLine.getPrice_UOM(), qtyInvoiced);
+		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getPrice_UOM(), qtyInvoiced);
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 

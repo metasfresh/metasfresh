@@ -26,6 +26,8 @@ package org.adempiere.service.impl;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.compiere.model.MRolePermRequest;
 
+import de.metas.document.DocTypeId;
+
 public class RolePermLoggingBL implements IRolePermLoggingBL
 {
 
@@ -66,9 +68,9 @@ public class RolePermLoggingBL implements IRolePermLoggingBL
 	}
 
 	@Override
-	public void logDocActionAccess(int AD_Role_ID, int C_DocType_ID, String docAction, Boolean access)
+	public void logDocActionAccess(int AD_Role_ID, DocTypeId docTypeId, String docAction, Boolean access)
 	{
-		MRolePermRequest.logDocActionAccess(AD_Role_ID, C_DocType_ID, docAction, access);
+		MRolePermRequest.logDocActionAccess(AD_Role_ID, docTypeId, docAction, access);
 	}
 
 }

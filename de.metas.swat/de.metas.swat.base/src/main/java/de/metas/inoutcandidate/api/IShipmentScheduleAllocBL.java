@@ -24,11 +24,10 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleAllocBL extends ISingletonService
 {

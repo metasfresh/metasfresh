@@ -3,13 +3,13 @@ package de.metas.server.housekeep;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Loggables;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 
 /*
  * #%L

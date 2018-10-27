@@ -6,12 +6,12 @@ import java.util.Set;
 
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.Check;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -8,11 +8,11 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.compiere.model.Null;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -36,8 +37,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -51,6 +51,7 @@ import org.eevolution.model.X_PP_Product_Planning;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -62,6 +63,8 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *
@@ -162,20 +165,24 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			// From Warehouse
 			//
 			// This can be null
-			final I_M_Warehouse lineWarehouse = line.getM_Warehouse();
+			final WarehouseId lineWarehouseId = WarehouseId.ofRepoIdOrNull(line.getM_Warehouse_ID());
 
-			final I_M_Warehouse warehouseToUse;
+			final WarehouseId warehouseIdToUse;
 
-			if (lineWarehouse != null)
+			if (lineWarehouseId != null)
 			{
-				warehouseToUse = lineWarehouse;
+				warehouseIdToUse = lineWarehouseId;
 			}
 			else
 			{
-				warehouseToUse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line);
+				warehouseIdToUse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line);
+				if (warehouseIdToUse == null)
+				{
+					throw new AdempiereException("No warehouse found for " + line);
+				}
 			}
 
-			receiptSchedule.setM_Warehouse(warehouseToUse);
+			receiptSchedule.setM_Warehouse_ID(warehouseIdToUse.getRepoId());
 
 			//
 			// Destination Warehouse
@@ -413,13 +420,14 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Fallback: get standard Material Receipt document type
-		return Services.get(IDocTypeDAO.class)
-				.getDocTypeIdOrNull(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-						.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
-						.adClientId(orderLine.getAD_Client_ID())
-						.adOrgId(orderLine.getAD_Org_ID())
-						.build());
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(orderLine.getAD_Client_ID())
+				.adOrgId(orderLine.getAD_Org_ID())
+				.build();
+		return DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
 	}
 
 	/** Wraps {@link I_C_OrderLine} as {@link IReceiptScheduleWarehouseDestProvider.IContext} */

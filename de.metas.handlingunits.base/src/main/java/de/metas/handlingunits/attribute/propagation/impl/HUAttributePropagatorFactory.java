@@ -26,12 +26,12 @@ package de.metas.handlingunits.attribute.propagation.impl;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagator;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagatorFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.util.Check;
 
 public class HUAttributePropagatorFactory implements IHUAttributePropagatorFactory
 {

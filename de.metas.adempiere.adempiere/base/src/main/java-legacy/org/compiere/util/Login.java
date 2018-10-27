@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import lombok.NonNull;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -45,9 +47,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_DocType;
@@ -60,10 +59,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
-import de.metas.hash.HashableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import lombok.NonNull;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
+import de.metas.util.time.SystemTime;
 
 /**
  * Login Manager
@@ -108,62 +109,6 @@ public class Login
 	// State
 	private final LoginContext _loginContext;
 	// NOTE: please avoid having other state variables. If needed, pls add them to LoginContext.
-
-	/**
-	 * Java Version Test
-	 *
-	 * @param isClient client connection
-	 * @return true if Java Version is OK
-	 */
-	public static boolean isJavaOK(final boolean isClient)
-	{
-		// Java System version check
-		final String jVersion = System.getProperty("java.version");
-
-		final StringBuilder msg = new StringBuilder();
-		msg.append(System.getProperty("java.vm.name")).append(" - ").append(jVersion);
-
-		// if (isClient)
-		// {
-		// JOptionPane.showMessageDialog(null, msg.toString(),
-		// org.compiere.Adempiere.getName() + " - Java Version Check",
-		// JOptionPane.INFORMATION_MESSAGE);
-		// }
-		// else
-		// {
-		log.debug("Using java version: {}", msg);
-		// }
-
-		return true;
-		// 04406 end - below is the commented-out original code
-
-		// if (jVersion.startsWith("1.5.0"))
-		// return true;
-		// //vpj-cd e-evolution support to java 6
-		// if (jVersion.startsWith("1.6.0"))
-		// return true;
-		// //end
-		// // Warning
-		// boolean ok = false;
-		// // if (jVersion.startsWith("1.4")
-		// // || jVersion.startsWith("1.5.1")) // later/earlier release
-		// // ok = true;
-		//
-		// // Error Message
-		// StringBuffer msg = new StringBuffer();
-		// msg.append(System.getProperty("java.vm.name")).append(" - ").append(jVersion);
-		// if (ok)
-		// msg.append("(untested)");
-		// msg.append(" <> 1.5.0");
-		// //
-		// if (isClient)
-		// JOptionPane.showMessageDialog(null, msg.toString(),
-		// org.compiere.Adempiere.getName() + " - Java Version Check",
-		// ok ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE);
-		// else
-		// log.error(msg.toString());
-		// return ok;
-	}   // isJavaOK
 
 	/**************************************************************************
 	 * Login
@@ -289,7 +234,7 @@ public class Login
 			{
 				Ini.setProperty(Ini.P_UID, "");
 			}
-			
+
 			if (Ini.isPropertyBool(Ini.P_STORE_PWD)
 					&& systemBL.isRememberPasswordAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME")
 					&& password.isPlain())

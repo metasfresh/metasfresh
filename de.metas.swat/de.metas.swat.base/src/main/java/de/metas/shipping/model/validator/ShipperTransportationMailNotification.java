@@ -31,7 +31,6 @@ import java.util.StringTokenizer;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.MClient;
@@ -55,6 +54,7 @@ import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.MMShipperTransportation;
+import de.metas.util.Check;
 
 /**
  * Supposed to send an email to a shipment's receiver when the shipper document is completed.

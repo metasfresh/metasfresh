@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -55,13 +57,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.IRefreshableEditor;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.APanel;
 import org.compiere.apps.search.FindHelper;
 import org.compiere.apps.search.Info;
@@ -72,11 +71,11 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.Lookup;
-import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
@@ -95,6 +94,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Lookup Visual Field.
@@ -816,7 +817,7 @@ public class VLookup extends JComponent
 			// Not in Lookup - set to Null
 			if (m_combo.getSelectedItem() == null)
 			{
-				log.info(m_columnName + "=" + value + ": not in Lookup - set to NULL");
+				log.info("{}={}: not in Lookup - set to NULL", m_columnName, value);
 				actionCombo(null);             // data binding (calls setValue again)
 				m_value = null;
 			}
@@ -953,8 +954,6 @@ public class VLookup extends JComponent
 			return;
 		}
 
-		log.info(m_columnName + " - " + e.getActionCommand() + ", ComboValue=" + m_combo.getSelectedItem());
-
 		// Combo Selection
 		if (e.getSource() == m_combo)
 		{
@@ -966,7 +965,7 @@ public class VLookup extends JComponent
 				// don't allow selection of inactive
 				if (s.startsWith(MLookup.INACTIVE_S) && s.endsWith(MLookup.INACTIVE_E))
 				{
-					log.info(m_columnName + " - selection inactive set to NULL");
+					log.info("{} - selection inactive set to NULL", m_columnName);
 					value = null;
 				}
 			}
@@ -1176,8 +1175,9 @@ public class VLookup extends JComponent
 			if (m_mField != null)
 			{
 				final int AD_Table_ID = m_mField.getAD_Table_ID();
-				multipleSelection = (InterfaceWrapperHelper.getTableId(I_C_OrderLine.class) == AD_Table_ID)
-						|| (MInvoiceLine.Table_ID == AD_Table_ID) || (InterfaceWrapperHelper.getTableId(I_PP_Product_BOMLine.class) == AD_Table_ID)
+				multipleSelection = (getTableId(I_C_OrderLine.class) == AD_Table_ID)
+						|| (getTableId(I_C_InvoiceLine.class) == AD_Table_ID)
+						|| (getTableId(I_PP_Product_BOMLine.class) == AD_Table_ID)
 						|| (I_M_ProductPrice.Table_Name.equals(m_mField.getTableName()));
 			}
 
@@ -1243,7 +1243,7 @@ public class VLookup extends JComponent
 		// Result
 		if (result != null && result.length > 0)
 		{
-			log.info(m_columnName + " - Result = " + result.toString() + " (" + result.getClass().getName() + ")");
+			log.debug(m_columnName + " - Result = " + result.toString() + " (" + result.getClass().getName() + ")");
 			// make sure that value is in cache
 			lookup.getDirect(IValidationContext.NULL, result[0], false, true); // saveInCache=false, cacheLocal=true
 			if (resetValue)
@@ -1263,12 +1263,12 @@ public class VLookup extends JComponent
 		}
 		else if (cancelled)
 		{
-			log.info(m_columnName + " - Result = null (cancelled)");
+			log.debug("{} - Result = null (cancelled)", m_columnName);
 			actionCombo(null);
 		}
 		else
 		{
-			log.info(m_columnName + " - Result = null (not cancelled)");
+			log.debug("{} - Result = null (not cancelled)", m_columnName);
 			setValue(m_value);      // to re-display value
 		}
 	}	// actionButton
@@ -1791,7 +1791,6 @@ public class VLookup extends JComponent
 				selectedItemKey = getValue();
 				validationCtx = getValidationContext();
 			}
-			log.info(m_columnName + " #" + lookup.getSize() + ", Selected=" + selectedItemKey);
 
 			//
 			// Actually refresh the combo
@@ -1810,7 +1809,6 @@ public class VLookup extends JComponent
 
 		//
 		setCursor(Cursor.getDefaultCursor());
-		log.info(m_columnName + " #" + lookup.getSize() + ", Selected=" + m_combo.getSelectedItem());
 	}	// actionRefresh
 
 	/**
@@ -1832,13 +1830,9 @@ public class VLookup extends JComponent
 		}
 
 		final Object selectedObj = lookup.getSelectedItem();
-		log.info(m_columnName + " - Start    Count=" + m_combo.getItemCount() + ", Selected=" + selectedObj);
 
 		lookup.fillComboBox(isMandatory(), true, true, false);     // only validated & active
-
-		log.info(m_columnName + " - Update   Count=" + m_combo.getItemCount() + ", Selected=" + selectedObj);
 		lookup.setSelectedItem(selectedObj);
-		log.info(m_columnName + " - Selected Count=" + m_combo.getItemCount() + ", Selected=" + lookup.getSelectedItem());
 
 		return true;
 	}
@@ -1935,7 +1929,6 @@ public class VLookup extends JComponent
 		if (e.getSource() == m_text)
 		{
 			String text = m_text.getText();
-			log.info(m_columnName + " (Text) " + m_columnName + " = " + m_value + " - " + text);
 			m_haveFocus = false;
 			// Skip if empty
 			if ((m_value == null
@@ -1965,7 +1958,6 @@ public class VLookup extends JComponent
 		//
 		m_settingFocus = true;  // prevents actionPerformed
 		//
-		log.info(m_columnName + " = " + m_combo.getSelectedItem());
 		Object obj = m_combo.getSelectedItem();
 		/*
 		 * // set original model

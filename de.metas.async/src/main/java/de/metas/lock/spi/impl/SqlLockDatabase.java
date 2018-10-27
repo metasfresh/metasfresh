@@ -1,32 +1,8 @@
 package de.metas.lock.spi.impl;
 
-/*
- * #%L
- * de.metas.async
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,8 +15,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
@@ -56,6 +30,10 @@ import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.lock.model.I_T_Lock;
 import de.metas.lock.spi.ILockDatabase;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * {@link ILockDatabase} implementation which stores the locks in {@link I_T_Lock} table.
@@ -101,34 +79,9 @@ public class SqlLockDatabase extends AbstractLockDatabase
 			sqlParams.add(param);
 			return "?";
 		}
-
-		if (param == null)
-		{
-			return "NULL";
-		}
-		else if (param instanceof Integer)
-		{
-			return String.valueOf(param);
-		}
-		else if (param instanceof String)
-		{
-			return DB.TO_STRING((String)param);
-		}
-		else if (param instanceof Timestamp)
-		{
-			return DB.TO_DATE((Timestamp)param);
-		}
-		else if (param instanceof BigDecimal)
-		{
-			return DB.TO_NUMBER((BigDecimal)param, DisplayType.Number);
-		}
-		else if (param instanceof Boolean)
-		{
-			return DisplayType.toBooleanString((Boolean)param);
-		}
 		else
 		{
-			throw new IllegalArgumentException("Parameter " + param + " (" + param.getClass() + ") not supported");
+			return DB.TO_SQL(param);
 		}
 	}
 
@@ -145,17 +98,16 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		sql.append(" AND ").append(I_T_Lock.COLUMNNAME_Record_ID).append("=").append(toSqlParam(recordId, sqlParams));
 	}
 
-	private final void appendTableSelectionWhereClause(final int adTableId, final int adPInstanceId, final StringBuilder sql, final List<Object> sqlParams)
+	private final void appendTableSelectionWhereClause(final int adTableId, @NonNull final PInstanceId pinstanceId, final StringBuilder sql, final List<Object> sqlParams)
 	{
 		Check.assume(adTableId > 0, "adTableId > 0");
 		sql.append(" AND ").append(I_T_Lock.COLUMNNAME_AD_Table_ID).append("=").append(toSqlParam(adTableId, sqlParams));
-		sqlParams.add(adTableId);
+		//sqlParams.add(adTableId);
 
 		// Record_ID shall be in our selection
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
 		sql.append(" AND ").append(I_T_Lock.COLUMNNAME_Record_ID)
-				.append(" IN (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID=").append(toSqlParam(adPInstanceId, sqlParams)).append(")");
-		sqlParams.add(adPInstanceId);
+				.append(" IN (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID=").append(toSqlParam(pinstanceId, sqlParams)).append(")");
+		//sqlParams.add(adPInstanceId);
 	}
 
 	@Override
@@ -236,8 +188,8 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
 		Check.assume(adTableId > 0, "adTableId > 0");
 
-		final int adPInstanceId = lockCommand.getSelectionToLock_AD_PInstance_ID();
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
+		final PInstanceId pinstanceId = lockCommand.getSelectionToLock_AD_PInstance_ID();
+		Check.assumeNotNull(pinstanceId, "pinstanceId not null");
 
 		final LockOwner lockOwner = lockCommand.getOwner();
 		assertValidLockOwner(lockOwner);
@@ -259,7 +211,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				+ ", " + toSqlParam(isAllowMultipleOwners(lockCommand.getAllowAdditionalLocks()), sqlParams) // IsAllowMultipleOwners
 				//
 				+ " FROM T_Selection"
-				+ " WHERE AD_PInstance_ID=" + toSqlParam(adPInstanceId, sqlParams);
+				+ " WHERE AD_PInstance_ID=" + toSqlParam(pinstanceId, sqlParams);
 
 		return performLockSQLInsert(lockCommand, sqlParams, sql);
 	}

@@ -29,9 +29,10 @@ import java.util.List;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+
+import de.metas.util.Services;
 
 public class InvoiceCountryModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

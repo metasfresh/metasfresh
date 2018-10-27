@@ -28,8 +28,6 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.IDDOrderDAO;
@@ -45,6 +43,8 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class DDOrderDAO implements IDDOrderDAO
 {

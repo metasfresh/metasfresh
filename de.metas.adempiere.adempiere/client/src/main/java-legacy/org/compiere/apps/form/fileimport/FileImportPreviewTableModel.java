@@ -7,14 +7,14 @@ import java.util.Objects;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.impexp.CellErrorMessage;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class FileImportPreviewTableModel extends AbstractTableModel
 {

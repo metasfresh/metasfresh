@@ -10,8 +10,6 @@ import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.compiere.Adempiere;
 import org.compiere.util.Util.ArrayKey;
 import org.reflections.ReflectionUtils;
@@ -27,6 +25,8 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L
@@ -121,6 +121,7 @@ public final class ProcessClassInfo
 	public static final void resetCache()
 	{
 		processClassInfoCache.invalidateAll();
+		processClassInfoCache.cleanUp();
 	}
 
 	/** "Process class" to {@link ProcessClassInfo} cache */

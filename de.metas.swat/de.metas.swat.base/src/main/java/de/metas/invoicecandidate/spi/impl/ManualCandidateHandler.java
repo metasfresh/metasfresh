@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -43,6 +42,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.util.Services;
 
 /**
  * @author cg

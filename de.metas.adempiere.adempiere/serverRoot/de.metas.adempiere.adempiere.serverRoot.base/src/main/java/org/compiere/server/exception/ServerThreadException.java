@@ -23,10 +23,10 @@ package org.compiere.server.exception;
  */
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.Services;
 
 /**
  * This exception is used if an error occurs during execution of an ADempiere server process.

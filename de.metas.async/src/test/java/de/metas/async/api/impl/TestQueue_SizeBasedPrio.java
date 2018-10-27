@@ -30,7 +30,6 @@ import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -45,6 +44,7 @@ import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+import de.metas.util.Services;
 
 /**
  * Enqueue a number of workpackages and verify their priorities.

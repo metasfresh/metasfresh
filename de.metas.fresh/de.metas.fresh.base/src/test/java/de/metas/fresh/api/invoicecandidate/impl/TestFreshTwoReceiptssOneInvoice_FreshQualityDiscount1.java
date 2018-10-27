@@ -34,8 +34,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.collections.CollectionUtils;
-
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -43,6 +41,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.aggregationEngine.TestTwoReceiptsOneInvoice_QualityDiscount1;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.util.collections.CollectionUtils;
 
 /**
  * Similar to its super class {@link TestTwoReceiptsOneInvoice_QualityDiscount1}, but uses the {@link FreshQuantityDiscountAggregator} instead of the default aggregator.<br>

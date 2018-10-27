@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 
 /*
  * #%L

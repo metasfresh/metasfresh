@@ -25,13 +25,12 @@ package de.metas.handlingunits.client.terminal.mmovement.model.split.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-import org.compiere.model.I_M_Product;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.lutuconfig.model.TUKey;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
 
 /**
  * Transport Unit Key
@@ -49,14 +48,14 @@ public class TUSplitKey extends TUKey
 	public TUSplitKey(final ITerminalContext terminalContext,
 			final I_M_HU_PI_Item_Product huPIItemProduct,
 			final I_M_HU_PI tuPI,
-			final I_M_Product cuProduct,
+			final ProductId cuProductId,
 			final BigDecimal capacity,
 			final String unitType)
 	{
 		super(terminalContext,
 				huPIItemProduct,
 				tuPI,
-				cuProduct,
+				cuProductId,
 				huPIItemProduct.getC_UOM(),
 				huPIItemProduct.isInfiniteCapacity(),
 				capacity);

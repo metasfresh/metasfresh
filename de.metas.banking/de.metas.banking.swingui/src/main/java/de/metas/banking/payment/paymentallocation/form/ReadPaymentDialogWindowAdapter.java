@@ -26,11 +26,11 @@ package de.metas.banking.payment.paymentallocation.form;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public abstract class ReadPaymentDialogWindowAdapter extends WindowAdapter
 {

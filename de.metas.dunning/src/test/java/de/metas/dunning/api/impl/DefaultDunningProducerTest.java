@@ -10,18 +10,17 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -103,7 +102,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 		candidate.setProcessed(false);
 		candidate.setIsDunningDocProcessed(false);
 		candidate.setDunningDateEffective(null);
-		
+
 		candidate.setIsWriteOff(false);
 
 		InterfaceWrapperHelper.save(candidate);
@@ -113,18 +112,18 @@ public class DefaultDunningProducerTest extends DunningTestBase
 	private void assertDunningDocValid(final IDunningContext context, final I_C_Dunning_Candidate candidate)
 	{
 		InterfaceWrapperHelper.refresh(candidate);
-		
+
 		final I_C_DunningDoc dunningDoc = retrieveDunningDocForCandidate(candidate);
 		Assert.assertNotNull("No dunning doc found for " + candidate, dunningDoc);
 		assertValid(context, dunningDoc, candidate);
 
-		final List<I_C_DunningDoc_Line> docLines = dao.retrieveDunningDocLines(context, dunningDoc);
+		final List<I_C_DunningDoc_Line> docLines = dao.retrieveDunningDocLines(dunningDoc);
 		Assert.assertNotNull("No lines found for" + dunningDoc, docLines);
 		Assert.assertEquals("One line expected for " + dunningDoc, 1, docLines.size());
 		final I_C_DunningDoc_Line docLine = docLines.get(0);
 		assertValid(context, docLine, candidate);
 
-		final List<I_C_DunningDoc_Line_Source> docLineSources = dao.retrieveDunningDocLineSources(context, docLine);
+		final List<I_C_DunningDoc_Line_Source> docLineSources = dao.retrieveDunningDocLineSources(docLine);
 		Assert.assertNotNull("No sources found for" + docLine, docLineSources);
 		Assert.assertEquals("One source expected for " + docLine, 1, docLineSources.size());
 		// final I_C_DunningDoc_Line_Source docLineSrc = docLineSources.get(0);

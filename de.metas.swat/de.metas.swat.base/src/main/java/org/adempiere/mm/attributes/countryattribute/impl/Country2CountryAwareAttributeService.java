@@ -36,11 +36,12 @@ import org.adempiere.mm.attributes.exceptions.AttributeRestrictedException;
 import org.adempiere.mm.attributes.exceptions.NoAttributeGeneratorException;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
+
+import de.metas.util.Services;
 
 public class Country2CountryAwareAttributeService implements ICountryAwareAttributeService
 {

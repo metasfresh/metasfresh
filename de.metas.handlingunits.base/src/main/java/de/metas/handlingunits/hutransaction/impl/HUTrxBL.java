@@ -29,12 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Util;
@@ -42,6 +39,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -66,6 +64,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUTrxBL implements IHUTrxBL
@@ -384,8 +384,8 @@ public class HUTrxBL implements IHUTrxBL
 					trx.getHUStatus(),
 					// trxCandidate.getM_HU(), just delegates to HU_Item
 					trx.getM_HU_Item() == null ? -1 : trx.getM_HU_Item().getM_HU_Item_ID(),
-					trx.getM_Locator() == null ? -1 : trx.getM_Locator().getM_Locator_ID(),
-					trx.getProduct() == null ? -1 : trx.getProduct().getM_Product_ID(),
+					trx.getLocatorId(),
+					trx.getProductId() == null ? -1 : trx.getProductId().getRepoId(),
 					// trxCandidate.getQuantity(),
 					trx.getReferencedModel() == null ? -1 : TableRecordReference.of(trx.getReferencedModel()),
 					// trxCandidate.getVHU(), just delegates to VHU_Item
@@ -399,10 +399,10 @@ public class HUTrxBL implements IHUTrxBL
 						final HUTransactionCandidate mergedCandidate = new HUTransactionCandidate(existingCand.getReferencedModel(),
 								existingCand.getM_HU_Item(),
 								existingCand.getVHU_Item(),
-								existingCand.getProduct(),
+								existingCand.getProductId(),
 								existingCand.getQuantity().add(newCand.getQuantity()),
 								existingCand.getDate(),
-								existingCand.getM_Locator(),
+								existingCand.getLocatorId(),
 								existingCand.getHUStatus());
 
 						if (existingCand.isSkipProcessing())

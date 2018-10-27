@@ -8,13 +8,10 @@ import java.util.Map;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -29,6 +26,10 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -113,9 +114,9 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			return;
 		}
 
-		final I_M_Product product = productStorage.getM_Product();
+		final ProductId productId = productStorage.getProductId();
 
-		if (originInOutLine.getM_Product_ID() != product.getM_Product_ID())
+		if (originInOutLine.getM_Product_ID() != productId.getRepoId())
 		{
 			return;
 		}
@@ -126,14 +127,14 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 
-		final I_C_UOM productUOM = productBL.getStockingUOM(product);
-		final BigDecimal qtyToMoveTotal = productStorage.getQty(productUOM).getQty();
+		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+		final BigDecimal qtyToMoveTotal = productStorage.getQty(productUOM).getAsBigDecimal();
 
 		final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(productStorage.getM_HU());
 		final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
 		final BigDecimal qtyToMove = qtyToMoveTotal.subtract(qtyToMoveInDispute);
 
-		final I_M_InOutLine inOutLine = getCreateInOutLine(originInOutLine, product);
+		final I_M_InOutLine inOutLine = getCreateInOutLine(originInOutLine, productId);
 
 		if (originInOutLine.getM_InOut_ID() != getM_InOut().getM_InOut_ID())
 		{
@@ -155,7 +156,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		if (qtyToMoveInDispute.signum() != 0)
 		{
-			final I_M_InOutLine inOutLineInDispute = getCreateInOutLineInDispute(originInOutLine, product);
+			final I_M_InOutLine inOutLineInDispute = getCreateInOutLineInDispute(originInOutLine, productId);
 
 			final BigDecimal inOutLine_Qty_Old = inOutLineInDispute.getMovementQty();
 			final BigDecimal inOutLine_Qty_New = inOutLine_Qty_Old.add(qtyToMoveInDispute);
@@ -193,10 +194,10 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	/**
 	 * Search the inout lines map (_inOutLines) and check if there is already a line for the given product. In case it already exists, return it. Otherwise, create a line for this product.
 	 *
-	 * @param product
+	 * @param productId
 	 * @return
 	 */
-	private I_M_InOutLine getCreateInOutLine(final I_M_InOutLine originInOutLine, final I_M_Product product)
+	private I_M_InOutLine getCreateInOutLine(final I_M_InOutLine originInOutLine, final ProductId productId)
 	{
 		final I_M_InOut inout = getM_InOut();
 
@@ -208,7 +209,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		//
 		// Check if we already have a movement line for our key
-		final ArrayKey inOutLineKey = mkInOutLineKey(originInOutLine, product);
+		final ArrayKey inOutLineKey = mkInOutLineKey(originInOutLine, productId);
 		final I_M_InOutLine existingInOutLine = _inOutLines.get(inOutLineKey);
 
 		// return the existing inout line if found
@@ -249,7 +250,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		return newInOutLine;
 	}
 
-	private I_M_InOutLine getCreateInOutLineInDispute(final I_M_InOutLine originInOutLine, final I_M_Product product)
+	private I_M_InOutLine getCreateInOutLineInDispute(final I_M_InOutLine originInOutLine, final ProductId productId)
 	{
 		final I_M_InOutLine originInOutLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveLineWithQualityDiscount(originInOutLine), I_M_InOutLine.class);
 
@@ -258,7 +259,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			return null;
 		}
 
-		final I_M_InOutLine inoutLineInDispute = getCreateInOutLine(originInOutLineInDispute, product);
+		final I_M_InOutLine inoutLineInDispute = getCreateInOutLine(originInOutLineInDispute, productId);
 
 		inoutLineInDispute.setIsInDispute(true);
 		inoutLineInDispute.setQualityDiscountPercent(originInOutLineInDispute.getQualityDiscountPercent());
@@ -275,12 +276,12 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	/**
 	 * Make a unique key for the given product. This will serve in mapping the inout lines to their products.
 	 *
-	 * @param product
+	 * @param productId
 	 * @return
 	 */
-	private static ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine, final I_M_Product product)
+	private static ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine, @NonNull final ProductId productId)
 	{
-		return Util.mkKey(originInOutLine.getM_InOutLine_ID(), product.getM_Product_ID());
+		return Util.mkKey(originInOutLine.getM_InOutLine_ID(), productId);
 	}
 
 	@Override

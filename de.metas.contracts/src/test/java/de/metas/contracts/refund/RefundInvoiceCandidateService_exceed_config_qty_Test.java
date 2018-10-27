@@ -26,11 +26,11 @@ import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
+import de.metas.util.lang.Percent;
 
 /*
  * #%L

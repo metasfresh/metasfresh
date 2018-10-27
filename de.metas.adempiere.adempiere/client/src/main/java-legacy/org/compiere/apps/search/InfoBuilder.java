@@ -13,8 +13,6 @@ import org.adempiere.ad.service.IADInfoWindowBL;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_A_Asset;
@@ -29,6 +27,9 @@ import org.compiere.model.I_S_ResourceAssignment;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Info window (see {@link Info}) builder.

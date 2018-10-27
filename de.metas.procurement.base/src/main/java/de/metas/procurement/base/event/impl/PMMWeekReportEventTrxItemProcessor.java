@@ -8,8 +8,6 @@ import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -25,6 +23,8 @@ import de.metas.procurement.base.model.I_PMM_Week;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

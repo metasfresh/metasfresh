@@ -11,7 +11,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MOrderLinePOCopyRecordSupport;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
@@ -25,6 +24,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.impl.OrderLineBL;
+import de.metas.util.Services;
 
 /**
  * @author cg

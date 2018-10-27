@@ -31,8 +31,9 @@ import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryAggregateColumnBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAggregator;
+
+import de.metas.util.Check;
 
 /**
  * COUNT-IF aggregation. Counts all source records which are matching the {@link #filter()}.

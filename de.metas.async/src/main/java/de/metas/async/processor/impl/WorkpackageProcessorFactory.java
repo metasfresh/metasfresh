@@ -25,13 +25,12 @@ package de.metas.async.processor.impl;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.IMBeanAwareService;
-import org.adempiere.util.Services;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.util.Check;
+import de.metas.util.IMBeanAwareService;
+import de.metas.util.Services;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.ConfigurationException;
 import de.metas.async.model.I_C_Queue_PackageProcessor;

@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.bind.JAXBElement;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +44,7 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 

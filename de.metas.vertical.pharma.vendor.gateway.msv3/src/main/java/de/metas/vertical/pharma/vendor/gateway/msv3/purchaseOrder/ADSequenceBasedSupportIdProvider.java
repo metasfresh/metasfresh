@@ -5,12 +5,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.Properties;
 
 import org.adempiere.ad.service.ISequenceDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.protocol.order.SupportIDType;
 
 /*

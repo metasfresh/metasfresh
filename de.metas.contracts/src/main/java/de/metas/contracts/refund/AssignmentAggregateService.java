@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment_Aggregate_V;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

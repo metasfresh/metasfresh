@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,6 +49,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUItemStorage;
+import de.metas.util.Services;
 
 public class HUIteratorTest extends AbstractHUTest
 {
@@ -68,7 +68,7 @@ public class HUIteratorTest extends AbstractHUTest
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item huDefIFCO_item_MI = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(huDefIFCO_item_MI, pTomato, new BigDecimal("20"), uomEach);
+			helper.assignProduct(huDefIFCO_item_MI, pTomatoId, new BigDecimal("20"), uomEach);
 
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 		}

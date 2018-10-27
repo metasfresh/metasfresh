@@ -25,9 +25,8 @@ package de.metas.inout.api;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
+import de.metas.util.ISingletonService;
 
 public interface IMaterialBalanceConfigBL extends ISingletonService
 {

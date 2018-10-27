@@ -28,11 +28,11 @@ import java.sql.Timestamp;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.api.IParams;
 
 import de.metas.ordercandidate.api.OLCandUpdateResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.Check;
 
 public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCandUpdateResult>
 {

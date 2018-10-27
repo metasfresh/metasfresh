@@ -17,7 +17,8 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
-import de.metas.product.LotNumberLockRepository;
+import de.metas.product.LotNumberQuarantineRepository;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -45,12 +46,14 @@ public class DistributeAndMoveReceiptCreatorTest
 {
 	private DistributeAndMoveReceiptCreator distributeAndMoveReceiptCreator;
 
+	private final ProductId productId = ProductId.ofRepoId(1);
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(new LotNumberLockRepository());
+		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(new LotNumberQuarantineRepository());
 	}
 
 	@Test
@@ -71,8 +74,9 @@ public class DistributeAndMoveReceiptCreatorTest
 		save(receiptLineLocator);
 
 		final I_M_InOutLine receiptLineRecord = newInstance(I_M_InOutLine.class);
-		receiptLineRecord.setM_Locator(receiptLineLocator);
 		receiptLineRecord.setM_InOut(receiptRecord);
+		receiptLineRecord.setM_Locator(receiptLineLocator);
+		receiptLineRecord.setM_Product_ID(productId.getRepoId());
 		saveRecord(receiptLineRecord);
 
 		final I_M_ReceiptSchedule receiptSchedule = newInstance(I_M_ReceiptSchedule.class);

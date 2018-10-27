@@ -29,8 +29,8 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
-import org.compiere.model.MLocator;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.MProduct;
 import org.compiere.model.MStorage;
 import org.compiere.model.MUOM;
@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 @Callout(I_DD_OrderLine.class)
 public class DD_OrderLine
@@ -172,9 +173,9 @@ public class DD_OrderLine
 			{
 				final int M_Locator_ID = ddOrderLine.getM_Locator_ID();
 				int M_AttributeSetInstance_ID = ddOrderLine.getM_AttributeSetInstance_ID();
-				final int M_Warehouse_ID = MLocator.get(ctx, M_Locator_ID).getM_Warehouse_ID();
+				final WarehouseId warehouseId = Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(M_Locator_ID);
 
-				BigDecimal qtyAvailable = MStorage.getQtyAvailable(M_Warehouse_ID, 0, M_Product_ID, M_AttributeSetInstance_ID, ITrx.TRXNAME_None);
+				BigDecimal qtyAvailable = MStorage.getQtyAvailable(warehouseId.getRepoId(), 0, M_Product_ID, M_AttributeSetInstance_ID, ITrx.TRXNAME_None);
 				if (qtyAvailable == null)
 					qtyAvailable = BigDecimal.ZERO;
 				if (qtyAvailable.signum() == 0)

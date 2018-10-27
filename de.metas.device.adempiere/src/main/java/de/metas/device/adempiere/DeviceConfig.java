@@ -3,14 +3,13 @@ package de.metas.device.adempiere;
 import java.util.Collection;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.device.adempiere.DeviceConfig.Builder.IDeviceParameterValueSupplier;
 import de.metas.device.adempiere.DeviceConfig.Builder.IDeviceRequestClassnamesSupplier;
 import de.metas.device.api.IDevice;
+import de.metas.util.Check;
 
 /*
  * #%L

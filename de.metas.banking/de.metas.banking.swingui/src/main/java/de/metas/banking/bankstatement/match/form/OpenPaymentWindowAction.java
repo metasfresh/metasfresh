@@ -2,12 +2,12 @@ package de.metas.banking.bankstatement.match.form;
 
 import java.awt.event.ActionEvent;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.banking.bankstatement.match.model.IPayment;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -29,15 +29,15 @@ import java.math.RoundingMode;
 
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
 import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeTransferStrategy
 {
@@ -114,14 +114,14 @@ public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeT
 		//
 		// The qty which is to be subtracted divided by the full qty is our division ratio
 		// (will return a value which is numerically less than 1, and greater or equal to 0)
-		final I_M_Product requestProduct = request.getM_Product();
+		final ProductId requestProductId = request.getProductId();
 
 		final IHUStorage huStorageFrom = request.getHUStorageFrom();
 
 		I_C_UOM uomToUse = request.getC_UOM();
 		if (uomToUse == null)
 		{
-			uomToUse = huStorageFrom.getProductStorage(requestProduct).getC_UOM(); // fallback and consider using the request UOM
+			uomToUse = huStorageFrom.getProductStorage(requestProductId).getC_UOM(); // fallback and consider using the request UOM
 		}
 
 		final BigDecimal requestQty = request.getQty();
@@ -129,7 +129,7 @@ public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeT
 		final BigDecimal existingStorageQtyOnSource;
 		if (huStorageFrom != null)
 		{
-			final BigDecimal storageQty = huStorageFrom.getQty(requestProduct, uomToUse);
+			final BigDecimal storageQty = huStorageFrom.getQty(requestProductId, uomToUse);
 			final BigDecimal qtyUnloaded = request.getQtyUnloaded();
 
 			//

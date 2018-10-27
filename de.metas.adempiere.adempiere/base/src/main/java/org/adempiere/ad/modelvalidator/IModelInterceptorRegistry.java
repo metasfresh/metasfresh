@@ -24,8 +24,9 @@ package org.adempiere.ad.modelvalidator;
 
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Client;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Service used to register model interceptors

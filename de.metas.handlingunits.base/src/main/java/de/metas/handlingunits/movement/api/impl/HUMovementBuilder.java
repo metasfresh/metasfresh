@@ -35,13 +35,10 @@ import java.util.TreeSet;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -66,6 +63,9 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -395,11 +395,11 @@ public class HUMovementBuilder
 			return;
 		}
 
-		final I_M_Product product = productStorage.getM_Product();
-		final I_M_MovementLine movementLine = getCreateMovementLine(product);
+		final ProductId productId = productStorage.getProductId();
+		final I_M_MovementLine movementLine = getCreateMovementLine(productId);
 
-		final I_C_UOM productUOM = productBL.getStockingUOM(product);
-		final BigDecimal qtyToMove = productStorage.getQty(productUOM).getQty();
+		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+		final BigDecimal qtyToMove = productStorage.getQty(productUOM).getAsBigDecimal();
 
 		//
 		// Adjust movement line's qty to move
@@ -419,11 +419,11 @@ public class HUMovementBuilder
 		}
 	}
 
-	private I_M_MovementLine getCreateMovementLine(final I_M_Product product)
+	private I_M_MovementLine getCreateMovementLine(final ProductId productId)
 	{
 		//
 		// Check if we already have a movement line for our key
-		final ArrayKey movementLineKey = mkMovementLineKey(product);
+		final ArrayKey movementLineKey = mkMovementLineKey(productId);
 		I_M_MovementLine movementLine = _movementLines.get(movementLineKey);
 		if (movementLine != null)
 		{
@@ -439,7 +439,7 @@ public class HUMovementBuilder
 
 		movementLine.setIsPackagingMaterial(false);
 
-		movementLine.setM_Product(product);
+		movementLine.setM_Product_ID(productId.getRepoId());
 		// movementLine.setMovementQty(qty);
 
 		final I_M_Locator locatorFrom = getLocatorFrom();
@@ -457,9 +457,9 @@ public class HUMovementBuilder
 		return movementLine;
 	}
 
-	private ArrayKey mkMovementLineKey(final I_M_Product product)
+	private ArrayKey mkMovementLineKey(final ProductId productId)
 	{
-		return Util.mkKey(product.getM_Product_ID());
+		return Util.mkKey(productId.getRepoId());
 	}
 
 }

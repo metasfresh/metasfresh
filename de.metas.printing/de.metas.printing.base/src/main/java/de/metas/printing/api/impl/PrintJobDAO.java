@@ -2,11 +2,11 @@ package de.metas.printing.api.impl;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.util.Services;
 
 import de.metas.printing.api.IPrintJobDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Instructions_v;
+import de.metas.util.Services;
 
 /*
  * #%L

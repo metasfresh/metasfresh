@@ -2,12 +2,11 @@ package de.metas.procurement.base;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.procurement.sync.IAgentSync;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L
@@ -31,7 +30,7 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
  * #L%
  */
 /**
- * Note that we don't have an implementation in metasfresh. Instead, we use the framework, to get a jax-rs client proxy which we then register in {@link org.adempiere.util.Services}.
+ * Note that we don't have an implementation in metasfresh. Instead, we use the framework, to get a jax-rs client proxy which we then register in {@link de.metas.util.Services}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

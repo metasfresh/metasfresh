@@ -8,16 +8,16 @@ import java.util.Optional;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -46,8 +46,12 @@ import lombok.NonNull;
 public class GroupTemplateRepository
 {
 	private final CCache<GroupTemplateId, GroupTemplate> //
-	groupTemplatesById = CCache.<GroupTemplateId, GroupTemplate> newCache(I_C_CompensationGroup_Schema.Table_Name, 10, CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_C_CompensationGroup_SchemaLine.Table_Name);
+	groupTemplatesById = CCache.<GroupTemplateId, GroupTemplate> builder()
+			.tableName(I_C_CompensationGroup_Schema.Table_Name)
+			.initialCapacity(10)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.additionalTableNameToResetFor(I_C_CompensationGroup_SchemaLine.Table_Name)
+			.build();
 
 	private final Map<String, GroupMatcherFactory> groupMatcherFactoriesByType;
 

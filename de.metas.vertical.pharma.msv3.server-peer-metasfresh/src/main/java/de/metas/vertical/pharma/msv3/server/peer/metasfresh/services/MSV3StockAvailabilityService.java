@@ -7,9 +7,6 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +18,18 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
-import de.metas.material.cockpit.stock.StockDataQuery;
+import de.metas.material.cockpit.stock.StockDataAggregateQuery;
 import de.metas.material.cockpit.stock.StockDataQueryOrderBy;
-import de.metas.material.cockpit.stock.StockDataRecord;
+import de.metas.material.cockpit.stock.StockDataAggregateItem;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
@@ -96,14 +96,14 @@ public class MSV3StockAvailabilityService
 		}
 		else
 		{
-			final Stream<StockDataRecord> stockRecordsStream = stockRepository.streamStockDataRecords(StockDataQuery.builder()
+			final Stream<StockDataAggregateItem> stockRecordsStream = stockRepository.streamStockDataAggregateItems(StockDataAggregateQuery.builder()
 					.productCategoryIds(serverConfig.getProductCategoryIds())
 					.warehouseIds(serverConfig.getWarehouseIds())
 					.warehouseId(null) // accept also those which aren't in any warehouse yet
 					.orderBy(StockDataQueryOrderBy.ProductId)
 					.build());
 
-			final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors.groupByAndStream(stockRecordsStream, StockDataRecord::getProductId)
+			final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors.groupByAndStream(stockRecordsStream, StockDataAggregateItem::getProductId)
 					.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
 					// .flatMap(sa -> repeat(sa, 10000))
 					.filter(Predicates.notNull());
@@ -132,7 +132,7 @@ public class MSV3StockAvailabilityService
 		msv3ServerPeerService.publishProductExcludes(eventsBuilder.build());
 	}
 
-	private MSV3StockAvailability toMSV3StockAvailabilityOrNullIfFailed(final MSV3ServerConfig serverConfig, final List<StockDataRecord> records)
+	private MSV3StockAvailability toMSV3StockAvailabilityOrNullIfFailed(final MSV3ServerConfig serverConfig, final List<StockDataAggregateItem> records)
 	{
 		try
 		{
@@ -145,7 +145,7 @@ public class MSV3StockAvailabilityService
 		}
 	}
 
-	private MSV3StockAvailability toMSV3StockAvailability(final MSV3ServerConfig serverConfig, final List<StockDataRecord> records)
+	private MSV3StockAvailability toMSV3StockAvailability(final MSV3ServerConfig serverConfig, final List<StockDataAggregateItem> records)
 	{
 		Check.assumeNotEmpty(records, "records is not empty");
 
@@ -157,7 +157,7 @@ public class MSV3StockAvailabilityService
 				.build();
 	}
 
-	private int calculateQtyOnHand(final MSV3ServerConfig serverConfig, final List<StockDataRecord> records)
+	private int calculateQtyOnHand(final MSV3ServerConfig serverConfig, final List<StockDataAggregateItem> records)
 	{
 		if (serverConfig.getFixedQtyAvailableToPromise().isPresent())
 		{
@@ -165,7 +165,7 @@ public class MSV3StockAvailabilityService
 		}
 
 		return records.stream()
-				.map(StockDataRecord::getQtyOnHand)
+				.map(StockDataAggregateItem::getQtyOnHand)
 				.reduce(BigDecimal.ZERO, BigDecimal::add)
 				.setScale(0, RoundingMode.DOWN)
 				.intValue();

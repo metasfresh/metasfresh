@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.reflect.TestingClassInstanceProvider;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,6 +43,7 @@ import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.lock.api.ILockManager;
+import de.metas.util.Services;
 
 public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 {

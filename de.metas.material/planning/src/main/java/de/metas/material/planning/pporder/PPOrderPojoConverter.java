@@ -3,7 +3,6 @@ package de.metas.material.planning.pporder;
 import java.util.List;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
+import de.metas.util.Services;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 

@@ -1,7 +1,6 @@
 package de.metas.elasticsearch;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +13,7 @@ import de.metas.elasticsearch.config.FTSIndexConfig;
 import de.metas.elasticsearch.config.FTSIndexIncludeConfig;
 import de.metas.elasticsearch.config.FTSIndexRepository;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

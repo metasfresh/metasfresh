@@ -26,10 +26,10 @@ package de.metas.currency.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.currency.ICurrencyRate;
+import de.metas.util.Check;
 
 public final class CurrencyRate implements ICurrencyRate
 {

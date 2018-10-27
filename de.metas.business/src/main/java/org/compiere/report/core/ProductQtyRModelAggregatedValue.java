@@ -25,22 +25,20 @@ package org.compiere.report.core;
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 public class ProductQtyRModelAggregatedValue extends AbstractRModelAggregatedValue
 {
@@ -54,7 +52,7 @@ public class ProductQtyRModelAggregatedValue extends AbstractRModelAggregatedVal
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private I_M_Product product = null;
-	private IUOMConversionContext uomConversionCtx;
+	private UOMConversionContext uomConversionCtx;
 	private I_C_UOM uom;
 	private BigDecimal qty;
 	private boolean valid = true;
@@ -102,9 +100,8 @@ public class ProductQtyRModelAggregatedValue extends AbstractRModelAggregatedVal
 		final boolean isInitialized = product != null;
 		if (!isInitialized)
 		{
-			product = InterfaceWrapperHelper.create(getCtx(), rowProductId, I_M_Product.class, ITrx.TRXNAME_None);
-			uomConversionCtx = uomConversionBL.createConversionContext(product);
-			uom = productBL.getStockingUOM(product);
+			uomConversionCtx = UOMConversionContext.of(rowProductId);
+			uom = productBL.getStockingUOM(rowProductId);
 			qty = BigDecimal.ZERO;
 		}
 		//

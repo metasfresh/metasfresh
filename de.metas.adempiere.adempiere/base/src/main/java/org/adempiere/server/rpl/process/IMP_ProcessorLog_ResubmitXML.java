@@ -29,12 +29,12 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_IMP_ProcessorLog;
 import org.compiere.model.Query;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class IMP_ProcessorLog_ResubmitXML extends JavaProcess
 {

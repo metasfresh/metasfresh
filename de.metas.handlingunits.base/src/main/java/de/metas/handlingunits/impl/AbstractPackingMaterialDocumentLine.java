@@ -29,10 +29,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.handlingunits.IPackingMaterialDocumentLine;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
+import de.metas.util.Check;
 
 /**
  * Abstract {@link IPackingMaterialDocumentLine} implementation which implements the common methods.

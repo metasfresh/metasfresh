@@ -136,7 +136,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 		final I_M_HU paloxe1 = paloxes.get(0);
 		final List<I_M_HU> createdHUs = helper.newSplitBuilder(huContext,
 				paloxe1,
-				pTomato,
+				pTomatoId,
 				BigDecimal.valueOf(430), // CU Qty
 				uomKg,
 				materialItemProductTomato_10.getQty(), // 10, split the full TU off the source TU

@@ -1,10 +1,10 @@
 package de.metas.request.api;
 
-import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.request.model.I_R_Request;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

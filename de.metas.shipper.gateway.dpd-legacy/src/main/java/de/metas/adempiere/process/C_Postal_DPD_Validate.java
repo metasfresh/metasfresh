@@ -29,7 +29,6 @@ package de.metas.adempiere.process;
 import java.util.Iterator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
@@ -37,6 +36,7 @@ import de.metas.adempiere.model.I_C_Postal;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.dpd.model.I_DPD_Route;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * @author tsa

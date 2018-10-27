@@ -13,52 +13,45 @@ package de.metas.activity.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.ModelValidator;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.util.Services;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE}, 
-			ifColumnsChanged = {I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void updateActivity(final I_C_OrderLine orderLine)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	public void onProductChanged(final I_C_OrderLine orderLine)
 	{
-		if(orderLine.getM_Product_ID() <= 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
 		{
-			orderLine.setC_Activity(null);
+			orderLine.setC_Activity_ID(-1);
 			return;
 		}
-		
-		final I_M_Product product = orderLine.getM_Product();
-		final I_M_Product_Acct productAcct = Services.get(IProductAcctDAO.class).retrieveProductAcctOrNull(product);
-		final de.metas.adempiere.model.I_M_Product productEx = InterfaceWrapperHelper.create(product, de.metas.adempiere.model.I_M_Product.class);
-		// Unrelated bug: isDiverse no longer set.
-		orderLine.setIsDiverse(productEx.isDiverse());
-		if (null != productAcct)
-		{
-			orderLine.setC_Activity_ID(productAcct.getC_Activity_ID());
-		}
-		else
-		{
-			orderLine.setC_Activity(null);
-		}
+
+		// IsDiverse flag
+		final IProductBL productBL = Services.get(IProductBL.class);
+		orderLine.setIsDiverse(productBL.isDiverse(productId));
+
+		// Activity
+		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).getProductActivityId(productId);
+		orderLine.setC_Activity_ID(ActivityId.toRepoId(productActivityId));
 	}
 }

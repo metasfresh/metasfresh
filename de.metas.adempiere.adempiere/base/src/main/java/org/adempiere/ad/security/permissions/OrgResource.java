@@ -27,8 +27,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_AD_Client;
@@ -37,6 +35,9 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import com.google.common.base.Function;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Identifies a particular organization.

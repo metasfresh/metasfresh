@@ -35,8 +35,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
@@ -56,6 +54,9 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.process.PInstanceId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -105,8 +106,8 @@ public class ShipmentScheduleEnqueuer
 
 		final Mutable<Result> result = new Mutable<>();
 
-		IQueryFilter<I_M_ShipmentSchedule> queryFilters = workPackageParameters.getQueryFilters();
-		int adPInstanceId = workPackageParameters.getAdPInstanceId();
+		final IQueryFilter<I_M_ShipmentSchedule> queryFilters = workPackageParameters.getQueryFilters();
+		final PInstanceId adPInstanceId = workPackageParameters.getAdPInstanceId();
 
 		trxManager.run(trxNameInitial, new TrxRunnableAdapter()
 		{
@@ -199,7 +200,7 @@ public class ShipmentScheduleEnqueuer
 
 				workpackageBuilder
 						.parameters()
-						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsUseQtyPicked, workPackageParameters.useQtyPickedRecords)
+						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.quantityType)
 						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.completeShipments)
 						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday);
 
@@ -254,9 +255,9 @@ public class ShipmentScheduleEnqueuer
 	}
 
 	/** Lock all invoice candidates for selection and return an auto-closable lock. */
-	private final ILock acquireLock(final int adPInstanceId, IQueryFilter<I_M_ShipmentSchedule> queryFilters)
+	private final ILock acquireLock(@NonNull final PInstanceId adPInstanceId, IQueryFilter<I_M_ShipmentSchedule> queryFilters)
 	{
-		final LockOwner lockOwner = LockOwner.newOwner("ShipmentScheduleEnqueuer", adPInstanceId);
+		final LockOwner lockOwner = LockOwner.newOwner("ShipmentScheduleEnqueuer", adPInstanceId.getRepoId());
 		return lockManager.lock()
 				.setOwner(lockOwner)
 				// allow these locks to be cleaned-up on server starts.
@@ -317,14 +318,16 @@ public class ShipmentScheduleEnqueuer
 	@Value
 	public static class ShipmentScheduleWorkPackageParameters
 	{
-		public static final String PARAM_IsUseQtyPicked = "IsUseQtyPicked";
+		public static final String PARAM_QuantityType = "QuantityType";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 
-		private int adPInstanceId;
+		@NonNull
+		private PInstanceId adPInstanceId;
+
 		@NonNull
 		private IQueryFilter<I_M_ShipmentSchedule> queryFilters;
-		private boolean useQtyPickedRecords;
+		private String quantityType;
 		private boolean completeShipments;
 		private boolean isShipmentDateToday;
 	}

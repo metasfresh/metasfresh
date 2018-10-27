@@ -1,12 +1,12 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.collections.CollectionUtils.extractSingleElement;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.adempiere.util.collections.CollectionUtils.extractSingleElement;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -18,8 +18,6 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -35,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -49,6 +48,8 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -159,15 +160,26 @@ public class RefundInvoiceCandidateFactory
 		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
 		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(invoiceSchedule.getId().getRepoId());
 
-		final LocalDate dateToInvoice = invoiceSchedule.calculateNextDateToInvoice(assignableCandidate.getInvoiceableFrom());
-		refundInvoiceCandidateRecord.setDateOrdered(TimeUtil.asTimestamp(dateToInvoice));
-		refundInvoiceCandidateRecord.setDeliveryDate(TimeUtil.asTimestamp(dateToInvoice));
+		final LocalDate dateToInvoiceFromInvoiceSchedule = invoiceSchedule.calculateNextDateToInvoice(assignableCandidate.getInvoiceableFrom());
+		final Timestamp dateForRefundCandidate;
+		if (dateToInvoiceFromInvoiceSchedule.isAfter(refundContract.getEndDate()))
+		{
+			// make sure the refund candidate's dateToInvoice is not *after* the contract's actual ending.
+			// otherwise RefundInvoiceCandidateRepository.getRefundInvoiceCandidates() won't find the invoice candidate record later.
+			dateForRefundCandidate = TimeUtil.asTimestamp(refundContract.getEndDate());
+		}
+		else
+		{
+			dateForRefundCandidate = TimeUtil.asTimestamp(dateToInvoiceFromInvoiceSchedule);
+		}
+		refundInvoiceCandidateRecord.setDateOrdered(dateForRefundCandidate);
+		refundInvoiceCandidateRecord.setDeliveryDate(dateForRefundCandidate);
 
 		final RefundInvoiceType refundInvoiceType = extractSingleElement(refundConfigs, RefundConfig::getRefundInvoiceType);
 		try
 		{
-			final int docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundInvoiceType);
-			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId);
+			final DocTypeId docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundInvoiceType);
+			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
 		}
 		catch (final RuntimeException e)
 		{
@@ -191,7 +203,7 @@ public class RefundInvoiceCandidateFactory
 		return resultCandidate;
 	}
 
-	private int computeDocType(
+	private DocTypeId computeDocType(
 			final I_C_Invoice_Candidate assignableInvoiceCandidateRecord,
 			final RefundInvoiceType refundInvoiceType)
 	{
@@ -226,10 +238,10 @@ public class RefundInvoiceCandidateFactory
 				break;
 		}
 
-		final int docTypeId = Services.get(IDocTypeDAO.class)
-				.getDocTypeIdOrNull(docTypeQueryBuilder.build());
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQueryBuilder.build());
 
-		return Check.assumeGreaterThanZero(docTypeId, "docTypeId");
+		return docTypeId;
 	}
 
 	private void invalidateNewRefundRecordIfNeeded(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)

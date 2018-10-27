@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -29,11 +30,10 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
@@ -52,6 +52,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -406,7 +408,7 @@ public final class MPayment extends X_C_Payment
 		setA_Zip(zip);
 		setA_Country(country);
 	}   // setAccountAddress
-	
+
 	/**
 	 * Before Save
 	 *
@@ -2596,6 +2598,12 @@ public final class MPayment extends X_C_Payment
 		}
 		return sb.toString();
 	}	// getSummary
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateTrx());
+	}
 
 	/**
 	 * Get Process Message

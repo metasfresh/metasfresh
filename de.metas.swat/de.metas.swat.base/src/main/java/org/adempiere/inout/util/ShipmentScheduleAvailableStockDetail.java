@@ -1,5 +1,10 @@
 package org.adempiere.inout.util;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,12 +30,11 @@ package org.adempiere.inout.util;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
+import org.adempiere.warehouse.WarehouseId;
+
+import de.metas.material.cockpit.stock.StockDataItem;
 import de.metas.material.event.commons.AttributesKey;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import de.metas.product.ProductId;
 
 /**
  * Stock detail with mutable qtyOnHand.
@@ -39,14 +43,14 @@ import lombok.ToString;
 @Getter
 public class ShipmentScheduleAvailableStockDetail
 {
-	public static ShipmentScheduleAvailableStockDetail of(final AvailableToPromiseResultGroup result)
+	public static ShipmentScheduleAvailableStockDetail of(final StockDataItem result)
 	{
 		return builder()
 				.productId(result.getProductId())
 				.warehouseId(result.getWarehouseId())
-				.bpartnerId(result.getBpartnerId())
+				//.bpartnerId(result.getBpartnerId())
 				.storageAttributesKey(result.getStorageAttributesKey())
-				.qtyOnHand(result.getQty())
+				.qtyOnHand(result.getQtyOnHand())
 				.build();
 	}
 
@@ -57,24 +61,24 @@ public class ShipmentScheduleAvailableStockDetail
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
-	private final int productId;
-	private final int warehouseId;
+	private final ProductId productId;
+	private final WarehouseId warehouseId;
 	private final AttributesKey storageAttributesKey;
-	private final int bpartnerId;
+//	private final int bpartnerId;
 	private BigDecimal qtyOnHand;
 
 	@Builder
 	private ShipmentScheduleAvailableStockDetail(
-			final int productId,
-			final int warehouseId,
+			final ProductId productId,
+			final WarehouseId warehouseId,
 			@NonNull final AttributesKey storageAttributesKey,
-			final int bpartnerId,
+//			final int bpartnerId,
 			@NonNull final BigDecimal qtyOnHand)
 	{
 		this.productId = productId;
 		this.warehouseId = warehouseId;
 		this.storageAttributesKey = storageAttributesKey;
-		this.bpartnerId = bpartnerId;
+	//	this.bpartnerId = bpartnerId;
 		this.qtyOnHand = qtyOnHand;
 	}
 

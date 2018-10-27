@@ -30,8 +30,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
@@ -43,6 +41,8 @@ import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Immutable Cost Dimension

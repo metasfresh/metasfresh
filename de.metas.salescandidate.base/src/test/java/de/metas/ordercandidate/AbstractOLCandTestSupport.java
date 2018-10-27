@@ -27,7 +27,6 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,6 +34,7 @@ import org.junit.BeforeClass;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.modelvalidator.OrderCandidate;
 import de.metas.testsupport.AbstractTestSupport;
+import de.metas.util.Services;
 
 /**
  * Test support for {@link I_C_OLCand}s

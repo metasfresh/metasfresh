@@ -26,13 +26,13 @@ package de.metas.aggregation.api.impl;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.aggregation.api.IAggregationKey;
+import de.metas.util.Services;
 
 public final class AggregationKey implements IAggregationKey
 {

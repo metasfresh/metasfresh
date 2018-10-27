@@ -15,8 +15,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_InfoColumn;
@@ -24,7 +22,6 @@ import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 
@@ -33,10 +30,11 @@ import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoBL;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
-import de.metas.inout.IInOutBL;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -176,20 +174,6 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 				.create()
 				.list();
 
-		// check if any item still has a null QtyOnHand value.
-		// if yes, then we will use the storage engine to get the overall non-iterative QtyOnHand from the system.
-		boolean resetAllQtys = false;
-		for (I_X_MRP_ProductInfo_Detail_MV item : list)
-		{
-			if (selector.getModelOrNull() == null // if the model is null, then we already know that we need to reset all qtys, because there is no model to extract the delta from.
-					|| !selector.getParamPrefix().startsWith(I_M_InOutLine.Table_Name)
-					|| InterfaceWrapperHelper.isNull(item, I_X_MRP_ProductInfo_Detail_MV.COLUMNNAME_QtyOnHand))
-			{
-				resetAllQtys = true; // at least one item needs a full computation, so we can do it for all
-				break;
-			}
-		}
-
 		// if there are multiple I_X_MRP_ProductInfo_Detail_MV that share the same selector
 		// (i.e. one with IsFallBack='N' and following n with IsFallBack='Y')
 		// then use this set to only deal with the first one
@@ -219,23 +203,13 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 				itemToUse = item;
 			}
 
-			if (resetAllQtys)
+			// do the "full" computation. note that all item need the same qtyOnHand value
+			if (qtyOnHand == null)
 			{
-				// do the "full" computation. note that all item need the same qtyOnHand value
-				if (qtyOnHand == null)
-				{
-					qtyOnHand = retrieveQtyOnHand(ctx, selector);
-				}
-				itemToUse.setQtyOnHand(qtyOnHand);
+				qtyOnHand = retrieveQtyOnHand(ctx, selector);
 			}
-			else if (selector.getParamPrefix().startsWith(I_M_InOutLine.Table_Name))
-			{
-				// just increase or decrease by the inout line's qty
-				final IInOutBL inOutBL = Services.get(IInOutBL.class);
-				final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(selector.getModelOrNull(), I_M_InOutLine.class);
-				final BigDecimal delta = inOutBL.getEffectiveStorageChange(inOutLine);
-				itemToUse.setQtyOnHand(itemToUse.getQtyOnHand().add(delta));
-			}
+			itemToUse.setQtyOnHand(qtyOnHand);
+
 			InterfaceWrapperHelper.save(itemToUse);
 		}
 	}

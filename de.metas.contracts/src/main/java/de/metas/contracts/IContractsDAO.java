@@ -26,10 +26,11 @@ package de.metas.contracts;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.order.OrderId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IContractsDAO extends ISingletonService
 {
@@ -59,4 +60,7 @@ public interface IContractsDAO extends ISingletonService
 
 
 	List<I_C_SubscriptionProgress> getSubscriptionProgress(I_C_Flatrate_Term currentTerm);
+	
+	List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId);
+
 }

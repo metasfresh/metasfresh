@@ -26,11 +26,11 @@ package org.adempiere.ad.migration.executor.impl;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
 import org.adempiere.ad.migration.executor.IMigrationStepExecutor;
 import org.adempiere.ad.migration.model.I_AD_MigrationStep;
-import org.adempiere.util.Check;
 
 public abstract class AbstractMigrationStepExecutor implements IMigrationStepExecutor
 {

@@ -32,8 +32,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.comparator.CardinalityOrderComparator;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -50,6 +48,8 @@ import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMoveme
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
 import de.metas.handlingunits.client.terminal.mmovement.view.impl.HUDistributeCUTUPanel;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Model responsible for distributing VHU (i.e. CU) to TUs

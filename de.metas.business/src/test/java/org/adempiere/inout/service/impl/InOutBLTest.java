@@ -28,7 +28,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -37,6 +36,7 @@ import org.junit.Test;
 
 import de.metas.inout.IInOutBL;
 import de.metas.inout.impl.InOutBL;
+import de.metas.util.Services;
 
 public class InOutBLTest
 {

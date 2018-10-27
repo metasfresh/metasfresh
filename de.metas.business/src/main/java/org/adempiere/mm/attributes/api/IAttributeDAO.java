@@ -23,6 +23,7 @@ package org.adempiere.mm.attributes.api;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -30,7 +31,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
@@ -39,6 +39,7 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 
 import de.metas.lang.SOTrx;
+import de.metas.util.ISingletonService;
 
 public interface IAttributeDAO extends ISingletonService
 {
@@ -75,13 +76,6 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_AttributeUse.SeqNo
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
-
-	/**
-	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_Attribute_ID.
-	 *         If you want the instances to be ordered by M_AttributeUse.SeqNo,
-	 *         please use {@link #retrieveAttributeInstances(I_M_AttributeSetInstance)}
-	 */
-	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId asiId);
 
 	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, AttributeId attributeId);
 
@@ -183,4 +177,6 @@ public interface IAttributeDAO extends ISingletonService
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
 
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
+
+	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds, Set<AttributeId> attributeIds);
 }

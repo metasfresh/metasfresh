@@ -3,11 +3,11 @@ package de.metas.project.interceptor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Component;
 
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

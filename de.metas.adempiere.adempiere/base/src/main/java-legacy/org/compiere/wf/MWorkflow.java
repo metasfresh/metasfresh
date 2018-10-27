@@ -30,22 +30,22 @@ import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.MMenu;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.process.StateEngine;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.api.IADWorkflowDAO;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 
 /**
  *	WorkFlow Model

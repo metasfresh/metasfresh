@@ -2,9 +2,6 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Movement;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -12,6 +9,7 @@ import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -37,8 +35,6 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
 
 public class QualityReturnsWarehouseModel extends AbstractMovementsWarehouseModel
 {
-
-	private static final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 
 	public QualityReturnsWarehouseModel(final ITerminalContext terminalContext, final I_M_Warehouse warehouseFrom, final List<I_M_HU> hus)
@@ -50,12 +46,8 @@ public class QualityReturnsWarehouseModel extends AbstractMovementsWarehouseMode
 	@Override
 	protected void load()
 	{
-		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(getCtx());
-
-		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = InterfaceWrapperHelper.createList(warehouses, org.compiere.model.I_M_Warehouse.class);
-		Check.assumeNotEmpty(warehouses, MSG_NoQualityWarehouse);
-		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehousesToLoad);
-
+		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouses();
+		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehouses);
 	}
 
 	@Override

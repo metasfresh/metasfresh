@@ -14,9 +14,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingContext;
-import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import lombok.NonNull;
 
 /*
@@ -68,7 +65,7 @@ public class HU2PackingItemTestCommons
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(cuQty), helper.uomEach );
+		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomatoProductId, BigDecimal.valueOf(cuQty), helper.uomEach);
 
 		return huPiItemProduct;
 	}
@@ -138,21 +135,8 @@ public class HU2PackingItemTestCommons
 
 		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 		final BigDecimal qtyToLoadBD = BigDecimal.valueOf(qtyToLoad);
-		final List<I_M_HU> hus = helper.createHUs(huContext, tuHuDef.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), helper.pTomato, qtyToLoadBD, helper.uomEach);
+		final List<I_M_HU> hus = helper.createHUs(huContext, tuHuDef.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), helper.pTomatoProductId, qtyToLoadBD, helper.uomEach);
 
 		return hus;
-	}
-
-	/**
-	 * Creates HU to Packing Items Allocator (i.e. class under test)
-	 */
-	public static HU2PackingItemsAllocator createHU2PackingItemsAllocator(
-			@NonNull final IPackingContext packingContext,
-			@NonNull final IFreshPackingItem itemToPack)
-	{
-		final HU2PackingItemsAllocator hu2PackingItemsAllocator = new HU2PackingItemsAllocator();
-		hu2PackingItemsAllocator.setItemToPack(itemToPack);
-		hu2PackingItemsAllocator.setPackingContext(packingContext);
-		return hu2PackingItemsAllocator;
 	}
 }

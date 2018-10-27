@@ -23,10 +23,10 @@ package de.metas.lock.housekeeping.spi.impl;
  */
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 
 import de.metas.lock.api.ILockManager;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Deletes lock records which were flagged with "auto-cleanup".

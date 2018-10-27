@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
@@ -16,6 +15,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

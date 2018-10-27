@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,6 +17,7 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTe
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -86,7 +86,7 @@ public class HUPackingMaterialsCollectorTest
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setTUPI(data.piTU_IFCO);
 		lutuProducer.setMaxTUsPerLU(Integer.MAX_VALUE); // allow as many TUs on that one palette as we want
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(totalQtyCU), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal(totalQtyCU), data.helper.uomKg);
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdLUs.size(), is(1));

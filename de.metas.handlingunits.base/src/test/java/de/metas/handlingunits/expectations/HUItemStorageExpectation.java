@@ -13,21 +13,18 @@ package de.metas.handlingunits.expectations;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_UOM;
@@ -40,10 +37,13 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
-	private I_M_Product _product;
+	private ProductId _productId;
 	private BigDecimal _qty;
 	private I_C_UOM _uom;
 	private IMutable<I_M_HU_Item_Storage> _huItemStorageRef;
@@ -60,9 +60,9 @@ public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUE
 
 		Assert.assertNotNull(prefix + "HU Item Storage not null", storage);
 
-		if (_product != null)
+		if (_productId != null)
 		{
-			assertModelEquals(prefix + "Product", _product, storage.getM_Product());
+			Assert.assertEquals(prefix + "Product", _productId, ProductId.ofRepoId(storage.getM_Product_ID()));
 		}
 		if (_qty != null)
 		{
@@ -79,19 +79,24 @@ public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUE
 		{
 			_huItemStorageRef.setValue(storage);
 		}
-		
+
 		return this;
 	}
 
 	public HUItemStorageExpectation<ParentExpectationType> product(final I_M_Product product)
 	{
-		this._product = product;
+		return product(ProductId.ofRepoIdOrNull(product != null ? product.getM_Product_ID() : null));
+	}
+
+	public HUItemStorageExpectation<ParentExpectationType> product(final ProductId productId)
+	{
+		this._productId = productId;
 		return this;
 	}
 
-	public I_M_Product getProduct()
+	public ProductId getProductId()
 	{
-		return _product;
+		return _productId;
 	}
 
 	public HUItemStorageExpectation<ParentExpectationType> qty(final BigDecimal qty)
@@ -137,17 +142,17 @@ public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUE
 		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 		final IHUItemStorage storage = huStorageFactory.getStorage(huItem);
 
-		Assert.assertTrue("Storage shall be empty: " + storage, storage.isEmpty(getProduct()));
+		Assert.assertTrue("Storage shall be empty: " + storage, storage.isEmpty(getProductId()));
 
-		storage.addQty(getProduct(), getQty(), getC_UOM());
-		
+		storage.addQty(getProductId(), getQty(), getC_UOM());
+
 		//
 		// Capture if asked
 		if (_huItemStorageRef != null)
 		{
 			final I_M_HU_Item_Storage huItemStorage = huStorageFactory
 					.getHUStorageDAO()
-					.retrieveItemStorage(huItem, getProduct());
+					.retrieveItemStorage(huItem, getProductId());
 			Check.assumeNotNull(huItemStorage, "huItemStorage not null");
 			_huItemStorageRef.setValue(huItemStorage);
 		}

@@ -2,7 +2,7 @@ package de.metas.translation.api;
 
 import java.sql.SQLException;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

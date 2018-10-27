@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationContext;
@@ -39,6 +38,7 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.MutableAttributeSplitRequest;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import de.metas.util.Check;
 
 public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 {

@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.junit.Assert;
 
@@ -39,6 +38,7 @@ import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationUtils;
+import de.metas.util.Services;
 
 /**
  * Listens to InOutGenerate topic, collects the inouts which were notified and later can compare with a given list.

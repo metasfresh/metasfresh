@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.reservation.HUReservation.HUReservationBuilder;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

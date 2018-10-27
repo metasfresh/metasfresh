@@ -32,13 +32,12 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
@@ -55,6 +54,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Business Partner Editor.
@@ -202,7 +203,9 @@ public final class VBPartner extends CDialog implements ActionListener
 		{
 			ro = !Env.getUserRolePermissions().canUpdate(
 					Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
-					MBPartnerLocation.Table_ID, 0, false);
+					InterfaceWrapperHelper.getTableId(I_C_BPartner_Location.class),
+					0,
+					false);
 		}
 		if (!ro)
 		{

@@ -33,9 +33,11 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.ad.trx.exceptions.TrxNotFoundException;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TrxRunnable;
+
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /**
  * Transaction Manager
@@ -86,7 +88,7 @@ public interface ITrxManager extends ISingletonService
 
 		/**
 		 * The default is {@link TrxPropagation#REQUIRES_NEW}.
-		 * 
+		 *
 		 * @param trxPropagation
 		 * @return
 		 */
@@ -185,15 +187,25 @@ public interface ITrxManager extends ISingletonService
 	String createTrxName(String prefix, boolean createTrx);
 
 	<T> T call(Callable<T> callable);
-	
-	void run(Runnable runnable);
+
+	default void run(final Runnable runnable)
+	{
+		runInNewTrx(runnable);
+	}
+
+	void runInNewTrx(Runnable runnable);
 
 	/**
 	 * Same as calling {@link #run(String, TrxRunnable)} with trxName=null
 	 *
 	 * @see #run(String, TrxRunnable)
 	 */
-	void run(TrxRunnable r);
+	void runInNewTrx(TrxRunnable runnable);
+
+	default void run(final TrxRunnable runnable)
+	{
+		runInNewTrx(runnable);
+	};
 
 	/**
 	 * Same as calling {@link #call(String, TrxRunnable)} with trxName=null
@@ -213,9 +225,9 @@ public interface ITrxManager extends ISingletonService
 	 * @see #run(String, boolean, TrxRunnable)
 	 */
 	void run(String trxName, TrxRunnable r);
-	
+
 	void run(String trxName, Runnable runnable);
-	
+
 	default void runInThreadInheritedTrx(final Runnable runnable)
 	{
 		run(ITrx.TRXNAME_ThreadInherited, runnable);
@@ -232,6 +244,11 @@ public interface ITrxManager extends ISingletonService
 	 * @see #call(String, boolean, TrxRunnable)
 	 */
 	<T> T call(String trxName, TrxCallable<T> callable);
+
+	default <T> T callInThreadInheritedTrx(@NonNull final TrxCallable<T> callable)
+	{
+		return call(ITrx.TRXNAME_ThreadInherited, callable);
+	}
 
 	/**
 	 * @see #call(String, boolean, TrxCallable)
@@ -360,6 +377,16 @@ public interface ITrxManager extends ISingletonService
 	default boolean isActive(final ITrx trx)
 	{
 		return !isNull(trx) && trx.isActive();
+	}
+
+	default boolean isActive(final String trxName)
+	{
+		if (isNull(trxName))
+		{
+			return false;
+		}
+		final ITrx trx = get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
+		return isActive(trx);
 	}
 
 	/**

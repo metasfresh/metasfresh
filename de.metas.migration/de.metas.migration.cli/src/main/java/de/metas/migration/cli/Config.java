@@ -1,11 +1,12 @@
 package de.metas.migration.cli;
 
-import de.metas.migration.applier.IScriptsApplierListener;
-import de.metas.migration.applier.impl.NullScriptsApplierListener;
 import lombok.Builder;
 import lombok.Builder.Default;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
+
+import de.metas.migration.applier.IScriptsApplierListener;
+import de.metas.migration.applier.impl.NullScriptsApplierListener;
 
 /*
  * #%L
@@ -36,50 +37,50 @@ import lombok.NonNull;
  *
  */
 @Builder
-@Data
+@Value
 public class Config
 {
 	public static final String DEFAULT_SETTINGS_FILENAME = "local_settings.properties";
 
 	@Default
-	private final boolean canRun = false;
+	boolean canRun = false;
 
 	@NonNull
-	private final String rolloutDirName;
+	String rolloutDirName;
 
 	@Default
-	private final String settingsFileName = null;
+	String settingsFile = null;
 
 	@Default
-	private final String scriptFileName = null;
+	String scriptFileName = null;
 
 	@Default
-	private final IScriptsApplierListener scriptsApplierListener = NullScriptsApplierListener.instance;
+	IScriptsApplierListener scriptsApplierListener = NullScriptsApplierListener.instance;
 
 	@Default
-	private final boolean justMarkScriptAsExecuted = false;
+	boolean justMarkScriptAsExecuted = false;
 
 	/**
 	 * By default we will check the versions.
 	 */
 	@Default
-	private final boolean checkVersions = true;
+	boolean checkVersions = true;
 
 	/**
 	 * By default we will store our won version in the DB after a successful update.
 	 */
 	@Default
-	private final boolean storeVersion = true;
+	boolean storeVersion = true;
 
 	/**
 	 * If the DB version is already ahead of our local rollout package usually means that something is wrong, so by default the rollout shall fail.
 	 */
 	@Default
-	private final boolean failIfRolloutIsGreaterThanDB = true;
+	boolean failIfRolloutIsGreaterThanDB = true;
 
 	@Default
-	private final String templateDBName = null;
+	String templateDBName = null;
 
 	@Default
-	private final String newDBName = null;
+	String newDBName = null;
 }

@@ -24,8 +24,9 @@ package de.metas.adempiere.service;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Warehouse;
+
+import de.metas.util.ISingletonService;
 
 public interface IWarehouseDAO extends ISingletonService
 {

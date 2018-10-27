@@ -163,29 +163,6 @@ public class MetasfreshLastError
 	}   // retrieveWarning
 
 	/**
-	 * Save Info as ValueNamePair
-	 *
-	 * @param AD_Message message key
-	 * @param message clear text message
-	 */
-	public static void saveInfo(final String AD_Message, final String message)
-	{
-		final ValueNamePair lastInfo = new ValueNamePair(AD_Message, message);
-		getLastErrorsInstance().setLastInfo(lastInfo);
-	}   // saveInfo
-
-	/**
-	 * Get Info from Stack
-	 *
-	 * @return AD_Message as Value and Message as String
-	 */
-	public static ValueNamePair retrieveInfo()
-	{
-		final ValueNamePair lastInfo = getLastErrorsInstance().getLastInfoAndReset();
-		return lastInfo;
-	}
-
-	/**
 	 * Reset Saved Messages/Errors/Info
 	 */
 	public static void resetLast()
@@ -211,7 +188,6 @@ public class MetasfreshLastError
 		private ValueNamePair lastError;
 		private Throwable lastException;
 		private ValueNamePair lastWarning;
-		private ValueNamePair lastInfo;
 
 		private LastErrorsInstance()
 		{
@@ -225,7 +201,6 @@ public class MetasfreshLastError
 			sb.append("lastError=").append(lastError);
 			sb.append(", lastException=").append(lastException);
 			sb.append(", lastWarning=").append(lastWarning);
-			sb.append(", lastInfo=").append(lastInfo);
 			sb.append("]");
 			return sb.toString();
 		}
@@ -266,24 +241,11 @@ public class MetasfreshLastError
 			this.lastWarning = lastWarning;
 		}
 
-		public synchronized ValueNamePair getLastInfoAndReset()
-		{
-			final ValueNamePair lastInfoToReturn = lastInfo;
-			lastInfo = null;
-			return lastInfoToReturn;
-		}
-
-		public synchronized void setLastInfo(final ValueNamePair lastInfo)
-		{
-			this.lastInfo = lastInfo;
-		}
-
 		public synchronized void reset()
 		{
 			lastError = null;
 			lastException = null;
 			lastWarning = null;
-			lastInfo = null;
 		}
 	}
 

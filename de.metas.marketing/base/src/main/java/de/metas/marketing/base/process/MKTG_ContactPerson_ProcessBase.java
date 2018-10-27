@@ -6,16 +6,16 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Service;
 
-import de.metas.bpartner.DefaultAddressType;
 import de.metas.marketing.base.CampaignService;
+import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
