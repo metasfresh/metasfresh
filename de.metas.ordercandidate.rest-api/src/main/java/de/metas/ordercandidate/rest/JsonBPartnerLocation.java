@@ -1,13 +1,13 @@
 package de.metas.ordercandidate.rest;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -33,9 +33,7 @@ import io.swagger.annotations.ApiModelProperty;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder(toBuilder = true)
+@Value
 public class JsonBPartnerLocation
 {
 	@ApiModelProperty(allowEmptyValue = false, //
@@ -49,11 +47,31 @@ public class JsonBPartnerLocation
 	private String city;
 	private String state;
 
-	@NonNull
 	private String countryCode;
 
 	@ApiModelProperty(allowEmptyValue = false, //
 			value = "This translates to <code>C_BPartner_Location.GLN</code>.")
-	@Nullable
 	private String gln;
+
+	@Builder(toBuilder = true)
+	@JsonCreator
+	public JsonBPartnerLocation(
+			@JsonProperty("externalId") final String externalId,
+			@JsonProperty("address1") final String address1,
+			@JsonProperty("address2") final String address2,
+			@JsonProperty("postal") final String postal,
+			@JsonProperty("city") final String city,
+			@JsonProperty("state") final String state,
+			@JsonProperty("countryCode") @NonNull final String countryCode,
+			@JsonProperty("gln") @Nullable final String gln)
+	{
+		this.externalId = externalId;
+		this.address1 = address1;
+		this.address2 = address2;
+		this.postal = postal;
+		this.city = city;
+		this.state = state;
+		this.countryCode = countryCode;
+		this.gln = gln;
+	}
 }
