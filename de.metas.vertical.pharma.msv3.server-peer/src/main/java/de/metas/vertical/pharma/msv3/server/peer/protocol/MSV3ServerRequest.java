@@ -1,10 +1,12 @@
 package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
+import lombok.Builder;
+import lombok.Value;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /*
  * #%L
@@ -29,8 +31,7 @@ import lombok.Data;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder
+@Value
 public class MSV3ServerRequest
 {
 	public static MSV3ServerRequest requestAll()
@@ -45,4 +46,14 @@ public class MSV3ServerRequest
 
 	boolean requestAllUsers;
 	boolean requestAllStockAvailabilities;
+
+	@JsonCreator
+	@Builder
+	public MSV3ServerRequest(
+			@JsonProperty("requestAllUsers") final boolean requestAllUsers,
+			@JsonProperty("requestAllStockAvailabilities") final boolean requestAllStockAvailabilities)
+	{
+		this.requestAllUsers = requestAllUsers;
+		this.requestAllStockAvailabilities = requestAllStockAvailabilities;
+	}
 }

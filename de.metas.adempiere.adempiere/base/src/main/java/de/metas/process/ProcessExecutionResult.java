@@ -1,5 +1,11 @@
 package de.metas.process;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+
+import javax.annotation.concurrent.Immutable;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -9,8 +15,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -38,10 +42,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.time.SystemTime;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
 
 /*
  * #%L
@@ -66,7 +66,6 @@ import lombok.Setter;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@AllArgsConstructor
 public class ProcessExecutionResult
 {
 	public static ProcessExecutionResult newInstanceForADPInstanceId(final PInstanceId pinstanceId)
@@ -150,6 +149,49 @@ public class ProcessExecutionResult
 	{
 		this.pinstanceId = pinstanceId;
 		this.logs = new ArrayList<>();
+	}
+
+	@JsonCreator
+	public ProcessExecutionResult(
+			@JsonProperty("pinstanceId") final PInstanceId pinstanceId,
+			@JsonProperty("summary") final String summary,
+			@JsonProperty("error") final boolean error,
+			@JsonProperty("errorWasReportedToUser") final boolean errorWasReportedToUser,
+			@JsonProperty("timeout") final boolean timeout,
+			@JsonProperty("logs") final List<ProcessInfoLog> logs,
+			@JsonProperty("showProcessLogsPolicy") final ShowProcessLogs showProcessLogsPolicy,
+			@JsonProperty("printFormat") final MPrintFormat printFormat,
+			@JsonProperty("reportData") final byte[] reportData,
+			@JsonProperty("reportFilename") final String reportFilename,
+			@JsonProperty("reportContentType") final String reportContentType,
+			@JsonProperty("throwable") final Throwable throwable,
+			@JsonProperty("refreshAllAfterExecution") final boolean refreshAllAfterExecution,
+			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution,
+			@JsonProperty("recordToSelectAfterExecution") final TableRecordReference recordToSelectAfterExecution,
+			@JsonProperty("recordsToOpen") final RecordsToOpen recordsToOpen,
+			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
+			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
+			@JsonProperty("webuiViewId") final String webuiViewId)
+	{
+		this.pinstanceId = pinstanceId;
+		this.summary = summary;
+		this.error = error;
+		this.errorWasReportedToUser = errorWasReportedToUser;
+		this.timeout = timeout;
+		this.logs = logs;
+		this.showProcessLogsPolicy = showProcessLogsPolicy;
+		this.printFormat = printFormat;
+		this.reportData = reportData;
+		this.reportFilename = reportFilename;
+		this.reportContentType = reportContentType;
+		this.throwable = throwable;
+		this.refreshAllAfterExecution = refreshAllAfterExecution;
+		this.recordToRefreshAfterExecution = recordToRefreshAfterExecution;
+		this.recordToSelectAfterExecution = recordToSelectAfterExecution;
+		this.recordsToOpen = recordsToOpen;
+		this.webuiViewToOpen = webuiViewToOpen;
+		this.displayQRCode = displayQRCode;
+		this.webuiViewId = webuiViewId;
 	}
 
 	@Override

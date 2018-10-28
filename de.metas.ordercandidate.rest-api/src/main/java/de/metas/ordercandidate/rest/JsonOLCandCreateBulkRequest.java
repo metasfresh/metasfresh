@@ -1,15 +1,16 @@
 package de.metas.ordercandidate.rest;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.Singular;
 
 /*
  * #%L
@@ -34,8 +35,7 @@ import lombok.Singular;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder
+@Value
 public class JsonOLCandCreateBulkRequest
 {
 	public static JsonOLCandCreateBulkRequest of(@NonNull final JsonOLCandCreateRequest request)
@@ -43,9 +43,15 @@ public class JsonOLCandCreateBulkRequest
 		return builder().request(request).build();
 	}
 
-	@JsonProperty("requests")
-	@Singular
-	private List<JsonOLCandCreateRequest> requests;
+	List<JsonOLCandCreateRequest> requests;
+
+	@JsonCreator
+	@Builder
+	public JsonOLCandCreateBulkRequest(
+			@JsonProperty("requests") @Singular final List<JsonOLCandCreateRequest> requests)
+	{
+		this.requests = requests;
+	}
 
 	public JsonOLCandCreateBulkRequest validate()
 	{

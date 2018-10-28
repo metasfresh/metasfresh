@@ -1,12 +1,15 @@
 package de.metas.marketing.gateway.cleverreach.restapi.models;
 
+import lombok.NonNull;
+import lombok.Value;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.Campaign.CampaignBuilder;
 import de.metas.marketing.base.model.CampaignRemoteUpdate;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -34,6 +37,30 @@ import lombok.Value;
 @Value
 public class Group
 {
+	String name;
+	int id;
+	long stamp;
+	long last_mailing;
+	long last_changed;
+	boolean isLocked;
+
+	@JsonCreator
+	public Group(
+			@JsonProperty("name") String name,
+			@JsonProperty("id") int id,
+			@JsonProperty("stamp") long stamp,
+			@JsonProperty("last_mailing") long last_mailing,
+			@JsonProperty("last_changed") long last_changed,
+			@JsonProperty("isLocked") boolean isLocked)
+	{
+		this.name = name;
+		this.id = id;
+		this.stamp = stamp;
+		this.last_mailing = last_mailing;
+		this.last_changed = last_changed;
+		this.isLocked = isLocked;
+	}
+
 	public Campaign toCampaign()
 	{
 		return finishAndBuild(Campaign.builder());
@@ -51,13 +78,6 @@ public class Group
 				.remoteId(String.valueOf(id))
 				.build();
 	}
-
-	String name;
-	int id;
-	long stamp;
-	long last_mailing;
-	long last_changed;
-	boolean isLocked;
 
 	public CampaignRemoteUpdate toCampaignUpdate()
 	{

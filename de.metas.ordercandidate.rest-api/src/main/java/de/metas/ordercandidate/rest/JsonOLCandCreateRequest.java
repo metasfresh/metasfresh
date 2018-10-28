@@ -1,19 +1,22 @@
 package de.metas.ordercandidate.rest;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -44,8 +47,7 @@ import lombok.NonNull;
  *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder(toBuilder = true)
+@Value
 public final class JsonOLCandCreateRequest
 {
 	private JsonOrganization org;
@@ -173,7 +175,7 @@ public final class JsonOLCandCreateRequest
 	private JsonDocTypeInfo invoiceDocType;
 
 	/**
-	 * Since we want to use {@code ..build().toBuilder()} to get copies if the builder,
+	 * Since we want to use {@code ..build().toBuilder()} to get copies of the builder,
 	 * we have a number of mandatory fields which are not annotated with {@link NonNull}.
 	 * Therefore we call this method to check each instance before it is actually used.
 	 */
@@ -196,5 +198,55 @@ public final class JsonOLCandCreateRequest
 					this);
 		}
 		return this;
+	}
+
+	@JsonCreator
+	@Builder(toBuilder = true)
+	public JsonOLCandCreateRequest(
+			@JsonProperty("org") final JsonOrganization org,
+			@JsonProperty("externalId") final String externalId,
+			@JsonProperty("dataSourceInternalName") final String dataSourceInternalName,
+			@JsonProperty("dataDestInternalName") final String dataDestInternalName,
+			@JsonProperty("bpartner") final JsonBPartnerInfo bpartner,
+			@JsonProperty("billBPartner") final JsonBPartnerInfo billBPartner,
+			@JsonProperty("dropShipBPartner") final JsonBPartnerInfo dropShipBPartner,
+			@JsonProperty("handOverBPartner") final JsonBPartnerInfo handOverBPartner,
+			@JsonProperty("dateRequired") final LocalDate dateRequired,
+			@JsonProperty("flatrateConditionsId") final int flatrateConditionsId,
+			@JsonProperty("product") final JsonProductInfo product,
+			@JsonProperty("productDescription") final String productDescription,
+			@JsonProperty("qty") final BigDecimal qty,
+			@JsonProperty("uomCode") final String uomCode,
+			@JsonProperty("packingMaterialId") final int packingMaterialId,
+			@JsonProperty("pricingSystemCode") final String pricingSystemCode,
+			@JsonProperty("price") final BigDecimal price,
+			@JsonProperty("currencyCode") final String currencyCode,
+			@JsonProperty("discount") final BigDecimal discount,
+			@JsonProperty("poReference") final String poReference,
+			@JsonProperty("dateInvoiced") final LocalDate dateInvoiced,
+			@JsonProperty("invoiceDocType") final JsonDocTypeInfo invoiceDocType)
+	{
+		this.org = org;
+		this.externalId = externalId;
+		this.dataSourceInternalName = dataSourceInternalName;
+		this.dataDestInternalName = dataDestInternalName;
+		this.bpartner = bpartner;
+		this.billBPartner = billBPartner;
+		this.dropShipBPartner = dropShipBPartner;
+		this.handOverBPartner = handOverBPartner;
+		this.dateRequired = dateRequired;
+		this.flatrateConditionsId = flatrateConditionsId;
+		this.product = product;
+		this.productDescription = productDescription;
+		this.qty = qty;
+		this.uomCode = uomCode;
+		this.packingMaterialId = packingMaterialId;
+		this.pricingSystemCode = pricingSystemCode;
+		this.price = price;
+		this.currencyCode = currencyCode;
+		this.discount = discount;
+		this.poReference = poReference;
+		this.dateInvoiced = dateInvoiced;
+		this.invoiceDocType = invoiceDocType;
 	}
 }
