@@ -56,22 +56,23 @@
 			<artifactId>spring-data-elasticsearch</artifactId>
 		</dependency>
 
-		<!-- spring boot-2.0 has 2.1.10 (provided) in its dependency tree; elasticsearch-5.6.8 
-			has 2.1.9 (compile) -->
+		<!-- spring boot-2.0 has 2.1.10 (provided) in its dependency tree; elasticsearch-5.6.12 has 2.1.9 (compile) -->
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
-			<!-- <exclusions> <exclusion> <groupId>org.hdrhistogram</groupId> <artifactId>HdrHistogram</artifactId> 
-				</exclusion> </exclusions> -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.hdrhistogram</groupId>
+					<artifactId>HdrHistogram</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		<!-- <dependency> <groupId>org.hdrhistogram</groupId> <artifactId>HdrHistogram</artifactId> 
-			<version>2.1.10</version> </dependency> -->
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
+			<groupId>org.hdrhistogram</groupId>
+			<artifactId>HdrHistogram</artifactId>
+			<version>2.1.10</version>
 		</dependency>
-
+		
 		<!-- https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/_using_another_logger.html -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -80,6 +81,12 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 	</dependencies>
