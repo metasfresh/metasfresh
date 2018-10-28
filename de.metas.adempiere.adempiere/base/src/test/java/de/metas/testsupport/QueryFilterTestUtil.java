@@ -1,5 +1,7 @@
 package de.metas.testsupport;
 
+import lombok.NonNull;
+
 import java.util.List;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -9,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
 
 /*
  * #%L

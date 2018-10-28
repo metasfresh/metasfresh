@@ -35,7 +35,6 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
 import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.impl.PlainCalendarDAO;
 import de.metas.util.Services;
 
 public class CalendarTestBase

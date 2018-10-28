@@ -37,8 +37,6 @@ import org.junit.Test;
 
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
-import de.metas.cache.interceptor.CacheInterceptor;
-import de.metas.cache.interceptor.CacheIntrospectionException;
 import de.metas.cache.interceptor.testservices.ITestServiceWithCacheReload;
 import de.metas.cache.interceptor.testservices.ITestServiceWithCachedMethod;
 import de.metas.cache.interceptor.testservices.ITestServiceWithInvalidMethod;

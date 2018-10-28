@@ -36,8 +36,6 @@ import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
-import de.metas.cache.interceptor.CacheIntrospectionException;
-import de.metas.cache.interceptor.CachedMethodDescriptor;
 import de.metas.util.IService;
 
 /**

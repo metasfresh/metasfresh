@@ -34,8 +34,6 @@ import org.junit.Test;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheIgnore;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.cache.interceptor.CacheKeyBuilder;
-import de.metas.cache.interceptor.CachedMethodDescriptor;
 
 public class CachedMethodDescriptorTest
 {

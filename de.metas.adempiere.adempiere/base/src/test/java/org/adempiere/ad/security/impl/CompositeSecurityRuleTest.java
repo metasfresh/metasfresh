@@ -27,13 +27,13 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import mockit.Mocked;
-
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import mockit.Mocked;
 
 public class CompositeSecurityRuleTest
 {

@@ -32,8 +32,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.cache.CCache;
-
 public class CCacheTest
 {
 	public static class MyUncheckedException extends RuntimeException

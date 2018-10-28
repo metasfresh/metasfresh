@@ -3,13 +3,15 @@ package de.metas.testsupport;
 import static de.metas.testsupport.QueryFilterTestUtil.castOrNull;
 import static org.assertj.core.error.ElementsShouldSatisfy.elementsShouldSatisfyAny;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -26,8 +28,6 @@ import org.assertj.core.internal.Iterables;
 import org.springframework.util.ReflectionUtils;
 
 import com.jgoodies.common.base.Objects;
-
-import lombok.NonNull;
 
 /*
  * #%L

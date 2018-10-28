@@ -18,9 +18,9 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.javaclasses.IJavaClassTypeBL;
 import de.metas.javaclasses.impl.JavaClassTypeBL.IReflectionTypeProvider;
+import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestServiceImplementation;
 import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestsIAnnotatedServiceInterface;
 import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestsIServiceAnnotation;
-import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestServiceImplementation;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
 

@@ -30,8 +30,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.cache.annotation.CacheReloadIfTrue;
-import de.metas.cache.interceptor.CacheIntrospectionException;
-import de.metas.cache.interceptor.CachedMethodDescriptor;
 import de.metas.cache.interceptor.testservices.impl.TestServiceWithCacheReload_InvalidMethods;
 
 /**

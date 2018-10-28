@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerType;
-import de.metas.bpartner.service.impl.BPartnerDAO;
 
 /*
  * #%L

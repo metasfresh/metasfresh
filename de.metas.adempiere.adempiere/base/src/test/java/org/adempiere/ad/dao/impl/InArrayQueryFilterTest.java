@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao.impl;
 
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -33,8 +35,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.util.lang.RepoIdAware;
-
-import lombok.Value;
 
 public class InArrayQueryFilterTest
 {

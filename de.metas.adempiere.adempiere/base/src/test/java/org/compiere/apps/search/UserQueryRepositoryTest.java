@@ -3,6 +3,8 @@ package org.compiere.apps.search;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import lombok.Builder;
+
 import java.util.stream.Stream;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -11,8 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
-
-import lombok.Builder;
 
 /*
  * #%L

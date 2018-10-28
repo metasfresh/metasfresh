@@ -1,5 +1,7 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -53,37 +55,32 @@
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-elasticsearch</artifactId>
 		</dependency>
-		
-		<!-- spring boot-2.0 has 2.1.10 (provided) in its dependency tree; elasticsearch-5.6.8 has 2.1.9 (compile) -->
+
+		<!-- spring boot-2.0 has 2.1.10 (provided) in its dependency tree; elasticsearch-5.6.8 
+			has 2.1.9 (compile) -->
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
-			<!-- 
-			<exclusions>
-				<exclusion>
-					<groupId>org.hdrhistogram</groupId>
-					<artifactId>HdrHistogram</artifactId>
-				</exclusion>
-			</exclusions>
-			 -->
+			<!-- <exclusions> <exclusion> <groupId>org.hdrhistogram</groupId> <artifactId>HdrHistogram</artifactId> 
+				</exclusion> </exclusions> -->
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.hdrhistogram</groupId>
-			<artifactId>HdrHistogram</artifactId>
-			<version>2.1.10</version>
-		</dependency>
-		 -->
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
+		<!-- <dependency> <groupId>org.hdrhistogram</groupId> <artifactId>HdrHistogram</artifactId> 
+			<version>2.1.10</version> </dependency> -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/_using_another_logger.html -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-to-slf4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
 	</dependencies>
 </project>

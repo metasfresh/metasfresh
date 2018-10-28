@@ -4,9 +4,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.function.Predicate;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
+
+import java.util.function.Predicate;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.User;
@@ -24,9 +28,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
 import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L

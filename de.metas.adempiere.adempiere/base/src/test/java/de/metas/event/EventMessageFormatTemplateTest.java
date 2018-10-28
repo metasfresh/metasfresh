@@ -1,5 +1,7 @@
 package de.metas.event;
 
+import lombok.NonNull;
+
 import java.util.Map;
 import java.util.function.Function;
 
@@ -13,8 +15,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-
-import lombok.NonNull;
 
 /*
  * #%L

@@ -7,6 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import lombok.NonNull;
+
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +26,6 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Services;
-import lombok.NonNull;
 import mockit.Expectations;
 
 /*

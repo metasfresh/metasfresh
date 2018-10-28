@@ -7,6 +7,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import lombok.Builder;
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -24,11 +27,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.StartupListener;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
-import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L

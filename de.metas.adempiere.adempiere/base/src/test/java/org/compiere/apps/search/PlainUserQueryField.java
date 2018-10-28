@@ -1,13 +1,13 @@
 package org.compiere.apps.search;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 import org.junit.Ignore;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L

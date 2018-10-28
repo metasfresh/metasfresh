@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import lombok.NonNull;
+
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.impl.LookupDAO;
 import org.adempiere.ad.service.impl.LookupDAO.TableRefInfo;
@@ -19,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.util.Services;
-import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Mocked;
 

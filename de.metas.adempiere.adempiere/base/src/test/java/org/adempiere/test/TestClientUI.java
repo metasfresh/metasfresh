@@ -25,14 +25,14 @@ package org.adempiere.test;
 
 import java.lang.reflect.Method;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.junit.Assert;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.AbstractClientUI;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.adempiere.form.IClientUIInvoker;
+import de.metas.logging.LogManager;
 
 /**
  * Mocked {@link IClientUI} implementation used in JUnit tests.

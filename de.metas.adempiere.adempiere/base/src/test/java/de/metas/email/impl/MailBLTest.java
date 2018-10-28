@@ -3,11 +3,11 @@ package de.metas.email.impl;
 import static org.junit.Assert.assertEquals;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.email.IMailBL;
+import de.metas.util.Services;
 
 /*
  * #%L

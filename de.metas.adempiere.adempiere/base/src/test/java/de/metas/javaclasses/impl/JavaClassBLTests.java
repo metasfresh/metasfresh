@@ -30,7 +30,6 @@ import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.javaclasses.impl.JavaClassBL;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 

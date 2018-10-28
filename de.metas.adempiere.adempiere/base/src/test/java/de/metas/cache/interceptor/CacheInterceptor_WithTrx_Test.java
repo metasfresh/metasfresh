@@ -34,7 +34,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.cache.interceptor.testservices.ITestServiceWithCachedMethod;
 import de.metas.cache.interceptor.testservices.impl.TestServiceWithCachedMethod;
 import de.metas.util.Services;

@@ -36,7 +36,6 @@ import org.junit.Test;
 
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.impl.ADPInstanceDAO;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 

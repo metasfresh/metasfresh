@@ -2,6 +2,8 @@ package de.metas.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import lombok.NonNull;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -15,7 +17,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt.ResetMode;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
-import lombok.NonNull;
 
 /*
  * #%L

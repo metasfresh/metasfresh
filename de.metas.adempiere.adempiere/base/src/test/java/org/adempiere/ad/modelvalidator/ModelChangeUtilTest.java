@@ -4,15 +4,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import lombok.Builder;
+import lombok.Value;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Order;
 import org.junit.Before;
 import org.junit.Test;
-
-import lombok.Builder;
-import lombok.Value;
 
 /*
  * #%L
