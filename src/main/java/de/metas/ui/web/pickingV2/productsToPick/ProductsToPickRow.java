@@ -215,19 +215,33 @@ public class ProductsToPickRow implements IViewRow
 		return approvalStatus.isApproved();
 	}
 
-	public boolean isEligibleForPicking()
+	private boolean isEligibleForChangingPickStatus()
 	{
 		return !isProcessed() && !isApproved();
 	}
 
+	public boolean isEligibleForPicking()
+	{
+		return isEligibleForChangingPickStatus()
+				&& getHuId() != null
+				&& (pickStatus.isToBePicked() || pickStatus.isPickRejected());
+	}
+
+	public boolean isEligibleForRejectPicking()
+	{
+		return isEligibleForChangingPickStatus()
+				&& !pickStatus.isPickRejected();
+	}
+
 	public boolean isEligibleForPacking()
 	{
-		return !isProcessed() && !isApproved() && pickStatus.isPickedOrPacked();
+		return isEligibleForChangingPickStatus()
+				&& pickStatus.isPickedOrPacked();
 	}
 
 	public boolean isEligibleForReview()
 	{
-		return !isProcessed() && (pickStatus.isPacked() || pickStatus.isPickRejected());
+		return !isProcessed() && pickStatus.isFinalState();
 	}
 
 	public boolean isEligibleForProcessing()
