@@ -8,12 +8,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -54,9 +54,10 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
 			@NonNull final PackageableRowsData rowsData,
-			@NonNull @Singular final ImmutableList<RelatedProcessDescriptor> relatedProcessDescriptors)
+			@NonNull @Singular final ImmutableList<RelatedProcessDescriptor> relatedProcessDescriptors,
+			@NonNull final DocumentFilterDescriptorsProvider viewFilterDescriptors)
 	{
-		super(viewId, description, rowsData, NullDocumentFilterDescriptorsProvider.instance);
+		super(viewId, description, rowsData, viewFilterDescriptors);
 		this.relatedProcessDescriptors = relatedProcessDescriptors;
 	}
 
@@ -70,6 +71,18 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	protected PackageableRowsData getRowsData()
 	{
 		return PackageableRowsData.cast(super.getRowsData());
+	}
+
+	@Override
+	public List<DocumentFilter> getStickyFilters()
+	{
+		return getRowsData().getStickyFilters();
+	}
+
+	@Override
+	public List<DocumentFilter> getFilters()
+	{
+		return getRowsData().getFilters();
 	}
 
 	@Override

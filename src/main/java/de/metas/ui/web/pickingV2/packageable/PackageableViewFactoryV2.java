@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.money.MoneyService;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_OpenProductsToPick;
 import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_UnlockAll;
@@ -62,8 +63,14 @@ public class PackageableViewFactoryV2 implements IViewFactory
 				.setWindowId(PickingConstantsV2.WINDOWID_PackageableView)
 				.setCaption("Picking") // TODO: trl
 				.setAllowOpeningRowDetails(false)
+				.setFilters(getFilterDescriptorsProvider().getAll())
 				.addElementsFromViewRowClass(PackageableRow.class, viewDataType)
 				.build();
+	}
+
+	private DocumentFilterDescriptorsProvider getFilterDescriptorsProvider()
+	{
+		return PackageableViewFilters.getDescriptors();
 	}
 
 	@Override
@@ -72,12 +79,18 @@ public class PackageableViewFactoryV2 implements IViewFactory
 		final ViewId viewId = request.getViewId();
 		viewId.assertWindowId(PickingConstantsV2.WINDOWID_PackageableView);
 
-		final PackageableRowsData rowsData = rowsRepo.getPackageableRowsData();
+		final DocumentFilterDescriptorsProvider filterDescriptors = getFilterDescriptorsProvider();
+
+		final PackageableRowsData rowsData = rowsRepo.newPackageableRowsData()
+				.filters(request.getOrUnwrapFilters(filterDescriptors))
+				.stickyFilters(request.getStickyFilters())
+				.build();
 
 		return PackageableView.builder()
 				.viewId(viewId)
 				.rowsData(rowsData)
 				.relatedProcessDescriptors(getRelatedProcessDescriptors())
+				.viewFilterDescriptors(filterDescriptors)
 				.build();
 	}
 

@@ -27,13 +27,14 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.pickingV2.packageable.PackageableRowsData.PackageableRowsDataBuilder;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -81,16 +82,15 @@ final class PackageableRowsRepository
 		userLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_AD_User.Table_Name));
 	}
 
-	public PackageableRowsData getPackageableRowsData()
+	public PackageableRowsDataBuilder newPackageableRowsData()
 	{
-		return PackageableRowsData.newInstance(this);
+		return PackageableRowsData.builder().repo(this);
 	}
 
-	List<PackageableRow> retrieveRows()
+	List<PackageableRow> retrieveRows(final List<DocumentFilter> filters)
 	{
-		final PackageableQuery query = PackageableQuery.builder()
-				.onlyFromSalesOrder(true)
-				.build();
+		final PackageableQuery query = createPackageableQuery(filters);
+
 		return packageablesRepo.stream(query)
 				.collect(GuavaCollectors.toImmutableListMultimap(packageable -> extractGroupingKey(packageable)))
 				.asMap()
@@ -99,6 +99,20 @@ final class PackageableRowsRepository
 				.map(this::createPackageableRowNoFail)
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private PackageableQuery createPackageableQuery(final List<DocumentFilter> filters)
+	{
+		final PackageableViewFilterVO filterVO = PackageableViewFilters.extractPackageableViewFilterVO(filters);
+
+		return PackageableQuery.builder()
+				.onlyFromSalesOrder(true)
+				.salesOrderId(filterVO.getSalesOrderId())
+				.customerId(filterVO.getCustomerId())
+				.warehouseTypeId(filterVO.getWarehouseTypeId())
+				.deliveryDate(filterVO.getDeliveryDate())
+				.preparationDate(filterVO.getPreparationDate())
+				.build();
 	}
 
 	private static ArrayKey extractGroupingKey(final Packageable packageable)

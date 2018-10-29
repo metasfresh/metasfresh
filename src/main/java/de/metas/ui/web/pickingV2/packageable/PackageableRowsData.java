@@ -1,15 +1,20 @@
 package de.metas.ui.web.pickingV2.packageable;
 
+import java.util.List;
 import java.util.Map;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import lombok.NonNull;
+import lombok.Builder;
+import lombok.Getter;
 
 /*
  * #%L
@@ -21,12 +26,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,16 +45,28 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 		return (PackageableRowsData)rowsData;
 	}
 
-	public static PackageableRowsData newInstance(final PackageableRowsRepository repo)
-	{
-		return new PackageableRowsData(repo);
-	}
+	@Getter
+	private final ImmutableList<DocumentFilter> stickyFilters;
+	@Getter
+	private final ImmutableList<DocumentFilter> filters;
 
 	private final ExtendedMemorizingSupplier<PackageableRowsIndex> rowsIndexSupplier;
 
-	private PackageableRowsData(@NonNull final PackageableRowsRepository repo)
+	@Builder
+	private PackageableRowsData(
+			final PackageableRowsRepository repo,
+			final List<DocumentFilter> stickyFilters,
+			final List<DocumentFilter> filters)
 	{
-		rowsIndexSupplier = ExtendedMemorizingSupplier.of(() -> PackageableRowsIndex.of(repo.retrieveRows()));
+		this.filters = ImmutableList.copyOf(filters);
+		this.stickyFilters = ImmutableList.copyOf(stickyFilters);
+
+		final ImmutableList<DocumentFilter> allFilters = ImmutableList.<DocumentFilter> builder()
+				.addAll(filters)
+				.addAll(stickyFilters)
+				.build();
+
+		rowsIndexSupplier = ExtendedMemorizingSupplier.of(() -> PackageableRowsIndex.of(repo.retrieveRows(allFilters)));
 	}
 
 	@Override
