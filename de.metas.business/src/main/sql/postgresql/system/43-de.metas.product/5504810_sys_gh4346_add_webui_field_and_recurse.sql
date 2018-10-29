@@ -52,14 +52,3 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-29 16:32:1
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Table SET IsEnableRemoteCacheInvalidation='Y',Updated=TO_TIMESTAMP('2018-10-29 16:50:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=209
 ;
-
--- 2018-10-29T17:21:41.296
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Reference (AD_Client_ID,IsActive,Created,CreatedBy,IsOrderByValue,Updated,UpdatedBy,AD_Reference_ID,ValidationType,Name,AD_Org_ID,EntityType) VALUES (0,'Y',TO_TIMESTAMP('2018-10-29 17:21:41','YYYY-MM-DD HH24:MI:SS'),100,'N',TO_TIMESTAMP('2018-10-29 17:21:41','YYYY-MM-DD HH24:MI:SS'),100,540931,'T','te',0,'U')
-;
-
--- 2018-10-29T17:21:41.305
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Reference_ID=540931 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
-;
-
