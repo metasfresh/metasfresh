@@ -1,0 +1,48 @@
+{
+  "data1": {
+    "actions": [
+      {
+        "processId": "ID_1",
+        "caption": "Pick",
+        "description": "",
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "No items selected",
+        "evaluateDuration": "188.8 μs",
+        "internalName": "OpenProductsToPick"
+      }
+    ]
+  },
+  "data2": {
+    "actions": [
+      {
+        "processId": "ID_1",
+        "caption": "Pick",
+        "description": "",
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "evaluateDuration": "188.1 μs",
+        "internalName": "OpenProductsToPick"
+      },
+      {
+        "processId": "ID_2",
+        "caption": "Unlock",
+        "description": "",
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "evaluateDuration": "483.7 μs",
+        "internalName": "Unlock"
+      },
+      {
+        "processId": "ID_3",
+        "caption": "Unlock all",
+        "description": "",
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "evaluateDuration": "299.1 μs",
+        "internalName": "UnlockAll"
+      }
+    ]
+  }
+}

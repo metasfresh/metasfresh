@@ -16,7 +16,7 @@ class Filters extends Component {
     widgetShown: false,
   };
 
-  componentWillReceiveProps() {
+  UNSAFE_componentWillReceiveProps() {
     this.parseActiveFilters();
   }
 

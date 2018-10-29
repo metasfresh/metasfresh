@@ -4,7 +4,7 @@
 import React, { Component } from 'react';
 
 import RawWidget from '../widget/RawWidget';
-import { parseDateWithCurrenTimezone } from '../../actions/WindowActions';
+import { parseDateWithCurrenTimezone } from '../../utils/documentListHelper';
 import { DATE_FIELDS } from '../../constants/Constants';
 
 class InlineFilterItem extends Component {
@@ -20,7 +20,7 @@ class InlineFilterItem extends Component {
     this.init();
   }
 
-  componentWillReceiveProps(props) {
+  UNSAFE_componentWillReceiveProps(props) {
     const { active } = this.props;
 
     if (JSON.stringify(active) !== JSON.stringify(props.active)) {

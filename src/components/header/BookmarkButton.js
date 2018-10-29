@@ -12,7 +12,7 @@ export default class BookmarkButton extends Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.isBookmark !== this.props.isBookmark) {
       this.setState({ isBookmark: nextProps.isBookmark });
     }

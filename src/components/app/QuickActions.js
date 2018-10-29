@@ -1,5 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
+import ImmutablePropTypes from 'react-immutable-proptypes';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
@@ -18,12 +19,13 @@ const initialState = {
   loading: false,
 };
 
-class QuickActions extends Component {
+export class QuickActions extends Component {
   static propTypes = {
     // from @connect
     dispatch: PropTypes.func.isRequired,
 
     // from <DocumentList>
+    rows: ImmutablePropTypes.list,
     childView: PropTypes.object.isRequired,
     parentView: PropTypes.object.isRequired,
     windowType: PropTypes.string.isRequired,
@@ -37,10 +39,18 @@ class QuickActions extends Component {
     processStatus: PropTypes.string,
   };
 
-  unmounted = false;
+  mounted = false;
 
   constructor(props) {
     super(props);
+
+    this.state = initialState;
+
+    this.fetchActions = this.fetchActions.bind(this);
+  }
+
+  componentDidMount = () => {
+    this.mounted = true;
 
     const {
       fetchOnInit,
@@ -49,19 +59,18 @@ class QuickActions extends Component {
       viewId,
       childView,
       parentView,
-    } = props;
-    this.state = initialState;
+    } = this.props;
 
     if (fetchOnInit) {
       this.fetchActions(windowType, viewId, selected, childView, parentView);
     }
-  }
-
-  componentWillUnmount = () => {
-    this.unmounted = true;
   };
 
-  componentWillReceiveProps = nextProps => {
+  componentWillUnmount = () => {
+    this.mounted = false;
+  };
+
+  UNSAFE_componentWillReceiveProps = nextProps => {
     const { selected, viewId, windowType } = this.props;
 
     if (
@@ -84,17 +93,6 @@ class QuickActions extends Component {
     return nextProps.shouldNotUpdate !== true;
   }
 
-  updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
-    const { windowType, viewId, selected, childView, parentView } = this.props;
-    this.fetchActions(
-      windowType,
-      viewId,
-      selected,
-      { ...childView, viewSelectedIds: childSelection },
-      parentView
-    );
-  };
-
   componentDidUpdate = prevProps => {
     const { inBackground, inModal } = this.props;
 
@@ -111,6 +109,17 @@ class QuickActions extends Component {
         loading: false,
       });
     }
+  };
+
+  updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
+    const { windowType, viewId, selected, childView, parentView } = this.props;
+    this.fetchActions(
+      windowType,
+      viewId,
+      selected,
+      { ...childView, viewSelectedIds: childSelection },
+      parentView
+    );
   };
 
   handleClickOutside = () => {
@@ -150,30 +159,46 @@ class QuickActions extends Component {
     this.toggleDropdown();
   };
 
-  fetchActions = (windowType, viewId, selected, childView, parentView) => {
-    if (this.unmounted) {
-      return;
+  async fetchActions(windowType, viewId, selected, childView, parentView) {
+    if (!this.mounted) {
+      // return;
+      return Promise.resolve();
     }
 
-    if (windowType && viewId && selected && childView && parentView) {
-      quickActionsRequest(windowType, viewId, selected, childView, parentView)
+    if (windowType && viewId && childView && parentView) {
+      await quickActionsRequest(
+        windowType,
+        viewId,
+        selected,
+        childView,
+        parentView
+      )
         .then(response => {
-          this.setState({
-            actions: response.data.actions,
-            loading: false,
-          });
+          return this.setState(
+            {
+              actions: response.data.actions,
+              loading: false,
+            },
+            () => Promise.resolve()
+          );
         })
         .catch(() => {
-          this.setState({
-            loading: false,
-          });
+          return this.setState(
+            {
+              loading: false,
+            },
+            () => Promise.reject()
+          );
         });
     } else {
-      this.setState({
-        loading: false,
-      });
+      return this.setState(
+        {
+          loading: false,
+        },
+        () => Promise.resolve()
+      );
     }
-  };
+  }
 
   toggleDropdown = option => {
     this.setState({

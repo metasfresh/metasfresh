@@ -9,7 +9,8 @@ import {
   patchRequest,
 } from '../../actions/GenericActions';
 import { initLayout } from '../../api';
-import { addNewRow, parseToDisplay } from '../../actions/WindowActions';
+import { addNewRow } from '../../actions/WindowActions';
+import { parseToDisplay } from '../../utils/documentListHelper';
 import RawWidget from '../widget/RawWidget';
 
 class TableQuickInput extends Component {

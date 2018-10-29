@@ -110,7 +110,7 @@ class TableCell extends PureComponent {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { widgetData, updateRow, readonly, rowId } = this.props;
     // We should avoid highlighting when whole row is exchanged (sorting)
     if (rowId !== nextProps.rowId) {
