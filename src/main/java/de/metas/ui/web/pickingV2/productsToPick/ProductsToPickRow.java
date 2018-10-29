@@ -114,7 +114,7 @@ public class ProductsToPickRow implements IViewRow
 	private ProductsToPickRow(
 			@NonNull final ProductsToPickRowId rowId,
 			@NonNull final LookupValue product,
-			@NonNull final LookupValue locator,
+			final LookupValue locator,
 			//
 			final String lotNumber,
 			final LocalDate expiringDate,
