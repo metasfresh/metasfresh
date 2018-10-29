@@ -145,6 +145,11 @@ class ProductsToPickRowsDataFactory
 		rows.addAll(createRowsFromPickingCandidates(allocablePackageable));
 		rows.addAll(createRowsFromHUs(allocablePackageable));
 
+		if (!allocablePackageable.isAllocated())
+		{
+			rows.add(createQtyNotAvailableRow(allocablePackageable));
+		}
+
 		// TODO: handle the case when the packageable is not fully allocated !!!
 
 		return rows.stream();
@@ -227,6 +232,30 @@ class ProductsToPickRowsDataFactory
 	{
 		final Quantity qtyZero = packageable.getQtyToAllocate().toZero();
 		return createRow(packageable, qtyZero, huId, NULL_PickingCandidate);
+	}
+
+	private ProductsToPickRow createQtyNotAvailableRow(final AllocablePackageable packageable)
+	{
+		final ProductId productId = packageable.getProductId();
+		final ShipmentScheduleId shipmentScheduleId = packageable.getShipmentScheduleId();
+
+		final LookupValue product = getProductLookupValue(productId);
+		final LookupValue locator = null; // getLocatorLookupValueByHuId(pickFromHUId);
+
+		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
+				.huId(null)
+				.productId(productId)
+				.build();
+
+		return ProductsToPickRow.builder()
+				.rowId(rowId)
+				.product(product)
+				.locator(locator)
+				//
+				.qty(packageable.getQtyToAllocate())
+				//
+				.shipmentScheduleId(shipmentScheduleId)
+				.build();
 	}
 
 	private ProductsToPickRow createRow(
