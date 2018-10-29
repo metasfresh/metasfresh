@@ -72,7 +72,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		}
 
 		final List<StockDataItem> stockResult = stockRepository
-				.streamStockDatatems(multiQuery)
+				.streamStockDataItems(multiQuery)
 				.collect(ImmutableList.toImmutableList());
 
 		return createStockDetails(stockResult);
