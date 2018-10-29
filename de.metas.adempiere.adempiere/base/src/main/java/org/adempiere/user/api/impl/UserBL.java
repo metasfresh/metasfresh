@@ -36,7 +36,6 @@ import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
-
 import lombok.NonNull;
 
 public class UserBL implements IUserBL
@@ -207,7 +206,12 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public void changePassword(final Properties ctx, final int adUserId, final HashableString oldPassword, final String newPassword, final String newPasswordRetype)
+	public void changePassword(
+			final Properties ctx,
+			final int adUserId,
+			final HashableString oldPassword,
+			final String newPassword,
+			final String newPasswordRetype)
 	{
 		//
 		// Make sure the new password and new password retype are matching
@@ -231,7 +235,7 @@ public class UserBL implements IUserBL
 						.setParameter("reason", "User does not have a password set. Please leave empty the OldPassword field.");
 			}
 
-			if (!Objects.equals(oldPassword, userPassword))
+			if (!userPassword.isMatching(oldPassword))
 			{
 				throw new AdempiereException("@OldPasswordNoMatch@");
 			}
