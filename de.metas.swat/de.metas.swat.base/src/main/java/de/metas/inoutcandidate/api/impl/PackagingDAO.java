@@ -62,6 +62,20 @@ public class PackagingDAO implements IPackagingDAO
 				.endOrderBy();
 
 		//
+		// Filter: Customer
+		if (query.getCustomerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_C_BPartner_Customer_ID, query.getCustomerId());
+		}
+
+		//
+		// Filter: M_Warehouse_Type_ID
+		if (query.getWarehouseTypeId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_M_Warehouse_Type_ID, query.getWarehouseTypeId());
+		}
+
+		//
 		// Filter: M_Warehouse_ID
 		if (query.getWarehouseId() != null)
 		{
@@ -79,10 +93,24 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
+		// Filter: PreparationDate
+		if (query.getPreparationDate() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+		}
+
+		//
 		// Filter: only those packageables which are created from sales order/lines
 		if (query.isOnlyFromSalesOrder())
 		{
 			queryBuilder.addNotNull(I_M_Packageable_V.COLUMN_C_OrderLineSO_ID);
+		}
+
+		//
+		// Filter: sales order ID
+		if (query.getSalesOrderId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_C_OrderSO_ID, query.getSalesOrderId());
 		}
 
 		//
