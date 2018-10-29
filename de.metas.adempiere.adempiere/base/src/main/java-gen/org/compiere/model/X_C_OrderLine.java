@@ -1496,6 +1496,40 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public org.compiere.model.I_M_ProductDescription getM_ProductDescription() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ProductDescription_ID, org.compiere.model.I_M_ProductDescription.class);
+	}
+
+	@Override
+	public void setM_ProductDescription(org.compiere.model.I_M_ProductDescription M_ProductDescription)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ProductDescription_ID, org.compiere.model.I_M_ProductDescription.class, M_ProductDescription);
+	}
+
+	/** Set Produktbeschreibung.
+		@param M_ProductDescription_ID Produktbeschreibung	  */
+	@Override
+	public void setM_ProductDescription_ID (int M_ProductDescription_ID)
+	{
+		if (M_ProductDescription_ID < 1) 
+			set_Value (COLUMNNAME_M_ProductDescription_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ProductDescription_ID, Integer.valueOf(M_ProductDescription_ID));
+	}
+
+	/** Get Produktbeschreibung.
+		@return Produktbeschreibung	  */
+	@Override
+	public int getM_ProductDescription_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductDescription_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+	
+	@Override
 	public org.compiere.model.I_M_Promotion getM_Promotion() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Promotion_ID, org.compiere.model.I_M_Promotion.class);

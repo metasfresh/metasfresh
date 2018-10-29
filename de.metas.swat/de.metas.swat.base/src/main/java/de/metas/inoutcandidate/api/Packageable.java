@@ -121,7 +121,7 @@ public class Packageable
 		}
 		else
 		{
-			throw new AdempiereException("More than one value ware extracted (" + values + ") from " + packageables);
+			throw new AdempiereException("More than one value were extracted (" + values + ") from " + packageables);
 		}
 	}
 }
