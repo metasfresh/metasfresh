@@ -1,11 +1,14 @@
 package de.metas.ui.web.document.filter;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import org.compiere.util.DisplayType;
 
@@ -16,6 +19,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -271,6 +275,27 @@ public class DocumentFilterParam
 			final String itemStr = itemObj.toString();
 			return Integer.parseInt(itemStr);
 		}
+	}
+
+	public <T extends RepoIdAware> T getValueAsRepoIdOrNull(final @NonNull IntFunction<T> repoIdMapper)
+	{
+		final int idInt = getValueAsInt(-1);
+		if (idInt < 0)
+		{
+			return null;
+		}
+		return repoIdMapper.apply(idInt);
+	}
+
+	public LocalDateTime getValueAsLocalDateTime()
+	{
+		return JSONDate.localDateTimeFromObject(value);
+	}
+
+	public LocalDate getValueAsLocalDate()
+	{
+		final LocalDateTime valueDateTime = getValueAsLocalDateTime();
+		return valueDateTime != null ? valueDateTime.toLocalDate() : null;
 	}
 
 	public Object getValueTo()

@@ -1,11 +1,14 @@
 package de.metas.ui.web.document.filter;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -18,7 +21,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.util.Check;
-
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /*
@@ -209,6 +212,39 @@ public final class DocumentFilter
 		}
 
 		return param.getValueAsDate(defaultValue);
+	}
+
+	public <T extends RepoIdAware> T getParameterValueAsRepoIdOrNull(@NonNull final String parameterName, @NonNull IntFunction<T> repoIdMapper)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return null;
+		}
+
+		return param.getValueAsRepoIdOrNull(repoIdMapper);
+	}
+
+	public LocalDate getParameterValueAsLocalDate(@NonNull final String parameterName)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return null;
+		}
+
+		return param.getValueAsLocalDate();
+	}
+
+	public LocalDateTime getParameterValueAsLocalDateTime(@NonNull final String parameterName)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return null;
+		}
+
+		return param.getValueAsLocalDateTime();
 	}
 
 	public <T> T getParameterValueAs(@NonNull final String parameterName)
