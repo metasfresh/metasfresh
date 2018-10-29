@@ -1392,6 +1392,33 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Produktbeschreibung.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ProductDescription_ID (int M_ProductDescription_ID);
+
+	/**
+	 * Get Produktbeschreibung.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ProductDescription_ID();
+
+	public org.compiere.model.I_M_ProductDescription getM_ProductDescription();
+
+	public void setM_ProductDescription(org.compiere.model.I_M_ProductDescription M_ProductDescription);
+
+    /** Column definition for M_ProductDescription_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_ProductDescription> COLUMN_M_ProductDescription_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_ProductDescription>(I_C_OrderLine.class, "M_ProductDescription_ID", org.compiere.model.I_M_ProductDescription.class);
+    /** Column name M_ProductDescription_ID */
+    public static final String COLUMNNAME_M_ProductDescription_ID = "M_ProductDescription_ID";
+    
+	/**
 	 * Set Promotion.
 	 *
 	 * <br>Type: TableDir
