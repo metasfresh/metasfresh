@@ -13,26 +13,26 @@ package org.adempiere.ad.persistence;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.ad.persistence.EntityTypesCache.EntityTypeEntry;
 import org.compiere.model.I_AD_EntityType;
-import org.compiere.util.CacheMgt;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Ignore;
+
+import de.metas.cache.CacheMgt;
 
 /**
  * Helper class used to test {@link TableModelClassLoader}.
@@ -59,10 +59,11 @@ public class TableModelClassLoaderTester
 	private IEntityTypesCache entityTypesCache = new EntityTypesCache()
 	{
 		@Override
-		Map<String, EntityTypeEntry> retrieveEntityTypeEntries()
+		public EntityTypesMap retrieveEntityTypesMap()
 		{
-			return entityTypeEntries;
+			return EntityTypesMap.of(entityTypeEntries.values());
 		};
+
 	};
 
 	public TableModelClassLoaderTester()
@@ -74,8 +75,8 @@ public class TableModelClassLoaderTester
 	public TableModelClassLoaderTester setEntityTypeModelPackage(final String entityType, final String modelPackage)
 	{
 		final EntityTypeEntry entry = EntityTypeEntry.builder()
-				.setEntityType(entityType)
-				.setModelPackage(modelPackage)
+				.entityType(entityType)
+				.modelPackage(modelPackage)
 				.build();
 		entityTypeEntries.put(entityType, entry);
 		return this;
@@ -119,14 +120,14 @@ public class TableModelClassLoaderTester
 
 	public TableModelClassLoaderTester assertEntityTypeExists(final String entityType)
 	{
-		final List<String> entityTypeNames = entityTypesCache.getEntityTypeNames();
+		final Set<String> entityTypeNames = entityTypesCache.getEntityTypeNames();
 		Assert.assertThat(entityTypeNames, Matchers.hasItem(entityType));
 		return this;
 	}
 
 	public TableModelClassLoaderTester assertEntityTypeNotExists(final String entityType)
 	{
-		final List<String> entityTypeNames = entityTypesCache.getEntityTypeNames();
+		final Set<String> entityTypeNames = entityTypesCache.getEntityTypeNames();
 		Assert.assertThat(entityTypeNames, Matchers.not(Matchers.hasItem(entityType)));
 		return this;
 	}

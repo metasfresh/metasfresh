@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MAging;
@@ -28,8 +29,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Invoice Aging Report.
@@ -182,7 +183,7 @@ public class Aging extends JavaProcess
 		MAging aging = null;
 		int counter = 0;
 		int rows = 0;
-		int AD_PInstance_ID = getAD_PInstance_ID();
+		int AD_PInstance_ID = getPinstanceId().getRepoId();
 		//
 		try
 		{

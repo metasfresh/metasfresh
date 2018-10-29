@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.model.I_M_Attribute;
 import org.junit.Ignore;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -95,7 +95,7 @@ public class ListAttributeStorage extends AbstractAttributeStorage
 	}
 
 	@Override
-	protected List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, final Map<I_M_Attribute, Object> defaultAttributesValue)
+	protected List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, final Map<AttributeId, Object> defaultAttributesValue)
 	{
 		throw new UnsupportedOperationException();
 	}

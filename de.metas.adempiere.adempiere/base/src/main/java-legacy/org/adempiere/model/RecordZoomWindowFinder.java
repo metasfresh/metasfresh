@@ -10,12 +10,12 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.POInfo;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;

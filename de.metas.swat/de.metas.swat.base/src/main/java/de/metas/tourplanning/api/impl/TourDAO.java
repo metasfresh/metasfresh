@@ -26,8 +26,8 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.calendar.ICalendarBL;
 import de.metas.tourplanning.api.ITourDAO;
 import de.metas.tourplanning.api.ITourVersionRange;

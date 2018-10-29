@@ -13,6 +13,7 @@ import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
@@ -54,7 +55,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 	protected void prepare()
 	{
 		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = createQueryBuilder();
-		final int selectionCount = createSelection(queryBuilder, getAD_PInstance_ID());
+		final int selectionCount = createSelection(queryBuilder, getPinstanceId());
 		if (selectionCount <= 0)
 		{
 			throw new AdempiereException("@NoSelection@");
@@ -79,7 +80,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 				.action(action)
 				.build();
 
-		final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getAD_PInstance_ID());
+		final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getPinstanceId());
 		flatrateTerms.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
 
 		return "@Success@";
@@ -100,7 +101,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 				.addOnlyContextClient();
 	}
 
-	private final Iterable<I_C_Flatrate_Term> retrieveSelection(final int adPInstanceId)
+	private final Iterable<I_C_Flatrate_Term> retrieveSelection(final PInstanceId adPInstanceId)
 	{
 		return () -> queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class)

@@ -388,7 +388,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final void generateInitialAttributes(final Map<I_M_Attribute, Object> defaultAttributesValue)
+	public final void generateInitialAttributes(final Map<AttributeId, Object> defaultAttributesValue)
 	{
 		assertNotDisposed();
 
@@ -437,7 +437,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 	private final AtomicBoolean _generateInitialAttributesRunning = new AtomicBoolean(false);
 
-	protected abstract List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, Map<I_M_Attribute, Object> defaultAttributesValue);
+	protected abstract List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, Map<AttributeId, Object> defaultAttributesValue);
 
 	@Override
 	public Object getValue(final String attributeKey)
@@ -1133,40 +1133,15 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		return callout.isDisplayedUI(this, attribute);
 	}
 
-	protected final Object getDefaultAttributeValue(final Map<I_M_Attribute, Object> defaultAttributesValue, final I_M_Attribute attribute)
+	protected final Object getDefaultAttributeValue(final Map<AttributeId, Object> defaultAttributesValue, final AttributeId attributeId)
 	{
 		if (defaultAttributesValue == null || defaultAttributesValue.isEmpty())
 		{
 			return null;
 		}
 
-		Check.assumeNotNull(attribute, "attribute not null");
-
-		// Check for given attribute directly
-		if (defaultAttributesValue.containsKey(attribute))
-		{
-			return defaultAttributesValue.get(attribute);
-		}
-
-		//
-		// Fallback: check if we can find the attribute by attribute
-		final int attributeId = attribute.getM_Attribute_ID();
-		for (final Map.Entry<I_M_Attribute, Object> e : defaultAttributesValue.entrySet())
-		{
-			final I_M_Attribute currentAttribute = e.getKey();
-			if (currentAttribute == null)
-			{
-				continue;
-			}
-			if (attributeId == currentAttribute.getM_Attribute_ID())
-			{
-				return e.getValue();
-			}
-		}
-
-		//
-		// No default value found for given attribute
-		return null;
+		Check.assumeNotNull(attributeId, "attribute not null");
+		return defaultAttributesValue.get(attributeId);
 	}
 
 	@Override

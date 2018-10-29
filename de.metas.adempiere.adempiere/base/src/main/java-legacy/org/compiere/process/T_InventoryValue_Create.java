@@ -44,10 +44,6 @@ public class T_InventoryValue_Create extends JavaProcess
 	private Timestamp p_DateValue;
 	private int p_M_Warehouse_ID;
 	private int p_C_Currency_ID;
-	/** The Record						*/
-	private int		p_Record_ID = 0;
-	/** The Instance					*/
-	private int     p_PInstance_ID;
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -72,8 +68,6 @@ public class T_InventoryValue_Create extends JavaProcess
 			else
 				log.error("Unknown Parameter: " + name);
 		}
-		p_Record_ID = getRecord_ID();
-		p_PInstance_ID = getAD_PInstance_ID();
 	}	//	prepare
 
 	/**
@@ -99,7 +93,7 @@ public class T_InventoryValue_Create extends JavaProcess
 		// Insert Products
 		sqlins = "INSERT INTO T_InventoryValue "
 		       + "(AD_Client_ID,AD_Org_ID, AD_PInstance_ID, M_Warehouse_ID,M_Product_ID) "
-		       + "SELECT AD_Client_ID,AD_Org_ID," + p_PInstance_ID + "," + p_M_Warehouse_ID + ",M_Product_ID "
+		       + "SELECT AD_Client_ID,AD_Org_ID," + getPinstanceId().getRepoId() + "," + p_M_Warehouse_ID + ",M_Product_ID "
 		       + "FROM M_Product "
 		       + "WHERE IsStocked='Y'";
 		cnti = DB.executeUpdate(sqlins, get_TrxName());

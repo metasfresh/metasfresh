@@ -57,9 +57,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 import org.slf4j.Logger;
+
+import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 
 /**

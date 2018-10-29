@@ -26,7 +26,6 @@ import java.util.Properties;
  */
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -34,13 +33,14 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.IModelCacheService;
 import de.metas.event.Topic;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;

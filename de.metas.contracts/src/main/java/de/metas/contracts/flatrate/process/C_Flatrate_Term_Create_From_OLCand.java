@@ -35,12 +35,12 @@ public class C_Flatrate_Term_Create_From_OLCand extends JavaProcess implements I
 			Check.assume(getTable_ID() == MTable.getTable_ID(I_C_OLCand.Table_Name), "Process is called for C_OLCands");
 
 			final I_C_OLCand olCand = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_OLCand.class, get_TrxName());
-			subscriptionBL.createTermForOLCand(getCtx(), olCand, getAD_PInstance_ID(), true, get_TrxName());
+			subscriptionBL.createTermForOLCand(getCtx(), olCand, getPinstanceId(), true, get_TrxName());
 			addLog("@C_OLCand_ID@ " + olCand.getC_OLCand_ID() + " @Processed@");
 		}
 		else
 		{
-			final int counter = subscriptionBL.createMissingTermsForOLCands(getCtx(), true, getAD_PInstance_ID(), get_TrxName());
+			final int counter = subscriptionBL.createMissingTermsForOLCands(getCtx(), true, getPinstanceId(), get_TrxName());
 			addLog("@Processed@ " + counter + " @C_OLCand_ID@");
 		}
 

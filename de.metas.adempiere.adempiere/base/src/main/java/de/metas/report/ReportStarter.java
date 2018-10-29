@@ -18,6 +18,7 @@ import de.metas.print.IPrintService;
 import de.metas.print.IPrintServiceRegistry;
 import de.metas.process.ClientOnlyProcess;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
@@ -186,7 +187,7 @@ public abstract class ReportStarter extends JavaProcess
 				basename -> !Check.isEmpty(basename, true),
 				() -> extractReportBasename_IfDocument(pi),
 				() -> pi.getTitle(),
-				() -> "report_" + pi.getAD_PInstance_ID());
+				() -> "report_" + PInstanceId.toRepoIdOr(pi.getPinstanceId(), 0));
 
 		final String fileExtension = outputType.getFileExtension();
 

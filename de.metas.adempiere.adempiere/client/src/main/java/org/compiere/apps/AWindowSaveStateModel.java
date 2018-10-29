@@ -40,13 +40,13 @@ import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.MTable;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.cache.CCache;
 
 /**
  * 

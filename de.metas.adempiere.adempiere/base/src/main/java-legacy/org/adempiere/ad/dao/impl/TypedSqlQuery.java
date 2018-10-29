@@ -19,6 +19,8 @@
  ******************************************************************************/
 package org.adempiere.ad.dao.impl;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -56,10 +58,10 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import lombok.NonNull;
 
 /**
  *
@@ -102,8 +104,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private boolean applyAccessFilterRW = false;
 	private boolean onlyActiveRecords = false;
 	private boolean onlyClient_ID = false;
-	private int onlySelection_ID = -1;
-	private int notInSelection_ID = -1;
+	private PInstanceId onlySelectionId;
+	private PInstanceId notInSelectionId;
 
 	private int limit = NO_LIMIT;
 	private int offset = NO_LIMIT;
@@ -257,16 +259,18 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public TypedSqlQuery<T> setOnlySelection(final int AD_PInstance_ID)
+	public TypedSqlQuery<T> setOnlySelection(final PInstanceId pinstanceId)
 	{
-		this.onlySelection_ID = AD_PInstance_ID;
+		this.onlySelectionId = pinstanceId;
 		return this;
 	}
 
+
+
 	@Override
-	public TypedSqlQuery<T> setNotInSelection(final int AD_PInstance_ID)
+	public TypedSqlQuery<T> setNotInSelection(final PInstanceId pinstanceId)
 	{
-		this.notInSelection_ID = AD_PInstance_ID;
+		this.notInSelectionId = pinstanceId;
 		return this;
 	}
 
@@ -810,10 +814,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		else
 		{
-			sqlSelect = new StringBuilder("SELECT 1 FROM ").append(getSqlFrom());
-
+			setLimit(1); // we don't need more than one row to decide if it matches
+			sqlSelect = new StringBuilder("SELECT 1 FROM ")
+					.append(getSqlFrom());
 		}
-		final String sql = buildSQL(sqlSelect, false);
+		final String sql = buildSQL(sqlSelect, false/*useOrderByClause*/);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1105,7 +1110,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// IN selection
-		if (this.onlySelection_ID > 0)
+		if (this.onlySelectionId != null)
 		{
 			final String keyColumnName = getKeyColumnName();
 			//
@@ -1118,7 +1123,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// NOT IN selection
-		if (this.notInSelection_ID > 0)
+		if (this.notInSelectionId != null)
 		{
 			final String keyColumnName = getKeyColumnName();
 			//
@@ -1152,15 +1157,15 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			parametersEffective.add(AD_Client_ID);
 			log.trace("Parameter AD_Client_ID = {}", AD_Client_ID);
 		}
-		if (this.onlySelection_ID > 0)
+		if (this.onlySelectionId != null)
 		{
-			parametersEffective.add(this.onlySelection_ID);
-			log.trace("Parameter Selection AD_PInstance_ID = {}", this.onlySelection_ID);
+			parametersEffective.add(this.onlySelectionId);
+			log.trace("Parameter Selection AD_PInstance_ID = {}", this.onlySelectionId);
 		}
-		if (this.notInSelection_ID > 0)
+		if (this.notInSelectionId != null)
 		{
-			parametersEffective.add(this.notInSelection_ID);
-			log.trace("Parameter NotInSelection AD_PInstance_ID = {}", this.notInSelection_ID);
+			parametersEffective.add(this.notInSelectionId);
+			log.trace("Parameter NotInSelection AD_PInstance_ID = {}", this.notInSelectionId);
 		}
 
 		//
@@ -1350,8 +1355,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				.add("applyAccessFilter", applyAccessFilter ? Boolean.TRUE : null)
 				.add("applyAccessFilterRW", applyAccessFilterRW ? Boolean.TRUE : null)
 				.add("onlyActiveRecords", onlyActiveRecords ? Boolean.TRUE : null)
-				.add("onlySelection_ID", onlySelection_ID > 0 ? onlySelection_ID : null)
-				.add("notInSelection_ID", notInSelection_ID > 0 ? notInSelection_ID : null)
+				.add("onlySelectionId", onlySelectionId)
+				.add("notInSelectionId", notInSelectionId)
 				.add("options", options != null && !options.isEmpty() ? options : null)
 				.toString();
 	}
@@ -1519,8 +1524,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		queryTo.applyAccessFilterRW = applyAccessFilterRW;
 		queryTo.onlyActiveRecords = onlyActiveRecords;
 		queryTo.onlyClient_ID = onlyClient_ID;
-		queryTo.onlySelection_ID = onlySelection_ID;
-		queryTo.notInSelection_ID = notInSelection_ID;
+		queryTo.onlySelectionId = onlySelectionId;
+		queryTo.notInSelectionId = notInSelectionId;
 		queryTo.limit = limit;
 		queryTo.offset = offset;
 		queryTo.unions = unions == null ? null : new ArrayList<>(unions);
@@ -1552,14 +1557,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @return number of records inserted in selection
 	 */
 	@Override
-	public int createSelection(final int AD_PInstance_ID)
+	public int createSelection(@NonNull final PInstanceId pinstanceId)
 	{
 		final String keyColumnName = getKeyColumnName();
 
 		final StringBuilder selectClause = new StringBuilder(80)
 				.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ")
 				.append(" SELECT ")
-				.append(AD_PInstance_ID)
+				.append(pinstanceId.getRepoId())
 				.append(", ").append(keyColumnName)
 				.append(" FROM ").append(getSqlFrom());
 
@@ -1571,16 +1576,16 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public int createSelection()
+	public PInstanceId createSelection()
 	{
 		// Create new AD_PInstance_ID for our selection
-		final int newSelectionId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(getCtx());
+		final PInstanceId newSelectionId = Services.get(IADPInstanceDAO.class).createPInstanceId();
 
 		// Populate the selection
 		final int count = createSelection(newSelectionId);
 		if (count <= 0)
 		{
-			return -1;
+			return null;
 		}
 
 		return newSelectionId;
@@ -1810,11 +1815,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Wrap the INSERT SQL and create the insert selection ID if required
-		final int insertSelectionId;
+		final PInstanceId insertSelectionId;
 		final String sql;
 		if (queryInserter.isCreateSelectionOfInsertedRows())
 		{
-			insertSelectionId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(getCtx());
+			insertSelectionId = Services.get(IADPInstanceDAO.class).createPInstanceId();
 
 			final String toKeyColumnName = queryInserter.getToKeyColumnName();
 			sql = new StringBuilder()
@@ -1824,13 +1829,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 					.append("\n )")
 					//
 					.append("\n INSERT INTO T_Selection (AD_PInstance_ID, T_Selection_ID)")
-					.append("\n SELECT ").append(insertSelectionId).append(", ").append(toKeyColumnName).append(" FROM insert_code")
+					.append("\n SELECT ").append(insertSelectionId.getRepoId()).append(", ").append(toKeyColumnName).append(" FROM insert_code")
 					//
 					.toString();
 		}
 		else
 		{
-			insertSelectionId = -1;
+			insertSelectionId = null;
 			sql = sqlInsert.toString();
 		}
 

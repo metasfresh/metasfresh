@@ -52,7 +52,7 @@ public class Fresh_AvailableSingletonServices_Test
 				.skipServiceInterface(org.adempiere.util.testservice.ITestServiceWithFailingConstructor.class) // because it's supposed to fail
 				.skipServiceInterface(org.adempiere.util.testservice.ITestMissingService.class) // because it's supposed to fail
 				.skipServiceInterfaceIfStartsWith("org.adempiere.util.proxy.impl.JavaAssistInterceptorTests") // some test interface
-				.skipServiceInterface(de.metas.adempiere.util.cache.testservices.ITestServiceWithPrivateCachedMethod.class)
+				.skipServiceInterface(de.metas.cache.interceptor.testservices.ITestServiceWithPrivateCachedMethod.class)
 				.test();
 	}
 }

@@ -13,8 +13,8 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.CCache;
 
+import de.metas.cache.CCache;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -112,11 +112,11 @@ public class HandlerTools
 	}
 
 	private static final CCache<Integer, I_C_Flatrate_Term> IC_2_TERM = CCache
-			.<Integer, I_C_Flatrate_Term> newCache(
-					I_C_Invoice_Candidate.Table_Name + "#by#" + I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID + "#" + I_C_Invoice_Candidate.COLUMNNAME_Record_ID,
-					0,
-					CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_C_Flatrate_Term.Table_Name);
+			.<Integer, I_C_Flatrate_Term> builder()
+			.cacheName(I_C_Invoice_Candidate.Table_Name + "#by#" + I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID + "#" + I_C_Invoice_Candidate.COLUMNNAME_Record_ID)
+			.tableName(I_C_Invoice_Candidate.Table_Name)
+			.additionalTableNameToResetFor(I_C_Flatrate_Term.Table_Name)
+			.build();
 
 	public static I_C_Flatrate_Term retrieveTerm(@NonNull final I_C_Invoice_Candidate ic)
 	{

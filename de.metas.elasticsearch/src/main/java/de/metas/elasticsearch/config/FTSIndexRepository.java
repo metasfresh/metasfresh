@@ -9,12 +9,12 @@ import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.elasticsearch.model.I_ES_FTS_Index;
 import de.metas.elasticsearch.model.I_ES_FTS_IndexInclude;
 import de.metas.util.GuavaCollectors;
@@ -48,8 +48,11 @@ public class FTSIndexRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<Integer, FTSIndexConfig> configsById = CCache.<Integer, FTSIndexConfig> newCache(I_ES_FTS_Index.Table_Name, 10, CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_ES_FTS_IndexInclude.Table_Name);
+	private final CCache<Integer, FTSIndexConfig> configsById = CCache.<Integer, FTSIndexConfig> builder()
+			.tableName(I_ES_FTS_Index.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_ES_FTS_IndexInclude.Table_Name)
+			.build();
 
 	private final FTSIndexTemplatesRepository indexTemplatesRepo;
 

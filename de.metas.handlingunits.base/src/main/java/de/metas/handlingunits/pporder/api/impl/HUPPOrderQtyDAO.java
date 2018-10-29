@@ -11,8 +11,8 @@ import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_PP_Order_Qty;

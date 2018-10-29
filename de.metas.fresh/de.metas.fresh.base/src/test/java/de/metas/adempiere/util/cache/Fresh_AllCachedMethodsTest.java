@@ -28,6 +28,8 @@ import org.adempiere.util.proxy.Cached;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.cache.interceptor.ClasspathCachedMethodsTester;
+
 /**
  * {@link Cached} integration test: makes sure all classes are valid
  * 

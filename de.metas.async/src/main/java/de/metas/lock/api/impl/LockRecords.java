@@ -35,7 +35,8 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import de.metas.util.Check;
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
 
 /**
  * Pool of records to be processed (e.g. lock, unlock etc).
@@ -48,7 +49,7 @@ import de.metas.util.Check;
 	private Set<ITableRecordReference> _records = null;
 	//
 	private int _selection_AD_Table_ID = -1;
-	private int _selection_AD_PInstance_ID = -1;
+	private PInstanceId _selection_pinstanceId;
 
 	private IQueryFilter<?> _selection_filters = null;
 	
@@ -100,7 +101,7 @@ import de.metas.util.Check;
 		_records = new HashSet<>(records);
 		// Reset selection
 		_selection_AD_Table_ID = -1;
-		_selection_AD_PInstance_ID = -1;
+		_selection_pinstanceId = null;
 	}
 
 	public final void addRecords(final Collection<ITableRecordReference> records)
@@ -115,15 +116,13 @@ import de.metas.util.Check;
 		}
 
 		_selection_AD_Table_ID = -1;
-		_selection_AD_PInstance_ID = -1;
+		_selection_pinstanceId = null;
 	}
 
-	public void setRecordsBySelection(final Class<?> modelClass, final int adPIstanceId)
+	public void setRecordsBySelection(final Class<?> modelClass, @NonNull final PInstanceId pinstanceId)
 	{
-		Check.assume(adPIstanceId > 0, "adPIstanceId > 0");
-
 		_selection_AD_Table_ID = InterfaceWrapperHelper.getTableId(modelClass);
-		_selection_AD_PInstance_ID = adPIstanceId;
+		_selection_pinstanceId = pinstanceId;
 
 		_records = null;
 	}
@@ -145,9 +144,9 @@ import de.metas.util.Check;
 		return _selection_AD_Table_ID;
 	}
 
-	public final int getSelection_AD_PInstance_ID()
+	public final PInstanceId getSelection_PInstanceId()
 	{
-		return _selection_AD_PInstance_ID;
+		return _selection_pinstanceId;
 	}
 
 	public final Iterator<ITableRecordReference> getRecordsIterator()

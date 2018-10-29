@@ -1,9 +1,5 @@
 package de.metas.invoicecandidate.api.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -30,6 +26,8 @@ import javax.annotation.Nullable;
 import java.util.IdentityHashMap;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.compiere.util.Env;
 
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -46,9 +44,11 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.LockOwner;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
+import lombok.NonNull;
 
 /**
  * Takes {@link I_C_Invoice_Candidate}s, group them by "IC's header aggregation key" and add them {@link InvoiceCandWorkpackageProcessor} workpackages.
@@ -196,7 +196,7 @@ import de.metas.util.collections.MapReduceAggregator;
 		group.build();
 	}
 
-	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_Creator_ID(final int adPInstanceId)
+	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_Creator_ID(final PInstanceId adPInstanceId)
 	{
 		_queueBlockBuilder.setAD_PInstance_Creator_ID(adPInstanceId);
 		return this;

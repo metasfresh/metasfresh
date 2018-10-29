@@ -81,8 +81,9 @@ public class SourceHUsService
 		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
 
 		// this filter's real job is to collect those HUs that are flagged as "source"
+		// FIXME: avoid using filters in such a way...
 		final Predicate<I_M_HU> filter = hu -> {
-			if (sourceHuDAO.isSourceHu(hu.getM_HU_ID()))
+			if (sourceHuDAO.isSourceHu(HuId.ofRepoId(hu.getM_HU_ID())))
 			{
 				sourceHUs.add(hu);
 			}
@@ -117,7 +118,7 @@ public class SourceHUsService
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final Predicate<I_M_HU> filterToExcludeSourceHus = currentHu -> !isSourceHu(currentHu.getM_HU_ID());
+		final Predicate<I_M_HU> filterToExcludeSourceHus = currentHu -> !isSourceHu(HuId.ofRepoId(currentHu.getM_HU_ID()));
 
 		final TopLevelHusQuery query = TopLevelHusQuery.builder()
 				.includeAll(false)
@@ -204,14 +205,9 @@ public class SourceHUsService
 		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHUIds(query);
 	}
 
-	public boolean isSourceHu(final int huId)
-	{
-		return Services.get(ISourceHuDAO.class).isSourceHu(huId);
-	}
-
 	public boolean isSourceHu(final HuId huId)
 	{
-		return Services.get(ISourceHuDAO.class).isSourceHu(huId.getRepoId());
+		return Services.get(ISourceHuDAO.class).isSourceHu(huId);
 	}
 
 	/**

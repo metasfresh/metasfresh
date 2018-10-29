@@ -47,9 +47,9 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.X_EDI_Desadv;
 import de.metas.i18n.IMsgBL;
+import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 /**
  * Send EDI documents for selected desadv entries.
@@ -89,7 +89,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 
 		// final I_C_Queue_Block block = queue.enqueueBlock(ctx);
 		final IWorkPackageBlockBuilder builder = queue.newBlock()
-				.setAD_PInstance_Creator_ID(getAD_PInstance_ID())
+				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setContext(getCtx());
 
 		// Enqueue selected desadvs as workpackages

@@ -13,6 +13,7 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.repository.HuTraceEventToDbRecordUtil;
 import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -90,7 +91,7 @@ public class HUTraceRepository
 	/**
 	 * Similar to {@link #query(HUTraceEventQuery)}, but returns an ID that can be used with {@link IQueryBuilder#setOnlySelection(int)} to retrieve the query result.
 	 */
-	public int queryToSelection(@NonNull final HUTraceEventQuery query)
+	public PInstanceId queryToSelection(@NonNull final HUTraceEventQuery query)
 	{
 		return RetrieveDbRecordsUtil.queryToSelection(query);
 	}

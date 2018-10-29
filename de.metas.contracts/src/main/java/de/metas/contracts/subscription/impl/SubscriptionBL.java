@@ -95,6 +95,7 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.process.PInstanceId;
 import de.metas.product.IProductPA;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -243,7 +244,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	public int createMissingTermsForOLCands(
 			final Properties ctx,
 			final boolean completeIt,
-			final int AD_PInstance_ID,
+			final PInstanceId AD_PInstance_ID,
 			final String trxName)
 	{
 		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
@@ -900,7 +901,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	@Override
-	public I_C_Flatrate_Term createTermForOLCand(final Properties ctx, final I_C_OLCand olCand, final int AD_PInstance_ID, final boolean completeIt, String trxName)
+	public I_C_Flatrate_Term createTermForOLCand(final Properties ctx, final I_C_OLCand olCand, final PInstanceId AD_PInstance_ID, final boolean completeIt, String trxName)
 	{
 		if (olCand.getC_Flatrate_Conditions_ID() <= 0)
 		{
@@ -915,7 +916,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_Contract_Term_Alloc alloc = InterfaceWrapperHelper.create(ctx, I_C_Contract_Term_Alloc.class, trxName);
 		alloc.setC_OLCand_ID(olCand.getC_OLCand_ID());
 		alloc.setC_Flatrate_Term_ID(newTerm.getC_Flatrate_Term_ID());
-		alloc.setAD_PInstance_ID(AD_PInstance_ID);
+		alloc.setAD_PInstance_ID(PInstanceId.toRepoId(AD_PInstance_ID));
 		save(alloc);
 
 		olCand.setProcessed(true);

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import de.metas.printing.api.IPrintJobBL.ContextForAsyncProcessing;
+import de.metas.process.PInstanceId;
 
 /*
  * #%L
@@ -36,7 +37,7 @@ public class IPrintJobBLTest
 	public void contextForAsyncProcessingDefaults()
 	{
 		final ContextForAsyncProcessing result = ContextForAsyncProcessing.builder().build();
-		assertThat(result.getAdPInstanceId()).isEqualTo(-1);
+		assertThat(result.getAdPInstanceId()).isNull();
 		assertThat(result.getParentAsyncBatchId()).isEqualTo(-1);
 	}
 
@@ -45,9 +46,9 @@ public class IPrintJobBLTest
 	public void contextForAsyncProcessingDefaults2()
 	{
 		final ContextForAsyncProcessing result = ContextForAsyncProcessing.builder()
-				.adPInstanceId(23)
+				.adPInstanceId(PInstanceId.ofRepoId(23))
 				.build();
-		assertThat(result.getAdPInstanceId()).isEqualTo(23);
+		assertThat(result.getAdPInstanceId().getRepoId()).isEqualTo(23);
 		assertThat(result.getParentAsyncBatchId()).isEqualTo(-1);
 	}
 }

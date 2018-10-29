@@ -59,7 +59,8 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.IExportProcessor;
-import org.compiere.util.CCache;
+
+import de.metas.cache.CCache;
 
 /**
  * @author Trifon N. Trifonov

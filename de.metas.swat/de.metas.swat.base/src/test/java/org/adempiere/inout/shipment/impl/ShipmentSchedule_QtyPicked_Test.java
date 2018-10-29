@@ -13,15 +13,14 @@ package org.adempiere.inout.shipment.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -44,8 +43,10 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.quantity.Quantity;
@@ -67,6 +68,8 @@ public class ShipmentSchedule_QtyPicked_Test
 
 		this.contextProvider = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
 
+		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
+
 		shipmentScheduleAllocBL = new ShipmentScheduleAllocBL();
 		Services.registerService(IShipmentScheduleAllocBL.class, shipmentScheduleAllocBL);
 
@@ -80,7 +83,6 @@ public class ShipmentSchedule_QtyPicked_Test
 		product = InterfaceWrapperHelper.newInstance(I_M_Product.class, contextProvider);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(product);
-
 
 		POJOWrapper.setDefaultStrictValues(false);
 	}

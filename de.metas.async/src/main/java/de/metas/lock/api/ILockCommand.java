@@ -29,6 +29,8 @@ import java.util.concurrent.Future;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.ITableRecordReference;
 
+import de.metas.process.PInstanceId;
+
 /**
  * Lock acquire/Lock change command.
  *
@@ -145,11 +147,11 @@ public interface ILockCommand
 
 	Iterator<ITableRecordReference> getRecordsToLockIterator();
 
-	ILockCommand setRecordsBySelection(Class<?> modelClass, int adPIstanceId);
+	ILockCommand setRecordsBySelection(Class<?> modelClass, PInstanceId adPIstanceId);
 
 	int getSelectionToLock_AD_Table_ID();
 
-	int getSelectionToLock_AD_PInstance_ID();
+	PInstanceId getSelectionToLock_AD_PInstance_ID();
 
 	<T> ILockCommand setSetRecordsByFilter(Class<T> modelClass, IQueryFilter<T> filters);
 

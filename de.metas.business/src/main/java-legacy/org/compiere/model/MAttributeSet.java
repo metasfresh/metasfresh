@@ -29,10 +29,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 
+import de.metas.cache.CCache;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 

@@ -48,7 +48,6 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.X_M_DiscountSchemaBreak;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -57,9 +56,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -83,18 +83,15 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 public class PricingConditionsRepository implements IPricingConditionsRepository
 {
-	private final CCache<PricingConditionsId, PricingConditions> //
-	pricingConditionsById = CCache
-			.<PricingConditionsId, PricingConditions> newCache(
-					I_M_DiscountSchema.Table_Name,
-					10,
-					CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_M_DiscountSchemaBreak.Table_Name);
+	private final CCache<PricingConditionsId, PricingConditions> pricingConditionsById = CCache.<PricingConditionsId, PricingConditions> builder()
+			.tableName(I_M_DiscountSchema.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_M_DiscountSchemaBreak.Table_Name)
+			.build();
 
 	@Override
 	public PricingConditions getPricingConditionsById(@NonNull final PricingConditionsId pricingConditionsId)

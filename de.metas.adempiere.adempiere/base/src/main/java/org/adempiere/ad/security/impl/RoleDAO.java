@@ -42,7 +42,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_Role;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
 
 public class RoleDAO implements IRoleDAO

@@ -13,11 +13,11 @@ package de.metas.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -54,40 +54,35 @@ public interface IADPInstanceDAO extends ISingletonService
 	/**
 	 * Saves process parameters.
 	 *
-	 * @param adPInstanceId existing AD_PInstance_ID (mandatory)
+	 * @param pinstanceId existing AD_PInstance_ID (mandatory)
 	 * @param piParams
 	 */
-	void saveParameterToDB(int adPInstanceId, List<ProcessInfoParameter> piParams);
+	void saveParameterToDB(PInstanceId pinstanceId, List<ProcessInfoParameter> piParams);
 
 	/**
-	 * Retrieve process parameters for given AD_PInstance_ID
-	 *
-	 * @param ctx
 	 * @param adPInstanceId AD_PInstance_ID
-	 * @return
+	 * @return process parameters for given AD_PInstance_ID
 	 */
-	List<ProcessInfoParameter> retrieveProcessInfoParameters(Properties ctx, int adPInstanceId);
+	List<ProcessInfoParameter> retrieveProcessInfoParameters(PInstanceId pinstanceId);
 
 	/**
 	 * Locks underlying AD_PInstance.
 	 *
-	 * @param ctx
 	 * @param adPInstanceId
 	 */
-	void lock(Properties ctx, int adPInstanceId);
+	void lock(PInstanceId pinstanceId);
 
 	/**
 	 * Unlocks underlying AD_PInstance, saves the result and logs.
 	 *
-	 * @param ctx
 	 * @param result
 	 */
-	void unlockAndSaveResult(Properties ctx, ProcessExecutionResult result);
+	void unlockAndSaveResult(ProcessExecutionResult result);
 
 	void loadResultSummary(ProcessExecutionResult result);
 
 	/** @return process info logs, ordered chronologically */
-	List<ProcessInfoLog> retrieveProcessInfoLogs(int adPInstanceId);
+	List<ProcessInfoLog> retrieveProcessInfoLogs(PInstanceId pinstanceId);
 
 	/**
 	 * Creates a new AD_PInstance_ID.
@@ -95,32 +90,26 @@ public interface IADPInstanceDAO extends ISingletonService
 	 * IMPORTANT: <b>this method is NOT creating an {@link I_AD_PInstance} record.</b>
 	 * If you want to create an {@link I_AD_PInstance}, please use {@link #createAD_PInstance(Properties, int, int, int)}.
 	 *
-	 * @param ctx
 	 * @return new AD_PInstance_ID
 	 */
-	int createAD_PInstance_ID(Properties ctx);
+	PInstanceId createPInstanceId();
 
 	/**
 	 * Creates and saves a new AD_PInstance.
 	 *
-	 * @param ctx
 	 * @param AD_Process_ID
 	 * @param AD_Table_ID
 	 * @param recordId
 	 * @return
 	 */
-	I_AD_PInstance createAD_PInstance(Properties ctx, int AD_Process_ID, int AD_Table_ID, int recordId);
+	I_AD_PInstance createAD_PInstance(int AD_Process_ID, int AD_Table_ID, int recordId);
 
 	/**
-	 * Loads AD_PInstance.
-	 *
-	 * @param ctx
-	 * @param adPInstanceId
 	 * @return process instance; never returns null
 	 */
-	I_AD_PInstance retrieveAD_PInstance(Properties ctx, int adPInstanceId);
-	
-	Set<TableRecordReference> retrieveSelectedIncludedRecords(final int adPInstanceId);
-	
-	void saveSelectedIncludedRecords(final int adPInstanceId, final Set<TableRecordReference> recordRefs);
+	I_AD_PInstance getById(PInstanceId pinstanceId);
+
+	Set<TableRecordReference> retrieveSelectedIncludedRecords(PInstanceId pinstanceId);
+
+	void saveSelectedIncludedRecords(PInstanceId pinstanceId, Set<TableRecordReference> recordRefs);
 }

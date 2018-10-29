@@ -47,11 +47,11 @@ import java.util.List;
 import java.util.Properties;
 
 import org.compiere.model.Query;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderWorkflowBL;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 

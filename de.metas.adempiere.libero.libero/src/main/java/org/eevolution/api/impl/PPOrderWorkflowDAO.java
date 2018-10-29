@@ -42,8 +42,8 @@ import org.eevolution.model.I_PP_Order_Node_Asset;
 import org.eevolution.model.I_PP_Order_Node_Product;
 import org.eevolution.model.I_PP_Order_Workflow;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.util.Check;
 import de.metas.util.Services;

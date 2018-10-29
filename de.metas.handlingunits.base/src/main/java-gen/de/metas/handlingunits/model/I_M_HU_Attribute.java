@@ -143,9 +143,9 @@ public interface I_M_HU_Attribute
 	 */
 	public int getM_Attribute_ID();
 
-	public org.compiere.model.I_M_Attribute getM_Attribute();
-
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute);
+//	public org.compiere.model.I_M_Attribute getM_Attribute();
+//
+//	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute);
 
     /** Column definition for M_Attribute_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Attribute, org.compiere.model.I_M_Attribute> COLUMN_M_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_HU_Attribute, org.compiere.model.I_M_Attribute>(I_M_HU_Attribute.class, "M_Attribute_ID", org.compiere.model.I_M_Attribute.class);
@@ -220,9 +220,9 @@ public interface I_M_HU_Attribute
 	 */
 	public int getM_HU_PI_Attribute_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Attribute getM_HU_PI_Attribute();
+//	public de.metas.handlingunits.model.I_M_HU_PI_Attribute getM_HU_PI_Attribute();
 
-	public void setM_HU_PI_Attribute(de.metas.handlingunits.model.I_M_HU_PI_Attribute M_HU_PI_Attribute);
+//	public void setM_HU_PI_Attribute(de.metas.handlingunits.model.I_M_HU_PI_Attribute M_HU_PI_Attribute);
 
     /** Column definition for M_HU_PI_Attribute_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Attribute, de.metas.handlingunits.model.I_M_HU_PI_Attribute> COLUMN_M_HU_PI_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_HU_Attribute, de.metas.handlingunits.model.I_M_HU_PI_Attribute>(I_M_HU_Attribute.class, "M_HU_PI_Attribute_ID", de.metas.handlingunits.model.I_M_HU_PI_Attribute.class);

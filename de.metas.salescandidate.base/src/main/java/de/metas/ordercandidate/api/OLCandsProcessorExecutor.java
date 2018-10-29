@@ -1,5 +1,8 @@
 package de.metas.ordercandidate.api;
 
+import lombok.Builder;
+import lombok.NonNull;
+
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,8 +36,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -46,12 +47,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -199,15 +200,13 @@ public class OLCandsProcessorExecutor
 	/**
 	 * Decides if there needs to be a new order for 'candidate'.
 	 */
-	private boolean isOrderSplit(final OLCand candidate, final OLCand previousCandidate)
+	private boolean isOrderSplit(@NonNull final OLCand candidate, @NonNull final OLCand previousCandidate)
 	{
-		Check.assumeNotNull(previousCandidate, "Param 'previousCandidate' != null");
-
 		// We keep this block for the time being because as of now we did not make sure that the aggAndOrderList is complete to ensure that all
 		// C_OLCands with different C_Order-"header"-columns will be split into different orders (think of e.g. C_OLCands with different currencies).
 		if (previousCandidate.getAD_Org_ID() != candidate.getAD_Org_ID()
 				|| !Objects.equals(previousCandidate.getPOReference(), candidate.getPOReference())
-				|| previousCandidate.getC_Currency_ID() != candidate.getC_Currency_ID()
+				|| !Objects.equals(previousCandidate.getC_Currency_ID(), candidate.getC_Currency_ID())
 				//
 				|| !Objects.equals(previousCandidate.getBPartnerInfo(), candidate.getBPartnerInfo())
 				|| !Objects.equals(previousCandidate.getBillBPartnerInfo(), candidate.getBillBPartnerInfo())
@@ -217,7 +216,7 @@ public class OLCandsProcessorExecutor
 				|| !Objects.equals(previousCandidate.getHandOverBPartnerInfo(), candidate.getHandOverBPartnerInfo())
 				|| !Objects.equals(previousCandidate.getDropShipBPartnerInfo(), candidate.getDropShipBPartnerInfo())
 				//
-				|| previousCandidate.getPricingSystemId() != candidate.getPricingSystemId())
+				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId()))
 		{
 			return true;
 		}
@@ -237,15 +236,9 @@ public class OLCandsProcessorExecutor
 	}
 
 	/**
-	 * Computes a grouping key for the given candidate. The key is made such that two different candidates that should be grouped (i.e. qtys aggregated) end up with the same grouping key.
-	 *
-	 * @param processor
-	 *
-	 * @param candidate
-	 * @param aggAndOrderList
-	 * @return
+	 * Computes an order-line-related grouping key for the given candidate. The key is made such that two different candidates that should be grouped (i.e. qtys aggregated) end up with the same grouping key.
 	 */
-	private ArrayKey mkGroupingKey(final OLCand candidate)
+	private ArrayKey mkGroupingKey(@NonNull final OLCand candidate)
 	{
 		if (aggregationInfo.getGroupByColumns().isEmpty())
 		{

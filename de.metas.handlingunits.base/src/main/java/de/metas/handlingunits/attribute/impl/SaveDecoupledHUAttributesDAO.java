@@ -1,13 +1,13 @@
 package de.metas.handlingunits.attribute.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -15,6 +15,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -25,8 +26,15 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -67,7 +75,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	// Status
 	/** Cache: huKey to huAtributeKey to {@link I_M_HU_Attribute} */
 	@ToStringBuilder(skip = true)
-	private final Map<Object, Map<Object, I_M_HU_Attribute>> _hu2huAttributes = new HashMap<>();
+	private final HashMap<HuId, HUAttributesMap> _hu2huAttributes = new HashMap<>();
 	@ToStringBuilder(skip = true)
 	private final List<I_M_HU_Attribute> _huAttributesToRemove = new ArrayList<>();
 	private final Set<Integer> idsToSaveFromLastFlush = new HashSet<>();
@@ -103,7 +111,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 	public synchronized final SaveDecoupledHUAttributesDAO setAutoflushEnabled(final boolean autoflushEnabled)
 	{
-		if (this._autoflushEnabled == autoflushEnabled)
+		if (_autoflushEnabled == autoflushEnabled)
 		{
 			return this;
 		}
@@ -114,7 +122,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 			flush();
 		}
 
-		this._autoflushEnabled = autoflushEnabled;
+		_autoflushEnabled = autoflushEnabled;
 		return this;
 	}
 
@@ -125,7 +133,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	 */
 	public synchronized final boolean isAutoflushEnabled()
 	{
-		return this._autoflushEnabled;
+		return _autoflushEnabled;
 	}
 
 	/**
@@ -141,28 +149,13 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	 */
 	public synchronized final SaveDecoupledHUAttributesDAO setIncrementalFlush(final boolean incrementalFlush)
 	{
-		this._incrementalFlush = incrementalFlush;
+		_incrementalFlush = incrementalFlush;
 		return this;
 	}
 
 	private final boolean isIncrementalFlush()
 	{
 		return _incrementalFlush;
-	}
-
-	private final Object mkHUKey(final I_M_HU hu)
-	{
-		return hu.getM_HU_ID();
-	}
-
-	private final Object mkHUAttributeKey(final I_M_HU_Attribute huAttribute)
-	{
-		return mkHUAttributeKey(huAttribute.getM_HU_ID(), AttributeId.ofRepoId(huAttribute.getM_Attribute_ID()));
-	}
-
-	private final Object mkHUAttributeKey(final int huId, final AttributeId attributeId)
-	{
-		return Util.mkKey(huId, attributeId);
 	}
 
 	@Override
@@ -173,7 +166,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		return huAttribute;
 	}
 
-	private final void setReadonly(final Object model, final boolean readonly)
+	private static final void setReadonly(final Object model, final boolean readonly)
 	{
 		if (model == null)
 		{
@@ -198,10 +191,9 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		}
 
 		final I_M_HU hu = huAttribute.getM_HU();
-		final Map<Object, I_M_HU_Attribute> huAttributes = getHUAttributes(hu, true);
+		final HUAttributesMap huAttributes = getHUAttributesMap(hu);
 
-		final Object huAttributeKey = mkHUAttributeKey(huAttribute);
-		final I_M_HU_Attribute huAttributeOld = huAttributes.put(huAttributeKey, huAttribute);
+		final I_M_HU_Attribute huAttributeOld = huAttributes.put(huAttribute);
 
 		//
 		// Check if cache is valid
@@ -243,14 +235,9 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		}
 
 		final I_M_HU hu = huAttribute.getM_HU();
-		final Map<Object, I_M_HU_Attribute> huAttributes = getHUAttributes(hu, true);
+		final HUAttributesMap huAttributes = getHUAttributesMap(hu);
 
-		final Object huAttributeKey = mkHUAttributeKey(huAttribute);
-		final I_M_HU_Attribute huAttributeToRemove = huAttributes.remove(huAttributeKey);
-		if (!Util.same(huAttribute, huAttributeToRemove))
-		{
-			throw new IllegalStateException("Given " + huAttribute + " was not found in internal cache or it's different (" + huAttributeToRemove + ")");
-		}
+		huAttributes.remove(huAttribute);
 
 		//
 		// Case: HU Attribute was already saved in database so we will need to enqueue it to be deleted
@@ -262,65 +249,47 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	public synchronized void initHUAttributes(final I_M_HU hu)
+	public synchronized HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
-		final boolean retrieveIfNotFound = false; // init with a empty list
-		getHUAttributes(hu, retrieveIfNotFound);
+		final HUAttributesMap huAttributes = getHUAttributesMap(hu);
+		final List<I_M_HU_Attribute> huAttributesList = huAttributes.toList();
+		final PIAttributes piAttributes = createPIAttributes(huAttributesList);
+		final ImmutableList<I_M_HU_Attribute> huAttributesSorted = HUAttributesBySeqNoComparator.of(piAttributes).sortAndCopy(huAttributesList);
+		return HUAndPIAttributes.of(huAttributesSorted, piAttributes);
 	}
 
-	@Override
-	public synchronized List<I_M_HU_Attribute> retrieveAttributesOrdered(final I_M_HU hu)
+	private PIAttributes createPIAttributes(final Collection<I_M_HU_Attribute> huAttributesList)
 	{
-		final boolean retrieveIfNotFound = true;
-		final Map<Object, I_M_HU_Attribute> huAttributes = getHUAttributes(hu, retrieveIfNotFound);
+		final IHUPIAttributesDAO piAttributesRepo = Services.get(IHUPIAttributesDAO.class);
 
-		final List<I_M_HU_Attribute> result = new ArrayList<>(huAttributes.values());
-		Collections.sort(result, HUAttributesBySeqNoComparator.instance);
-		return result;
+		final ImmutableSet<Integer> piAttributeIds = huAttributesList.stream().map(I_M_HU_Attribute::getM_HU_PI_Attribute_ID).collect(ImmutableSet.toImmutableSet());
+		return piAttributesRepo.retrievePIAttributesByIds(piAttributeIds);
 	}
 
-	private final Map<Object, I_M_HU_Attribute> getHUAttributes(final I_M_HU hu, final boolean retrieveIfNotFound)
+	private final HUAttributesMap getHUAttributesMap(final I_M_HU hu)
 	{
-		final Object huKey = mkHUKey(hu);
+		return getHUAttributesMap(hu, this::retrieveHUAttributesMap);
+	}
 
-		Map<Object, I_M_HU_Attribute> huAttributes = _hu2huAttributes.get(huKey);
-		if (huAttributes != null)
-		{
-			return huAttributes;
-		}
-
-		if (retrieveIfNotFound)
-		{
-			final List<I_M_HU_Attribute> huAttributesList = db.retrieveAttributesOrdered(hu);
-			huAttributes = new HashMap<>(huAttributesList.size());
-			for (final I_M_HU_Attribute huAttribute : huAttributesList)
-			{
-				// Make sure HU attributes are cached using ThreadInherited trx and NOT hu's transaction (08776)
-				InterfaceWrapperHelper.setTrxName(huAttribute, ITrx.TRXNAME_ThreadInherited);
-
-				final Object huAttributeKey = mkHUAttributeKey(huAttribute);
-				huAttributes.put(huAttributeKey, huAttribute);
-				setReadonly(huAttribute, true);
-			}
-		}
-		else
-		{
-			huAttributes = new HashMap<>();
-		}
-
-		_hu2huAttributes.put(huKey, huAttributes);
-
+	private HUAttributesMap retrieveHUAttributesMap(final I_M_HU hu)
+	{
+		HUAttributesMap huAttributes;
+		final HUAndPIAttributes huAndPIAttributes = db.retrieveAttributesOrdered(hu);
+		huAttributes = HUAttributesMap.of(huAndPIAttributes);
 		return huAttributes;
+	}
+
+	private final HUAttributesMap getHUAttributesMap(final I_M_HU hu, final Function<I_M_HU, HUAttributesMap> loader)
+	{
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		return _hu2huAttributes.computeIfAbsent(huId, k -> loader.apply(hu));
 	}
 
 	@Override
 	public synchronized I_M_HU_Attribute retrieveAttribute(final I_M_HU hu, final AttributeId attributeId)
 	{
-		final boolean retrieveIfNotFound = true;
-		final Map<Object, I_M_HU_Attribute> huAttributes = getHUAttributes(hu, retrieveIfNotFound);
-
-		final Object huAttributeKey = mkHUAttributeKey(hu.getM_HU_ID(), attributeId);
-		return huAttributes.get(huAttributeKey);
+		return getHUAttributesMap(hu)
+				.getByAttributeIdOrNull(attributeId);
 	}
 
 	/**
@@ -346,16 +315,15 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 		//
 		// Save all attributes
-		for (final Iterator<Map<Object, I_M_HU_Attribute>> it = _hu2huAttributes.values().iterator(); it.hasNext();)
+		for (final Iterator<HUAttributesMap> it = _hu2huAttributes.values().iterator(); it.hasNext();)
 		{
-			final Map<Object, I_M_HU_Attribute> huAttributes = it.next();
-
+			final HUAttributesMap huAttributes = it.next();
 			if (huAttributes == null || huAttributes.isEmpty())
 			{
 				continue;
 			}
 
-			for (final I_M_HU_Attribute huAttribute : huAttributes.values())
+			for (final I_M_HU_Attribute huAttribute : huAttributes)
 			{
 				saveToDatabase(huAttribute, trxName);
 			}
@@ -465,7 +433,8 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		}
 
 		final I_M_HU_Attribute modelOld = InterfaceWrapperHelper.createOld(huAttribute, I_M_HU_Attribute.class);
-		final I_M_Attribute attribute = huAttribute.getM_Attribute();
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttribute.getM_Attribute_ID());
 		final String modelChangeInfo = ""
 				+ Services.get(IHandlingUnitsBL.class).getDisplayName(huAttribute.getM_HU())
 				+ " - "
@@ -489,5 +458,74 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 		_hu2huAttributes.clear();
 		logger.trace("cached cleared");
+	}
+
+	private static class HUAttributesMap implements Iterable<I_M_HU_Attribute>
+	{
+		public static HUAttributesMap newEmptyInstance()
+		{
+			return new HUAttributesMap(new HashMap<>());
+		}
+
+		public static HUAttributesMap of(final HUAndPIAttributes huAndPIAttributes)
+		{
+			final ImmutableList<I_M_HU_Attribute> huAttributesList = huAndPIAttributes.getHuAttributes();
+			final HashMap<AttributeId, I_M_HU_Attribute> huAttributes = new HashMap<>(huAttributesList.size());
+			for (final I_M_HU_Attribute huAttribute : huAttributesList)
+			{
+				// Make sure HU attributes are cached using ThreadInherited trx and NOT hu's transaction (08776)
+				InterfaceWrapperHelper.setTrxName(huAttribute, ITrx.TRXNAME_ThreadInherited);
+
+				final AttributeId attributeId = AttributeId.ofRepoId(huAttribute.getM_Attribute_ID());
+				huAttributes.put(attributeId, huAttribute);
+				setReadonly(huAttribute, true);
+			}
+
+			return new HUAttributesMap(huAttributes);
+		}
+
+		private final HashMap<AttributeId, I_M_HU_Attribute> huAttributes;
+
+		private HUAttributesMap(final HashMap<AttributeId, I_M_HU_Attribute> huAttributes)
+		{
+			this.huAttributes = huAttributes;
+		}
+
+		public I_M_HU_Attribute getByAttributeIdOrNull(final AttributeId attributeId)
+		{
+			return huAttributes.get(attributeId);
+		}
+
+		public boolean isEmpty()
+		{
+			return huAttributes.isEmpty();
+		}
+
+		@Override
+		public Iterator<I_M_HU_Attribute> iterator()
+		{
+			return huAttributes.values().iterator();
+		}
+
+		public List<I_M_HU_Attribute> toList()
+		{
+			return ImmutableList.copyOf(huAttributes.values());
+		}
+
+		public I_M_HU_Attribute put(final I_M_HU_Attribute huAttribute)
+		{
+			final AttributeId attributeId = AttributeId.ofRepoId(huAttribute.getM_Attribute_ID());
+			return huAttributes.put(attributeId, huAttribute);
+		}
+
+		public void remove(final I_M_HU_Attribute huAttribute)
+		{
+			final AttributeId attributeId = AttributeId.ofRepoId(huAttribute.getM_Attribute_ID());
+			final I_M_HU_Attribute huAttributeRemoved = huAttributes.remove(attributeId);
+			if (!Util.same(huAttribute, huAttributeRemoved))
+			{
+				throw new AdempiereException("Given " + huAttribute + " was not found in internal cache or it's different (" + huAttributeRemoved + ")");
+			}
+		}
 	}
 }

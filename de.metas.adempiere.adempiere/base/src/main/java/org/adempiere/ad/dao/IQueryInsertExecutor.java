@@ -2,7 +2,11 @@ package org.adempiere.ad.dao;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.base.MoreObjects;
+
+import de.metas.process.PInstanceId;
 
 /*
  * #%L
@@ -88,40 +92,40 @@ public interface IQueryInsertExecutor<ToModelType, FromModelType>
 	@Immutable
 	public static final class QueryInsertExecutorResult
 	{
-		public static QueryInsertExecutorResult of(final int rowsInserted, final int insertSelectionId)
+		public static QueryInsertExecutorResult of(final int rowsInserted, final PInstanceId insertSelectionId)
 		{
 			return new QueryInsertExecutorResult(rowsInserted, insertSelectionId);
 		}
 
 		private final int rowsInserted;
-		private final int insertSelectionId;
+		private final PInstanceId insertSelectionId;
 
-		private QueryInsertExecutorResult(final int rowsInserted, final int insertSelectionId)
+		private QueryInsertExecutorResult(final int rowsInserted, final PInstanceId insertSelectionId)
 		{
 			this.rowsInserted = rowsInserted;
 			this.insertSelectionId = insertSelectionId;
 		}
-		
+
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
 					.add("rowsInserted", rowsInserted)
-					.add("insertSelectionId", insertSelectionId > 0 ? insertSelectionId : null)
+					.add("insertSelectionId", insertSelectionId)
 					.toString();
 		}
-		
+
 		public int getRowsInserted()
 		{
 			return rowsInserted;
 		}
-		
-		public int getInsertSelectionId()
+
+		public PInstanceId getInsertSelectionId()
 		{
-			if(insertSelectionId <= 0)
+			if (insertSelectionId == null)
 			{
-				throw new IllegalStateException("No insert selection defined");
+				throw new AdempiereException("No insert selection defined");
 			}
 			return insertSelectionId;
 		}

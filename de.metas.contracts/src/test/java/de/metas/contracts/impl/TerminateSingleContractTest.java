@@ -4,8 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 
 /*
@@ -76,8 +74,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
@@ -130,7 +130,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)
@@ -159,7 +159,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)

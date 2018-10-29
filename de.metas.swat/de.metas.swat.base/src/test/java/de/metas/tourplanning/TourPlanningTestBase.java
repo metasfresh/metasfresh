@@ -16,12 +16,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,6 +55,8 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.product.ProductId;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayBL;
@@ -79,7 +81,7 @@ import de.metas.util.time.TimeSource;
 
 /**
  * Base class (to be extended) for all Tour Planning tests.
- * 
+ *
  * @author tsa
  *
  */
@@ -118,6 +120,8 @@ public abstract class TourPlanningTestBase
 		trxManager.setThreadInheritedTrxName(trxName);
 
 		this.contextProvider = PlainContextAware.newWithThreadInheritedTrx();
+
+		Services.registerService(IShipmentScheduleBL.class,ShipmentScheduleBL.newInstanceForUnitTesting());
 
 		//
 		// Model Interceptors
@@ -236,7 +240,7 @@ public abstract class TourPlanningTestBase
 
 	/**
 	 * Asserts given shipment schedule is allocated to expected delivery day.
-	 * 
+	 *
 	 * @param deliveryDayExpected
 	 * @param shipmentSchedule
 	 */
@@ -257,7 +261,7 @@ public abstract class TourPlanningTestBase
 
 	/**
 	 * sets the system time to a static value. Note that this is reset after each test by {@link #resetSystemTime()}.
-	 * 
+	 *
 	 * @param currentTime
 	 */
 	protected void setSystemTime(final String currentTime)
@@ -299,7 +303,7 @@ public abstract class TourPlanningTestBase
 	 * Create a shipment schedule for the given oder.
 	 * <p>
 	 * NOTE: we expect that the tests was set up such that {@link DeliveryDayAllocableInterceptor} is fired when the shipment schedule is stored.
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 */

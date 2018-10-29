@@ -1894,8 +1894,11 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	 */
 	private PrintElement layoutPInstanceLogs()
 	{
-		if (m_query == null || !m_query.isActive() || m_query.getAD_PInstance_ID() <= 0)
+		if (m_query == null || !m_query.isActive() || m_query.getPinstanceId() == null)
+		{
 			return null;
+		}
+		
 		//
 		PInstanceLogElement e = new PInstanceLogElement(m_printCtx, m_query, m_format.getTableFormat());
 		if (e.getEffectiveRowCount() <= 0)

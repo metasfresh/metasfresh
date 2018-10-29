@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -147,7 +148,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @param defaultAttributesValue
 	 * @throws AdempiereException if attributes were already generated
 	 */
-	void generateInitialAttributes(final Map<I_M_Attribute, Object> defaultAttributesValue);
+	void generateInitialAttributes(final Map<AttributeId, Object> defaultAttributesValue);
 
 	/**
 	 * Updates given <code>huTrxAttribute</code> with storage settings and with underlying infos from <code>fromAttributeValue</code>.
@@ -201,6 +202,11 @@ public interface IAttributeStorage extends IAttributeSet
 	boolean isReadonlyUI(final IAttributeValueContext ctx, I_M_Attribute attribute);
 
 	boolean isDisplayedUI(final ImmutableSet<ProductId> productIDs, final I_M_Attribute attribute);
+
+	default boolean isMandatory(@NonNull final I_M_Attribute attribute)
+	{
+		return getAttributeValue(attribute.getValue()).isMandatory();
+	}
 
 	/**
 	 * Set attribute's value with NO propagation.
@@ -383,10 +389,5 @@ public interface IAttributeStorage extends IAttributeSet
 	default int getM_Warehouse_ID()
 	{
 		return -1;
-	}
-
-	default boolean isMandatory(I_M_Attribute attribute)
-	{
-		return false;
 	}
 }

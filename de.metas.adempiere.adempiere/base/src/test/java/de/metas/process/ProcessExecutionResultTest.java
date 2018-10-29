@@ -77,7 +77,7 @@ public class ProcessExecutionResultTest
 
 	private ProcessExecutionResult createTestResult()
 	{
-		final ProcessExecutionResult result = ProcessExecutionResult.newInstanceForADPInstanceId(12345);
+		final ProcessExecutionResult result = ProcessExecutionResult.newInstanceForADPInstanceId(PInstanceId.ofRepoId(12345));
 		result.setRecordToSelectAfterExecution(createDummyTableRecordReference());
 		result.markAsError("error summary1");
 		result.setReportData(new byte[] { 1, 2, 3 }, "report.pdf", "application/pdf");
@@ -127,7 +127,7 @@ public class ProcessExecutionResultTest
 		final ProcessExecutionResult resultFromJson = fromJson(json);
 
 		// Compare
-		Assert.assertEquals(result.getAD_PInstance_ID(), resultFromJson.getAD_PInstance_ID());
+		Assert.assertEquals(result.getPinstanceId(), resultFromJson.getPinstanceId());
 		Assert.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
 		Assert.assertEquals(result.getSummary(), resultFromJson.getSummary());
 		Assert.assertEquals(result.isError(), resultFromJson.isError());
@@ -157,7 +157,7 @@ public class ProcessExecutionResultTest
 	{
 		final ProcessExecutionResult result = createTestResult();
 
-		final ProcessExecutionResult resultCopy = ProcessExecutionResult.newInstanceForADPInstanceId(result.getAD_PInstance_ID());
+		final ProcessExecutionResult resultCopy = ProcessExecutionResult.newInstanceForADPInstanceId(result.getPinstanceId());
 		resultCopy.updateFrom(result);
 
 		assertEqualsAsJson(result, resultCopy);

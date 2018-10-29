@@ -89,6 +89,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.print.IPrintService;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
@@ -1147,9 +1148,8 @@ public class ReportEngine implements PrintServiceAttributeListener
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Client_ID);
-			pstmt.setInt(2, pi.getAD_PInstance_ID());
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, AD_Client_ID, pi.getPinstanceId());
 			rs = pstmt.executeQuery();
 			// Just get first
 			if (rs.next())
@@ -1188,8 +1188,8 @@ public class ReportEngine implements PrintServiceAttributeListener
 					+ "WHERE pi.AD_PInstance_ID=?";
 			try
 			{
-				pstmt = DB.prepareStatement(sql, null);
-				pstmt.setInt(1, pi.getAD_PInstance_ID());
+				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+				DB.setParameters(pstmt, pi.getPinstanceId());
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
@@ -1213,7 +1213,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 			}
 			if (AD_PrintFormat_ID <= 0)
 			{
-				log.error("Report Info NOT found AD_PInstance_ID=" + pi.getAD_PInstance_ID() + ",AD_Client_ID=" + AD_Client_ID);
+				log.error("Report Info NOT found AD_PInstance_ID=" + pi.getPinstanceId() + ",AD_Client_ID=" + AD_Client_ID);
 				return null;
 			}
 		}
@@ -1227,7 +1227,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		}
 		else
 		{
-			query = MQuery.get(ctx, pi.getAD_PInstance_ID(), TableName);
+			query = MQuery.get(ctx, pi.getPinstanceId(), TableName);
 		}
 
 		// metas 03915
@@ -1336,18 +1336,18 @@ public class ReportEngine implements PrintServiceAttributeListener
 	public static ReportEngine get(Properties ctx, int type, int Record_ID, String trxName)
 	{
 		final int adPrintFormatToUseId = -1; // auto-detect
-		final int pInstanceId = -1;
+		final PInstanceId pInstanceId = null;
 		return get(ctx, type, Record_ID, pInstanceId, adPrintFormatToUseId, trxName);
 	}
 
-	public static ReportEngine get(Properties ctx, int type, int Record_ID, int pInstanceId, String trxName)
+	public static ReportEngine get(Properties ctx, int type, int Record_ID, PInstanceId pInstanceId, String trxName)
 	{
 		final int adPrintFormatToUseId = -1; // auto-detect
 		return get(ctx, type, Record_ID, pInstanceId, adPrintFormatToUseId, trxName);
 	}
 
 	// metas: added adPrintFormatToUseId parameter
-	public static ReportEngine get(final Properties ctx, int type, int Record_ID, final int pInstanceId, final int adPrintFormatToUseId, final String trxName)
+	public static ReportEngine get(final Properties ctx, int type, int Record_ID, final PInstanceId pInstanceId, final int adPrintFormatToUseId, final String trxName)
 	{
 		if (Record_ID < 1)
 		{

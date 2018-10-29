@@ -30,10 +30,10 @@ import org.compiere.model.MPayment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.bpartner.exceptions.BPartnerNoAddressException;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfoParameter;
 
 
 /**
@@ -247,7 +247,7 @@ public class DunningRunCreate extends JavaProcess
 					continue;
 				if (DaysDue < DaysAfterDue.intValue() && !level.isShowAllDue())
 					continue;
-				if (Env.ZERO.compareTo(Open) == 0)
+				if (BigDecimal.ZERO.compareTo(Open) == 0)
 					continue;
 				//
 				int TimesDunned = 0;
@@ -288,7 +288,7 @@ public class DunningRunCreate extends JavaProcess
 		catch (Exception e)
 		{
 			log.error("addInvoices", e);
-			getResult().addLog(getProcessInfo().getAD_PInstance_ID(), null, null, e.getLocalizedMessage());
+			getResult().addLog(getProcessInfo().getPinstanceId(), null, null, e.getLocalizedMessage());
 		}
 		finally
 		{
@@ -327,7 +327,7 @@ public class DunningRunCreate extends JavaProcess
 				+ ", @C_BPartner_ID@ " + MBPartner.get(getCtx(), C_BPartner_ID).getName()
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
 			final ProcessExecutionResult processResult = getResult();
-			processResult.addLog(processResult.getAD_PInstance_ID(), null, null, msg);
+			processResult.addLog(processResult.getPinstanceId(), null, null, msg);
 			return false;
 		}
 		
@@ -404,7 +404,7 @@ public class DunningRunCreate extends JavaProcess
 				BigDecimal OpenAmt = rs.getBigDecimal(4).negate();
 				int C_BPartner_ID = rs.getInt(5);
 				//
-				if (Env.ZERO.compareTo(OpenAmt) == 0)
+				if (BigDecimal.ZERO.compareTo(OpenAmt) == 0)
 					continue;
 				//
 				if (createPaymentLine (C_Payment_ID, C_Currency_ID, PayAmt, OpenAmt,
@@ -418,7 +418,7 @@ public class DunningRunCreate extends JavaProcess
 		{
 			log.error(sql, e);
 			final ProcessExecutionResult result = getResult();
-			result.addLog(result.getAD_PInstance_ID(), null, null, e.getLocalizedMessage());
+			result.addLog(result.getPinstanceId(), null, null, e.getLocalizedMessage());
 		}
 		finally
 		{
@@ -449,7 +449,7 @@ public class DunningRunCreate extends JavaProcess
 				+ ", @C_BPartner_ID@ " + MBPartner.get(getCtx(), C_BPartner_ID).getName()
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
 			final ProcessExecutionResult processResult = getResult();
-			processResult.addLog(processResult.getAD_PInstance_ID(), null, null, msg);
+			processResult.addLog(processResult.getPinstanceId(), null, null, msg);
 			return false;
 		}
 		if (entry.get_ID() == 0)

@@ -2,8 +2,6 @@ package de.metas.contracts.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.contracts
@@ -32,7 +30,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,8 +51,10 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.model.I_C_Order;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
@@ -76,8 +75,8 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 			.terminationMemo(terminationMemo)
 			.build();
 
-	@Before
-	public void before()
+	@Override
+	public void initialize()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
 		SystemTime.setTimeSource(today);
@@ -100,7 +99,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)
@@ -132,7 +131,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)

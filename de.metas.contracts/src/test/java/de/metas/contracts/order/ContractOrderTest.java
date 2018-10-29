@@ -50,6 +50,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -78,7 +79,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)
@@ -124,7 +125,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)
@@ -186,7 +187,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(newContract)
 				.forceExtend(true)
 				.forceComplete(true)

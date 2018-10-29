@@ -35,12 +35,12 @@ import org.compiere.model.MMenu;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.process.StateEngine;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.api.IADWorkflowDAO;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;

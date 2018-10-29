@@ -21,8 +21,9 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.X_AD_PrintFont;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
+
+import de.metas.cache.CCache;
 
 /**
  *	AD_PrintFont Print Font Model

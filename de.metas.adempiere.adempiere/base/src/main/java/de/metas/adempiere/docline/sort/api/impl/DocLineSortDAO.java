@@ -35,8 +35,8 @@ import org.compiere.model.I_C_DocLine_Sort_Item;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.adempiere.docline.sort.api.IDocLineSortItemFinder;
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

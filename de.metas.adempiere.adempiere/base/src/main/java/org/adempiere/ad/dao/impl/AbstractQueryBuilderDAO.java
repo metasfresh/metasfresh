@@ -18,6 +18,7 @@ import org.compiere.model.IQuery;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.process.PInstanceId;
 import lombok.NonNull;
 
 /*
@@ -290,7 +291,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		private final String modelTableName;
 		private final ImmutableMap<String, Object> queryOptions;
 		//
-		private final int queryOnlySelectionId;
+		private final PInstanceId queryOnlySelectionId;
 		private IQueryFilter<T> mainFilter;
 		//
 		private IQueryOrderBy queryOrderBy;
@@ -369,7 +370,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			return queryOptions;
 		}
 
-		public int getQueryOnlySelectionId()
+		public PInstanceId getQueryOnlySelectionId()
 		{
 			return queryOnlySelectionId;
 		}

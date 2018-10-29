@@ -44,6 +44,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
+import org.adempiere.ad.trx.api.NullTrxPlaceholder;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.trx.exceptions.IllegalTrxRunStateException;
@@ -1025,7 +1026,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	@Override
 	public final boolean isNull(final ITrx trx)
 	{
-		return trx == null;
+		return trx == null || trx == NullTrxPlaceholder.instance;
 	}
 
 	@Override

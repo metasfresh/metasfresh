@@ -5,8 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import lombok.NonNull;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +32,9 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.order.model.I_C_Order;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
@@ -56,7 +56,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)
@@ -75,7 +75,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(null);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(true)
@@ -94,7 +94,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForExtrendingAllTest(false);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(false)
 				.forceComplete(true)
@@ -131,7 +131,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForExtrendingAllTest(true);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
-				.AD_PInstance_ID(1)
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
 				.forceExtend(false)
 				.forceComplete(true)

@@ -22,8 +22,9 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.compiere.print.MPrintColor;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
+
+import de.metas.cache.CCache;
 
 /**
  * 	Performance Color Schema

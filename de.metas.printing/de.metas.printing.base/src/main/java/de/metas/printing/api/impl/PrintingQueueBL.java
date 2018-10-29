@@ -249,9 +249,9 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		// 03870 R2
 		// if possible, use the AD_User_ID of the user that started the process which is calling this method
-		if (printingQueueQuery.getOnlyAD_PInstance_ID() > 0)
+		if (printingQueueQuery.getOnlyAD_PInstance_ID() != null)
 		{
-			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, printingQueueQuery.getOnlyAD_PInstance_ID());
+			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).getById(printingQueueQuery.getOnlyAD_PInstance_ID());
 			final int printJobUserId = pinstance.getAD_User_ID();
 			if (printJobUserId > 0)
 			{

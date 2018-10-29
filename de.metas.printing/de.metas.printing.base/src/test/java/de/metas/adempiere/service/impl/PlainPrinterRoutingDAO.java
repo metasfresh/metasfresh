@@ -36,7 +36,7 @@ import org.junit.Ignore;
 
 import de.metas.adempiere.model.I_AD_Printer;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.util.Check;
 

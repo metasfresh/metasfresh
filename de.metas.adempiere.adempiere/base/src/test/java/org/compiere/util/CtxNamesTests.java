@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -326,6 +328,31 @@ public class CtxNamesTests
 
 		final String value = ctxName.getValueAsString(context);
 		assertThat(value).isEqualTo("someDefaultValue");
+	}
+
+	@Test
+	public void test_validName()
+	{
+		CtxNames.parse("Test");
+		CtxNames.parse("Test0_ID");
+		CtxNames.parse("#Test0_ID");
+		CtxNames.parse("$Test0_ID");
+		CtxNames.parse("$Test0-ID"); // not sure if this shall be tollerated, but for now we tollerate it
+
+		assertInvalidName("AD_Element_ID\\0");
+	}
+
+	private static void assertInvalidName(final String name)
+	{
+		try
+		{
+			CtxName ctxName = CtxNames.parse(name);
+			Assert.fail("Parsing '" + name + "' should fail but it didn't and returned: " + ctxName);
+		}
+		catch (AdempiereException ex)
+		{
+			// OK
+		}
 	}
 
 }

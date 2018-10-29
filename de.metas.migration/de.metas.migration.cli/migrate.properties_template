@@ -1,0 +1,8 @@
+#
+# you can copy this file to migration.properties and edit its properties to match your local DB
+#
+METASFRESH_DB_SERVER=<DBMS hostname> # e.g. localhost
+METASFRESH_DB_PORT=<DBMS hostname> # e.g. 5432
+METASFRESH_DB_NAME=<DB name> # e.g. metasfresh
+METASFRESH_DB_USER=<DB user name> # e.g. metasfresh
+METASFRESH_DB_PASSWORD=<pasword>

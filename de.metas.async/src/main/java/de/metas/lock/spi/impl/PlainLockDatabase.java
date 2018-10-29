@@ -56,6 +56,7 @@ import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.AbstractLockDatabase;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -115,7 +116,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	protected int lockBySelection(final ILockCommand lockCommand)
 	{
 		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
-		final int adPInstanceId = lockCommand.getSelectionToLock_AD_PInstance_ID();
+		final PInstanceId adPInstanceId = lockCommand.getSelectionToLock_AD_PInstance_ID();
 
 		int countLocked = 0;
 		for (final ITableRecordReference record : retrieveSelection(adTableId, adPInstanceId))
@@ -285,7 +286,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	protected int unlockBySelection(final IUnlockCommand unlockCommand)
 	{
 		final int adTableId = unlockCommand.getSelectionToUnlock_AD_Table_ID();
-		final int adPInstanceId = unlockCommand.getSelectionToUnlock_AD_PInstance_ID();
+		final PInstanceId adPInstanceId = unlockCommand.getSelectionToUnlock_AD_PInstance_ID();
 
 		int countUnlocked = 0;
 		for (final ITableRecordReference record : retrieveSelection(adTableId, adPInstanceId))
@@ -300,11 +301,11 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return countUnlocked;
 	}
 
-	private List<ITableRecordReference> retrieveSelection(final int adTableId, final int adPInstanceId)
+	private List<ITableRecordReference> retrieveSelection(final int adTableId, final PInstanceId pinstanceId)
 	{
 		// NOTE: below comes a fucked up, not optimum implementation shit which shall do the work for testing
 
-		final POJOInSelectionQueryFilter<Object> filter = POJOInSelectionQueryFilter.inSelection(adPInstanceId);
+		final POJOInSelectionQueryFilter<Object> filter = POJOInSelectionQueryFilter.inSelection(pinstanceId);
 
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 		final List<ITableRecordReference> records = new ArrayList<>();

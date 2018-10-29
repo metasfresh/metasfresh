@@ -26,12 +26,12 @@ package de.metas.aggregation.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CacheMgt;
 
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.listeners.IAggregationListeners;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.I_C_AggregationItem;
+import de.metas.cache.CacheMgt;
 import de.metas.util.Services;
 
 @Interceptor(I_C_AggregationItem.class)
