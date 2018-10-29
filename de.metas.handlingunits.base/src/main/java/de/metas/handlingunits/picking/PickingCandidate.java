@@ -68,7 +68,6 @@ public class PickingCandidate
 	@Default
 	private PickingCandidateApprovalStatus approvalStatus = PickingCandidateApprovalStatus.TO_BE_APPROVED;
 
-	@NonNull
 	private final HuId pickFromHuId;
 
 	@NonNull
@@ -140,7 +139,7 @@ public class PickingCandidate
 	{
 		return PickingCandidateStatus.Processed.equals(getStatus());
 	}
-	
+
 	public boolean isRejectedToPick()
 	{
 		return PickingCandidatePickStatus.WILL_NOT_BE_PICKED.equals(pickStatus);
@@ -166,6 +165,11 @@ public class PickingCandidate
 	public void changeStatusToDraft()
 	{
 		setStatus(PickingCandidateStatus.Draft);
+	}
+
+	public void changeStatusToProcessed()
+	{
+		changeStatusToProcessed(getPickFromHuId());
 	}
 
 	public void changeStatusToProcessed(@NonNull final HuId packedToHuId)
@@ -196,7 +200,7 @@ public class PickingCandidate
 		qtyPicked = qtyRejected;
 		pickStatus = PickingCandidatePickStatus.WILL_NOT_BE_PICKED;
 	}
-	
+
 	public void packTo(final HuPackingInstructionsId packToInstructionsId)
 	{
 		assertDraft();
@@ -210,7 +214,6 @@ public class PickingCandidate
 		this.packToInstructionsId = packToInstructionsId;
 		pickStatus = computePickOrPackStatus(this.packToInstructionsId);
 	}
-
 
 	public void reviewPicking(final BigDecimal qtyReview)
 	{
@@ -249,7 +252,6 @@ public class PickingCandidate
 			return PickingCandidateApprovalStatus.REJECTED;
 		}
 	}
-
 
 	private static PickingCandidatePickStatus computePickOrPackStatus(final HuPackingInstructionsId packToInstructionsId)
 	{
