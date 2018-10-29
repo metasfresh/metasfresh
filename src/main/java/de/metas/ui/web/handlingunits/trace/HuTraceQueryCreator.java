@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.trace;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.OptionalInt;
@@ -11,6 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
@@ -197,9 +199,9 @@ public class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueNotNull("VhuId", query.getVhuId(), query);
+		errorIfQueryValueNotEmpty("VhuId", query.getVhuIds(), query);
 
-		return query.withVhuId(extractHuId(parameter));
+		return query.withVhuIds(extractHuIds(parameter));
 	}
 
 	private static HUTraceEventQuery updateVhuSourceIdFromParameter(
@@ -249,9 +251,9 @@ public class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueNotNull("TopLevelHuId", query.getTopLevelHuId(), query);
+		errorIfQueryValueNotEmpty("TopLevelHuId", query.getTopLevelHuIds(), query);
 
-		return query.withTopLevelHuId(extractHuId(parameter));
+		return query.withTopLevelHuIds(extractHuIds(parameter));
 	}
 
 	private static HUTraceEventQuery updateInOutIdFromParameter(
@@ -328,6 +330,18 @@ public class HuTraceQueryCreator
 		}
 	}
 
+	private static void errorIfQueryValueNotEmpty(
+			@NonNull final String field,
+			@Nullable final Collection<?> value,
+			@NonNull final HUTraceEventQuery query)
+	{
+		if (!Check.isEmpty(value))
+		{
+			final String message = StringUtils.formatMessage("The given HUTraceEventQuery already has {}={}", field, value);
+			throw new AdempiereException(message).setParameter("HUTraceEventQuery", query);
+		}
+	}
+
 	private static void errorIfQueryValueNotNull(
 			@NonNull final String field,
 			final Object value,
@@ -352,6 +366,12 @@ public class HuTraceQueryCreator
 	private static HuId extractHuId(@NonNull final DocumentFilterParam parameter)
 	{
 		return HuId.ofRepoIdOrNull(extractInt(parameter));
+	}
+
+	private static ImmutableSet<HuId> extractHuIds(@NonNull final DocumentFilterParam parameter)
+	{
+		final HuId huId = extractHuId(parameter);
+		return huId != null ? ImmutableSet.of(huId) : ImmutableSet.of();
 	}
 
 	private static int extractInt(@NonNull final DocumentFilterParam parameter)
