@@ -1,11 +1,15 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import javax.annotation.Nullable;
+
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
 
 /*
  * #%L
@@ -29,21 +33,23 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-class ProductsToPickRowId
+@EqualsAndHashCode
+@ToString(of = "documentId")
+final class ProductsToPickRowId
 {
-	private HuId huId;
-	private ProductId productId;
+	@Getter
+	private final HuId huId;
+	// private final ProductId productId;
 
 	private DocumentId documentId;
 
 	@Builder
 	private ProductsToPickRowId(
-			@NonNull final HuId huId,
+			@Nullable final HuId huId,
 			@NonNull final ProductId productId)
 	{
 		this.huId = huId;
-		this.productId = productId;
+		// this.productId = productId;
 		this.documentId = createDocumentId(huId, productId);
 	}
 
@@ -54,7 +60,14 @@ class ProductsToPickRowId
 
 	private static DocumentId createDocumentId(final HuId huId, final ProductId productId)
 	{
-		return DocumentId.ofString(huId.getRepoId() + "_" + productId.getRepoId());
+		if (huId == null)
+		{
+			return DocumentId.of(productId);
+		}
+		else
+		{
+			return DocumentId.ofString(huId.getRepoId() + "_" + productId.getRepoId());
+		}
 	}
 
 }
