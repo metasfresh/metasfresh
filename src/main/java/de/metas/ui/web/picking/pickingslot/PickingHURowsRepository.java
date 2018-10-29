@@ -184,6 +184,11 @@ public class PickingHURowsRepository
 		final ImmutableListMultimap.Builder<PickingSlotId, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
 		for (final PickingCandidate pickingCandidate : pickingCandidates)
 		{
+			if (pickingCandidate.isRejectedToPick())
+			{
+				continue;
+			}
+
 			final HuId huId = pickingCandidate.getPickFromHuId();
 			if (huId2huRow.containsKey(huId))
 			{
