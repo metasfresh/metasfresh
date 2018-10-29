@@ -12,11 +12,11 @@ import java.util.function.Supplier;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.model.IQuery;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.log.impl.EventLogEntry;

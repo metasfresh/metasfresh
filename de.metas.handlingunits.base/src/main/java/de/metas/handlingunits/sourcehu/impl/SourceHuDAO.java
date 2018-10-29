@@ -14,8 +14,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.util.CacheModel;
+import de.metas.cache.annotation.CacheModel;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
@@ -51,15 +52,14 @@ public class SourceHuDAO implements ISourceHuDAO
 {
 	@Override
 	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID)
-	public boolean isSourceHu(final int huId)
+	public boolean isSourceHu(@NonNull final HuId huId)
 	{
-		final boolean isSourceHU = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Source_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Source_HU.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.match();
-		return isSourceHU;
 	}
 
 	@Override
@@ -149,12 +149,16 @@ public class SourceHuDAO implements ISourceHuDAO
 		final ICompositeQueryFilter<I_M_HU> huFilters = queryBL.createCompositeQueryFilter(I_M_HU.class)
 				.setJoinOr();
 
-		final IQueryFilter<I_M_HU> huFilter = handlingUnitsDAO.createHUQueryBuilder()
+		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
 				.setOnlyActiveHUs(true)
 				.setAllowEmptyStorage()
-				.addOnlyWithProductIds(ProductId.toRepoIds(query.getProductIds()))
-				.addOnlyInWarehouseId(query.getWarehouseId())
-				.createQueryFilter();
+				.addOnlyWithProductIds(ProductId.toRepoIds(query.getProductIds()));
+		if (query.getWarehouseId() != null)
+		{
+			huQueryBuilder.addOnlyInWarehouseId(query.getWarehouseId());
+		}
+
+		final IQueryFilter<I_M_HU> huFilter = huQueryBuilder.createQueryFilter();
 		huFilters.addFilter(huFilter);
 
 		return huFilters;

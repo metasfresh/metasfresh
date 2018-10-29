@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import lombok.Value;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -36,7 +38,9 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngine;
@@ -44,7 +48,6 @@ import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.spi.hu.impl.HUStorageRecord;
 import de.metas.util.Services;
-import lombok.Value;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
@@ -90,7 +93,10 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
 		Services.get(IStorageEngineService.class).registerStorageEngine(storageEngine);
+
+		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 
 		uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);

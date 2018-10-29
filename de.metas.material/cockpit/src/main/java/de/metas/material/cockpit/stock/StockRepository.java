@@ -1,30 +1,28 @@
 package de.metas.material.cockpit.stock;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
-import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.commons.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -51,82 +49,10 @@ import lombok.NonNull;
 @Service
 public class StockRepository
 {
-	private final PostMaterialEventService postMaterialEventService;
 
-	public StockRepository(final PostMaterialEventService postMaterialEventService)
-	{
-		this.postMaterialEventService = postMaterialEventService;
-	}
-
-	public void handleDataUpdateRequest(@NonNull final StockDataUpdateRequest dataUpdateRequest)
-	{
-		final I_MD_Stock dataRecord = retrieveOrCreateDataRecord(dataUpdateRequest.getIdentifier());
-		final BigDecimal qtyOnHandOld = dataRecord.getQtyOnHand();
-
-		final BigDecimal qtyOnHandToAdd = dataUpdateRequest.getOnHandQtyChange();
-		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(dataRecord.getQtyOnHand().add(qtyOnHandToAdd));
-		dataRecord.setQtyOnHand(qtyOnHandNew);
-		save(dataRecord);
-
-		fireStockChangedEvent(dataRecord, qtyOnHandOld);
-	}
-
-	private I_MD_Stock retrieveOrCreateDataRecord(@NonNull final StockDataRecordIdentifier identifier)
-	{
-		final IQuery<I_MD_Stock> query = createQueryForIdentifier(identifier);
-
-		final I_MD_Stock existingDataRecord = query.firstOnly(I_MD_Stock.class);
-		if (existingDataRecord != null)
-		{
-			return existingDataRecord;
-		}
-
-		final I_MD_Stock newDataRecord = newInstance(I_MD_Stock.class);
-		newDataRecord.setM_Product_ID(identifier.getProductDescriptor().getProductId());
-		newDataRecord.setAttributesKey(identifier.getProductDescriptor().getStorageAttributesKey().getAsString());
-		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId());
-
-		return newDataRecord;
-	}
-
-	private IQuery<I_MD_Stock> createQueryForIdentifier(@NonNull final StockDataRecordIdentifier identifier)
-	{
-		final ProductDescriptor productDescriptor = identifier.getProductDescriptor();
-
-		final AttributesKey attributesKey = productDescriptor.getStorageAttributesKey();
-		attributesKey.assertNotAllOrOther();
-
-		final IQueryBuilder<I_MD_Stock> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_MD_Stock.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, productDescriptor.getProductId())
-				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, identifier.getWarehouseId());
-
-		return queryBuilder.create();
-	}
-
-	private void fireStockChangedEvent(final I_MD_Stock dataRecord, final BigDecimal qtyOnHandOld)
-	{
-		final BigDecimal qtyOnHandNew = dataRecord.getQtyOnHand();
-		if (qtyOnHandOld.compareTo(qtyOnHandNew) == 0)
-		{
-			return;
-		}
-
-		final StockChangedEvent event = StockChangedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(dataRecord.getAD_Client_ID(), dataRecord.getAD_Org_ID()))
-				.productDescriptor(ProductDescriptor.forProductAndAttributes(
-						dataRecord.getM_Product_ID(),
-						AttributesKey.ofString(dataRecord.getAttributesKey())))
-				.warehouseId(dataRecord.getM_Warehouse_ID())
-				.qtyOnHand(qtyOnHandNew)
-				.qtyOnHandOld(qtyOnHandOld)
-				.build();
-		postMaterialEventService.postEventNow(event);
-	}
-
-	public BigDecimal getQtyOnHandForProductAndWarehouseIds(@NonNull final ProductId productId, final Set<WarehouseId> warehouseIds)
+	public BigDecimal getQtyOnHandForProductAndWarehouseIds(
+			@NonNull final ProductId productId,
+			final Set<WarehouseId> warehouseIds)
 	{
 		Check.assumeNotEmpty(warehouseIds, "warehouseIds is not empty");
 
@@ -140,15 +66,14 @@ public class StockRepository
 		return qtyOnHand != null ? qtyOnHand : BigDecimal.ZERO;
 	}
 
-	public Stream<StockDataRecord> streamStockDataRecords(@NonNull final StockDataQuery query)
+	public Stream<StockDataAggregateItem> streamStockDataAggregateItems(@NonNull final StockDataAggregateQuery query)
 	{
-		return createQueryBuilder(query)
-				.create()
+		return createStockDataAggregateItemQuery(query)
 				.iterateAndStream()
-				.map(this::toStockDataRecord);
+				.map(this::recordToStockDataItem);
 	}
 
-	private IQueryBuilder<I_MD_Stock_WarehouseAndProduct_v> createQueryBuilder(final StockDataQuery query)
+	private IQuery<I_MD_Stock_WarehouseAndProduct_v> createStockDataAggregateItemQuery(@NonNull final StockDataAggregateQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Stock_WarehouseAndProduct_v> queryBuilder = queryBL.createQueryBuilder(I_MD_Stock_WarehouseAndProduct_v.class);
@@ -163,16 +88,62 @@ public class StockRepository
 
 		query.getOrderBys().forEach(orderBy -> queryBuilder.orderBy(orderBy.getColumnName()));
 
-		return queryBuilder;
+		return queryBuilder.create();
 	}
 
-	private StockDataRecord toStockDataRecord(final I_MD_Stock_WarehouseAndProduct_v record)
+	private StockDataAggregateItem recordToStockDataItem(@NonNull final I_MD_Stock_WarehouseAndProduct_v record)
 	{
-		return StockDataRecord.builder()
+		return StockDataAggregateItem.builder()
 				.productCategoryId(record.getM_Product_Category_ID())
 				.productId(record.getM_Product_ID())
 				.productValue(record.getProductValue())
 				.warehouseId(record.getM_Warehouse_ID())
+				.qtyOnHand(record.getQtyOnHand())
+				.build();
+	}
+
+	public Stream<StockDataItem> streamStockDatatems(@NonNull final StockDataMultiQuery multiQuery)
+	{
+		final Optional<IQuery<I_MD_Stock>> query = multiQuery
+				.getStockDataQueries()
+				.stream()
+				.map(this::createStockDatItemQuery)
+				.reduce(IQuery.unionDistict());
+
+		if (!query.isPresent())
+		{
+			return Stream.empty();
+		}
+		return query.get()
+				.iterateAndStream()
+				.map(this::recordToStockDataItem);
+	}
+
+	private IQuery<I_MD_Stock> createStockDatItemQuery(@NonNull final StockDataQuery query)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_MD_Stock> queryBuilder = queryBL.createQueryBuilder(I_MD_Stock.class);
+
+		queryBuilder.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, query.getProductId());
+
+		if (!query.getWarehouseIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, query.getWarehouseIds());
+		}
+
+		final AttributesKeyQueryHelper<I_MD_Stock> helper = AttributesKeyQueryHelper.createFor(I_MD_Stock.COLUMN_AttributesKey);
+		final ICompositeQueryFilter<I_MD_Stock> attributesKeysFilter = helper.createORFilterForStorageAttributesKeys(ImmutableList.of(query.getStorageAttributesKey()));
+		queryBuilder.filter(attributesKeysFilter);
+
+		return queryBuilder.create();
+	}
+
+	private StockDataItem recordToStockDataItem(@NonNull final I_MD_Stock record)
+	{
+		return StockDataItem.builder()
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.storageAttributesKey(AttributesKey.ofString(record.getAttributesKey()))
 				.qtyOnHand(record.getQtyOnHand())
 				.build();
 	}

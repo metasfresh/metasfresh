@@ -36,7 +36,7 @@ import org.compiere.model.I_AD_WF_Node;
 import org.eevolution.api.IPPWFNodeAssetDAO;
 import org.eevolution.model.I_PP_WF_Node_Asset;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
 
 public class PPWFNodeAssetDAO implements IPPWFNodeAssetDAO

@@ -6,8 +6,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
 import de.metas.dunning.invoice.model.validator.InvoiceDunningValidator;
+import de.metas.dunning.printing.spi.impl.DunningPrintingQueueHandler;
 import de.metas.printing.api.IPrintingQueueBL;
-import de.metas.printing.spi.impl.DunningPrintingQueueHandler;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

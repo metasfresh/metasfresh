@@ -42,14 +42,17 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.X_M_Attribute;
 
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
+import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
@@ -61,7 +64,6 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware
 {
@@ -171,12 +173,12 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 
 		logger.trace("Loading attributes for {}", this);
 
-		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu);
+		final HUAndPIAttributes huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu);
 		return toAttributeValues(huAttributes);
 	}
 
 	@Override
-	protected final List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, final Map<I_M_Attribute, Object> defaultAttributesValue)
+	protected final List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, final Map<AttributeId, Object> defaultAttributesValue)
 	{
 		final I_M_HU hu = getM_HU();
 		Check.assumeNotNull(hu, "hu not null");
@@ -187,16 +189,19 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		// Retrieve M_HU_PI_Attributes
 		// gh #460: in case of an aggregate HU which is created right now, we need to get the pi version the HUBuilder was invoked with.
 		// note that we can't yet get it from the HU's parent item itself, because that item is not yet finalized.
-		final I_M_HU_PI_Version piVersion = IHUBuilder.BUILDER_INVOCATION_HU_PI_VERSION.getValue(hu, handlingUnitsBL.getPIVersion(hu));
-		final List<I_M_HU_PI_Attribute> piAttributes = huPIAttributesDAO.retrievePIAttributes(piVersion);
+		final I_M_HU_PI_Version piVersion = IHUBuilder.BUILDER_INVOCATION_HU_PI_VERSION.getValueIfExists(hu)
+				.orElseGet(() -> handlingUnitsBL.getPIVersion(hu));
+		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piVersion.getM_HU_PI_Version_ID());
+		final PIAttributes piAttributes = huPIAttributesDAO.retrievePIAttributes(piVersionId);
 
 		//
 		// Generate all M_HU_Attribute records and convert them to IAttributeValue
 		// final List<I_M_HU_Attribute> huAttributes = new ArrayList<I_M_HU_Attribute>(piAttributes.size());
-		final List<IAttributeValue> attributeValues = new ArrayList<>(piAttributes.size());
+		final List<IAttributeValue> attributeValues = new ArrayList<>();
 		for (final I_M_HU_PI_Attribute piAttribute : piAttributes)
 		{
-			final Object valueInitialDefault = getDefaultAttributeValue(defaultAttributesValue, piAttribute.getM_Attribute());
+			final AttributeId attributeId = AttributeId.ofRepoId(piAttribute.getM_Attribute_ID());
+			final Object valueInitialDefault = getDefaultAttributeValue(defaultAttributesValue, attributeId);
 			final IAttributeValue attributeValue = generateAttributeValueOrNull(attributesCtx, hu, piAttribute, valueInitialDefault);
 			if (attributeValue == null)
 			{
@@ -220,7 +225,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 
 		//
 		// Wrap the "huAttribute" to IAttributeValue
-		final IAttributeValue attributeValue = toAttributeValue(huAttribute);
+		final IAttributeValue attributeValue = toAttributeValue(huAttribute, piAttribute);
 
 		//
 		// Generate initial/seed value
@@ -297,8 +302,8 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.newHUAttribute(hu);
 		huAttribute.setAD_Org_ID(hu.getAD_Org_ID());
 		huAttribute.setM_HU(hu);
-		huAttribute.setM_HU_PI_Attribute(piAttr);
-		huAttribute.setM_Attribute(piAttr.getM_Attribute());
+		huAttribute.setM_HU_PI_Attribute_ID(piAttr.getM_HU_PI_Attribute_ID());
+		huAttribute.setM_Attribute_ID(piAttr.getM_Attribute_ID());
 
 		// NOTE: don't save it!
 
@@ -319,33 +324,31 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		}
 	}
 
-	protected final List<IAttributeValue> toAttributeValues(final List<I_M_HU_Attribute> huAttributes)
+	protected final List<IAttributeValue> toAttributeValues(final HUAndPIAttributes huAttributes)
 	{
-		if (huAttributes.isEmpty())
+		final List<I_M_HU_Attribute> huAttributesList = huAttributes.getHuAttributes();
+		final PIAttributes piAttributes = huAttributes.getPiAttributes();
+
+		if (huAttributesList.isEmpty())
 		{
 			return Collections.emptyList();
 		}
 
-		final List<IAttributeValue> attributeValues = new ArrayList<>(huAttributes.size());
-		for (final I_M_HU_Attribute huAttr : huAttributes)
+		final List<IAttributeValue> attributeValues = new ArrayList<>(huAttributesList.size());
+		for (final I_M_HU_Attribute huAttribute : huAttributesList)
 		{
-			final IAttributeValue huAttributeValue = toAttributeValue(huAttr);
+			final AttributeId attributeId = AttributeId.ofRepoId(huAttribute.getM_Attribute_ID());
+			final I_M_HU_PI_Attribute piAttribute = piAttributes.getByAttributeId(attributeId);
+			final IAttributeValue huAttributeValue = toAttributeValue(huAttribute, piAttribute);
 			attributeValues.add(huAttributeValue);
 		}
 
 		return attributeValues;
 	}
 
-	/**
-	 * Helper method for creating {@link IAttributeValue} from {@link I_M_HU_Attribute}.
-	 *
-	 * @param huAttribute
-	 * @return created {@link IAttributeValue}
-	 */
-	private final IAttributeValue toAttributeValue(final I_M_HU_Attribute huAttribute)
+	private final IAttributeValue toAttributeValue(final I_M_HU_Attribute huAttribute, final I_M_HU_PI_Attribute piAttribute)
 	{
-		final HUAttributeValue huAttributeValue = new HUAttributeValue(this, huAttribute, isSaveOnChange());
-		return huAttributeValue;
+		return new HUAttributeValue(this, huAttribute, piAttribute, isSaveOnChange());
 	}
 
 	protected final IHandlingUnitsDAO getHandlingUnitsDAO()
@@ -422,16 +425,5 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		}
 
 		return locator.getM_Warehouse_ID();
-	}
-
-	@Override
-	public boolean isMandatory(@NonNull final I_M_Attribute attribute)
-	{
-		final IHUAttributesDAO huAttributesDAO = getHUAttributesDAO();
-
-		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(getM_HU(), AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
-		final I_M_HU_PI_Attribute huPiAttribute = huAttribute.getM_HU_PI_Attribute();
-
-		return huPiAttribute != null ? huPiAttribute.isMandatory() : false;
 	}
 }

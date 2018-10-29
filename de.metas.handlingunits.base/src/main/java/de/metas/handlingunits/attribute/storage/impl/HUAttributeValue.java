@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -34,8 +33,10 @@ import org.compiere.util.TimeUtil;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.AbstractHUAttributeValue;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Wraps a {@link I_M_HU_Attribute} to {@link IAttributeValue}
@@ -51,12 +52,16 @@ final class HUAttributeValue extends AbstractHUAttributeValue
 	private BigDecimal valueNumber;
 	private Date valueDate;
 
-	public HUAttributeValue(final AbstractHUAttributeStorage attributeStorage, final I_M_HU_Attribute huAttribute, final boolean saveOnChange)
+	public HUAttributeValue(
+			@NonNull final AbstractHUAttributeStorage attributeStorage,
+			@NonNull final I_M_HU_Attribute huAttribute,
+			@NonNull final I_M_HU_PI_Attribute piAttribute,
+			final boolean saveOnChange)
 	{
-		super( //
-				attributeStorage //
-				, huAttribute.getM_HU_PI_Attribute() //
-				, (Boolean)null // isTemplateAttribute = don't know; it will be evaluated when needed
+		super(
+				attributeStorage,
+				piAttribute,
+				(Boolean)null // isTemplateAttribute = don't know; it will be evaluated when needed
 		);
 
 		this.huAttribute = huAttribute;
@@ -220,11 +225,5 @@ final class HUAttributeValue extends AbstractHUAttributeValue
 	protected Date getInternalValueDateInitial()
 	{
 		return huAttribute.getValueDateInitial();
-	}
-
-	@Override
-	public boolean isOnlyIfInProductAttributeSet()
-	{
-		return huAttribute.getM_HU_PI_Attribute().isOnlyIfInProductAttributeSet();
 	}
 }

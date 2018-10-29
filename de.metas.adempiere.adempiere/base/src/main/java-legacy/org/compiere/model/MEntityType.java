@@ -21,7 +21,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CacheMgt;
+
+import de.metas.cache.CacheMgt;
 
 /**
  * Entity Type Model

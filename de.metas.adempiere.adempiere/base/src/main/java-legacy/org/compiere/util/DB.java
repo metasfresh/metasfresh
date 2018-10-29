@@ -69,6 +69,7 @@ import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
+import de.metas.cache.CacheMgt;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;

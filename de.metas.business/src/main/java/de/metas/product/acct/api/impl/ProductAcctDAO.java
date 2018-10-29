@@ -37,7 +37,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;

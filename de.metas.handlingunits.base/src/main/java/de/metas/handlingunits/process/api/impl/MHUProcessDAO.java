@@ -4,12 +4,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;

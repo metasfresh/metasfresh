@@ -13,11 +13,11 @@ package de.metas.adempiere.report.jasper;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,7 +32,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
@@ -40,6 +39,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -71,11 +71,14 @@ class OrgLogoClassLoaderHook
 
 	//
 	// Caching (static)
-	private static final CCache<Integer, Optional<File>> adOrgId2logoLocalFile = new CCache<Integer, Optional<File>>(I_AD_Image.Table_Name + "#LogoBy_AD_Org_ID", 10, 0)
-			.addResetForTableName(I_AD_ClientInfo.Table_Name) // FRESH-327
-			.addResetForTableName(I_AD_OrgInfo.Table_Name) // FRESH-327
-			.addResetForTableName(I_C_BPartner.Table_Name) // for C_BPartner.Logo_ID FRESH-356
-			;
+	private static final CCache<Integer, Optional<File>> adOrgId2logoLocalFile = CCache.<Integer, Optional<File>> builder()
+			.cacheName(I_AD_Image.Table_Name + "#LogoBy_AD_Org_ID")
+			.tableName(I_AD_Image.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_AD_ClientInfo.Table_Name) // FRESH-327
+			.additionalTableNameToResetFor(I_AD_OrgInfo.Table_Name) // FRESH-327
+			.additionalTableNameToResetFor(I_C_BPartner.Table_Name) // for C_BPartner.Logo_ID FRESH-356
+			.build();
 	private final Callable<Optional<File>> orgLogoLocalFileLoader;
 
 	private OrgLogoClassLoaderHook(final int adOrgId)

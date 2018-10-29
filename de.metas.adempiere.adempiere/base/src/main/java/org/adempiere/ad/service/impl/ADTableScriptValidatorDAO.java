@@ -39,7 +39,7 @@ import org.compiere.model.I_AD_Table_ScriptValidator;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
 
 public class ADTableScriptValidatorDAO implements IADTableScriptValidatorDAO

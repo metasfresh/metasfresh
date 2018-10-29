@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -41,7 +43,6 @@ import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.impl.InventoryBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import lombok.NonNull;
 import mockit.Mocked;
 
 /*
@@ -173,7 +174,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 		createdLU.setM_Locator(locator);
 
-		new M_HU().updateChildren(createdLU);
+		M_HU.INSTANCE.updateChildren(createdLU);
 		save(createdLU);
 
 		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
@@ -232,7 +233,7 @@ public class HUInternalUseInventoryProducerTests
 		huStatusBL.setHUStatus(data.helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
 		createdTU.setM_Locator(locator);
 
-		new M_HU().updateChildren(createdTU);
+		M_HU.INSTANCE.updateChildren(createdTU);
 		save(createdTU);
 
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);

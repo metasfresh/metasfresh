@@ -71,17 +71,17 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
+//	@Override
+//	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+//	}
+//
+//	@Override
+//	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+//	}
 
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
@@ -260,17 +260,17 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		return false;
 	}
 
-	@Override
-	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
-	}
-
-	@Override
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
-	}
+//	@Override
+//	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
+//	}
+//
+//	@Override
+//	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
+//	{
+//		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
+//	}
 
 	/** Set Merkmal.
 		@param M_Attribute_ID 
@@ -319,17 +319,17 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class);
-	}
-
-	@Override
-	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class, M_HU_PI_Version);
-	}
+//	@Override
+//	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class);
+//	}
+//
+//	@Override
+//	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version)
+//	{
+//		set_ValueFromPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class, M_HU_PI_Version);
+//	}
 
 	/** Set Packvorschrift Version.
 		@param M_HU_PI_Version_ID Packvorschrift Version	  */

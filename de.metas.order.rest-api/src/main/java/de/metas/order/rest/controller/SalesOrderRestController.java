@@ -1,5 +1,7 @@
 package de.metas.order.rest.controller;
 
+import lombok.NonNull;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -43,7 +45,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -180,7 +181,7 @@ public class SalesOrderRestController
 				.id(AttachmentEntryId.getRepoId(entry.getId()))
 				.type(entry.getType())
 				.filename(entry.getFilename())
-				.contentType(entry.getContentType())
+				.mimeType(entry.getMimeType())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)
 				.build();
 	}

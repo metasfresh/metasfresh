@@ -47,7 +47,6 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.util.GridRowCtx;
 import org.compiere.model.GridTab.DataNewCopyMode;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -59,6 +58,7 @@ import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.cache.CacheMgt;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;

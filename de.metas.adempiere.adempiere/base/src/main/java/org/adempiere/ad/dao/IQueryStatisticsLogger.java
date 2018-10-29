@@ -35,6 +35,8 @@ import java.util.Date;
 public interface IQueryStatisticsLogger
 // extends ISingletonService // commented out because it shall be accessed via spring @Autowired
 {
+	public static final String SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR = "org.adempiere.ad.dao.impl.QueryStatisticsLogger.LogToSystemError";
+
 	/**
 	 * Enable statistics logging
 	 */

@@ -21,10 +21,11 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 import org.slf4j.Logger;
+
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 
 /**

@@ -22,8 +22,8 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.CCache;
 
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 
 

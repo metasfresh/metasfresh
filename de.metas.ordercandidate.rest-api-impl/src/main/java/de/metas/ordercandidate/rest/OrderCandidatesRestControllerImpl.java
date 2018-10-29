@@ -159,7 +159,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 			@ApiParam(value = "List with an even number of items;\n"
 					+ "transformed to a map of key-value pairs and added to the new attachment as tags.\n"
-					+ "If the number of items is odd, the last item is discarded", allowEmptyValue = true) //
+					+ "If the number of items is odd, the last item is discarded.", allowEmptyValue = true) //
 			@RequestParam("tags") //
 			@Nullable final List<String> tagKeyValuePairs,
 
@@ -222,7 +222,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 				.attachmentId(attachmentId)
 				.type(entry.getType())
 				.filename(entry.getFilename())
-				.contentType(entry.getContentType())
+				.mimeType(entry.getMimeType())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)
 				.build();
 	}

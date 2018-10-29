@@ -46,8 +46,8 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.util.CacheCtx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;

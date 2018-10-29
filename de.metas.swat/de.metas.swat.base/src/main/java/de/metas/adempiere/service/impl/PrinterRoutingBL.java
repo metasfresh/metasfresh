@@ -50,7 +50,7 @@ import de.metas.adempiere.model.X_AD_PrinterRouting;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.IPrintingService;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 

@@ -21,7 +21,7 @@ import java.util.Properties;
 
 /**
  *	Processor Interface
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: AdempiereProcessor.java,v 1.2 2006/07/30 00:51:03 jjanke Exp $
  */
@@ -31,8 +31,8 @@ public interface AdempiereProcessor
 	 * 	Get Client
 	 *	@return AD_Client_ID
 	 */
-	public int getAD_Client_ID();	
-	
+	public int getAD_Client_ID();
+
 	/**
 	 * 	Get Name
 	 *	@return Name
@@ -50,7 +50,7 @@ public interface AdempiereProcessor
 	 *	@return context
 	 */
 	public Properties getCtx();
-	
+
 	/**
 	 * 	Get the frequency type
 	 * 	@return frequency type
@@ -63,7 +63,7 @@ public interface AdempiereProcessor
 	 */
 	public int getFrequency();
 
-	
+
 	/**
 	 * 	Get Unique ID
 	 *	@return Unique ID
@@ -96,12 +96,12 @@ public interface AdempiereProcessor
 	public void setDateLastRun(Timestamp dateLastRun);
 
 	/**
-	 * 	Save
+	 * 	Save out of transaction.
 	 *	@return true if saved
 	 */
-	public boolean save();
+	public boolean saveOutOfTrx();
 
-	
+
 	/**
 	 * 	Get Processor Logs
 	 *	@return logs

@@ -40,9 +40,9 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.adempiere.util.CacheCtx;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.letters.api.ITextTemplateBL;

@@ -16,7 +16,7 @@ import org.compiere.model.MAccount;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
 
 /*

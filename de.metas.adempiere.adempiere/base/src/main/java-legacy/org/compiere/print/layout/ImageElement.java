@@ -33,11 +33,11 @@ import org.compiere.model.I_AD_PrintFormatItem;
 import org.compiere.model.MImage;
 import org.compiere.print.MPrintFormatItem;
 import org.compiere.print.PrintDataElement;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.cache.CCache;
 
 /**
  *	Image Element

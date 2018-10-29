@@ -74,7 +74,7 @@ public class HUKeysByBarcodeCollectorTest
 	{
 		final I_M_HU_Attribute hu_att = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class, contextProvider);
 
-		hu_att.setM_Attribute(attr);
+		hu_att.setM_Attribute_ID(attr.getM_Attribute_ID());
 		hu_att.setM_HU(hu);
 		hu_att.setValue(value);
 		hu_att.setValueNumber(valueNumber);

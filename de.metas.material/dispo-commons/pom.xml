@@ -47,13 +47,18 @@
 			<artifactId>metasfresh-material-event</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-event</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-commons</artifactId>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>

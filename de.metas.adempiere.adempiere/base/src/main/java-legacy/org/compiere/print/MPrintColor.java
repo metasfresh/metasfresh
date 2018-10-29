@@ -20,11 +20,12 @@ import java.awt.Color;
 import java.awt.SystemColor;
 import java.util.Properties;
 import org.slf4j.Logger;
+
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_PrintColor;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 

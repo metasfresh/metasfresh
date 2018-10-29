@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
-import org.compiere.util.CCache;
+import de.metas.cache.CCache;
 
 
 /**

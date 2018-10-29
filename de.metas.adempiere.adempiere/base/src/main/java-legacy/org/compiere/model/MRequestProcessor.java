@@ -21,24 +21,25 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
-import org.compiere.util.DB;
-
 /**
  *	Request Processor Model
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MRequestProcessor.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class MRequestProcessor extends X_R_RequestProcessor 
+public class MRequestProcessor extends X_R_RequestProcessor
 	implements AdempiereProcessor
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3149710397208186523L;
 
@@ -46,11 +47,11 @@ public class MRequestProcessor extends X_R_RequestProcessor
 	/**
 	 * 	Get Active Request Processors
 	 *	@param ctx context
-	 *	@return array of Request 
+	 *	@return array of Request
 	 */
 	public static MRequestProcessor[] getActive (Properties ctx)
 	{
-		ArrayList<MRequestProcessor> list = new ArrayList<MRequestProcessor>();
+		ArrayList<MRequestProcessor> list = new ArrayList<>();
 		String sql = "SELECT * FROM R_RequestProcessor WHERE IsActive='Y'";
 		PreparedStatement pstmt = null;
 		try
@@ -81,11 +82,11 @@ public class MRequestProcessor extends X_R_RequestProcessor
 		list.toArray (retValue);
 		return retValue;
 	}	//	getActive
-	
+
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MRequestProcessor.class);
 
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -104,7 +105,7 @@ public class MRequestProcessor extends X_R_RequestProcessor
 			setOverdueAssignDays (0);
 			setRemindDays (0);
 		//	setSupervisor_ID (0);
-		}	
+		}
 	}	//	MRequestProcessor
 
 	/**
@@ -126,12 +127,12 @@ public class MRequestProcessor extends X_R_RequestProcessor
 	{
 		this (parent.getCtx(), 0, parent.get_TrxName());
 		setClientOrg(parent);
-		setName (parent.getName() + " - " 
+		setName (parent.getName() + " - "
 			+ Msg.translate(getCtx(), "R_RequestProcessor_ID"));
 		setSupervisor_ID (Supervisor_ID);
 	}	//	MRequestProcessor
-	
-	
+
+
 	/**	The Lines						*/
 	private MRequestProcessorRoute[]	m_routes = null;
 
@@ -144,9 +145,9 @@ public class MRequestProcessor extends X_R_RequestProcessor
 	{
 		if (m_routes != null && !reload)
 			return m_routes;
-		
+
 		String sql = "SELECT * FROM R_RequestProcessor_Route WHERE R_RequestProcessor_ID=? ORDER BY SeqNo";
-		ArrayList<MRequestProcessorRoute> list = new ArrayList<MRequestProcessorRoute>();
+		ArrayList<MRequestProcessorRoute> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -178,17 +179,18 @@ public class MRequestProcessor extends X_R_RequestProcessor
 		list.toArray (m_routes);
 		return m_routes;
 	}	//	getRoutes
-	
+
 	/**
 	 * 	Get Logs
 	 *	@return Array of Logs
 	 */
+	@Override
 	public AdempiereProcessorLog[] getLogs()
 	{
-		ArrayList<MRequestProcessorLog> list = new ArrayList<MRequestProcessorLog>();
+		ArrayList<MRequestProcessorLog> list = new ArrayList<>();
 		String sql = "SELECT * "
 			+ "FROM R_RequestProcessorLog "
-			+ "WHERE R_RequestProcessor_ID=? " 
+			+ "WHERE R_RequestProcessor_ID=? "
 			+ "ORDER BY Created DESC";
 		PreparedStatement pstmt = null;
 		try
@@ -220,7 +222,7 @@ public class MRequestProcessor extends X_R_RequestProcessor
 		list.toArray (retValue);
 		return retValue;
 	}	//	getLogs
-	
+
 	/**
 	 * 	Delete old Request Log
 	 *	@return number of records
@@ -230,17 +232,18 @@ public class MRequestProcessor extends X_R_RequestProcessor
 		if (getKeepLogDays() < 1)
 			return 0;
 		String sql = "DELETE FROM R_RequestProcessorLog "
-			+ "WHERE R_RequestProcessor_ID=" + getR_RequestProcessor_ID() 
+			+ "WHERE R_RequestProcessor_ID=" + getR_RequestProcessor_ID()
 			+ " AND (Created+" + getKeepLogDays() + ") < now()";
 		int no = DB.executeUpdate(sql, get_TrxName());
 		return no;
 	}	//	deleteLog
-	
+
 	/**
 	 * 	Get the date Next run
 	 * 	@param requery requery database
 	 * 	@return date next run
 	 */
+	@Override
 	public Timestamp getDateNextRun (boolean requery)
 	{
 		if (requery)
@@ -252,9 +255,16 @@ public class MRequestProcessor extends X_R_RequestProcessor
 	 * 	Get Unique ID
 	 *	@return Unique ID
 	 */
+	@Override
 	public String getServerID()
 	{
 		return "RequestProcessor" + get_ID();
 	}	//	getServerID
-	
+
+	@Override
+	public boolean saveOutOfTrx()
+	{
+		return save(ITrx.TRXNAME_None);
+	}
+
 }	//	MRequestProcessor

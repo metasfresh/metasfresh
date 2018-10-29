@@ -278,8 +278,9 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		// No-HU PI
 		// Default attributes
 		{
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
-					.setM_HU_PI(huDefNone));
+// this is already done in HUTestHelper.setupNoPIAttributes(); if we do it again, we violate the uniqueness assumption for M_HU_PI_Attributes
+//			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+//					.setM_HU_PI(huDefNone));
 
 			//
 			// Add some more Text attributes to this PI (just to see how it works in UI)
