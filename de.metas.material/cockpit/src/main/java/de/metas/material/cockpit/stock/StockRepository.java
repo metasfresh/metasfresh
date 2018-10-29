@@ -102,7 +102,7 @@ public class StockRepository
 				.build();
 	}
 
-	public Stream<StockDataItem> streamStockDatatems(@NonNull final StockDataMultiQuery multiQuery)
+	public Stream<StockDataItem> streamStockDataItems(@NonNull final StockDataMultiQuery multiQuery)
 	{
 		final Optional<IQuery<I_MD_Stock>> query = multiQuery
 				.getStockDataQueries()
