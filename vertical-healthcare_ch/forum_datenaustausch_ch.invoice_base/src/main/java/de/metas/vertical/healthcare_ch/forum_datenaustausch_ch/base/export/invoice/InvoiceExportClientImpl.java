@@ -1,4 +1,4 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -450,7 +450,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 		for (final InvoiceAttachment invoiceAttachment : invoiceAttachments)
 		{
-			if (invoiceAttachment.isPrimaryAttrachment())
+			if (invoiceAttachment.isPrimaryAttachment())
 			{
 				continue;
 			}

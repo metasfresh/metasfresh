@@ -1,18 +1,15 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload;
+package de.metas.dunning_gateway.spi.model;
 
-import lombok.Builder;
-import lombok.NonNull;
+
+
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
-import java.math.BigInteger;
-
-import javax.xml.datatype.XMLGregorianCalendar;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
 /*
  * #%L
- * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -31,23 +28,18 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Value
-@Builder(toBuilder = true)
-public class XmlReminder
+public class BPartnerId implements RepoIdAware
 {
-	@NonNull
-	BigInteger requestTimestamp;
+	public static BPartnerId ofRepoId(final int repoId)
+	{
+		return new BPartnerId(repoId);
+	}
 
-	@NonNull
-	XMLGregorianCalendar requestDate;
+	int repoId;
 
-	@NonNull
-	String requestId;
-
-	@Nullable
-	String reminderLevel;
-
-	@Nullable
-	String reminderText;
+	private BPartnerId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }

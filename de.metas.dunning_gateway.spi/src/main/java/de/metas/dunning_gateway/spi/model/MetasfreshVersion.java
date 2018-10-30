@@ -1,18 +1,11 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload;
+package de.metas.dunning_gateway.spi.model;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-
-import java.math.BigInteger;
-
-import javax.xml.datatype.XMLGregorianCalendar;
 
 /*
  * #%L
- * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
+ * metasfresh-invoice_gateway.spi
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -33,21 +26,11 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class XmlReminder
+@Builder
+public class MetasfreshVersion
 {
-	@NonNull
-	BigInteger requestTimestamp;
+	final int major;
+	final int minor;
 
-	@NonNull
-	XMLGregorianCalendar requestDate;
-
-	@NonNull
-	String requestId;
-
-	@Nullable
-	String reminderLevel;
-
-	@Nullable
-	String reminderText;
+	final String fullVersion;
 }

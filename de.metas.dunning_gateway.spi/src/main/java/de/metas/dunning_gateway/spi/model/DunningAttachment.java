@@ -1,18 +1,17 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload;
+package de.metas.dunning_gateway.spi.model;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
-import java.math.BigInteger;
-
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Map;
 
 /*
  * #%L
- * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
+ * metasfresh-invoice_gateway.spi
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -33,21 +32,31 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class XmlReminder
+public class DunningAttachment
 {
-	@NonNull
-	BigInteger requestTimestamp;
+	String fileName;
 
-	@NonNull
-	XMLGregorianCalendar requestDate;
+	String mimeType;
 
-	@NonNull
-	String requestId;
+	byte[] data;
 
-	@Nullable
-	String reminderLevel;
+	Map<String, String> tags;
 
-	@Nullable
-	String reminderText;
+	public InputStream getDataAsInputStream()
+	{
+		return new ByteArrayInputStream(getData());
+	}
+
+	@Builder
+	private DunningAttachment(
+			@NonNull String fileName,
+			@NonNull String mimeType,
+			@NonNull byte[] data,
+			@Singular Map<String, String> tags)
+	{
+		this.fileName = fileName;
+		this.mimeType = mimeType;
+		this.data = data;
+		this.tags = tags;
+	}
 }

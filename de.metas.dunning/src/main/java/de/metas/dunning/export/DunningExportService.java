@@ -1,4 +1,4 @@
-package de.metas.invoice.export;
+package de.metas.dunning.export;
 
 import lombok.NonNull;
 
@@ -15,16 +15,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.invoice_gateway.api.InvoiceExportServiceRegistry;
-import de.metas.invoice_gateway.spi.InvoiceExportClient;
-import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
-import de.metas.invoice_gateway.spi.model.InvoiceExportResult;
-import de.metas.invoice_gateway.spi.model.InvoiceId;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.dunning.DunningDocId;
+import de.metas.dunning.model.I_C_DunningDoc;
+import de.metas.dunning_gateway.api.DunningExportServiceRegistry;
+import de.metas.dunning_gateway.spi.DunningExportClient;
+import de.metas.dunning_gateway.spi.DunningExportClientFactory;
+import de.metas.dunning_gateway.spi.model.DunningExportResult;
+import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -32,7 +32,7 @@ import de.metas.util.StringUtils;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.dunning
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -53,51 +53,53 @@ import de.metas.util.StringUtils;
  */
 
 @Service
-public class InvoiceExportService
+public class DunningExportService
 {
-	private static final Logger logger = LogManager.getLogger(InvoiceExportService.class);
 
-	private final InvoiceToExportFactory invoiceToExportFactory;
+	private static final Logger logger = LogManager.getLogger(DunningExportService.class);
 
-	private final InvoiceExportServiceRegistry invoiceExportServiceRegistry;
-
+	private final DunningToExportFactory dunningToExportFactory;
 	private final AttachmentEntryService attachmentEntryService;
+	private final DunningExportServiceRegistry dunningExportServiceRegistry;
 
-	private InvoiceExportService(
-			@NonNull final InvoiceToExportFactory invoiceToExportFactory,
-			@NonNull final InvoiceExportServiceRegistry invoiceExportServiceRegistry,
+	private DunningExportService(
+			@NonNull final DunningToExportFactory dunningToExportFactory,
+			@NonNull final DunningExportServiceRegistry dunningExportServiceRegistry,
 			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
-		this.invoiceToExportFactory = invoiceToExportFactory;
-		this.invoiceExportServiceRegistry = invoiceExportServiceRegistry;
 		this.attachmentEntryService = attachmentEntryService;
+		this.dunningToExportFactory = dunningToExportFactory;
+		this.dunningExportServiceRegistry = dunningExportServiceRegistry;
 	}
 
-	public void exportInvoices(@NonNull final ImmutableList<InvoiceId> invoiceIdsToExport)
+	public void exportDunnings(@NonNull final ImmutableList<DunningDocId> dunningDocIds)
 	{
-		for (final InvoiceId invoiceIdToExport : invoiceIdsToExport)
+		for (final DunningDocId dunningDocId : dunningDocIds)
 		{
-			final InvoiceToExport invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
-			exportInvoice(invoiceToExport);
+			final List<DunningToExport> dunningsToExport = dunningToExportFactory.getCreateForId(dunningDocId);
+			for (final DunningToExport dunningToExport : dunningsToExport)
+			{
+				exportDunning(dunningToExport);
+			}
 		}
 	}
 
-	private void exportInvoice(@NonNull final InvoiceToExport invoiceToExport)
+	private void exportDunning(@NonNull final DunningToExport dunningToExport)
 	{
 		final ILoggable loggable = Loggables.get().withLogger(logger, Level.DEBUG);
 
-		final List<InvoiceExportClient> exportClients = invoiceExportServiceRegistry.createExportClients(invoiceToExport);
+		final List<DunningExportClient> exportClients = dunningExportServiceRegistry.createExportClients(dunningToExport);
 		if (exportClients.isEmpty())
 		{
-			loggable.addLog("InvoiceExportService - Found no InvoiceExportClient implementors for invoiceId={}; invoiceToExport={}", invoiceToExport.getId(), invoiceToExport);
+			loggable.addLog("DunningExportService - Found no DunningExportClient implementors for dunningDocId={}; dunningToExport={}", dunningToExport.getId(), dunningToExport);
 			return; // nothing more to do
 		}
 
 		final List<AttachmentEntryCreateRequest> attachmentEntryCreateRequests = new ArrayList<>();
-		for (final InvoiceExportClient exportClient : exportClients)
+		for (final DunningExportClient exportClient : exportClients)
 		{
-			final List<InvoiceExportResult> exportResults = exportClient.export(invoiceToExport);
-			for (final InvoiceExportResult exportResult : exportResults)
+			final List<DunningExportResult> exportResults = exportClient.export(dunningToExport);
+			for (final DunningExportResult exportResult : exportResults)
 			{
 				attachmentEntryCreateRequests.add(createAttachmentRequest(exportResult));
 			}
@@ -106,13 +108,13 @@ public class InvoiceExportService
 		for (final AttachmentEntryCreateRequest attachmentEntryCreateRequest : attachmentEntryCreateRequests)
 		{
 			attachmentEntryService.createNewAttachment(
-					TableRecordReference.of(I_C_Invoice.Table_Name, invoiceToExport.getId()),
+					TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningToExport.getId()),
 					attachmentEntryCreateRequest);
-			loggable.addLog("InvoiceExportService - Attached export data to invoiceId={}; attachment={}", invoiceToExport.getId(), attachmentEntryCreateRequest);
+			loggable.addLog("DunningExportService - Attached export data to dunningDocId={}; attachment={}", dunningToExport.getId(), attachmentEntryCreateRequest);
 		}
 	}
 
-	private AttachmentEntryCreateRequest createAttachmentRequest(@NonNull final InvoiceExportResult exportResult)
+	private AttachmentEntryCreateRequest createAttachmentRequest(@NonNull final DunningExportResult exportResult)
 	{
 		byte[] byteArrayData;
 		try
@@ -130,8 +132,9 @@ public class InvoiceExportService
 						byteArrayData)
 				.tag(AttachmentConstants.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true)) // other than the "input" xml with was more or less just a template, this is a document
 				.tag(AttachmentConstants.TAGNAME_BPARTNER_RECIPIENT_ID, Integer.toString(exportResult.getRecipientId().getRepoId()))
-				.tag(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getInvoiceExportProviderId())
+				.tag(DunningExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getDunningExportProviderId())
 				.build();
 		return attachmentEntryCreateRequest;
 	}
+
 }

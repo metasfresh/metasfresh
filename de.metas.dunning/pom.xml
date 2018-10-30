@@ -15,6 +15,7 @@
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list of base directories -->
 		<migration-sql-basedir></migration-sql-basedir>
+		<metasfresh.version>10.0.0</metasfresh.version>
 	</properties>
 
 	<dependencies>
@@ -26,34 +27,40 @@
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dunning_gateway</groupId>
+			<artifactId>metasfresh-dunning_gateway.api</artifactId>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		
 		<!-- 2103: this is required for a printing handler for dunning -->
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -61,13 +68,13 @@
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
@@ -75,13 +82,13 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 
 	<build>
