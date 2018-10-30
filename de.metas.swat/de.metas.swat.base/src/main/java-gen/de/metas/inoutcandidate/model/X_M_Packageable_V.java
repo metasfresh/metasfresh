@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -788965256L;
+	private static final long serialVersionUID = 1506625755L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -424,10 +424,10 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_HoldingFee = "HF";
 	/** Subscription = SU */
 	public static final String DOCSUBTYPE_Subscription = "SU";
-	/** NB - Mengendifferenz = AQ */
-	public static final String DOCSUBTYPE_NB_Mengendifferenz = "AQ";
-	/** NB - Preisdifferenz = AP */
-	public static final String DOCSUBTYPE_NB_Preisdifferenz = "AP";
+	/** AQ = AQ */
+	public static final String DOCSUBTYPE_AQ = "AQ";
+	/** AP = AP */
+	public static final String DOCSUBTYPE_AP = "AP";
 	/** GS - Lieferdifferenz = CQ */
 	public static final String DOCSUBTYPE_GS_Lieferdifferenz = "CQ";
 	/** GS - Preisdifferenz = CR */
@@ -456,6 +456,12 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_Rueckverguetungsrechnung = "RI";
 	/** Rückvergütungsgutschrift = RC */
 	public static final String DOCSUBTYPE_Rueckverguetungsgutschrift = "RC";
+	/** Healthcare_CH-GM = GM */
+	public static final String DOCSUBTYPE_Healthcare_CH_GM = "GM";
+	/** Healthcare_CH-EA = EA */
+	public static final String DOCSUBTYPE_Healthcare_CH_EA = "EA";
+	/** Healthcare_CH-KV = KV */
+	public static final String DOCSUBTYPE_Healthcare_CH_KV = "KV";
 	/** Set Doc Sub Type.
 		@param DocSubType 
 		Document Sub Type
@@ -930,20 +936,58 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		return bd;
 	}
 
-	/** Set Kommissionierte Menge.
-		@param QtyPicked Kommissionierte Menge	  */
+	/** Set Menge kommissioniert und geliefert.
+		@param QtyPickedAndDelivered Menge kommissioniert und geliefert	  */
 	@Override
-	public void setQtyPicked (java.math.BigDecimal QtyPicked)
+	public void setQtyPickedAndDelivered (java.math.BigDecimal QtyPickedAndDelivered)
 	{
-		set_ValueNoCheck (COLUMNNAME_QtyPicked, QtyPicked);
+		set_ValueNoCheck (COLUMNNAME_QtyPickedAndDelivered, QtyPickedAndDelivered);
 	}
 
-	/** Get Kommissionierte Menge.
-		@return Kommissionierte Menge	  */
+	/** Get Menge kommissioniert und geliefert.
+		@return Menge kommissioniert und geliefert	  */
 	@Override
-	public java.math.BigDecimal getQtyPicked () 
+	public java.math.BigDecimal getQtyPickedAndDelivered () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPicked);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPickedAndDelivered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge kommissioniert (noch) nicht geliefert.
+		@param QtyPickedNotDelivered Menge kommissioniert (noch) nicht geliefert	  */
+	@Override
+	public void setQtyPickedNotDelivered (java.math.BigDecimal QtyPickedNotDelivered)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyPickedNotDelivered, QtyPickedNotDelivered);
+	}
+
+	/** Get Menge kommissioniert (noch) nicht geliefert.
+		@return Menge kommissioniert (noch) nicht geliefert	  */
+	@Override
+	public java.math.BigDecimal getQtyPickedNotDelivered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPickedNotDelivered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge kommissioniert oder geliefert.
+		@param QtyPickedOrDelivered Menge kommissioniert oder geliefert	  */
+	@Override
+	public void setQtyPickedOrDelivered (java.math.BigDecimal QtyPickedOrDelivered)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyPickedOrDelivered, QtyPickedOrDelivered);
+	}
+
+	/** Get Menge kommissioniert oder geliefert.
+		@return Menge kommissioniert oder geliefert	  */
+	@Override
+	public java.math.BigDecimal getQtyPickedOrDelivered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPickedOrDelivered);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
