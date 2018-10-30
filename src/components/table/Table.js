@@ -56,7 +56,10 @@ class Table extends Component {
     const { defaultSelected, rowEdited } = props;
 
     this.state = {
-      selected: (defaultSelected && defaultSelected !== null) || [undefined],
+      selected:
+        defaultSelected && defaultSelected !== null
+          ? defaultSelected
+          : [undefined],
       listenOnKeys: true,
       contextMenu: {
         open: false,
@@ -444,7 +447,7 @@ class Table extends Component {
 
     this.setState(
       {
-        selected: [],
+        selected: [undefined],
       },
       cb && cb()
     );
@@ -792,7 +795,7 @@ class Table extends Component {
     this.setState(
       {
         promptOpen: false,
-        selected: [],
+        selected: [undefined],
       },
       () => {
         deleteRequest(
@@ -1140,7 +1143,7 @@ class Table extends Component {
                 mainTable,
                 updateDocList,
               }}
-              selected={selected || []}
+              selected={selected || [undefined]}
               blur={() => this.closeContextMenu()}
               tabId={tabid}
               deselect={() => this.deselectAllProducts()}
@@ -1251,7 +1254,7 @@ class Table extends Component {
                 queryLimitHit,
                 disablePaginationShortcuts,
               }}
-              selected={selected || []}
+              selected={selected || [undefined]}
               pageLength={pageLength}
               rowLength={rows ? rows.length : 0}
               handleSelectAll={this.selectAll}
