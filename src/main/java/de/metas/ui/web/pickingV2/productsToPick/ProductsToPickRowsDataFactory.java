@@ -383,9 +383,7 @@ class ProductsToPickRowsDataFactory
 		{
 			this.packageable = packageable;
 			qtyToAllocateTarget = packageable.getQtyOrdered()
-					.subtract(packageable.getQtyDelivered())
-					.subtract(packageable.getQtyPicked())
-					.subtract(packageable.getQtyPickedPlanned())
+					.subtract(packageable.getQtyPickedOrDelivered())
 					.toZeroIfNegative();
 
 			qtyToAllocate = qtyToAllocateTarget;
