@@ -208,8 +208,6 @@ class Modal extends Component {
     } = this.props;
     const { isNew, isNewDoc } = this.state;
 
-    console.log('Modal closeModal: ', isNewDoc)
-
     if (isNewDoc) {
       processNewRecord('window', windowType, dataId).then(response => {
         dispatch(
@@ -244,8 +242,6 @@ class Modal extends Component {
   removeModal = () => {
     const { dispatch, rawModalVisible } = this.props;
 
-    console.log('Modal removeModal')
-
     dispatch(closeModal());
 
     if (!rawModalVisible) {
@@ -255,8 +251,6 @@ class Modal extends Component {
 
   handleClose = () => {
     const { modalSaveStatus, modalType } = this.props;
-
-    console.log('Modal handleClose')
 
     if (modalType === 'process') {
       return this.closeModal();
@@ -280,8 +274,6 @@ class Modal extends Component {
 
   handleStart = () => {
     const { dispatch, layout, windowType, indicator } = this.props;
-
-    console.log('Modal handleStart')
 
     if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });
@@ -503,48 +495,26 @@ class Modal extends Component {
     );
   };
 
-  // overlayCallback = async (a, b, ret) => {
-  //   return await ret;
-  // };
-
   renderOverlay = () => {
     const { data, layout, windowType, modalType, isNewDoc } = this.props;
     const { pending } = this.state;
 
-    let applyHandler =
+    const applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
     const cancelHandler =
       modalType === 'process'
         ? this.handleClose
         : isNewDoc ? this.removeModal : undefined;
 
-    const callCallback = async (a, b, ret) => {
-      console.log('async callCallback');
+    const overlayCallback = async (a, b, ret) => {
       return await ret;
-    }
+    };
 
-    // if (layout.layoutType === 'singleOverlayField') {
-      const { handleSubmit, closeOverlay } = this.props;
-      let applyFn = applyHandler;
-      // let cancelFn = cancelHandler;
+    const applyFn = async () => {
+      await overlayCallback;
 
-      applyHandler = async () => {
-        console.log('async applyHandler');
-        await callCallback;
-
-        applyFn();
-      }
-    // switch (e.key) {
-    //   case 'Enter':
-    //     document.activeElement.blur();
-    //     handleSubmit();
-    //     break;
-    //   case 'Escape':
-    //     closeOverlay();
-    //     break;
-    //   default:
-    // }
-
+      applyHandler();
+    };
 
     return (
       <OverlayField
@@ -552,17 +522,8 @@ class Modal extends Component {
         disabled={pending}
         data={data}
         layout={layout}
-        handleSubmit={applyHandler}
-        _handleSubmit={
-          modalType === 'process' ? this.handleStart : this.handleClose
-        }
-        _closeOverlay={
-          modalType === 'process'
-            ? this.handleClose
-            : isNewDoc ? this.removeModal : ''
-        }
-        _onChange={this.overlayCallback}
-        onChange={callCallback}
+        handleSubmit={applyFn}
+        onChange={overlayCallback}
         closeOverlay={cancelHandler}
       />
     );
