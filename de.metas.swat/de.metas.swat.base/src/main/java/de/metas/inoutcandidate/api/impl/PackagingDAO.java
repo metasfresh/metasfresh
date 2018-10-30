@@ -158,7 +158,8 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.qtyOrdered(Quantity.of(record.getQtyOrdered(), uom));
 		packageable.qtyToDeliver(Quantity.of(record.getQtyToDeliver(), uom));
 		packageable.qtyDelivered(Quantity.of(record.getQtyDelivered(), uom));
-		packageable.qtyPicked(Quantity.of(record.getQtyPicked(), uom));
+		packageable.qtyPickedAndDelivered(Quantity.of(record.getQtyPickedAndDelivered(), uom));
+		packageable.qtyPickedNotDelivered(Quantity.of(record.getQtyPickedNotDelivered(), uom));
 		packageable.qtyPickedPlanned(Quantity.of(record.getQtyPickedPlanned(), uom));
 
 		packageable.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()));

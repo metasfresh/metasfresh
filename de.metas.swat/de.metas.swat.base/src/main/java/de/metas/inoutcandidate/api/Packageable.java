@@ -42,9 +42,10 @@ public class Packageable
 	Quantity qtyToDeliver;
 	@NonNull
 	Quantity qtyDelivered;
-	/** quantity picked, not yet delivered */
 	@NonNull
-	Quantity qtyPicked;
+	Quantity qtyPickedAndDelivered;
+	@NonNull
+	Quantity qtyPickedNotDelivered;
 	/** quantity picked planned (i.e. picking candidates not already processed) */
 	@NonNull
 	Quantity qtyPickedPlanned;
@@ -94,7 +95,7 @@ public class Packageable
 	OrderLineId salesOrderLineIdOrNull;
 	@Nullable
 	Money salesOrderLineNetAmt;
-	
+
 	@Nullable
 	UserId lockedBy;
 
@@ -123,5 +124,14 @@ public class Packageable
 		{
 			throw new AdempiereException("More than one value were extracted (" + values + ") from " + packageables);
 		}
+	}
+
+	public Quantity getQtyPickedOrDelivered()
+	{
+		// NOTE: keep in sync with M_Packageable_V.QtyPickedOrDelivered
+		return getQtyDelivered()
+				.add(getQtyPickedNotDelivered())
+				.add(getQtyPickedPlanned());
+
 	}
 }
