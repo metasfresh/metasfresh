@@ -190,6 +190,11 @@ public class PickingHURowsRepository
 			}
 
 			final HuId huId = pickingCandidate.getPickFromHuId();
+			if (huId == null)
+			{
+				logger.warn("Skip {} because huId is null", huId);
+				continue;
+			}
 			if (huId2huRow.containsKey(huId))
 			{
 				continue;
