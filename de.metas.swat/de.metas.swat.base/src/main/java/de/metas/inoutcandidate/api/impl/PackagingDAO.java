@@ -1,8 +1,8 @@
 package de.metas.inoutcandidate.api.impl;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -202,15 +202,17 @@ public class PackagingDAO implements IPackagingDAO
 	}
 
 	@Override
-	public BigDecimal retrieveQtyPickedPlannedOrNull(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public Optional<Quantity> retrieveQtyPickedPlanned(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final I_M_Packageable_V record = retrievePackageableRecordByShipmentScheduleId(shipmentScheduleId);
 		if (record == null)
 		{
-			return null;
+			return Optional.empty();
 		}
-		return record.getQtyPickedPlanned();
 
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(record.getC_UOM_ID());
+		final Quantity qtyPickedPlanned = Quantity.of(record.getQtyPickedPlanned(), uom);
+		return Optional.of(qtyPickedPlanned);
 	}
 
 	private List<I_M_Packageable_V> retrievePackageableRecordsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
