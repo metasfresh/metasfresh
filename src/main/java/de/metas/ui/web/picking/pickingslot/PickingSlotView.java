@@ -13,9 +13,7 @@ import org.compiere.util.Evaluatee;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
@@ -33,7 +31,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -243,24 +240,12 @@ public class PickingSlotView implements IView
 	}
 
 	/**
-	 * Returns the {@code M_ShipmentSchedule_ID} of the packageable line that is currently selected within the {@link PackageableView}.
-	 *
-	 * @return never returns a value {@code <= 0} (see constructor code).
+	 * @return the {@code M_ShipmentSchedule_ID} of the packageable line that is currently selected within the {@link PackageableView}.
 	 */
+	@NonNull
 	public ShipmentScheduleId getCurrentShipmentScheduleId()
 	{
 		return currentShipmentScheduleId;
-	}
-
-	/**
-	 * Convenience method. See {@link #getCurrentShipmentScheduleId()}.
-	 *
-	 * @return never returns {@code null} (see constructor code).
-	 */
-	public I_M_ShipmentSchedule getCurrentShipmentSchedule()
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class);
-		return shipmentSchedule;
 	}
 
 	@Override

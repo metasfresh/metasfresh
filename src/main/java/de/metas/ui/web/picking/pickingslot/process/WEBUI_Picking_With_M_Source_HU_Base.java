@@ -1,17 +1,15 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import java.math.BigDecimal;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.api.IPackagingDAO;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
 /*
@@ -48,30 +46,37 @@ import de.metas.util.Services;
 
 	protected final boolean checkSourceHuPrecondition()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule();
+		final List<I_M_HU> sourceHUs = retrieveAvailableSourceHUs();
+		return !sourceHUs.isEmpty();
+	}
+
+	private List<I_M_HU> retrieveAvailableSourceHUs()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 
 		final PickingHUsQuery query = PickingHUsQuery.builder()
 				.onlyIfAttributesMatchWithShipmentSchedules(true)
-				.shipmentSchedules(ImmutableList.of(shipmentSchedule))
+				.shipmentSchedule(shipmentSchedule)
 				.onlyTopLevelHUs(true)
 				.build();
 
 		final List<I_M_HU> sourceHUs = huPickingSlotBL.retrieveAvailableSourceHUs(query);
-		return !sourceHUs.isEmpty();
+		return sourceHUs;
 	}
-	
-	protected final BigDecimal retrieveQtyToPick()
+
+	protected final Quantity retrieveQtyToPick()
 	{
-		final ShipmentScheduleId shipmentScheduleId = getView().getCurrentShipmentScheduleId();
-		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentScheduleId);
+		final ShipmentScheduleId shipmentScheduleId = getCurrentShipmentScheduleId();
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
+
+		final Quantity qtyToDeliverTarget = Services.get(IShipmentScheduleBL.class).getQtyToDeliver(shipmentSchedule);
+
+		final Quantity qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlanned(shipmentScheduleId).orElse(null);
 		if (qtyPickedPlanned == null)
 		{
-			return BigDecimal.ZERO;
+			return qtyToDeliverTarget.toZero();
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
-
-		return qtyToPick.signum() > 0 ? qtyToPick : BigDecimal.ZERO;
+		return qtyToDeliverTarget.subtract(qtyPickedPlanned).toZeroIfNegative();
 	}
 }
