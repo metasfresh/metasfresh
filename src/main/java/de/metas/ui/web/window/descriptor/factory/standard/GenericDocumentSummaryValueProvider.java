@@ -22,6 +22,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -249,12 +250,13 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 
 			try
 			{
+				final java.util.Date date = JSONDate.fromObject(fieldValue, widgetType);
 				return DisplayType.getDateFormat(widgetType.getDisplayType())
-						.format(fieldValue);
+						.format(date);
 			}
 			catch (final Exception ex)
 			{
-				logger.warn("Failed formatting date field value '{}' using {}. Returning toString().", fieldValue, this, ex);
+				logger.warn("Failed formatting date field value '{}' ({}) using {}. Returning toString().", fieldValue, fieldValue.getClass(), this, ex);
 				return fieldValue.toString();
 			}
 		}
