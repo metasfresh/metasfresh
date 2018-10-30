@@ -19,6 +19,13 @@ from (
 Where c.ad_column_ID = x.ad_column_ID;
 
 
+INSERT INTO t_alter_column values('ad_tab','AD_Element_ID','NUMERIC(10)',null,null)
+;
+
+
+INSERT INTO t_alter_column values('ad_tab','AD_Element_ID',null,'NULL',null)
+;
+
 
 
 
@@ -33,6 +40,14 @@ Where c.ad_column_ID = x.ad_column_ID;
 
 
 
+INSERT INTO t_alter_column values('ad_window','AD_Element_ID','NUMERIC(10)',null,null)
+;
+
+
+INSERT INTO t_alter_column values('ad_window','AD_Element_ID',null,'NULL',null)
+;
+
+
 
 UPDATE AD_Column c SET IsMandatory='N'
 from (
@@ -43,6 +58,12 @@ from (
 	and col.columnname = 'AD_Element_ID') x
 Where c.ad_column_ID = x.ad_column_ID;
 
+INSERT INTO t_alter_column values('ad_menu','AD_Element_ID','NUMERIC(10)',null,null)
+;
+
+
+INSERT INTO t_alter_column values('ad_menu','AD_Element_ID',null,'NULL',null)
+;
 
 
 
