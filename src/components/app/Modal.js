@@ -208,6 +208,8 @@ class Modal extends Component {
     } = this.props;
     const { isNew, isNewDoc } = this.state;
 
+    console.log('Modal closeModal: ', isNewDoc)
+
     if (isNewDoc) {
       processNewRecord('window', windowType, dataId).then(response => {
         dispatch(
@@ -242,6 +244,8 @@ class Modal extends Component {
   removeModal = () => {
     const { dispatch, rawModalVisible } = this.props;
 
+    console.log('Modal removeModal')
+
     dispatch(closeModal());
 
     if (!rawModalVisible) {
@@ -251,6 +255,8 @@ class Modal extends Component {
 
   handleClose = () => {
     const { modalSaveStatus, modalType } = this.props;
+
+    console.log('Modal handleClose')
 
     if (modalType === 'process') {
       return this.closeModal();
@@ -274,6 +280,8 @@ class Modal extends Component {
 
   handleStart = () => {
     const { dispatch, layout, windowType, indicator } = this.props;
+
+    console.log('Modal handleStart')
 
     if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });
@@ -360,6 +368,13 @@ class Modal extends Component {
       layout,
     } = this.props;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
+
+    const applyHandler =
+      modalType === 'process' ? this.handleStart : this.handleClose;
+    const cancelHandler =
+      modalType === 'process'
+        ? this.handleClose
+        : isNewDoc ? this.removeModal : undefined;
 
     return (
       Object.keys(data).length > 0 && (
@@ -476,25 +491,60 @@ class Modal extends Component {
             >
               {this.renderModalBody()}
             </div>
-            <ModalContextShortcuts
-              apply={
-                modalType === 'process' ? this.handleStart : this.handleClose
-              }
-              cancel={
-                modalType === 'process'
-                  ? this.handleClose
-                  : isNewDoc ? this.removeModal : ''
-              }
-            />
+            {layout.layoutType !== 'singleOverlayField' && (
+              <ModalContextShortcuts
+                apply={applyHandler}
+                cancel={cancelHandler}
+              />
+            )}
           </div>
         </div>
       )
     );
   };
 
+  // overlayCallback = async (a, b, ret) => {
+  //   return await ret;
+  // };
+
   renderOverlay = () => {
     const { data, layout, windowType, modalType, isNewDoc } = this.props;
     const { pending } = this.state;
+
+    let applyHandler =
+      modalType === 'process' ? this.handleStart : this.handleClose;
+    const cancelHandler =
+      modalType === 'process'
+        ? this.handleClose
+        : isNewDoc ? this.removeModal : undefined;
+
+    const callCallback = async (a, b, ret) => {
+      console.log('async callCallback');
+      return await ret;
+    }
+
+    // if (layout.layoutType === 'singleOverlayField') {
+      const { handleSubmit, closeOverlay } = this.props;
+      let applyFn = applyHandler;
+      // let cancelFn = cancelHandler;
+
+      applyHandler = async () => {
+        console.log('async applyHandler');
+        await callCallback;
+
+        applyFn();
+      }
+    // switch (e.key) {
+    //   case 'Enter':
+    //     document.activeElement.blur();
+    //     handleSubmit();
+    //     break;
+    //   case 'Escape':
+    //     closeOverlay();
+    //     break;
+    //   default:
+    // }
+
 
     return (
       <OverlayField
@@ -502,14 +552,18 @@ class Modal extends Component {
         disabled={pending}
         data={data}
         layout={layout}
-        handleSubmit={
+        handleSubmit={applyHandler}
+        _handleSubmit={
           modalType === 'process' ? this.handleStart : this.handleClose
         }
-        closeOverlay={
+        _closeOverlay={
           modalType === 'process'
             ? this.handleClose
             : isNewDoc ? this.removeModal : ''
         }
+        _onChange={this.overlayCallback}
+        onChange={callCallback}
+        closeOverlay={cancelHandler}
       />
     );
   };
