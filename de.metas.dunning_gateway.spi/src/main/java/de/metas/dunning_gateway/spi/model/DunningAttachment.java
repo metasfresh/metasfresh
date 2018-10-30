@@ -52,8 +52,7 @@ public class DunningAttachment
 			@NonNull String fileName,
 			@NonNull String mimeType,
 			@NonNull byte[] data,
-			@Singular Map<String, String> tags,
-			@NonNull Boolean primaryAttachment)
+			@Singular Map<String, String> tags)
 	{
 		this.fileName = fileName;
 		this.mimeType = mimeType;

@@ -98,7 +98,7 @@ public class DunningToExportFactory
 					.documentNumber(dunningDocRecord.getDocumentNo())
 					.dunningTimestamp(dunningDocRecord.getCreated().toInstant())
 					.recipientId(BPartnerId.ofRepoId(dunnedInvoiceRecord.getC_BPartner_ID()))
-					//.dunningText(dunningDocRecord.get)
+					.dunningText(dunningDocRecord.getC_DunningLevel().getNote())
 					.build();
 			result.add(dunningToExport);
 		}

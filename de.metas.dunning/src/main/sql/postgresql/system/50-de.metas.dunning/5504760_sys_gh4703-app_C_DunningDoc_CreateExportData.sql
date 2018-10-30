@@ -44,3 +44,12 @@ INSERT INTO C_Queue_PackageProcessor (Updated,Created,CreatedBy,IsActive,Updated
 INSERT INTO C_Queue_Processor (Updated,Created,CreatedBy,IsActive,UpdatedBy,KeepAliveTimeMillis,PoolSize,C_Queue_Processor_ID,AD_Client_ID,AD_Org_ID,Name) VALUES (TO_TIMESTAMP('2018-10-26 17:12:10','YYYY-MM-DD HH24:MI:SS'),TO_TIMESTAMP('2018-10-26 17:12:10','YYYY-MM-DD HH24:MI:SS'),100,'Y',100,1000,1,540052,0,0,'C_DunningDoc_CreateExportData')
 ;
 
+
+-- 2018-10-29T18:55:25.417
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Queue_Processor_Assign (C_Queue_Processor_ID,C_Queue_PackageProcessor_ID,Updated,Created,CreatedBy,IsActive,UpdatedBy,C_Queue_Processor_Assign_ID,AD_Client_ID,AD_Org_ID) VALUES (540052,540063,TO_TIMESTAMP('2018-10-29 18:55:25','YYYY-MM-DD HH24:MI:SS'),TO_TIMESTAMP('2018-10-29 18:55:25','YYYY-MM-DD HH24:MI:SS'),100,'Y',100,540084,0,0)
+;
+
+UPDATE ad_attachmententry
+SET tags=replace(tags, 'InvoiceExportProviderId=forum-datenaustausch.ch', 'InvoiceExportProviderId=forum-datenaustausch.ch-invoice')
+;
