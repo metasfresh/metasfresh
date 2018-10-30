@@ -7,18 +7,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -38,7 +37,6 @@ import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -315,7 +313,7 @@ public class ViewLayout implements ETagAware
 	{
 		return allowNewCaption;
 	}
-	
+
 	public boolean isAllowOpeningRowDetails()
 	{
 		return allowOpeningRowDetails;
@@ -349,7 +347,7 @@ public class ViewLayout implements ETagAware
 
 		public ViewLayout build()
 		{
-			final WindowId windowIdEffective = windowId != null ? windowId : from.windowId;
+			final WindowId windowIdEffective = getWindowIdEffective();
 			final ViewProfileId profileIdEffective = !ViewProfileId.isNull(profileId) ? profileId : from.profileId;
 			final ImmutableList<DocumentFilterDescriptor> filtersEffective = ImmutableList.copyOf(filters != null ? filters : from.getFilters());
 			final String allowNewCaptionEffective = allowNewCaption != null ? allowNewCaption : from.allowNewCaption;
@@ -388,6 +386,11 @@ public class ViewLayout implements ETagAware
 		{
 			this.windowId = windowId;
 			return this;
+		}
+
+		private WindowId getWindowIdEffective()
+		{
+			return windowId != null ? windowId : from.windowId;
 		}
 
 		public ChangeBuilder profileId(final ViewProfileId profileId)
@@ -438,17 +441,26 @@ public class ViewLayout implements ETagAware
 
 		public ChangeBuilder elementsOrder(final String... fieldNames)
 		{
-			final List<String> fieldNamesList = ImmutableList.copyOf(fieldNames);
+			final ImmutableMap<String, DocumentLayoutElementDescriptor> elementsByFieldName = Maps.uniqueIndex(getElementsToEdit(), DocumentLayoutElementDescriptor::getFirstFieldName);
 
-			final ArrayList<DocumentLayoutElementDescriptor> elementsNew = getElementsToEdit()
-					.stream()
-					.filter(element -> fieldNamesList.contains(element.getFirstFieldName()))
-					.sorted(FixedOrderByKeyComparator.<DocumentLayoutElementDescriptor, String> builder()
-							.fixedOrderKeys(fieldNamesList)
-							.keyMapper(DocumentLayoutElementDescriptor::getFirstFieldName)
-							.notMatchedMarkerIndex(Integer.MAX_VALUE)
-							.build())
-					.collect(Collectors.toCollection(ArrayList::new));
+			final ArrayList<DocumentLayoutElementDescriptor> elementsNew = new ArrayList<>();
+			for (final String fieldName : fieldNames)
+			{
+				final DocumentLayoutElementDescriptor element = elementsByFieldName.get(fieldName);
+				if (element == null)
+				{
+					logger.warn("Field {} was not found. Will be ignored."
+							+ "\n Available field names are: {}."
+							+ "\n If this is a standard view, pls check if the field added to window {}.",
+							fieldName,
+							elementsByFieldName.keySet(),
+							getWindowIdEffective());
+					continue;
+				}
+
+				elementsNew.add(element);
+			}
+
 			setElements(elementsNew);
 
 			return this;
