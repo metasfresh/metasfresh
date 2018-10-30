@@ -25,7 +25,6 @@ import de.metas.process.JavaProcess;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -398,6 +397,12 @@ public abstract class LookupValue
 		{
 			final Map<String, Object> attributes = null;
 			return new IntegerLookupValue(id, displayName, attributes);
+		}
+
+		public static final IntegerLookupValue of(@NonNull final RepoIdAware id, final ITranslatableString displayName)
+		{
+			final Map<String, Object> attributes = null;
+			return new IntegerLookupValue(id.getRepoId(), displayName, attributes);
 		}
 
 		public static final IntegerLookupValue of(final StringLookupValue stringLookupValue)
