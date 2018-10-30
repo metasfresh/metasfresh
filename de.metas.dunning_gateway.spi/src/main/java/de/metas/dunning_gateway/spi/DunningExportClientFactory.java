@@ -30,10 +30,6 @@ import de.metas.dunning_gateway.spi.model.DunningToExport;
 public interface DunningExportClientFactory
 {
 	public static final String ATTATCHMENT_TAGNAME_EXPORT_PROVIDER = "DunningExportProviderId";
-//
-//	public static final String ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE = "ExternalReference";
-//
-//	public static final String ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE = "BelogsToExternalReference";
 
 	String getDunningExportProviderId();
 
