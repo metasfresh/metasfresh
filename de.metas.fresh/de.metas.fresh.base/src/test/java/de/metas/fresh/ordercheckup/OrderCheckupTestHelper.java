@@ -1,5 +1,8 @@
 package de.metas.fresh.ordercheckup;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -10,18 +13,17 @@ package de.metas.fresh.ordercheckup;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -37,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_S_Resource;
@@ -100,37 +103,41 @@ public class OrderCheckupTestHelper
 		return plant;
 	}
 
-	public I_M_Warehouse createWarehouse(final String name, final I_AD_User responsibleUser, final I_S_Resource plant)
+	public I_M_Warehouse createWarehouse(final String name, final I_S_Resource plant)
 	{
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.create(ctx, I_M_Warehouse.class, ITrx.TRXNAME_None);
 		warehouse.setValue(name);
 		warehouse.setName(name);
-		warehouse.setAD_User(responsibleUser);
 		warehouse.setPP_Plant(plant);
 		InterfaceWrapperHelper.save(warehouse);
 		return warehouse;
 	}
 
-	public I_M_Product createProduct(final String name, final I_M_Warehouse mfgWarehouse)
+	public I_M_Product createProduct(final String name, final I_M_Warehouse mfgWarehouse, final I_AD_User responsibleUser)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
 		product.setValue(name);
 		product.setName(name);
 		InterfaceWrapperHelper.save(product);
 
-		createManufacturingProductPlanning(product, mfgWarehouse);
+		createManufacturingProductPlanning(product, mfgWarehouse, responsibleUser);
 
 		return product;
 	}
 
-	public void createManufacturingProductPlanning(final I_M_Product product, final I_M_Warehouse warehouse)
+	public void createManufacturingProductPlanning(final I_M_Product product, final I_M_Warehouse warehouse, final I_AD_User responsibleUser)
 	{
+		final I_AD_Workflow workflow = newInstance(I_AD_Workflow.class);
+		workflow.setAD_User_InCharge(responsibleUser);
+		save(workflow);
+
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(ctx, I_PP_Product_Planning.class, ITrx.TRXNAME_None);
 		productPlanning.setM_Product(product);
 		productPlanning.setM_Warehouse(warehouse);
 		productPlanning.setAD_Org_ID(warehouse.getAD_Org_ID());
 		productPlanning.setS_Resource(warehouse.getPP_Plant());
 		productPlanning.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
+		productPlanning.setAD_Workflow(workflow);
 		InterfaceWrapperHelper.save(productPlanning);
 	}
 
