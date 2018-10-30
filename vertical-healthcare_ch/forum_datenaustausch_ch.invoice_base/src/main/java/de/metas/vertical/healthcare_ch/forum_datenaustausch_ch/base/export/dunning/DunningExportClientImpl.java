@@ -37,7 +37,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody.BodyMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlReminder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.BalanceMod;
@@ -113,7 +112,7 @@ public class DunningExportClientImpl implements DunningExportClient
 
 				final DunningExportResult exportResult = DunningExportResult.builder()
 						.data(inputStream)
-						.fileName("Export_" + attachment.getFileName())
+						.fileName("DunningExport_" + attachment.getFileName())
 						.mimeType(attachment.getMimeType())
 						.dunningExportProviderId(ForumDatenaustauschChConstants.DUNNING_EXPORT_PROVIDER_ID)
 						.recipientId(dunning.getRecipientId())
@@ -171,7 +170,7 @@ public class DunningExportClientImpl implements DunningExportClient
 		return PayloadMod.builder()
 				.type(RequestType.REMINDER.getValue())
 				.reminder(createReminder(dunning))
-				.bodyMod(createBodyMod(dunning, xPayLoad.getBody()))
+				.bodyMod(createBodyMod(dunning))
 				.build();
 	}
 
@@ -189,8 +188,7 @@ public class DunningExportClientImpl implements DunningExportClient
 	}
 
 	private BodyMod createBodyMod(
-			@NonNull final DunningToExport dunning,
-			@NonNull final XmlBody xBody)
+			@NonNull final DunningToExport dunning)
 	{
 		return BodyMod
 				.builder()
