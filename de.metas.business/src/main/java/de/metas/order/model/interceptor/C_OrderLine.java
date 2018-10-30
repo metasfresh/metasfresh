@@ -34,7 +34,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.CalloutOrder;
-import org.compiere.model.I_M_ProductDescription;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -317,24 +316,5 @@ public class C_OrderLine
 	public void updateProductDescriptionFromProductBOMIfConfigured(final I_C_OrderLine orderLine)
 	{
 		Services.get(IOrderLineBL.class).updateProductDescriptionFromProductBOMIfConfigured(orderLine);
-	}
-	
-	@CalloutMethod(columnNames = {
-			I_C_OrderLine.COLUMNNAME_M_ProductDescription_ID
-	})
-	public void onMProductDescriptionIDChanged(final I_C_OrderLine orderLine)
-	{
-		if (orderLine.getM_ProductDescription_ID() > 0)
-		{
-			final I_M_ProductDescription productDescription = orderLine.getM_ProductDescription();
-			orderLine.setProductDescription(productDescription.getName());
-		}
-	}
-	
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void updateMProductDescriptionIDFromProductMProductDescriptionIfConfigured(final I_C_OrderLine orderLine)
-	{
-		Services.get(IOrderLineBL.class).updateMProductDescriptionIDFromProductMProductDescriptionIfConfigured(orderLine);
 	}
 }

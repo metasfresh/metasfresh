@@ -904,27 +904,73 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Kommissionierte Menge.
+	 * Set Menge kommissioniert und geliefert.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyPicked (java.math.BigDecimal QtyPicked);
+	public void setQtyPickedAndDelivered (java.math.BigDecimal QtyPickedAndDelivered);
 
 	/**
-	 * Get Kommissionierte Menge.
+	 * Get Menge kommissioniert und geliefert.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyPicked();
+	public java.math.BigDecimal getQtyPickedAndDelivered();
 
-    /** Column definition for QtyPicked */
-    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyPicked = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "QtyPicked", null);
-    /** Column name QtyPicked */
-    public static final String COLUMNNAME_QtyPicked = "QtyPicked";
+    /** Column definition for QtyPickedAndDelivered */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyPickedAndDelivered = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "QtyPickedAndDelivered", null);
+    /** Column name QtyPickedAndDelivered */
+    public static final String COLUMNNAME_QtyPickedAndDelivered = "QtyPickedAndDelivered";
+
+	/**
+	 * Set Menge kommissioniert (noch) nicht geliefert.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPickedNotDelivered (java.math.BigDecimal QtyPickedNotDelivered);
+
+	/**
+	 * Get Menge kommissioniert (noch) nicht geliefert.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPickedNotDelivered();
+
+    /** Column definition for QtyPickedNotDelivered */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyPickedNotDelivered = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "QtyPickedNotDelivered", null);
+    /** Column name QtyPickedNotDelivered */
+    public static final String COLUMNNAME_QtyPickedNotDelivered = "QtyPickedNotDelivered";
+
+	/**
+	 * Set Menge kommissioniert oder geliefert.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPickedOrDelivered (java.math.BigDecimal QtyPickedOrDelivered);
+
+	/**
+	 * Get Menge kommissioniert oder geliefert.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPickedOrDelivered();
+
+    /** Column definition for QtyPickedOrDelivered */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyPickedOrDelivered = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "QtyPickedOrDelivered", null);
+    /** Column name QtyPickedOrDelivered */
+    public static final String COLUMNNAME_QtyPickedOrDelivered = "QtyPickedOrDelivered";
 
 	/**
 	 * Set Qty picked (planned).
