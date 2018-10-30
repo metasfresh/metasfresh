@@ -85,7 +85,7 @@ public final class PackageableRow implements IViewRow
 	})
 	private final Quantity qtyOrdered;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyPicked, layouts = {
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = "QtyPicked", layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 35)
 	})
 	private final Quantity qtyPicked;

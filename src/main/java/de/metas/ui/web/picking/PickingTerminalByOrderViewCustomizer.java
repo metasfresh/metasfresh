@@ -109,7 +109,7 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 				FIELDNAME_OrderOrBPLocation,
 				I_M_Packageable_V.COLUMNNAME_M_Product_ID,
 				I_M_Packageable_V.COLUMNNAME_QtyOrdered,
-				I_M_Packageable_V.COLUMNNAME_QtyPicked,
+				I_M_Packageable_V.COLUMNNAME_QtyPickedOrDelivered,
 				I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID,
 				I_M_Packageable_V.COLUMNNAME_PreparationDate);
 	}
