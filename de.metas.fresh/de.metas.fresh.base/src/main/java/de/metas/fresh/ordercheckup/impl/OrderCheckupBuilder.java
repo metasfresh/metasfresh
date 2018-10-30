@@ -1,5 +1,7 @@
 package de.metas.fresh.ordercheckup.impl;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -10,12 +12,12 @@ package de.metas.fresh.ordercheckup.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +42,7 @@ import de.metas.util.Check;
 
 /**
  * {@link I_C_Order_MFGWarehouse_Report} builder.
- * 
+ *
  * @author tsa
  *
  */
@@ -61,12 +63,11 @@ public class OrderCheckupBuilder
 
 	private OrderCheckupBuilder()
 	{
-		super();
 	}
 
 	/**
 	 * Builds the {@link I_C_Order_MFGWarehouse_Report}.
-	 * 
+	 *
 	 * If there were no {@link I_C_OrderLine}s added, no report will be created.
 	 */
 	public void build()
@@ -107,7 +108,7 @@ public class OrderCheckupBuilder
 			reportLine.setBarcode(OrderCheckupBarcode.ofC_OrderLine_ID(reportLine.getC_OrderLine_ID()).toBarcodeString());
 			InterfaceWrapperHelper.save(reportLine);
 		}
-		
+
 		//
 		// Mark the report as processed
 		// NOTE we do this only at the end because this is the moment where doc outbound shall react and create/print the PDF report.
@@ -156,7 +157,7 @@ public class OrderCheckupBuilder
 		return _orderLines;
 	}
 
-	public OrderCheckupBuilder setM_Warehouse(I_M_Warehouse warehouse)
+	public OrderCheckupBuilder setM_Warehouse(@Nullable final I_M_Warehouse warehouse)
 	{
 		this._warehouse = warehouse;
 		return this;
@@ -188,13 +189,13 @@ public class OrderCheckupBuilder
 	{
 		return _reponsibleUser;
 	}
-	
+
 	public OrderCheckupBuilder setDocumentType(String documentType)
 	{
 		this._documentType = documentType;
 		return this;
 	}
-	
+
 	private String getDocumentType()
 	{
 		Check.assumeNotEmpty(_documentType, "documentType not empty");
