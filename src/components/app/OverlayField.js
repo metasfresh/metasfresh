@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
@@ -36,8 +37,7 @@ class OverlayField extends Component {
   };
 
   renderElements = (layout, data, type) => {
-    const { onChange } = this.props;
-    const { disabled, codeSelected } = this.props;
+    const { disabled, codeSelected, onChange } = this.props;
     const elements = layout.elements;
 
     return elements.map((elem, id) => {
@@ -149,5 +149,9 @@ class OverlayField extends Component {
     );
   }
 }
+
+OverlayField.propTypes = {
+  onChange: PropTypes.func,
+};
 
 export default BarcodeScanner(OverlayField);

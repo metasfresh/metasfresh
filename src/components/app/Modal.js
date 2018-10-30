@@ -26,6 +26,7 @@ class Modal extends Component {
 
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
+    isNewDoc: PropTypes.bool,
   };
 
   constructor(props) {
