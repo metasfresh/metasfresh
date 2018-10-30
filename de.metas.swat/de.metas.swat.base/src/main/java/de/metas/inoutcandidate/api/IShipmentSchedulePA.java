@@ -10,11 +10,8 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MOrderLine;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -61,30 +58,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	List<I_M_ShipmentSchedule> retrieveUnprocessedForRecord(Properties ctx, int adTableId, int recordId, String trxName);
 
 	/**
-	 *
-	 * @param order
-	 * @param trxName
-	 * @return
-	 * @deprecated Use {@link MShipmentSchedule#retrieveForOrder(Properties, int, String)} instead
-	 */
-	@Deprecated
-	Collection<I_M_ShipmentSchedule> retrieveForOrder(I_C_Order order, String trxName);
-
-	Collection<I_M_ShipmentSchedule> retrieveForProduct(int productId, String trxName);
-
-	List<I_M_ShipmentSchedule> retrieveAll(String trxName);
-
-	/**
-	 *
-	 * @param bPartnerId
-	 * @param trxName
-	 * @return
-	 * @deprecated Please check if you can use {@link #retrieveForBPartner(int, IContextAware)}
-	 */
-	@Deprecated
-	Collection<I_M_ShipmentSchedule> retrieveForBPartner(int bPartnerId, String trxName);
-
-	/**
 	 * Returns an iterator with those scheds that reference the given <code>bPartner</code> (via <code>COALESCE(C_BPArtner_Override_ID,C_BPArtner_ID)</code>), are active and are not yet processed.
 	 * Note that the partner is also used as context provider (ctx and trxName).
 	 *
@@ -92,22 +65,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 * @return
 	 */
 	Iterator<I_M_ShipmentSchedule> retrieveForBPartner(I_C_BPartner bPartner);
-
-	/**
-	 * Loads the valid {@link I_M_ShipmentSchedule} and {@link I_C_OrderLine} instances for the given bPartner. They are returned in the right order, such that the available products can be allocated
-	 * from the first to the last element. However, this method doesn't have to make sure that all relevant shipment schedules are valid.
-	 *
-	 * @param bPartnerId the id of the bPartner whose shipment schedule and order lines need to be loaded.
-	 *
-	 * @param includeUncompleted if <code>true</code>, also those shipment schedules are returned that already have an uncompleted {@link I_M_InOutLine}.
-	 * @param trxName
-	 * @return
-	 */
-	List<OlAndSched> retrieveOlAndSchedsForBPartner(
-			int bPartnerId, boolean includeUncompleted, String trxName);
-
-	List<OlAndSched> retrieveOlAndSchedsForProduct(
-			Properties ctx, int productId, String trxName);
 
 	/**
 	 * Retrieves from the DB "invalid" {@link I_M_ShipmentSchedule}s (i.e. those instances that need some updating) together with their {@link I_C_OrderLine}s. The
@@ -131,16 +88,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	boolean isInvalid(I_M_ShipmentSchedule sched);
 
 	/**
-	 * Loads the shipment schedules that are valid. They are returned in the right order, such that the available products can be allocated from the first to the last element. However, this method
-	 * doesn't have to make sure that all relevant shipment schedules are valid.
-	 *
-	 * @param includeUncompleted if <code>true</code>, also those shipment schedules are returned that already have an uncompleted {@link I_M_InOutLine}.
-	 * @param trxName
-	 * @return
-	 */
-	List<OlAndSched> retrieveForShipmentRun(boolean includeUncompleted, String trxName);
-
-	/**
 	 * Sets the {@link I_M_ShipmentSchedule#COLUMNNAME_IsValid} column to <code>'N'</code> for all shipment schedule entries whose order line has the given product id.
 	 *
 	 * @param productId
@@ -149,14 +96,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 */
 	@Deprecated
 	void invalidateForProduct(int productId, String trxName);
-
-	/**
-	 * @param productIds
-	 * @param trxName
-	 * @deprecated please be more selective with the invalidation, using storage segments
-	 */
-	@Deprecated
-	void invalidateForProducts(Collection<Integer> productIds, String trxName);
 
 	/**
 	 * Invalidates all shipment schedules which have one of the given <code>headerAggregationKeys</code>.
