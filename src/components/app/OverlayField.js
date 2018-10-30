@@ -8,26 +8,18 @@ class OverlayField extends Component {
   handleKeyDown = e => {
     const { handleSubmit, closeOverlay, onSelectBarcode } = this.props;
 
-    // if (!handleSubmit || !closeOverlay) {
-    //   console.log('OverlayField handleKey')
-    //   if (e.key !== 'Enter' && e.key !== 'Escape') {
-    //     onSelectBarcode(null);
-    //   }
-    // } else {
-      switch (e.key) {
-        case 'Enter':
-          document.activeElement.blur();
-          console.log('')
-          handleSubmit();
-          break;
-        case 'Escape':
-          closeOverlay();
-          break;
-        default:
-          onSelectBarcode(null);
-          break;
-      }
-    // }
+    switch (e.key) {
+      case 'Enter':
+        document.activeElement.blur();
+        handleSubmit();
+        break;
+      case 'Escape':
+        closeOverlay();
+        break;
+      default:
+        onSelectBarcode(null);
+        break;
+    }
   };
 
   renderBarcodeScanButton = () => {
@@ -68,9 +60,7 @@ class OverlayField extends Component {
           autoFocus={id === 0}
           captionElement={captionElement}
           data={codeSelected || undefined}
-
           onChange={onChange}
-
           {...elem}
         />
       );
