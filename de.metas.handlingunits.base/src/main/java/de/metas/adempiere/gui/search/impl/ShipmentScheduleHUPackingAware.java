@@ -13,15 +13,14 @@ package de.metas.adempiere.gui.search.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -31,6 +30,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -119,7 +120,12 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
-		return shipmentSchedule.getM_HU_PI_Item_Product();
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(getM_HU_PI_Item_Product_ID());
+		if (piItemProductId == null)
+		{
+			return null;
+		}
+		return Services.get(IHUPIItemProductDAO.class).getById(piItemProductId);
 	}
 
 	@Override

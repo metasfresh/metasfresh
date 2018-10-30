@@ -56,7 +56,7 @@ public final class NullModelTranslationMap implements IModelTranslationMap
 	@Override
 	public ITranslatableString getColumnTrl(final String columnName, final String defaultValue)
 	{
-		return ImmutableTranslatableString.constant(defaultValue);
+		return ImmutableTranslatableString.anyLanguage(defaultValue);
 	}
 
 	@Override
