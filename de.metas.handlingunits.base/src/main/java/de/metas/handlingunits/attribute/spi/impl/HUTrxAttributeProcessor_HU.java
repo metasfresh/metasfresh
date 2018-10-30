@@ -64,7 +64,7 @@ public class HUTrxAttributeProcessor_HU implements IHUTrxAttributeProcessor
 			huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class, hu);
 			huAttribute.setAD_Org_ID(hu.getAD_Org_ID());
 			huAttribute.setM_HU(hu);
-			huAttribute.setM_Attribute(trxAttribute.getM_Attribute());
+			huAttribute.setM_Attribute_ID(trxAttribute.getM_Attribute_ID());
 
 			huAttribute.setM_HU_PI_Attribute_ID(trxAttribute.getM_HU_PI_Attribute_ID());
 		}

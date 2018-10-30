@@ -1,6 +1,5 @@
 package de.metas.adempiere.report.jasper.servlet;
 
-import org.compiere.util.CacheMgt;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.Profiles;
 import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.JasperServerConstants;
+import de.metas.cache.CacheMgt;
 
 /**
  * This servlet was introduced for managing the actions that the other Jasper servlets can take.

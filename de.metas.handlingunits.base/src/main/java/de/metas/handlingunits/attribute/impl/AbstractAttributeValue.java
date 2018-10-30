@@ -36,6 +36,7 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -763,12 +764,15 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	@Override
 	public I_C_UOM getC_UOM()
 	{
-		final I_C_UOM uom = attribute.getC_UOM();
-		if (uom == null || uom.getC_UOM_ID() <= 0)
+		final int uomId = attribute.getC_UOM_ID();
+		if (uomId > 0)
+		{
+			return Services.get(IUOMDAO.class).getById(uomId);
+		}
+		else
 		{
 			return null;
 		}
-		return uom;
 	}
 
 	private IAttributeValueCallout _attributeValueCallout = null;

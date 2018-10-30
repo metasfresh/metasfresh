@@ -13,11 +13,11 @@ package de.metas.report.jasper.client;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,8 +30,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.CacheInterface;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
@@ -40,6 +38,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -72,42 +72,32 @@ public final class JRClient
 	/** Jasper server supplier */
 	private final ExtendedMemorizingSupplier<IJasperServer> serverSupplier = ExtendedMemorizingSupplier.of(() -> createJasperServer());
 
-	/**
-	 * Force the Jasper servlet cache to reset together with the others.
-	 */
-	private final CacheInterface cacheListener = new CacheInterface()
-	{
-		@Override
-		public int size()
-		{
-			return 1;
-		}
-
-		@Override
-		public int reset()
-		{
-			// Force recreating of jasper server, just in case the config changed
-			serverSupplier.forget();
-
-			final IJasperServer server = serverSupplier.get();
-			if (server != null)
-			{
-				server.cacheReset();
-			}
-			return 1;
-		}
-	};
-
 	private JRClient()
 	{
-		super();
-
 		// If the instance is not a client, reset the Jasper servlet cache.
 		if (!Ini.isClient())
 		{
-			CacheMgt.get().register(cacheListener);
+			CacheMgt.get().addCacheResetListener(this::onCacheReset);
 			logger.info("Registered cache listener for JasperReports");
 		}
+	}
+
+	private int onCacheReset(final CacheInvalidateMultiRequest multiRequest)
+	{
+		if (!multiRequest.isResetAll())
+		{
+			return 0;
+		}
+
+		// Force recreating of jasper server, just in case the config changed
+		serverSupplier.forget();
+
+		final IJasperServer server = serverSupplier.get();
+		if (server != null)
+		{
+			server.cacheReset();
+		}
+		return 1;
 	}
 
 	public JasperPrint createJasperPrint(final ProcessInfo pi)
@@ -197,7 +187,7 @@ public final class JRClient
 			logger.info("JasperServer instance: " + server);
 			return server;
 		}
-		catch(ClassNotFoundException e)
+		catch (ClassNotFoundException e)
 		{
 			throw new AdempiereException("Jasper server class not found", e);
 		}

@@ -122,7 +122,7 @@ public class AttachmentEntryFactory
 				.name(entryRecord.getFileName())
 				.type(toAttachmentEntryTypeFromADRefListValue(entryRecord.getType()))
 				.filename(entryRecord.getFileName())
-				.contentType(entryRecord.getContentType())
+				.mimeType(entryRecord.getContentType())
 				.url(extractUriOrNull(entryRecord))
 				.tags(tags)
 				.build();

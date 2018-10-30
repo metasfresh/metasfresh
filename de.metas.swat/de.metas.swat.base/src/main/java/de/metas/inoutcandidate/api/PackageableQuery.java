@@ -3,7 +3,10 @@ package de.metas.inoutcandidate.api;
 import java.time.LocalDate;
 
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseTypeId;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -13,8 +16,13 @@ public class PackageableQuery
 {
 	public static final PackageableQuery ALL = PackageableQuery.builder().build();
 
-	private WarehouseId warehouseId;
-	private LocalDate deliveryDate;
+	BPartnerId customerId;
+	WarehouseTypeId warehouseTypeId;
+	WarehouseId warehouseId;
+	LocalDate deliveryDate;
+	LocalDate preparationDate;
+
 	/** retrieve only those packageables which are created from sales order/lines */
-	private boolean onlyFromSalesOrder;
+	boolean onlyFromSalesOrder;
+	OrderId salesOrderId;
 }

@@ -45,7 +45,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.compiere.util.CCache;
+import de.metas.cache.CCache;
 
 /**
  * @author Ashley G Ramdass

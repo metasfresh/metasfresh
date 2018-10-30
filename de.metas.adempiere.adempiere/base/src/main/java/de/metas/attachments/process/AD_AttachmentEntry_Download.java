@@ -41,7 +41,7 @@ public class AD_AttachmentEntry_Download extends JavaProcess
 		final AttachmentEntry entry = attachmentEntryService.getById(entryId);
 		final byte[] data = attachmentEntryService.retrieveData(entry.getId());
 
-		getResult().setReportData(data, entry.getFilename(), entry.getContentType());
+		getResult().setReportData(data, entry.getFilename(), entry.getMimeType());
 
 		return MSG_OK;
 	}

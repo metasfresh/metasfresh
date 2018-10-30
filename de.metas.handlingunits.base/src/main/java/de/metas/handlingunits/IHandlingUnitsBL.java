@@ -371,6 +371,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
 
+	HuPackingInstructionsVersionId getEffectivePIVersionId(I_M_HU hu);
+
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
 	 * Otherwise, return the given {@code hu}'s own/direct PI version.
@@ -390,4 +392,5 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
 	I_M_HU_PackingMaterial getHUPackingMaterial(I_M_HU_Item huItem);
+
 }

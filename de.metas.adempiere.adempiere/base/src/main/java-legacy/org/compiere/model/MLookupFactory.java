@@ -28,7 +28,6 @@ import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -38,6 +37,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;

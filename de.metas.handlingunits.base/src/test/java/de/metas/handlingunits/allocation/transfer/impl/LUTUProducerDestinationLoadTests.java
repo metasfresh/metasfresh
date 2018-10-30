@@ -36,12 +36,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
@@ -67,6 +69,8 @@ import de.metas.util.Services;
 @RunWith(Theories.class)
 public class LUTUProducerDestinationLoadTests
 {
+	@Rule
+	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 	/**
 	 * This dataPoint shall enable us to test with both values of {@code isOwnPackingMaterials}.
 	 */
@@ -355,7 +359,7 @@ public class LUTUProducerDestinationLoadTests
 	{
 		performTest(6050, 30,
 				husExpectation -> {
-					//@formatter:off
+				//@formatter:off
 					husExpectation
 						.newHUExpectation()
 						.huPI(data.piLU)
@@ -556,11 +560,10 @@ public class LUTUProducerDestinationLoadTests
 		final I_C_BPartner bpartner = createBPartner("testPartner");
 		final I_C_BPartner_Location bpLocation = createBPartnerLocation(bpartner);
 
-		final I_M_HU_PI_Item piLU_Item_Virtual = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.helper.huDefVirtual, BigDecimal.ONE);
 
 		final I_M_HU_LUTU_Configuration lutuConfiguration = InterfaceWrapperHelper.newInstance(I_M_HU_LUTU_Configuration.class);
 		lutuConfiguration.setM_LU_HU_PI(data.piLU);
-		lutuConfiguration.setM_LU_HU_PI_Item(piLU_Item_Virtual);
+		lutuConfiguration.setM_LU_HU_PI_Item(data.piLU_Item_Virtual);
 		lutuConfiguration.setIsInfiniteQtyLU(false);
 		lutuConfiguration.setQtyLU(BigDecimal.ONE);
 		lutuConfiguration.setM_TU_HU_PI(data.helper.huDefVirtual);

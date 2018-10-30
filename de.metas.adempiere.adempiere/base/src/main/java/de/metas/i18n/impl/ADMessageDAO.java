@@ -36,7 +36,7 @@ import org.compiere.model.I_AD_Message;
 import org.compiere.model.X_AD_Message;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.util.Services;
 

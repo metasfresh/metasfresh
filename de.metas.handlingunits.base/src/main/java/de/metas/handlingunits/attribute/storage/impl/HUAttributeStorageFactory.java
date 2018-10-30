@@ -28,9 +28,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheIgnore;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheIgnore;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.handlingunits.model.I_M_HU;
 
 public class HUAttributeStorageFactory extends AbstractModelAttributeStorageFactory<I_M_HU, HUAttributeStorage>

@@ -45,7 +45,6 @@ import org.compiere.grid.VTable;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Field_ContextMenu;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
@@ -53,7 +52,8 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
 
 public class ContextMenuProvider implements IContextMenuProvider
 {

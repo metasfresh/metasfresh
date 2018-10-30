@@ -8,10 +8,13 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -279,6 +282,7 @@ public class AttachmentEntryService
 				.stream()
 				.filter(e -> e.hasAllTagsSetToTrue(query.getTagsSetToTrue()))
 				.filter(e -> e.hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
+				.filter(e -> Check.isEmpty(query.getMimeType(), true) || Objects.equals(e.getMimeType(), query.getMimeType()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -356,13 +360,18 @@ public class AttachmentEntryService
 
 		Object referencedRecord;
 
+		String mimeType;
+
 		@Builder
 		private AttachmentEntryQuery(
 				@Singular("tagSetToTrue") final List<String> tagsSetToTrue,
 				@Singular("tagSetToAnyValue") final List<String> tagsSetToAnyValue,
+				@Nullable final String mimeType,
 				@NonNull final Object referencedRecord)
 		{
 			this.referencedRecord = referencedRecord;
+
+			this.mimeType = mimeType;
 
 			this.tagsSetToTrue = tagsSetToTrue;
 			this.tagsSetToAnyValue = tagsSetToAnyValue;

@@ -21,8 +21,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 import org.compiere.model.X_C_PeriodControl;
-import org.compiere.util.CacheMgt;
 
+import de.metas.cache.CacheMgt;
 import de.metas.calendar.IPeriodBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;

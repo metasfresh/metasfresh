@@ -33,7 +33,7 @@ import org.adempiere.ad.ui.api.ITabCalloutDAO;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.util.proxy.Cached;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
 
 public class TabCalloutDAO implements ITabCalloutDAO

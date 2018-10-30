@@ -19,6 +19,8 @@
  ******************************************************************************/
 package org.adempiere.ad.dao.impl;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -60,7 +62,6 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import lombok.NonNull;
 
 /**
  *
@@ -263,8 +264,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.onlySelectionId = pinstanceId;
 		return this;
 	}
-	
-	
+
+
 
 	@Override
 	public TypedSqlQuery<T> setNotInSelection(final PInstanceId pinstanceId)
@@ -813,10 +814,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		else
 		{
-			sqlSelect = new StringBuilder("SELECT 1 FROM ").append(getSqlFrom());
-
+			setLimit(1); // we don't need more than one row to decide if it matches
+			sqlSelect = new StringBuilder("SELECT 1 FROM ")
+					.append(getSqlFrom());
 		}
-		final String sql = buildSQL(sqlSelect, false);
+		final String sql = buildSQL(sqlSelect, false/*useOrderByClause*/);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

@@ -57,6 +57,7 @@ import de.metas.adempiere.form.terminal.ITerminalNumericField;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane.ScrollPolicy;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
+import de.metas.adempiere.form.terminal.ITerminalTextField.KeyboardDisplayMode;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.WrongValueException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -530,7 +531,7 @@ import de.metas.logging.LogManager;
 		{
 			final int displayTypeString = DisplayType.isText(displayType) ? displayType : DisplayType.String;
 			final ITerminalTextField editor = factory.createTerminalTextField(propertyName, displayTypeString, SwingPropertiesPanel.DEFAULT_FONT_SIZE);
-			editor.setShowKeyboardButton(true);
+			editor.setKeyboardDisplayMode(KeyboardDisplayMode.WHEN_TYPING);
 
 			// NOTE: in case user enters a value in editor and then clicks on other component, we want to commit the value right-away
 			editor.setCommitOnValidEdit(true);

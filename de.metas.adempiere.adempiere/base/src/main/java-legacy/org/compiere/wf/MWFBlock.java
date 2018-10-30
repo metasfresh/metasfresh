@@ -20,7 +20,8 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.compiere.model.X_AD_WF_Block;
-import org.compiere.util.CCache;
+
+import de.metas.cache.CCache;
 
 
 /**

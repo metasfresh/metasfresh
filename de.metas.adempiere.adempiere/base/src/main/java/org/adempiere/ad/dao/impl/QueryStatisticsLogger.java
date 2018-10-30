@@ -46,7 +46,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	private boolean traceSqlQueries = false;
 	private static final AtomicInteger traceSqlQueries_Count = new AtomicInteger(0);
 
-	private static final boolean logToSystemError = Boolean.getBoolean("org.adempiere.ad.dao.impl.QueryStatisticsLogger.LogToSystemError");
+	private static final boolean logToSystemError = Boolean.getBoolean(SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR);
 
 	public QueryStatisticsLogger()
 	{

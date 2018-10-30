@@ -11,10 +11,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Color;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_Color;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;

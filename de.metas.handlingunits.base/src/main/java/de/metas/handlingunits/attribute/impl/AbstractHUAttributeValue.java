@@ -13,19 +13,20 @@ package de.metas.handlingunits.attribute.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
@@ -51,21 +52,21 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 			final I_M_HU_PI_Attribute huPIAttribute,
 			final Boolean isTemplateAttribute)
 	{
-		super(attributeStorage, huPIAttribute.getM_Attribute());
+		super(attributeStorage, Services.get(IAttributeDAO.class).getAttributeById(huPIAttribute.getM_Attribute_ID()));
 		this.huPIAttribute = huPIAttribute;
 
 		this._definedByTemplate = isTemplateAttribute; // null is OK
 	}
 
 	@Override
-	public String getPropagationType()
+	public final String getPropagationType()
 	{
 		final String propagationType = huPIAttribute.getPropagationType();
 		return propagationType;
 	}
 
 	@Override
-	public IAttributeAggregationStrategy retrieveAggregationStrategy()
+	public final IAttributeAggregationStrategy retrieveAggregationStrategy()
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPIAttribute);
 		final int adJavaClassId = huPIAttribute.getAggregationStrategy_JavaClass_ID();
@@ -76,7 +77,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	}
 
 	@Override
-	public IAttributeSplitterStrategy retrieveSplitterStrategy()
+	public final IAttributeSplitterStrategy retrieveSplitterStrategy()
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPIAttribute);
 		final int adJavaClassId = huPIAttribute.getSplitterStrategy_JavaClass_ID();
@@ -87,7 +88,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	}
 
 	@Override
-	public IHUAttributeTransferStrategy retrieveTransferStrategy()
+	public final IHUAttributeTransferStrategy retrieveTransferStrategy()
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPIAttribute);
 		final int adJavaClassId = huPIAttribute.getHU_TansferStrategy_JavaClass_ID();
@@ -98,19 +99,19 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	}
 
 	@Override
-	public boolean isUseInASI()
+	public final boolean isUseInASI()
 	{
 		return huPIAttribute.isUseInASI();
 	}
 
 	@Override
-	public boolean isDefinedByTemplate()
+	public final boolean isDefinedByTemplate()
 	{
-		if(_definedByTemplate == null)
+		if (_definedByTemplate == null)
 		{
 			synchronized (this)
 			{
-				if(_definedByTemplate == null)
+				if (_definedByTemplate == null)
 				{
 					_definedByTemplate = Services.get(IHUPIAttributesDAO.class).isTemplateAttribute(huPIAttribute);
 				}
@@ -119,38 +120,46 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 		return _definedByTemplate;
 	}
 
-	public I_M_HU_PI_Attribute getM_HU_PI_Attribute()
+	public final I_M_HU_PI_Attribute getM_HU_PI_Attribute()
 	{
 		return huPIAttribute;
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public final I_C_UOM getC_UOM()
 	{
-		final I_C_UOM uom = huPIAttribute.getC_UOM();
-		if (uom != null && uom.getC_UOM_ID() > 0)
+		final int uomId = huPIAttribute.getC_UOM_ID();
+		if(uomId > 0)
 		{
-			return uom;
+			return Services.get(IUOMDAO.class).getById(uomId);
 		}
-
-		// fallback to M_Attribute's UOM
-		return super.getC_UOM();
+		else
+		{
+			// fallback to M_Attribute's UOM
+			return super.getC_UOM();
+		}
 	}
 
 	@Override
-	public boolean isReadonlyUI()
+	public final boolean isReadonlyUI()
 	{
 		return huPIAttribute.isReadOnly();
 	}
 
 	@Override
-	public boolean isDisplayedUI()
+	public final boolean isDisplayedUI()
 	{
 		return huPIAttribute.isDisplayed();
 	}
 
 	@Override
-	public int getDisplaySeqNo()
+	public final boolean isMandatory()
+	{
+		return huPIAttribute.isMandatory();
+	}
+
+	@Override
+	public final int getDisplaySeqNo()
 	{
 		final int seqNo = huPIAttribute.getSeqNo();
 		if (seqNo > 0)
@@ -160,5 +169,12 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 
 		// Fallback: if SeqNo was not set, return max int (i.e. show them last)
 		return Integer.MAX_VALUE;
+	}
+	
+
+	@Override
+	public boolean isOnlyIfInProductAttributeSet()
+	{
+		return huPIAttribute.isOnlyIfInProductAttributeSet();
 	}
 }

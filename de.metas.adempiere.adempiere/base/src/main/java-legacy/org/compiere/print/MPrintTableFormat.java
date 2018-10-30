@@ -36,13 +36,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_PrintTableFormat;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 
 /**

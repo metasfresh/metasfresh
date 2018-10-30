@@ -8,8 +8,8 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 
-import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
 
 /*
@@ -61,6 +61,6 @@ public class ConfigRepositoryUtil
 	@Builder
 	public static class ConfigQuery
 	{
-		BPartnerId bpartnerId;
+		RepoIdAware bpartnerId;
 	}
 }

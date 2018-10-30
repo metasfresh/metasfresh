@@ -39,8 +39,8 @@ import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
 import de.metas.util.Services;

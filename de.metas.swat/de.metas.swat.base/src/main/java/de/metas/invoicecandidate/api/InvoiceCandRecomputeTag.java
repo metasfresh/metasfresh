@@ -106,14 +106,4 @@ public final class InvoiceCandRecomputeTag
 		// NOTE: keep in sync with fromString()
 		return String.valueOf(pinstanceId.getRepoId());
 	}
-
-	@Deprecated
-	public int getAD_PInstance_ID()
-	{
-		if (pinstanceId == null)
-		{
-			throw new AdempiereException("Getting AD_PInstance_ID is not allowed for null/empty tags");
-		}
-		return pinstanceId.getRepoId();
-	}
 }

@@ -32,9 +32,9 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Util;
 
+import de.metas.cache.CacheMgt;
 import de.metas.util.Services;
 import de.metas.util.WeakList;
 

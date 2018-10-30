@@ -1,9 +1,9 @@
 package de.metas.fresh.setup.process;
 
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.CacheMgt;
 
-import de.metas.adempiere.util.cache.CacheInterceptor;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;

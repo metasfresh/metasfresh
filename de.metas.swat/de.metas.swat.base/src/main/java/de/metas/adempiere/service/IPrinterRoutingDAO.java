@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.adempiere.model.I_AD_Printer;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.ISingletonService;
 
 public interface IPrinterRoutingDAO extends ISingletonService

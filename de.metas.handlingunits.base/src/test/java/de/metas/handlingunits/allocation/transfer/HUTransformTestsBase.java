@@ -110,7 +110,7 @@ public class HUTransformTestsBase
 			sourceTU = createdTUs.get(0);
 
 			huStatusBL.setHUStatus(data.helper.getHUContext(), sourceTU, X_M_HU.HUSTATUS_Active);
-			new M_HU().updateChildren(sourceTU);
+			M_HU.INSTANCE.updateChildren(sourceTU);
 			save(sourceTU);
 
 			testHUsBuilder.inititalParent(sourceTU);

@@ -83,7 +83,7 @@ public class OLCandBL implements IOLCandBL
 	private static final Logger logger = LogManager.getLogger(OLCandBL.class);
 
 	@Override
-	public void process(final OLCandProcessorDescriptor processor)
+	public void process(@NonNull final OLCandProcessorDescriptor processor)
 	{
 		final OLCandRegistry olCandRegistry = Adempiere.getBean(OLCandRegistry.class);
 		final OLCandRepository olCandRepo = Adempiere.getBean(OLCandRepository.class);

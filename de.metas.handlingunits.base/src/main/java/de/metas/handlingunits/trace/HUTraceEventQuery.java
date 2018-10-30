@@ -7,6 +7,8 @@ import java.util.OptionalInt;
 
 import org.adempiere.service.OrgId;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -14,6 +16,7 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import lombok.experimental.Wither;
 
@@ -93,7 +96,9 @@ public class HUTraceEventQuery
 
 	HUTraceType type;
 
-	HuId vhuId;
+	@NonNull
+	@Singular
+	ImmutableSet<HuId> vhuIds;
 
 	ProductId productId;
 
@@ -101,7 +106,9 @@ public class HUTraceEventQuery
 
 	String vhuStatus;
 
-	HuId topLevelHuId;
+	@Singular
+	@NonNull
+	ImmutableSet<HuId> topLevelHuIds;
 
 	HuId vhuSourceId;
 
