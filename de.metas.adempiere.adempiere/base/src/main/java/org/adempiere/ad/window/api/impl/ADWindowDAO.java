@@ -880,8 +880,6 @@ public class ADWindowDAO implements IADWindowDAO
 	public List<I_AD_Tab> retrieveTabsWithMissingElements()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Element_ID, null)
 				.create()
 				.list(I_AD_Tab.class);
@@ -891,8 +889,6 @@ public class ADWindowDAO implements IADWindowDAO
 	public List<I_AD_Window> retrieveWindowsWithMissingElements()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Window.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.addEqualsFilter(I_AD_Window.COLUMN_AD_Element_ID, null)
 				.create()
 				.list(I_AD_Window.class);

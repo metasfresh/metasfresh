@@ -17,6 +17,7 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.model.MColumn;
 
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Services;
 
@@ -45,15 +46,12 @@ import de.metas.util.Services;
 public class AD_Element_Create_Missing extends JavaProcess
 {
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		createAndLinkElementsForTabs();
 		createAndLinkElementsForWindows();
 		createAndLinkElementsForMenus();
-
-		make_AD_Element_Mandatory_In_AD_Tab();
-		make_AD_Element_Mandatory_In_AD_Window();
-		make_AD_Element_Mandatory_In_AD_Menu();
 
 		return MSG_OK;
 	}
@@ -62,23 +60,22 @@ public class AD_Element_Create_Missing extends JavaProcess
 	{
 		final I_AD_Column elementIdColumn = Services.get(IADTableDAO.class).retrieveColumn(I_AD_Menu.Table_Name, I_AD_Menu.COLUMNNAME_AD_Element_ID);
 
-		makeElementColumnMandatory (elementIdColumn);
+		makeElementColumnMandatory(elementIdColumn);
 	}
 
 	private void make_AD_Element_Mandatory_In_AD_Window()
 	{
 		final I_AD_Column elementIdColumn = Services.get(IADTableDAO.class).retrieveColumn(I_AD_Window.Table_Name, I_AD_Window.COLUMNNAME_AD_Element_ID);
 
-		makeElementColumnMandatory (elementIdColumn);
+		makeElementColumnMandatory(elementIdColumn);
 	}
 
 	private void make_AD_Element_Mandatory_In_AD_Tab()
 	{
 		final I_AD_Column elementIdColumn = Services.get(IADTableDAO.class).retrieveColumn(I_AD_Tab.Table_Name, I_AD_Tab.COLUMNNAME_AD_Element_ID);
 
-		makeElementColumnMandatory (elementIdColumn);
+		makeElementColumnMandatory(elementIdColumn);
 	}
-
 
 	private void makeElementColumnMandatory(final I_AD_Column elementIdColumn)
 	{
@@ -162,6 +159,17 @@ public class AD_Element_Create_Missing extends JavaProcess
 
 			menu.setAD_Element_ID(elementId);
 			save(menu);
+		}
+	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (success)
+		{
+			make_AD_Element_Mandatory_In_AD_Tab();
+			make_AD_Element_Mandatory_In_AD_Window();
+			make_AD_Element_Mandatory_In_AD_Menu();
 		}
 	}
 

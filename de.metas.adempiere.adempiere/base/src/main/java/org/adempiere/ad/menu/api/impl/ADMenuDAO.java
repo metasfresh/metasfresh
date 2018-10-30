@@ -37,8 +37,6 @@ public class ADMenuDAO implements IADMenuDAO
 	public List<I_AD_Menu> retrieveMenusWithMissingElements()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Menu.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.addEqualsFilter(I_AD_Menu.COLUMN_AD_Element_ID, null)
 				.create()
 				.list(I_AD_Menu.class);
