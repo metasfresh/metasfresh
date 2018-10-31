@@ -435,13 +435,16 @@ class RawLookup extends Component {
           },
         ]}
       >
-        <div id={idValue || ''}>
+        <div id={idValue || ''} className="raw-lookup-wrapper">
           <div
-            className={classnames('raw-lookup-wrapper raw-lookup-wrapper-bcg', {
-              'raw-lookup-disabled': disabled,
-              'input-disabled': readonly,
-              focused: isFocused,
-            })}
+            className={classnames(
+              'lookup-widget-wrapper lookup-widget-wrapper-bcg',
+              {
+                'raw-lookup-disabled': disabled,
+                'input-disabled': readonly,
+                focused: isFocused,
+              }
+            )}
             ref={ref => (this.wrapper = ref)}
           >
             <div className={'input-dropdown input-block'}>

@@ -626,17 +626,17 @@ input:checked + .input-slider:before {
 }
 
 .input-error {
-    .raw-lookup-wrapper-bcg:hover {
+    .lookup-widget-wrapper-bcg:hover {
         background-color: $brand-danger-color !important;
     }
 
-    .raw-lookup-wrapper-bcg:hover .input-dropdown-container .input-dropdown {
+    .lookup-widget-wrapper-bcg:hover .input-dropdown-container .input-dropdown {
         color: $brand-super-light-color;
     }
 
-    .raw-lookup-wrapper-bcg:hover .input-dropdown,
-    .raw-lookup-wrapper-bcg:hover .input-dropdown input,
-    .raw-lookup-wrapper-bcg:hover .input-dropdown-container {
+    .lookup-widget-wrapper-bcg:hover .input-dropdown,
+    .lookup-widget-wrapper-bcg:hover .input-dropdown input,
+    .lookup-widget-wrapper-bcg:hover .input-dropdown-container {
         background-color: $brand-danger-color !important;
         color: $brand-super-light-color;
     }
@@ -716,7 +716,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     justify-content: space-between;
 }
 
-.input-secondary .raw-lookup-wrapper {
+.input-secondary .lookup-widget-wrapper {
     padding: .1rem .50rem;
 }
 
@@ -741,11 +741,16 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     }
 }
 
+.raw-lookup-wrapper {
+    display: flex;
+    flex: 1;
+}
+
 .lookup-wrapper-disabled {
     pointer-events: none;
 }
 
-.raw-lookup-wrapper {
+.lookup-widget-wrapper {
     display: flex;
     align-items: center;
     padding: 0;
@@ -795,7 +800,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     }
 }
 
-.raw-lookup-wrapper-bcg:hover {
+.lookup-widget-wrapper-bcg:hover {
     background-color: $brand-border-color;
 }
 
