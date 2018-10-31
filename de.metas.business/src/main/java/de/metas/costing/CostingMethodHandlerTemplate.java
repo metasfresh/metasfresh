@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
@@ -129,12 +130,12 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	private static CostDetailQuery extractCostDetailQuery(final CostDetailCreateRequest request)
 	{
-		final CostElement costElement = request.getCostElement();
+		final CostElementId costElementId = request.isAllCostElements() ? null : request.getCostElement().getId();
 
 		return CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.costElementId(costElement != null ? costElement.getId() : -1)
+				.costElementId(costElementId)
 				.documentRef(request.getDocumentRef())
 				.build();
 	}
@@ -200,7 +201,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		costDetail.setIsChangingCosts(true);
 		costDetail.setPrev_CurrentCostPrice(previousCosts.getCurrentCostPrice().getValue());
 		costDetail.setPrev_CurrentCostPriceLL(previousCosts.getCurrentCostPriceLL().getValue());
-		costDetail.setPrev_CurrentQty(previousCosts.getCurrentQty().getQty());
+		costDetail.setPrev_CurrentQty(previousCosts.getCurrentQty().getAsBigDecimal());
 		costDetailsRepo.save(costDetail);
 
 		return createCostDetailCreateResult(costDetail, request);
@@ -209,21 +210,20 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	private final I_M_CostDetail prepareCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		final I_M_CostDetail costDetail = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class);
-		final int costDetailClientId = costDetail.getAD_Client_ID();
-		Check.assume(costDetailClientId == request.getClientId(), "same AD_Client_ID: {} vs {}", costDetailClientId, request.getClientId());
-		costDetail.setAD_Org_ID(request.getOrgId());
+		final ClientId costDetailClientId = ClientId.ofRepoId(costDetail.getAD_Client_ID());
+		Check.assumeEquals(costDetailClientId, request.getClientId(), "AD_Client_ID");
+		costDetail.setAD_Org_ID(request.getOrgId().getRepoId());
 		costDetail.setC_AcctSchema_ID(request.getAcctSchemaId());
-		costDetail.setM_Product_ID(request.getProductId());
-		costDetail.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId());
+		costDetail.setM_Product_ID(request.getProductId().getRepoId());
+		costDetail.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId().getRepoId());
 
-		final CostElement costElement = request.getCostElement();
-		if (costElement != null)
+		if(!request.isAllCostElements())
 		{
-			costDetail.setM_CostElement_ID(costElement.getId());
+			costDetail.setM_CostElement_ID(request.getCostElement().getId().getRepoId());
 		}
 
 		costDetail.setAmt(request.getAmt().getValue());
-		costDetail.setQty(request.getQty().getQty());
+		costDetail.setQty(request.getQty().getAsBigDecimal());
 
 		costDetail.setDescription(request.getDescription());
 

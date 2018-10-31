@@ -28,7 +28,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
@@ -41,6 +44,7 @@ import org.compiere.util.Env;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -312,10 +316,10 @@ public final class CostDimension
 	{
 		final I_C_AcctSchema as = MAcctSchema.get(Env.getCtx(), C_AcctSchema_ID);
 		return CostSegment.builder()
-				.clientId(AD_Client_ID)
-				.orgId(AD_Org_ID)
-				.productId(M_Product_ID)
-				.attributeSetInstanceId(M_AttributeSetInstance_ID)
+				.clientId(ClientId.ofRepoId(AD_Client_ID))
+				.orgId(OrgId.ofRepoId(AD_Org_ID))
+				.productId(ProductId.ofRepoId(M_Product_ID))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(M_AttributeSetInstance_ID))
 				.costTypeId(M_CostType_ID)
 				.acctSchemaId(C_AcctSchema_ID)
 				.costingLevel(CostingLevel.forCode(as.getCostingLevel()))

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
@@ -108,9 +109,9 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = Env.getCtx();
-		final int productId = costSegment.getProductId();
-		final int orgId = costSegment.getOrgId();
-		final int asiId = costSegment.getAttributeSetInstanceId();
+		final int productId = costSegment.getProductId().getRepoId();
+		final int orgId = costSegment.getOrgId().getRepoId();
+		final int asiId = costSegment.getAttributeSetInstanceId().getRepoId();
 		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
 
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"
@@ -138,7 +139,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		final int oldTransaction_ID = 0;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, productId);
 			if (orgId > 0)
 			{

@@ -35,6 +35,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -55,6 +56,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 public class AcctSchemaDAO implements IAcctSchemaDAO
 {
@@ -95,7 +97,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	@Override
 	@Cached(cacheName = I_C_AcctSchema.Table_Name + "#by#" + I_C_AcctSchema.COLUMNNAME_AD_Client_ID)
-	public List<I_C_AcctSchema> retrieveClientAcctSchemas(@CacheCtx final Properties ctx, final int AD_Client_ID)
+	public List<I_C_AcctSchema> retrieveClientAcctSchemas(@CacheCtx final Properties ctx, @NonNull final ClientId clientId)
 	{
 		// services
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -106,7 +108,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 		//
 		// Retrieve the primary accounting schema for our client
-		final I_AD_ClientInfo info = clientDAO.retrieveClientInfo(ctx, AD_Client_ID);
+		final I_AD_ClientInfo info = clientDAO.retrieveClientInfo(ctx, clientId.getRepoId());
 		final I_C_AcctSchema acctSchemaPrimary = info.getC_AcctSchema1();
 		if (acctSchemaPrimary != null && acctSchemaPrimary.getC_AcctSchema_ID() > 0)
 		{
@@ -124,13 +126,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		final IQueryBuilder<I_C_AcctSchema> acctSchemaQueryBuilder = queryBL.createQueryBuilder(I_C_AcctSchema.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_C_AcctSchema.COLUMN_C_AcctSchema_ID, I_C_AcctSchema_GL.COLUMN_C_AcctSchema_ID, acctSchemaGLsQuery)
-				.addInSubQueryFilter(I_C_AcctSchema.COLUMN_C_AcctSchema_ID, I_C_AcctSchema_Default.COLUMN_C_AcctSchema_ID, acctSchemaDefaultsQuery);
-		// Only for given AD_Client_ID, if specified.
-		// If not specified, we will retrieve accounting schemas for ALL clients
-		if (AD_Client_ID > 0)
-		{
-			acctSchemaQueryBuilder.addEqualsFilter(I_C_AcctSchema.COLUMN_AD_Client_ID, AD_Client_ID);
-		}
+				.addInSubQueryFilter(I_C_AcctSchema.COLUMN_C_AcctSchema_ID, I_C_AcctSchema_Default.COLUMN_C_AcctSchema_ID, acctSchemaDefaultsQuery)
+				.addEqualsFilter(I_C_AcctSchema.COLUMN_AD_Client_ID, clientId);
 
 		//
 		// Retrieve all other accouting schemas that we have and add them to our map (to make sure they are uniquely fetched)

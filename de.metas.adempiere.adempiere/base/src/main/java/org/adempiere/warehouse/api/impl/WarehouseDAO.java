@@ -88,7 +88,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	public <T extends I_M_Warehouse> T getById(@NonNull final WarehouseId warehouseId, @NonNull final Class<T> modelType)
 	{
 		final T outOfTrxWarehouseRecord = loadOutOfTrx(warehouseId, modelType);
-		if(outOfTrxWarehouseRecord != null)
+		if (outOfTrxWarehouseRecord != null)
 		{
 			return outOfTrxWarehouseRecord; // with is almost always the case
 		}
@@ -443,12 +443,17 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public int retrieveOrgIdByLocatorId(final int locatorId)
+	public OrgId retrieveOrgIdByLocatorId(final int locatorId)
 	{
 		final String sql = "SELECT AD_Org_ID FROM M_Locator WHERE M_Locator_ID=?";
-		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, locatorId);
+		final int orgIdInt = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, locatorId);
+		if (orgIdInt < 0)
+		{
+			throw new AdempiereException("No Org found for locatorId=" + locatorId);
+		}
+		return OrgId.ofRepoId(orgIdInt);
 	}
-	
+
 	@Override
 	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "#" + I_M_Locator.COLUMNNAME_Value)
 	public LocatorId retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorValue, final WarehouseId warehouseId)

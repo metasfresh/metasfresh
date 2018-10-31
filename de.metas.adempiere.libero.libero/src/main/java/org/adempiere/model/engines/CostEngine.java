@@ -45,9 +45,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_C_AcctSchema;
@@ -71,6 +74,7 @@ import org.slf4j.Logger;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
@@ -85,6 +89,8 @@ import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -116,7 +122,7 @@ public class CostEngine
 				cc,
 				resourceProduct,
 				MAcctSchema.get(ctx, d.getC_AcctSchema_ID()),
-				Adempiere.getBean(ICostElementRepository.class).getById(d.getM_CostElement_ID()));
+				Adempiere.getBean(ICostElementRepository.class).getById(CostElementId.ofRepoId(d.getM_CostElement_ID())));
 	}
 
 	public CostAmount getResourceActualCostRate(final I_PP_Cost_Collector cc, final int S_Resource_ID, final CostDimension d, final String trxName)
@@ -135,7 +141,7 @@ public class CostEngine
 				cc,
 				resourceProduct,
 				as,
-				Adempiere.getBean(ICostElementRepository.class).getById(d.getM_CostElement_ID()),
+				Adempiere.getBean(ICostElementRepository.class).getById(CostElementId.ofRepoId(d.getM_CostElement_ID())),
 				trxName);
 	}
 
@@ -188,10 +194,10 @@ public class CostEngine
 				.costingLevel(Services.get(IProductBL.class).getCostingLevel(product, as))
 				.acctSchemaId(as.getC_AcctSchema_ID())
 				.costTypeId(as.getM_CostType_ID())
-				.productId(product.getM_Product_ID())
-				.clientId(product.getAD_Client_ID())
-				.orgId(cc.getAD_Org_ID())
-				.attributeSetInstanceId(cc.getM_AttributeSetInstance_ID())
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.clientId(ClientId.ofRepoId(product.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(cc.getAD_Org_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(cc.getM_AttributeSetInstance_ID()))
 				.build();
 		return Adempiere.getBean(ICurrentCostsRepository.class).getOrCreate(costSegment, element.getId());
 	}
@@ -204,7 +210,7 @@ public class CostEngine
 				as, as.getM_CostType_ID(),
 				0, // AD_Org_ID,
 				0, // M_ASI_ID,
-				element.getId());
+				element.getId().getRepoId());
 
 		final I_PP_Order_Cost oc = d.toQueryBuilder(I_PP_Order_Cost.class, trxName)
 				.addEqualsFilter(I_PP_Order_Cost.COLUMNNAME_PP_Order_ID, cc.getPP_Order_ID())
@@ -234,7 +240,7 @@ public class CostEngine
 	 * @param M_AttributeSetInstance_ID
 	 * @return I_M_CostDetail
 	 */
-	private I_M_CostDetail getCostDetail(final IDocumentLine model, final MTransaction mtrx, final I_C_AcctSchema as, final int M_CostElement_ID)
+	private I_M_CostDetail getCostDetail(final IDocumentLine model, final MTransaction mtrx, final I_C_AcctSchema as, final CostElementId costElementId)
 	{
 		final String whereClause = "AD_Client_ID=? AND AD_Org_ID=?"
 				+ " AND " + model.get_TableName() + "_ID=?"
@@ -251,7 +257,7 @@ public class CostEngine
 				mtrx.getM_AttributeSetInstance_ID(),
 				as.getC_AcctSchema_ID(),
 				// as.getM_CostType_ID(),
-				M_CostElement_ID,
+				costElementId,
 		};
 		return new Query(mtrx.getCtx(), I_M_CostDetail.Table_Name, whereClause, mtrx.get_TrxName())
 				.setParameters(params)
@@ -269,18 +275,19 @@ public class CostEngine
 		final I_PP_Cost_Collector cc = model instanceof MPPCostCollector ? (MPPCostCollector)model : null;
 
 		final Properties ctx = mtrx.getCtx();
+		final ProductId productId = ProductId.ofRepoId(mtrx.getM_Product_ID());
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 
 		for (final I_C_AcctSchema as : getAcctSchema(mtrx))
 		{
 			// Cost Detail
-			final CostingMethod costingMethod = Services.get(IProductBL.class).getCostingMethod(mtrx.getM_Product_ID(), as);
+			final CostingMethod costingMethod = Services.get(IProductBL.class).getCostingMethod(productId, as);
 			// Check costing method
 			if (!getCostingMethod().equals(costingMethod))
 			{
 				throw new LiberoException("Costing method not supported - " + costingMethod);
 			}
 			//
-			final I_M_Product product = MProduct.get(ctx, mtrx.getM_Product_ID());
 			for (final CostElement element : getCostElements())
 			{
 				//
@@ -297,7 +304,8 @@ public class CostEngine
 				if (cd == null)		// createNew
 				{
 					cd = createCostDetail(as, mtrx.getAD_Org_ID(),
-							mtrx.getM_Product_ID(), mtrx.getM_AttributeSetInstance_ID(),
+							productId,
+							mtrx.getM_AttributeSetInstance_ID(),
 							element.getId(),
 							amt,
 							qty,
@@ -346,18 +354,23 @@ public class CostEngine
 				&& costDetail.getDeltaQty().signum() == 0);
 	}	// isDelta
 
-	private static I_M_CostDetail createCostDetail(final I_C_AcctSchema as, final int AD_Org_ID,
-			final int M_Product_ID, final int M_AttributeSetInstance_ID,
-			final int M_CostElement_ID, final CostAmount amt, final BigDecimal Qty,
-			final String Description, final String trxName)
+	private static I_M_CostDetail createCostDetail(final I_C_AcctSchema as,
+			final int AD_Org_ID,
+			final ProductId M_Product_ID, 
+			final int M_AttributeSetInstance_ID,
+			final CostElementId costElementId, 
+			final CostAmount amt, 
+			final BigDecimal Qty,
+			final String Description, 
+			final String trxName)
 	{
 		final I_M_CostDetail cd = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class, new PlainContextAware(Env.getCtx(), trxName));
 		cd.setAD_Org_ID(AD_Org_ID);
 		cd.setC_AcctSchema_ID(as.getC_AcctSchema_ID());
-		cd.setM_Product_ID(M_Product_ID);
+		cd.setM_Product_ID(ProductId.toRepoId(M_Product_ID));
 		cd.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
 		//
-		cd.setM_CostElement_ID(M_CostElement_ID);
+		cd.setM_CostElement_ID(CostElementId.toRepoId(costElementId));
 		//
 		cd.setAmt(amt.getValue());
 		cd.setQty(Qty);
@@ -367,7 +380,7 @@ public class CostEngine
 		return cd;
 	}	// I_M_CostDetail
 
-	private int deleteCostDetail(final IDocumentLine model, final I_C_AcctSchema as, final int M_CostElement_ID,
+	private int deleteCostDetail(final IDocumentLine model, final I_C_AcctSchema as, final CostElementId costElementId,
 			final int M_AttributeSetInstance_ID)
 	{
 		// Delete Unprocessed zero Differences
@@ -382,7 +395,7 @@ public class CostEngine
 				as.getC_AcctSchema_ID(),
 				M_AttributeSetInstance_ID,
 				// as.getM_CostType_ID(),
-				M_CostElement_ID };
+				costElementId };
 
 		final int no = DB.executeUpdateEx(sql, parameters, model.get_TrxName());
 		if (no != 0)
@@ -427,7 +440,7 @@ public class CostEngine
 		return list;
 	}
 
-	private I_M_CostDetail getCostDetail(final I_PP_Cost_Collector cc, final int M_CostElement_ID)
+	private I_M_CostDetail getCostDetail(final I_PP_Cost_Collector cc, final CostElementId costElementId)
 	{
 		final String whereClause = I_M_CostDetail.COLUMNNAME_PP_Cost_Collector_ID + "=?"
 				+ " AND " + I_M_CostDetail.COLUMNNAME_M_CostElement_ID + "=?";
@@ -435,7 +448,7 @@ public class CostEngine
 		final Properties ctx = InterfaceWrapperHelper.getCtx(cc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(cc);
 		final I_M_CostDetail cd = new Query(ctx, I_M_CostDetail.Table_Name, whereClause, trxName)
-				.setParameters(new Object[] { cc.getPP_Cost_Collector_ID(), M_CostElement_ID })
+				.setParameters(new Object[] { cc.getPP_Cost_Collector_ID(), costElementId })
 				.setOrderBy(I_M_CostDetail.COLUMNNAME_Qty + " DESC")  // TODO : fix this; we have 2 cost details; now we are taking the one with bigger qty; we must find a proper way
 				.first(I_M_CostDetail.class);
 		return cd;
@@ -488,7 +501,7 @@ public class CostEngine
 		}
 		if (element != null)
 		{
-			cdv.setM_CostElement_ID(element.getId());
+			cdv.setM_CostElement_ID(element.getId().getRepoId());
 		}
 		//
 		cdv.setPP_Cost_Collector_ID(ccv.getPP_Cost_Collector_ID());
@@ -527,13 +540,13 @@ public class CostEngine
 						as.getM_CostType_ID(),
 						0, // AD_Org_ID,
 						0, // M_ASI_ID
-						element.getId());
+						element.getId().getRepoId());
 				final CostAmount price = getResourceActualCostRate(cc, cc.getS_Resource_ID(), d, cc.get_TrxName());
 				final CostAmount costs = price.multiply(qty).roundToPrecisionIfNeeded(as.getCostingPrecision());
 				//
 				final I_M_CostDetail cd = createCostDetail(as,
 						0, // AD_Org_ID,
-						d.getM_Product_ID(),
+						ProductId.ofRepoId(d.getM_Product_ID()),
 						0, // M_AttributeSetInstance_ID,
 						element.getId(),
 						costs.negate(),

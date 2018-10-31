@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MPeriod;
@@ -117,20 +118,20 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	}
 
 	/** @return payment org (if exists) or line's org */
-	public int getPaymentOrg_ID()
+	public OrgId getPaymentOrgId()
 	{
 		final I_C_Payment paymentToUse = getC_Payment();
-		return getPaymentOrg_ID(paymentToUse);
+		return getPaymentOrgId(paymentToUse);
 	}	// getAD_Org_ID
 
 	/** @return C_Payment.AD_Org_ID (if any); fallback to {@link #getAD_Org_ID()} */
-	public final int getPaymentOrg_ID(final I_C_Payment paymentToUseOrNull)
+	public final OrgId getPaymentOrgId(final I_C_Payment paymentToUseOrNull)
 	{
 		if (paymentToUseOrNull != null)
 		{
-			return paymentToUseOrNull.getAD_Org_ID();
+			return OrgId.ofRepoId(paymentToUseOrNull.getAD_Org_ID());
 		}
-		return super.getAD_Org_ID();
+		return super.getOrgId();
 
 	}
 
@@ -210,8 +211,8 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		return currencyConversionBL.createCurrencyConversionContext(
 				getDateAcct(),
 				conversionTypeId,
-				getAD_Client_ID(),
-				getAD_Org_ID());
+				getClientId(),
+				getOrgId());
 	}
 
 	public boolean isBankTransfer()

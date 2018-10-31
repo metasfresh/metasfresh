@@ -1,7 +1,11 @@
 package de.metas.costing;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,26 +40,23 @@ public class CostSegment
 	int costTypeId;
 	CostingLevel costingLevel;
 	
-	int clientId;
-	int orgId;
-	int productId;
-	int attributeSetInstanceId;
+	ClientId clientId;
+	OrgId orgId;
+	ProductId productId;
+	AttributeSetInstanceId attributeSetInstanceId;
 
 	@Builder(toBuilder = true)
 	private CostSegment(
 			@NonNull final CostingLevel costingLevel,
 			final int acctSchemaId,
 			final int costTypeId,
-			final int clientId,
-			final int orgId,
-			final int productId,
-			final int attributeSetInstanceId)
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
+			@NonNull final ProductId productId,
+			final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		Check.assume(acctSchemaId > 0, "acctSchemaId > 0");
 		Check.assume(costTypeId > 0, "costTypeId > 0");
-		Check.assume(clientId > 0, "clientId > 0");
-		Check.assume(orgId >= 0, "orgId >= 0");
-		Check.assume(productId > 0, "productId > 0");
 
 		this.costingLevel = costingLevel;
 		this.acctSchemaId = acctSchemaId;
@@ -65,17 +66,17 @@ public class CostSegment
 
 		if (costingLevel == CostingLevel.Client)
 		{
-			this.orgId = 0;
-			this.attributeSetInstanceId = 0;
+			this.orgId = OrgId.ANY;
+			this.attributeSetInstanceId = AttributeSetInstanceId.NONE;
 		}
 		else if (costingLevel == CostingLevel.Organization)
 		{
 			this.orgId = orgId;
-			this.attributeSetInstanceId = 0;
+			this.attributeSetInstanceId = AttributeSetInstanceId.NONE;
 		}
 		else if (costingLevel == CostingLevel.BatchLot)
 		{
-			this.orgId = 0;
+			this.orgId = OrgId.ANY;
 			this.attributeSetInstanceId = attributeSetInstanceId;
 		}
 		else

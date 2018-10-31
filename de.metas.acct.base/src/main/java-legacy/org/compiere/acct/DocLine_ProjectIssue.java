@@ -63,10 +63,10 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 			return costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(getAD_Client_ID())
-							.orgId(getAD_Org_ID())
-							.productId(getM_Product_ID())
-							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+							.clientId(getClientId())
+							.orgId(getOrgId())
+							.productId(getProductId())
+							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofProjectIssueId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A

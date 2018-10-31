@@ -56,6 +56,7 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.ICostElementRepository;
 import de.metas.currency.ICurrencyBL;
@@ -124,7 +125,7 @@ public class CopyPriceToStandard extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
-		CostElement element = Adempiere.getBean(ICostElementRepository.class).getById(p_M_CostElement_ID);
+		CostElement element = Adempiere.getBean(ICostElementRepository.class).getById(CostElementId.ofRepoId(p_M_CostElement_ID));
 		if (CostElementType.Material != element.getCostElementType())
 		{
 			throw new LiberoException("Only Material Cost Elements are allowed");
@@ -149,7 +150,7 @@ public class CopyPriceToStandard extends JavaProcess
 			Collection<I_M_Cost> costs = d.toQuery(I_M_Cost.class, get_TrxName()).list();
 			for (I_M_Cost cost : costs)
 			{
-				if (cost.getM_CostElement_ID() == element.getId())
+				if (cost.getM_CostElement_ID() == element.getId().getRepoId())
 				{
 					cost.setFutureCostPrice(price);
 					InterfaceWrapperHelper.save(cost);

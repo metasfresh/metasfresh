@@ -7,6 +7,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product_Category;
@@ -111,7 +112,8 @@ public class M_CostElement
 		}
 
 		// Costing Methods on AS level
-		for (final I_C_AcctSchema as : Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(Env.getCtx(), costElement.getAD_Client_ID()))
+		final ClientId clientId = ClientId.ofRepoId(costElement.getAD_Client_ID());
+		for (final I_C_AcctSchema as : Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(Env.getCtx(), clientId))
 		{
 			if (as.getCostingMethod().equals(costElement.getCostingMethod()))
 			{
@@ -122,7 +124,7 @@ public class M_CostElement
 		// Costing Methods on PC level
 		final String productCategoriesUsingCostingMethod = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product_Category_Acct.class)
-				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_AD_Client_ID, costElement.getAD_Client_ID())
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_AD_Client_ID, clientId)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_CostingMethod, costElement.getCostingMethod())
 				.andCollect(I_M_Product_Category_Acct.COLUMN_M_Product_Category_ID)
 				.orderBy(I_M_Product_Category.COLUMN_Name)

@@ -10,34 +10,36 @@ package de.metas.currency;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Currency;
 
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /**
  * Currency conversion services.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface ICurrencyBL extends ISingletonService
 {
@@ -45,11 +47,20 @@ public interface ICurrencyBL extends ISingletonService
 
 	ICurrencyConversionContext createCurrencyConversionContext(Date ConvDate, int ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
 
+	default ICurrencyConversionContext createCurrencyConversionContext(
+			final Date ConvDate,
+			final int ConversionType_ID,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
+	{
+		return createCurrencyConversionContext(ConvDate, ConversionType_ID, clientId.getRepoId(), orgId.getRepoId());
+	}
+
 	ICurrencyConversionContext createCurrencyConversionContext(Date ConvDate, ConversionType conversionType, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Gets base currency of AD_Client and AD_Org which are set in context.
-	 * 
+	 *
 	 * @param ctx
 	 * @return currency
 	 */
@@ -57,7 +68,7 @@ public interface ICurrencyBL extends ISingletonService
 
 	/**
 	 * Gets base currency of given AD_Client and AD_Org
-	 * 
+	 *
 	 * @param ctx
 	 * @return currency
 	 */
@@ -65,7 +76,7 @@ public interface ICurrencyBL extends ISingletonService
 
 	/**
 	 * Convert an amount to base Currency
-	 * 
+	 *
 	 * @param ctx context
 	 * @param CurFrom_ID The C_Currency_ID FROM
 	 * @param ConvDate conversion date - if null - use current date
@@ -79,7 +90,7 @@ public interface ICurrencyBL extends ISingletonService
 
 	/**
 	 * Convert an amount
-	 * 
+	 *
 	 * @param ctx context
 	 * @param CurFrom_ID The C_Currency_ID FROM
 	 * @param CurTo_ID The C_Currency_ID TO
@@ -94,7 +105,7 @@ public interface ICurrencyBL extends ISingletonService
 
 	/**
 	 * Convert an amount with today's default rate
-	 * 
+	 *
 	 * @param ctx context
 	 * @param CurFrom_ID The C_Currency_ID FROM
 	 * @param CurTo_ID The C_Currency_ID TO
@@ -109,7 +120,7 @@ public interface ICurrencyBL extends ISingletonService
 
 	/**
 	 * Get Currency Conversion Rate
-	 * 
+	 *
 	 * @param CurFrom_ID The C_Currency_ID FROM
 	 * @param CurTo_ID The C_Currency_ID TO
 	 * @param ConvDate The Conversion date - if null - use current date
@@ -125,7 +136,7 @@ public interface ICurrencyBL extends ISingletonService
 	ICurrencyRate getCurrencyRateOrNull(ICurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
 
 	/**
-	 * 
+	 *
 	 * @param conversionCtx
 	 * @param currencyFromId
 	 * @param currencyToId

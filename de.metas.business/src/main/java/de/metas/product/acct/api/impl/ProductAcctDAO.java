@@ -65,7 +65,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 			return null;
 		}
 
-		final I_M_Product_Acct acctInfo = retrieveProductAcctOrNull(ctx, acctSchema.getC_AcctSchema_ID(), productId.getRepoId());
+		final I_M_Product_Acct acctInfo = retrieveProductAcctOrNull(ctx, acctSchema.getC_AcctSchema_ID(), productId);
 		if (acctInfo == null)
 		{
 			return null;
@@ -75,7 +75,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	}
 
 	@Cached(cacheName = I_M_Product_Acct.Table_Name)
-	public I_M_Product_Acct retrieveProductAcctOrNull(@CacheCtx final Properties ctx, final int acctSchemaId, final int productId)
+	public I_M_Product_Acct retrieveProductAcctOrNull(@CacheCtx final Properties ctx, final int acctSchemaId, final ProductId productId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product_Acct.class, ctx, ITrx.TRXNAME_None)
@@ -87,7 +87,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	}
 
 	@Override
-	public I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, final int productId)
+	public I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, final ProductId productId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(acctSchema);
 		final int acctSchemaId = acctSchema.getC_AcctSchema_ID();
@@ -99,7 +99,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	{
 		final Properties ctx = Env.getCtx();
 		final I_C_AcctSchema schema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx);
-		final I_M_Product_Acct productAcct = retrieveProductAcctOrNull(ctx, schema.getC_AcctSchema_ID(), productId.getRepoId());
+		final I_M_Product_Acct productAcct = retrieveProductAcctOrNull(ctx, schema.getC_AcctSchema_ID(), productId);
 		if (productAcct == null)
 		{
 			return null;

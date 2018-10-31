@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Order;
@@ -102,10 +104,10 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 				.costingLevel(getProductCostingLevel(as))
 				.acctSchemaId(as.getC_AcctSchema_ID())
 				.costTypeId(as.getM_CostType_ID())
-				.clientId(getAD_Client_ID())
-				.orgId(getAD_Org_ID())
-				.productId(getM_Product_ID())
-				.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+				.clientId(getClientId())
+				.orgId(getOrgId())
+				.productId(getProductId())
+				.attributeSetInstanceId(getAttributeSetInstanceId())
 				.build();
 		final CostAmount costPrice = costDetailService.getCurrentCosts(costSegment, CostingMethod.StandardCosting).getTotalAmount();
 		return costPrice.multiply(getQty());
@@ -131,10 +133,10 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return costDetailService.createCostDetail(
 				CostDetailCreateRequest.builder()
 						.acctSchemaId(as.getC_AcctSchema_ID())
-						.clientId(orderLine.getAD_Client_ID())
-						.orgId(orderLine.getAD_Org_ID())
-						.productId(getM_Product_ID())
-						.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+						.clientId(ClientId.ofRepoId(orderLine.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
+						.productId(getProductId())
+						.attributeSetInstanceId(getAttributeSetInstanceId())
 						.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
 						.qty(qty)
 						.amt(amt)

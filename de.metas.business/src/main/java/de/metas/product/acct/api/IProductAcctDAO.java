@@ -50,7 +50,7 @@ public interface IProductAcctDAO extends ISingletonService
 	 */
 	ActivityId retrieveActivityForAcct(ClientId clientId, OrgId orgId, ProductId productId);
 
-	I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, int productId);
+	I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, ProductId productId);
 
 	ActivityId getProductActivityId(ProductId productId);
 

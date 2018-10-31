@@ -2,6 +2,7 @@ package de.metas.costing.interceptors;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
-import de.metas.util.Check;
 
 /*
  * #%L
@@ -44,10 +44,11 @@ public class M_Product_Category_Acct
 	public void checkCosting(final I_M_Product_Category_Acct pca)
 	{
 		// Create Cost Elements
-		final String costingMethod = pca.getCostingMethod();
-		if (!Check.isEmpty(costingMethod, true))
+		final CostingMethod costingMethod = CostingMethod.ofNullableCode(pca.getCostingMethod());
+		if (costingMethod != null)
 		{
-			costElementRepo.getOrCreateMaterialCostElement(pca.getAD_Client_ID(), CostingMethod.ofNullableCode(costingMethod));
+			final ClientId clientId = ClientId.ofRepoId(pca.getAD_Client_ID());
+			costElementRepo.getOrCreateMaterialCostElement(clientId, costingMethod);
 		}
 	}
 }

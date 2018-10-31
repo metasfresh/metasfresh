@@ -10,7 +10,10 @@ import java.util.stream.Stream;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
@@ -31,6 +34,7 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
@@ -46,6 +50,7 @@ import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyRate;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -163,8 +168,8 @@ public class CostingService implements ICostingService
 		final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				TimeUtil.asTimestamp(request.getDate()),
 				request.getCurrencyConversionTypeId(),
-				request.getClientId(),
-				request.getOrgId());
+				request.getClientId().getRepoId(),
+				request.getOrgId().getRepoId());
 		final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getAmt().getCurrencyId(), acctCurrencyId);
 		final BigDecimal amtConv = rate.convertAmount(request.getAmt().getValue(), as.getCostingPrecision());
 
@@ -182,7 +187,7 @@ public class CostingService implements ICostingService
 	{
 		if (costDetail.isChangingCosts())
 		{
-			final int costElementId = costDetail.getM_CostElement_ID();
+			final CostElementId costElementId = CostElementId.ofRepoId(costDetail.getM_CostElement_ID());
 			final CostElement costElement = costElementRepo.getById(costElementId);
 			final CostDetailVoidRequest request = createCostDetailVoidRequest(costDetail);
 			getCostingMethodHandlers(costElement.getCostingMethod(), documentRef)
@@ -199,7 +204,7 @@ public class CostingService implements ICostingService
 		final int costTypeId = acctSchema.getM_CostType_ID();
 
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final int productId = costDetail.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(costDetail.getM_Product_ID());
 		final CostingLevel costingLevel = productBL.getCostingLevel(productId, acctSchema);
 		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(productId);
 
@@ -208,12 +213,13 @@ public class CostingService implements ICostingService
 				.acctSchemaId(acctSchemaId)
 				.costTypeId(costTypeId)
 				.productId(productId)
-				.clientId(costDetail.getAD_Client_ID())
-				.orgId(costDetail.getAD_Org_ID())
-				.attributeSetInstanceId(costDetail.getM_AttributeSetInstance_ID())
+				.clientId(ClientId.ofRepoId(costDetail.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(costDetail.getAD_Org_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(costDetail.getM_AttributeSetInstance_ID()))
 				.build();
 
-		final CostElement costElement = costElementRepo.getById(costDetail.getM_CostElement_ID());
+		final CostElementId costElementId = CostElementId.ofRepoId(costDetail.getM_CostElement_ID());
+		final CostElement costElement = costElementRepo.getById(costElementId);
 
 		final CostAmount amt = CostAmount.of(costDetail.getAmt(), acctSchema.getC_Currency_ID());
 		final Quantity qty = Quantity.of(costDetail.getQty(), productUOM);
@@ -327,7 +333,8 @@ public class CostingService implements ICostingService
 
 	private Stream<CostDetailCreateResult> createReversalCostDetailsAndStream(final I_M_CostDetail costDetail, final CostDetailReverseRequest reversalRequest)
 	{
-		final CostElement costElement = costElementRepo.getById(costDetail.getM_CostElement_ID());
+		final CostElementId costElementId = CostElementId.ofRepoId(costDetail.getM_CostElement_ID());
+		final CostElement costElement = costElementRepo.getById(costElementId);
 		final CostDetailCreateRequest request = createCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail);
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
@@ -345,10 +352,10 @@ public class CostingService implements ICostingService
 
 		return CostDetailCreateRequest.builder()
 				.acctSchemaId(reversalRequest.getAcctSchemaId())
-				.clientId(costDetail.getAD_Client_ID())
-				.orgId(costDetail.getAD_Org_ID())
-				.productId(costDetail.getM_Product_ID())
-				.attributeSetInstanceId(costDetail.getM_AttributeSetInstance_ID())
+				.clientId(ClientId.ofRepoId(costDetail.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(costDetail.getAD_Org_ID()))
+				.productId(ProductId.ofRepoId(costDetail.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(costDetail.getM_AttributeSetInstance_ID()))
 				.documentRef(reversalRequest.getReversalDocumentRef())
 				.initialDocumentRef(reversalRequest.getInitialDocumentRef())
 				.qty(qty)

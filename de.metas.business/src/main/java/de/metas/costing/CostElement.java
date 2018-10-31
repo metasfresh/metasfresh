@@ -1,6 +1,7 @@
 package de.metas.costing;
 
-import de.metas.util.Check;
+import org.adempiere.service.ClientId;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,30 +31,28 @@ import lombok.Value;
 @Value
 public class CostElement
 {
-	int id;
+	CostElementId id;
 	String name;
 	CostElementType costElementType;
 	CostingMethod costingMethod;
 	boolean calculated;
-	int adClientId;
+	ClientId clientId;
 
 	@Builder
 	private CostElement(
-			final int id,
+			@NonNull final CostElementId id,
 			@NonNull final String name,
 			@NonNull final CostElementType costElementType,
 			@NonNull final CostingMethod costingMethod,
 			final boolean calculated,
-			final int adClientId)
+			@NonNull final ClientId clientId)
 	{
-		Check.assume(id > 0, "id > 0");
-
 		this.id = id;
 		this.name = name;
 		this.costElementType = costElementType;
 		this.costingMethod = costingMethod;
 		this.calculated = calculated;
-		this.adClientId = adClientId;
+		this.clientId = clientId;
 	}
 
 	public boolean isMaterialCostingMethod()

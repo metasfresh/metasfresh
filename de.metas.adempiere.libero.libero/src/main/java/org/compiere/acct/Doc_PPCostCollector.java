@@ -197,7 +197,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		dr.setQty(qty);
 		dr.addDescription(desc);
 		dr.setC_Project_ID(docLine.getC_Project_ID());
-		dr.setC_Activity_ID(docLine.getC_Activity_ID());
+		dr.setC_Activity_ID(docLine.getActivityId());
 		dr.setC_Campaign_ID(docLine.getC_Campaign_ID());
 		dr.setM_Locator_ID(docLine.getM_Locator_ID());
 
@@ -205,7 +205,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		cr.setQty(qty);
 		cr.addDescription(desc);
 		cr.setC_Project_ID(docLine.getC_Project_ID());
-		cr.setC_Activity_ID(docLine.getC_Activity_ID());
+		cr.setC_Activity_ID(docLine.getActivityId());
 		cr.setC_Campaign_ID(docLine.getC_Campaign_ID());
 		cr.setM_Locator_ID(docLine.getM_Locator_ID());
 	}

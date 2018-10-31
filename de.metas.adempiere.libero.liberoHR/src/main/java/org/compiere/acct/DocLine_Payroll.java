@@ -22,6 +22,8 @@ import org.compiere.util.Env;
 import org.eevolution.model.MHRConcept;
 import org.eevolution.model.MHRMovement;
 
+import de.metas.product.acct.api.ActivityId;
+
 /**
  *  Payroll Line
  *
@@ -56,7 +58,7 @@ public class DocLine_Payroll extends DocLine<Doc_HRProcess>
 	private int m_HR_Process_ID  = 0;
 	private int m_HR_Concept_ID  = 0;
 	private int m_C_BPartner_ID  = 0;
-	private int m_C_Activity_ID  = 0;
+	private ActivityId m_C_Activity_ID;
 	private String m_AccountSign = "";
 	private BigDecimal m_Amount  = BigDecimal.ZERO;
 	private int m_HR_Department_ID = 0;
@@ -80,7 +82,7 @@ public class DocLine_Payroll extends DocLine<Doc_HRProcess>
 	}
 	
 	@Override
-	public int getC_Activity_ID(){
+	public ActivityId getActivityId() {
 		return m_C_Activity_ID;
 	}  
 

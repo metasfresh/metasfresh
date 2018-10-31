@@ -13,10 +13,12 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostElementRepository;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /*
@@ -48,13 +50,15 @@ public class M_Cost
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_Cost costRecord)
 	{
-		final CostElement ce = Adempiere.getBean(ICostElementRepository.class).getById(costRecord.getM_CostElement_ID());
+		CostElementId costElementId = CostElementId.ofRepoId(costRecord.getM_CostElement_ID());
+		final CostElement ce = Adempiere.getBean(ICostElementRepository.class).getById(costElementId);
 		final boolean userEntry = InterfaceWrapperHelper.isUIAction(costRecord);
 
 		// Check if data entry makes sense
 		if (userEntry)
 		{
-			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(costRecord.getM_Product_ID(), costRecord.getC_AcctSchema_ID());
+			final ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
+			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(productId, costRecord.getC_AcctSchema_ID());
 			if (CostingLevel.Client.equals(costingLevel))
 			{
 				if (costRecord.getAD_Org_ID() > 0 || costRecord.getM_AttributeSetInstance_ID() > 0)

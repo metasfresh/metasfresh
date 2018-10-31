@@ -45,6 +45,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
@@ -69,6 +72,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -78,6 +82,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -256,7 +261,7 @@ public class RollupBillOfMaterial extends JavaProcess
 
 			final CostSegment costSegment = baseCost.getCostSegment()
 					.toBuilder()
-					.productId(bomline.getM_Product_ID())
+					.productId(ProductId.ofRepoId(bomline.getM_Product_ID()))
 					.build();
 			final CurrentCost cost = currentCostsRepo.getOrCreate(costSegment, costElement.getId());
 			cost.setCurrentCostPriceLL(costPrice);
@@ -343,7 +348,7 @@ public class RollupBillOfMaterial extends JavaProcess
 		return costPriceLL;
 	}
 
-	private Collection<CurrentCost> getCosts(final MProduct product, final int costElementId)
+	private Collection<CurrentCost> getCosts(final I_M_Product product, final CostElementId costElementId)
 	{
 		final CostSegment costSegment = createCostSegment(product);
 		final CurrentCost cost = currentCostsRepo.getOrNull(costSegment, costElementId);
@@ -354,7 +359,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	{
 		final MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
 
-		final int productId = product.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final CostingLevel costingLevel = productBL.getCostingLevel(productId, as);
 
 		return CostSegment.builder()
@@ -362,9 +367,9 @@ public class RollupBillOfMaterial extends JavaProcess
 				.acctSchemaId(as.getC_AcctSchema_ID())
 				.costTypeId(p_M_CostType_ID)
 				.productId(productId)
-				.clientId(product.getAD_Client_ID())
-				.orgId(p_AD_Org_ID)
-				.attributeSetInstanceId(0)
+				.clientId(ClientId.ofRepoId(product.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(p_AD_Org_ID))
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.build();
 
 	}

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.exception.AccountingException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
@@ -72,9 +73,9 @@ public interface IAcctSchemaDAO extends ISingletonService
 	 * @param adClientId AD_Client_ID
 	 * @return client accounting schemas
 	 */
-	List<I_C_AcctSchema> retrieveClientAcctSchemas(Properties ctx, int adClientId);
+	List<I_C_AcctSchema> retrieveClientAcctSchemas(Properties ctx, ClientId adClientId);
 	
-	default List<I_C_AcctSchema> retrieveClientAcctSchemas(final int adClientId)
+	default List<I_C_AcctSchema> retrieveClientAcctSchemas(final ClientId adClientId)
 	{
 		return retrieveClientAcctSchemas(Env.getCtx(), adClientId);
 	}

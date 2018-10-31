@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.report.MReportTree;
 import org.compiere.util.KeyNamePair;
@@ -85,14 +87,14 @@ public class MAcctSchema extends X_C_AcctSchema
 	@Deprecated
 	public static MAcctSchema[] getClientAcctSchema (final Properties ctx, final int AD_Client_ID)
 	{
-		final List<I_C_AcctSchema> clientAcctSchemas = Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(ctx, AD_Client_ID);
+		final List<I_C_AcctSchema> clientAcctSchemas = Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(ctx, ClientId.ofRepoId(AD_Client_ID));
 		return LegacyAdapters.convertToPOArray(clientAcctSchemas, MAcctSchema.class);
 	}	//	getClientAcctSchema
 
 	@Deprecated
 	public static MAcctSchema[] getClientAcctSchema (final int AD_Client_ID)
 	{
-		final List<I_C_AcctSchema> clientAcctSchemas = Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(AD_Client_ID);
+		final List<I_C_AcctSchema> clientAcctSchemas = Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(ClientId.ofRepoId(AD_Client_ID));
 		return LegacyAdapters.convertToPOArray(clientAcctSchemas, MAcctSchema.class);
 	}
 
@@ -404,9 +406,9 @@ public class MAcctSchema extends X_C_AcctSchema
 		return true;
 	}	//	isSkipOrg
 	
-	public boolean isAllowPostingForOrg(final int adOrgId)
+	public boolean isAllowPostingForOrg(final OrgId adOrgId)
 	{
-		return !isSkipOrg(adOrgId);
+		return !isSkipOrg(OrgId.toRepoId(adOrgId));
 	}
 	
 	/**

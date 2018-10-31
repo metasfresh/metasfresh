@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
@@ -56,12 +57,12 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		return movementLine.getM_AttributeSetInstanceTo_ID();
 	}
 
-	private final int getFromOrgId()
+	private final OrgId getFromOrgId()
 	{
 		return Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(getM_Locator_ID());
 	}
 
-	private final int getToOrgId()
+	private final OrgId getToOrgId()
 	{
 		return Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(getM_LocatorTo_ID());
 	}
@@ -122,10 +123,10 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 	{
 		return CostDetailCreateRequest.builder()
 				.acctSchemaId(as.getC_AcctSchema_ID())
-				.clientId(getAD_Client_ID())
+				.clientId(getClientId())
 				.orgId(getFromOrgId())
-				.productId(getM_Product_ID())
-				.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+				.productId(getProductId())
+				.attributeSetInstanceId(getAttributeSetInstanceId())
 				.documentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
 				.qty(getQty().negate())
 				.amt(CostAmount.zero(as.getC_Currency_ID())) // expect to be calculated
@@ -137,10 +138,10 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 	{
 		return CostDetailCreateRequest.builder()
 				.acctSchemaId(as.getC_AcctSchema_ID())
-				.clientId(getAD_Client_ID())
+				.clientId(getClientId())
 				.orgId(getToOrgId())
-				.productId(getM_Product_ID())
-				.attributeSetInstanceId(getM_AttributeSetInstanceTo_ID())
+				.productId(getProductId())
+				.attributeSetInstanceId(getAttributeSetInstanceId())
 				.documentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
 				.qty(getQty())
 				.amt(amt)

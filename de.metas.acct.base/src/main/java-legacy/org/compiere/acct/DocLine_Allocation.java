@@ -26,6 +26,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
@@ -361,15 +362,15 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return invoice == null ? -1 : invoice.getC_Currency_ID();
 	}	// getInvoiceC_Currency_ID
 
-	public int getInvoiceOrg_ID()
+	public OrgId getInvoiceOrgId()
 	{
 		final I_C_Invoice invoice = getC_Invoice();
 		if (invoice != null)
 		{
-			return invoice.getAD_Org_ID();
+			return OrgId.ofRepoId(invoice.getAD_Org_ID());
 		}
 
-		return getAD_Org_ID();
+		return getOrgId();
 	}
 
 	public int getInvoiceBPartner_ID()
@@ -554,21 +555,21 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getC_Payment() != null || getC_CashLine() != null;
 	}
 
-	public final int getPaymentOrg_ID()
+	public final OrgId getPaymentOrgId()
 	{
 		final I_C_Payment payment = getC_Payment();
 		if (payment != null)
 		{
-			return payment.getAD_Org_ID();
+			return OrgId.ofRepoId(payment.getAD_Org_ID());
 		}
 
 		final I_C_CashLine cashLine = getC_CashLine();
 		if (cashLine != null)
 		{
-			return cashLine.getAD_Org_ID();
+			return OrgId.ofRepoId(cashLine.getAD_Org_ID());
 		}
 
-		return getAD_Org_ID();
+		return getOrgId();
 	}
 
 	public final int getPaymentBPartner_ID()

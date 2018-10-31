@@ -26,13 +26,13 @@ import org.compiere.model.I_M_Product;
 
 public interface ICurrentCostsRepository
 {
-	CurrentCost getOrNull(CostSegment costSegment, int costElementId);
+	CurrentCost getOrNull(CostSegment costSegment, CostElementId costElementId);
 
-	CurrentCost getOrCreate(CostSegment costSegment, int costElementId);
+	CurrentCost getOrCreate(CostSegment costSegment, CostElementId costElementId);
 
-	CurrentCost create(CostSegment costSegment, int costElementId);
+	CurrentCost create(CostSegment costSegment, CostElementId costElementId);
 
-	void createIfMissing(CostSegment costSegment, int costElementId);
+	void createIfMissing(CostSegment costSegment, CostElementId costElementId);
 
 	void createDefaultProductCosts(I_M_Product product);
 

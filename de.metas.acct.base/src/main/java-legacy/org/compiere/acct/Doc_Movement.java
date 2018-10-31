@@ -134,7 +134,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 				.setAmtSourceDrOrCr(outboundCosts.getValue()) // from (-) CR
 				.setQty(line.getQty().negate()) // outgoing
 				.locatorId(line.getM_Locator_ID())
-				.activityId(line.getC_ActivityFrom_ID())
+				.activityId(line.getActivityFromId())
 				.buildAndAdd();
 
 		//
@@ -147,7 +147,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 				.setAmtSourceDrOrCr(inboundCosts.getValue()) // to (+) DR
 				.setQty(line.getQty()) // incoming
 				.locatorId(line.getM_LocatorTo_ID())
-				.activityId(line.getC_Activity_ID())
+				.activityId(line.getActivityId())
 				.buildAndAdd();
 	}
 

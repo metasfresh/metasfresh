@@ -3,6 +3,7 @@ package de.metas.costing.interceptors;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
@@ -61,7 +62,8 @@ public class C_AcctSchema
 		}
 
 		// Create Cost Elements
-		costElementRepo.getOrCreateMaterialCostElement(acctSchema.getAD_Client_ID(), CostingMethod.ofNullableCode(acctSchema.getCostingMethod()));
+		final ClientId clientId = ClientId.ofRepoId(acctSchema.getAD_Client_ID());
+		costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.ofNullableCode(acctSchema.getCostingMethod()));
 
 		// Default Costing Level
 		if (acctSchema.getCostingLevel() == null)

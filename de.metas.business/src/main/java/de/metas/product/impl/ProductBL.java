@@ -315,16 +315,16 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public CostingLevel getCostingLevel(final int productId, final I_C_AcctSchema as)
+	public CostingLevel getCostingLevel(final ProductId productId, final I_C_AcctSchema as)
 	{
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getCostingLevel(product, as);
 	}
 
 	@Override
-	public CostingLevel getCostingLevel(final int productId, final int acctSchemaId)
+	public CostingLevel getCostingLevel(final ProductId productId, final int acctSchemaId)
 	{
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		final I_C_AcctSchema as = loadOutOfTrx(acctSchemaId, I_C_AcctSchema.class);
 		return getCostingLevel(product, as);
 	}
@@ -350,9 +350,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public CostingMethod getCostingMethod(final int productId, final I_C_AcctSchema as)
+	public CostingMethod getCostingMethod(final ProductId productId, final I_C_AcctSchema as)
 	{
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getCostingMethod(product, as);
 	}
 
@@ -410,10 +410,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isASIMandatory(final int productId, final boolean isSOTrx)
+	public boolean isASIMandatory(@NonNull final ProductId productId, final boolean isSOTrx)
 	{
-		Check.assume(productId > 0, "productId > 0");
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return isASIMandatory(product, isSOTrx);
 	}
 

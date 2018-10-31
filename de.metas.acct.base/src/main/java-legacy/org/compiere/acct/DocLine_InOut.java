@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_OrderLine;
@@ -83,10 +84,12 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	/**
 	 * @return order's org if defined, else doc line's org
 	 */
-	public final int getOrder_Org_ID()
+	public final OrgId getOrderOrgId()
 	{
 		final I_C_OrderLine orderLine = getOrderLineOrNull();
-		return orderLine != null ? orderLine.getAD_Org_ID() : getAD_Org_ID();
+		return orderLine != null
+				? OrgId.ofRepoId(orderLine.getAD_Org_ID())
+				: getOrgId();
 	}
 
 	public MAccount getProductAssetAccount(final I_C_AcctSchema as)
@@ -124,10 +127,10 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			return costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(getAD_Client_ID())
-							.orgId(getAD_Org_ID())
-							.productId(getM_Product_ID())
-							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+							.clientId(getClientId())
+							.orgId(getOrgId())
+							.productId(getProductId())
+							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A
@@ -154,10 +157,10 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			return costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(getAD_Client_ID())
-							.orgId(getAD_Org_ID())
-							.productId(getM_Product_ID())
-							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+							.clientId(getClientId())
+							.orgId(getOrgId())
+							.productId(getProductId())
+							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getC_Currency_ID())) // expect to be calculated

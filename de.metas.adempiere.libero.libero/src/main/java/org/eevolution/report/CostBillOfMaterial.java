@@ -236,7 +236,7 @@ public class CostBillOfMaterial extends JavaProcess
 			tboml.setM_CostType_ID(p_M_CostType_ID);
 			tboml.setCostingMethod(p_ConstingMethod);
 			tboml.setAD_PInstance_ID(getPinstanceId().getRepoId());
-			tboml.setM_CostElement_ID(costElement.getId());
+			tboml.setM_CostElement_ID(costElement.getId().getRepoId());
 			tboml.setM_Product_ID(product.get_ID());
 			tboml.setQtyBOM(qty);
 			//
@@ -252,7 +252,7 @@ public class CostBillOfMaterial extends JavaProcess
 					p_M_CostType_ID,
 					p_AD_Org_ID,
 					0, // ASI
-					costElement.getId());
+					costElement.getId().getRepoId());
 			BigDecimal currentCostPrice = BigDecimal.ZERO;
 			BigDecimal currentCostPriceLL = BigDecimal.ZERO;
 			BigDecimal futureCostPrice = BigDecimal.ZERO;
@@ -299,8 +299,13 @@ public class CostBillOfMaterial extends JavaProcess
 
 	private List<CostElement> m_costElements = null;
 
-	private static Collection<I_M_Cost> getCostsByElement(final MProduct product, final MAcctSchema as,
-			final int M_CostType_ID, final int AD_Org_ID, final int M_AttributeSetInstance_ID, final int M_CostElement_ID)
+	private static Collection<I_M_Cost> getCostsByElement(
+			final MProduct product, 
+			final MAcctSchema as,
+			final int M_CostType_ID, 
+			final int AD_Org_ID, 
+			final int M_AttributeSetInstance_ID,
+			final int M_CostElement_ID)
 	{
 		final CostDimension cd = new CostDimension(product, as, M_CostType_ID,
 				AD_Org_ID, M_AttributeSetInstance_ID,

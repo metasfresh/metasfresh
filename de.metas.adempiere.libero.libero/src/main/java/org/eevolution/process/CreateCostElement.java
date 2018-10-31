@@ -40,13 +40,16 @@ package org.eevolution.process;
  */
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
@@ -54,12 +57,16 @@ import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -134,13 +141,14 @@ public class CreateCostElement extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final I_C_AcctSchema as = InterfaceWrapperHelper.create(getCtx(), p_C_AcctSchema_ID, I_C_AcctSchema.class, ITrx.TRXNAME_None);
+		final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
 
 		int count_all = 0;
-		for (final int orgId : getOrgs(as))
+		for (final OrgId orgId : getOrgIds(as))
 		{
 			for (final I_M_Product product : getProducts())
 			{
-				final int productId = product.getM_Product_ID();
+				final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 				final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
 
 				final CostSegment costSegment = CostSegment.builder()
@@ -148,14 +156,15 @@ public class CreateCostElement extends JavaProcess
 						.acctSchemaId(as.getC_AcctSchema_ID())
 						.costTypeId(p_M_CostType_ID)
 						.productId(productId)
-						.clientId(getAD_Client_ID())
+						.clientId(clientId)
 						.orgId(orgId)
-						.attributeSetInstanceId(0)
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 						.build();
 
 				for (final I_M_CostElement element : getElements())
 				{
-					currentCostsRepo.createIfMissing(costSegment, element.getM_CostElement_ID());
+					final CostElementId costElementId = CostElementId.ofRepoId(element.getM_CostElement_ID());
+					currentCostsRepo.createIfMissing(costSegment, costElementId);
 					count_all++;
 				}
 			}
@@ -170,7 +179,7 @@ public class CreateCostElement extends JavaProcess
 	 * @param as Account Schema
 	 * @return array of IDs
 	 */
-	private List<Integer> getOrgs(final I_C_AcctSchema as)
+	private Set<OrgId> getOrgIds(final I_C_AcctSchema as)
 	{
 		// Set the Costing Level
 		final CostingLevel costingLevel = CostingLevel.forCode(as.getCostingLevel());
@@ -178,7 +187,7 @@ public class CreateCostElement extends JavaProcess
 		{
 			p_AD_Org_ID = 0;
 			p_M_AttributeSetInstance_ID = 0;
-			return Collections.singletonList(0);
+			return ImmutableSet.of(OrgId.ANY);
 		}
 
 		final IQueryBuilder<I_AD_Org> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Org.class, this)
@@ -192,7 +201,7 @@ public class CreateCostElement extends JavaProcess
 
 		return queryBuilder
 				.create()
-				.listIds();
+				.listIds(OrgId::ofRepoId);
 	}
 
 	private Collection<I_M_CostElement> getElements()

@@ -24,6 +24,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
@@ -517,10 +518,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return costDetailService
 				.createCostDetail(CostDetailCreateRequest.builder()
 						.acctSchemaId(as.getC_AcctSchema_ID())
-						.clientId(getAD_Client_ID())
-						.orgId(getAD_Org_ID())
-						.productId(getM_Product_ID())
-						.attributeSetInstanceId(matchInv.getM_AttributeSetInstance_ID())
+						.clientId(getClientId())
+						.orgId(getOrgId())
+						.productId(getProductId())
+						.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(matchInv.getM_AttributeSetInstance_ID()))
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
 						.qty(matchQty)
 						.amt(CostAmount.of(matchAmt, currentId))

@@ -109,9 +109,9 @@ public interface IProductBL extends ISingletonService
 
 	CostingLevel getCostingLevel(I_M_Product product, I_C_AcctSchema as);
 
-	CostingLevel getCostingLevel(int productId, I_C_AcctSchema as);
+	CostingLevel getCostingLevel(ProductId productId, I_C_AcctSchema as);
 
-	CostingLevel getCostingLevel(int productId, int acctSchemaId);
+	CostingLevel getCostingLevel(ProductId productId, int acctSchemaId);
 
 	/**
 	 * Get Product Costing Method
@@ -121,7 +121,7 @@ public interface IProductBL extends ISingletonService
 	 */
 	CostingMethod getCostingMethod(I_M_Product product, I_C_AcctSchema as);
 
-	CostingMethod getCostingMethod(int productId, I_C_AcctSchema as);
+	CostingMethod getCostingMethod(ProductId productId, I_C_AcctSchema as);
 
 	/** @return UOM used in material storage; never return null; */
 	I_C_UOM getStockingUOM(I_M_Product product);
@@ -173,7 +173,7 @@ public interface IProductBL extends ISingletonService
 	 */
 	boolean isASIMandatory(I_M_Product product, boolean isSOTrx);
 
-	boolean isASIMandatory(int productId, boolean isSOTrx);
+	boolean isASIMandatory(ProductId productId, boolean isSOTrx);
 
 	/**
 	 * Has the Product Instance Attribute

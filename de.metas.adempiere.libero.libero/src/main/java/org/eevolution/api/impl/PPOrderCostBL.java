@@ -6,7 +6,10 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Product;
@@ -27,6 +30,7 @@ import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 public class PPOrderCostBL implements IPPOrderCostBL
@@ -55,15 +59,15 @@ public class PPOrderCostBL implements IPPOrderCostBL
 		//
 		// Create Standard Costs for Order Header (resulting product)
 		{
-			final int productId = ppOrder.getM_Product_ID();
+			final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 			costSegments.add(CostSegment.builder()
 					.costingLevel(productBL.getCostingLevel(productId, as))
 					.acctSchemaId(as.getC_AcctSchema_ID())
 					.costTypeId(as.getM_CostType_ID())
 					.productId(productId)
-					.clientId(ppOrder.getAD_Client_ID())
-					.orgId(ppOrder.getAD_Org_ID())
-					.attributeSetInstanceId(ppOrder.getM_AttributeSetInstance_ID())
+					.clientId(ClientId.ofRepoId(ppOrder.getAD_Client_ID()))
+					.orgId(OrgId.ofRepoId(ppOrder.getAD_Org_ID()))
+					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID()))
 					.build());
 		}
 
@@ -72,15 +76,15 @@ public class PPOrderCostBL implements IPPOrderCostBL
 		final List<I_PP_Order_BOMLine> ppOrderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
 		for (final I_PP_Order_BOMLine line : ppOrderBOMLines)
 		{
-			final int productId = line.getM_Product_ID();
+			final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
 			costSegments.add(CostSegment.builder()
 					.costingLevel(productBL.getCostingLevel(productId, as))
 					.acctSchemaId(as.getC_AcctSchema_ID())
 					.costTypeId(as.getM_CostType_ID())
 					.productId(productId)
-					.clientId(line.getAD_Client_ID())
-					.orgId(line.getAD_Org_ID())
-					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+					.clientId(ClientId.ofRepoId(line.getAD_Client_ID()))
+					.orgId(OrgId.ofRepoId(line.getAD_Org_ID()))
+					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID()))
 					.build());
 		}
 
@@ -100,16 +104,16 @@ public class PPOrderCostBL implements IPPOrderCostBL
 				// shall not happen, but we can skip it for now
 				continue;
 			}
-			final int resourceProductId = resourceProduct.getM_Product_ID();
+			final ProductId resourceProductId = ProductId.ofRepoId(resourceProduct.getM_Product_ID());
 
 			costSegments.add(CostSegment.builder()
 					.costingLevel(productBL.getCostingLevel(resourceProduct, as))
 					.acctSchemaId(as.getC_AcctSchema_ID())
 					.costTypeId(as.getM_CostType_ID())
 					.productId(resourceProductId)
-					.clientId(node.getAD_Client_ID())
-					.orgId(node.getAD_Org_ID())
-					.attributeSetInstanceId(0)
+					.clientId(ClientId.ofRepoId(node.getAD_Client_ID()))
+					.orgId(OrgId.ofRepoId(node.getAD_Org_ID()))
+					.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 					.build());
 		}
 
@@ -131,13 +135,13 @@ public class PPOrderCostBL implements IPPOrderCostBL
 		final I_PP_Order_Cost ppOrderCost = InterfaceWrapperHelper.newInstance(I_PP_Order_Cost.class, ppOrder);
 		ppOrderCost.setPP_Order_ID(ppOrder.getPP_Order_ID());
 
-		ppOrderCost.setAD_Org_ID(costSegment.getOrgId());
+		ppOrderCost.setAD_Org_ID(costSegment.getOrgId().getRepoId());
 		ppOrderCost.setC_AcctSchema_ID(costSegment.getAcctSchemaId());
 		ppOrderCost.setM_CostType_ID(costSegment.getCostTypeId());
-		ppOrderCost.setM_Product_ID(costSegment.getProductId());
-		ppOrderCost.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId());
+		ppOrderCost.setM_Product_ID(costSegment.getProductId().getRepoId());
+		ppOrderCost.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId().getRepoId());
 
-		ppOrderCost.setM_CostElement_ID(costElement.getId());
+		ppOrderCost.setM_CostElement_ID(costElement.getId().getRepoId());
 
 		ppOrderCost.setCurrentCostPrice(amount.getValue());
 		// ppOrderCost.setCurrentCostPriceLL(cost.getCurrentCostPriceLL());

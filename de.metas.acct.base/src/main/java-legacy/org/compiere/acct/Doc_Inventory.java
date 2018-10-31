@@ -142,7 +142,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 				.buildAndAdd();
 		if (line.getC_Charge_ID() > 0)	// explicit overwrite for charge
 		{
-			cr.setAD_Org_ID(line.getAD_Org_ID());
+			cr.setAD_Org_ID(line.getOrgId());
 		}
 	}
 

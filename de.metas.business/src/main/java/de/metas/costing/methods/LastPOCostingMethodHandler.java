@@ -183,9 +183,9 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	public static BigDecimal getLastPOPrice(final CostSegment costSegment)
 	{
 		final Properties ctx = Env.getCtx();
-		final int productId = costSegment.getProductId();
-		final int AD_Org_ID = costSegment.getOrgId();
-		final int M_ASI_ID = costSegment.getAttributeSetInstanceId();
+		final int productId = costSegment.getProductId().getRepoId();
+		final int AD_Org_ID = costSegment.getOrgId().getRepoId();
+		final int M_ASI_ID = costSegment.getAttributeSetInstanceId().getRepoId();
 		final MAcctSchema as = MAcctSchema.get(ctx, costSegment.getAcctSchemaId());
 		final int C_Currency_ID = as.getC_Currency_ID();
 

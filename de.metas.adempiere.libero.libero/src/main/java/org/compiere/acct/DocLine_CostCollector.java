@@ -21,6 +21,7 @@ import de.metas.costing.CostElementType;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /**
@@ -75,8 +76,8 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 	@Override
 	public MAccount getAccount(final ProductAcctType acctType, final I_C_AcctSchema as)
 	{
-		final int productId = getM_Product_ID();
-		if (productId <= 0)
+		final ProductId productId = getProductId();
+		if (productId == null)
 		{
 			return super.getAccount(acctType, as);
 		}
@@ -116,10 +117,10 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 			return costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(getAD_Client_ID())
-							.orgId(getAD_Org_ID())
-							.productId(getM_Product_ID())
-							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+							.clientId(getClientId())
+							.orgId(getOrgId())
+							.productId(getProductId())
+							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A

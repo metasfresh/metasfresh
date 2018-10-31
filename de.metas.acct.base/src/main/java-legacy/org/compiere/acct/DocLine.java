@@ -24,7 +24,10 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -44,6 +47,9 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.quantity.Quantity;
 import de.metas.util.NumberUtils;
@@ -141,9 +147,9 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return m_doc.getTrxName();
 	}
 
-	protected final int getAD_Client_ID()
+	protected final ClientId getClientId()
 	{
-		return m_doc.getAD_Client_ID();
+		return m_doc.getClientId();
 	}
 
 	private final PO getPO()
@@ -391,7 +397,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		//
 		// Charge account
-		if (getM_Product_ID() <= 0 && getC_Charge_ID() > 0)
+		if (getProductId() == null && getC_Charge_ID() > 0)
 		{
 			final MAccount acct;
 			if (!m_doc.isSOTrx())
@@ -419,14 +425,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private MAccount getProductAccount(final ProductAcctType acctType, final I_C_AcctSchema as)
 	{
 		// No Product - get Default from Product Category
-		final int productId = getM_Product_ID();
-		if (productId <= 0)
+		final ProductId productId = getProductId();
+		if (productId == null)
 		{
 			return getAccountDefault(acctType, as);
 		}
 
 		final I_M_Product_Acct productAcct = productAcctDAO.retrieveProductAcctOrNull(as, productId);
-		if(productAcct == null)
+		if (productAcct == null)
 		{
 			final String productName = Services.get(IProductBL.class).getProductName(productId);
 			throw newPostingException().setC_AcctSchema(as).setDetailMessage("Product " + productName + " has no accounting definition records");
@@ -511,14 +517,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getPO().get_ID();
 	}
 
-	public final int getAD_Org_ID()
+	public final OrgId getOrgId()
 	{
-		return getPO().getAD_Org_ID();
+		return OrgId.ofRepoId(getPO().getAD_Org_ID());
 	}
 
-	public final int getM_Product_ID()
+	public final ProductId getProductId()
 	{
-		return getValue("M_Product_ID");
+		return ProductId.ofRepoIdOrNull(getValue("M_Product_ID"));
 	}
 
 	/**
@@ -555,17 +561,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	public final CostingMethod getProductCostingMethod(final I_C_AcctSchema as)
 	{
-		return productBL.getCostingMethod(getM_Product_ID(), as);
+		return productBL.getCostingMethod(getProductId(), as);
 	}
 
 	public final CostingLevel getProductCostingLevel(final I_C_AcctSchema as)
 	{
-		return productBL.getCostingLevel(getM_Product_ID(), as);
+		return productBL.getCostingLevel(getProductId(), as);
 	}
 
-	public final int getM_AttributeSetInstance_ID()
+	public final AttributeSetInstanceId getAttributeSetInstanceId()
 	{
-		return getValue("M_AttributeSetInstance_ID");
+		return AttributeSetInstanceId.ofRepoIdOrNone(getValue("M_AttributeSetInstance_ID"));
 	}
 
 	public final int getM_Locator_ID()
@@ -600,10 +606,10 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		if (_product == null)
 		{
-			final int productId = getM_Product_ID();
-			if (productId > 0)
+			final ProductId productId = getProductId();
+			if (productId != null)
 			{
-				_product = InterfaceWrapperHelper.loadOutOfTrx(productId, I_M_Product.class);
+				_product = Services.get(IProductDAO.class).getById(productId);
 			}
 		}
 		return _product;
@@ -611,7 +617,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	protected final I_C_UOM getProductStockingUOM()
 	{
-		return productBL.getStockingUOM(getM_Product_ID());
+		return productBL.getStockingUOM(getProductId());
 	}
 
 	/**
@@ -781,14 +787,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("C_Campaign_ID");
 	}
 
-	public final int getC_ActivityFrom_ID()
+	public final ActivityId getActivityFromId()
 	{
-		return getValue("C_ActivityFrom_ID");
+		return ActivityId.ofRepoIdOrNull(getValue("C_ActivityFrom_ID"));
 	}
 
-	public int getC_Activity_ID()
+	public ActivityId getActivityId()
 	{
-		return getValue("C_Activity_ID");
+		return ActivityId.ofRepoIdOrNull(getValue("C_Activity_ID"));
 	}
 
 	public final int getUser1_ID()
@@ -892,7 +898,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 				.omitNullValues()
 				.add("id", get_ID())
 				.add("description", getDescription())
-				.add("productId", getM_Product_ID())
+				.add("productId", getProductId())
 				.add("qty", m_qty)
 				.add("amtSource", getAmtSource())
 				.toString();

@@ -26,17 +26,19 @@ import java.util.function.Consumer;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MFactAcct;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -925,15 +927,14 @@ public final class Fact
 		private int uomId;
 
 		private boolean alsoAddZeroLine = false;
-		
+
 		// Other dimensions
-		private Integer AD_Org_ID;
-		private Integer C_BPartner_ID;
+		private OrgId orgId;
+		private BPartnerId bpartnerId;
 		private Integer C_Tax_ID;
 		private Integer locatorId;
-		private Integer activityId;
+		private ActivityId activityId;
 
-		
 		private FactLineBuilder(final Fact fact)
 		{
 			this.fact = fact;
@@ -1013,7 +1014,7 @@ public final class Fact
 				{
 					log.debug("Both amounts & qty = 0/Null - {}", this);
 					// https://github.com/metasfresh/metasfresh/issues/4147 we might need the zero-line later
-					if(!alsoAddZeroLine)
+					if (!alsoAddZeroLine)
 					{
 						return null;
 					}
@@ -1049,16 +1050,16 @@ public final class Fact
 				line.setM_Locator_ID(locatorId);
 			}
 			//
-			final Integer adOrgId = getAD_Org_ID();
-			if (adOrgId != null)
+			final OrgId orgId = getOrgId();
+			if (orgId != null)
 			{
-				line.setAD_Org_ID(adOrgId);
+				line.setAD_Org_ID(orgId.getRepoId());
 			}
 			//
-			final Integer bpartnerId = getC_BPartner_ID();
+			final BPartnerId bpartnerId = getBpartnerId();
 			if (bpartnerId != null)
 			{
-				line.setC_BPartner_ID(bpartnerId);
+				line.setC_BPartner_ID(bpartnerId.getRepoId());
 			}
 			//
 			final Integer taxId = getC_Tax_ID();
@@ -1067,10 +1068,10 @@ public final class Fact
 				line.setC_Tax_ID(taxId);
 			}
 			//
-			final Integer activityId = getActivityId();
+			final ActivityId activityId = getActivityId();
 			if (activityId != null)
 			{
-				line.setC_Activity_ID(activityId);
+				line.setC_Activity_ID(activityId.getRepoId());
 			}
 
 			//
@@ -1186,7 +1187,7 @@ public final class Fact
 			return this;
 		}
 
-		/** 
+		/**
 		 * Usually the {@link #buildAndAdd()} method ignores fact lines that have zero/null source amount and zero/null qty.
 		 * Invoke this builder method still have the builder add them.
 		 */
@@ -1195,7 +1196,7 @@ public final class Fact
 			alsoAddZeroLine = true;
 			return this;
 		}
-		
+
 		public FactLineBuilder setC_Currency_ID(final int currencyId)
 		{
 			assertNotBuild();
@@ -1263,32 +1264,51 @@ public final class Fact
 			return this;
 		}
 
+		@Deprecated
 		public FactLineBuilder setAD_Org_ID(Integer adOrgId)
 		{
+			final OrgId orgId = adOrgId != null ? OrgId.ofRepoIdOrNull(adOrgId) : null;
+			return orgId(orgId);
+		}
+
+		public FactLineBuilder orgId(final OrgId orgId)
+		{
 			assertNotBuild();
-			this.AD_Org_ID = adOrgId;
+			this.orgId = orgId;
 			return this;
 		}
 
+		@Deprecated
 		public FactLineBuilder setAD_Org_ID_IfValid(final int adOrgId)
 		{
-			assertNotBuild();
-			if (adOrgId > 0 && adOrgId != Env.CTXVALUE_AD_Org_ID_System)
+			return orgIdIfValid(OrgId.ofRepoIdOrNull(adOrgId));
+		}
+
+		public FactLineBuilder orgIdIfValid(final OrgId orgId)
+		{
+			if (orgId != null && orgId.isRegular())
 			{
-				setAD_Org_ID(adOrgId);
+				orgId(orgId);
 			}
 			return this;
 		}
 
-		private Integer getAD_Org_ID()
+		private OrgId getOrgId()
 		{
-			return AD_Org_ID;
+			return orgId;
 		}
 
-		public FactLineBuilder setC_BPartner_ID(Integer bpartnerId)
+		@Deprecated
+		public FactLineBuilder setC_BPartner_ID(Integer bpartnerIdInt)
+		{
+			final BPartnerId bpartnerId = bpartnerIdInt != null ? BPartnerId.ofRepoIdOrNull(bpartnerIdInt) : null;
+			return bpartnerId(bpartnerId);
+		}
+
+		public FactLineBuilder bpartnerId(final BPartnerId bpartnerId)
 		{
 			assertNotBuild();
-			this.C_BPartner_ID = bpartnerId;
+			this.bpartnerId = bpartnerId;
 			return this;
 		}
 
@@ -1303,9 +1323,9 @@ public final class Fact
 
 		}
 
-		private Integer getC_BPartner_ID()
+		private BPartnerId getBpartnerId()
 		{
-			return C_BPartner_ID;
+			return bpartnerId;
 		}
 
 		public FactLineBuilder setC_Tax_ID(Integer taxId)
@@ -1332,14 +1352,14 @@ public final class Fact
 			return locatorId;
 		}
 
-		public FactLineBuilder activityId(final int activityId)
+		public FactLineBuilder activityId(final ActivityId activityId)
 		{
 			assertNotBuild();
 			this.activityId = activityId;
 			return this;
 		}
 
-		private Integer getActivityId()
+		private ActivityId getActivityId()
 		{
 			return activityId;
 		}

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_CostDetail;
 import org.slf4j.Logger;
@@ -97,16 +98,16 @@ public class CostDetailRepository implements ICostDetailRepository
 				.addEqualsFilter(I_M_CostDetail.COLUMN_C_AcctSchema_ID, query.getAcctSchemaId())
 				.addEqualsFilter(documentRef.getCostDetailColumnName(), documentRef.getRecordId());
 
-		if (query.getAttributeSetInstanceId() > 0)
+		if (query.getAttributeSetInstanceId().isRegular())
 		{
 			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_M_AttributeSetInstance_ID, query.getAttributeSetInstanceId());
 		}
 		else
 		{
-			queryBuilder.addInArrayFilter(I_M_CostDetail.COLUMN_M_AttributeSetInstance_ID, null, 0);
+			queryBuilder.addInArrayFilter(I_M_CostDetail.COLUMN_M_AttributeSetInstance_ID, null, AttributeSetInstanceId.NONE);
 		}
 
-		queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_M_CostElement_ID, query.getCostElementId() > 0 ? query.getCostElementId() : null);
+		queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_M_CostElement_ID, query.getCostElementId());
 
 		if (documentRef.getOutboundTrx() != null)
 		{

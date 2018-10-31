@@ -217,7 +217,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
-		dr.setAD_Org_ID(line.getOrder_Org_ID());		// Revenue X-Org
+		dr.setAD_Org_ID(line.getOrderOrgId().getRepoId());		// Revenue X-Org
 		dr.setQty(line.getQty().negate());
 
 		//
@@ -281,7 +281,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setM_Locator_ID(line.getM_Locator_ID());
 		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
-		cr.setAD_Org_ID(line.getOrder_Org_ID());		// Revenue X-Org
+		cr.setAD_Org_ID(line.getOrderOrgId());		// Revenue X-Org
 		cr.setQty(line.getQty().negate());
 	}
 

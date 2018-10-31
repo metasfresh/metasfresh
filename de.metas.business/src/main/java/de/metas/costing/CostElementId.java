@@ -1,8 +1,6 @@
-package org.adempiere.service;
+package de.metas.costing;
 
 import java.util.Objects;
-
-import org.compiere.util.Env;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -15,7 +13,7 @@ import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -35,34 +33,20 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * AD_Client_ID
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class ClientId implements RepoIdAware
+public class CostElementId implements RepoIdAware
 {
 	@JsonCreator
-	public static ClientId ofRepoId(final int repoId)
+	public static CostElementId ofRepoId(final int repoId)
 	{
-		if (repoId == SYSTEM.repoId)
-		{
-			return SYSTEM;
-		}
-		return new ClientId(repoId);
+		return new CostElementId(repoId);
 	}
 
 	@JsonCreator
-	public static ClientId ofRepoIdOrNull(final int repoId)
+	public static CostElementId ofRepoIdOrNull(final int repoId)
 	{
-		if (repoId == SYSTEM.repoId)
-		{
-			return SYSTEM;
-		}
-		else if (repoId <= 0)
+		if (repoId <= 0)
 		{
 			return null;
 		}
@@ -72,28 +56,16 @@ public class ClientId implements RepoIdAware
 		}
 	}
 
-	public static int toRepoId(final ClientId clientId)
+	public static int toRepoId(final CostElementId id)
 	{
-		return clientId != null ? clientId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
-
-	public static final ClientId SYSTEM = new ClientId();
 
 	int repoId;
 
-	private ClientId(final int repoId)
+	private CostElementId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
-
-	private ClientId()
-	{
-		this.repoId = Env.CTXVALUE_AD_Client_ID_System;
-	}
-
-	public boolean isSystem()
-	{
-		return repoId == Env.CTXVALUE_AD_Client_ID_System;
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_CostElement_ID");
 	}
 
 	@Override
@@ -103,7 +75,7 @@ public class ClientId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final ClientId id1, final ClientId id2)
+	public static boolean equals(final CostElementId id1, final CostElementId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

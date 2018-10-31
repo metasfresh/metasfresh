@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner_Location;
@@ -43,12 +44,13 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
-
 
 /**
  * Accounting Fact Entry.
@@ -60,8 +62,11 @@ import lombok.NonNull;
  *          Chris Farley: Fix Bug [ 1657372 ] M_MatchInv records can not be balanced
  *          https://sourceforge.net/forum/message.php?msg_id=4151117
  *          Carlos Ruiz - globalqss: Add setAmtAcct method rounded by Currency
- *          Armen Rizal, Goodwill Consulting <li>BF [ 1745154 ] Cost in Reversing Material Related Docs Bayu Sistematika - <li>BF [ 2213252 ] Matching Inv-Receipt generated unproperly value for src
- *          amt Teo Sarca <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
+ *          Armen Rizal, Goodwill Consulting
+ *          <li>BF [ 1745154 ] Cost in Reversing Material Related Docs Bayu Sistematika -
+ *          <li>BF [ 2213252 ] Matching Inv-Receipt generated unproperly value for src
+ *          amt Teo Sarca
+ *          <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
  * 
  */
 final class FactLine extends X_Fact_Acct
@@ -205,12 +210,12 @@ final class FactLine extends X_Fact_Acct
 			}
 		}
 	}   // setAccount
-	
+
 	final MAcctSchema getAcctSchema()
 	{
 		return m_acctSchema;
 	}
-	
+
 	/**
 	 * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(MAcctSchema, MAccount)}.
 	 */
@@ -219,7 +224,7 @@ final class FactLine extends X_Fact_Acct
 	{
 		throw new UnsupportedOperationException("Please use setAccount()");
 	}
-	
+
 	/**
 	 * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(MAcctSchema, MAccount)}.
 	 */
@@ -228,7 +233,7 @@ final class FactLine extends X_Fact_Acct
 	{
 		throw new UnsupportedOperationException("Please use setAccount()");
 	}
-	
+
 	public boolean isZeroAmtSource()
 	{
 		return getAmtSourceDr().signum() == 0 && getAmtSourceCr().signum() == 0;
@@ -274,7 +279,7 @@ final class FactLine extends X_Fact_Acct
 		setAmtSourceDr(roundAmountToPrecision("AmtSourceDr", AmtSourceDr, precision));
 		setAmtSourceCr(roundAmountToPrecision("AmtSourceCr", AmtSourceCr, precision));
 	}   // setAmtSource
-	
+
 	/**
 	 * Set Accounted Amounts (alternative: call convert)
 	 * 
@@ -302,14 +307,14 @@ final class FactLine extends X_Fact_Acct
 		setAmtAcctDr(AmtAcctDr);
 		setAmtAcctCr(AmtAcctCr);
 	}   // setAmtAcct
-	
+
 	public final void invertDrAndCrAmounts()
 	{
-		final BigDecimal amtSourceDr = getAmtSourceDr(); 
+		final BigDecimal amtSourceDr = getAmtSourceDr();
 		final BigDecimal amtSourceCr = getAmtSourceCr();
 		final BigDecimal amtAcctDr = getAmtAcctDr();
 		final BigDecimal amtAcctCr = getAmtAcctCr();
-		
+
 		setAmtSourceDr(amtSourceCr);
 		setAmtSourceCr(amtSourceDr);
 		setAmtAcctDr(amtAcctCr);
@@ -324,17 +329,17 @@ final class FactLine extends X_Fact_Acct
 		}
 		invertDrAndCrAmounts();
 	}
-	
+
 	/**
 	 * Negate the DR and CR source and acounted amounts.
 	 */
 	public final void negateDrAndCrAmounts()
 	{
-		final BigDecimal amtSourceDr = getAmtSourceDr(); 
+		final BigDecimal amtSourceDr = getAmtSourceDr();
 		final BigDecimal amtSourceCr = getAmtSourceCr();
 		final BigDecimal amtAcctDr = getAmtAcctDr();
 		final BigDecimal amtAcctCr = getAmtAcctCr();
-		
+
 		setAmtSourceDr(amtSourceDr.negate());
 		setAmtSourceCr(amtSourceCr.negate());
 		setAmtAcctDr(amtAcctDr.negate());
@@ -386,7 +391,7 @@ final class FactLine extends X_Fact_Acct
 				log.debug(ex.getLocalizedMessage(), ex);
 			}
 		}
-		
+
 		return amtRounded;
 	}
 
@@ -400,41 +405,41 @@ final class FactLine extends X_Fact_Acct
 	{
 		m_doc = doc;
 		m_docLine = docLine;
-		
+
 		// reset
 		setAD_Org_ID(0);
 		setC_SalesRegion_ID(0);
-		
+
 		// Client
 		if (getAD_Client_ID() == 0)
 			setAD_Client_ID(m_doc.getAD_Client_ID());
-		
+
 		// Date Trx
 		setDateTrx(m_doc.getDateDoc());
 		if (m_docLine != null && m_docLine.getDateDoc() != null)
 			setDateTrx(m_docLine.getDateDoc());
-		
+
 		// Date Acct
 		setDateAcct(m_doc.getDateAcct());
 		if (m_docLine != null && m_docLine.getDateAcct() != null)
 			setDateAcct(m_docLine.getDateAcct());
-		
+
 		// Period
 		if (m_docLine != null && m_docLine.getC_Period_ID() > 0)
 			setC_Period_ID(m_docLine.getC_Period_ID());
 		else
 			setC_Period_ID(m_doc.getC_Period_ID());
-		
+
 		// Tax
 		if (m_docLine != null)
 			setC_Tax_ID(m_docLine.getC_Tax_ID());
-		
+
 		// Document infos
 		setDocumentNo(m_doc.getDocumentNo());
 		setC_DocType_ID(m_doc.getC_DocType_ID());
 		setDocBaseType(m_doc.getDocumentType());
 		setDocStatus(m_doc.getDocStatus());
-		
+
 		// Description
 		final StringBuilder description = new StringBuilder(m_doc.getDocumentNo());
 		if (m_docLine != null)
@@ -448,21 +453,21 @@ final class FactLine extends X_Fact_Acct
 		else if (m_doc.getDescription() != null && m_doc.getDescription().length() > 0)
 			description.append(" (").append(m_doc.getDescription()).append(")");
 		setDescription(description.toString());
-		
+
 		// Journal Info
 		setGL_Budget_ID(m_doc.getGL_Budget_ID());
 		setGL_Category_ID(m_doc.getGL_Category_ID());
 
 		// Product
 		if (m_docLine != null)
-			setM_Product_ID(m_docLine.getM_Product_ID());
+			setM_Product_ID(m_docLine.getProductId());
 		if (getM_Product_ID() == 0)
 			setM_Product_ID(m_doc.getM_Product_ID());
-		
+
 		// UOM
 		if (m_docLine != null)
 			setC_UOM_ID(m_docLine.getC_UOM_ID());
-		
+
 		// Qty
 		if (get_Value("Qty") == null)	// not previously set
 		{
@@ -477,52 +482,52 @@ final class FactLine extends X_Fact_Acct
 			setC_LocFrom_ID(m_docLine.getC_LocFrom_ID());
 		if (getC_LocFrom_ID() == 0)
 			setC_LocFrom_ID(m_doc.getC_LocFrom_ID());
-		
+
 		// Loc To (maybe set earlier)
 		if (getC_LocTo_ID() == 0 && m_docLine != null)
 			setC_LocTo_ID(m_docLine.getC_LocTo_ID());
 		if (getC_LocTo_ID() == 0)
 			setC_LocTo_ID(m_doc.getC_LocTo_ID());
-		
+
 		// BPartner
 		if (m_docLine != null)
 			setC_BPartner_ID(m_docLine.getC_BPartner_ID());
 		if (getC_BPartner_ID() <= 0)
 			setC_BPartner_ID(m_doc.getC_BPartner_ID());
-		
+
 		// Sales Region from BPLocation/Sales Rep
 		// NOTE: it will be set on save or on first call of getC_SalesRegion_ID() method.
-		
+
 		// Trx Org
 		if (m_docLine != null)
 			setAD_OrgTrx_ID(m_docLine.getAD_OrgTrx_ID());
 		if (getAD_OrgTrx_ID() <= 0)
 			setAD_OrgTrx_ID(m_doc.getAD_OrgTrx_ID());
-		
+
 		// Project
 		if (m_docLine != null)
 			setC_Project_ID(m_docLine.getC_Project_ID());
 		if (getC_Project_ID() <= 0)
 			setC_Project_ID(m_doc.getC_Project_ID());
-		
+
 		// Campaign
 		if (m_docLine != null)
 			setC_Campaign_ID(m_docLine.getC_Campaign_ID());
 		if (getC_Campaign_ID() <= 0)
 			setC_Campaign_ID(m_doc.getC_Campaign_ID());
-		
+
 		// Activity
 		if (m_docLine != null)
-			setC_Activity_ID(m_docLine.getC_Activity_ID());
+			setC_Activity_ID(m_docLine.getActivityId());
 		if (getC_Activity_ID() <= 0)
 			setC_Activity_ID(m_doc.getC_Activity_ID());
-		
+
 		// User List 1
 		if (m_docLine != null)
 			setUser1_ID(m_docLine.getUser1_ID());
 		if (getUser1_ID() <= 0)
 			setUser1_ID(m_doc.getUser1_ID());
-		
+
 		// User List 2
 		if (m_docLine != null)
 			setUser2_ID(m_docLine.getUser2_ID());
@@ -530,7 +535,7 @@ final class FactLine extends X_Fact_Acct
 			setUser2_ID(m_doc.getUser2_ID());
 		// References in setAccount
 	}   // setDocumentInfo
-	
+
 	public final Doc<?> getDoc()
 	{
 		return m_doc;
@@ -749,11 +754,11 @@ final class FactLine extends X_Fact_Acct
 	{
 		return getAcctBalance().signum() >= 0;
 	}   // isDrSourceBalance
-	
+
 	/**
 	 * 
 	 * @param factLine
-	 * @return true if the given fact line is booked on same DR/CR side as this line 
+	 * @return true if the given fact line is booked on same DR/CR side as this line
 	 */
 	public boolean isSameAmtSourceDrCrSideAs(final FactLine factLine)
 	{
@@ -763,14 +768,14 @@ final class FactLine extends X_Fact_Acct
 		{
 			return false;
 		}
-		
+
 		final boolean thisCR = getAmtAcctCr().signum() != 0;
 		final boolean otherCR = factLine != null && factLine.getAmtAcctCr().signum() != 0;
 		if (thisCR != otherCR)
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -784,12 +789,12 @@ final class FactLine extends X_Fact_Acct
 		final int amtAcctDrSign = amtAcctDr == null ? 0 : amtAcctDr.signum();
 		final BigDecimal amtAcctCr = getAmtAcctCr();
 		final int amtAcctCrSign = amtAcctCr == null ? 0 : amtAcctCr.signum();
-		
-		if(amtAcctDrSign != 0 && amtAcctCrSign == 0)
+
+		if (amtAcctDrSign != 0 && amtAcctCrSign == 0)
 		{
 			return amtAcctDr;
 		}
-		else if(amtAcctDrSign == 0 && amtAcctCrSign != 0)
+		else if (amtAcctDrSign == 0 && amtAcctCrSign != 0)
 		{
 			return amtAcctCr;
 		}
@@ -803,7 +808,7 @@ final class FactLine extends X_Fact_Acct
 			throw new IllegalStateException("Both AmtAcctDr and AmtAcctCr are not zero: " + this);
 		}
 	}
-	
+
 	/**
 	 * @return AmtSourceDr/AmtAcctDr or AmtSourceCr/AmtAcctCr, which one is not ZERO
 	 * @throws IllegalStateException if both of them are not ZERO
@@ -814,13 +819,13 @@ final class FactLine extends X_Fact_Acct
 		final int amtAcctDrSign = amtAcctDr == null ? 0 : amtAcctDr.signum();
 		final BigDecimal amtAcctCr = getAmtAcctCr();
 		final int amtAcctCrSign = amtAcctCr == null ? 0 : amtAcctCr.signum();
-		
-		if(amtAcctDrSign != 0 && amtAcctCrSign == 0)
+
+		if (amtAcctDrSign != 0 && amtAcctCrSign == 0)
 		{
 			final BigDecimal amtSourceDr = getAmtSourceDr();
 			return AmountSourceAndAcct.of(amtSourceDr, amtAcctDr);
 		}
-		else if(amtAcctDrSign == 0 && amtAcctCrSign != 0)
+		else if (amtAcctDrSign == 0 && amtAcctCrSign != 0)
 		{
 			final BigDecimal amtSourceCr = getAmtSourceCr();
 			return AmountSourceAndAcct.of(amtSourceCr, amtAcctCr);
@@ -834,7 +839,7 @@ final class FactLine extends X_Fact_Acct
 			// shall not happen
 			throw new IllegalStateException("Both AmtAcctDr and AmtAcctCr are not zero: " + this);
 		}
-		
+
 	}
 
 	/**
@@ -899,7 +904,7 @@ final class FactLine extends X_Fact_Acct
 			setCurrencyRate(BigDecimal.ONE);
 			return;
 		}
-		
+
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final ICurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
 		final ICurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, getC_Currency_ID(), m_acctSchema.getC_Currency_ID());
@@ -910,12 +915,12 @@ final class FactLine extends X_Fact_Acct
 		setAmtAcctCr(amtAcctCr);
 		setCurrencyRate(currencyRate.getConversionRate());
 	}	// convert
-	
+
 	public void setCurrencyConversionCtx(final ICurrencyConversionContext currencyConversionCtx)
 	{
 		this.currencyConversionCtx = currencyConversionCtx;
 	}
-	
+
 	private final ICurrencyConversionContext getCurrencyConversionCtx()
 	{
 		// Use preset currency conversion context, if any
@@ -923,25 +928,31 @@ final class FactLine extends X_Fact_Acct
 		{
 			return currencyConversionCtx;
 		}
-		
+
 		// Get Conversion Type from Line or Header
 		int C_ConversionType_ID = ICurrencyBL.DEFAULT_ConversionType_ID;
-		int AD_Org_ID = 0;
+		OrgId orgId = OrgId.ANY;
 		if (m_docLine != null)			// get from line
 		{
 			C_ConversionType_ID = m_docLine.getC_ConversionType_ID();
-			AD_Org_ID = m_docLine.getAD_Org_ID();
+			orgId = m_docLine.getOrgId();
 		}
 		if (C_ConversionType_ID <= 0)	// get from header
 		{
 			Check.assumeNotNull(m_doc, "m_doc not null");
 			C_ConversionType_ID = m_doc.getC_ConversionType_ID();
-			if (AD_Org_ID == 0)
-				AD_Org_ID = m_doc.getAD_Org_ID();
+			if (orgId == null || orgId.isAny())
+			{
+				orgId = m_doc.getOrgId();
+			}
 		}
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(getDateAcct(), C_ConversionType_ID, m_doc.getAD_Client_ID(), AD_Org_ID);
+		final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+				getDateAcct(),
+				C_ConversionType_ID,
+				m_doc.getClientId(),
+				orgId);
 		return conversionCtx;
 	}
 
@@ -988,13 +999,13 @@ final class FactLine extends X_Fact_Acct
 		{
 			return super.getAD_Org_ID();
 		}
-		
+
 		// Prio 1 - get from locator - if exist
 		final int locatorId = getM_Locator_ID();
 		if (locatorId > 0)
 		{
-			final int locatorOrgId = Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(locatorId);
-			if(locatorOrgId > 0)
+			final OrgId locatorOrgId = Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(locatorId);
+			if (locatorOrgId != null)
 			{
 				setAD_Org_ID(locatorOrgId);
 			}
@@ -1002,10 +1013,10 @@ final class FactLine extends X_Fact_Acct
 		// Prio 2 - get from doc line - if exists (document context overwrites)
 		if (m_docLine != null && super.getAD_Org_ID() <= 0)
 		{
-			setAD_Org_ID(m_docLine.getAD_Org_ID());
+			setAD_Org_ID(m_docLine.getOrgId());
 		}
 		// Prio 3 - get from doc - if not GL
-		if (m_doc != null && super.getAD_Org_ID() == 0)
+		if (m_doc != null && super.getAD_Org_ID() <= 0)
 		{
 			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
 			{
@@ -1013,7 +1024,7 @@ final class FactLine extends X_Fact_Acct
 			}
 			else
 			{
-				setAD_Org_ID(m_doc.getAD_Org_ID());
+				setAD_Org_ID(m_doc.getOrgId());
 			}
 		}
 		// Prio 4 - get from account - if not GL
@@ -1021,7 +1032,7 @@ final class FactLine extends X_Fact_Acct
 		{
 			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
 			{
-				setAD_Org_ID(m_doc.getAD_Org_ID());
+				setAD_Org_ID(m_doc.getOrgId());
 			}
 			else
 			{
@@ -1126,7 +1137,7 @@ final class FactLine extends X_Fact_Acct
 				setUser1_ID(m_acct.getUser1_ID());
 			if (getUser2_ID() == 0)
 				setUser2_ID(m_acct.getUser2_ID());
-			
+
 			setVATCodeIfApplies();
 
 			//
@@ -1382,7 +1393,7 @@ final class FactLine extends X_Fact_Acct
 		{
 			return;
 		}
-		
+
 		//
 		// Get context
 		final boolean isSOTrx;
@@ -1396,7 +1407,7 @@ final class FactLine extends X_Fact_Acct
 			final Doc<?> doc = getDoc();
 			isSOTrx = doc.isSOTrx();
 		}
-		
+
 		final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
 		final VATCode vatCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
 				.setC_AcctSchema_ID(getC_AcctSchema_ID())
@@ -1404,13 +1415,29 @@ final class FactLine extends X_Fact_Acct
 				.setIsSOTrx(isSOTrx)
 				.setDate(getDateAcct())
 				.build());
-		
+
 		this.setVATCode(vatCode.getCode());
 	}
-	
+
 	public void setQty(@NonNull final Quantity quantity)
 	{
-		setQty(quantity.getQty());
+		setQty(quantity.getAsBigDecimal());
 		setC_UOM(quantity.getUOM());
 	}
+
+	public void setAD_Org_ID(final OrgId orgId)
+	{
+		super.setAD_Org_ID(OrgId.toRepoId(orgId));
+	}
+
+	public void setM_Product_ID(final ProductId productId)
+	{
+		super.setM_Product_ID(ProductId.toRepoId(productId));
+	}
+
+	public void setC_Activity_ID(final ActivityId activityId)
+	{
+		super.setC_Activity_ID(ActivityId.toRepoId(activityId));
+	}
+
 }	// FactLine

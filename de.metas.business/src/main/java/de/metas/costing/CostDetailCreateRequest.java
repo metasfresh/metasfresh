@@ -5,6 +5,11 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -39,10 +44,10 @@ import lombok.Value;
 public class CostDetailCreateRequest
 {
 	int acctSchemaId;
-	int clientId;
-	int orgId;
-	int productId;
-	int attributeSetInstanceId;
+	ClientId clientId;
+	OrgId orgId;
+	ProductId productId;
+	AttributeSetInstanceId attributeSetInstanceId;
 	CostingDocumentRef documentRef;
 	/** Initial document reference (in case of reversal) */
 	CostingDocumentRef initialDocumentRef;
@@ -56,10 +61,10 @@ public class CostDetailCreateRequest
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
 			final int acctSchemaId,
-			final int clientId,
-			final int orgId,
-			final int productId,
-			final int attributeSetInstanceId,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
+			@NonNull final ProductId productId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final CostingDocumentRef documentRef,
 			@Nullable final CostingDocumentRef initialDocumentRef,
 			@Nullable final CostElement costElement,
@@ -70,12 +75,9 @@ public class CostDetailCreateRequest
 			@Nullable final String description)
 	{
 		// acctSchema: not set is OK
-		Check.assume(clientId > 0, "clientId > 0");
-		Check.assume(productId > 0, "productId > 0");
-
 		this.acctSchemaId = normalizeAcctSchemaId(acctSchemaId);
 		this.clientId = clientId;
-		this.orgId = orgId > 0 ? orgId : 0;
+		this.orgId = orgId;
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId;
 		this.documentRef = documentRef;

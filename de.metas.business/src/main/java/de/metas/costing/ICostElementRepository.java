@@ -2,6 +2,8 @@ package de.metas.costing;
 
 import java.util.List;
 
+import org.adempiere.service.ClientId;
+
 /*
  * #%L
  * de.metas.business
@@ -26,15 +28,15 @@ import java.util.List;
 
 public interface ICostElementRepository
 {
-	CostElement getById(int costElementId);
+	CostElement getById(CostElementId costElementId);
 
-	CostElement getOrCreateMaterialCostElement(int adClientId, CostingMethod costingMethod);
+	CostElement getOrCreateMaterialCostElement(ClientId adClientId, CostingMethod costingMethod);
 
-	List<CostElement> getCostElementsWithCostingMethods(int adClientId);
+	List<CostElement> getCostElementsWithCostingMethods(ClientId adClientId);
 
-	List<CostElement> getMaterialCostingMethods(int adClientId);
+	List<CostElement> getMaterialCostingMethods(ClientId adClientId);
 
-	List<CostElement> getNonCostingMethods(int adClientId);
+	List<CostElement> getNonCostingMethods(ClientId adClientId);
 
 	List<CostElement> getByCostingMethod(CostingMethod costingMethod);
 

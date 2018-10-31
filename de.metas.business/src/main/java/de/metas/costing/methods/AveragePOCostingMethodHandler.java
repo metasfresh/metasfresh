@@ -170,9 +170,9 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = Env.getCtx();
-		final int productId = costSegment.getProductId();
-		final int AD_Org_ID = costSegment.getOrgId();
-		final int M_AttributeSetInstance_ID = costSegment.getAttributeSetInstanceId();
+		final int productId = costSegment.getProductId().getRepoId();
+		final int AD_Org_ID = costSegment.getOrgId().getRepoId();
+		final int M_AttributeSetInstance_ID = costSegment.getAttributeSetInstanceId().getRepoId();				
 		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
 
 		String sql = "SELECT t.MovementQty, mp.Qty, ol.QtyOrdered, ol.PriceCost, ol.PriceActual,"	// 1..5

@@ -39,6 +39,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
@@ -64,6 +65,8 @@ import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -537,7 +540,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					{
 						for (int line = 0; skip && line < docLines.size(); line++)
 						{
-							skip = acctSchema.isSkipOrg(docLines.get(line).getAD_Org_ID());
+							skip = acctSchema.isSkipOrg(docLines.get(line).getOrgId().getRepoId());
 							if (!skip)
 							{
 								break;
@@ -1502,15 +1505,21 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		return getPO().getAD_Client_ID();
 	}
-	
+
 	public final ClientId getClientId()
 	{
 		return ClientId.ofRepoId(getAD_Client_ID());
 	}
 
+	@Deprecated
 	public final int getAD_Org_ID()
 	{
 		return getPO().getAD_Org_ID();
+	}
+
+	public final OrgId getOrgId()
+	{
+		return OrgId.ofRepoId(getAD_Org_ID());
 	}
 
 	public String getDocumentNo()
@@ -1793,14 +1802,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_BP_C_SalesRegion_ID = C_SalesRegion_ID;
 	}
 
-	public final int getC_Activity_ID()
+	public final ActivityId getC_Activity_ID()
 	{
-		return getValueAsIntOrZero("C_Activity_ID");
+		return ActivityId.ofRepoIdOrNull(getValueAsIntOrZero("C_Activity_ID"));
 	}
 
 	public final int getC_Campaign_ID()
 	{
 		return getValueAsIntOrZero("C_Campaign_ID");
+	}
+
+	public final ProductId getProductId()
+	{
+		return ProductId.ofRepoIdOrNull(getM_Product_ID());
 	}
 
 	public final int getM_Product_ID()
