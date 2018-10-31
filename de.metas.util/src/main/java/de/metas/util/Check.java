@@ -150,6 +150,11 @@ public final class Check
 	{
 		assume(cond, defaultExClazz, errMsg, params);
 	}
+	
+	public static <T> void assumeEquals(final T obj1, final T obj2, final String objectName)
+	{
+		assume(Objects.equals(obj1, obj2), "assumed same {} but they were different: {}, {}", objectName, obj1, obj2);
+	}
 
 	/**
 	 * Like {@link #assume(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
