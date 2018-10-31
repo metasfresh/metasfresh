@@ -35,10 +35,10 @@ class TableFilter extends Component {
       supportQuickInput,
       allowCreateNew,
       modalVisible,
+      wrapperHeight
     } = this.props;
 
     const { isTooltipShow } = this.state;
-
     const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
 
     return (
@@ -94,6 +94,7 @@ class TableFilter extends Component {
                 docType={docType}
                 docId={docId}
                 tabId={tabId}
+                forceHeight={wrapperHeight ? wrapperHeight : null}
               />
             )}
         </div>

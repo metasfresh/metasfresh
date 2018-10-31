@@ -478,6 +478,7 @@ class RawLookup extends Component {
                     ? this.props.forcedWidth
                     : this.wrapper && this.wrapper.offsetWidth
                 }
+                height={this.props.forceHeight ? this.props.forceHeight - this.wrapper.offsetHeight : undefined}
                 onChange={this.handleTemporarySelection}
                 onSelect={this.handleSelect}
                 onCancel={this.handleBlur}

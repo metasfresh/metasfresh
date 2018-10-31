@@ -357,6 +357,7 @@ class Lookup extends Component {
       codeSelected,
       scannerElement,
       forceFullWidth,
+      forceHeight,
     } = this.props;
 
     const {
@@ -476,6 +477,7 @@ class Lookup extends Component {
                     this.dropdownListToggle(val, item.field, mouse);
                   }}
                   forcedWidth={width}
+                  forceHeight={forceHeight}
                   parentElement={forceFullWidth && this.dropdown}
                   {...{
                     placeholder,

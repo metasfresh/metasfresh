@@ -244,14 +244,21 @@ export default class SelectionDropdown extends Component {
   );
 
   render() {
-    const { options, width, loading, forceEmpty } = this.props;
+    const { options, width, height, loading, forceEmpty } = this.props;
     const empty = this.size(options) === 0;
+    const style = {
+      width,
+    };
+
+    if (height) {
+      style.maxHeight = height;
+    }
 
     return (
       <div
         ref={ref => (this.wrapper = ref)}
         className="input-dropdown-list"
-        style={{ width }}
+        style={style}
       >
         {loading ? this.loading : (empty || forceEmpty) && this.renderEmpty()}
         {options.map(this.renderOption)}
