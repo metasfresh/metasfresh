@@ -7,7 +7,7 @@ import PaginationContextShortcuts from '../keyshortcuts/PaginationContextShortcu
 
 class TablePagination extends PureComponent {
   static defaultProps = {
-    selected: [],
+    selected: [undefined],
   };
 
   constructor(props) {
