@@ -37,6 +37,7 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -201,7 +202,7 @@ public class CostingService implements ICostingService
 	{
 		final int acctSchemaId = costDetail.getC_AcctSchema_ID();
 		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaById(acctSchemaId);
-		final int costTypeId = acctSchema.getM_CostType_ID();
+		final CostTypeId costTypeId = CostTypeId.ofRepoId(acctSchema.getM_CostType_ID());
 
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final ProductId productId = ProductId.ofRepoId(costDetail.getM_Product_ID());

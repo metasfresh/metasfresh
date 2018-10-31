@@ -279,7 +279,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		final I_C_AcctSchema as = acctSchemaRepo.retrieveAcctSchemaById(request.getAcctSchemaId());
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final CostingLevel costingLevel = productBL.getCostingLevel(request.getProductId(), as);
-		final int costTypeId = as.getM_CostType_ID();
+		final CostTypeId costTypeId = CostTypeId.ofRepoId(as.getM_CostType_ID());
 
 		return CostSegment.builder()
 				.costingLevel(costingLevel)

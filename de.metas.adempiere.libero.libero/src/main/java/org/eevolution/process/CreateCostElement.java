@@ -61,6 +61,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
@@ -142,6 +143,7 @@ public class CreateCostElement extends JavaProcess
 	{
 		final I_C_AcctSchema as = InterfaceWrapperHelper.create(getCtx(), p_C_AcctSchema_ID, I_C_AcctSchema.class, ITrx.TRXNAME_None);
 		final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
+		final CostTypeId costTypeId = CostTypeId.ofRepoId(p_M_CostType_ID);
 
 		int count_all = 0;
 		for (final OrgId orgId : getOrgIds(as))
@@ -154,7 +156,7 @@ public class CreateCostElement extends JavaProcess
 				final CostSegment costSegment = CostSegment.builder()
 						.costingLevel(costingLevel)
 						.acctSchemaId(as.getC_AcctSchema_ID())
-						.costTypeId(p_M_CostType_ID)
+						.costTypeId(costTypeId)
 						.productId(productId)
 						.clientId(clientId)
 						.orgId(orgId)

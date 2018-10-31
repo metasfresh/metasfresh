@@ -25,6 +25,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.material.planning.IResourceProductService;
@@ -53,6 +54,8 @@ public class PPOrderCostBL implements IPPOrderCostBL
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
 		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx);
+		final int acctSchemaId = as.getC_AcctSchema_ID();
+		final CostTypeId costTypeId = CostTypeId.ofRepoId(as.getM_CostType_ID());
 
 		final Set<CostSegment> costSegments = new LinkedHashSet<>();
 
@@ -62,8 +65,8 @@ public class PPOrderCostBL implements IPPOrderCostBL
 			final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 			costSegments.add(CostSegment.builder()
 					.costingLevel(productBL.getCostingLevel(productId, as))
-					.acctSchemaId(as.getC_AcctSchema_ID())
-					.costTypeId(as.getM_CostType_ID())
+					.acctSchemaId(acctSchemaId)
+					.costTypeId(costTypeId)
 					.productId(productId)
 					.clientId(ClientId.ofRepoId(ppOrder.getAD_Client_ID()))
 					.orgId(OrgId.ofRepoId(ppOrder.getAD_Org_ID()))
@@ -79,8 +82,8 @@ public class PPOrderCostBL implements IPPOrderCostBL
 			final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
 			costSegments.add(CostSegment.builder()
 					.costingLevel(productBL.getCostingLevel(productId, as))
-					.acctSchemaId(as.getC_AcctSchema_ID())
-					.costTypeId(as.getM_CostType_ID())
+					.acctSchemaId(acctSchemaId)
+					.costTypeId(costTypeId)
 					.productId(productId)
 					.clientId(ClientId.ofRepoId(line.getAD_Client_ID()))
 					.orgId(OrgId.ofRepoId(line.getAD_Org_ID()))
@@ -108,8 +111,8 @@ public class PPOrderCostBL implements IPPOrderCostBL
 
 			costSegments.add(CostSegment.builder()
 					.costingLevel(productBL.getCostingLevel(resourceProduct, as))
-					.acctSchemaId(as.getC_AcctSchema_ID())
-					.costTypeId(as.getM_CostType_ID())
+					.acctSchemaId(acctSchemaId)
+					.costTypeId(costTypeId)
 					.productId(resourceProductId)
 					.clientId(ClientId.ofRepoId(node.getAD_Client_ID()))
 					.orgId(OrgId.ofRepoId(node.getAD_Org_ID()))
@@ -137,7 +140,7 @@ public class PPOrderCostBL implements IPPOrderCostBL
 
 		ppOrderCost.setAD_Org_ID(costSegment.getOrgId().getRepoId());
 		ppOrderCost.setC_AcctSchema_ID(costSegment.getAcctSchemaId());
-		ppOrderCost.setM_CostType_ID(costSegment.getCostTypeId());
+		ppOrderCost.setM_CostType_ID(costSegment.getCostTypeId().getRepoId());
 		ppOrderCost.setM_Product_ID(costSegment.getProductId().getRepoId());
 		ppOrderCost.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId().getRepoId());
 

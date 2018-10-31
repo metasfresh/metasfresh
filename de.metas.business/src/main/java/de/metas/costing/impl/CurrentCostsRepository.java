@@ -32,6 +32,7 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
@@ -146,7 +147,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		final I_M_Cost costRecord = InterfaceWrapperHelper.newInstance(I_M_Cost.class);
 		costRecord.setAD_Org_ID(costSegment.getOrgId().getRepoId());
 		costRecord.setC_AcctSchema_ID(costSegment.getAcctSchemaId());
-		costRecord.setM_CostType_ID(costSegment.getCostTypeId());
+		costRecord.setM_CostType_ID(costSegment.getCostTypeId().getRepoId());
 		costRecord.setM_Product_ID(costSegment.getProductId().getRepoId());
 		costRecord.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId().getRepoId());
 		costRecord.setM_CostElement_ID(costElementId.getRepoId());
@@ -191,7 +192,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(costingLevel)
 				.acctSchemaId(costRecord.getC_AcctSchema_ID())
-				.costTypeId(costRecord.getM_CostType_ID())
+				.costTypeId(CostTypeId.ofRepoId(costRecord.getM_CostType_ID()))
 				.productId(productId)
 				.clientId(ClientId.ofRepoId(costRecord.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(costRecord.getAD_Org_ID()))
@@ -257,6 +258,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				continue;
 			}
 
+			final int acctSchemaId = as.getC_AcctSchema_ID();
+			final CostTypeId costTypeId = CostTypeId.ofRepoId(as.getM_CostType_ID());
 			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
 
 			// Create Std Costing
@@ -264,8 +267,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			{
 				final CostSegment costSegment = CostSegment.builder()
 						.costingLevel(costingLevel)
-						.acctSchemaId(as.getC_AcctSchema_ID())
-						.costTypeId(as.getM_CostType_ID())
+						.acctSchemaId(acctSchemaId)
+						.costTypeId(costTypeId)
 						.productId(productId)
 						.clientId(clientId)
 						.orgId(OrgId.ANY)
@@ -281,8 +284,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				{
 					final CostSegment costSegment = CostSegment.builder()
 							.costingLevel(costingLevel)
-							.acctSchemaId(as.getC_AcctSchema_ID())
-							.costTypeId(as.getM_CostType_ID())
+							.acctSchemaId(acctSchemaId)
+							.costTypeId(costTypeId)
 							.productId(productId)
 							.clientId(clientId)
 							.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))

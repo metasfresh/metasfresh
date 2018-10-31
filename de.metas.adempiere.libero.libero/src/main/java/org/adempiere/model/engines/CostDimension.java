@@ -42,6 +42,7 @@ import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -320,10 +321,9 @@ public final class CostDimension
 				.orgId(OrgId.ofRepoId(AD_Org_ID))
 				.productId(ProductId.ofRepoId(M_Product_ID))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(M_AttributeSetInstance_ID))
-				.costTypeId(M_CostType_ID)
+				.costTypeId(CostTypeId.ofRepoId(M_CostType_ID))
 				.acctSchemaId(C_AcctSchema_ID)
 				.costingLevel(CostingLevel.forCode(as.getCostingLevel()))
-				.costTypeId(as.getM_CostType_ID())
 				.build();
 	}
 

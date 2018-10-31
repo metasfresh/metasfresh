@@ -77,6 +77,7 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
@@ -193,7 +194,7 @@ public class CostEngine
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(Services.get(IProductBL.class).getCostingLevel(product, as))
 				.acctSchemaId(as.getC_AcctSchema_ID())
-				.costTypeId(as.getM_CostType_ID())
+				.costTypeId(CostTypeId.ofRepoId(as.getM_CostType_ID()))
 				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.clientId(ClientId.ofRepoId(product.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(cc.getAD_Org_ID()))

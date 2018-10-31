@@ -20,6 +20,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
@@ -103,7 +104,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(getProductCostingLevel(as))
 				.acctSchemaId(as.getC_AcctSchema_ID())
-				.costTypeId(as.getM_CostType_ID())
+				.costTypeId(CostTypeId.ofRepoId(as.getM_CostType_ID()))
 				.clientId(getClientId())
 				.orgId(getOrgId())
 				.productId(getProductId())

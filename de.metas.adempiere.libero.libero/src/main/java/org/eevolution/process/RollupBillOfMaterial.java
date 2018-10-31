@@ -74,6 +74,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
@@ -365,7 +366,7 @@ public class RollupBillOfMaterial extends JavaProcess
 		return CostSegment.builder()
 				.costingLevel(costingLevel)
 				.acctSchemaId(as.getC_AcctSchema_ID())
-				.costTypeId(p_M_CostType_ID)
+				.costTypeId(CostTypeId.ofRepoId(p_M_CostType_ID))
 				.productId(productId)
 				.clientId(ClientId.ofRepoId(product.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(p_AD_Org_ID))

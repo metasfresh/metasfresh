@@ -37,7 +37,7 @@ import lombok.Value;
 public class CostSegment
 {
 	int acctSchemaId;
-	int costTypeId;
+	CostTypeId costTypeId;
 	CostingLevel costingLevel;
 	
 	ClientId clientId;
@@ -49,14 +49,13 @@ public class CostSegment
 	private CostSegment(
 			@NonNull final CostingLevel costingLevel,
 			final int acctSchemaId,
-			final int costTypeId,
+			@NonNull final CostTypeId costTypeId,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		Check.assume(acctSchemaId > 0, "acctSchemaId > 0");
-		Check.assume(costTypeId > 0, "costTypeId > 0");
 
 		this.costingLevel = costingLevel;
 		this.acctSchemaId = acctSchemaId;
