@@ -1,5 +1,7 @@
 package org.adempiere.ad.column.model.interceptor;
 
+import lombok.NonNull;
+
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -38,13 +40,13 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_AD_Column.class)
-@Component("org.adempiere.ad.column.model.interceptor.AutoApplyValidationRuleConfigMI")
-public class AutoApplyValidationRuleConfigMI
+@Component("org.adempiere.ad.column.model.interceptor.AD_Column_AutoApplyValidationRuleConfig")
+public class AD_Column_AutoApplyValidationRuleConfig
 {
 	private IModelValidationEngine engine;
 
 	@Init
-	public void initialize(IModelValidationEngine engine)
+	public void initialize(@NonNull final IModelValidationEngine engine)
 	{
 		if (this.engine != null)
 		{

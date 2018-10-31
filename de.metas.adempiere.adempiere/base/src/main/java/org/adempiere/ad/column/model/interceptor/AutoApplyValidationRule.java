@@ -1,6 +1,7 @@
 package org.adempiere.ad.column.model.interceptor;
 
 import lombok.NonNull;
+import lombok.ToString;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
@@ -15,13 +16,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
 /*
@@ -46,19 +45,17 @@ import de.metas.util.Services;
  * #L%
  */
 
+@ToString(exclude = { "m_AD_Client_ID", "engine" })
 public class AutoApplyValidationRule implements IModelInterceptor
 {
-
-	private static final Logger logger = LogManager.getLogger(AutoApplyValidationRule.class);
-
 	private int m_AD_Client_ID = -1;
 	private IModelValidationEngine engine;
 
-	private final ImmutableMap<String, I_AD_Column> columns;
-
 	private final String tableName;
 
-	AutoApplyValidationRule(
+	private final ImmutableMap<String, I_AD_Column> columns;
+
+	public AutoApplyValidationRule(
 			@NonNull final String tableName,
 			@NonNull final ImmutableList<I_AD_Column> columns)
 	{
@@ -67,7 +64,9 @@ public class AutoApplyValidationRule implements IModelInterceptor
 	}
 
 	@Override
-	public void initialize(IModelValidationEngine engine, I_AD_Client client)
+	public void initialize(
+			@NonNull final IModelValidationEngine engine,
+			@NonNull final I_AD_Client client)
 	{
 		if (this.engine != null)
 		{
@@ -91,11 +90,12 @@ public class AutoApplyValidationRule implements IModelInterceptor
 	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
 		// nothing
-
 	}
 
 	@Override
-	public void onModelChange(Object recordModel, ModelChangeType changeType)
+	public void onModelChange(
+			@NonNull final Object recordModel,
+			@NonNull final ModelChangeType changeType)
 	{
 		if (!ModelChangeType.BEFORE_NEW.equals(changeType))
 		{
@@ -134,8 +134,9 @@ public class AutoApplyValidationRule implements IModelInterceptor
 					.orderBy(tableRefInfo.getKeyColumn())
 					.create()
 					.firstId();
-			// todo handle e.g. AD_User_ID with possibility of 0
-			if (resultId > 0)
+
+			final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(orderLineColumnInfo.getColumnName());
+			if (resultId >= firstValidId)
 			{
 				InterfaceWrapperHelper.setValue(recordModel, orderLineColumnInfo.getColumnName(), resultId);
 			}
@@ -147,6 +148,5 @@ public class AutoApplyValidationRule implements IModelInterceptor
 	public void onDocValidate(Object model, DocTimingType timing) throws Exception
 	{
 		// nothing
-
 	}
 }
