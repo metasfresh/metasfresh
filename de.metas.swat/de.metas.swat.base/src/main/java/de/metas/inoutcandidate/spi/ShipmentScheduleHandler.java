@@ -40,6 +40,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 
@@ -167,11 +168,8 @@ public abstract class ShipmentScheduleHandler
 	/**
 	 * Create a new deliver request for the given <code>sched</code>.<br>
 	 * This method shall be called by {@link IShipmentScheduleHandlerBL#createDeliverRequest(I_M_ShipmentSchedule)}, not directly by a user.
-	 *
-	 * @param sched
-	 * @return
 	 */
-	public abstract IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched);
+	public abstract IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine);
 
 	/**
 	 * Invoked by the framework while an instance is initialized.

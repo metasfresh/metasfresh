@@ -54,10 +54,8 @@ public interface ISubscriptionBL extends ISingletonService
 	 * <li>there already is an older delayed delivery for the sp's subscription</li>
 	 * </ul>
 	 * In these cases the current delivery is delayed.
-	 * 
-	 * @param trxName
 	 */
-	void evalDeliveries(Properties ctx, String trxName);
+	void evalDeliveries(Properties ctx);
 
 	/**
 	 * Iterate the given deliveries, sum up their price (using their orderline's product and priceActual). Then compute

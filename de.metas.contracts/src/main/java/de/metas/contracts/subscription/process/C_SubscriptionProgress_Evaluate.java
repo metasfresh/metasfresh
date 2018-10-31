@@ -26,7 +26,6 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -67,7 +66,7 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 		addLog("Creating/updating shipment schedules");
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.run(() -> {
-			subscriptionBL.evalDeliveries(getCtx(), ITrx.TRXNAME_ThreadInherited);
+			subscriptionBL.evalDeliveries(getCtx());
 		});
 
 		addLog("Done after {}" + " (evaluated {} terms)", TimeUtil.formatElapsed(startTime), countProcessedTerms);

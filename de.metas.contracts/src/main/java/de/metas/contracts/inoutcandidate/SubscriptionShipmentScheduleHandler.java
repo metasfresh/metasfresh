@@ -23,6 +23,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
@@ -40,7 +41,7 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
@@ -149,8 +150,6 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	@Override
 	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
 		final I_C_SubscriptionProgress subscriptionLine = InterfaceWrapperHelper.create(model, I_C_SubscriptionProgress.class);
 		if (subscriptionLine.getM_ShipmentSchedule_ID() >= 0)
 		{
@@ -158,7 +157,9 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		}
 
 		final ImmutableStorageSegment segment = createStorageSegmentFor(subscriptionLine);
-		shipmentSchedulePA.invalidate(ImmutableSet.of(segment));
+
+		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+		invalidSchedulesRepo.invalidateStorageSegments(ImmutableSet.of(segment));
 	}
 
 	private ImmutableStorageSegment createStorageSegmentFor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
@@ -223,13 +224,16 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched)
+	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine)
+	{
+		final I_C_SubscriptionProgress subscriptionLine = getSubscriptionProgress(sched);
+		return subscriptionLine::getQty;
+	}
+
+	private I_C_SubscriptionProgress getSubscriptionProgress(final I_M_ShipmentSchedule sched)
 	{
 		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(sched);
-		final TableRecordReference ref = new TableRecordReference(sched.getAD_Table_ID(), sched.getRecord_ID());
-
-		final I_C_SubscriptionProgress subscriptionLine = ref.getModel(contextAware, I_C_SubscriptionProgress.class);
-
-		return () -> subscriptionLine.getQty();
+		final TableRecordReference ref = TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID());
+		return ref.getModel(contextAware, I_C_SubscriptionProgress.class);
 	}
 }
