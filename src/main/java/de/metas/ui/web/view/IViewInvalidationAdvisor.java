@@ -3,6 +3,7 @@ package de.metas.ui.web.view;
 import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.springframework.stereotype.Component;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -42,5 +43,5 @@ public interface IViewInvalidationAdvisor
 {
 	WindowId getWindowId();
 
-	Set<DocumentId> findAffectedRowIds(final Set<TableRecordReference> recordRefs, IView view);
+	Set<DocumentId> findAffectedRowIds(final TableRecordReferenceSet recordRefs, IView view);
 }

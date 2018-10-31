@@ -7,11 +7,10 @@ import java.util.stream.Stream;
 
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.util.Env;
@@ -25,7 +24,8 @@ import com.google.common.collect.ImmutableSet;
 import com.jgoodies.common.base.Objects;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -33,6 +33,8 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -74,7 +76,7 @@ final class DocumentAttachments
 	private static final Splitter ID_Splitter = Splitter.on(ID_SEPARATOR);
 	private static final Joiner ID_Joiner = Joiner.on(ID_SEPARATOR);
 
-	private final transient IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
+	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
 
 	private final DocumentPath documentPath;
 	private final ITableRecordReference recordRef;
@@ -104,9 +106,9 @@ final class DocumentAttachments
 
 	public List<JSONAttachment> toJson()
 	{
-		final Stream<IDocumentAttachmentEntry> attachments = attachmentsBL.getEntries(recordRef)
+		final Stream<IDocumentAttachmentEntry> attachments = attachmentEntryService.getByReferencedRecord(recordRef)
 				.stream()
-				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId()), entry));
+				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId().getRepoId()), entry));
 
 		final Stream<DocumentArchiveEntry> archives = Services.get(IArchiveDAO.class).retrieveLastArchives(Env.getCtx(), recordRef, 10)
 				.stream()
@@ -123,14 +125,14 @@ final class DocumentAttachments
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		attachmentsBL.addEntry(recordRef, name, data);
+		attachmentEntryService.createNewAttachment(recordRef, name, data);
 
 		notifyRelatedDocumentTabsChanged();
 	}
 
 	public void addURLEntry(final String name, final URI url)
 	{
-		attachmentsBL.addURLEntry(recordRef, name, url);
+		attachmentEntryService.createNewAttachment(recordRef, name, url);
 
 		notifyRelatedDocumentTabsChanged();
 	}
@@ -143,7 +145,7 @@ final class DocumentAttachments
 
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
-			final AttachmentEntry entry = attachmentsBL.getEntryById(recordRef, entryId);
+			final AttachmentEntry entry = attachmentEntryService.getById(AttachmentEntryId.ofRepoId(entryId));
 			if (entry == null)
 			{
 				throw new EntityNotFoundException(id.toJson());
@@ -173,7 +175,9 @@ final class DocumentAttachments
 
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
-			attachmentsBL.deleteEntryForModel(recordRef, entryId);
+			final AttachmentEntry entry = attachmentEntryService.getById(AttachmentEntryId.ofRepoId(entryId));
+			attachmentEntryService.unattach(recordRef, entry);
+
 			notifyRelatedDocumentTabsChanged();
 		}
 		else if (ID_PREFIX_Archive.equals(idPrefix))
@@ -205,9 +209,9 @@ final class DocumentAttachments
 		return ImmutablePair.of(idPrefix, entryId);
 	}
 
-	private static final DocumentId buildId(final String idPrefix, final int entryId)
+	private static final DocumentId buildId(final String idPrefix, final int id)
 	{
-		return DocumentId.ofString(ID_Joiner.join(idPrefix, entryId));
+		return DocumentId.ofString(ID_Joiner.join(idPrefix, id));
 	}
 
 	/**

@@ -2,14 +2,13 @@ package de.metas.ui.web.document.filter.json;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

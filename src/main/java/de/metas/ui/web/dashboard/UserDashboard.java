@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
@@ -17,6 +16,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.util.Check;
 
 /*
  * #%L

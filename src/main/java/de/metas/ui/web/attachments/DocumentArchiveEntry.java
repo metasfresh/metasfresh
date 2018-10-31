@@ -3,13 +3,13 @@ package de.metas.ui.web.attachments;
 import java.net.URI;
 
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.util.FileUtils;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.MimeType;
 
-import de.metas.attachments.AttachmentEntryType;
+import de.metas.attachments.AttachmentEntry;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.FileUtils;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -54,11 +54,11 @@ class DocumentArchiveEntry implements IDocumentAttachmentEntry
 	{
 		return id;
 	}
-	
+
 	@Override
-	public AttachmentEntryType getType()
+	public AttachmentEntry.Type getType()
 	{
-		return AttachmentEntryType.Data;
+		return AttachmentEntry.Type.Data;
 	}
 
 	@Override
@@ -83,7 +83,7 @@ class DocumentArchiveEntry implements IDocumentAttachmentEntry
 		final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 		return archiveBL.getContentType(archive);
 	}
-	
+
 	@Override
 	public URI getUrl()
 	{

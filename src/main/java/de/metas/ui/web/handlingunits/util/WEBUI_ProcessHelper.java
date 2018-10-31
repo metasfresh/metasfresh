@@ -8,17 +8,17 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -54,7 +54,7 @@ public class WEBUI_ProcessHelper
 	 * It returns the eligible PIIPs for the given product and partner.
 	 *
 	 * @param ctx
-	 * @param product
+	 * @param productId
 	 * @param bPartner optional, may be {@code null}
 	 * @param includeVirtualItem if {@code true}, then the resulting list also contains the "virtual" PiiP.
 	 *
@@ -62,11 +62,11 @@ public class WEBUI_ProcessHelper
 	 */
 	public LookupValuesList retrieveHUPIItemProducts(
 			@NonNull final Properties ctx,
-			@NonNull final I_M_Product product,
+			@NonNull final ProductId productId,
 			@Nullable final I_C_BPartner bPartner,
 			final boolean includeVirtualItem)
 	{
-		final List<I_M_HU_PI_Item_Product> list = retrieveHUPIItemProductRecords(ctx, product, bPartner, includeVirtualItem);
+		final List<I_M_HU_PI_Item_Product> list = retrieveHUPIItemProductRecords(ctx, productId, bPartner, includeVirtualItem);
 
 		return list.stream()
 				.sorted(Comparator.comparing(I_M_HU_PI_Item_Product::getName))
@@ -76,7 +76,7 @@ public class WEBUI_ProcessHelper
 
 	public List<I_M_HU_PI_Item_Product> retrieveHUPIItemProductRecords(
 			@NonNull final Properties ctx,
-			@NonNull final I_M_Product product,
+			@NonNull final ProductId productId,
 			@Nullable final I_C_BPartner bPartner,
 			final boolean includeVirtualItem)
 	{
@@ -87,7 +87,7 @@ public class WEBUI_ProcessHelper
 				Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 
 		final List<I_M_HU_PI_Item_Product> list = hupiItemProductDAO
-				.retrieveTUs(ctx, product, bPartner, allowInfiniteCapacity);
+				.retrieveTUs(ctx, productId, bPartner, allowInfiniteCapacity);
 
 		if (includeVirtualItem)
 		{

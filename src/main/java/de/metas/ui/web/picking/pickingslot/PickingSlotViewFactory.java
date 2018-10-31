@@ -1,25 +1,25 @@
 package de.metas.ui.web.picking.pickingslot;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
-import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Process;
@@ -39,6 +39,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -127,14 +128,14 @@ public class PickingSlotViewFactory implements IViewFactory
 	 */
 	public PickingSlotView createView(
 			@NonNull final CreateViewRequest request,
-			@Nullable final List<Integer> allShipmentScheduleIds)
+			@Nullable final Set<ShipmentScheduleId> allShipmentScheduleIds)
 	{
 		final CreateViewRequest requestEffective = request.unwrapFiltersAndCopy(getFilterDescriptorsProvider());
 
 		final ViewId pickingViewId = requestEffective.getParentViewId();
 		final DocumentId pickingRowId = requestEffective.getParentRowId();
 		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
-		final int shipmentScheduleId = extractCurrentShipmentScheduleId(requestEffective);
+		final ShipmentScheduleId shipmentScheduleId = extractCurrentShipmentScheduleId(requestEffective);
 
 		final PickingSlotRepoQuery query = createPickingSlotRowsQuery(requestEffective, allShipmentScheduleIds);
 		final Supplier<List<PickingSlotRow>> rowsSupplier = () -> pickingSlotRepo.retrieveRows(query);
@@ -150,14 +151,14 @@ public class PickingSlotViewFactory implements IViewFactory
 				.build();
 	}
 
-	private static final PickingSlotRepoQuery createPickingSlotRowsQuery(final CreateViewRequest request, final List<Integer> allShipmentScheduleIds)
+	private static final PickingSlotRepoQuery createPickingSlotRowsQuery(final CreateViewRequest request, final Set<ShipmentScheduleId> allShipmentScheduleIds)
 	{
-		final int currentShipmentScheduleId = extractCurrentShipmentScheduleId(request);
+		final ShipmentScheduleId currentShipmentScheduleId = extractCurrentShipmentScheduleId(request);
 
 		//
 		// setup the picking slot query and the rowsSupplier which uses the query to retrieve the PickingSlotView's rows.
 		final PickingSlotRepoQueryBuilder queryBuilder = PickingSlotRepoQuery.builder()
-				.pickingCandidates(PickingCandidate.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM)
+				.onlyNotClosedOrNotRackSystem(true)
 				.currentShipmentScheduleId(currentShipmentScheduleId);
 		if (allShipmentScheduleIds == null || allShipmentScheduleIds.isEmpty())
 		{
@@ -181,11 +182,10 @@ public class PickingSlotViewFactory implements IViewFactory
 		return queryBuilder.build();
 	}
 
-	private static final int extractCurrentShipmentScheduleId(final CreateViewRequest request)
+	private static final ShipmentScheduleId extractCurrentShipmentScheduleId(final CreateViewRequest request)
 	{
 		final DocumentId pickingRowId = request.getParentRowId();
-		final int shipmentScheduleId = pickingRowId.toInt(); // TODO make it more obvious/explicit
-		return shipmentScheduleId;
+		return ShipmentScheduleId.ofRepoId(pickingRowId.toInt()); // TODO make it more obvious/explicit
 	}
 
 	private List<RelatedProcessDescriptor> createAdditionalRelatedProcessDescriptors()

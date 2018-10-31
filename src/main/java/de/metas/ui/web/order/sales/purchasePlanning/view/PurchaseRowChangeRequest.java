@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

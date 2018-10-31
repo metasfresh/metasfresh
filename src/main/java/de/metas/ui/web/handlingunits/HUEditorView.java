@@ -10,9 +10,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.Predicates;
@@ -24,7 +23,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.lang.RepoIdAware;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -43,6 +41,9 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /*
@@ -386,17 +387,15 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(final TableRecordReferenceSet recordRefs)
 	{
 		// TODO: notifyRecordsChanged:
 		// get M_HU_IDs from recordRefs,
 		// find the top level records from this view which contain our HUs
 		// invalidate those top levels only
 
-		final Set<HuId> huIdsToCheck = recordRefs.stream()
-				.filter(recordRef -> I_M_HU.Table_Name.equals(recordRef.getTableName()))
-				.map(recordRef -> recordRef.getRecord_ID())
-				.map(HuId::ofRepoId)
+		final Set<HuId> huIdsToCheck = recordRefs
+				.streamIds(I_M_HU.Table_Name, HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 		if (huIdsToCheck.isEmpty())
 		{

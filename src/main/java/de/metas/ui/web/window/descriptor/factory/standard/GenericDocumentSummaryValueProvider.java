@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,7 +8,6 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
-import org.adempiere.util.Services;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -24,11 +22,13 @@ import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
+import de.metas.util.Services;
 import lombok.Data;
 
 /*
@@ -192,7 +192,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 				.map(fieldValue -> Check.isEmpty(fieldValue, true) ? null : fieldValue.trim()) // convert empty strings to null
 				.filter(fieldValue -> fieldValue != null) // skip null strings
 				.collect(Collectors.joining(" ")); // join all field values
-		
+
 		if (Check.isEmpty(summary, true))
 		{
 			return "";
@@ -250,33 +250,14 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 
 			try
 			{
-				return getDateFormat().format(fieldValue);
+				final java.util.Date date = JSONDate.fromObject(fieldValue, widgetType);
+				return DisplayType.getDateFormat(widgetType.getDisplayType())
+						.format(date);
 			}
 			catch (final Exception ex)
 			{
-				logger.warn("Failed formatting date field value '{}' using {}. Returning toString().", fieldValue, this, ex);
+				logger.warn("Failed formatting date field value '{}' ({}) using {}. Returning toString().", fieldValue, fieldValue.getClass(), this, ex);
 				return fieldValue.toString();
-			}
-		}
-
-		private SimpleDateFormat getDateFormat()
-		{
-			if (widgetType == DocumentFieldWidgetType.Date)
-			{
-				return DisplayType.getDateFormat(DisplayType.Date);
-			}
-			else if (widgetType == DocumentFieldWidgetType.DateTime)
-			{
-				return DisplayType.getDateFormat(DisplayType.DateTime);
-			}
-			if (widgetType == DocumentFieldWidgetType.Time)
-			{
-				return DisplayType.getDateFormat(DisplayType.Time);
-			}
-			else
-			{
-				// unknown format, shall not happen
-				return null;
 			}
 		}
 	}

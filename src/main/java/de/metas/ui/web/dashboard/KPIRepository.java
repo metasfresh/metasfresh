@@ -8,15 +8,13 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Element;
-import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -25,6 +23,8 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.base.model.I_WEBUI_KPI_Field;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -39,11 +39,11 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -55,14 +55,15 @@ public class KPIRepository
 	private static final Logger logger = LogManager.getLogger(KPIRepository.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<Integer, KPI> kpisCache = CCache.<Integer, KPI> newLRUCache(I_WEBUI_KPI.Table_Name + "#KPIs", Integer.MAX_VALUE, 0)
-			.addResetForTableName(I_WEBUI_KPI_Field.Table_Name);
+	private final CCache<Integer, KPI> kpisCache = CCache.<Integer, KPI> builder()
+			.tableName(I_WEBUI_KPI.Table_Name)
+			.additionalTableNameToResetFor(I_WEBUI_KPI_Field.Table_Name)
+			.build();
 
 	public void invalidateKPI(final int id)
 	{
 		kpisCache.remove(id);
 	}
-
 
 	public Collection<KPI> getKPIs()
 	{
@@ -74,7 +75,7 @@ public class KPIRepository
 
 		return getKPIs(kpiIds);
 	}
-	
+
 	private Collection<KPI> getKPIs(final Collection<Integer> kpiIds)
 	{
 		return kpisCache.getAllOrLoad(kpiIds, this::retrieveKPIs);
@@ -182,11 +183,10 @@ public class KPIRepository
 	private static final KPIField createKPIField(final I_WEBUI_KPI_Field kpiFieldDef, final boolean isComputeOffset)
 	{
 		final I_AD_Element adElement = kpiFieldDef.getAD_Element();
-		
-		final String elementColumnName = adElement.getColumnName ();
+
+		final String elementColumnName = adElement.getColumnName();
 		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", adElement);
-		
-		
+
 		final String fieldName = elementColumnName;
 
 		//

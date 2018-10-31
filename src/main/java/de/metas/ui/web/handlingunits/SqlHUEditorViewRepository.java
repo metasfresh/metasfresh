@@ -22,12 +22,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.PagedIterator.Page;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -52,6 +47,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -77,6 +73,11 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.collections.PagedIterator.Page;
+
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -115,7 +116,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final HUReservationService huReservationService;
 
 	private final boolean showBestBeforeDate;
-	private final boolean showLocator;
 
 	private final SqlViewBinding sqlViewBinding;
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
@@ -128,15 +128,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
 			@NonNull final HUReservationService huReservationService,
-			final boolean showBestBeforeDate,
-			final boolean showLocator)
+			final boolean showBestBeforeDate)
 	{
 		this.windowId = windowId;
 
 		this.attributesProvider = attributesProvider;
 		this.rowProcessedPredicate = rowProcessedPredicate != null ? rowProcessedPredicate : HUEditorRowIsProcessedPredicates.NEVER;
 		this.showBestBeforeDate = showBestBeforeDate;
-		this.showLocator = showLocator;
 
 		this.sqlViewBinding = sqlViewBinding;
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding);
@@ -263,10 +261,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		//
 		// Locator
-		if (showLocator)
-		{
-			huEditorRow.setLocator(createLocatorLookupValue(hu.getM_Locator_ID()));
-		}
+
+		huEditorRow.setLocator(createLocatorLookupValue(hu.getM_Locator_ID()));
 
 		//
 		// Product/UOM/Qty if there is only one product stored
@@ -274,9 +270,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (singleProductStorage != null)
 		{
 			huEditorRow
-					.setProduct(createProductLookupValue(singleProductStorage.getM_Product()))
+					.setProduct(createProductLookupValue(singleProductStorage.getProductId()))
 					.setUOM(createUOMLookupValue(singleProductStorage.getC_UOM()))
-					.setQtyCU(singleProductStorage.getQty());
+					.setQtyCU(singleProductStorage.getQty().getAsBigDecimal());
 		}
 
 		//
@@ -358,13 +354,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final IHUStorage huStorage = Services.get(IHandlingUnitsBL.class).getStorageFactory()
 				.getStorage(hu);
 
-		final I_M_Product product = huStorage.getSingleProductOrNull();
-		if (product == null)
+		final ProductId productId = huStorage.getSingleProductIdOrNull();
+		if (productId == null)
 		{
 			return null;
 		}
 
-		final IHUProductStorage productStorage = huStorage.getProductStorage(product);
+		final IHUProductStorage productStorage = huStorage.getProductStorage(productId);
 		return productStorage;
 	}
 
@@ -378,13 +374,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		final I_M_HU hu = huStorage.getM_HU();
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-		final I_M_Product product = huStorage.getM_Product();
+		final ProductId productId = huStorage.getProductId();
 		final HUEditorRowAttributesProvider attributesProviderEffective = !huId.equals(parentHUId) ? attributesProvider : null;
 
 		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getReservedForOrderLineId(huId);
 
 		final HUEditorRow huEditorRow = HUEditorRow.builder(windowId)
-				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, ProductId.ofRepoId(product.getM_Product_ID())))
+				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, productId))
 				.setType(HUEditorRowType.HUStorage)
 				.setTopLevel(false)
 				.setProcessed(processed)
@@ -397,9 +393,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setReservedForOrderLine(reservedForOrderLineId.orElse(null))
 				.setHUStatusDisplay(createHUStatusDisplayLookupValue(hu))
 				//
-				.setProduct(createProductLookupValue(product))
+				.setProduct(createProductLookupValue(productId))
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
-				.setQtyCU(huStorage.getQty())
+				.setQtyCU(huStorage.getQty().getAsBigDecimal())
 				//
 				.build();
 
@@ -407,15 +403,15 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return huEditorRow;
 	}
 
-	public JSONLookupValue createProductLookupValue(@Nullable final I_M_Product product)
+	public JSONLookupValue createProductLookupValue(@Nullable final ProductId productId)
 	{
-		if (product == null)
+		if (productId == null)
 		{
 			return null;
 		}
 
-		final String displayName = product.getValue() + "_" + product.getName();
-		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
+		final String displayName = Services.get(IProductBL.class).getProductValueAndName(productId);
+		return JSONLookupValue.of(productId.getRepoId(), displayName);
 	}
 
 	private static JSONLookupValue createUOMLookupValue(@Nullable final I_C_UOM uom)

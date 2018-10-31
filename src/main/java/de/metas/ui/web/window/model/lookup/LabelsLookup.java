@@ -7,7 +7,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
@@ -18,6 +17,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.util.Services;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import lombok.Builder;
 import lombok.Getter;

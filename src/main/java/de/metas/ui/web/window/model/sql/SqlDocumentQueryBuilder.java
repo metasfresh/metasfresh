@@ -13,7 +13,6 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.Env;
@@ -29,6 +28,7 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -41,6 +41,7 @@ import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -601,7 +602,7 @@ public class SqlDocumentQueryBuilder
 			final String keyColumnName = keyField.getColumnName();
 
 			final Object valueObj = composedKeyParts.get(i);
-			final Object valueConv = DocumentFieldDescriptor.convertToValueClass(
+			final Object valueConv = DataTypes.convertToValueClass(
 					keyColumnName,
 					valueObj,
 					keyField.getWidgetType(),

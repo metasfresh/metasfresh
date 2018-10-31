@@ -3,11 +3,10 @@ package de.metas.ui.web.dashboard;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.ui.web.base.model.X_WEBUI_DashboardItem;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

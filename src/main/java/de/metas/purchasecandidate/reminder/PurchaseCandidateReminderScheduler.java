@@ -12,7 +12,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 
 import org.adempiere.model.RecordZoomWindowFinder;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
@@ -47,6 +46,8 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

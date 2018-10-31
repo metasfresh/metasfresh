@@ -9,13 +9,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableInt;
 import org.compiere.Adempiere;
-import org.compiere.util.CCache;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessInstanceResult;
@@ -25,6 +24,8 @@ import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodArgumen
 import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodReturnTypeConverter;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

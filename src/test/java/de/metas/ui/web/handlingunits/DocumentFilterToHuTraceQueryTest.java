@@ -9,6 +9,9 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
@@ -115,21 +118,21 @@ public class DocumentFilterToHuTraceQueryTest
 
 		assertThat(huTraceQuery).isNotNull();
 		assertThat(huTraceQuery.getRecursionMode()).isEqualTo(RecursionMode.BOTH);
-		assertThat(huTraceQuery.getOrgId()).isEqualTo(20);
-		assertThat(huTraceQuery.getDocTypeId().getAsInt()).isEqualTo(30);
+		assertThat(huTraceQuery.getOrgId().getRepoId()).isEqualTo(20);
+		assertThat(huTraceQuery.getDocTypeId().get().getRepoId()).isEqualTo(30);
 		assertThat(huTraceQuery.getDocStatus()).isEqualTo("CO");
 		assertThat(huTraceQuery.getType().toString()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
-		assertThat(huTraceQuery.getTopLevelHuId()).isEqualTo(60);
+		assertThat(huTraceQuery.getTopLevelHuIds()).isEqualTo(ImmutableSet.of(HuId.ofRepoId(60)));
 		assertThat(huTraceQuery.getHuTraceEventId().getAsInt()).isEqualTo(70);
 		assertThat(huTraceQuery.getHuTrxLineId()).isEqualTo(80);
 		assertThat(huTraceQuery.getInOutId()).isEqualTo(90);
 		assertThat(huTraceQuery.getMovementId()).isEqualTo(100);
-		assertThat(huTraceQuery.getProductId()).isEqualTo(110);
-		assertThat(huTraceQuery.getShipmentScheduleId()).isEqualTo(120);
+		assertThat(huTraceQuery.getProductId().getRepoId()).isEqualTo(110);
+		assertThat(huTraceQuery.getShipmentScheduleId().getRepoId()).isEqualTo(120);
 		assertThat(huTraceQuery.getPpCostCollectorId()).isEqualTo(130);
 		assertThat(huTraceQuery.getPpOrderId()).isEqualTo(140);
-		assertThat(huTraceQuery.getVhuId()).isEqualTo(160);
-		assertThat(huTraceQuery.getVhuSourceId()).isEqualTo(170);
+		assertThat(huTraceQuery.getVhuIds()).isEqualTo(ImmutableSet.of(HuId.ofRepoId(160)));
+		assertThat(huTraceQuery.getVhuSourceId().getRepoId()).isEqualTo(170);
 		assertThat(huTraceQuery.getVhuStatus()).isEqualTo(X_M_HU_Trace.VHUSTATUS_Active);
 		assertThat(huTraceQuery.getEventTime()).isEqualTo(TimeUtil.parseTimestamp("2017-10-13").toInstant());
 	}

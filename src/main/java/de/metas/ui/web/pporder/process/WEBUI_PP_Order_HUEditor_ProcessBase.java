@@ -3,7 +3,6 @@ package de.metas.ui.web.pporder.process;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
@@ -14,6 +13,7 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProcessTemplate

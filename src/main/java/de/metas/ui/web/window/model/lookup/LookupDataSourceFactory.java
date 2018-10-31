@@ -9,19 +9,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CCacheStats;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
 
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 

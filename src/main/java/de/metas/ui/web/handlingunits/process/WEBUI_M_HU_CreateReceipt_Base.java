@@ -9,10 +9,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +33,9 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -126,7 +127,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		// Reset the view's affected HUs
 		getView().invalidateAll();
 
-		viewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));
+		viewsRepo.notifyRecordsChanged(TableRecordReferenceSet.of(TableRecordReference.ofSet(receiptSchedules)));
 
 		return MSG_OK;
 	}
@@ -154,7 +155,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 				.getModel(this, I_M_ReceiptSchedule.class);
 	}
 
-	private Set<HuId> retrieveHUsToReceive()
+	protected Set<HuId> retrieveHUsToReceive()
 	{
 		// https://github.com/metasfresh/metasfresh/issues/1863
 		// if the queryFilter is empty, then *do not* return everything to avoid an OOME

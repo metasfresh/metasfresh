@@ -27,8 +27,6 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.ui.spi.ExceptionHandledTabCallout;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -65,6 +63,8 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.DocumentsRepository.SaveResult;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -1158,21 +1158,6 @@ public final class Document
 			final String docAction = null; // not relevant
 			throw new DocumentProcessingException("Not all changes could be saved", this, docAction);
 		}
-
-		// TODO: Check Existence of Workflow Activities
-		// final String wfStatus = MWFActivity.getActiveInfo(Env.getCtx(), m_AD_Table_ID, Record_ID);
-		// if (wfStatus != null)
-		// {
-		// ADialog.error(m_WindowNo, this, "WFActiveForRecord", wfStatus);
-		// return;
-		// }
-
-		// TODO: make sure the DocStatus column is up2date
-		// if (!checkStatus(m_mTab.getTableName(), Record_ID, DocStatus))
-		// {
-		// ADialog.error(m_WindowNo, this, "DocumentStatusChanged");
-		// return;
-		// }
 
 		//
 		// Actually process the document

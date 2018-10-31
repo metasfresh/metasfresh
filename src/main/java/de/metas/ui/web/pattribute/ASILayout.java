@@ -3,9 +3,6 @@ package de.metas.ui.web.pattribute;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -13,6 +10,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

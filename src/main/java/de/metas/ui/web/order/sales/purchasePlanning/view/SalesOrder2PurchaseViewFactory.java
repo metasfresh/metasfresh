@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -37,6 +34,9 @@ import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_Pur
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

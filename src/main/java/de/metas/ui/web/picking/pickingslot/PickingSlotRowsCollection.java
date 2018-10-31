@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import com.google.common.base.MoreObjects;
@@ -17,6 +16,7 @@ import com.google.common.collect.Maps;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -95,8 +95,7 @@ public final class PickingSlotRowsCollection
 
 	public PickingSlotRow getById(@NonNull final PickingSlotRowId rowId) throws EntityNotFoundException
 	{
-
-		if (rowId.getPickingSlotId() <= 0)
+		if (rowId.getPickingSlotId() == null)
 		{
 			return assertRowNotNull(rowId, getRowsIndex().getRow(rowId));
 		}

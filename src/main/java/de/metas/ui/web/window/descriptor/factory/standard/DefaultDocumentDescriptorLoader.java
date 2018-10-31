@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import org.adempiere.util.Check;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
 import org.compiere.util.Env;
@@ -15,6 +14,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import de.metas.util.Check;
 
 /*
  * #%L

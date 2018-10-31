@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -22,6 +21,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -29,6 +28,7 @@ import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -187,9 +187,8 @@ public class WEBUI_PP_Order_Receipt
 		final String packingInfo = getSingleSelectedRow().getPackingInfo();
 		if (!Check.isEmpty(packingInfo, true))
 		{
-			return ProcessPreconditionsResolution.builder()
-					.setCaptionOverride(packingInfo)
-					.accept();
+			return ProcessPreconditionsResolution.accept()
+					.deriveWithCaptionOverride(packingInfo);
 		}
 
 		//

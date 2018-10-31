@@ -2,13 +2,13 @@ package de.metas.ui.web.picking.pickingslot;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 
+import de.metas.handlingunits.HuId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -38,24 +38,23 @@ import lombok.Getter;
 @EqualsAndHashCode
 public final class PickingSlotRowId
 {
-	public static final PickingSlotRowId ofPickingSlotId(final int pickingSlotId)
+	public static final PickingSlotRowId ofPickingSlotId(final PickingSlotId pickingSlotId)
 	{
-		Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
-		return new PickingSlotRowId(pickingSlotId, -1, -1);
-	}
-
-	public static final PickingSlotRowId ofPickedHU(final int pickingSlotId, final int huId, final int huStorageProductId)
-	{
-		Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
-		Preconditions.checkArgument(huId > 0, "huId > 0");
-
+		final HuId huId = null;
+		final int huStorageProductId = -1;
 		return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
 	}
 
-	public static final PickingSlotRowId ofSourceHU(final int huId)
+	public static final PickingSlotRowId ofPickedHU(final PickingSlotId pickingSlotId, final HuId huId, final int huStorageProductId)
 	{
-		Preconditions.checkArgument(huId > 0, "huId > 0");
-		return new PickingSlotRowId(-1, huId, -1);
+		return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
+	}
+
+	public static final PickingSlotRowId ofSourceHU(final HuId huId)
+	{
+		final PickingSlotId pickingSlotId = null;
+		final int huStorageProductId = -1;
+		return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
 	}
 
 	public static final PickingSlotRowId fromDocumentId(final DocumentId documentId)
@@ -72,17 +71,17 @@ public final class PickingSlotRowId
 			throw new IllegalArgumentException("Invalid id: " + parts);
 		}
 
-		final int pickingSlotId = !Check.isEmpty(parts.get(0), true) ? Integer.parseInt(parts.get(0)) : 0;
-		final int huId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : 0;
+		final PickingSlotId pickingSlotId = !Check.isEmpty(parts.get(0), true) ? PickingSlotId.ofRepoIdOrNull(Integer.parseInt(parts.get(0))) : null;
+		final HuId huId = partsCount >= 2 ? HuId.ofRepoIdOrNull(Integer.parseInt(parts.get(1))) : null;
 		final int huStorageProductId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : 0;
 
 		return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
 	}
 
 	@Getter
-	private final int pickingSlotId;
+	private final PickingSlotId pickingSlotId;
 	@Getter
-	private final int huId;
+	private final HuId huId;
 	@Getter
 	private final int huStorageProductId;
 
@@ -93,10 +92,10 @@ public final class PickingSlotRowId
 	private static final Splitter DOCUMENT_ID_SPLITTER = Splitter.on(SEPARATOR);
 
 	@Builder
-	private PickingSlotRowId(final int pickingSlotId, final int huId, final int huStorageProductId)
+	private PickingSlotRowId(final PickingSlotId pickingSlotId, final HuId huId, final int huStorageProductId)
 	{
-		this.pickingSlotId = pickingSlotId > 0 ? pickingSlotId : 0;
-		this.huId = huId > 0 ? huId : 0;
+		this.pickingSlotId = pickingSlotId;
+		this.huId = huId;
 		this.huStorageProductId = huStorageProductId > 0 ? huStorageProductId : 0;
 	}
 
@@ -112,8 +111,8 @@ public final class PickingSlotRowId
 		if (id == null)
 		{
 			final String idStr = DOCUMENT_ID_JOINER.join(
-					pickingSlotId,
-					huId > 0 ? huId : null,
+					pickingSlotId != null ? pickingSlotId.getRepoId() : 0,
+					huId != null ? huId.getRepoId() : null,
 					huStorageProductId > 0 ? huStorageProductId : null);
 
 			id = _documentId = DocumentId.ofString(idStr);
@@ -124,43 +123,18 @@ public final class PickingSlotRowId
 	/** @return {@code true} if this row ID represents an actual picking slot and not any sort of HU that is also shown in this view. */
 	public boolean isPickingSlotRow()
 	{
-		return getPickingSlotId() > 0 && getHuId() <= 0;
+		return getPickingSlotId() != null && getHuId() == null;
 	}
 
 	/** @return {@code true} is this row ID represents an HU that is assigned to a picking slot */
 	public boolean isPickedHURow()
 	{
-		return getHuId() > 0 && getPickingSlotId() > 0;
+		return getPickingSlotId() != null && getHuId() != null;
 	}
 
 	/** @return {@code true} if this row ID represents an HU that is a source-HU for fine-picking. */
 	public boolean isPickingSourceHURow()
 	{
-		return getHuId() > 0 && getPickingSlotId() <= 0;
-	}
-
-	public String[] toPartsArray()
-	{
-		if (huStorageProductId > 0)
-		{
-			return new String[] {
-					String.valueOf(pickingSlotId),
-					String.valueOf(huId),
-					String.valueOf(huStorageProductId)
-			};
-		}
-		else if (huId > 0)
-		{
-			return new String[] {
-					String.valueOf(pickingSlotId),
-					String.valueOf(huStorageProductId)
-			};
-		}
-		else
-		{
-			return new String[] {
-					String.valueOf(pickingSlotId),
-			};
-		}
+		return getPickingSlotId() == null && getHuId() != null;
 	}
 }

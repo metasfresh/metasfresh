@@ -1,7 +1,5 @@
 package de.metas.ui.web.devices;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
@@ -12,6 +10,8 @@ import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebSocketProducer;
 import de.metas.ui.web.websocket.WebSocketProducerFactory;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

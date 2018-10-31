@@ -10,7 +10,6 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.INamePairPredicate;
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -18,6 +17,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
@@ -29,6 +29,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+
 import lombok.NonNull;
 
 /*

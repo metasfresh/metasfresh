@@ -5,6 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpression;
@@ -15,11 +19,11 @@ import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -27,6 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -74,14 +79,32 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 				return DisplayType.toBoolean(valueStr, null);
 			});
 		}
+		//
 		else if (java.util.Date.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<java.util.Date>(stringExpression, java.util.Date.class, (rs) -> rs.getTimestamp(1));
+			return new SqlDefaultValueExpression<java.util.Date>(stringExpression, java.util.Date.class, rs -> rs.getTimestamp(1));
 		}
 		else if (Timestamp.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<Timestamp>(stringExpression, Timestamp.class, (rs) -> rs.getTimestamp(1));
+			return new SqlDefaultValueExpression<Timestamp>(stringExpression, Timestamp.class, rs -> rs.getTimestamp(1));
 		}
+		else if (ZonedDateTime.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<ZonedDateTime>(stringExpression, ZonedDateTime.class, rs -> retrieveZonedDateTime(rs));
+		}
+		else if (LocalDateTime.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<LocalDateTime>(stringExpression, LocalDateTime.class, rs -> retrieveLocalDateTime(rs));
+		}
+		else if (LocalDate.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<LocalDate>(stringExpression, LocalDate.class, rs -> retrieveLocalDate(rs));
+		}
+		else if (LocalTime.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<LocalTime>(stringExpression, LocalTime.class, rs -> retrieveLocalTime(rs));
+		}
+		//
 		else if (String.class.equals(valueClass)
 				|| StringLookupValue.class.equals(valueClass))
 		{
@@ -89,6 +112,26 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 		}
 
 		throw new ExpressionCompileException("Value type " + valueClass + " is not supported by " + SqlDefaultValueExpression.class);
+	}
+
+	private static ZonedDateTime retrieveZonedDateTime(final ResultSet rs) throws SQLException
+	{
+		return TimeUtil.asZonedDateTime(rs.getTimestamp(1));
+	}
+
+	private static LocalDateTime retrieveLocalDateTime(final ResultSet rs) throws SQLException
+	{
+		return TimeUtil.asLocalDateTime(rs.getTimestamp(1));
+	}
+
+	private static LocalDate retrieveLocalDate(final ResultSet rs) throws SQLException
+	{
+		return TimeUtil.asLocalDate(rs.getTimestamp(1));
+	}
+
+	private static LocalTime retrieveLocalTime(final ResultSet rs) throws SQLException
+	{
+		return TimeUtil.asLocalTime(rs.getTimestamp(1));
 	}
 
 	private static final Logger logger = LogManager.getLogger(SqlDefaultValueExpression.class);

@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -18,6 +17,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L

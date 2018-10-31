@@ -4,18 +4,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import org.adempiere.util.Check;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CCacheStats;
+import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,17 +55,21 @@ class FullyCachedLookupDataSource implements LookupDataSource
 
 	private final transient CCache<LookupDataSourceContext, LookupValuesList> cacheByPartition;
 
-	private FullyCachedLookupDataSource(final LookupDataSourceFetcher fetcher)
+	private FullyCachedLookupDataSource(@NonNull final LookupDataSourceFetcher fetcher)
 	{
-		super();
-		Check.assumeNotNull(fetcher, "Parameter fetcher is not null");
 		this.fetcher = fetcher;
 
 		final String cachePrefix = fetcher.getCachePrefix();
 		Check.assumeNotEmpty(cachePrefix, "cachePrefix is not empty");
 		final int maxSize = 100;
 		final int expireAfterMinutes = 60 * 2;
-		cacheByPartition = CCache.newLRUCache(cachePrefix + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
+		cacheByPartition = CCache.<LookupDataSourceContext, LookupValuesList> builder()
+				.cacheName(cachePrefix + "#" + NAME + "#LookupByPartition")
+				.cacheMapType(CacheMapType.LRU)
+				.initialCapacity(maxSize)
+				.expireMinutes(expireAfterMinutes)
+				.additionalTableNameToResetFor(I_AD_SysConfig.Table_Name) // when the AvailableToPromiseRepository's SysConfig changes, we need to reset the cache. The same might apply to other cases.
+				.build();
 	}
 
 	@Override
@@ -144,6 +151,6 @@ class FullyCachedLookupDataSource implements LookupDataSource
 	@Override
 	public void cacheInvalidate()
 	{
-		cacheByPartition.clear();
+		cacheByPartition.reset();
 	}
 }

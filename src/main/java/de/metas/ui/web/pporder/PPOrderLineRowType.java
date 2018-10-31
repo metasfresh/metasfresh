@@ -4,11 +4,11 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -51,7 +51,7 @@ public enum PPOrderLineRowType
 
 	public static PPOrderLineRowType forCode(@NonNull final String code)
 	{
-		PPOrderLineRowType type = code2type.get(code);
+		final PPOrderLineRowType type = code2type.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + PPOrderLineRowType.class + " found for code: " + code);

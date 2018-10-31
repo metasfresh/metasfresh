@@ -6,19 +6,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.adempiere.util.NumberUtils;
-
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.util.NumberUtils;
+
 import lombok.NonNull;
 
 /*
@@ -48,9 +50,13 @@ public interface IViewRow
 	// Document info
 	// @formatter:off
 	DocumentId getId();
-	IViewRowType getType();
 	boolean isProcessed();
 	// @formatter:on
+
+	default IViewRowType getType()
+	{
+		return DefaultRowType.Row;
+	}
 
 	/**
 	 * Gets row's document path.
@@ -122,7 +128,9 @@ public interface IViewRow
 
 	//
 	// Included documents (children)
-	Collection<? extends IViewRow> getIncludedRows();
+	// @formatter:off
+	default Collection<? extends IViewRow> getIncludedRows() { return ImmutableList.of(); };
+	// @formatter:on
 
 	//
 	// Attributes

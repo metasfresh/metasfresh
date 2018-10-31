@@ -4,15 +4,12 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
@@ -21,6 +18,7 @@ import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -76,6 +74,10 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonProperty("tabid")
 	private final DetailId tabid;
 
+	@JsonProperty("internalName")
+	@JsonInclude(Include.NON_EMPTY)
+	private final String internalName;
+
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String caption;
@@ -99,7 +101,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilterDescriptor> filters;
-	
+
 	@JsonProperty("defaultOrderBys")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONViewOrderBy> defaultOrderBys;
@@ -126,6 +128,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 		this.tabId = gridLayout.getDetailId();
 		tabid = tabId;
 
+		internalName = includedTabLayout.getInternalName();
+
 		final String adLanguage = jsonOpts.getAD_Language();
 		if (jsonOpts.isDebugShowColumnNamesForCaption() && tabid != null)
 		{
@@ -148,42 +152,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 		elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
-		
+
 		this.defaultOrderBys = JSONViewOrderBy.ofList(gridLayout.getDefaultOrderBys());
-	}
-
-	@JsonCreator
-	private JSONDocumentLayoutTab(
-			@JsonProperty("windowId") final WindowId windowId,
-			@JsonProperty("tabId") final DetailId tabId,
-			@JsonProperty("caption") final String caption,
-			@JsonProperty("description") final String description,
-			@JsonProperty("emptyResultText") final String emptyResultText,
-			@JsonProperty("emptyResultHint") final String emptyResultHint,
-			@JsonProperty("elements") final List<JSONDocumentLayoutElement> elements,
-			@JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters,
-			@JsonProperty("defaultOrderBys") final List<JSONViewOrderBy> defaultOrderBys,
-			@JsonProperty("supportQuickInput") final boolean supportQuickInput,
-			@JsonProperty("queryOnActivate") final boolean queryOnActivate
-	)
-	{
-		super();
-		this.windowId = windowId;
-		this.type = windowId;
-
-		this.tabId = tabId;
-		this.tabid = tabId;
-
-		this.caption = caption;
-		this.description = description;
-		this.emptyResultText = emptyResultText;
-		this.emptyResultHint = emptyResultHint;
-
-		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
-		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
-		this.defaultOrderBys = defaultOrderBys == null ? ImmutableList.of() : ImmutableList.copyOf(defaultOrderBys);
-		this.supportQuickInput = supportQuickInput;
-		this.queryOnActivate = queryOnActivate;
 	}
 
 	@Override

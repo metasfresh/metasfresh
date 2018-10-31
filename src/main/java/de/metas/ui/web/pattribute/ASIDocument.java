@@ -9,8 +9,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
@@ -29,6 +27,8 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 
 /*

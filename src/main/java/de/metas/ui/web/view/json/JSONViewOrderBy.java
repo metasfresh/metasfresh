@@ -2,14 +2,13 @@ package de.metas.ui.web.view.json;
 
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

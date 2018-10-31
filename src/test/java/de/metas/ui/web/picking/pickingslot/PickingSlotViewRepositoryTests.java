@@ -7,16 +7,22 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.PickingCandidatesQuery;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
@@ -24,6 +30,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -52,6 +59,8 @@ import mockit.Mocked;
 
 public class PickingSlotViewRepositoryTests
 {
+	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(2);
+
 	@Mocked
 	private PickingHURowsRepository pickingHUsRepo;
 
@@ -68,22 +77,24 @@ public class PickingSlotViewRepositoryTests
 	@Test
 	public void testRetrievePickingSlotRows_No_HUs_show_PickingSlotsOnly()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		save(shipmentSchedule);
+		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule();
 
-		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
-		pickingSlot.setIsPickingRackSystem(true);
-		save(pickingSlot);
-
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentSchedule.getM_ShipmentSchedule_ID());
+		createPickingSlot(pickingSlot -> {
+			pickingSlot.setIsPickingRackSystem(true);
+		});
 
 		// @formatter:off return an empty list
-		new Expectations() {{ pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query); result = ImmutableListMultimap.of(); }};
+		new Expectations() {{
+			pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.builder()
+					.shipmentScheduleId(shipmentScheduleId)
+					.onlyNotClosedOrNotRackSystem(true)
+					.build());
+			result = ImmutableListMultimap.of();
+		}};
 		// @formatter:on
 
-		final NullLookupDataSource nullDS = NullLookupDataSource.instance;
-
-		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDS, () -> nullDS, () -> nullDS);
+		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSlotViewRepository();
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 		final List<PickingSlotRow> pickingSlotRows = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
 		assertThat(pickingSlotRows.size(), is(1)); // even if there are no HUs, there shall still be a row for our picking slot.
@@ -95,20 +106,16 @@ public class PickingSlotViewRepositoryTests
 	@Test
 	public void testRetrievePickingSlotRows_One_TU_with_CU()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		save(shipmentSchedule);
+		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule();
 
-		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
-		save(pickingSlot);
+		final PickingSlotId pickingSlotId = createPickingSlot();
 
 		final boolean pickingSlotRowProcessed = false;
 
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentSchedule.getM_ShipmentSchedule_ID());
-
 		// set up a picked TU with a CU to be returned by the pickingHUsRepo.
 		{
-			final ListMultimap<Integer, PickedHUEditorRow> husIndexedByPickingSlotId = ImmutableListMultimap.of(
-					pickingSlot.getM_PickingSlot_ID(),
+			final ListMultimap<PickingSlotId, PickedHUEditorRow> husIndexedByPickingSlotId = ImmutableListMultimap.of(
+					pickingSlotId,
 					new PickedHUEditorRow(
 							HUEditorRow
 									.builder(WindowId.of(423))
@@ -125,11 +132,18 @@ public class PickingSlotViewRepositoryTests
 							pickingSlotRowProcessed));
 
 			// @formatter:off return an empty list
-			new Expectations() {{ pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query); result = husIndexedByPickingSlotId; }};
+			new Expectations() {{ 
+				pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.builder()
+						.shipmentScheduleId(shipmentScheduleId)
+						.onlyNotClosedOrNotRackSystem(true)
+						.build());
+				result = husIndexedByPickingSlotId; 
+			}};
 			// @formatter:on
 		}
 
-		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSllotViewRepository();
+		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSlotViewRepository();
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 		final List<PickingSlotRow> rowsByShipmentScheduleId = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
 		assertThat(rowsByShipmentScheduleId.size(), is(1));
@@ -142,20 +156,45 @@ public class PickingSlotViewRepositoryTests
 		final PickingSlotRow tuRow = pickingSlotRow.getIncludedRows().get(0);
 		assertThat(tuRow.isPickingSlotRow(), is(false));
 		assertThat(tuRow.isPickedHURow(), is(true));
-		assertThat(tuRow.getHuId(), is(100));
+		assertThat(tuRow.getHuId().getRepoId(), is(100));
 
 		assertThat(tuRow.getIncludedRows().size(), is(1));
 		final PickingSlotRow whuRow = tuRow.getIncludedRows().get(0);
 		assertThat(whuRow.isPickingSlotRow(), is(false));
 		assertThat(whuRow.isPickedHURow(), is(true));
-		assertThat(whuRow.getHuId(), is(101));
+		assertThat(whuRow.getHuId().getRepoId(), is(101));
 	}
 
-	private PickingSlotViewRepository createPickingSllotViewRepository()
+	private ShipmentScheduleId createShipmentSchedule()
 	{
-		final NullLookupDataSource nullDs = NullLookupDataSource.instance;
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setC_BPartner_ID(1);
+		shipmentSchedule.setC_BPartner_Location_ID(2);
+		shipmentSchedule.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
+		save(shipmentSchedule);
+		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+	}
 
-		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDs, () -> nullDs, () -> nullDs);
+	private PickingSlotId createPickingSlot()
+	{
+		return createPickingSlot(pickingSlot -> {
+		});
+	}
+
+	private PickingSlotId createPickingSlot(final Consumer<I_M_PickingSlot> customizer)
+	{
+		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
+		pickingSlot.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
+		customizer.accept(pickingSlot);
+		save(pickingSlot);
+		return PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
+	}
+
+	private PickingSlotViewRepository createPickingSlotViewRepository()
+	{
+		final Supplier<LookupDataSource> nullDataSourceSupplier = () -> NullLookupDataSource.instance;
+
+		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, nullDataSourceSupplier, nullDataSourceSupplier, nullDataSourceSupplier);
 		return pickingSlotViewRepository;
 	}
 

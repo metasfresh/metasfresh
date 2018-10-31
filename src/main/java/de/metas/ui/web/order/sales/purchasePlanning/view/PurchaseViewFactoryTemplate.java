@@ -6,8 +6,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Services;
-
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -27,12 +25,15 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*
@@ -97,6 +98,11 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 		viewLayoutFactory = PurchaseViewLayoutFactory.builder()
 				.caption(caption)
 				.build();
+	}
+
+	@Override
+	public void setViewsRepository(final IViewsRepository viewsRepository)
+	{
 	}
 
 	protected abstract List<PurchaseDemand> getDemands(CreateViewRequest request);

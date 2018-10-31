@@ -3,7 +3,6 @@ package de.metas.ui.web.dashboard.json;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -12,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.dashboard.UserDashboardItem;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.util.GuavaCollectors;
 import lombok.Value;
 
 /*

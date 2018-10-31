@@ -10,16 +10,14 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import org.adempiere.util.collections.IteratorUtils;
-import org.adempiere.util.collections.PagedIterator.PageFetcher;
 import org.adempiere.util.lang.Mutables;
 import org.adempiere.util.lang.SynchronizedMutable;
-import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -32,6 +30,8 @@ import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.collections.IteratorUtils;
+import de.metas.util.collections.PagedIterator.PageFetcher;
 import lombok.NonNull;
 
 /*
@@ -155,7 +155,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		});
 
 		huEditorRepo.invalidateCache();
-		cache_huRowsById.clear();
+		cache_huRowsById.reset();
 	}
 
 	@Override

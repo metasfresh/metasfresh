@@ -4,13 +4,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.view.IView;
@@ -55,43 +58,46 @@ class PickingTerminalViewInvalidationAdvisor implements IViewInvalidationAdvisor
 	}
 
 	@Override
-	public Set<DocumentId> findAffectedRowIds(final Set<TableRecordReference> recordRefs, final IView view)
+	public Set<DocumentId> findAffectedRowIds(final TableRecordReferenceSet recordRefs, final IView view)
 	{
-		final Set<Integer> shipmentScheduleIds = extractShipmentScheduleIds(recordRefs);
+		final Set<ShipmentScheduleId> shipmentScheduleIds = extractShipmentScheduleIds(recordRefs);
 		if (shipmentScheduleIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
 		final SqlViewKeyColumnNamesMap keyColumnNamesMap = SqlViewKeyColumnNamesMap.ofIntKeyField(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID);
-		return SqlViewRowIdsOrderedSelectionFactory.retrieveRowIdsForLineIds(keyColumnNamesMap, view.getViewId(), shipmentScheduleIds);
+		return SqlViewRowIdsOrderedSelectionFactory.retrieveRowIdsForLineIds(
+				keyColumnNamesMap,
+				view.getViewId(),
+				ShipmentScheduleId.toIntSet(shipmentScheduleIds));
 	}
 
-	private Set<Integer> extractShipmentScheduleIds(final Set<TableRecordReference> recordRefs)
+	private Set<ShipmentScheduleId> extractShipmentScheduleIds(final TableRecordReferenceSet recordRefs)
 	{
 		if (recordRefs.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final Set<Integer> shipmentScheduleIds = new HashSet<>();
-		final Set<Integer> pickingCandidateIds = new HashSet<>();
+		final Set<ShipmentScheduleId> shipmentScheduleIds = new HashSet<>();
+		final Set<PickingCandidateId> pickingCandidateIds = new HashSet<>();
 		for (TableRecordReference recordRef : recordRefs)
 		{
 			final String tableName = recordRef.getTableName();
 			if (I_M_ShipmentSchedule.Table_Name.equals(tableName))
 			{
-				shipmentScheduleIds.add(recordRef.getRecord_ID());
+				shipmentScheduleIds.add(ShipmentScheduleId.ofRepoId(recordRef.getRecord_ID()));
 			}
 			else if (I_M_Picking_Candidate.Table_Name.equals(tableName))
 			{
-				pickingCandidateIds.add(recordRef.getRecord_ID());
+				pickingCandidateIds.add(PickingCandidateId.ofRepoId(recordRef.getRecord_ID()));
 			}
 		}
 
 		if (!pickingCandidateIds.isEmpty())
 		{
-			shipmentScheduleIds.addAll(pickingCandidateRepository.retrieveShipmentScheduleIdsForPickingCandidateIds(pickingCandidateIds));
+			shipmentScheduleIds.addAll(pickingCandidateRepository.getShipmentScheduleIdsByPickingCandidateIds(pickingCandidateIds));
 		}
 
 		return shipmentScheduleIds;

@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.Suppliers;
@@ -14,6 +12,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -110,7 +110,7 @@ class VHUPackingInfo implements IHUPackingInfo
 			return null;
 		}
 
-		return huProductStorage.getQty();
+		return huProductStorage.getQty().getAsBigDecimal();
 	}
 
 	@Override

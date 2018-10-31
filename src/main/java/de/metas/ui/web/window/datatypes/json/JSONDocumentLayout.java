@@ -7,7 +7,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -73,6 +72,10 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonInclude(Include.NON_NULL)
 	private final DetailId tabid;
 
+	@JsonProperty("internalName")
+	@JsonInclude(Include.NON_EMPTY)
+	private final String internalName;
+
 	@JsonProperty("caption")
 	@JsonInclude(Include.NON_EMPTY)
 	private final String caption;
@@ -123,6 +126,8 @@ public final class JSONDocumentLayout implements Serializable
 
 		tabId = null;
 		tabid = tabId;
+		
+		internalName = null;
 
 		caption = layout.getCaption(jsonOpts.getAD_Language());
 
@@ -170,6 +175,8 @@ public final class JSONDocumentLayout implements Serializable
 		tabId = detailLayout.getDetailId();
 		tabid = tabId;
 
+		internalName = detailLayout.getInternalName();
+
 		final DocumentLayoutSingleRow singleRowLayout = detailLayout.getSingleRowLayout();
 		caption = singleRowLayout.getCaption(jsonOpts.getAD_Language());
 
@@ -183,67 +190,6 @@ public final class JSONDocumentLayout implements Serializable
 
 		emptyResultText = null;
 		emptyResultHint = null;
-	}
-//	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
-//	{
-//		final String adLanguage = jsonOpts.getAD_Language();
-//
-//		windowId = detailLayout.getWindowId();
-//		type = windowId;
-//
-//		tabId = detailLayout.getDetailId();
-//		tabid = tabId;
-//
-//		caption = detailLayout.getCaption(jsonOpts.getAD_Language());
-//
-//		documentSummaryElement = null;
-//		docActionElement = null;
-//
-//		sections = JSONDocumentLayoutSection.ofDetailTab(detailLayout, jsonOpts);
-//		tabs = ImmutableList.of(); // no tabs for included tab
-//
-//		filters = null;
-//
-//		emptyResultText = detailLayout.getEmptyResultText(adLanguage);
-//		emptyResultHint = detailLayout.getEmptyResultHint(adLanguage);
-//
-//		if (WindowConstants.isProtocolDebugging())
-//		{
-//			putDebugProperty(JSONOptions.DEBUG_ATTRNAME, jsonOpts.toString());
-//		}
-//	}
-
-	@JsonCreator
-	private JSONDocumentLayout(
-			@JsonProperty("windowId") final WindowId windowId//
-			, @JsonProperty("tabId") final DetailId tabId //
-			, @JsonProperty("caption") final String caption //
-			, @JsonProperty("documentSummaryElement") final JSONDocumentLayoutElement documentSummaryElement //
-			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
-			, @JsonProperty("sections") final List<JSONDocumentLayoutSection> sections //
-			, @JsonProperty("tabs") final List<JSONDocumentLayoutTab> tabs //
-			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
-			, @JsonProperty("emptyResultText") final String emptyResultText //
-			, @JsonProperty("emptyResultHint") final String emptyResultHint //
-
-	)
-	{
-		this.windowId = windowId;
-		type = windowId;
-
-		this.tabId = tabId;
-		tabid = tabId;
-
-		this.caption = caption;
-
-		this.documentSummaryElement = documentSummaryElement;
-		this.docActionElement = docActionElement;
-		this.sections = sections == null ? ImmutableList.of() : ImmutableList.copyOf(sections);
-		this.tabs = tabs == null ? ImmutableList.of() : ImmutableList.copyOf(tabs);
-		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
-
-		this.emptyResultText = emptyResultText;
-		this.emptyResultHint = emptyResultHint;
 	}
 
 	@Override

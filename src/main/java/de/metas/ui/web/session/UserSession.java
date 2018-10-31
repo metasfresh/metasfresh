@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -26,6 +25,7 @@ import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -249,7 +249,7 @@ public class UserSession
 	 * @param adLanguage
 	 * @return old AD_Language
 	 */
-	String setAD_Language(final String adLanguage)
+	public String setAD_Language(final String adLanguage)
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 		final Language lang = Language.getLanguage(adLanguage);

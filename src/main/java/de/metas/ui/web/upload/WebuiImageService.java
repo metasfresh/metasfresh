@@ -6,7 +6,6 @@ import java.time.format.DateTimeFormatter;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.FileUtils;
 import org.compiere.model.MImage;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
@@ -15,6 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.util.FileUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -29,11 +30,11 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,8 +43,8 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 public class WebuiImageService
 {
 	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss");
-	
-	public int uploadImage(final MultipartFile file) throws IOException
+
+	public WebuiImageId uploadImage(final MultipartFile file) throws IOException
 	{
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
@@ -56,7 +57,7 @@ public class WebuiImageService
 		// TODO: introduce adImage.setTemporary(true);
 		InterfaceWrapperHelper.save(adImage);
 
-		return adImage.getAD_Image_ID();
+		return WebuiImageId.ofRepoId(adImage.getAD_Image_ID());
 	}
 
 	private static final String normalizeUploadFilename(final String name, final String contentType)
@@ -78,14 +79,9 @@ public class WebuiImageService
 		return FileUtils.changeFileExtension(nameNormalized, fileExtension);
 	}
 
-	public WebuiImage getWebuiImage(final int imageId, final int maxWidth, final int maxHeight)
+	public WebuiImage getWebuiImage(@NonNull final WebuiImageId imageId, final int maxWidth, final int maxHeight)
 	{
-		if (imageId <= 0)
-		{
-			throw new IllegalArgumentException("Invalid image id");
-		}
-
-		final MImage adImage = MImage.get(Env.getCtx(), imageId);
+		final MImage adImage = MImage.get(Env.getCtx(), imageId.getRepoId());
 		if (adImage == null || adImage.getAD_Image_ID() <= 0)
 		{
 			throw new EntityNotFoundException("Image id not found: " + imageId);
@@ -93,5 +89,4 @@ public class WebuiImageService
 
 		return WebuiImage.of(adImage, maxWidth, maxHeight);
 	}
-
 }

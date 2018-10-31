@@ -20,11 +20,11 @@ import org.junit.Ignore;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,6 +34,15 @@ public class EnumTestUtils
 {
 	public static <JSONEnumType, EnumType> void assertMappingFullyCovered(final EnumType[] values, final Function<EnumType, JSONEnumType> toJson)
 	{
+		final boolean checkAlreadyMatchedValues = true;
+		assertMappingFullyCovered(values, toJson, checkAlreadyMatchedValues);
+	}
+
+	public static <JSONEnumType, EnumType> void assertMappingFullyCovered(
+			final EnumType[] values,
+			final Function<EnumType, JSONEnumType> toJson,
+			final boolean checkAlreadyMatchedValues)
+	{
 		Assert.assertNull(toJson.apply(null));
 
 		final Set<JSONEnumType> jsonValuesAlreadyMatched = new HashSet<>();
@@ -42,7 +51,7 @@ public class EnumTestUtils
 			final JSONEnumType jsonValue = toJson.apply(value);
 			Assert.assertNotNull("JSON shall not be null for " + value, jsonValue);
 
-			if (!jsonValuesAlreadyMatched.add(jsonValue))
+			if (checkAlreadyMatchedValues && !jsonValuesAlreadyMatched.add(jsonValue))
 			{
 				Assert.fail("JSON value " + jsonValue + " was already matched");
 			}

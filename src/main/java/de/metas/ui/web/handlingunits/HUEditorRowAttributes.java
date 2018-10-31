@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -20,7 +18,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUAware;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
@@ -45,6 +43,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -316,7 +316,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public Optional<Date> getBestBeforeDate()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute bestBeforeDateAttribute = attributeDAO.retrieveAttributeByValue(Constants.ATTR_BestBeforeDate);
+		final I_M_Attribute bestBeforeDateAttribute = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_BestBeforeDate);
 		if (!attributesStorage.hasAttribute(bestBeforeDateAttribute))
 		{
 			return Optional.empty();

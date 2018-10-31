@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.metas.attachments.AttachmentEntryType;
+import de.metas.attachments.AttachmentEntry;
 import de.metas.ui.web.attachments.json.JSONAttachURLRequest;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -133,12 +133,12 @@ public class DocumentAttachmentsRestController
 		final IDocumentAttachmentEntry entry = getDocumentAttachments(windowIdStr, documentId)
 				.getEntry(entryId);
 
-		final AttachmentEntryType type = entry.getType();
-		if (type == AttachmentEntryType.Data)
+		final AttachmentEntry.Type type = entry.getType();
+		if (type == AttachmentEntry.Type.Data)
 		{
 			return extractResponseEntryFromData(entry);
 		}
-		else if (type == AttachmentEntryType.URL)
+		else if (type == AttachmentEntry.Type.URL)
 		{
 			return extractResponseEntryFromURL(entry);
 		}

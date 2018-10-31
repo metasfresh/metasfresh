@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -18,9 +19,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /*
@@ -281,6 +282,11 @@ public abstract class DocumentId implements Serializable
 		{
 			throw exceptionSupplier.get();
 		}
+	}
+	
+	public <T extends RepoIdAware> T toId(@NonNull final IntFunction<T> mapper)
+	{
+		return mapper.apply(toInt());
 	}
 
 	private static final class IntDocumentId extends DocumentId

@@ -10,11 +10,10 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.CacheMgt;
+import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +35,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import ch.qos.logback.classic.Level;
+import de.metas.cache.CacheMgt;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
@@ -44,25 +44,35 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
 import de.metas.notification.UserNotificationTargetType;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.SqlViewFactory;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.event.JSONViewChanges;
+import de.metas.ui.web.view.event.ViewChanges;
 import de.metas.ui.web.view.json.JSONViewResult;
+import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketEventLogRecord;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
 
 /*
@@ -155,7 +165,11 @@ public class DebugRestController
 	}
 
 	@RequestMapping(value = "/traceSqlQueries", method = RequestMethod.GET)
-	public void setTraceSqlQueries(@RequestParam("enabled") final boolean enabled)
+	public void setTraceSqlQueries(
+
+			@ApiParam(value = "If Enabled, all SQL queries are logged with loglevel=WARN, or if the system property <code>" + IQueryStatisticsLogger.SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR + "</code> is set to <code>true</code>, they will be written to std-err.", //
+					allowEmptyValue = false) //
+			@RequestParam("enabled") final boolean enabled)
 	{
 		if (enabled)
 		{
@@ -250,6 +264,36 @@ public class DebugRestController
 		websocketSender.sendMessage(endpoint, message);
 	}
 
+	@PostMapping("/websocket/view/fireRowChanges")
+	public void sendWebsocketViewChangedNotification(
+			@PathVariable("viewId") final String viewIdStr,
+			@RequestParam("changedIds") final String changedIdsStr)
+	{
+		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
+		final DocumentIdsSelection changedRowIds = DocumentIdsSelection.ofCommaSeparatedString(changedIdsStr);
+		sendWebsocketViewChangedNotification(viewId, changedRowIds);
+	}
+
+	private void sendWebsocketViewChangedNotification(final ViewId viewId, final DocumentIdsSelection changedRowIds)
+	{
+		final ViewChanges viewChanges = new ViewChanges(viewId);
+		viewChanges.addChangedRowIds(changedRowIds);
+		JSONViewChanges jsonViewChanges = JSONViewChanges.of(viewChanges);
+
+		final String endpoint = WebSocketConfig.buildViewNotificationsTopicName(jsonViewChanges.getViewId());
+		try
+		{
+			websocketSender.convertAndSend(endpoint, jsonViewChanges);
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.appendParametersToMessage()
+					.setParameter("json", jsonViewChanges);
+		}
+
+	}
+
 	@RequestMapping(value = "/sql/loadLimit/warn", method = RequestMethod.PUT)
 	public void setSqlLoadLimitWarn(@RequestBody final int limit)
 	{
@@ -299,9 +343,9 @@ public class DebugRestController
 	public static enum LoggingModule
 	{
 		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()), view(de.metas.ui.web.view.IView.class.getPackage().getName()), cache(
-				org.compiere.util.CCache.class.getName() //
-				, org.compiere.util.CacheMgt.class.getName() //
-				, org.adempiere.ad.dao.cache.IModelCacheService.class.getName() // model caching
+				de.metas.cache.CCache.class.getName() //
+				, de.metas.cache.CacheMgt.class.getName() //
+				, de.metas.cache.model.IModelCacheService.class.getName() // model caching
 		) //
 		;
 
@@ -405,4 +449,30 @@ public class DebugRestController
 		return websocketSender.getLoggedEvents(destinationFilter);
 	}
 
+	@PostMapping("/view/{viewId}/deleteRows")
+	public String viewDeleteRowIds(
+			@PathVariable("viewId") final String viewIdStr,
+			@RequestParam("ids") final String rowIdsStr)
+	{
+		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
+		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofCommaSeparatedString(rowIdsStr);
+
+		//
+		// Delete from DB selection
+		String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
+				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(viewId.getViewId())
+				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1 + "=" + DB.buildSqlList(rowIds.toIntSet());
+		final int countDeleted = DB.executeUpdate(sql, ITrx.TRXNAME_None);
+
+		//
+		// Clear view's cache
+		final IView view = viewsRepo.getView(viewId);
+		rowIds.forEach(view::invalidateRowById);
+
+		//
+		// Notify
+		sendWebsocketViewChangedNotification(viewId, rowIds);
+
+		return "Deleted " + countDeleted + " rows";
+	}
 }

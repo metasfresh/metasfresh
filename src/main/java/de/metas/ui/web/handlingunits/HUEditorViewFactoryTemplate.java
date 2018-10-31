@@ -15,11 +15,8 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Tab;
-import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +25,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.IMsgBL;
@@ -63,6 +61,10 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*
@@ -96,6 +98,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 	@Autowired
 	private HUReservationService huReservationService;
+
+	private static final String SYSCFG_AlwaysUseSameLayout = "de.metas.ui.web.handlingunits.HUEditorViewFactory.AlwaysUseSameLayout";
 
 	private final ImmutableListMultimap<String, HUEditorViewCustomizer> viewCustomizersByReferencingTableName;
 	private final ImmutableMap<String, HUEditorRowIsProcessedPredicate> rowProcessedPredicateByReferencingTableName;
@@ -191,7 +195,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			sqlViewBinding.field(SqlViewRowFieldBinding.builder()
 					.fieldName(HUEditorRow.FIELDNAME_BestBeforeDate)
 					.widgetType(DocumentFieldWidgetType.Date)
-					.columnSql(Constants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID))
+					.columnSql(HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID))
 					.fieldLoader((rs, adLanguage) -> rs.getTimestamp(HUEditorRow.FIELDNAME_BestBeforeDate))
 					.build());
 		}
@@ -254,7 +258,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				//
 				.addElementsFromViewRowClass(HUEditorRow.class, viewDataType);
 
-		customizeViewLayout(viewLayoutBuilder, viewDataType);
+		if (!alwaysUseSameLayout())
+		{
+			customizeViewLayout(viewLayoutBuilder, viewDataType);
+		}
 
 		return viewLayoutBuilder.build();
 	}
@@ -449,6 +456,11 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			sqlParamsOut.collectAll(sqlQueryFilter);
 			return sql;
 		}
+	}
+
+	private boolean alwaysUseSameLayout()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_AlwaysUseSameLayout, false);
 	}
 
 }

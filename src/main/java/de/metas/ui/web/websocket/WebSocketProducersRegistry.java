@@ -11,7 +11,6 @@ import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

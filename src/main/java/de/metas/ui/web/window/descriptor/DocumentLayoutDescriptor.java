@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -8,8 +9,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -23,6 +22,10 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -72,9 +75,8 @@ public final class DocumentLayoutDescriptor
 	/** Misc debugging properties */
 	private final Map<String, String> debugProperties;
 
-	private DocumentLayoutDescriptor(final Builder builder)
+	private DocumentLayoutDescriptor(@NonNull final Builder builder)
 	{
-		super();
 		windowId = builder.windowId;
 		Check.assumeNotNull(windowId, "Parameter windowId is not null");
 
@@ -112,7 +114,7 @@ public final class DocumentLayoutDescriptor
 	{
 		return windowId;
 	}
-
+	
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
@@ -152,9 +154,6 @@ public final class DocumentLayoutDescriptor
 	}
 
 	/**
-	 *
-	 * @param detailId
-	 * @return detail
 	 * @throws DocumentLayoutDetailNotFoundException
 	 */
 	public DocumentLayoutDetailDescriptor getDetail(final DetailId detailId)
@@ -210,7 +209,7 @@ public final class DocumentLayoutDescriptor
 			//
 			// Debug informations:
 			putDebugProperty("generator-thread", Thread.currentThread().getName());
-			putDebugProperty("generator-timestamp", new java.util.Date().toString());
+			putDebugProperty("generator-timestamp", LocalDateTime.now().toString());
 			if (stopwatch != null)
 			{
 				putDebugProperty("generator-duration", stopwatch.toString());

@@ -14,18 +14,15 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
@@ -56,6 +53,9 @@ import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpression
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -83,7 +83,7 @@ import lombok.NonNull;
 
 /**
  * Creates {@link ProcessDescriptor}s from {@link I_AD_Process} based processes
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -134,6 +134,7 @@ import lombok.NonNull;
 
 		return WebuiRelatedProcessDescriptor.builder()
 				.processId(processDescriptor.getProcessId())
+				.internalName(processDescriptor.getInternalName())
 				.processCaption(processDescriptor.getCaption())
 				.processDescription(processDescriptor.getDescription())
 				.debugProcessClassname(processDescriptor.getProcessClassname())
@@ -196,6 +197,7 @@ import lombok.NonNull;
 		// Process descriptor
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
+				.setInternalName(adProcess.getValue())
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
 				.setParametersDescriptor(parametersDescriptor)

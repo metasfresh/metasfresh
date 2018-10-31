@@ -4,7 +4,6 @@ import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.Services;
 import org.compiere.model.I_Fact_Acct;
 
 import de.metas.process.IProcessPrecondition;
@@ -13,6 +12,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -9,10 +9,12 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Suppliers;
 
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -36,52 +38,48 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString
 public final class ViewEvaluationCtx
 {
 	public static final ViewEvaluationCtx newInstanceFromCurrentContext()
 	{
 		final Properties ctx = Env.getCtx();
-		final String adLanguage = Env.getAD_Language(ctx);
-		final UserRolePermissionsKey permissionsKey = UserRolePermissionsKey.of(ctx);
-		return new ViewEvaluationCtx(adLanguage, permissionsKey);
-	}
 
-	private final String adLanguage;
-	private final UserRolePermissionsKey permissionsKey;
-	private final Supplier<Evaluatee> evaluateeSupplier;
-
-	private ViewEvaluationCtx(@NonNull final String adLanguage, @NonNull final UserRolePermissionsKey permissionsKey)
-	{
-		this.adLanguage = adLanguage;
-		this.permissionsKey = permissionsKey;
-		this.evaluateeSupplier = Suppliers.memoize(() -> createEvaluatee(adLanguage, permissionsKey));
-	}
-
-	private static final Evaluatee createEvaluatee(final String adLanguage, final UserRolePermissionsKey permissionsKey)
-	{
-		return Evaluatees.mapBuilder()
-				.put(Env.CTXNAME_AD_Language, adLanguage)
-				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), permissionsKey.toPermissionsKeyString())
+		return ViewEvaluationCtx.builder()
+				.loggedUserId(Env.getAD_User_ID(ctx))
+				.adLanguage(Env.getAD_Language(ctx))
+				.permissionsKey(UserRolePermissionsKey.of(ctx))
 				.build();
 	}
 
-	@Override
-	public String toString()
+	@Getter
+	private final int loggedUserId;
+	@Getter
+	private final String adLanguage;
+	@Getter
+	private final UserRolePermissionsKey permissionsKey;
+
+	private final Supplier<Evaluatee> evaluateeSupplier;
+
+	@Builder
+	private ViewEvaluationCtx(
+			final int loggedUserId,
+			@NonNull final String adLanguage,
+			@NonNull final UserRolePermissionsKey permissionsKey)
 	{
-		return MoreObjects.toStringHelper(this)
-				.add("adLanguage", adLanguage)
-				.add("permissionsKey", permissionsKey)
-				.toString();
+		this.loggedUserId = loggedUserId;
+		this.adLanguage = adLanguage;
+		this.permissionsKey = permissionsKey;
+		this.evaluateeSupplier = Suppliers.memoize(() -> createEvaluatee());
 	}
 
-	public String getAD_Language()
+	private final Evaluatee createEvaluatee()
 	{
-		return adLanguage;
-	}
-
-	public UserRolePermissionsKey getPermissionsKey()
-	{
-		return permissionsKey;
+		return Evaluatees.mapBuilder()
+				.put(Env.CTXNAME_AD_User_ID, loggedUserId)
+				.put(Env.CTXNAME_AD_Language, adLanguage)
+				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), permissionsKey.toPermissionsKeyString())
+				.build();
 	}
 
 	public Evaluatee toEvaluatee()

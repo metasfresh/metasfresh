@@ -13,8 +13,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -32,6 +32,7 @@ import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
@@ -47,6 +48,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -139,7 +141,7 @@ public class ADProcessPostProcessService
 
 			if (!viewInvalidateAllCalled && viewSupplier.get() != null)
 			{
-				viewSupplier.get().notifyRecordsChanged(ImmutableSet.of(recordToRefresh));
+				viewSupplier.get().notifyRecordsChanged(TableRecordReferenceSet.of(recordToRefresh));
 			}
 		}
 	}
@@ -147,7 +149,7 @@ public class ADProcessPostProcessService
 	private static final DocumentId extractInstanceId(final ADProcessPostProcessRequest request)
 	{
 		final DocumentId instanceIdOverride = request.getInstanceIdOverride();
-		return instanceIdOverride != null ? instanceIdOverride : DocumentId.of(request.getProcessExecutionResult().getAD_PInstance_ID());
+		return instanceIdOverride != null ? instanceIdOverride : DocumentId.of(request.getProcessExecutionResult().getPinstanceId());
 	}
 
 	private static final String extractSummary(final ProcessExecutionResult processExecutionResult)
@@ -177,11 +179,11 @@ public class ADProcessPostProcessService
 		File reportFile = null;
 		try
 		{
-			final String reportFilePrefix = "report_" + processExecutionResult.getAD_PInstance_ID() + "_";
+			final String reportFilePrefix = "report_" + processExecutionResult.getPinstanceId().getRepoId() + "_";
 
 			final String reportContentType = processExecutionResult.getReportContentType();
 			final String reportFileExtension = MimeType.getExtensionByType(reportContentType);
-			final String reportFileSuffix = Check.isEmpty(reportFileExtension, true) ? "" : "." + reportFileExtension.trim();
+			final String reportFileSuffix = Check.isEmpty(reportFileExtension, true) ? "" : reportFileExtension.trim();
 			reportFile = File.createTempFile(reportFilePrefix, reportFileSuffix);
 		}
 		catch (final IOException e)
@@ -343,6 +345,7 @@ public class ADProcessPostProcessService
 			{
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
+						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
 						.build();
 			}
 			else
@@ -368,6 +371,14 @@ public class ADProcessPostProcessService
 			return OpenSingleDocument.builder()
 					.documentPath(documentPath)
 					.modal(true)
+					.build();
+		}
+		//
+		// Display QRCode to user
+		else if (processExecutionResult.getDisplayQRCode() != null)
+		{
+			return DisplayQRCodeAction.builder()
+					.code(processExecutionResult.getDisplayQRCode().getCode())
 					.build();
 		}
 		//

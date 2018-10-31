@@ -8,10 +8,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Process;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Component;
 
 import com.google.common.cache.Cache;
@@ -20,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
@@ -48,6 +47,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -144,6 +144,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.huProcessDescriptor(huProcessDescriptor)
 				.processDescriptor(ProcessDescriptor.builder()
 						.setProcessId(processId)
+						.setInternalName(huProcessDescriptor.getInternalName())
 						.setType(ProcessDescriptorType.Report)
 						.setParametersDescriptor(parametersDescriptor)
 						.setLayout(ProcessLayout.builder()
@@ -272,7 +273,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	@Override
 	public void cacheReset()
 	{
-		processDescriptors.clear();
+		processDescriptors.reset();
 		instances.cleanUp();
 	}
 

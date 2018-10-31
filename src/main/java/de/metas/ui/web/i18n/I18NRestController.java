@@ -8,7 +8,6 @@ import java.util.function.UnaryOperator;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.X_AD_Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +27,8 @@ import de.metas.i18n.po.POTrlRepository;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

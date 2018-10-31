@@ -7,9 +7,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -23,6 +20,10 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*
@@ -63,7 +64,8 @@ public final class DocumentLayoutElementDescriptor
 		final Builder elementBuilder = new Builder()
 				.setCaption(firstField.getCaption())
 				// .setDescription(firstField.getDescription())
-				.setWidgetType(firstField.getWidgetType());
+				.setWidgetType(firstField.getWidgetType())
+				.setWidgetSize(firstField.getWidgetSize());
 
 		for (final DocumentFieldDescriptor field : fields)
 		{
@@ -99,6 +101,8 @@ public final class DocumentLayoutElementDescriptor
 
 	private final DocumentFieldWidgetType widgetType;
 	private final boolean allowShowPassword; // in case widgetType is Password
+	private final boolean multilineText; // in case widgetType is Text
+	private final int multilineTextLines; // in case widgetType is Text
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 
 	private final LayoutType layoutType;
@@ -126,6 +130,8 @@ public final class DocumentLayoutElementDescriptor
 
 		widgetType = builder.getWidgetType();
 		allowShowPassword = builder.isAllowShowPassword();
+		multilineText = builder.isMultilineText();
+		multilineTextLines = builder.getMultilineTextLines();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 
 		layoutType = builder.getLayoutType();
@@ -198,6 +204,16 @@ public final class DocumentLayoutElementDescriptor
 		return allowShowPassword;
 	}
 
+	public boolean isMultilineText()
+	{
+		return multilineText;
+	}
+
+	public int getMultilineTextLines()
+	{
+		return multilineTextLines;
+	}
+
 	public LayoutType getLayoutType()
 	{
 		return layoutType;
@@ -258,6 +274,8 @@ public final class DocumentLayoutElementDescriptor
 
 		private DocumentFieldWidgetType _widgetType;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
+		private boolean _multilineText = false; // in case widgetType is Text
+		private int _multilineTextLines = 0; // in case widgetType is Text
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 
 		private LayoutType _layoutType;
@@ -413,6 +431,11 @@ public final class DocumentLayoutElementDescriptor
 			return _widgetType != null;
 		}
 
+		public boolean isWidgetSizeSet()
+		{
+			return _widgetSize != null;
+		}
+
 		public DocumentFieldWidgetType getWidgetType()
 		{
 			Check.assumeNotNull(_widgetType, DocumentLayoutBuildException.class, "Parameter widgetType is not null for {}", this);
@@ -445,6 +468,28 @@ public final class DocumentLayoutElementDescriptor
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
+		}
+
+		public Builder setMultilineText(boolean multilineText)
+		{
+			this._multilineText = multilineText;
+			return this;
+		}
+
+		private boolean isMultilineText()
+		{
+			return _multilineText;
+		}
+
+		public Builder setMultilineTextLines(final int multilineTextLines)
+		{
+			this._multilineTextLines = multilineTextLines;
+			return this;
+		}
+
+		private int getMultilineTextLines()
+		{
+			return _multilineTextLines;
 		}
 
 		public Builder setLayoutType(final LayoutType layoutType)
@@ -486,9 +531,8 @@ public final class DocumentLayoutElementDescriptor
 			return _advancedField;
 		}
 
-		public Builder addField(final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
+		public Builder addField(@NonNull final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
 		{
-			Check.assumeNotNull(fieldBuilder, "Parameter fieldBuilder is not null");
 			final DocumentLayoutElementFieldDescriptor.Builder previousFieldBuilder = _fieldsBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
 			if (previousFieldBuilder != null)
 			{

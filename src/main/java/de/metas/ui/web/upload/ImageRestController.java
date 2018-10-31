@@ -61,7 +61,7 @@ public class ImageRestController
 	}
 
 	@PostMapping
-	public int uploadImage(@RequestParam("file") final MultipartFile file) throws IOException
+	public WebuiImageId uploadImage(@RequestParam("file") final MultipartFile file) throws IOException
 	{
 		userSession.assertLoggedIn();
 		return imageService.uploadImage(file);
@@ -69,13 +69,15 @@ public class ImageRestController
 
 	@GetMapping("/{imageId}")
 	@ResponseBody
-	public ResponseEntity<byte[]> getImage(@PathVariable final int imageId,
+	public ResponseEntity<byte[]> getImage(
+			@PathVariable("imageId") final int imageIdInt,
 			@RequestParam(name = "maxWidth", required = false, defaultValue = "-1") final int maxWidth,
 			@RequestParam(name = "maxHeight", required = false, defaultValue = "-1") final int maxHeight,
 			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
+		final WebuiImageId imageId = WebuiImageId.ofRepoIdOrNull(imageIdInt);
 		return ETagResponseEntityBuilder.ofETagAware(request, getWebuiImage(imageId, maxWidth, maxHeight))
 				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
@@ -83,7 +85,7 @@ public class ImageRestController
 				.toResponseEntity((responseBuilder, webuiImage) -> webuiImage.toResponseEntity(responseBuilder));
 	}
 
-	public WebuiImage getWebuiImage(final int imageId, final int maxWidth, final int maxHeight)
+	private WebuiImage getWebuiImage(final WebuiImageId imageId, final int maxWidth, final int maxHeight)
 	{
 		final WebuiImage image = imageService.getWebuiImage(imageId, maxWidth, maxHeight);
 		assertUserHasAccess(image);

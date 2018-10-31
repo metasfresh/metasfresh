@@ -28,8 +28,6 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -57,6 +55,9 @@ import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollecti
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*
@@ -90,7 +91,8 @@ public class DocumentEntityDescriptor
 
 	private final DocumentType documentType;
 	private final DocumentId documentTypeId;
-	private final String _id;
+	private final String id;
+	private final String internalName;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
@@ -154,7 +156,8 @@ public class DocumentEntityDescriptor
 		dependencies = builder.buildDependencies();
 
 		//
-		_id = builder.buildId();
+		id = builder.getId();
+		internalName = builder.getInternalName();
 
 		//
 		// Callouts
@@ -187,7 +190,7 @@ public class DocumentEntityDescriptor
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(_id);
+		return Objects.hash(id);
 	}
 
 	@Override
@@ -204,7 +207,7 @@ public class DocumentEntityDescriptor
 		}
 
 		final DocumentEntityDescriptor other = (DocumentEntityDescriptor)obj;
-		return DataTypes.equals(_id, other._id);
+		return DataTypes.equals(id, other.id);
 	}
 
 	public DocumentType getDocumentType()
@@ -215,6 +218,11 @@ public class DocumentEntityDescriptor
 	public DocumentId getDocumentTypeId()
 	{
 		return documentTypeId;
+	}
+
+	public String getInternalName()
+	{
+		return internalName;
 	}
 
 	/**
@@ -476,6 +484,8 @@ public class DocumentEntityDescriptor
 		private DocumentType _documentType;
 		private DocumentId _documentTypeId;
 
+		private String _internalName;
+
 		private ITranslatableString _caption = ImmutableTranslatableString.empty();
 		private ITranslatableString _description = ImmutableTranslatableString.empty();
 
@@ -506,7 +516,6 @@ public class DocumentEntityDescriptor
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override
@@ -541,7 +550,7 @@ public class DocumentEntityDescriptor
 		/**
 		 * @return {@link DocumentEntityDescriptor}'s ID
 		 */
-		private String buildId()
+		private String getId()
 		{
 			final StringBuilder id = new StringBuilder();
 			id.append(getDocumentType());
@@ -554,6 +563,22 @@ public class DocumentEntityDescriptor
 			}
 
 			return id.toString();
+		}
+
+		public Builder setInternalName(final String internalName)
+		{
+			this._internalName = internalName;
+			return this;
+		}
+
+		public String getInternalName()
+		{
+			if (_internalName != null)
+			{
+				return _internalName;
+			}
+
+			return getId();
 		}
 
 		public WindowId getWindowId()

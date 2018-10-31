@@ -4,7 +4,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.slf4j.Logger;
@@ -15,6 +14,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.NewRecordDescriptor;
+import de.metas.util.Services;
 
 /*
  * #%L

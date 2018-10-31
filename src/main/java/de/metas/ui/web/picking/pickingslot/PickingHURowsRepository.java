@@ -1,45 +1,40 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.adempiere.warehouse.WarehouseId;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableListMultimap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.picking.PickingCandidatesQuery;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery.MatchingSourceHusQueryBuilder;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.printing.esb.base.util.Check;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
@@ -47,6 +42,8 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository;
 import de.metas.ui.web.picking.PickingConstants;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -80,14 +77,19 @@ import lombok.NonNull;
 @Service
 public class PickingHURowsRepository
 {
+	private static final Logger logger = LogManager.getLogger(PickingHURowsRepository.class);
 	private final HUEditorViewRepository huEditorRepo;
+	private final PickingCandidateRepository pickingCandidatesRepo;
 
 	@Autowired
 	public PickingHURowsRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
+			@NonNull final PickingCandidateRepository pickingCandidatesRepo,
 			@NonNull final HUReservationService huReservationService)
 	{
-		this(createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService));
+		this(
+				createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService),
+				pickingCandidatesRepo);
 	}
 
 	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(
@@ -108,9 +110,12 @@ public class PickingHURowsRepository
 	 * @param huEditorRepo
 	 */
 	@VisibleForTesting
-	PickingHURowsRepository(@NonNull final HUEditorViewRepository huEditorRepo)
+	PickingHURowsRepository(
+			@NonNull final HUEditorViewRepository huEditorRepo,
+			@NonNull final PickingCandidateRepository pickingCandidatesRepo)
 	{
 		this.huEditorRepo = huEditorRepo;
+		this.pickingCandidatesRepo = pickingCandidatesRepo;
 	}
 
 	/**
@@ -129,148 +134,103 @@ public class PickingHURowsRepository
 	@VisibleForTesting
 	static MatchingSourceHusQuery createMatchingSourceHusQuery(@NonNull final PickingSlotRepoQuery query)
 	{
-		final I_M_ShipmentSchedule currentShipmentSchedule = query.getCurrentShipmentScheduleId() > 0 ? load(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class) : null;
-		final List<Integer> productIds;
-		final Set<Integer> allShipmentScheduleIds = query.getShipmentScheduleIds();
+		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+
+		final I_M_ShipmentSchedule currentShipmentSchedule = query.getCurrentShipmentScheduleId() != null
+				? shipmentSchedulesRepo.getById(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class)
+				: null;
+
+		final Set<ProductId> productIds;
+		final Set<ShipmentScheduleId> allShipmentScheduleIds = query.getShipmentScheduleIds();
 		if (allShipmentScheduleIds.isEmpty())
 		{
-			productIds = ImmutableList.of();
+			productIds = ImmutableSet.of();
 		}
 		else if (allShipmentScheduleIds.size() == 1)
 		{
-			productIds = ImmutableList.of(currentShipmentSchedule.getM_Product_ID());
+			productIds = ImmutableSet.of(ProductId.ofRepoId(currentShipmentSchedule.getM_Product_ID()));
 		}
 		else
 		{
-			productIds = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_ShipmentSchedule.class)
-					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, allShipmentScheduleIds)
-					.create()
-					.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, Integer.class);
+			productIds = shipmentSchedulesRepo.getProductIdsByShipmentScheduleIds(allShipmentScheduleIds);
 		}
 
 		final MatchingSourceHusQueryBuilder builder = MatchingSourceHusQuery.builder()
 				.productIds(productIds);
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final int effectiveWarehouseId = currentShipmentSchedule != null ? shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentSchedule) : -1;
+		final WarehouseId effectiveWarehouseId = currentShipmentSchedule != null ? shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentSchedule) : null;
 		builder.warehouseId(effectiveWarehouseId);
 		return builder.build();
 	}
 
 	/**
 	 *
-	 * @param pickingSlotRowQuery determines which {@code M_ShipmentSchedule_ID}s this is about,<br>
+	 * @param pickingCandidatesQuery determines which {@code M_ShipmentSchedule_ID}s this is about,<br>
 	 *            and also (optionally) if the returned rows shall have picking candidates with a certain status.
 	 *
 	 * @return a multi-map where the keys are {@code M_PickingSlot_ID}s and the value is a list of HUEditorRows which also contain with the respective {@code M_Picking_Candidate}s' {@code processed} states.
 	 */
-	public ListMultimap<Integer, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
+	public ListMultimap<PickingSlotId, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final PickingCandidatesQuery pickingCandidatesQuery)
 	{
-		final List<I_M_Picking_Candidate> pickingCandidates = retrievePickingCandidates(pickingSlotRowQuery);
+		final List<PickingCandidate> pickingCandidates = pickingCandidatesRepo.query(pickingCandidatesQuery);
 		return retrievePickedHUsIndexedByPickingSlotId(pickingCandidates);
 	}
 
-	private static List<I_M_Picking_Candidate> retrievePickingCandidates(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
+	private ListMultimap<PickingSlotId, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final List<PickingCandidate> pickingCandidates)
 	{
-		// configure the query builder
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final Map<HuId, PickedHUEditorRow> huId2huRow = new HashMap<>();
 
-		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL
-				.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingSlotRowQuery.getShipmentScheduleIds());
-
-		switch (pickingSlotRowQuery.getPickingCandidates())
+		final ImmutableListMultimap.Builder<PickingSlotId, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
+		for (final PickingCandidate pickingCandidate : pickingCandidates)
 		{
-			case ONLY_NOT_CLOSED:
-				queryBuilder.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL); // even if we don't care, we *do not* want to show closed picking candidates
-				break;
-			case ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM:
-				final Set<Integer> rackSystemPickingSlotIds = Services.get(IHUPickingSlotDAO.class).retrieveAllPickingSlotIdsWhichAreRackSystems();
-				queryBuilder.addCompositeQueryFilter()
-						.setJoinOr()
-						.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL)
-						.addNotInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, rackSystemPickingSlotIds);
-				break;
-			case ONLY_PROCESSED:
-				queryBuilder.addEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_PR);
-				break;
-			case ONLY_UNPROCESSED:
-				queryBuilder.addEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_IP);
-				break;
-			default:
-				Check.errorIf(true, "Query has unexpected pickingCandidates={}; query={}", pickingSlotRowQuery.getPickingCandidates(), pickingSlotRowQuery);
-		}
-
-		//
-		// Picking slot Barcode filter
-		final String pickingSlotBarcode = pickingSlotRowQuery.getPickingSlotBarcode();
-		if (!Check.isEmpty(pickingSlotBarcode, true))
-		{
-			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
-			final List<Integer> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
-					.barcode(pickingSlotBarcode)
-					.build());
-			if (pickingSlotIds.isEmpty())
+			if (pickingCandidate.isRejectedToPick())
 			{
-				return ImmutableList.of();
+				continue;
 			}
 
-			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotIds);
-		}
-
-		//
-		// HU filter
-		final IQuery<I_M_HU> husQuery = queryBL.createQueryBuilder(I_M_HU.class)
-				.addNotEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Shipped) // not already shipped (https://github.com/metasfresh/metasfresh-webui-api/issues/647)
-				.create();
-		queryBuilder.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
-
-		return queryBuilder
-				.orderBy(I_M_Picking_Candidate.COLUMNNAME_M_Picking_Candidate_ID)
-				.create()
-				.list();
-	}
-
-	private ListMultimap<Integer, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final List<I_M_Picking_Candidate> pickingCandidates)
-	{
-		final Map<Integer, PickedHUEditorRow> huId2huRow = new HashMap<>();
-
-		final Builder<Integer, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
-
-		for (final I_M_Picking_Candidate pickingCandidate : pickingCandidates)
-		{
-			final int huId = pickingCandidate.getM_HU_ID();
+			final HuId huId = pickingCandidate.getPickFromHuId();
+			if (huId == null)
+			{
+				logger.warn("Skip {} because huId is null", huId);
+				continue;
+			}
 			if (huId2huRow.containsKey(huId))
 			{
 				continue;
 			}
 
-			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(HuId.ofRepoId(huId));
+			final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
+			if (pickingSlotId == null)
+			{
+				logger.warn("Skip picking candidate because it has no picking slot set: {}."
+						+ "\n Usually that happening because it was picked with some other picking terminal.", pickingCandidate);
+				continue;
+			}
+
+			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
 			final boolean pickingCandidateProcessed = isPickingCandidateProcessed(pickingCandidate);
 			final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRow, pickingCandidateProcessed);
 
 			huId2huRow.put(huId, row);
-
-			builder.put(pickingCandidate.getM_PickingSlot_ID(), row);
+			builder.put(pickingSlotId, row);
 		}
 
 		return builder.build();
 	}
 
-	private static boolean isPickingCandidateProcessed(@NonNull final I_M_Picking_Candidate pc)
+	private static boolean isPickingCandidateProcessed(@NonNull final PickingCandidate pc)
 	{
-		final String status = pc.getStatus();
-		if (X_M_Picking_Candidate.STATUS_CL.equals(status))
+		final PickingCandidateStatus status = pc.getStatus();
+		if (PickingCandidateStatus.Closed.equals(status))
 		{
 			return true;
 		}
-		else if (X_M_Picking_Candidate.STATUS_PR.equals(status))
+		else if (PickingCandidateStatus.Processed.equals(status))
 		{
 			return true;
 		}
-		else if (X_M_Picking_Candidate.STATUS_IP.equals(status))
+		else if (PickingCandidateStatus.Draft.equals(status))
 		{
 			return false;
 		}
@@ -280,10 +240,10 @@ public class PickingHURowsRepository
 		}
 	}
 
-	public ListMultimap<Integer, PickedHUEditorRow> //
+	public ListMultimap<PickingSlotId, PickedHUEditorRow> //
 			retrieveAllPickedHUsIndexedByPickingSlotId(@NonNull final List<I_M_PickingSlot> pickingSlots)
 	{
-		final SetMultimap<Integer, HuId> //
+		final SetMultimap<PickingSlotId, HuId> //
 		huIdsByPickingSlotId = Services.get(IHUPickingSlotDAO.class).retrieveAllHUIdsIndexedByPickingSlotId(pickingSlots);
 
 		huEditorRepo.warmUp(ImmutableSet.copyOf(huIdsByPickingSlotId.values()));
@@ -292,7 +252,7 @@ public class PickingHURowsRepository
 				.entries()
 				.stream()
 				.map(pickingSlotAndHU -> {
-					final int pickingSlotId = pickingSlotAndHU.getKey();
+					final PickingSlotId pickingSlotId = pickingSlotAndHU.getKey();
 					final HuId huId = pickingSlotAndHU.getValue();
 
 					final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
@@ -305,7 +265,7 @@ public class PickingHURowsRepository
 	}
 
 	/**
-	 * Immutable pojo that contains the HU editor as retrieved from {@link HUEditorViewRepository} plus the the {@code processed} value from the respective {@link I_M_Picking_Candidate}.
+	 * Immutable pojo that contains the HU editor as retrieved from {@link HUEditorViewRepository} plus the the {@code processed} value from the respective picking candidate.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 *

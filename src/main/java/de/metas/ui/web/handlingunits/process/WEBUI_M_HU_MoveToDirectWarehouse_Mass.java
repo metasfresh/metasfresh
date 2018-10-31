@@ -5,8 +5,6 @@ import java.util.Iterator;
 
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -19,6 +17,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

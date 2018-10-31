@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -256,7 +256,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	}
 
 	@Override
-	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(final TableRecordReferenceSet recordRefs)
 	{
 		// TODO Auto-generated method stub
 

@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -28,6 +27,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfo.ProcessInfoBuilder;
@@ -55,6 +55,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -160,7 +161,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		// Save process info together with it's parameters and get the the newly created AD_PInstance_ID
 		final ProcessInfo processInfo = createProcessInfo(request);
 		Services.get(IADPInstanceDAO.class).saveProcessInfo(processInfo);
-		final DocumentId adPInstanceId = DocumentId.of(processInfo.getAD_PInstance_ID());
+		final DocumentId adPInstanceId = DocumentId.of(processInfo.getPinstanceId());
 
 		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
 		try (final IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
@@ -323,17 +324,17 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		return processInfoBuilder.build();
 	}
 
-	private ADProcessInstanceController retrieveProcessInstance(final DocumentId adPInstanceId)
+	private ADProcessInstanceController retrieveProcessInstance(final DocumentId adPInstanceDocumentId)
 	{
-		Check.assumeNotNull(adPInstanceId, "Parameter adPInstanceId is not null");
-		Check.assume(adPInstanceId.toInt() > 0, "adPInstanceId > 0");
+		Check.assumeNotNull(adPInstanceDocumentId, "Parameter adPInstanceDocumentId is not null");
 
 		//
 		// Load process info
+		final PInstanceId pinstanceId = PInstanceId.ofRepoId(adPInstanceDocumentId.toInt());
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
-				.setAD_PInstance_ID(adPInstanceId.toInt())
+				.setPInstanceId(pinstanceId)
 				.build();
 
 		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
@@ -350,7 +351,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			final Document parametersDoc = parametersDescriptor
 					.getDataBinding()
 					.getDocumentsRepository()
-					.retrieveDocumentById(parametersDescriptor, adPInstanceId, NullDocumentChangesCollector.instance);
+					.retrieveDocumentById(parametersDescriptor, adPInstanceDocumentId, NullDocumentChangesCollector.instance);
 
 			// TODO: handle the case when the process was already executed
 			// In that case we need to load the result and provide it to ProcessInstance constructor
@@ -364,7 +365,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			//
 			return ADProcessInstanceController.builder()
 					.caption(processDescriptor.getCaption())
-					.instanceId(adPInstanceId)
+					.instanceId(adPInstanceDocumentId)
 					.parameters(parametersDoc)
 					.processClassInstance(processClassInstance)
 					.viewId(viewId)

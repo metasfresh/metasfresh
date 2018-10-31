@@ -22,6 +22,7 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -112,6 +113,7 @@ public final class ViewActionDescriptor
 
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
+				.setInternalName(actionId)
 				.setType(ProcessDescriptorType.Process)
 				//
 				.setLayout(processLayout)

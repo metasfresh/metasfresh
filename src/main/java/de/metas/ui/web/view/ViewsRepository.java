@@ -4,18 +4,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.MutableInt;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
@@ -43,6 +41,7 @@ import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -82,7 +81,7 @@ public class ViewsRepository implements IViewsRepository
 	@Value("${metasfresh.webui.view.truncateOnStartUp:true}")
 	private boolean truncateSelectionOnStartUp;
 
-	private final ConcurrentHashMap<WindowId, IViewsIndexStorage> viewsIndexStorages = new ConcurrentHashMap<>();
+	private final ImmutableMap<WindowId, IViewsIndexStorage> viewsIndexStorages;
 	private final IViewsIndexStorage defaultViewsIndexStorage = new DefaultViewsRepositoryStorage();
 
 	/**
@@ -92,10 +91,16 @@ public class ViewsRepository implements IViewsRepository
 	 */
 	public ViewsRepository(
 			@NonNull final Adempiere neededForDBAccess,
-			@NonNull final Collection<IViewFactory> viewFactories)
+			@NonNull final List<IViewFactory> viewFactories,
+			@NonNull final Optional<List<IViewsIndexStorage>> viewIndexStorages)
 	{
 		factories = createFactoriesMap(viewFactories);
-		logger.info("Registered following view factories: ", factories);
+		factories.values().forEach(viewFactory -> viewFactory.setViewsRepository(this));
+		logger.info("Registered following view factories: {}", factories);
+
+		this.viewsIndexStorages = createViewIndexStoragesMap(viewIndexStorages.orElseGet(ImmutableList::of));
+		this.viewsIndexStorages.values().forEach(viewsIndexStorage -> viewsIndexStorage.setViewsRepository(this));
+		logger.info("Registered following view index storages: {}", this.viewsIndexStorages);
 	}
 
 	@PostConstruct
@@ -155,6 +160,27 @@ public class ViewsRepository implements IViewsRepository
 		return ImmutableMap.copyOf(factories);
 	}
 
+	private static ImmutableMap<WindowId, IViewsIndexStorage> createViewIndexStoragesMap(List<IViewsIndexStorage> viewsIndexStorages)
+	{
+		final ImmutableMap.Builder<WindowId, IViewsIndexStorage> map = ImmutableMap.builder();
+
+		for (final IViewsIndexStorage viewsIndexStorage : viewsIndexStorages)
+		{
+			if (viewsIndexStorage instanceof DefaultViewsRepositoryStorage)
+			{
+				logger.warn("Skipping {} because it shall not be in spring context", viewsIndexStorage);
+				continue;
+			}
+
+			final WindowId windowId = viewsIndexStorage.getWindowId();
+			Check.assumeNotNull(windowId, "{} shall not have windowId null", viewsIndexStorage);
+
+			map.put(windowId, viewsIndexStorage);
+		}
+
+		return map.build();
+	}
+
 	private final IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
 	{
 		IViewFactory factory = factories.get(mkFactoryKey(windowId, viewType));
@@ -177,37 +203,8 @@ public class ViewsRepository implements IViewsRepository
 		return ArrayKey.of(windowId, viewType);
 	}
 
-	/**
-	 * @param viewsIndexStorages view index storages discovered in spring context
-	 */
-	@Autowired
-	private void registerViewsIndexStorages(final Collection<IViewsIndexStorage> viewsIndexStorages)
-	{
-		if (viewsIndexStorages.isEmpty())
-		{
-			logger.info("No {} discovered", IViewsIndexStorage.class);
-			return;
-		}
-
-		for (final IViewsIndexStorage viewsIndexStorage : viewsIndexStorages)
-		{
-			if (viewsIndexStorage instanceof DefaultViewsRepositoryStorage)
-			{
-				logger.warn("Skipping {} because it shall not be in spring context", viewsIndexStorage);
-				continue;
-			}
-
-			final WindowId windowId = viewsIndexStorage.getWindowId();
-			Check.assumeNotNull(windowId, "Parameter windowId is not null");
-
-			viewsIndexStorage.setViewsRepository(this);
-
-			this.viewsIndexStorages.put(windowId, viewsIndexStorage);
-			logger.info("Registered {} for windowId={}", viewsIndexStorage, windowId);
-		}
-	}
-
-	private IViewsIndexStorage getViewsStorageFor(@NonNull final ViewId viewId)
+	@Override
+	public IViewsIndexStorage getViewsStorageFor(@NonNull final ViewId viewId)
 	{
 		final IViewsIndexStorage viewIndexStorage = viewsIndexStorages.get(viewId.getWindowId());
 		if (viewIndexStorage != null)
@@ -389,7 +386,7 @@ public class ViewsRepository implements IViewsRepository
 
 	@Override
 	@Async
-	public void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(@NonNull final TableRecordReferenceSet recordRefs)
 	{
 		if (recordRefs.isEmpty())
 		{

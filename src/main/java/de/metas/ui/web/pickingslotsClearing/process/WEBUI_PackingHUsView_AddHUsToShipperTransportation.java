@@ -2,8 +2,6 @@ package de.metas.ui.web.pickingslotsClearing.process;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
-
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
@@ -11,6 +9,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.util.Services;
 
 /*
  * #%L

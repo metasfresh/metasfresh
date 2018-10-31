@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.compiere.util.DB;
 
 import com.google.common.base.Predicates;
@@ -26,6 +25,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.sql.PlainSqlEntityFieldBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

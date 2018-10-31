@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
@@ -25,6 +24,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

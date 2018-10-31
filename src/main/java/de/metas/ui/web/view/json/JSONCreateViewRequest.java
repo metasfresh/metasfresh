@@ -3,8 +3,6 @@ package de.metas.ui.web.view.json;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.collections.CollectionUtils;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -20,6 +18,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L

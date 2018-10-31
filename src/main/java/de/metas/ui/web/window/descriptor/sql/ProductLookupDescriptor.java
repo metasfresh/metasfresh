@@ -20,9 +20,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MLookupFactory;
@@ -60,6 +57,9 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -121,12 +121,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private static final String ATTRIBUTE_ASI = "asi";
 
+	private final boolean excludeBOMProducts;
+
 	@Builder(builderClassName = "BuilderWithStockInfo", builderMethodName = "builderWithStockInfo")
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
 			@NonNull final String availableStockDateParamName,
-			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter)
+			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
+			final boolean excludeBOMProducts)
 	{
 		this.param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		this.param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -134,19 +137,24 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		this.param_AvailableStockDate = CtxNames.ofNameAndDefaultValue(availableStockDateParamName, "NULL");
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
 
+		this.excludeBOMProducts = excludeBOMProducts;
+
 		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_AD_Org_ID);
 	}
 
 	@Builder(builderClassName = "BuilderWithoutStockInfo", builderMethodName = "builderWithoutStockInfo")
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
-			@NonNull final String pricingDateParamName)
+			@NonNull final String pricingDateParamName,
+			final boolean excludeBOMProducts)
 	{
 		this.param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		this.param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
 
 		this.param_AvailableStockDate = null;
 		this.availableToPromiseAdapter = null;
+
+		this.excludeBOMProducts = excludeBOMProducts;
 
 		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 	}
@@ -249,6 +257,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByPriceList(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByNotFreightCostProduct(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
+		appendFilterBOMProducts(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 
 		//
 		// SQL: SELECT ... FROM
@@ -266,6 +275,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
 				+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
 		sql.insert(0, "SELECT * FROM (").append(") p");
 
@@ -366,6 +376,16 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		final Integer adOrgId = param_AD_Org_ID.getValueAsInteger(evalCtx);
 		sqlWhereClause.append("\n AND p.AD_Org_ID IN (0, ").append(sqlWhereClauseParams.placeholder(adOrgId)).append(")");
+	}
+
+	private void appendFilterBOMProducts(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams, final LookupDataSourceContext evalCtx)
+	{
+		if (!excludeBOMProducts)
+		{
+			return;
+		}
+
+		sqlWhereClause.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM + "=" + sqlWhereClauseParams.placeholder(false));
 	}
 
 	private static final String convertFilterToSql(final String filter)
@@ -501,12 +521,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return productLookupValues;
 		}
 		// Services.get(IWarehouseDAO.class).
-		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(AvailableToPromiseQuery.builder()
+		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productIds(productLookupValues.getKeysAsInt())
 				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
 				.date(TimeUtil.asLocalDateTime(dateOrNull))
 				.bpartnerId(bpartnerId)
-				.build());
+				.build();
+		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(query);
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
 		// process the query's result into those explodedProductValues
@@ -641,5 +662,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		String COLUMNNAME_BPartnerProductNo = "BPartnerProductNo";
 		String COLUMNNAME_BPartnerProductName = "BPartnerProductName";
 		String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+		String COLUMNNAME_IsBOM = "IsBOM";
 	}
 }

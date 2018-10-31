@@ -13,9 +13,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,6 +20,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 

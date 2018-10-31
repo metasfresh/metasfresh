@@ -3,7 +3,6 @@ package de.metas.ui.web.process.json;
 import java.io.Serializable;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -13,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
@@ -25,7 +25,9 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -98,7 +100,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		else if (resultAction instanceof OpenViewAction)
 		{
 			final OpenViewAction openViewAction = (OpenViewAction)resultAction;
-			return new JSONOpenViewAction(openViewAction.getViewId());
+			return new JSONOpenViewAction(openViewAction.getViewId(), openViewAction.getProfileId());
 		}
 		else if (resultAction instanceof OpenIncludedViewAction)
 		{
@@ -115,6 +117,11 @@ public final class JSONProcessInstanceResult implements Serializable
 		{
 			final SelectViewRowsAction selectViewRowsAction = (SelectViewRowsAction)resultAction;
 			return new JSONSelectViewRowsAction(selectViewRowsAction.getViewId(), selectViewRowsAction.getRowIds());
+		}
+		else if (resultAction instanceof DisplayQRCodeAction)
+		{
+			final DisplayQRCodeAction displayQRCodeAction = (DisplayQRCodeAction)resultAction;
+			return new JSONDisplayQRCodeAction(displayQRCodeAction.getCode());
 		}
 		else
 		{
@@ -163,12 +170,15 @@ public final class JSONProcessInstanceResult implements Serializable
 	{
 		private final WindowId windowId;
 		private final String viewId;
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		private final String profileId;
 
-		public JSONOpenViewAction(final ViewId viewId)
+		public JSONOpenViewAction(final ViewId viewId, final ViewProfileId profileId)
 		{
 			super("openView");
 			this.windowId = viewId.getWindowId();
 			this.viewId = viewId.getViewId();
+			this.profileId = profileId != null ? profileId.toJson() : null;
 		}
 	}
 
@@ -225,6 +235,18 @@ public final class JSONProcessInstanceResult implements Serializable
 			this.viewId = viewId.getViewId();
 			this.rowIds = rowIds.toJsonSet();
 		}
+	}
 
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Getter
+	public static class JSONDisplayQRCodeAction extends JSONResultAction
+	{
+		private final String code;
+
+		protected JSONDisplayQRCodeAction(@NonNull final String code)
+		{
+			super("displayQRCode");
+			this.code = code;
+		}
 	}
 }

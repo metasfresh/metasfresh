@@ -27,11 +27,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RecordZoomWindowFinder;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_AD_User;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -45,6 +41,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.currency.Amount;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.DateTimeTranslatableString;
@@ -85,6 +82,9 @@ import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -122,9 +122,13 @@ public class BoardDescriptorRepository
 	@Autowired
 	private WebsocketSender websocketSender;
 
-	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> newCache(I_WEBUI_Board.Table_Name + "#BoardDescriptor", 50, 0)
-			.addResetForTableName(I_WEBUI_Board_Lane.Table_Name)
-			.addResetForTableName(I_WEBUI_Board_CardField.Table_Name);
+	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> builder()
+			.cacheName(I_WEBUI_Board.Table_Name + "#BoardDescriptor")
+			.tableName(I_WEBUI_Board.Table_Name)
+			.initialCapacity(50)
+			.additionalTableNameToResetFor(I_WEBUI_Board_Lane.Table_Name)
+			.additionalTableNameToResetFor(I_WEBUI_Board_CardField.Table_Name)
+			.build();
 
 	private void sendEvents(final BoardDescriptor board, final JSONBoardChangedEventsList events)
 	{
@@ -210,11 +214,9 @@ public class BoardDescriptorRepository
 		if (adValRuleId > 0)
 		{
 			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(
-					tableName
-					, adValRuleId
-					, null // ctx table name
+					tableName, adValRuleId, null // ctx table name
 					, null // ctx column name
-					);
+			);
 			final String sqlWhereClause = validationRule.getPrefilterWhereClause()
 					.evaluate(Evaluatees.ofCtx(Env.getCtx()), OnVariableNotFound.Fail);
 
@@ -616,13 +618,9 @@ public class BoardDescriptorRepository
 		{
 			return ITranslatableString.constant(value.toString());
 		}
-		else if (widgetType == DocumentFieldWidgetType.Date)
+		else if (widgetType.isDateOrTime())
 		{
-			return DateTimeTranslatableString.ofDate((java.util.Date)value);
-		}
-		else if (widgetType == DocumentFieldWidgetType.DateTime)
-		{
-			return DateTimeTranslatableString.ofDateTime((java.util.Date)value);
+			return DateTimeTranslatableString.ofObject(value, widgetType.getDisplayType());
 		}
 		else if (widgetType == DocumentFieldWidgetType.Integer)
 		{

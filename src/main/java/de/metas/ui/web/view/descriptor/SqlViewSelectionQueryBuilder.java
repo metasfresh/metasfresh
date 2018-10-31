@@ -18,7 +18,6 @@ import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -39,6 +38,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
 import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder.SqlOrderByBindings;
+import de.metas.util.Check;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;

@@ -1,6 +1,5 @@
 package de.metas.ui.web.pporder.process;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.IPPOrderDAO;
 
@@ -12,6 +11,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.pporder.PPOrderConstants;
 import de.metas.ui.web.process.adprocess.WebuiProcess;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
+import de.metas.util.Services;
 
 /*
  * #%L

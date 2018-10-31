@@ -7,12 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -29,6 +28,8 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -160,7 +161,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 		}
 
 		// Remove from picking slots all destroyed HUs
-		pickingCandidateService.inactivateForHUIds(huIdsDestroyedCollector);
+		pickingCandidateService.inactivateForHUIds(HuId.fromRepoIds(huIdsDestroyedCollector));
 
 		return MSG_OK;
 	}

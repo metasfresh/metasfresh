@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.adempiere.util.Functions;
 import org.elasticsearch.client.Client;
 
 import com.google.common.collect.ImmutableSet;
@@ -11,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.descriptor.sql.ISqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.Functions;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;

@@ -4,8 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +31,8 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /*
  * #%L

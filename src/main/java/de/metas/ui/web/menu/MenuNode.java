@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 
@@ -17,6 +16,7 @@ import com.google.common.collect.Iterables;
 
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Check;
 
 /*
  * #%L

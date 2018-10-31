@@ -106,7 +106,6 @@ public final class DocumentDescriptor implements ETagAware
 
 		private Builder()
 		{
-			super();
 		}
 
 		public DocumentDescriptor build()

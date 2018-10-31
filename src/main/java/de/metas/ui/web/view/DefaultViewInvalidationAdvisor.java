@@ -1,9 +1,8 @@
 package de.metas.ui.web.view;
 
-import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -48,7 +47,7 @@ public final class DefaultViewInvalidationAdvisor implements IViewInvalidationAd
 	}
 
 	@Override
-	public Set<DocumentId> findAffectedRowIds(final Set<TableRecordReference> recordRefs, final IView view)
+	public Set<DocumentId> findAffectedRowIds(final TableRecordReferenceSet recordRefs, final IView view)
 	{
 		final String viewTableName = view.getTableNameOrNull();
 		if (viewTableName == null)
@@ -56,8 +55,7 @@ public final class DefaultViewInvalidationAdvisor implements IViewInvalidationAd
 			return ImmutableSet.of();
 		}
 
-		return recordRefs.stream()
-				.filter(recordRef -> Objects.equals(viewTableName, recordRef.getTableName()))
+		return recordRefs.streamByTableName(viewTableName)
 				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 	}

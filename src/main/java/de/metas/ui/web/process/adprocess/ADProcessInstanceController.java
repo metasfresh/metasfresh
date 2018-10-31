@@ -21,6 +21,7 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.IProcessInstanceController;
@@ -321,7 +322,7 @@ import lombok.NonNull;
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(context.getCtx())
 				.setCreateTemporaryCtx()
-				.setAD_PInstance_ID(getInstanceId().toInt())
+				.setPInstanceId(PInstanceId.ofRepoId(getInstanceId().toInt()))
 				.setTitle(caption.translate(context.getAdLanguage()))
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)

@@ -4,12 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableList;
 
-import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -38,6 +36,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -91,10 +90,11 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.setParentRowId(pickingSlotRowId.toDocumentId())
 				.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, shipmentScheduleId);
 
-		final IPackageable packageable = packagingDAO.getByShipmentScheduleId(shipmentScheduleId);
+		final Packageable packageable = packagingDAO.getByShipmentScheduleId(shipmentScheduleId);
 
 		final DocumentFilter stickyFilter = huReservationDocumentFilterService.createDocumentFilterIgnoreAttributes(packageable);
 		builder.addStickyFilters(stickyFilter);
+		builder.setFilters(ImmutableList.of(HUsToPickViewFilters.createHUIdsFilter(true))); // https://github.com/metasfresh/metasfresh-webui-api/issues/1067
 
 		return builder.build();
 	}
@@ -123,6 +123,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 		viewLayoutBuilder
 				.clearElements()
 				.addElementsFromViewRowClassAndFieldNames(HUEditorRow.class,
+						viewDataType,
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
@@ -138,8 +139,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	protected void customizeHUEditorViewRepository(final SqlHUEditorViewRepositoryBuilder huEditorViewRepositoryBuilder)
 	{
 		huEditorViewRepositoryBuilder
-				.showBestBeforeDate(true)
-				.showLocator(true);
+				.showBestBeforeDate(true);
 	}
 
 	@Override

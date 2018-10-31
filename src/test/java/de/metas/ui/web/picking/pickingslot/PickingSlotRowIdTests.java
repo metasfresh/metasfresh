@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import de.metas.handlingunits.HuId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -36,18 +38,18 @@ public class PickingSlotRowIdTests
 	@Test
 	public void testNoPickingSlotId()
 	{
-		final PickingSlotRowId rowId = PickingSlotRowId.ofSourceHU(2);
-		assertThat(rowId.getPickingSlotId()).isLessThanOrEqualTo(0);
-		assertThat(rowId.getHuId()).isEqualTo(2);
+		final PickingSlotRowId rowId = PickingSlotRowId.ofSourceHU(HuId.ofRepoId(2));
+		assertThat(rowId.getPickingSlotId()).isNull();
+		assertThat(rowId.getHuId().getRepoId()).isEqualTo(2);
 		assertThat(rowId.getHuStorageProductId()).isLessThanOrEqualTo(0);
 	}
 
 	@Test
 	public void testOPfPickedHU()
 	{
-		final PickingSlotRowId rowId = PickingSlotRowId.ofPickedHU(1, 2, 3);
-		assertThat(rowId.getPickingSlotId()).isEqualTo(1);
-		assertThat(rowId.getHuId()).isEqualTo(2);
+		final PickingSlotRowId rowId = PickingSlotRowId.ofPickedHU(PickingSlotId.ofRepoId(1), HuId.ofRepoId(2), 3);
+		assertThat(rowId.getPickingSlotId().getRepoId()).isEqualTo(1);
+		assertThat(rowId.getHuId().getRepoId()).isEqualTo(2);
 		assertThat(rowId.getHuStorageProductId()).isEqualTo(3);
 	}
 
@@ -57,14 +59,14 @@ public class PickingSlotRowIdTests
 	@Test
 	public void testFromDocumentId_PickingSlot()
 	{
-		final DocumentId documentId = PickingSlotRowId.ofPickingSlotId(123).toDocumentId();
+		final DocumentId documentId = PickingSlotRowId.ofPickingSlotId(PickingSlotId.ofRepoId(123)).toDocumentId();
 		assertThat(documentId.toJson()).isEqualTo("123");
 
 		final PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(documentId);
 		assertThat(rowId.toDocumentId()).isEqualTo(documentId);
-		
-		assertThat(rowId.getPickingSlotId()).isEqualTo(123);
-		assertThat(rowId.getHuId()).isLessThanOrEqualTo(0);
+
+		assertThat(rowId.getPickingSlotId().getRepoId()).isEqualTo(123);
+		assertThat(rowId.getHuId()).isNull();
 		assertThat(rowId.getHuStorageProductId()).isLessThanOrEqualTo(0);
 		assertIsPickingSlotRow(rowId);
 	}
@@ -75,14 +77,14 @@ public class PickingSlotRowIdTests
 	@Test
 	public void testFromDocumentId_HU()
 	{
-		final DocumentId documentId = PickingSlotRowId.ofPickedHU(123, 456, -111).toDocumentId();
+		final DocumentId documentId = PickingSlotRowId.ofPickedHU(PickingSlotId.ofRepoId(123), HuId.ofRepoId(456), -111).toDocumentId();
 		assertThat(documentId.toJson()).isEqualTo("123-456");
 
 		final PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(documentId);
 		assertThat(rowId.toDocumentId()).isEqualTo(documentId);
 
-		assertThat(rowId.getPickingSlotId()).isEqualTo(123);
-		assertThat(rowId.getHuId()).isEqualTo(456);
+		assertThat(rowId.getPickingSlotId().getRepoId()).isEqualTo(123);
+		assertThat(rowId.getHuId().getRepoId()).isEqualTo(456);
 		assertThat(rowId.getHuStorageProductId()).isLessThanOrEqualTo(0);
 		assertIsPickedHURow(rowId);
 	}
@@ -93,14 +95,14 @@ public class PickingSlotRowIdTests
 	@Test
 	public void testFromDocumentId_HUStorage()
 	{
-		final DocumentId documentId = PickingSlotRowId.ofPickedHU(123, 456, 789).toDocumentId();
+		final DocumentId documentId = PickingSlotRowId.ofPickedHU(PickingSlotId.ofRepoId(123), HuId.ofRepoId(456), 789).toDocumentId();
 		assertThat(documentId.toJson()).isEqualTo("123-456-789");
 
 		final PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(documentId);
 		assertThat(rowId.toDocumentId()).isEqualTo(documentId);
 
-		assertThat(rowId.getPickingSlotId()).isEqualTo(123);
-		assertThat(rowId.getHuId()).isEqualTo(456);
+		assertThat(rowId.getPickingSlotId().getRepoId()).isEqualTo(123);
+		assertThat(rowId.getHuId().getRepoId()).isEqualTo(456);
 		assertThat(rowId.getHuStorageProductId()).isEqualTo(789);
 		assertIsPickedHURow(rowId);
 	}
@@ -111,14 +113,14 @@ public class PickingSlotRowIdTests
 	@Test
 	public void testFromDocumentId_SourceHU()
 	{
-		final DocumentId documentId = PickingSlotRowId.ofSourceHU(18052595).toDocumentId();
+		final DocumentId documentId = PickingSlotRowId.ofSourceHU(HuId.ofRepoId(18052595)).toDocumentId();
 		assertThat(documentId.toJson()).isEqualTo("0-18052595");
 
 		final PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(documentId);
 		assertThat(rowId.toDocumentId()).isEqualTo(documentId);
 
-		assertThat(rowId.getPickingSlotId()).isLessThanOrEqualTo(0);
-		assertThat(rowId.getHuId()).isEqualTo(18052595);
+		assertThat(rowId.getPickingSlotId()).isNull();
+		assertThat(rowId.getHuId()).isEqualTo(HuId.ofRepoId(18052595));
 		assertThat(rowId.getHuStorageProductId()).isLessThanOrEqualTo(0);
 		assertIsPickingSourceHURow(rowId);
 	}

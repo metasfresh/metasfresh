@@ -3,8 +3,6 @@ package de.metas.ui.web.view.json;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -21,6 +19,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

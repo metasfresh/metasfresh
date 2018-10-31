@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.elasticsearch.IESSystem;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardItemPatchPath;
@@ -35,6 +36,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
+import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
 
 /*
@@ -82,13 +84,28 @@ public class DashboardRestController
 
 	private UserDashboard getUserDashboardForReading()
 	{
+		if (!isElasticSearchEnabled())
+		{
+			return UserDashboard.EMPTY;
+		}
+
 		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getAD_Client_ID()));
 		// TODO: assert readable by current user
 		return dashboard;
 	}
 
+	private boolean isElasticSearchEnabled()
+	{
+		return Services.get(IESSystem.class).isEnabled();
+	}
+
 	private UserDashboard getUserDashboardForWriting()
 	{
+		if (!isElasticSearchEnabled())
+		{
+			return UserDashboard.EMPTY;
+		}
+
 		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getAD_Client_ID()));
 		// TODO: assert writable by current user
 		return dashboard;
@@ -267,12 +284,12 @@ public class DashboardRestController
 		{
 			final JSONDashboardChangedEventsListBuilder eventBuilder = JSONDashboardChangedEventsList.builder()
 					.event(JSONDashboardItemChangedEvent.of(changeResult.getDashboardId(), changeResult.getItemId()));
-			
-			if(changeResult.isPositionChanged())
+
+			if (changeResult.isPositionChanged())
 			{
 				eventBuilder.event(JSONDashboardOrderChangedEvent.of(changeResult.getDashboardId(), changeResult.getDashboardWidgetType(), changeResult.getDashboardOrderedItemIds()));
 			}
-			
+
 			sendEvents(dashboard, eventBuilder.build());
 		}
 

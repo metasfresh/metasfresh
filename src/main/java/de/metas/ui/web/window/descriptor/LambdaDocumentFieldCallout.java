@@ -4,10 +4,11 @@ import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /*
  * #%L

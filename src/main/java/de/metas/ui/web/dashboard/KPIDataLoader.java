@@ -8,7 +8,6 @@ import java.util.function.BiFunction;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -26,7 +25,9 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.elasticsearch.impl.ESSystem;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -236,7 +237,8 @@ public class KPIDataLoader
 		catch (final NoNodeAvailableException e)
 		{
 			// elastic search transport error => nothing to do about it
-			throw e;
+			throw new AdempiereException("" + e.getLocalizedMessage() + "."
+					+ "\nIf you want to disable the elasticsearch system then you can set `" + ESSystem.SYSCONFIG_Enabled + "` to `N`.", e);
 		}
 		catch (final Exception e)
 		{

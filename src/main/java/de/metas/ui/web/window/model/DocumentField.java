@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.util.NumberUtils;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -28,6 +27,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.util.NumberUtils;
+
 import lombok.NonNull;
 
 /*

@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import de.metas.ui.web.order.sales.pricingConditions.view.ProductPricingConditionsViewFactory;
+import de.metas.ui.web.order.pricingconditions.view.ProductPricingConditionsViewFactory;
 
 /*
  * #%L

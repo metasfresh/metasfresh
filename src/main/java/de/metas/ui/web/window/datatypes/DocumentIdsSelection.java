@@ -18,6 +18,7 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -131,12 +132,11 @@ public final class DocumentIdsSelection
 	public static Collector<DocumentId, ?, DocumentIdsSelection> toDocumentIdsSelection()
 	{
 		final Supplier<Set<DocumentId>> supplier = LinkedHashSet::new;
-		final BiConsumer<Set<DocumentId>, DocumentId> accumulator = (accum, documentId) -> accum.add(documentId);
-		final BinaryOperator<Set<DocumentId>> combiner = (l, r) ->
-			{
-				l.addAll(r);
-				return l;
-			};
+		final BiConsumer<Set<DocumentId>, DocumentId> accumulator = Set::add;
+		final BinaryOperator<Set<DocumentId>> combiner = (l, r) -> {
+			l.addAll(r);
+			return l;
+		};
 		final Function<Set<DocumentId>, DocumentIdsSelection> finisher = DocumentIdsSelection::of;
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
@@ -266,21 +266,25 @@ public final class DocumentIdsSelection
 		assertNotAll();
 		return documentIds;
 	}
-	
+
 	public <T> Set<T> toSet(@NonNull final Function<DocumentId, T> mapper)
 	{
 		assertNotAll();
-		if(documentIds.isEmpty())
+		if (documentIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 		return documentIds.stream().map(mapper).collect(ImmutableSet.toImmutableSet());
 	}
 
-
 	public Set<Integer> toIntSet()
 	{
 		return toSet(DocumentId::toInt);
+	}
+
+	public <ID extends RepoIdAware> Set<ID> toIds(@NonNull final Function<Integer, ID> idMapper)
+	{
+		return toSet(idMapper.compose(DocumentId::toInt));
 	}
 
 	public Set<String> toJsonSet()
@@ -289,7 +293,7 @@ public final class DocumentIdsSelection
 		{
 			return ALL_StringSet;
 		}
-		
+
 		return toSet(DocumentId::toJson);
 	}
 }

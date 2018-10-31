@@ -7,21 +7,17 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.apps.search.IUserQuery;
 import org.compiere.apps.search.IUserQueryField;
 import org.compiere.apps.search.IUserQueryRestriction;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.I_AD_UserQuery;
-import org.compiere.util.CachedSuppliers;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.cache.CachedSuppliers;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -30,7 +26,10 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
-import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -60,7 +59,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 	private static final Logger logger = LogManager.getLogger(UserQueryDocumentFilterDescriptorsProvider.class);
 
 	private final UserQueryRepository repository;
-	private final Supplier<Map<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(() -> retrieveAllByFilterId());
+	private final Supplier<Map<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);
 
 	public UserQueryDocumentFilterDescriptorsProvider(final int adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
 	{
@@ -142,17 +141,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 			final Object value = queryRestriction.getValue();
 			final Object valueTo = queryRestriction.getValueTo();
 
-			final boolean isParameter;
-			if (operator.isRangeOperator())
-			{
-				isParameter = value == null || valueTo == null;
-			}
-			else
-			{
-				isParameter = value == null;
-			}
-
-			if (isParameter)
+			if (!queryRestriction.isInternalParameter())
 			{
 				final ITranslatableString displayName = searchField.getDisplayName();
 				final DocumentFieldWidgetType widgetType = searchField.getWidgetType();
@@ -166,7 +155,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 						.setOperator(operator)
 						.setDefaultValue(value)
 						.setDefaultValueTo(valueTo)
-						.setMandatory(value == null) // mandatory if there is no default value
+						.setMandatory(queryRestriction.isMandatory())
 						.setLookupDescriptor(lookupDescriptor));
 			}
 			else
@@ -199,7 +188,6 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 		private final String fieldName;
 		private final ITranslatableString displayName;
 		private final DocumentFieldWidgetType widgetType;
-		private final Class<?> valueClass;
 		private final LookupDescriptor lookupDescriptor;
 
 		private UserQueryField(final DocumentFieldDescriptor field)
@@ -209,7 +197,6 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 			fieldName = field.getFieldName();
 			displayName = field.getCaption();
 			widgetType = field.getWidgetType();
-			valueClass = field.getValueClass();
 			lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
 		}
 
@@ -253,7 +240,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 		@Override
 		public Object convertValueToFieldType(final Object valueObj)
 		{
-			return DocumentFieldDescriptor.convertToValueClass(fieldName, valueObj, widgetType, valueClass, NullLookupDataSource.instance);
+			return valueObj;
 		}
 
 		public LookupDescriptor getLookupDescriptor()

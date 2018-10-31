@@ -1,15 +1,21 @@
 package de.metas.ui.web.handlingunits.process;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.model.I_M_Warehouse;
+import org.compiere.Adempiere;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
+import de.metas.adempiere.service.impl.WarehouseDAO;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.quarantine.HULotNumberQuarantineService;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters.CreateReceiptsParametersBuilder;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -19,6 +25,9 @@ import de.metas.process.Param;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*
@@ -48,6 +57,8 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 		implements IProcessPrecondition, IProcessParametersCallout, IProcessDefaultParametersProvider
 {
 
+	private final transient HULotNumberQuarantineService lotNumberQuarantineService = Adempiere.getBean(HULotNumberQuarantineService.class);
+
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
@@ -59,11 +70,38 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 	@Param(mandatory = false, parameterName = LOCATOR_PARAM_NAME)
 	private int locatorRepoId;
 
+	@ProcessParamLookupValuesProvider(parameterName = WAREHOUSE_PARAM_NAME, numericKey = true, lookupSource = LookupSource.lookup)
+	public LookupValuesList getAvailableWarehouses()
+	{
+		final boolean existQuarantineHUs = existQuarantineHUs();
+
+		return Services.get(IWarehouseDAO.class).getAllWarehouses()
+				.stream()
+				.map(warehouse -> create(warehouse, I_M_Warehouse.class))
+				.filter(warehouse -> !existQuarantineHUs || warehouse.isQuarantineWarehouse())
+				.map(warehouse -> IntegerLookupValue.of(warehouse.getM_Warehouse_ID(), warehouse.getName()))
+				.collect(LookupValuesList.collect());
+
+	}
+
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
 		if (WAREHOUSE_PARAM_NAME.equals(parameter.getColumnName()))
 		{
+
+			if (existQuarantineHUs())
+			{
+				final I_M_Warehouse quarantineWarehouse = Services.get(de.metas.adempiere.service.IWarehouseDAO.class).retrieveQuarantineWarehouseOrNull();
+
+				if (quarantineWarehouse == null)
+				{
+					throw new AdempiereException("@" + WarehouseDAO.MSG_M_Warehouse_NoQuarantineWarehouse + "@");
+				}
+
+				return quarantineWarehouse.getM_Warehouse_ID();
+			}
+
 			final int singleWarehouseId = CollectionUtils.extractSingleElementOrDefault(
 					getM_ReceiptSchedules(),
 					I_M_ReceiptSchedule::getM_Warehouse_Dest_ID,
@@ -86,6 +124,16 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 			}
 		}
 		return null;
+	}
+
+	private boolean existQuarantineHUs()
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		return retrieveHUsToReceive()
+				.stream()
+				.map(handlingUnitsDAO::getById)
+				.anyMatch(lotNumberQuarantineService::isQuarantineHU);
 	}
 
 	@Override
@@ -113,7 +161,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 		}
 
 		return warehouseDAO
-				.retrieveLocators(warehouseId())
+				.getLocators(warehouseId())
 				.stream()
 				.map(locator -> IntegerLookupValue.of(locator.getM_Locator_ID(), locator.getValue()))
 				.collect(LookupValuesList.collect());

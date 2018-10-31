@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits.util;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.MoreObjects;
@@ -14,6 +13,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -108,7 +108,7 @@ class TUPackingInfo implements IHUPackingInfo
 	public BigDecimal getQtyCUsPerTU()
 	{
 		final IHUProductStorage huProductStorage = getHUProductStorage();
-		return huProductStorage == null ? null : huProductStorage.getQty();
+		return huProductStorage == null ? null : huProductStorage.getQty().getAsBigDecimal();
 	}
 
 	@Override

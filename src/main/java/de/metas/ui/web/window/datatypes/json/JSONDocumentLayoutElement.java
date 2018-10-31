@@ -3,8 +3,6 @@ package de.metas.ui.web.window.datatypes.json;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -19,6 +17,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSON
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
+import de.metas.util.GuavaCollectors;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
@@ -91,6 +90,14 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean allowShowPassword; // in case widgetType is Password
 
+	@JsonProperty("multilineText")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean multilineText;
+
+	@JsonProperty("multilineTextLines")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer multilineTextLines;
+
 	@JsonProperty("buttonProcessId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final ProcessId buttonProcessId;
@@ -115,7 +122,7 @@ public final class JSONDocumentLayoutElement
 	@JsonProperty("sortable")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean viewAllowSorting;
-	
+
 	@JsonProperty("restrictToMediaTypes")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<MediaType> restrictToMediaTypes;
@@ -143,6 +150,17 @@ public final class JSONDocumentLayoutElement
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
 		allowShowPassword = element.isAllowShowPassword() ? Boolean.TRUE : null;
 
+		if (element.isMultilineText())
+		{
+			multilineText = Boolean.TRUE;
+			multilineTextLines = element.getMultilineTextLines();
+		}
+		else
+		{
+			multilineText = null;
+			multilineTextLines = null;
+		}
+
 		final ButtonFieldActionDescriptor buttonAction = element.getButtonActionDescriptor();
 		final ButtonFieldActionType buttonActionType = buttonAction == null ? null : buttonAction.getActionType();
 		if (buttonActionType == ButtonFieldActionType.processCall)
@@ -160,7 +178,7 @@ public final class JSONDocumentLayoutElement
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
 		viewEditorRenderMode = element.getViewEditorRenderMode() != null ? element.getViewEditorRenderMode().toJson() : null;
 		viewAllowSorting = element.isGridElement() ? element.isViewAllowSorting() : null;
-		
+
 		restrictToMediaTypes = ImmutableSet.copyOf(element.getRestrictToMediaTypes());
 
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
@@ -174,6 +192,8 @@ public final class JSONDocumentLayoutElement
 
 		this.widgetType = JSONLayoutWidgetType.fromNullable(widgetType);
 		allowShowPassword = null;
+		multilineText = null;
+		multilineTextLines = null;
 		buttonProcessId = null;
 
 		type = null;
@@ -181,17 +201,19 @@ public final class JSONDocumentLayoutElement
 		gridAlign = JSONLayoutAlign.right;
 		viewEditorRenderMode = ViewEditorRenderMode.NEVER.toJson();
 		viewAllowSorting = null;
-		
+
 		restrictToMediaTypes = null;
 
 		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //
-				fieldName, (JSONFieldType)null // type
-				, (JSONLookupSource)null // lookupSource
-				, "no " + fieldName // emptyText
-				, (List<JSONDeviceDescriptor>)null // devices
-				, (String)null // newRecordWindowId
-				, (String)null // newRecordCaption
-				, widgetType.isSupportZoomInto() // supportZoomInfo
+				fieldName,
+				(JSONFieldType)null,
+				(String)null, // tooltipIconName
+				(JSONLookupSource)null,
+				"no " + fieldName, // emptyText
+				(List<JSONDeviceDescriptor>)null,
+				(String)null, // newRecordWindowId
+				(String)null, // newRecordCaption
+				widgetType.isSupportZoomInto()
 		));
 	}
 

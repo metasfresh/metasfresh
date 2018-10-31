@@ -1,10 +1,13 @@
 package de.metas.ui.web;
 
+import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
@@ -13,6 +16,8 @@ import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -32,6 +37,8 @@ import de.metas.Profiles;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -60,6 +67,8 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 @Profile(Profiles.PROFILE_Webui)
 public class WebRestApiApplication
 {
+	private static final String SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE = "de.metas.ui.web.spring.profiles.active";
+
 	public static final String BEANNAME_WebuiTaskScheduler = "webuiTaskScheduler";
 
 	/**
@@ -78,23 +87,40 @@ public class WebRestApiApplication
 			System.setProperty("PropertyFile", "./metasfresh.properties");
 		}
 
+		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
+		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
+
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
-			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 			Ini.setRunMode(RunMode.WEBUI);
-			Adempiere.instance.startup(RunMode.BACKEND);
+			Adempiere.instance.startup(RunMode.WEBUI);
+
+			final ArrayList<String> activeProfiles = retrieveActiveProfilesFromSysConfig();
+			activeProfiles.add(Profiles.PROFILE_Webui);
 
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 
 			new SpringApplicationBuilder(WebRestApiApplication.class)
 					.headless(Boolean.parseBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 					.web(true)
-					.profiles(Profiles.PROFILE_Webui)
+					.profiles(activeProfiles.toArray(new String[0]))
 					.run(args);
 		}
 
 		// now init the model validation engine
 		ModelValidationEngine.get();
+	}
+
+	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
+	{
+		final ArrayList<String> activeProfiles = Services
+				.get(ISysConfigBL.class)
+				.getValuesForPrefix(SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE, 0, 0)
+				.entrySet()
+				.stream()
+				.map(Entry::getValue)
+				.collect(Collectors.toCollection(ArrayList::new));
+		return activeProfiles;
 	}
 
 	@Bean(Adempiere.BEAN_NAME)

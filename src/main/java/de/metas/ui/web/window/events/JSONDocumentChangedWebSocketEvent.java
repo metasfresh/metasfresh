@@ -8,7 +8,6 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.time.SystemTime;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -23,6 +22,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONIncludedTabInfo;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.util.time.SystemTime;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

@@ -5,10 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -16,6 +13,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -27,6 +26,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -82,7 +82,7 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	@Override
 	public void cacheInvalidate()
 	{
-		allCountriesCache.clear();
+		allCountriesCache.reset();
 	}
 
 	@Override

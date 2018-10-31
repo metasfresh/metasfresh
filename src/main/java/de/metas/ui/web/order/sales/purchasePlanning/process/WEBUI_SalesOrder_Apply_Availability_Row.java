@@ -1,6 +1,5 @@
 package de.metas.ui.web.order.sales.purchasePlanning.process;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 
@@ -16,6 +15,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRow;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowChangeRequest;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowChangeRequest.PurchaseRowChangeRequestBuilder;
+import de.metas.util.Check;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowId;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseView;
 import lombok.NonNull;

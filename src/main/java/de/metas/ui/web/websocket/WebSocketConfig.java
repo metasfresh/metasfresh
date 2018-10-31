@@ -3,7 +3,6 @@ package de.metas.ui.web.websocket;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -35,6 +34,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

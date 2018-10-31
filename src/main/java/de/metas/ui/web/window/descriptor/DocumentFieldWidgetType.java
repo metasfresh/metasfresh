@@ -1,12 +1,17 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.Sets;
 
+import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -46,9 +51,10 @@ public enum DocumentFieldWidgetType
 
 	//
 	// Dates
-	, Date(LayoutAlign.Right, java.util.Date.class, DisplayType.Date) //
-	, Time(LayoutAlign.Right, java.util.Date.class, DisplayType.Time) //
-	, DateTime(LayoutAlign.Right, java.util.Date.class, DisplayType.DateTime) //
+	, Date(LayoutAlign.Right, LocalDate.class, DisplayType.Date) //
+	, Time(LayoutAlign.Right, LocalTime.class, DisplayType.Time) //
+	, DateTime(LayoutAlign.Right, LocalDateTime.class, DisplayType.DateTime) //
+	, ZonedDateTime(LayoutAlign.Right, ZonedDateTime.class, DisplayType.DateTime) //
 	, DateRange(LayoutAlign.Left, DateRangeValue.class, -1) //
 
 	// Numbers, Amounts, Prices
@@ -68,7 +74,7 @@ public enum DocumentFieldWidgetType
 	// Special lookups
 	, Address(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.Location) //
 	, ProductAttributes(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.PAttribute) //
-	, Image(LayoutAlign.Left, Integer.class, DisplayType.Image) //
+	, Image(LayoutAlign.Left, WebuiImageId.class, DisplayType.Image) //
 	, Color(LayoutAlign.Center, ColorValue.class, DisplayType.Color) //
 	, BinaryData(LayoutAlign.Left, byte[].class, DisplayType.Binary) // TODO: not supported, search for references and see
 
@@ -87,7 +93,7 @@ public enum DocumentFieldWidgetType
 	//
 	;
 
-	private static final Set<DocumentFieldWidgetType> TYPES_Date = Sets.immutableEnumSet(Date, Time, DateTime);
+	private static final Set<DocumentFieldWidgetType> TYPES_Date = Sets.immutableEnumSet(Date, Time, DateTime, ZonedDateTime);
 	private static final Set<DocumentFieldWidgetType> TYPES_Numeric = Sets.immutableEnumSet(Integer, Number, Amount, Quantity, CostPrice);
 
 	private final LayoutAlign gridAlign;
@@ -100,7 +106,7 @@ public enum DocumentFieldWidgetType
 		this.valueClass = valueClass;
 		this.displayType = displayType;
 	}
-	
+
 	public int getDisplayType()
 	{
 		return displayType;

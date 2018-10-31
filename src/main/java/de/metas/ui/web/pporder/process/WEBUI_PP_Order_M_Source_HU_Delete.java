@@ -2,6 +2,7 @@ package de.metas.ui.web.pporder.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_SOURCE_HU;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -55,7 +56,7 @@ public class WEBUI_PP_Order_M_Source_HU_Delete
 	protected String doIt() throws Exception
 	{
 		final PPOrderLineRow rowToProcess = getSingleSelectedRow();
-		final int huId = rowToProcess.getM_HU_ID();
+		final HuId huId = HuId.ofRepoId(rowToProcess.getM_HU_ID());
 
 		// unselect the row we just deleted the record of, to avoid an 'EntityNotFoundException'
 		final boolean sourceWasDeleted = SourceHUsService.get().deleteSourceHuMarker(huId);

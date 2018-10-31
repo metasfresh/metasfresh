@@ -2,7 +2,6 @@ package de.metas.ui.web.pporder;
 
 import java.util.stream.Stream;
 
-import org.adempiere.util.GuavaCollectors;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -13,6 +12,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.view.IViewRowType;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
 /*

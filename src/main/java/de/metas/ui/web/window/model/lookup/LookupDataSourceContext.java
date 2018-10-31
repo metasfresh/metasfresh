@@ -17,7 +17,6 @@ import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
@@ -31,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -79,7 +79,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	private static final String FILTER_Any_SQL = "'%'";
 
 	public static final CtxName PARAM_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
-	private static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
+	public static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
 
 	public static final CtxName PARAM_Filter = CtxNames.parse("Filter");
 	public static final CtxName PARAM_FilterSql = CtxNames.parse("FilterSql");

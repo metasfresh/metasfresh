@@ -1,8 +1,9 @@
 package de.metas.ui.web.view;
 
-import de.metas.i18n.ITranslatableString;
 import lombok.NonNull;
 import lombok.Value;
+
+import de.metas.i18n.ITranslatableString;
 
 /*
  * #%L

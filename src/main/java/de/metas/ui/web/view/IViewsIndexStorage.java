@@ -38,7 +38,7 @@ public interface IViewsIndexStorage
 	WindowId getWindowId();
 
 	/** Don't call it directly. Will be called by API. */
-	default void setViewsRepository(IViewsRepository viewsRepository)
+	default void setViewsRepository(final IViewsRepository viewsRepository)
 	{
 	}
 

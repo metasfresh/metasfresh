@@ -1,15 +1,11 @@
 package de.metas.ui.web.quickinput.orderline;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,6 +16,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.product.ProductId;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
@@ -38,6 +35,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*
@@ -181,10 +180,10 @@ import lombok.NonNull;
 		}
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(productLookupValue);
-		final I_M_Product quickInputProduct = load(productAndAttributes.getProductId(), I_M_Product.class);
+		final ProductId quickInputProductId = productAndAttributes.getProductId();
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
-		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProduct, quickInputModel::setM_HU_PI_Item_Product);
+		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProductId, quickInputModel::setM_HU_PI_Item_Product);
 	}
 
 	private static DocumentFieldDescriptor.Builder createPackingInstructionFieldBuilder()

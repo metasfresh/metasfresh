@@ -13,6 +13,8 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.ProcessId;
+
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
@@ -50,11 +52,21 @@ import lombok.Value;
 @ToString
 public final class WebuiRelatedProcessDescriptor
 {
+	@Getter
 	private final ProcessId processId;
+
+	@Getter
+	private final String internalName;
+
 	private final ITranslatableString processCaption;
 	private final ITranslatableString processDescription;
+
+	@Getter
 	private final boolean quickAction;
+
+	@Getter
 	private final boolean defaultQuickAction;
+
 	@NonNull
 	private final Supplier<ValueAndDuration<ProcessPreconditionsResolution>> preconditionsResolutionSupplier;
 
@@ -63,6 +75,7 @@ public final class WebuiRelatedProcessDescriptor
 	@lombok.Builder
 	private WebuiRelatedProcessDescriptor(
 			final ProcessId processId,
+			final String internalName,
 			final ITranslatableString processCaption,
 			final ITranslatableString processDescription,
 			final boolean quickAction,
@@ -70,8 +83,8 @@ public final class WebuiRelatedProcessDescriptor
 			@NonNull final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier,
 			final String debugProcessClassname)
 	{
-		super();
 		this.processId = processId;
+		this.internalName = internalName;
 		this.processCaption = processCaption;
 		this.processDescription = processDescription;
 		this.quickAction = quickAction;
@@ -82,11 +95,6 @@ public final class WebuiRelatedProcessDescriptor
 		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.of(() -> ValueAndDuration.fromSupplier(preconditionsResolutionSupplier));
 
 		this.debugProcessClassname = debugProcessClassname;
-	}
-
-	public ProcessId getProcessId()
-	{
-		return processId;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -103,16 +111,6 @@ public final class WebuiRelatedProcessDescriptor
 	public String getDescription(final String adLanguage)
 	{
 		return processDescription.translate(adLanguage);
-	}
-
-	public boolean isQuickAction()
-	{
-		return quickAction;
-	}
-
-	public boolean isDefaultQuickAction()
-	{
-		return defaultQuickAction;
 	}
 
 	private ProcessPreconditionsResolution getPreconditionsResolution()
@@ -141,7 +139,7 @@ public final class WebuiRelatedProcessDescriptor
 		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
 		return preconditionsResolution.isAccepted() || !preconditionsResolution.isInternal();
 	}
-	
+
 	public boolean isInternal()
 	{
 		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();

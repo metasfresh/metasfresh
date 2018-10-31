@@ -7,18 +7,18 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import lombok.NonNull;
@@ -95,21 +95,26 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	private Quantity getQtyToPack()
+	{
+		final I_C_UOM uom = getCurrentShipmentScheuduleUOM();
+		return Quantity.of(qtyCU, uom);
+	}
+
 	@Override
 	protected String doIt() throws Exception
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
-		final boolean isAllowOverdelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
+		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
 
-		pickingCandidateService.addQtyToHU()
-				.qtyCU(qtyCU)
-				.targetHUId(pickingSlotRow.getHuId())
+		pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
+				.qtyToPack(getQtyToPack())
+				.packToHuId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())
-				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
-				.isAllowOverdelivery(isAllowOverdelivery)
-				.build()
-				.performAndGetQtyPicked();
+				.shipmentScheduleId(getCurrentShipmentScheduleId())
+				.allowOverDelivery(allowOverDelivery)
+				.build());
 
 		invalidateView();
 		invalidateParentView();
@@ -117,27 +122,17 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		return MSG_OK;
 	}
 
-	/**
-	 * Returns the {@code qtyToDeliver} value of the currently selected shipment schedule, or {@code null}.
-	 */
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		if (!Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
+		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
+		{
+			return retrieveQtyToPick().getAsBigDecimal();
+		}
+		else
 		{
 			return DEFAULT_VALUE_NOTAVAILABLE;
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
-		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
-		if (qtyPickedPlanned == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
-
-		return qtyToPick.signum() > 0 ? qtyToPick : BigDecimal.ZERO;
 	}
-
 }

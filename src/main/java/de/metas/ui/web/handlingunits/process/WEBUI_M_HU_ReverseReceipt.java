@@ -6,9 +6,8 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_M_InOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -20,7 +19,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.lang.RepoIdAwares;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -28,6 +26,9 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 
 /*
  * #%L
@@ -124,7 +125,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 				getView().removeHUIdsAndInvalidate(huIdsToReverse);
 
 				// Notify all active views that given receipt schedules were changed
-				viewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));
+				viewsRepo.notifyRecordsChanged(TableRecordReferenceSet.of(TableRecordReference.ofSet(receiptSchedules)));
 			}
 		}
 

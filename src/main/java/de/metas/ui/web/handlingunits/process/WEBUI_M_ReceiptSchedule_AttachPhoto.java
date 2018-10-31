@@ -5,7 +5,6 @@ import java.io.ByteArrayInputStream;
 
 import javax.imageio.ImageIO;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MImage;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -14,6 +13,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.util.Services;
 
 /*
  * #%L

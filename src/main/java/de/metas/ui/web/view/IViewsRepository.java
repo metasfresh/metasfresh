@@ -2,11 +2,8 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import com.google.common.collect.ImmutableSet;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -44,6 +41,8 @@ import lombok.NonNull;
  */
 public interface IViewsRepository
 {
+	IViewsIndexStorage getViewsStorageFor(ViewId viewId);
+
 	List<ViewProfile> getAvailableProfiles(WindowId windowId, JSONViewDataType viewDataType);
 
 	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, final ViewProfileId profileId);
@@ -92,10 +91,10 @@ public interface IViewsRepository
 	/**
 	 * Notify all views that given records was changed (asynchronously).
 	 */
-	void notifyRecordsChanged(Set<TableRecordReference> recordRefs);
+	void notifyRecordsChanged(TableRecordReferenceSet recordRefs);
 
 	default void notifyRecordChanged(final String tableName, final int recordId)
 	{
-		notifyRecordsChanged(ImmutableSet.of(TableRecordReference.of(tableName, recordId)));
+		notifyRecordsChanged(TableRecordReferenceSet.of(tableName, recordId));
 	}
 }

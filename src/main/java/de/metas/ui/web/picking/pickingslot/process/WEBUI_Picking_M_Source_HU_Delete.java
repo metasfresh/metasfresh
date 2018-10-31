@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.pickingslot.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_SOURCE_HU;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -53,7 +54,7 @@ public class WEBUI_Picking_M_Source_HU_Delete extends PickingSlotViewBasedProces
 	protected String doIt() throws Exception
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
-		final int huId = rowToProcess.getHuId();
+		final HuId huId = rowToProcess.getHuId();
 
 		this.sourceWasDeleted = SourceHUsService.get().deleteSourceHuMarker(huId);
 

@@ -1,19 +1,20 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewsIndexStorage;
@@ -82,12 +83,12 @@ public final class PackageableRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyOrdered, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
 	})
-	private final BigDecimal qtyOrdered;
+	private final Quantity qtyOrdered;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyPicked, layouts = {
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = "QtyPicked", layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 35)
 	})
-	private final BigDecimal qtyPicked;
+	private final Quantity qtyPicked;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40)
@@ -97,9 +98,9 @@ public final class PackageableRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
 	})
-	private final java.util.Date preparationDate;
+	private final LocalDateTime preparationDate;
 
-	private final int shipmentScheduleId;
+	private final ShipmentScheduleId shipmentScheduleId;
 
 	private final Optional<OrderLineId> salesOrderLineId;
 
@@ -112,27 +113,27 @@ public final class PackageableRow implements IViewRow
 		return (PackageableRow)row;
 	}
 
-	public static DocumentId createRowIdFromShipmentScheduleId(final int shipmentScheduleId)
+	public static DocumentId createRowIdFromShipmentScheduleId(final ShipmentScheduleId shipmentScheduleId)
 	{
-		return DocumentId.of(shipmentScheduleId);
+		return DocumentId.of(shipmentScheduleId.getRepoId());
 	}
 
-	public static TableRecordReference createTableRecordReferenceFromShipmentScheduleId(final int shipmentScheduleId)
+	public static TableRecordReference createTableRecordReferenceFromShipmentScheduleId(final ShipmentScheduleId shipmentScheduleId)
 	{
 		return TableRecordReference.of(I_M_Packageable_V.Table_Name, shipmentScheduleId);
 	}
 
 	@Builder
 	private PackageableRow(
-			final int shipmentScheduleId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final Optional<OrderLineId> salesOrderLineId,
 			@NonNull final ViewId viewId,
 			final LookupValue order,
 			final LookupValue product,
-			final BigDecimal qtyOrdered,
-			final BigDecimal qtyPicked,
+			@NonNull final Quantity qtyOrdered,
+			final Quantity qtyPicked,
 			final LookupValue bpartner,
-			final Date preparationDate)
+			final LocalDateTime preparationDate)
 	{
 		this.viewId = viewId;
 		this.id = createRowIdFromShipmentScheduleId(shipmentScheduleId);
@@ -141,10 +142,10 @@ public final class PackageableRow implements IViewRow
 		this.order = order;
 		this.product = product;
 		this.qtyOrdered = qtyOrdered;
-		this.qtyPicked = qtyPicked != null ? qtyPicked : BigDecimal.ZERO;
+		this.qtyPicked = qtyPicked;
 		this.bpartner = bpartner;
 		this.preparationDate = preparationDate;
-		this.shipmentScheduleId = Check.assumeGreaterThanZero(shipmentScheduleId, "shipmentScheduleId");
+		this.shipmentScheduleId = shipmentScheduleId;
 		this.salesOrderLineId = salesOrderLineId;
 
 		// create the included view's ID
@@ -216,7 +217,7 @@ public final class PackageableRow implements IViewRow
 		return includedViewId;
 	}
 
-	public int getShipmentScheduleId()
+	public ShipmentScheduleId getShipmentScheduleId()
 	{
 		return shipmentScheduleId;
 	}
@@ -226,24 +227,13 @@ public final class PackageableRow implements IViewRow
 		return salesOrderLineId;
 	}
 
-	public int getProductId()
+	public ProductId getProductId()
 	{
-		return product != null ? product.getIdAsInt() : -1;
+		return product != null ? ProductId.ofRepoIdOrNull(product.getIdAsInt()) : null;
 	}
 
-	public BigDecimal getQtyOrdered()
+	public Quantity getQtyOrderedWithoutPicked()
 	{
-		return qtyOrdered != null ? qtyOrdered : BigDecimal.ZERO;
-	}
-
-	public BigDecimal getQtyPicked()
-	{
-		return qtyPicked != null ? qtyPicked : BigDecimal.ZERO;
-	}
-
-	public BigDecimal getQtyOrderedWithoutPicked()
-	{
-		final BigDecimal qtyOrderedMinusPicked = getQtyOrdered().subtract(getQtyPicked());
-		return qtyOrderedMinusPicked.signum() > 0 ? qtyOrderedMinusPicked : BigDecimal.ZERO;
+		return qtyOrdered.subtract(qtyPicked).toZeroIfNegative();
 	}
 }

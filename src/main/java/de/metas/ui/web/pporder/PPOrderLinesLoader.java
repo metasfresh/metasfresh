@@ -10,8 +10,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
@@ -37,6 +36,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
@@ -48,6 +48,9 @@ import de.metas.ui.web.handlingunits.util.IHUPackingInfo;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -131,7 +134,8 @@ class PPOrderLinesLoader
 		records.addAll(bomLineRows);
 
 		// Source HUs
-		final List<PPOrderLineRow> sourceHuRowsForIssueProducts = createRowsForIssueProductSourceHUs(ppOrder.getM_Warehouse_ID(), bomLineRows);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
+		final List<PPOrderLineRow> sourceHuRowsForIssueProducts = createRowsForIssueProductSourceHUs(warehouseId, bomLineRows);
 		records.addAll(sourceHuRowsForIssueProducts);
 
 		return new PPOrderLinesViewData(extractDescription(ppOrder), ppOrder.getPlanningStatus(), records.build());
@@ -166,18 +170,18 @@ class PPOrderLinesLoader
 		return bomLineRows;
 	}
 
-	private List<PPOrderLineRow> createRowsForIssueProductSourceHUs(int m_Warehouse_ID, @NonNull final List<PPOrderLineRow> bomLineRows)
+	private List<PPOrderLineRow> createRowsForIssueProductSourceHUs(WarehouseId warehouseId, @NonNull final List<PPOrderLineRow> bomLineRows)
 	{
-		final ImmutableSet<Integer> issueProductIds = bomLineRows.stream()
+		final ImmutableSet<ProductId> issueProductIds = bomLineRows.stream()
 				.filter(PPOrderLineRow::isIssue)
-				.map(PPOrderLineRow::getM_Product_ID)
+				.map(PPOrderLineRow::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final ImmutableList.Builder<PPOrderLineRow> result = ImmutableList.builder();
 
 		final MatchingSourceHusQuery sourceHusQuery = MatchingSourceHusQuery.builder()
 				.productIds(issueProductIds)
-				.warehouseId(m_Warehouse_ID).build();
+				.warehouseId(warehouseId).build();
 
 		for (final HuId sourceHUId : SourceHUsService.get().retrieveMatchingSourceHUIds(sourceHusQuery))
 		{

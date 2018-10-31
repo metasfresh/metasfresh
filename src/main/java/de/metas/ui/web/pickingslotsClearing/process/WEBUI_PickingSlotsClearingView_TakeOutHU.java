@@ -8,13 +8,12 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
@@ -29,6 +28,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.pickingslotsClearing.PickingSlotsClearingView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -136,7 +137,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsCleari
 
 		//
 		// Inactive all those picking candidates
-		pickingCandidateService.inactivateForHUId(hu.getM_HU_ID());
+		pickingCandidateService.inactivateForHUId(HuId.ofRepoId(hu.getM_HU_ID()));
 
 		husExtractedEvents.add(HUExtractedFromPickingSlotEvent.builder()
 				.huId(hu.getM_HU_ID())

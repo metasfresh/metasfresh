@@ -1,15 +1,11 @@
 package de.metas.ui.web.quickinput.forecastline;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.product.ProductId;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
@@ -38,6 +35,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*
@@ -148,7 +147,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 		}
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(productLookupValue);
-		final I_M_Product quickInputProduct = load(productAndAttributes.getProductId(), I_M_Product.class);
+		final ProductId quickInputProduct = productAndAttributes.getProductId();
 
 		final I_M_Forecast forecast = quickInput.getRootDocumentAs(I_M_Forecast.class);
 		Services.get(IHUOrderBL.class).findM_HU_PI_Item_ProductForForecast(forecast, quickInputProduct, quickInputModel::setM_HU_PI_Item_Product);

@@ -7,8 +7,6 @@ import java.util.function.Predicate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.StringLikeFilter;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -24,6 +22,9 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.Check;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

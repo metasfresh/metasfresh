@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -28,6 +27,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
+import de.metas.util.Services;
 import de.metas.vertical.cables.CablesConstants;
 import lombok.NonNull;
 
@@ -67,6 +67,7 @@ import lombok.NonNull;
 				.builderWithoutStockInfo()
 				.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 				.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
+				.excludeBOMProducts(true)
 				.build();
 	}
 

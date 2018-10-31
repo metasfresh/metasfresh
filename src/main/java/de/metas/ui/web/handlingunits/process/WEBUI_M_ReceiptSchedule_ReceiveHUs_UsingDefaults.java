@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits.process;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -14,6 +13,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
+import de.metas.util.Services;
 
 /*
  * #%L

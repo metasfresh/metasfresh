@@ -2,10 +2,10 @@ package de.metas.ui.web.dashboard;
 
 import java.time.Duration;
 
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Util;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Value;
 

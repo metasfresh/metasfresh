@@ -13,8 +13,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -36,6 +34,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.FullTextSearchSqlDocumentFilterConverter;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import lombok.Singular;
 

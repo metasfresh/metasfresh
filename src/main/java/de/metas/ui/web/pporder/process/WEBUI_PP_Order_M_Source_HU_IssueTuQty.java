@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 
 import com.google.common.collect.ImmutableList;
 
@@ -24,6 +22,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /*
  * #%L

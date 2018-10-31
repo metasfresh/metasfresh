@@ -5,15 +5,14 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery.PickingSlotQueryBuilder;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.picking.api.PickingSlotQuery;
+import de.metas.picking.api.PickingSlotQuery.PickingSlotQueryBuilder;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -34,6 +33,8 @@ import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -124,8 +125,8 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 		final DocumentFiltersList filters = request.getFilters();
 		final PickingSlotQueryBuilder queryBuilder = PickingSlotQuery.builder();
 
-		final int bpartnerId = PickingSlotsClearingViewFilters.getBPartnerId(filters);
-		if (bpartnerId > 0)
+		final BPartnerId bpartnerId = PickingSlotsClearingViewFilters.getBPartnerId(filters);
+		if (bpartnerId != null)
 		{
 			queryBuilder.assignedToBPartnerId(bpartnerId);
 		}

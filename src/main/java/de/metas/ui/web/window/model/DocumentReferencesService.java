@@ -10,7 +10,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.Evaluatee;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,8 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.util.Services;
+
 import lombok.Getter;
 import lombok.NonNull;
 

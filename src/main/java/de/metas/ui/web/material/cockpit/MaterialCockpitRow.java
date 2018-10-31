@@ -2,6 +2,14 @@ package de.metas.ui.web.material.cockpit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -10,12 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
@@ -48,11 +50,10 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.ToString;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.collections.ListUtils;
 
 /*
  * #%L
@@ -80,7 +81,8 @@ import lombok.ToString;
 @EqualsAndHashCode(of = "documentId")
 public class MaterialCockpitRow implements IViewRow
 {
-	private static final String SYSCFG_PREFIX = "de.metas.ui.web.material.cockpit.field";
+	/** Please keep its prefix in sync with {@link MaterialCockpitViewFactory#SYSCFG_DisplayIncludedRows} */
+	public static final String SYSCFG_PREFIX = "de.metas.ui.web.material.cockpit.field";
 
 	public static MaterialCockpitRow cast(final IViewRow row)
 	{
@@ -106,7 +108,8 @@ public class MaterialCockpitRow implements IViewRow
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_M_Product.COLUMNNAME_M_Product_Category_ID, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30,
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	@Getter
 	@VisibleForTesting
 	private final String productCategoryOrSubRowName;

@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.Predicates;
 
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -77,7 +77,6 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	List<CCacheStats> getCacheStats();
 
-	@Override
 	DocumentZoomIntoInfo getDocumentZoomInto(final int id);
 
 	/** @return optional WindowId to be used when zooming into */

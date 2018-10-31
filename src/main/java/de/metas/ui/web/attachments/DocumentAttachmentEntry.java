@@ -1,14 +1,15 @@
 package de.metas.ui.web.attachments;
 
+import lombok.NonNull;
+import lombok.ToString;
+
 import java.net.URI;
 
-import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryType;
-import de.metas.attachments.IAttachmentDAO;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import lombok.ToString;
 
 /*
  * #%L
@@ -41,7 +42,7 @@ import lombok.ToString;
 @ToString
 class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 {
-	/* package */static DocumentAttachmentEntry of(final DocumentId id, final AttachmentEntry entry)
+	/* package */static DocumentAttachmentEntry of(@NonNull final DocumentId id, @NonNull final AttachmentEntry entry)
 	{
 		return new DocumentAttachmentEntry(id, entry);
 	}
@@ -49,7 +50,9 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	private final DocumentId id;
 	private final AttachmentEntry entry;
 
-	private DocumentAttachmentEntry(final DocumentId id, final AttachmentEntry entry)
+	private DocumentAttachmentEntry(
+			@NonNull final DocumentId id,
+			@NonNull final AttachmentEntry entry)
 	{
 		this.id = id;
 		this.entry = entry;
@@ -62,7 +65,7 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	}
 
 	@Override
-	public AttachmentEntryType getType()
+	public AttachmentEntry.Type getType()
 	{
 		return entry.getType();
 	}
@@ -76,13 +79,14 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	@Override
 	public byte[] getData()
 	{
-		return Services.get(IAttachmentDAO.class).retrieveData(entry);
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		return attachmentEntryService.retrieveData(entry.getId());
 	}
 
 	@Override
 	public String getContentType()
 	{
-		return entry.getContentType();
+		return entry.getMimeType();
 	}
 
 	@Override

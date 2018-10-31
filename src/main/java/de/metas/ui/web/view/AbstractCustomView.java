@@ -9,14 +9,13 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -33,6 +32,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderBys;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -256,7 +256,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	 * Also supports {@link DocumentIdsSelection#ALL}, because there won't be too many lines at one time.
 	 */
 	@Override
-	public final Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
+	public final Stream<T> streamByIds(final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isAll())
 		{
@@ -266,21 +266,28 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	}
 
 	@Override
-	public final void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
+	public final void notifyRecordsChanged(@NonNull final TableRecordReferenceSet recordRefs)
 	{
-		final ImmutableList<DocumentId> affectedRowIds = recordRefs.stream()
-				.filter(this::isEligibleInvalidateEvent)
-				.flatMap(this::extractDocumentIdsToInvalidate)
-				.collect(ImmutableList.toImmutableList());
-		if (affectedRowIds.isEmpty())
+		if (recordRefs.isEmpty())
+		{
+			return; // nothing to do, but shall not happen
+		}
+
+		final TableRecordReferenceSet recordRefsEligible = recordRefs.filter(this::isEligibleInvalidateEvent);
+		if (recordRefsEligible.isEmpty())
+		{
+			return; // nothing to do
+		}
+
+		final DocumentIdsSelection documentIdsToInvalidate = getDocumentIdsToInvalidate(recordRefsEligible);
+		if (documentIdsToInvalidate.isEmpty())
 		{
 			return; // nothing to do
 		}
 
 		rowsData.invalidateAll();
-		ViewChangesCollector
-				.getCurrentOrAutoflush()
-				.collectRowsChanged(this, DocumentIdsSelection.of(affectedRowIds));
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectRowsChanged(this, documentIdsToInvalidate);
 	}
 
 	protected boolean isEligibleInvalidateEvent(final TableRecordReference recordRef)
@@ -288,9 +295,9 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		return true;
 	}
 
-	protected Stream<DocumentId> extractDocumentIdsToInvalidate(final TableRecordReference recordRef)
+	protected final DocumentIdsSelection getDocumentIdsToInvalidate(@NonNull final TableRecordReferenceSet recordRefs)
 	{
-		return rowsData.streamDocumentIdsToInvalidate(recordRef);
+		return rowsData.getDocumentIdsToInvalidate(recordRefs);
 	}
 
 	public final void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
@@ -340,9 +347,9 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 
 	public interface IRowsData<T extends IViewRow>
 	{
-		Map<DocumentId, T> getDocumentId2TopLevelRows();
+		/* protected */ Map<DocumentId, T> getDocumentId2TopLevelRows();
 
-		ListMultimap<TableRecordReference, T> getTableRecordReference2rows();
+		DocumentIdsSelection getDocumentIdsToInvalidate(TableRecordReferenceSet recordRefs);
 
 		void invalidateAll();
 
@@ -377,14 +384,6 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 						.appendParametersToMessage().setParameter("rowId", rowId);
 			}
 			return row;
-		}
-
-		default Stream<DocumentId> streamDocumentIdsToInvalidate(@NonNull final TableRecordReference recordRef)
-		{
-			return getTableRecordReference2rows()
-					.get(recordRef)
-					.stream()
-					.map(IViewRow::getId);
 		}
 	}
 

@@ -11,19 +11,19 @@ import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.PO;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -431,72 +431,12 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			}
 		}
 
-		if (value != null && returnType.isAssignableFrom(value.getClass()))
-		{
-			return value;
-		}
-
-		if (boolean.class.equals(returnType))
-		{
-			return DisplayType.toBoolean(value);
-		}
-		else if (Integer.class.equals(returnType) || int.class.equals(returnType))
-		{
-			if (value == null)
-			{
-				return null;
-			}
-			else if (value instanceof Number)
-			{
-				return ((Number)value).intValue();
-			}
-			else if (value instanceof String)
-			{
-				return Integer.parseInt(value.toString());
-			}
-			else if (value instanceof LookupValue)
-			{
-				final LookupValue lookupValue = (LookupValue)value;
-				return lookupValue.getIdAsInt();
-			}
-		}
-		else if (String.class.equals(returnType))
-		{
-			if (value == null)
-			{
-				return null;
-			}
-			else if (value instanceof LookupValue)
-			{
-				return ((LookupValue)value).getIdAsString();
-			}
-			else
-			{
-				return value.toString();
-			}
-		}
-		else if (java.sql.Timestamp.class.equals(returnType))
-		{
-			if (value == null)
-			{
-				return null;
-			}
-			else if (value instanceof java.util.Date)
-			{
-				return TimeUtil.asTimestamp((java.util.Date)value);
-			}
-		}
-		else
-		{
-			return value;
-		}
-
-		throw new AdempiereException("Cannot convert value to type."
-				+ "\n Field: " + field
-				+ "\n Return type: " + returnType
-				+ "\n Value: " + value + " (" + (value == null ? "null" : value.getClass()) + ")"
-				+ "\n");
-
+		return DataTypes.convertToValueClass(
+				field.getFieldName(),
+				value,
+				field.getWidgetType(),
+				returnType,
+				null); // lookupDataSource
 	}
 
 	@Override
@@ -541,7 +481,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	{
 		return document;
 	}
-	
+
 	private final Properties getCtx()
 	{
 		return document.getCtx();

@@ -7,13 +7,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.Adempiere;
@@ -23,6 +23,8 @@ import org.compiere.model.GridTabVO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
+import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.X_AD_UI_ElementField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatees;
 import org.elasticsearch.client.Client;
@@ -36,6 +38,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
@@ -43,6 +46,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptorProvider;
@@ -56,6 +60,8 @@ import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -95,10 +101,11 @@ import lombok.NonNull;
 	// State
 	private final DocumentEntityDescriptor.Builder _documentEntryBuilder;
 
-	public GridTabVOBasedDocumentEntityDescriptorFactory(final GridTabVO gridTabVO,
-			final GridTabVO parentTabVO,
+	public GridTabVOBasedDocumentEntityDescriptorFactory(
+			@NonNull final GridTabVO gridTabVO,
+			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
-			final List<I_AD_UI_Element> labelsUIElements)
+			@NonNull final List<I_AD_UI_Element> labelsUIElements)
 	{
 		final boolean rootEntity = parentTabVO == null;
 
@@ -166,10 +173,11 @@ import lombok.NonNull;
 		return _documentEntryBuilder;
 	}
 
-	private DocumentEntityDescriptor.Builder createDocumentEntityBuilder(final GridTabVO gridTabVO,
-			final GridTabVO parentTabVO,
+	private DocumentEntityDescriptor.Builder createDocumentEntityBuilder(
+			@NonNull final GridTabVO gridTabVO,
+			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
-			final List<I_AD_UI_Element> labelsUIElements)
+			@NonNull final List<I_AD_UI_Element> labelsUIElements)
 	{
 		final String tableName = gridTabVO.getTableName();
 
@@ -204,6 +212,7 @@ import lombok.NonNull;
 		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.Window, gridTabVO.getAD_Window_ID())
 				.setDetailId(detailId)
+				.setInternalName(gridTabVO.getInternalName())
 				//
 				.setCaption(gridTabVO.getNameTrls(), gridTabVO.getName())
 				.setDescription(gridTabVO.getDescriptionTrls(), gridTabVO.getDescription())
@@ -241,7 +250,7 @@ import lombok.NonNull;
 	}
 
 	// keyColumn==true will mean "readOnly" further down the road
-	private boolean isTreatFieldAsKey(
+	private static boolean isTreatFieldAsKey(
 			@NonNull final GridFieldVO gridFieldVO,
 			@NonNull final GridTabVO gridTabVO,
 			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
@@ -252,13 +261,28 @@ import lombok.NonNull;
 		{
 			return gridFieldVO.isKey();
 		}
-		return gridFieldVO.isParentLink();
+		else
+		{
+			return gridFieldVO.isParentLink();
+		}
 	}
 
 	public DocumentFieldDescriptor.Builder documentFieldByAD_Field_ID(final int adFieldId)
 	{
 		final String fieldName = _adFieldId2columnName.get(adFieldId);
 		return documentField(fieldName);
+	}
+
+	public DocumentFieldDescriptor.Builder documentFieldByAD_UI_ElementField(@NonNull final I_AD_UI_ElementField elementFieldRecord)
+	{
+		final Builder builder = documentFieldByAD_Field_ID(elementFieldRecord.getAD_Field_ID());
+		if (X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
+		{
+			final String tooltipIconName = Check.assumeNotEmpty(elementFieldRecord.getTooltipIconName(),
+					"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
+			builder.setTooltipIconName(tooltipIconName);
+		}
+		return builder;
 	}
 
 	DocumentFieldDescriptor.Builder documentField(final String fieldName)
@@ -284,10 +308,22 @@ import lombok.NonNull;
 		final LookupDescriptor lookupDescriptor;
 		ILogicExpression readonlyLogic;
 
-		final boolean isParentLinkColumn = isFieldTheCurrentlyUsedParentLink(gridFieldVO, entityDescriptorBuilder);
+		final boolean isParentLinkColumn = isCurrentlyUsedParentLinkField(gridFieldVO, entityDescriptorBuilder);
 		final String sqlColumnName = gridFieldVO.getColumnName();
 
 		if (isParentLinkColumn) // assumes that the column is not only flagged as parent link, but is also the parent link *in this particular document*
+		{
+			widgetType = DocumentFieldWidgetType.Integer;
+			valueClass = widgetType.getValueClass();
+			alwaysUpdateable = false;
+
+			lookupDescriptorProvider = LookupDescriptorProvider.NULL;
+			lookupDescriptor = null;
+
+			defaultValueExpression = Optional.empty();
+			readonlyLogic = ConstantLogicExpression.TRUE;
+		}
+		else if (gridFieldVO.isKey()) // single key column
 		{
 			widgetType = DocumentFieldWidgetType.Integer;
 			valueClass = widgetType.getValueClass();
@@ -433,14 +469,16 @@ import lombok.NonNull;
 	 * @return true if the given {@code gridFieldVO} is flagged as parent link and also matches the parent-link columName.
 	 *         Logically there can be only one parent link field.
 	 */
-	private boolean isFieldTheCurrentlyUsedParentLink(
+	private static boolean isCurrentlyUsedParentLinkField(
 			@NonNull final GridFieldVO gridFieldVO,
 			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
 	{
-		if (!gridFieldVO.isParentLink())
-		{
-			return false;
-		}
+		// issue https://github.com/metasfresh/metasfresh/issues/4622 :
+		// Even if it's not flagged as parent-link in AD_Column, it can be configured that way in AD_Tab
+		// if (!gridFieldVO.isParentLink())
+		// {
+		// return false;
+		// }
 
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptorBuilder.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
 		final String parentLinkColumnName = entityBindings.getSqlParentLinkColumnName();
@@ -565,7 +603,7 @@ import lombok.NonNull;
 		{
 			final Class<?> valueClass = widgetType.getValueClass();
 			final LookupValueByIdSupplier lookupDataSource = null; // does not matter, we already excluded Lookups above
-			return DocumentFieldDescriptor.convertToValueClass(fieldName, autoFilterInitialValueStr, widgetType, valueClass, lookupDataSource);
+			return DataTypes.convertToValueClass(fieldName, autoFilterInitialValueStr, widgetType, valueClass, lookupDataSource);
 		}
 	}
 

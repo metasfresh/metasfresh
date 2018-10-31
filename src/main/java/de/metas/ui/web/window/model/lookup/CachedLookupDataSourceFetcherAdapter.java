@@ -3,17 +3,16 @@ package de.metas.ui.web.window.model.lookup;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.util.Check;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CCacheStats;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -106,8 +105,8 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	@Override
 	public void cacheInvalidate()
 	{
-		cache_retrieveEntities.clear();
-		cache_retrieveLookupValueById.clear();
+		cache_retrieveEntities.reset();
+		cache_retrieveLookupValueById.reset();
 	}
 
 	@Override

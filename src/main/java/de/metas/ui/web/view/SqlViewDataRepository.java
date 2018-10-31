@@ -16,8 +16,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -49,6 +47,8 @@ import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -263,7 +263,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		final Set<DocumentId> rootRowIds = new HashSet<>();
 		while (rs.next())
 		{
-			final ViewRow.Builder rowBuilder = loadViewRow(rs, viewId.getWindowId(), viewEvalCtx.getAD_Language());
+			final ViewRow.Builder rowBuilder = loadViewRow(rs, viewId.getWindowId(), viewEvalCtx.getAdLanguage());
 			if (rowBuilder == null)
 			{
 				continue;

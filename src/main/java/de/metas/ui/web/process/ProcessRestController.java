@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessClassInfo;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -51,6 +51,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Check;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 
@@ -338,6 +339,7 @@ public class ProcessRestController
 
 	public void cacheReset()
 	{
+		ProcessClassInfo.resetCache();
 		getAllRepositories().forEach(IProcessInstancesRepository::cacheReset);
 	}
 }

@@ -7,15 +7,15 @@ import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.NonNull;
 
 /*

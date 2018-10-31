@@ -1,7 +1,6 @@
 package de.metas.ui.web.picking;
 
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.util.Services;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -23,6 +22,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -93,7 +93,7 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Product_ID)
 				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyOrdered, "SUM(QtyOrdered)")
-				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyPicked, "SUM(QtyPicked + QtyPickedPlanned)")
+				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyPickedOrDelivered, "SUM(" + I_M_Packageable_V.COLUMNNAME_QtyPickedOrDelivered + ")")
 				.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, "MIN(DeliveryDate)")
 				.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, "IF_MIN(DeliveryDate, PreparationDate)")
 				.rowIdsConverter(SqlViewRowIdsConverters.TO_INT_EXCLUDING_STRINGS)
@@ -113,7 +113,7 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 				FIELDNAME_ProductOrBPartner,
 				I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID,
 				I_M_Packageable_V.COLUMNNAME_QtyOrdered,
-				I_M_Packageable_V.COLUMNNAME_QtyPicked,
+				I_M_Packageable_V.COLUMNNAME_QtyPickedOrDelivered,
 				I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID,
 				I_M_Packageable_V.COLUMNNAME_PreparationDate);
 	}

@@ -162,7 +162,8 @@ import lombok.NonNull;
 
 	private static IQueryFilterModifier extractFieldModifier(final DocumentFieldWidgetType widgetType)
 	{
-		if (widgetType == DocumentFieldWidgetType.DateTime)
+		if (widgetType == DocumentFieldWidgetType.DateTime
+				|| widgetType == DocumentFieldWidgetType.ZonedDateTime)
 		{
 			return DateTruncQueryFilterModifier.DAY;
 		}
@@ -181,7 +182,8 @@ import lombok.NonNull;
 
 	private static IQueryFilterModifier extractValueModifier(final DocumentFieldWidgetType widgetType)
 	{
-		if (widgetType == DocumentFieldWidgetType.DateTime)
+		if (widgetType == DocumentFieldWidgetType.DateTime
+				|| widgetType == DocumentFieldWidgetType.ZonedDateTime)
 		{
 			return DateTruncQueryFilterModifier.DAY;
 		}

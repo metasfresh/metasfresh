@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.util.GuavaCollectors;
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -18,11 +18,14 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
+import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -63,10 +66,28 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		return new JSONDocumentLayoutElementField(fieldDescriptor, jsonOpts);
 	}
 
+	/**
+	 * Optional property used to address special cases. Most fields don't need it.
+	 *
+	 * Please keep in sync with {@link FieldType}
+	 */
 	@ApiModel("field-type")
 	public static enum JSONFieldType
 	{
-		ActionButtonStatus, ActionButton;
+		/**
+		 * For the docstatus/docaction widget, the two fields @{@code DocStatus} and {@code DocAction} are mashed together.
+		 * This value and {@link #ActionButton} is used to specify which field is which.
+		 */
+		ActionButtonStatus,
+
+		/** See {@value #ActionButtonStatus}. */
+		ActionButton,
+
+		/**
+		 * Used to tell the frontend that a field with is part of a composition shall be shown as tooltip,
+		 * when the respective tooltip icon/button is pressed
+		 */
+		Tooltip;
 
 		public static JSONFieldType fromNullable(final FieldType fieldType)
 		{
@@ -85,16 +106,26 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		private static final Map<FieldType, JSONFieldType> fieldType2json = ImmutableMap.<FieldType, JSONFieldType> builder()
 				.put(FieldType.ActionButtonStatus, JSONFieldType.ActionButtonStatus)
 				.put(FieldType.ActionButton, JSONFieldType.ActionButton)
+				.put(FieldType.Tooltip, JSONFieldType.Tooltip)
 				.build();
 
 	}
 
+	/**
+	 * If one {@link DocumentLayoutElementDescriptor} has multiple fields,
+	 * then this tells the frontend how to render each particular "sub-widget".
+	 *
+	 * Please keep in sync with {@link LookupSource}.
+	 */
 	@ApiModel("lookup-source")
 	public static enum JSONLookupSource
 	{
-		lookup, list;
+		lookup, list,
 
-		public static JSONLookupSource fromNullable(final LookupSource lookupSource)
+		/** This one is used for fields that are tooltips. Also see {@link FieldType#Tooltip}. */
+		text;
+
+		public static JSONLookupSource fromNullable(@Nullable final LookupSource lookupSource)
 		{
 			if (lookupSource == null)
 			{
@@ -111,6 +142,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		private static final Map<LookupSource, JSONLookupSource> lookupSource2json = ImmutableMap.<LookupSource, JSONLookupSource> builder()
 				.put(LookupSource.list, list)
 				.put(LookupSource.lookup, lookup)
+				.put(LookupSource.text, text)
 				.build();
 	}
 
@@ -120,6 +152,10 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONFieldType type;
+
+	@JsonProperty("tooltipIconName")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String tooltipIconName;
 
 	@JsonProperty("source")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -140,16 +176,18 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@JsonProperty("newRecordCaption")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String newRecordCaption;
-	
+
 	@JsonProperty("supportZoomInto")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean supportZoomInto;
 
-	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONOptions jsonOpts)
+	private JSONDocumentLayoutElementField(
+			@NonNull final DocumentLayoutElementFieldDescriptor fieldDescriptor,
+			@NonNull final JSONOptions jsonOpts)
 	{
-		super();
 		field = fieldDescriptor.getField();
 		type = JSONFieldType.fromNullable(fieldDescriptor.getFieldType());
+		tooltipIconName = fieldDescriptor.getTooltipIconName();
 		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
 		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAD_Language());
 		devices = fieldDescriptor.getDevices();
@@ -165,32 +203,32 @@ public final class JSONDocumentLayoutElementField implements Serializable
 			newRecordWindowId = null;
 			newRecordCaption = null;
 		}
-		
+
 		supportZoomInto = fieldDescriptor.isSupportZoomInto() ? Boolean.TRUE : null;
 	}
 
 	@JsonCreator
 	/* package */ JSONDocumentLayoutElementField(
-			@JsonProperty("field") final String field //
-			, @JsonProperty("type") final JSONFieldType type //
-			, @JsonProperty("source") final JSONLookupSource source //
-			, @JsonProperty("emptyText") final String emptyText //
-			, @JsonProperty("devices") final List<JSONDeviceDescriptor> devices //
-			, @JsonProperty("newRecordWindowId") final String newRecordWindowId //
-			, @JsonProperty("newRecordCaption") final String newRecordCaption //
-			, @JsonProperty("supportZoomInto") final boolean supportZoomInto //
-			)
+			@JsonProperty("field") final String field,
+			@JsonProperty("type") final JSONFieldType type,
+			@JsonProperty("tooltipIconName") final String tooltipIconName,
+			@JsonProperty("source") final JSONLookupSource source,
+			@JsonProperty("emptyText") final String emptyText,
+			@JsonProperty("devices") final List<JSONDeviceDescriptor> devices,
+			@JsonProperty("newRecordWindowId") final String newRecordWindowId,
+			@JsonProperty("newRecordCaption") final String newRecordCaption,
+			@JsonProperty("supportZoomInto") final boolean supportZoomInto)
 	{
-		super();
 		this.field = field;
 		this.type = type;
+		this.tooltipIconName = tooltipIconName;
 		this.source = source;
 		this.emptyText = emptyText;
 		this.devices = devices == null ? ImmutableList.of() : ImmutableList.copyOf(devices);
 
 		this.newRecordWindowId = newRecordWindowId;
 		this.newRecordCaption = newRecordCaption;
-		
+
 		this.supportZoomInto = supportZoomInto;
 	}
 
@@ -215,13 +253,13 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		{
 			return null;
 		}
-		
+
 		final NewRecordDescriptorsProvider newRecordDescriptorsProvider = jsonOpts.getNewRecordDescriptorsProvider();
-		if(newRecordDescriptorsProvider == null)
+		if (newRecordDescriptorsProvider == null)
 		{
 			return null;
 		}
-		
+
 		return newRecordDescriptorsProvider.getNewRecordEntityDescriptorIfAvailable(lookupTableName);
 	}
 }

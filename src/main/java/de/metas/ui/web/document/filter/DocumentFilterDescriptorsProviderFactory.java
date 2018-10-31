@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.elasticsearch.client.Client;
 
@@ -26,6 +25,7 @@ import de.metas.ui.web.window.descriptor.FullTextSearchFilterContext;
 import de.metas.ui.web.window.descriptor.FullTextSearchSqlDocumentFilterConverter;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -159,7 +159,8 @@ public final class DocumentFilterDescriptorsProviderFactory
 	private DocumentFieldWidgetType extractFilterWidgetType(final DocumentFieldDescriptor field)
 	{
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
-		if (widgetType == DocumentFieldWidgetType.DateTime)
+		if (widgetType == DocumentFieldWidgetType.DateTime
+				|| widgetType == DocumentFieldWidgetType.ZonedDateTime)
 		{
 			return DocumentFieldWidgetType.Date;
 		}

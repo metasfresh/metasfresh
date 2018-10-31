@@ -12,9 +12,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +20,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.Builder;
@@ -51,6 +49,8 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescrip
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -157,7 +157,7 @@ public class SqlViewFactory implements IViewFactory
 		return ImmutableMap.copyOf(map);
 	}
 
-	private CompositeDefaultViewProfileIdProvider makeDefaultProfileIdProvider(
+	private static CompositeDefaultViewProfileIdProvider makeDefaultProfileIdProvider(
 			final List<DefaultViewProfileIdProvider> providers,
 			final List<SqlViewCustomizer> viewCustomizersToExtractFallbacks)
 	{
@@ -186,7 +186,7 @@ public class SqlViewFactory implements IViewFactory
 		}
 	}
 
-	private ImmutableMap<WindowId, IViewInvalidationAdvisor> makeViewInvalidationAdvisorsMap(final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
+	private static ImmutableMap<WindowId, IViewInvalidationAdvisor> makeViewInvalidationAdvisorsMap(final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
 	{
 		try
 		{

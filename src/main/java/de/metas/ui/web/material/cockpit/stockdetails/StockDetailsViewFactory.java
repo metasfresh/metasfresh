@@ -28,6 +28,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -71,6 +72,11 @@ public class StockDetailsViewFactory implements IViewFactory, IViewsIndexStorage
 	public StockDetailsViewFactory(@NonNull final HUStockInfoRepository huStockInfoRepository)
 	{
 		this.huStockInfoRepository = huStockInfoRepository;
+	}
+
+	@Override
+	public void setViewsRepository(final IViewsRepository viewsRepository)
+	{
 	}
 
 	@Override

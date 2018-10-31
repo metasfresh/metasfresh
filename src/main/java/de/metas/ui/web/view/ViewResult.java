@@ -6,8 +6,6 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -17,6 +15,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.Check;
+
 import lombok.Builder;
 import lombok.NonNull;
 

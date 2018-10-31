@@ -1,11 +1,13 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 
@@ -14,6 +16,7 @@ import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -449,7 +452,19 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			}
 			else if (java.util.Date.class.isAssignableFrom(valueClass))
 			{
-				return DocumentFieldValueLoaders.toDate(sqlColumnName, encrypted);
+				return DocumentFieldValueLoaders.toJULDate(sqlColumnName, encrypted);
+			}
+			else if (ZonedDateTime.class == valueClass)
+			{
+				return DocumentFieldValueLoaders.toZonedDateTime(sqlColumnName, encrypted);
+			}
+			else if (LocalDateTime.class == valueClass)
+			{
+				return DocumentFieldValueLoaders.toLocalDateTime(sqlColumnName, encrypted);
+			}
+			else if (LocalDate.class == valueClass)
+			{
+				return DocumentFieldValueLoaders.toLocalDate(sqlColumnName, encrypted);
 			}
 			// YesNo
 			else if (Boolean.class == valueClass)

@@ -6,8 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -20,6 +18,8 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -7,7 +7,6 @@ import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestAttributes;
@@ -27,6 +26,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -89,7 +89,6 @@ public final class JSONOptions
 
 	private JSONOptions(final Builder builder)
 	{
-		super();
 		adLanguage = builder.getAD_Language();
 		showAdvancedFields = builder.isShowAdvancedFields();
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);

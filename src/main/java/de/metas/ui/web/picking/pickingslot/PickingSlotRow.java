@@ -6,12 +6,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.google.common.base.Preconditions;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.handlingunits.HuId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.picking.PickingConstants;
@@ -27,7 +32,9 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -80,7 +87,7 @@ public final class PickingSlotRow implements IViewRow
 	private final LookupValue pickingSlotBPartner;
 	private final LookupValue pickingSlotBPLocation;
 	private final LookupValue pickingSlotWarehouse;
-	private final int pickingSlotLocatorId;
+	private final LocatorId pickingSlotLocatorId;
 	private final ITranslatableString pickingSlotCaption;
 
 	//
@@ -115,7 +122,7 @@ public final class PickingSlotRow implements IViewRow
 
 	@Builder(builderMethodName = "fromSourceHUBuilder", builderClassName = "FromSourceHUBuilder")
 	private PickingSlotRow(
-			final int huId,
+			final HuId huId,
 			final HUEditorRowType huEditorRowType,
 			final String huCode,
 			final JSONLookupValue product,
@@ -140,7 +147,7 @@ public final class PickingSlotRow implements IViewRow
 		//
 		// Picking slot info
 		pickingSlotWarehouse = null;
-		pickingSlotLocatorId = -1;
+		pickingSlotLocatorId = null;
 		pickingSlotBPartner = null;
 		pickingSlotBPLocation = null;
 		pickingSlotCaption = null;
@@ -164,11 +171,11 @@ public final class PickingSlotRow implements IViewRow
 	 */
 	@Builder(builderMethodName = "fromPickingSlotBuilder", builderClassName = "FromPickingSlotBuilder")
 	private PickingSlotRow(
-			final int pickingSlotId,
+			final PickingSlotId pickingSlotId,
 			//
 			final String pickingSlotName,
 			final LookupValue pickingSlotWarehouse,
-			final int pickingSlotLocatorId,
+			final LocatorId pickingSlotLocatorId,
 			final LookupValue pickingSlotBPartner,
 			final LookupValue pickingSlotBPLocation,
 			//
@@ -218,8 +225,8 @@ public final class PickingSlotRow implements IViewRow
 	 */
 	@Builder(builderMethodName = "fromPickedHUBuilder", builderClassName = "FromPickedHUBuilder")
 	private PickingSlotRow(
-			final int pickingSlotId,
-			final int huId,
+			@NonNull final PickingSlotId pickingSlotId,
+			@NonNull final HuId huId,
 			final int huStorageProductId,
 			//
 			final HUEditorRowType huEditorRowType,
@@ -233,9 +240,6 @@ public final class PickingSlotRow implements IViewRow
 			//
 			final List<PickingSlotRow> includedHURows)
 	{
-		Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
-		Preconditions.checkArgument(huId > 0, "huId > 0");
-
 		pickingSlotRowId = PickingSlotRowId.ofPickedHU(pickingSlotId, huId, huStorageProductId);
 
 		this.type = PickingSlotRowType.forPickingHuRow(huEditorRowType);
@@ -252,7 +256,7 @@ public final class PickingSlotRow implements IViewRow
 
 		// Picking slot info
 		pickingSlotWarehouse = null;
-		pickingSlotLocatorId = -1;
+		pickingSlotLocatorId = null;
 		pickingSlotBPartner = null;
 		pickingSlotBPLocation = null;
 		pickingSlotCaption = null;
@@ -375,12 +379,12 @@ public final class PickingSlotRow implements IViewRow
 		return pickingSlotRowId.isPickingSlotRow();
 	}
 
-	public int getPickingSlotId()
+	public PickingSlotId getPickingSlotId()
 	{
 		return getPickingSlotRowId().getPickingSlotId();
 	}
 
-	public int getHuId()
+	public HuId getHuId()
 	{
 		return pickingSlotRowId.getHuId();
 	}
@@ -427,9 +431,9 @@ public final class PickingSlotRow implements IViewRow
 		return pickingSlotRowId.isPickingSourceHURow();
 	}
 
-	public int getPickingSlotWarehouseId()
+	public WarehouseId getPickingSlotWarehouseId()
 	{
-		return pickingSlotWarehouse != null ? pickingSlotWarehouse.getIdAsInt() : -1;
+		return pickingSlotWarehouse != null ? WarehouseId.ofRepoId(pickingSlotWarehouse.getIdAsInt()) : null;
 	}
 
 	public BigDecimal getHuQtyCU()
@@ -437,9 +441,9 @@ public final class PickingSlotRow implements IViewRow
 		return huQtyCU;
 	}
 
-	public int getHuProductId()
+	public ProductId getHuProductId()
 	{
-		return huProduct != null ? huProduct.getKeyAsInt() : 0;
+		return huProduct != null ? ProductId.ofRepoId(huProduct.getKeyAsInt()) : null;
 	}
 
 	@Override
@@ -448,7 +452,7 @@ public final class PickingSlotRow implements IViewRow
 		return includedViewId;
 	}
 
-	public int getPickingSlotLocatorId()
+	public LocatorId getPickingSlotLocatorId()
 	{
 		return pickingSlotLocatorId;
 	}

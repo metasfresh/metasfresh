@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
@@ -16,6 +15,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -151,7 +151,15 @@ public final class DescriptorsFactoryHelper
 		}
 		else if (displayType == DisplayType.DateTime)
 		{
-			return DocumentFieldWidgetType.DateTime;
+			if (WindowConstants.FIELDNAME_Created.equals(columnName)
+					|| WindowConstants.FIELDNAME_Updated.equals(columnName))
+			{
+				return DocumentFieldWidgetType.ZonedDateTime;
+			}
+			else
+			{
+				return DocumentFieldWidgetType.DateTime;
+			}
 		}
 		//
 		//
@@ -163,7 +171,7 @@ public final class DescriptorsFactoryHelper
 		{
 			return DocumentFieldWidgetType.Password;
 		}
-		else if(displayType == DisplayType.URL)
+		else if (displayType == DisplayType.URL)
 		{
 			return DocumentFieldWidgetType.URL;
 		}
@@ -226,7 +234,7 @@ public final class DescriptorsFactoryHelper
 			throw new DocumentLayoutBuildException("Unknown displayType=" + displayType + " of columnName=" + columnName);
 		}
 	}
-	
+
 	public static DocumentFieldWidgetType extractWidgetType(final String columnName, final int displayType, final LookupDescriptor lookupDescriptor)
 	{
 		final DocumentFieldWidgetType widgetType = extractWidgetType(columnName, displayType);
@@ -241,10 +249,10 @@ public final class DescriptorsFactoryHelper
 						, columnName, displayType, widgetType //
 						, lookupSourceType, lookupWidgetType);
 			}
-			
+
 			return lookupWidgetType;
 		}
-		
+
 		return widgetType;
 	}
 

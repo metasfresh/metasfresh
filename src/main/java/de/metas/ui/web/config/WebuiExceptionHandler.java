@@ -2,7 +2,7 @@ package de.metas.ui.web.config;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ErrorAttributes;
@@ -34,6 +33,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L
@@ -137,7 +137,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	public Map<String, Object> getErrorAttributes(final RequestAttributes requestAttributes, final boolean includeStackTrace)
 	{
 		final Map<String, Object> errorAttributes = new LinkedHashMap<>();
-		errorAttributes.put(ATTR_Timestamp, new Date());
+		errorAttributes.put(ATTR_Timestamp, ZonedDateTime.now());
 		addStatus(errorAttributes, requestAttributes);
 		addErrorDetails(errorAttributes, requestAttributes, includeStackTrace);
 		addPath(errorAttributes, requestAttributes);

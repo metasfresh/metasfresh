@@ -8,8 +8,6 @@ import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.permissions.UserMenuInfo;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
@@ -20,6 +18,8 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

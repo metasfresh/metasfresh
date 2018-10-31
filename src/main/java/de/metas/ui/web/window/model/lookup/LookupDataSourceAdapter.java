@@ -3,15 +3,15 @@ package de.metas.ui.web.window.model.lookup;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.util.Check;
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

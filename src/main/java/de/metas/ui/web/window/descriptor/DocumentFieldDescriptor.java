@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,8 +15,6 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -30,17 +26,9 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.ColorValue;
-import de.metas.ui.web.window.datatypes.DateRangeValue;
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.Password;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONRange;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
@@ -48,6 +36,7 @@ import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
+import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -101,6 +90,8 @@ public final class DocumentFieldDescriptor
 	private final DocumentFieldWidgetType widgetType;
 	private final boolean allowShowPassword; // in case widgetType is Password
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
+
+	private final WidgetSize widgetSize;
 
 	private final Class<?> valueClass;
 
@@ -163,6 +154,8 @@ public final class DocumentFieldDescriptor
 		parentLinkFieldName = builder.parentLinkFieldName;
 
 		widgetType = builder.getWidgetType();
+
+		widgetSize = builder.getWidgetSize();
 		allowShowPassword = builder.isAllowShowPassword();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 		valueClass = builder.getValueClass();
@@ -248,6 +241,11 @@ public final class DocumentFieldDescriptor
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return widgetType;
+	}
+
+	public WidgetSize getWidgetSize()
+	{
+		return widgetSize;
 	}
 
 	public boolean isAllowShowPassword()
@@ -357,7 +355,7 @@ public final class DocumentFieldDescriptor
 
 	public Object convertToValueClass(final Object value, final LookupValueByIdSupplier lookupDataSource)
 	{
-		return convertToValueClass(fieldName, value, widgetType, valueClass, lookupDataSource);
+		return DataTypes.convertToValueClass(fieldName, value, widgetType, valueClass, lookupDataSource);
 	}
 
 	/**
@@ -371,326 +369,7 @@ public final class DocumentFieldDescriptor
 	 */
 	public <T> T convertToValueClass(final Object value, final DocumentFieldWidgetType widgetType, final Class<T> targetType, final LookupValueByIdSupplier lookupDataSource)
 	{
-		return convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
-	}
-
-	/**
-	 * Converts given value to target class.
-	 *
-	 * @param fieldName field name, needed only for logging purposes
-	 * @param value value to be converted
-	 * @param widgetType widget type (optional)
-	 * @param targetType target type
-	 * @param lookupDataSource optional Lookup data source, if needed
-	 * @return converted value
-	 */
-	public static <T> T convertToValueClass( //
-			final String fieldName //
-			, final Object value //
-			, final DocumentFieldWidgetType widgetType //
-			, final Class<T> targetType //
-			, final LookupValueByIdSupplier lookupDataSource //
-	)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-
-		final Class<?> fromType = value.getClass();
-
-		try
-		{
-			// Corner case: we need to convert Timestamp(which extends Date) to strict Date because else all value changed comparing methods will fail
-			if (java.util.Date.class.equals(targetType) && Timestamp.class.equals(fromType))
-			{
-				@SuppressWarnings("unchecked")
-				final T valueConv = (T)JSONDate.fromTimestamp((Timestamp)value);
-				return valueConv;
-			}
-
-			if (targetType.isAssignableFrom(fromType))
-			{
-				if (!targetType.equals(fromType))
-				{
-					logger.warn("Possible optimization issue: target type is assignable from source type, but they are not the same class."
-							+ "\n In future we will disallow this case, so please check and fix it."
-							+ "\n Field name: " + fieldName
-							+ "\n Target type: " + targetType
-							+ "\n Source type: " + fromType
-							+ "\n Value: " + value
-							+ "\n LookupDataSource: " + lookupDataSource);
-				}
-
-				@SuppressWarnings("unchecked")
-				final T valueConv = (T)value;
-				return valueConv;
-			}
-
-			if (String.class == targetType)
-			{
-				if (Map.class.isAssignableFrom(fromType))
-				{
-					// this is not allowed for consistency. let it fail.
-				}
-				// For any other case, blindly convert it to string
-				else
-				{
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)value.toString();
-					return valueConv;
-				}
-			}
-			else if (java.util.Date.class == targetType)
-			{
-				if (value instanceof String)
-				{
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONDate.fromJson((String)value, widgetType);
-					return valueConv;
-				}
-			}
-			else if (Integer.class == targetType || int.class == targetType)
-			{
-				if (value instanceof String)
-				{
-					final String valueStr = (String)value;
-					if (valueStr.isEmpty())
-					{
-						return null;
-					}
-
-					final BigDecimal valueBD = new BigDecimal(valueStr);
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)(Integer)valueBD.intValueExact();
-					return valueConv;
-				}
-				else if (value instanceof Number)
-				{
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)(Integer)((Number)value).intValue();
-					return valueConv;
-				}
-				else if (value instanceof LookupValue)
-				{
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)(Integer)((LookupValue)value).getIdAsInt();
-					return valueConv;
-				}
-				else if (value instanceof Map)
-				{
-					@SuppressWarnings("unchecked")
-					final Map<String, Object> map = (Map<String, Object>)value;
-					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)(Integer)lookupValue.getIdAsInt();
-					return valueConv;
-				}
-
-			}
-			else if (BigDecimal.class == targetType)
-			{
-				if (String.class == fromType)
-				{
-					final String valueStr = (String)value;
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)(valueStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(valueStr));
-					return valueConv;
-				}
-				else if (Integer.class == fromType || int.class == fromType)
-				{
-					final int valueInt = (int)value;
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)BigDecimal.valueOf(valueInt);
-					return valueConv;
-				}
-			}
-			else if (Boolean.class == targetType)
-			{
-				final Object valueToConv;
-				if (value instanceof StringLookupValue)
-				{
-					// If String lookup value then consider only the Key.
-					// usage example 1: the Posted column which can be Y, N and some other error codes.
-					// In this case we want to convert the "Y" to "true".
-					// usage example 2: some column which is List and the reference is "_YesNo".
-					valueToConv = ((StringLookupValue)value).getIdAsString();
-				}
-				else
-				{
-					valueToConv = value;
-				}
-
-				@SuppressWarnings("unchecked")
-				final T valueConv = (T)DisplayType.toBoolean(valueToConv, Boolean.FALSE);
-				return valueConv;
-			}
-			else if (IntegerLookupValue.class == targetType)
-			{
-				if (Map.class.isAssignableFrom(fromType))
-				{
-					@SuppressWarnings("unchecked")
-					final Map<String, Object> map = (Map<String, Object>)value;
-					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
-
-					if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
-					{
-						// corner case: the frontend sent a lookup value like '{ 1234567 : "" }'
-						// => we need to resolve the name against the lookup
-						// see https://github.com/metasfresh/metasfresh-webui/issues/230
-						final LookupValue lookupValueResolved = lookupDataSource.findById(lookupValue.getId());
-						return convertToValueClass(fieldName, lookupValueResolved, widgetType, targetType, /* lookupDataSource */null);
-					}
-					else
-					{
-						@SuppressWarnings("unchecked")
-						final T valueConv = (T)lookupValue;
-						return valueConv;
-					}
-				}
-				else if (Number.class.isAssignableFrom(fromType))
-				{
-					final int valueInt = ((Number)value).intValue();
-					if (lookupDataSource != null)
-					{
-						final LookupValue valueLookup = lookupDataSource.findById(valueInt);
-						final T valueConv = convertToValueClass(fieldName, valueLookup, widgetType, targetType, /* lookupDataSource */null);
-						// TODO: what if valueConv was not found?
-						return valueConv;
-					}
-				}
-				else if (String.class == fromType)
-				{
-					final String valueStr = (String)value;
-					if (valueStr.isEmpty())
-					{
-						return null;
-					}
-
-					if (lookupDataSource != null)
-					{
-						final LookupValue valueLookup = lookupDataSource.findById(valueStr);
-						final T valueConv = convertToValueClass(fieldName, valueLookup, widgetType, targetType, /* lookupDataSource */null);
-						// TODO: what if valueConv was not found?
-						return valueConv;
-					}
-				}
-				else if (StringLookupValue.class == fromType)
-				{
-					// TODO: implement https://github.com/metasfresh/metasfresh-webui-api/issues/417
-					final StringLookupValue stringLookupValue = (StringLookupValue)value;
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)IntegerLookupValue.of(stringLookupValue);
-					return valueConv;
-				}
-			}
-			else if (StringLookupValue.class == targetType)
-			{
-				if (Map.class.isAssignableFrom(fromType))
-				{
-					@SuppressWarnings("unchecked")
-					final Map<String, Object> map = (Map<String, Object>)value;
-					final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
-
-					if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
-					{
-						// corner case: the frontend sent a lookup value like '{ "someKey" : "" }'
-						// => we need to resolve the name against the lookup
-						// see https://github.com/metasfresh/metasfresh-webui/issues/230
-						final LookupValue lookupValueResolved = lookupDataSource.findById(lookupValue.getId());
-						return convertToValueClass(fieldName, lookupValueResolved, widgetType, targetType, /* lookupDataSource */null);
-					}
-					else
-					{
-						@SuppressWarnings("unchecked")
-						final T valueConv = (T)lookupValue;
-						return valueConv;
-					}
-				}
-				else if (String.class == fromType)
-				{
-					final String valueStr = (String)value;
-					if (valueStr.isEmpty())
-					{
-						return null;
-					}
-
-					if (lookupDataSource != null)
-					{
-						final LookupValue valueLookup = lookupDataSource.findById(valueStr);
-						final T valueConv = convertToValueClass(fieldName, valueLookup, widgetType, targetType, /* lookupDataSource */null);
-						// TODO: what if valueConv was not found?
-						return valueConv;
-					}
-				}
-				else if (IntegerLookupValue.class == fromType)
-				{
-					final IntegerLookupValue lookupValueInt = (IntegerLookupValue)value;
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)StringLookupValue.of(lookupValueInt.getIdAsString(), lookupValueInt.getDisplayName());
-					return valueConv;
-				}
-			}
-			else if (LookupValuesList.class == targetType)
-			{
-				if (Map.class.isAssignableFrom(fromType))
-				{
-					@SuppressWarnings("unchecked")
-					final Map<String, Object> map = (Map<String, Object>)value;
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONLookupValuesList.lookupValuesListFromJsonMap(map);
-					return valueConv;
-				}
-			}
-			else if (DateRangeValue.class == targetType)
-			{
-				if (Map.class.isAssignableFrom(fromType))
-				{
-					@SuppressWarnings("unchecked")
-					final Map<String, String> map = (Map<String, String>)value;
-					final DateRangeValue dateRange = JSONRange.dateRangeFromJSONMap(map);
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)dateRange;
-					return valueConv;
-				}
-			}
-			else if (Password.class == targetType)
-			{
-				final Password password = Password.ofNullableString(value.toString());
-				@SuppressWarnings("unchecked")
-				final T valueConv = (T)password;
-				return valueConv;
-			}
-			else if (ColorValue.class == targetType)
-			{
-				if (value instanceof String)
-				{
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)ColorValue.ofHexString(value.toString());
-					return valueConv;
-				}
-			}
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException("Failed converting " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
-					+ "\n LookupDataSource: " + lookupDataSource //
-					+ "\n Widget type: " + widgetType
-					+ "\n Reason: " + e.getLocalizedMessage(), e);
-		}
-
-		//
-		// Fallbacks
-
-		// consider empty strings as null objects
-		if (value instanceof String || value.toString().isEmpty())
-		{
-			return null;
-		}
-
-		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
-				+ "\n LookupDataSource: " + lookupDataSource //
-		);
+		return DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
 	}
 
 	/* package */List<IDocumentFieldCallout> getCallouts()
@@ -728,6 +407,7 @@ public final class DocumentFieldDescriptor
 		private boolean calculated;
 
 		private DocumentFieldWidgetType _widgetType;
+		private WidgetSize _widgetSize;
 		private Class<?> _valueClass;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 
@@ -751,6 +431,10 @@ public final class DocumentFieldDescriptor
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
 
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
+
+		/** See {@link #setTooltipIconName(String)}. */
+		@Getter
+		private String tooltipIconName = null;
 
 		//
 		// Default filtering options
@@ -949,6 +633,11 @@ public final class DocumentFieldDescriptor
 		{
 			Preconditions.checkNotNull(_widgetType, "widgetType is null");
 			return _widgetType;
+		}
+
+		public WidgetSize getWidgetSize()
+		{
+			return _widgetSize;
 		}
 
 		public Builder setAllowShowPassword(final boolean allowShowPassword)
@@ -1407,6 +1096,16 @@ public final class DocumentFieldDescriptor
 		public Builder setDefaultFilterInfo(DocumentFieldDefaultFilterDescriptor defaultFilterInfo)
 		{
 			this.defaultFilterInfo = defaultFilterInfo;
+			return this;
+		}
+
+		/**
+		 * Setting this to a non-{@code null} value means that this field is a tooltip field,
+		 * i.e. it represents a tooltip that is attached to some other field.
+		 */
+		public Builder setTooltipIconName(@Nullable final String tooltipIconName)
+		{
+			this.tooltipIconName = tooltipIconName;
 			return this;
 		}
 

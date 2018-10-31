@@ -5,7 +5,6 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
@@ -17,6 +16,8 @@ import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

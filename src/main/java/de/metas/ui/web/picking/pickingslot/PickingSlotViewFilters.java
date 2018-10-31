@@ -1,7 +1,5 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import org.adempiere.util.Services;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -10,6 +8,8 @@ import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.Services;
+
 import lombok.experimental.UtilityClass;
 
 /*

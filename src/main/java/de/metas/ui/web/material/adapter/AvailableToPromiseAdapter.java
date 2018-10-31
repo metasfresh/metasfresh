@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
@@ -27,6 +26,7 @@ import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Availab
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.GroupBuilder;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -54,18 +54,18 @@ import lombok.NonNull;
 @Service
 public class AvailableToPromiseAdapter
 {
-	private final AvailableToPromiseRepository stockRepository;
+	private final AvailableToPromiseRepository availableToPromiseRepository;
 
 	public AvailableToPromiseAdapter(@NonNull final AvailableToPromiseRepository stockRepository)
 	{
-		this.stockRepository = stockRepository;
+		this.availableToPromiseRepository = stockRepository;
 	}
 
 	@NonNull
 	public AvailableToPromiseResultForWebui retrieveAvailableStock(@NonNull final AvailableToPromiseQuery query)
 	{
 		final de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult //
-		commonsAvailableStock = stockRepository.retrieveAvailableStock(query);
+		commonsAvailableStock = availableToPromiseRepository.retrieveAvailableStock(query);
 
 		final AvailableToPromiseResultForWebuiBuilder clientResultBuilder = AvailableToPromiseResultForWebui.builder();
 
@@ -162,6 +162,6 @@ public class AvailableToPromiseAdapter
 
 	public Set<AttributesKey> getPredefinedStorageAttributeKeys()
 	{
-		return stockRepository.getPredefinedStorageAttributeKeys();
+		return availableToPromiseRepository.getPredefinedStorageAttributeKeys();
 	}
 }

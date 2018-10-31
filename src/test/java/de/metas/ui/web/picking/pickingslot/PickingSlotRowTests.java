@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import de.metas.handlingunits.HuId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 
 /*
@@ -35,7 +37,7 @@ public class PickingSlotRowTests
 	{
 		final PickingSlotRow sourceHURow = PickingSlotRow.fromSourceHUBuilder()
 				.huCode("123")
-				.huId(123)
+				.huId(HuId.ofRepoId(123))
 				.huEditorRowType(HUEditorRowType.LU)
 				.build();
 		assertThat(sourceHURow.isPickingSlotRow()).isFalse();
@@ -44,14 +46,14 @@ public class PickingSlotRowTests
 		assertThat(sourceHURow.getType().getName()).isEqualTo(HUEditorRowType.LU.getName());
 		assertThat(sourceHURow.getDocumentPath().getDocumentId().toInt()).isEqualTo(123);
 	}
-	
+
 	@Test
 	public void createPickedHURow()
 	{
 		final PickingSlotRow pickedHURow = PickingSlotRow.fromPickedHUBuilder()
 				.huCode("124")
-				.pickingSlotId(54)
-				.huId(124)
+				.pickingSlotId(PickingSlotId.ofRepoId(54))
+				.huId(HuId.ofRepoId(124))
 				.huEditorRowType(HUEditorRowType.TU)
 				.topLevelHU(true)
 				.build();
@@ -62,12 +64,12 @@ public class PickingSlotRowTests
 		assertThat(pickedHURow.getDocumentPath().getDocumentId().toInt()).isEqualTo(124);
 		assertThat(pickedHURow.isTopLevelHU()).isTrue();
 	}
-	
+
 	@Test
 	public void createPickingSlotRow()
 	{
 		final PickingSlotRow pickingSlotRow = PickingSlotRow.fromPickingSlotBuilder()
-				.pickingSlotId(55)
+				.pickingSlotId(PickingSlotId.ofRepoId(55))
 				.build();
 		assertThat(pickingSlotRow.isPickingSlotRow()).isTrue();
 		assertThat(pickingSlotRow.isPickingSourceHURow()).isFalse();

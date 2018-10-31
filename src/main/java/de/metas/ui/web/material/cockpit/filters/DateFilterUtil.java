@@ -2,8 +2,6 @@ package de.metas.ui.web.material.cockpit.filters;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
@@ -13,6 +11,9 @@ import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.Check;
+import de.metas.util.Services;
+
 import lombok.experimental.UtilityClass;
 
 /*

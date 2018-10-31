@@ -5,13 +5,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;

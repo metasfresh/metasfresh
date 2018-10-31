@@ -60,11 +60,10 @@ public class WEBUI_SalesOrder_PurchaseView_Launcher
 		}
 
 		final String docStatus = salesOrder.getDocStatus();
-		if (!IDocument.STATUS_Drafted.equals(docStatus)
-				&& !IDocument.STATUS_Completed.equals(docStatus))
+		if (!IDocument.STATUS_Drafted.equals(docStatus))
 		{
 			return ProcessPreconditionsResolution
-					.rejectWithInternalReason("only draft or completed orders are allowed");
+					.rejectWithInternalReason("only draft orders are allowed");
 		}
 
 		// At least one sales order line shall be selected

@@ -1,11 +1,10 @@
 package de.metas.ui.web.window.descriptor;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -39,6 +38,7 @@ public final class DocumentLayoutDetailDescriptor
 
 	private final WindowId windowId;
 	private final DetailId detailId;
+	private final String internalName;
 
 	private final ViewLayout gridLayout;
 	private final DocumentLayoutSingleRow singleRowLayout;
@@ -48,10 +48,11 @@ public final class DocumentLayoutDetailDescriptor
 
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
-		windowId = builder.windowId;
-		Check.assumeNotNull(windowId, "Parameter windowId is not null");
+		windowId = Check.assumeNotNull(builder.windowId, "Parameter windowId is not null");
 
 		detailId = builder.detailId;
+
+		internalName = builder.internalName;
 
 		gridLayout = builder.buildGridLayout();
 		singleRowLayout = builder.buildSingleRowLayout();
@@ -66,6 +67,7 @@ public final class DocumentLayoutDetailDescriptor
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("detailId", detailId)
+				.add("internalName", internalName)
 				.toString();
 	}
 
@@ -77,6 +79,11 @@ public final class DocumentLayoutDetailDescriptor
 	public DetailId getDetailId()
 	{
 		return detailId;
+	}
+
+	public String getInternalName()
+	{
+		return internalName;
 	}
 
 	public ViewLayout getGridLayout()
@@ -108,11 +115,12 @@ public final class DocumentLayoutDetailDescriptor
 	{
 		private final WindowId windowId;
 		private final DetailId detailId;
+		private String internalName;
 
 		private ViewLayout.Builder gridLayout = null;
 		private DocumentLayoutSingleRow.Builder singleRowLayout = null;
 
-		private boolean _supportQuickInput;
+		private boolean supportQuickInput;
 
 		private boolean queryOnActivate;
 
@@ -136,7 +144,7 @@ public final class DocumentLayoutDetailDescriptor
 		{
 			return singleRowLayout.build();
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -145,7 +153,13 @@ public final class DocumentLayoutDetailDescriptor
 					.toString();
 		}
 
-		public Builder setGridLayout(@NonNull final ViewLayout.Builder gridLayout)
+		public Builder internalName(final String internalName)
+		{
+			this.internalName = internalName;
+			return this;
+		}
+
+		public Builder gridLayout(@NonNull final ViewLayout.Builder gridLayout)
 		{
 			this.gridLayout = gridLayout;
 			gridLayout.setWindowId(windowId);
@@ -153,7 +167,7 @@ public final class DocumentLayoutDetailDescriptor
 			return this;
 		}
 
-		public Builder setSingleRowLayout(@NonNull final DocumentLayoutSingleRow.Builder singleRowLayout)
+		public Builder singleRowLayout(@NonNull final DocumentLayoutSingleRow.Builder singleRowLayout)
 		{
 			this.singleRowLayout = singleRowLayout;
 			singleRowLayout.setWindowId(windowId);
@@ -166,21 +180,21 @@ public final class DocumentLayoutDetailDescriptor
 					&& (singleRowLayout == null || singleRowLayout.isEmpty());
 		}
 
-		public Builder setQueryOnActivate(final boolean queryOnActivate)
+		public Builder queryOnActivate(final boolean queryOnActivate)
 		{
 			this.queryOnActivate = queryOnActivate;
 			return this;
 		}
 
-		public Builder setSupportQuickInput(final boolean supportQuickInput)
+		public Builder supportQuickInput(final boolean supportQuickInput)
 		{
-			_supportQuickInput = supportQuickInput;
+			this.supportQuickInput = supportQuickInput;
 			return this;
 		}
 
 		public boolean isSupportQuickInput()
 		{
-			return _supportQuickInput;
+			return supportQuickInput;
 		}
 	}
 }

@@ -4,22 +4,28 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.Callable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.time.SimpleDateFormatThreadLocal;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.time.SimpleDateFormatThreadLocal;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -55,6 +61,39 @@ public final class JSONDate
 
 	private static final SimpleDateFormatThreadLocal TIMEZONE_FORMAT = new SimpleDateFormatThreadLocal("XXX");
 
+	private static final LocalDate DATE_1970_01_01 = LocalDate.of(1970, Month.JANUARY, 1);
+	private static ZoneId fixedSystemZoneId = null; // used for testing
+
+	private static ZoneId getSystemZoneId()
+	{
+		final ZoneId fixedSystemZoneId = JSONDate.fixedSystemZoneId;
+		if (fixedSystemZoneId != null)
+		{
+			return fixedSystemZoneId;
+		}
+
+		return ZoneId.systemDefault();
+	}
+
+	@VisibleForTesting
+	public synchronized static <T> T withFixedSystemZoneId(@NonNull final ZoneId zoneId, @NonNull final Callable<T> callable)
+	{
+		final ZoneId fixedSystemZoneIdBackup = fixedSystemZoneId;
+		fixedSystemZoneId = zoneId;
+		try
+		{
+			return callable.call();
+		}
+		catch (Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+		finally
+		{
+			fixedSystemZoneId = fixedSystemZoneIdBackup;
+		}
+	}
+
 	public static String toJson(final Date date)
 	{
 		return toJson(date.getTime());
@@ -62,38 +101,52 @@ public final class JSONDate
 
 	public static String toJson(final LocalDate date)
 	{
-		final long millis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		return toJson(millis);
+		return toJson(date.atStartOfDay(getSystemZoneId()));
 	}
 
 	public static String toJson(final LocalDateTime date)
 	{
-		final long millis = date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		return toJson(millis);
+		return toJson(date.atZone(getSystemZoneId()));
 	}
 
 	public static String toJson(final long millis)
 	{
-		final ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
-		return DATE_FORMAT.format(zdt);
+		final ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), getSystemZoneId());
+		return toJson(zdt);
+	}
+
+	public static String toJson(final LocalTime time)
+	{
+		return toJson(time.atDate(DATE_1970_01_01).atZone(getSystemZoneId()));
+	}
+
+	public static String toJson(final ZonedDateTime date)
+	{
+		return DATE_FORMAT.format(date);
 	}
 
 	public static Date fromJson(final String valueStr, final DocumentFieldWidgetType widgetType)
 	{
 		if (widgetType == DocumentFieldWidgetType.Date)
 		{
-			return fromDateString(valueStr);
+			return toJULDate(valueStr);
 		}
 		else
 		{
-			return fromDateTimeString(valueStr);
+			return toJULDateWithTime(valueStr);
 		}
 	}
 
 	public static LocalDateTime localDateTimeFromJson(final String valueStr)
 	{
 		// TODO: optimize, convert directly
-		return TimeUtil.asLocalDateTime(fromDateTimeString(valueStr));
+		return TimeUtil.asLocalDateTime(toJULDateWithTime(valueStr));
+	}
+
+	public static ZonedDateTime zonedDateTimeFromJson(final String valueStr)
+	{
+		// TODO: optimize, convert directly
+		return TimeUtil.asZonedDateTime(toJULDateWithTime(valueStr));
 	}
 
 	public static Date fromObject(final Object value, final DocumentFieldWidgetType widgetType)
@@ -102,12 +155,19 @@ public final class JSONDate
 		{
 			return null;
 		}
-		if (value instanceof Date)
+		else if (value instanceof Date)
 		{
 			return (Date)value;
 		}
-		final String valueStr = value.toString().trim();
-		return JSONDate.fromJson(valueStr, widgetType);
+		else if (value instanceof String)
+		{
+			final String valueStr = value.toString().trim();
+			return fromJson(valueStr, widgetType);
+		}
+		else
+		{
+			return TimeUtil.asDate(value);
+		}
 	}
 
 	public static LocalDateTime localDateTimeFromObject(final Object value)
@@ -134,7 +194,7 @@ public final class JSONDate
 		return new Date(ts.getTime());
 	}
 
-	private static final Date fromDateTimeString(final String valueStr)
+	private static final Date toJULDateWithTime(final String valueStr)
 	{
 		try
 		{
@@ -156,7 +216,7 @@ public final class JSONDate
 			{
 				final String errmsg = "Failed converting '" + valueStr + "' to date."
 						+ "\n Please use following format: " + DATE_PATTEN + "."
-						+ "\n e.g. " + DATE_FORMAT.format(Instant.now());
+						+ "\n e.g. " + DATE_FORMAT.format(ZonedDateTime.now());
 				final IllegalArgumentException exFinal = new IllegalArgumentException(errmsg, ex1);
 				exFinal.addSuppressed(ex2);
 				throw exFinal;
@@ -164,7 +224,7 @@ public final class JSONDate
 		}
 	}
 
-	private static final Date fromDateString(final String valueStr)
+	private static final Date toJULDate(final String valueStr)
 	{
 		try
 		{

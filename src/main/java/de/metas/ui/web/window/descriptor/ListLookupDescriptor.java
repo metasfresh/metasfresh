@@ -4,8 +4,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
@@ -15,6 +13,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

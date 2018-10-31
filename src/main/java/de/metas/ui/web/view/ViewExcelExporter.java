@@ -5,16 +5,15 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractExcelExporter;
-import org.adempiere.impexp.CellValue;
-import org.adempiere.impexp.CellValues;
-import org.adempiere.util.Check;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.impexp.excel.AbstractExcelExporter;
+import de.metas.impexp.excel.CellValue;
+import de.metas.impexp.excel.CellValues;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.util.PageIndex;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -23,6 +22,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 

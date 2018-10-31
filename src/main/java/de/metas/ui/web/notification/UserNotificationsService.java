@@ -3,7 +3,6 @@ package de.metas.ui.web.notification;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -19,6 +18,7 @@ import de.metas.notification.UserNotificationUtils;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.util.Services;
 
 /*
  * #%L

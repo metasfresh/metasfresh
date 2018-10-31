@@ -3,14 +3,13 @@ package de.metas.ui.web.quickinput;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

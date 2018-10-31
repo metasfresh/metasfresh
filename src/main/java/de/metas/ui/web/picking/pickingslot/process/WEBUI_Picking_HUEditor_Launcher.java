@@ -79,12 +79,12 @@ public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 		final PickingSlotRowId pickingSlotRowId = getSingleSelectedRow().getPickingSlotRowId();
 
 		final ViewId pickingSlotViewId = pickingSlotsView.getViewId();
-		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
+		final ShipmentScheduleId shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
 		final CreateViewRequest createRequest = husToPickViewFactory.createViewRequest(
 				pickingSlotViewId,
 				pickingSlotRowId,
-				ShipmentScheduleId.offRepoId(shipmentScheduleId));
+				shipmentScheduleId);
 
 		final IView husToPickView = viewsRepo.createView(createRequest);
 		return husToPickView;

@@ -6,7 +6,6 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
@@ -16,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

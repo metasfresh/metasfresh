@@ -4,13 +4,12 @@ import java.util.function.Supplier;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.util.Check;
 
 /*
  * #%L

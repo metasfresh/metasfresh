@@ -1,13 +1,15 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.packageable.PackageableRow;
 import de.metas.ui.web.picking.packageable.PackageableView;
@@ -147,11 +149,11 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 								.build();
 
 						// provide all pickingView's M_ShipmentSchedule_IDs to the factory, because we want to show the same picking slots and picked HU-rows for all of them.
-						final List<Integer> allShipmentScheduleIds = packageableView
+						final Set<ShipmentScheduleId> allShipmentScheduleIds = packageableView
 								.streamByIds(DocumentIdsSelection.ALL)
 								.map(PackageableRow::cast)
 								.map(PackageableRow::getShipmentScheduleId)
-								.collect(Collectors.toList());
+								.collect(ImmutableSet.toImmutableSet());
 
 						return pickingSlotViewFactory.createView(createViewRequest, allShipmentScheduleIds);
 					});

@@ -10,6 +10,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 
 /*
  * #%L
@@ -47,6 +48,9 @@ public @interface ViewColumn
 
 	DocumentFieldWidgetType widgetType();
 
+	/** List AD_Reference_ID; to be used when {@link #widgetType()} is lookup */
+	int listReferenceId() default -1;
+
 	/**
 	 * Column's caption identified by AD_Message/AD_Element.
 	 */
@@ -61,13 +65,16 @@ public @interface ViewColumn
 	/**
 	 * Column layout profiles.
 	 *
-	 * If empty, the column won't be displayed in any of {@link JSONViewDataType} profiles.
+	 * If empty, and no defaults like {@link #seqNo()} were defined
+	 * then the column won't be displayed in any of {@link JSONViewDataType} profiles.
 	 */
 	ViewColumnLayout[] layouts() default {};
 
 	ViewEditorRenderMode editor() default ViewEditorRenderMode.NEVER;
 
 	MediaType[] restrictToMediaTypes() default {};
+
+	WidgetSize widgetSize() default WidgetSize.Default;
 
 	@Target({ ElementType.FIELD })
 	@Retention(RetentionPolicy.RUNTIME)
@@ -96,10 +103,13 @@ public @interface ViewColumn
 
 		Displayed displayed() default Displayed.TRUE;
 
+		boolean defaultDisplaySysConfig() default false;
+
 		/** See {@link Displayed#SYSCONFIG}. Null or empty strings mean {@link Displayed#FALSE}. */
 		String displayedSysConfigPrefix() default "";
 
 		/** Display sequence number */
 		int seqNo();
+
 	}
 }

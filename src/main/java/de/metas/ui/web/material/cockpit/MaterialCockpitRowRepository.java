@@ -1,6 +1,5 @@
 package de.metas.ui.web.material.cockpit;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -8,20 +7,18 @@ import java.util.Map;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -31,6 +28,8 @@ import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -89,9 +88,19 @@ public class MaterialCockpitRowRepository
 			}
 
 			@Override
-			public ListMultimap<TableRecordReference, MaterialCockpitRow> getTableRecordReference2rows()
+			public DocumentIdsSelection getDocumentIdsToInvalidate(@NonNull final TableRecordReferenceSet recordRefs)
 			{
-				return extractTableRecordReference2DocumentId2(getAllRows());
+				final TableRecordReferenceSet recordRefsEligible = recordRefs.filter(recordRef -> isEligibleRecordRef(recordRef));
+				if (recordRefsEligible.isEmpty())
+				{
+					return DocumentIdsSelection.EMPTY;
+				}
+
+				return getAllRows()
+						.stream()
+						.filter(row -> isRowMatching(row, recordRefsEligible))
+						.map(MaterialCockpitRow::getId)
+						.collect(DocumentIdsSelection.toDocumentIdsSelection());
 			}
 
 			@Override
@@ -172,24 +181,16 @@ public class MaterialCockpitRowRepository
 		return products;
 	}
 
-	private static ListMultimap<TableRecordReference, MaterialCockpitRow> extractTableRecordReference2DocumentId2(
-			@NonNull final Collection<MaterialCockpitRow> allRows)
+	private static boolean isEligibleRecordRef(final TableRecordReference recordRef)
 	{
-		final ListMultimap<TableRecordReference, MaterialCockpitRow> recordReference2DocumentId = ArrayListMultimap.create();
+		final String tableName = recordRef.getTableName();
+		return I_MD_Cockpit.Table_Name.equals(tableName)
+				|| I_MD_Stock.Table_Name.equals(tableName);
+	}
 
-		for (final MaterialCockpitRow materialCockpitRow : allRows)
-		{
-			materialCockpitRow
-					.getAllIncludedCockpitRecordIds()
-					.forEach(cockpitRecordId -> recordReference2DocumentId
-							.put(TableRecordReference.of(I_MD_Cockpit.Table_Name, cockpitRecordId), materialCockpitRow));
-
-			materialCockpitRow
-					.getAllIncludedStockRecordIds()
-					.forEach(stockRecordId -> recordReference2DocumentId
-							.put(TableRecordReference.of(I_MD_Stock.Table_Name, stockRecordId), materialCockpitRow));
-		}
-
-		return recordReference2DocumentId;
+	private static boolean isRowMatching(final MaterialCockpitRow row, final TableRecordReferenceSet recordRefs)
+	{
+		return recordRefs.containsRecordIds(I_MD_Cockpit.Table_Name, row.getAllIncludedCockpitRecordIds())
+				|| recordRefs.containsRecordIds(I_MD_Stock.Table_Name, row.getAllIncludedStockRecordIds());
 	}
 }

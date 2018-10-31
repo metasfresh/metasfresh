@@ -12,8 +12,6 @@ import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ISerialNoDAO;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Attribute;
@@ -38,6 +36,8 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

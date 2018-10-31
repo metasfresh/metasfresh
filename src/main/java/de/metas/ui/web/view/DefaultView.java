@@ -15,11 +15,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.CCache;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -29,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
@@ -52,6 +50,8 @@ import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -316,7 +316,7 @@ public final class DefaultView implements IEditableView
 	@Override
 	public void invalidateAll()
 	{
-		cache_rowsById.clear();
+		cache_rowsById.reset();
 	}
 
 	@Override
@@ -530,7 +530,7 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(final TableRecordReferenceSet recordRefs)
 	{
 		final Set<DocumentId> rowIds = viewInvalidationAdvisor.findAffectedRowIds(recordRefs, this);
 		if (rowIds.isEmpty())

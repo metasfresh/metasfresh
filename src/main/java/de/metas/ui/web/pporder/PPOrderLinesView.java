@@ -10,8 +10,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -22,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.OrderLineId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -38,6 +38,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -73,7 +74,7 @@ public class PPOrderLinesView implements IView
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
 	private final int ppOrderId;
-	private final int salesOrderLineId;
+	private final OrderLineId salesOrderLineId;
 
 	private final PPOrderLinesViewDataSupplier dataSupplier;
 
@@ -106,7 +107,7 @@ public class PPOrderLinesView implements IView
 		Preconditions.checkArgument(ppOrderId > 0, "PP_Order_ID not provided");
 		this.ppOrderId = ppOrderId;
 		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
-		this.salesOrderLineId = ppOrder.getC_OrderLine_ID();
+		this.salesOrderLineId = OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID());
 
 		this.dataSupplier = dataSupplier;
 	}
@@ -186,7 +187,7 @@ public class PPOrderLinesView implements IView
 		return ppOrderId;
 	}
 
-	public int getSalesOrderLineId()
+	public OrderLineId getSalesOrderLineId()
 	{
 		return salesOrderLineId;
 	}
@@ -333,7 +334,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(final TableRecordReferenceSet recordRefs)
 	{
 		// TODO: notifyRecordsChanged: identify the sub-trees which could be affected and invalidate only those
 	}

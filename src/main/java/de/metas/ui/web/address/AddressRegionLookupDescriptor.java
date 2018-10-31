@@ -6,12 +6,8 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Region;
-import org.compiere.util.CCache;
-import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
@@ -20,6 +16,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -29,6 +27,8 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -96,7 +96,7 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	@Override
 	public void cacheInvalidate()
 	{
-		regionsByCountryId.clear();
+		regionsByCountryId.reset();
 	}
 
 	@Override

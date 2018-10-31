@@ -10,9 +10,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -26,10 +24,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -128,11 +128,11 @@ public class PackingInfoProcessParams
 	{
 		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
 
-		final I_M_Product product = defaultLUTUConfig.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID());
 		final I_C_BPartner bPartner = defaultLUTUConfig.getC_BPartner();
 
 		final boolean includeVirtualItem = !enforcePhysicalTU;
-		final LookupValuesList huPIItemProducts = WEBUI_ProcessHelper.retrieveHUPIItemProducts(Env.getCtx(), product, bPartner, includeVirtualItem);
+		final LookupValuesList huPIItemProducts = WEBUI_ProcessHelper.retrieveHUPIItemProducts(Env.getCtx(), productId, bPartner, includeVirtualItem);
 
 		return huPIItemProducts;
 	}
@@ -219,7 +219,7 @@ public class PackingInfoProcessParams
 	{
 		final List<I_M_HU_PI_Item_Product> availableHUPIItemProductRecords = WEBUI_ProcessHelper.retrieveHUPIItemProductRecords(
 				Env.getCtx(),
-				defaultLUTUConfig.getM_Product(),
+				ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID()),
 				defaultLUTUConfig.getC_BPartner(),
 				false); // includeVirtualItem == false
 
@@ -355,7 +355,7 @@ public class PackingInfoProcessParams
 		final int M_HU_PI_Item_Product_ID = getTU_HU_PI_Item_Product_ID();
 		final BigDecimal qtyCU = getQtyCU();
 
-		final boolean isVirtualHU = M_HU_PI_Item_Product_ID == IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID;
+		final boolean isVirtualHU = M_HU_PI_Item_Product_ID == IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId();
 		final BigDecimal qtyTU = isVirtualHU ? BigDecimal.ONE : this.qtyTU;
 
 		if (M_HU_PI_Item_Product_ID <= 0)

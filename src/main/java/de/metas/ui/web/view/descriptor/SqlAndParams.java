@@ -7,10 +7,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

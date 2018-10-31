@@ -1,13 +1,14 @@
 package de.metas.ui.web.material.cockpit;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -47,7 +48,6 @@ public final class MaterialCockpitUtil
 
 	public static final String SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS = "de.metas.ui.web.material.cockpit.DisplayPerPlantDetailRows";
 
-
 	public static final String DONT_FILTER = "DONT_FILTER";
 	public static final String NON_EMPTY = "NON_EMPTY";
 
@@ -60,8 +60,15 @@ public final class MaterialCockpitUtil
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final IDimensionspecDAO dimensionspecDAO = Services.get(IDimensionspecDAO.class);
 
-		final String dimSpecName = sysConfigBL.getValue(SYSCONFIG_DIM_SPEC_INTERNAL_NAME, DEFAULT_DIM_SPEC_INTERNAL_NAME, Env.getAD_Client_ID(), Env.getAD_Org_ID(Env.getCtx()));
-		final DimensionSpec dimensionSpec = dimensionspecDAO.retrieveForInternalNameOrNull(dimSpecName);
+		final String dimSpecName = sysConfigBL.getValue(
+				SYSCONFIG_DIM_SPEC_INTERNAL_NAME,
+				DEFAULT_DIM_SPEC_INTERNAL_NAME,
+				Env.getAD_Client_ID(),
+				Env.getAD_Org_ID(Env.getCtx()));
+
+		final DimensionSpec dimensionSpec = dimensionspecDAO.retrieveForInternalNameOrNull(Util.firstNotEmptyTrimmed(
+				dimSpecName,
+				DEFAULT_DIM_SPEC_INTERNAL_NAME));
 
 		return Check.assumeNotNull(dimensionSpec, "Unable to load DIM_Dimension_Spec record with InternalName={}", dimSpecName);
 	}

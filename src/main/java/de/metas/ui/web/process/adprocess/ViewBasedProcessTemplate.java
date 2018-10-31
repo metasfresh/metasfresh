@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,6 +23,7 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
