@@ -72,7 +72,7 @@ public interface I_AD_UserQuery
 	 * Set Register.
 	 * Tab within a Window
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -82,7 +82,7 @@ public interface I_AD_UserQuery
 	 * Get Register.
 	 * Tab within a Window
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -101,7 +101,7 @@ public interface I_AD_UserQuery
 	 * Set DB-Tabelle.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -111,7 +111,7 @@ public interface I_AD_UserQuery
 	 * Get DB-Tabelle.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -282,6 +282,52 @@ public interface I_AD_UserQuery
     public static final org.adempiere.model.ModelColumn<I_AD_UserQuery, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_UserQuery, Object>(I_AD_UserQuery.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Mandatory Parameters.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsManadatoryParams (boolean IsManadatoryParams);
+
+	/**
+	 * Get Mandatory Parameters.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isManadatoryParams();
+
+    /** Column definition for IsManadatoryParams */
+    public static final org.adempiere.model.ModelColumn<I_AD_UserQuery, Object> COLUMN_IsManadatoryParams = new org.adempiere.model.ModelColumn<I_AD_UserQuery, Object>(I_AD_UserQuery.class, "IsManadatoryParams", null);
+    /** Column name IsManadatoryParams */
+    public static final String COLUMNNAME_IsManadatoryParams = "IsManadatoryParams";
+
+	/**
+	 * Set Display All Parameters.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsShowAllParams (boolean IsShowAllParams);
+
+	/**
+	 * Get Display All Parameters.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isShowAllParams();
+
+    /** Column definition for IsShowAllParams */
+    public static final org.adempiere.model.ModelColumn<I_AD_UserQuery, Object> COLUMN_IsShowAllParams = new org.adempiere.model.ModelColumn<I_AD_UserQuery, Object>(I_AD_UserQuery.class, "IsShowAllParams", null);
+    /** Column name IsShowAllParams */
+    public static final String COLUMNNAME_IsShowAllParams = "IsShowAllParams";
 
 	/**
 	 * Set Name.

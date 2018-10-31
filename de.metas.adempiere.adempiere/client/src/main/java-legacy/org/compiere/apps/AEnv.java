@@ -53,8 +53,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.db.CConnection;
 import org.compiere.grid.ed.Calculator;
@@ -66,7 +64,6 @@ import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CMenuItem;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -74,8 +71,11 @@ import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
+import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Windows Application Environment and utilities
@@ -758,10 +758,6 @@ public final class AEnv
 				{
 					s_workflow = Boolean.TRUE;
 				}
-				else
-				{
-					log.info(s_workflow.toString());
-				}
 			}
 			// Get Window
 			if (s_workflow.booleanValue())
@@ -772,8 +768,6 @@ public final class AEnv
 				{
 					s_workflow_Window_ID = 297;	// fallback HARDCODED
 				}
-				// s_workflow = Boolean.FALSE;
-				log.info(s_workflow + ", Window=" + s_workflow_Window_ID);
 			}
 		}
 		return s_workflow.booleanValue();
@@ -847,7 +841,7 @@ public final class AEnv
 		try
 		{
 			s_serverTries++;
-			log.info("try #" + s_serverTries);
+			log.debug("try #{}", s_serverTries);
 			ok = CConnection.get().isAppsServerOK(true);
 			if (ok)
 			{
@@ -890,8 +884,6 @@ public final class AEnv
 	 */
 	public static GridWindowVO getMWindowVO(final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID)
 	{
-		log.info("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
-
 		//
 		// Check cache (if any)
 		GridWindowVO mWindowVO = null;
@@ -901,7 +893,6 @@ public final class AEnv
 			if (mWindowVO != null)
 			{
 				mWindowVO = mWindowVO.clone(WindowNo);
-				log.info("Cached=" + mWindowVO);
 			}
 		}
 
@@ -909,7 +900,6 @@ public final class AEnv
 		// Create Window Model on Client
 		if (mWindowVO == null)
 		{
-			log.info("create local");
 			mWindowVO = GridWindowVO.builder()
 					.ctx(Env.getCtx())
 					.windowNo(WindowNo)

@@ -34,7 +34,6 @@ import java.io.File;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.MSetup;
@@ -46,6 +45,7 @@ import org.compiere.util.KeyNamePair;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * 	Process to create a new client (tenant)

@@ -1,5 +1,7 @@
 package de.metas.order.rest.model;
 
+import lombok.NonNull;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -10,12 +12,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.metas.attachments.AttachmentEntryType;
-import de.metas.order.rest.model.JsonSalesOrder;
-import de.metas.order.rest.model.JsonSalesOrderAttachment;
-import de.metas.order.rest.model.JsonSalesOrderCreateRequest;
-import de.metas.order.rest.model.JsonSalesOrderLine;
-import lombok.NonNull;
+import de.metas.attachments.AttachmentEntry;
 
 /*
  * #%L
@@ -27,12 +24,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -88,9 +85,9 @@ public class JsonSerializationDeserializationTest
 	{
 		testSerializeDeserialize(JsonSalesOrderAttachment.builder()
 				.id(444)
-				.type(AttachmentEntryType.Data)
+				.type(AttachmentEntry.Type.Data)
 				.filename("file.pdf")
-				.contentType("application/pdf")
+				.mimeType("application/pdf")
 				.build());
 	}
 }

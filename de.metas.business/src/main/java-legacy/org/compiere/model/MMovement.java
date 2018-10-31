@@ -20,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,9 +29,11 @@ import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -39,6 +42,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.util.Services;
 
 /**
  *	Inventory Movement Model
@@ -368,6 +372,7 @@ public class MMovement extends X_M_Movement implements IDocument
 			return IDocument.STATUS_Invalid;
 
 		//	Outstanding (not processed) Incoming Confirmations ?
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 		MMovementConfirm[] confirmations = getConfirmations(true);
 		for (MMovementConfirm confirmation : confirmations)
 		{
@@ -411,9 +416,10 @@ public class MMovement extends X_M_Movement implements IDocument
 					{
 						MMovementLineMA ma = ma2;
 						//
-						MLocator locator = new MLocator (getCtx(), line.getM_Locator_ID(), get_TrxName());
+						final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_Locator_ID());
 						//Update Storage
-						if (!storageBL.add(getCtx(),locator.getM_Warehouse_ID(),
+						if (!storageBL.add(getCtx(),
+								warehouseId.getRepoId(),
 								line.getM_Locator_ID(),
 								line.getM_Product_ID(),
 								ma.getM_AttributeSetInstance_ID(), 0,
@@ -430,7 +436,9 @@ public class MMovement extends X_M_Movement implements IDocument
 							M_AttributeSetInstanceTo_ID = ma.getM_AttributeSetInstance_ID();
 						}
 						//Update Storage
-						if (!storageBL.add(getCtx(),locator.getM_Warehouse_ID(),
+						final WarehouseId warehouseToId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID());
+						if (!storageBL.add(getCtx(),
+								warehouseToId.getRepoId(),
 								line.getM_LocatorTo_ID(),
 								line.getM_Product_ID(),
 								M_AttributeSetInstanceTo_ID, 0,
@@ -484,9 +492,10 @@ public class MMovement extends X_M_Movement implements IDocument
 				//	Fallback - We have ASI
 				if (trxFrom == null)
 				{
-					MLocator locator = new MLocator (getCtx(), line.getM_Locator_ID(), get_TrxName());
 					//Update Storage
-					if (!storageBL.add(getCtx(),locator.getM_Warehouse_ID(),
+					final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_Locator_ID());
+					if (!storageBL.add(getCtx(),
+							warehouseId.getRepoId(),
 							line.getM_Locator_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(), 0,
@@ -497,7 +506,9 @@ public class MMovement extends X_M_Movement implements IDocument
 					}
 
 					//Update Storage
-					if (!storageBL.add(getCtx(),locator.getM_Warehouse_ID(),
+					final WarehouseId warehouseToId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID());
+					if (!storageBL.add(getCtx(),
+							warehouseToId.getRepoId(),
 							line.getM_LocatorTo_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstanceTo_ID(), 0,
@@ -825,6 +836,12 @@ public class MMovement extends X_M_Movement implements IDocument
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
 	}	//	getSummary
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getMovementDate());
+	}
 
 	/**
 	 * 	Get Process Message

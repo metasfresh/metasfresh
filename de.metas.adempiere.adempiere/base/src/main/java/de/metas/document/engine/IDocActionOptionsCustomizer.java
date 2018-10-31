@@ -40,5 +40,5 @@ public interface IDocActionOptionsCustomizer
 	 */
 	String getAppliesToTableName();
 
-	void customizeValidActions(IDocActionOptionsContext optionsCtx);
+	void customizeValidActions(DocActionOptionsContext optionsCtx);
 }

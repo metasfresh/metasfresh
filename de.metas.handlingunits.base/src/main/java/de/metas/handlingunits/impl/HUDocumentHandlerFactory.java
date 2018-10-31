@@ -27,10 +27,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
+import de.metas.util.Check;
 
 public class HUDocumentHandlerFactory implements IHUDocumentHandlerFactory
 {

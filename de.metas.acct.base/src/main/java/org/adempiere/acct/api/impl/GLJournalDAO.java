@@ -36,12 +36,12 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 
 import de.metas.document.engine.IDocument;
+import de.metas.util.Services;
 
 public class GLJournalDAO implements IGLJournalDAO
 {

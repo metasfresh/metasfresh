@@ -35,16 +35,14 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -54,6 +52,7 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.lang.SOTrx;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_PP_Order;
@@ -67,8 +66,13 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceL
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Takes {@link IQualityInvoiceLineGroup}s and creates {@link I_C_Invoice_Candidate}s.
@@ -428,7 +432,7 @@ public class InvoiceCandidateWriter
 		ic.setPriceEntered(pricingResult.getPriceStd());
 		ic.setPriceActual(pricingResult.getPriceStd());
 		ic.setIsTaxIncluded(pricingResult.isTaxIncluded()); // 08457: Configure new IC from pricing result
-		ic.setDiscount(pricingResult.getDiscount().getValueAsBigDecimal());
+		ic.setDiscount(pricingResult.getDiscount().getValue());
 		ic.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
 		// InvoiceRule
@@ -581,14 +585,17 @@ public class InvoiceCandidateWriter
 	/**
 	 *
 	 * @param invoiceCandidate
+	 * @task 07442
 	 */
 	@VisibleForTesting
 	protected void setC_Activity_ID(final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		// 07442 activity
-		final IContextAware context = getContext();
-		final I_C_Activity activity = productAcctDAO.retrieveActivityForAcct(context, invoiceCandidate.getAD_Org(), invoiceCandidate.getM_Product());
-		invoiceCandidate.setC_Activity(activity);
+		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
+				ClientId.ofRepoId(invoiceCandidate.getAD_Client_ID()),
+				OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID()),
+				ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()));
+
+		invoiceCandidate.setC_Activity_ID(ActivityId.toRepoId(activityId));
 	}
 
 	/**
@@ -604,20 +611,17 @@ public class InvoiceCandidateWriter
 
 		final Properties ctx = contextProvider.getCtx();
 		final int taxCategoryId = pricingResult.getC_TaxCategory_ID();
-		final I_M_Warehouse warehouse = null; // warehouse: N/A
-		final boolean isSOTrx = false;
 
 		final int taxID = taxBL.getTax(
 				ctx,
 				ic,
 				taxCategoryId,
 				ic.getM_Product_ID(),
-				date, // bill date
 				date, // ship date
-				ic.getAD_Org_ID(),
-				warehouse,
+				OrgId.ofRepoId(ic.getAD_Org_ID()),
+				(WarehouseId)null,
 				ic.getBill_Location_ID(), // shipPartnerLocation TODO
-				isSOTrx);
+				SOTrx.PURCHASE.toBoolean());
 		ic.setC_Tax_ID(taxID);
 	}
 }

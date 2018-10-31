@@ -28,10 +28,11 @@ import java.util.Properties;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IGLJournalBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_GL_Journal;
+
+import de.metas.util.Services;
 
 public class GLJournalBL implements IGLJournalBL
 {

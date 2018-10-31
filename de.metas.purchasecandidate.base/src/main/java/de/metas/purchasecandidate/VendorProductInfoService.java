@@ -8,8 +8,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
@@ -21,7 +19,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
@@ -30,6 +27,10 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

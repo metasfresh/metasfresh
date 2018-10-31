@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.appdict.validation.spi.IADValidator;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 public interface IADValidatorRegistryBL extends ISingletonService
 {

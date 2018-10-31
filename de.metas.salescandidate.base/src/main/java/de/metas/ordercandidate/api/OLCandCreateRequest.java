@@ -5,9 +5,16 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
+import org.adempiere.service.OrgId;
+import org.adempiere.uom.UomId;
 
+import de.metas.document.DocTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,7 +45,12 @@ import lombok.Value;
 public class OLCandCreateRequest
 {
 	private String externalId;
-	
+
+	private String dataSourceInternalName;
+	private String dataDestInternalName;
+
+	private OrgId orgId;
+
 	private OLCandBPartnerInfo bpartner;
 	private OLCandBPartnerInfo billBPartner;
 	private OLCandBPartnerInfo dropShipBPartner;
@@ -47,56 +59,71 @@ public class OLCandCreateRequest
 	private String poReference;
 
 	private LocalDate dateRequired;
+
+	private LocalDate dateInvoiced;
+	private DocTypeId docTypeInvoiceId;
+
 	private int flatrateConditionsId;
 
 	private ProductId productId;
 	private String productDescription;
 	private BigDecimal qty;
-	private int uomId;
+	private UomId uomId;
 	private int huPIItemProductId;
 
-	private int pricingSystemId;
+	private PricingSystemId pricingSystemId;
 	private BigDecimal price;
-	private BigDecimal discount;
-	// private String currencyCode; // shall come from pricingSystem/priceList
-
-	private String adInputDataSourceInternalName;
+	private CurrencyId currencyId; // mandatory if price is provided
+	private Percent discount;
 
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalId,
+			final OrgId orgId,
+			@NonNull final  String dataSourceInternalName,
+			@Nullable final  String dataDestInternalName,
 			@NonNull final OLCandBPartnerInfo bpartner,
 			final OLCandBPartnerInfo billBPartner,
 			final OLCandBPartnerInfo dropShipBPartner,
 			final OLCandBPartnerInfo handOverBPartner,
 			final String poReference,
-			@NonNull final LocalDate dateRequired,
+			@Nullable final LocalDate dateRequired,
+			@Nullable final LocalDate dateInvoiced,
+			@Nullable final DocTypeId docTypeInvoiceId,
 			final int flatrateConditionsId,
 			@NonNull final ProductId productId,
 			final String productDescription,
 			@NonNull final BigDecimal qty,
-			final int uomId,
+			@NonNull final UomId uomId,
 			final int huPIItemProductId,
-			final int pricingSystemId,
+			@Nullable final PricingSystemId pricingSystemId,
 			final BigDecimal price,
-			final BigDecimal discount,
+			final CurrencyId currencyId,
+			final Percent discount,
 			//
 			final String adInputDataSourceInternalName)
 	{
-		Check.assume(uomId > 0, "uomId is set");
-		// Check.assume(pricingSystemId > 0, "pricingSystemId is set");
 		Check.assume(qty.signum() > 0, "qty > 0");
-		Check.assume(price == null || price.signum() >= 0, "price >= 0");
-		Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
+		// Check.assume(price == null || price.signum() >= 0, "price >= 0");
+		// Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
 		Check.assumeNotEmpty(adInputDataSourceInternalName, "adInputDataSourceInternalName is not empty");
 
 		this.externalId = externalId;
+		this.orgId = orgId;
+
+		this.dataDestInternalName = dataDestInternalName;
+		this.dataSourceInternalName = dataSourceInternalName;
+
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;
 		this.handOverBPartner = handOverBPartner;
 		this.poReference = poReference;
 		this.dateRequired = dateRequired;
+
+		this.dateInvoiced = dateInvoiced;
+		this.docTypeInvoiceId = docTypeInvoiceId;
+
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.productId = productId;
 		this.productDescription = productDescription;
@@ -105,9 +132,7 @@ public class OLCandCreateRequest
 		this.huPIItemProductId = huPIItemProductId;
 		this.pricingSystemId = pricingSystemId;
 		this.price = price;
+		this.currencyId = currencyId;
 		this.discount = discount;
-
-		this.adInputDataSourceInternalName = adInputDataSourceInternalName;
 	}
-
 }

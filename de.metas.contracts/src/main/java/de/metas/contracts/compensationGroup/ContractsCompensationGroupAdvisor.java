@@ -1,20 +1,20 @@
 package de.metas.contracts.compensationGroup;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.contracts.model.I_C_CompensationGroup_SchemaLine;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
+import de.metas.util.Check;
+import de.metas.order.compensationGroup.GroupMatcher;
 import de.metas.order.compensationGroup.GroupMatcherFactory;
 import de.metas.order.compensationGroup.OrderGroupRepositoryAdvisor;
 import lombok.ToString;
@@ -78,7 +78,7 @@ public class ContractsCompensationGroupAdvisor implements OrderGroupRepositoryAd
 	}
 
 	@Override
-	public Predicate<Group> createPredicate(
+	public GroupMatcher createPredicate(
 			final de.metas.order.model.I_C_CompensationGroup_SchemaLine schemaLine,
 			final List<de.metas.order.model.I_C_CompensationGroup_SchemaLine> allSchemaLines)
 	{
@@ -88,7 +88,7 @@ public class ContractsCompensationGroupAdvisor implements OrderGroupRepositoryAd
 	}
 
 	@ToString
-	private static final class FlatrateConditionsGroupMatcher implements Predicate<Group>
+	private static final class FlatrateConditionsGroupMatcher implements GroupMatcher
 	{
 		private final int flatrateConditionsId;
 
@@ -99,7 +99,7 @@ public class ContractsCompensationGroupAdvisor implements OrderGroupRepositoryAd
 		}
 
 		@Override
-		public boolean test(final Group group)
+		public boolean isMatching(final Group group)
 		{
 			return flatrateConditionsId == group.getFlatrateConditionsId();
 		}

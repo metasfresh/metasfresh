@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.MAcctSchema;
@@ -33,6 +32,7 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingMethod;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.Services;
 
 /**
  * Post MatchPO Documents.

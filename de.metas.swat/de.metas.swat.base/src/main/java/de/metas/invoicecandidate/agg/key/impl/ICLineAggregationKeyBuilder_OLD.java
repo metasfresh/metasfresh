@@ -29,9 +29,6 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
@@ -50,6 +47,9 @@ import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 
 /**
  * Default LineAggregationKey builder for {@link I_C_Invoice_Candidate}s.

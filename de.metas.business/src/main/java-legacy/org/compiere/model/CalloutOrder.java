@@ -27,10 +27,10 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -45,8 +45,8 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.lang.Percent;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
@@ -55,6 +55,9 @@ import de.metas.order.PriceAndDiscount;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -82,10 +85,13 @@ public class CalloutOrder extends CalloutEngine
 	public String docType(final ICalloutField calloutField)
 	{
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+
+		final I_C_Order oldOrder = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
+
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(order.getC_DocTypeTarget())
-				.setOldDocType_ID(order.getC_DocType_ID())
+				.setOldDocType_ID(oldOrder.getC_DocTypeTarget_ID())
 				.setOldDocumentNo(order.getDocumentNo())
 				.setDocumentModel(order)
 				.buildOrNull();
@@ -109,7 +115,7 @@ public class CalloutOrder extends CalloutEngine
 		// Delivery Rule
 		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
-			order.setDeliveryRule(X_C_Order.DELIVERYRULE_Force);
+			order.setDeliveryRule(DeliveryRule.FORCE.getCode());
 		}
 		// NOTE: Don't override default configured DeliveryRule (see task 09250)
 		// else
@@ -1142,9 +1148,10 @@ public class CalloutOrder extends CalloutEngine
 			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
 			final I_C_UOM uomTo = orderLine.getC_UOM();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
-			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product_ID());
+			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
 
-			final BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
+			final BigDecimal QtyEntered1 = uomConversionBL.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM={} {}; QtyEntered={}->{}", uomTo, QtyEntered, QtyEntered1);
@@ -1152,7 +1159,7 @@ public class CalloutOrder extends CalloutEngine
 				orderLine.setQtyEntered(QtyEntered);
 			}
 
-			BigDecimal QtyOrdered = uomConverter.convertQty(QtyEntered1, uomFrom, uomTo);
+			BigDecimal QtyOrdered = uomConversionBL.convertQty(uomConversionCtx, QtyEntered1, uomFrom, uomTo);
 			if (QtyOrdered == null)
 			{
 				QtyOrdered = QtyEntered;

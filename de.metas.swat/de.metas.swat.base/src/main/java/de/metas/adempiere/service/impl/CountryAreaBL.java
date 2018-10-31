@@ -10,12 +10,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,26 +32,26 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.Query;
 
 import de.metas.adempiere.model.I_C_CountryArea;
 import de.metas.adempiere.model.I_C_CountryArea_Assign;
 import de.metas.adempiere.service.ICountryAreaBL;
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class CountryAreaBL implements ICountryAreaBL
 {
 	@Override
-	public boolean isMemberOf(Properties ctx, String countryAreaKey, String countryCode, Timestamp date)
+	public boolean isMemberOf(Properties ctx,
+			@NonNull final String countryAreaKey,
+			@NonNull final String countryCode,
+			@NonNull final Timestamp date)
 	{
 		final String trxName = ITrx.TRXNAME_None;
-
-		Check.assume(date != null, "date not null");
 
 		final I_C_Country country = retrieveCountryByCode(ctx, countryCode, trxName);
 		if (country == null)
@@ -116,7 +116,7 @@ public class CountryAreaBL implements ICountryAreaBL
 				.create()
 				.list(I_C_CountryArea_Assign.class);
 	}
-	
+
 	@Override
 	public List<I_C_CountryArea_Assign> retrieveCountryAreaAssignments(I_C_CountryArea countryArea, int countryId)
 	{
@@ -124,7 +124,7 @@ public class CountryAreaBL implements ICountryAreaBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(countryArea);
 		final int countryAreaId = countryArea.getC_CountryArea_ID();
 
-		final List<I_C_CountryArea_Assign> result = new ArrayList<I_C_CountryArea_Assign>();
+		final List<I_C_CountryArea_Assign> result = new ArrayList<>();
 		for (I_C_CountryArea_Assign assignment : retrieveCountryAreaAssignments(ctx, countryAreaId, trxName))
 		{
 			if (assignment.getC_Country_ID() == countryId)
@@ -132,7 +132,7 @@ public class CountryAreaBL implements ICountryAreaBL
 				result.add(assignment);
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -165,9 +165,9 @@ public class CountryAreaBL implements ICountryAreaBL
 			}
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param newEntry
 	 * @param oldEntry
 	 * @return true if <code>newEntry</code>'s and <code>oldEntry</code>'s date/time intervals are overlapping

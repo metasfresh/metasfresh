@@ -1,6 +1,7 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.config;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
 import lombok.Value;
 
@@ -27,7 +28,7 @@ import lombok.Value;
  */
 
 @Value
-public class MSV3ClientConfigId
+public class MSV3ClientConfigId implements RepoIdAware
 {
 	int repoId;
 

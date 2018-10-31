@@ -6,8 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -19,6 +17,8 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -20,8 +20,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.acct.Fact.FactLineBuilder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
@@ -33,6 +31,8 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Post Bank Statement Documents.

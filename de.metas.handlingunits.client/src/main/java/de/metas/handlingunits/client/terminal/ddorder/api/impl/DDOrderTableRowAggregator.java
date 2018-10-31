@@ -30,8 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 
@@ -40,6 +38,8 @@ import de.metas.handlingunits.client.terminal.ddorder.model.DDOrderTableRow;
 import de.metas.handlingunits.client.terminal.ddorder.model.IDDOrderTableRow;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
 import de.metas.handlingunits.model.I_DD_OrderLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Aggregates {@link I_DD_OrderLine}s and creates {@link IDDOrderTableRow}s.

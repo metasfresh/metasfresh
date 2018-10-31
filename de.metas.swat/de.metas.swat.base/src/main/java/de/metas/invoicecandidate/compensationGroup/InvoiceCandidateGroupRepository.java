@@ -7,9 +7,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.UomId;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
@@ -17,7 +14,6 @@ import org.springframework.stereotype.Component;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.compensationGroup.Group;
@@ -32,6 +28,11 @@ import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

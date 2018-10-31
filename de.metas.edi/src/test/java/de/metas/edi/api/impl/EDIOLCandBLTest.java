@@ -3,7 +3,6 @@ package de.metas.edi.api.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,6 +11,7 @@ import org.junit.Test;
 import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.edi.model.I_AD_InputDataSource;
 import de.metas.edi.model.I_C_OLCand;
+import de.metas.util.Services;
 
 /*
  * #%L

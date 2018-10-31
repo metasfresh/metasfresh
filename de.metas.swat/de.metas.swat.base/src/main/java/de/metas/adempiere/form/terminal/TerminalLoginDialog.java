@@ -29,15 +29,16 @@ import java.util.Properties;
 
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
+import de.metas.adempiere.form.terminal.ITerminalTextField.KeyboardDisplayMode;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
-import de.metas.hash.HashableString;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
 
 public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 {
@@ -151,6 +152,7 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 		passwordLabel = getTerminalFactory().createLabel(ITerminalLabel.LABEL_PASSWORD);
 		passwordField = getTerminalFactory().createTerminalTextField(ITerminalLabel.LABEL_PASSWORD, ITerminalTextField.TYPE_Password);
 		passwordField.setAction(ITerminalTextField.ACTION_Nothing);
+		passwordField.setKeyboardDisplayMode(KeyboardDisplayMode.MANUAL);
 		passwordField.addListener(new PasswordListener());
 
 		confirmPanel = getTerminalFactory().createConfirmPanel(false, "");

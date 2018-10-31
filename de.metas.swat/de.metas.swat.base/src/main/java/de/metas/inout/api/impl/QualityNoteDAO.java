@@ -7,12 +7,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.util.Services;
 
 /*
  * #%L

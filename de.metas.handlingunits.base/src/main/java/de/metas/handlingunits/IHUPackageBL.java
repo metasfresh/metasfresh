@@ -1,37 +1,14 @@
 package de.metas.handlingunits;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Shipper;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.ISingletonService;
 
 public interface IHUPackageBL extends ISingletonService
 {
@@ -51,7 +28,7 @@ public interface IHUPackageBL extends ISingletonService
 	 * @return
 	 * @throws HUException if <code>hu</code> or <code>shipper</code> is <code>null</code> or if <code>hu</code> has not both a <code>C_BPartner_ID</code> and a <code>C_BPartner_Location_ID</code>.
 	 */
-	de.metas.shipping.interfaces.I_M_Package createM_Package(I_M_HU hu, I_M_Shipper shipper);
+	de.metas.shipping.interfaces.I_M_Package createM_Package(I_M_HU hu, ShipperId shipperId);
 
 	/**
 	 * Update all {@link I_M_Package}s and {@link I_M_ShippingPackage}s which are linked to given <code>hu</code>.

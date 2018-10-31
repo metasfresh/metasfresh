@@ -24,12 +24,12 @@ package de.metas.edi.spi.impl;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.edi.model.I_C_Invoice;
+import de.metas.util.Services;
 
 
 

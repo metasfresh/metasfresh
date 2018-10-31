@@ -1,26 +1,36 @@
 package de.metas.marketing.base;
 
+import static de.metas.i18n.Language.AD_Language_en_AU;
+import static de.metas.i18n.Language.AD_Language_en_GB;
+import static de.metas.i18n.Language.AD_Language_en_US;
+import static de.metas.i18n.Language.asLanguage;
+import static de.metas.i18n.Language.asLanguageString;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.i18n.Language;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Platform;
 import de.metas.marketing.base.model.PlatformId;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,6 +56,10 @@ import de.metas.marketing.base.model.PlatformId;
 
 public class ContactPersonServiceTest
 {
+	private static final Language LANGUAGE_en_GB = asLanguage(AD_Language_en_GB);
+	private static final Language LANGUAGE_en_AU = asLanguage(AD_Language_en_AU);
+	private static final Language LANGUAGE_en_US = asLanguage(AD_Language_en_US);
+
 	private UserRepository userRepository;
 	private ContactPersonService contactPersonService;
 
@@ -70,9 +84,9 @@ public class ContactPersonServiceTest
 
 		final String oldEmailAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
 
-		createContactPerson(user1, oldEmailAddress, platformId);
+		createContactPersonRecord(user1, oldEmailAddress, platformId);
 
-		contactPersonService.updateContactPersonsEmailFromUser(user1, oldEmailAddress);
+		contactPersonService.updateContactPersonsEmailFromUser(user1, oldEmailAddress, LANGUAGE_en_AU);
 
 		final List<I_MKTG_ContactPerson> resultContactPersons = retrieveContactPersons();
 
@@ -92,10 +106,10 @@ public class ContactPersonServiceTest
 
 		final String contactPersonAddress = "Anothertestmail@Anothertestmail.Anothertestmail";
 
-		createContactPerson(user1, contactPersonAddress, platformId);
+		createContactPersonRecord(user1, contactPersonAddress, platformId);
 
 		final String oldUserAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
-		contactPersonService.updateContactPersonsEmailFromUser(user1, oldUserAddress);
+		contactPersonService.updateContactPersonsEmailFromUser(user1, oldUserAddress, LANGUAGE_en_AU);
 
 		final List<I_MKTG_ContactPerson> resultContactPersons = retrieveContactPersons();
 
@@ -115,10 +129,10 @@ public class ContactPersonServiceTest
 
 		final String contactPersonAddress = "";
 
-		createContactPerson(user1, contactPersonAddress, platformId);
+		createContactPersonRecord(user1, contactPersonAddress, platformId);
 
 		final String oldUserAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
-		contactPersonService.updateContactPersonsEmailFromUser(user1, oldUserAddress);
+		contactPersonService.updateContactPersonsEmailFromUser(user1, oldUserAddress, LANGUAGE_en_AU);
 
 		final List<I_MKTG_ContactPerson> resultContactPersons = retrieveContactPersons();
 
@@ -137,10 +151,10 @@ public class ContactPersonServiceTest
 		final PlatformId platformId = createPlatformId();
 
 		final String contactPersonAddress = null;
-		createContactPerson(user1, contactPersonAddress, platformId);
+		createContactPersonRecord(user1, contactPersonAddress, platformId);
 
 		final String oldUserAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
-		contactPersonService.updateContactPersonsEmailFromUser(user1, oldUserAddress);
+		contactPersonService.updateContactPersonsEmailFromUser(user1, oldUserAddress, LANGUAGE_en_AU);
 
 		final List<I_MKTG_ContactPerson> resultContactPersons = retrieveContactPersons();
 
@@ -150,27 +164,73 @@ public class ContactPersonServiceTest
 		assertSame(newUserAddress, resultAddress);
 	}
 
-	private User createUser(final String name, final String mail)
+	private User createUser(
+			@NonNull final String name,
+			@Nullable final String mail)
+	{
+		return createUser(name, mail, LANGUAGE_en_AU);
+	}
+
+	private void createContactPersonRecord(
+			@NonNull final User user,
+			@Nullable final String emailAddress,
+			@NonNull final PlatformId platformId)
+	{
+		createContactPersonRecord(user, emailAddress, LANGUAGE_en_AU, platformId);
+	}
+
+	@Test
+	public void updateContactPersonsEmailFromUser_SameOldAddressAndLanguage()
+	{
+		final String newUserAddress = "Newtestmail@Newtestmail.Newtestmail";
+		final Language newLanguage = LANGUAGE_en_US;
+
+		final User user1 = createUser("name1", newUserAddress, newLanguage);
+
+		final PlatformId platformId = createPlatformId();
+
+		final String oldEmailAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
+		final Language oldLanguage = LANGUAGE_en_GB;
+
+		createContactPersonRecord(user1, oldEmailAddress, oldLanguage, platformId);
+
+		contactPersonService.updateContactPersonsEmailFromUser(user1, oldEmailAddress, oldLanguage);
+
+		final List<I_MKTG_ContactPerson> resultRecords = retrieveContactPersons();
+
+		assertThat(resultRecords).hasSize(1);
+		assertThat(resultRecords.get(0).getEMail()).isEqualTo(newUserAddress);
+		assertThat(resultRecords.get(0).getAD_Language()).isEqualTo(newLanguage.getAD_Language());
+	}
+
+	private User createUser(
+			@NonNull final String name,
+			@Nullable final String mail,
+			@Nullable final Language language)
 	{
 		final User user = User.builder()
 				.name(name)
 				.emailAddress(mail)
+				.language(language)
+				.userLanguage(language)
 				.build();
 		return userRepository.save(user);
-
 	}
 
-	private void createContactPerson(final User user, final String emailAddress, final PlatformId platformId)
+	private void createContactPersonRecord(
+			@NonNull final User user,
+			@Nullable final String emailAddress,
+			@Nullable final Language language,
+			@NonNull final PlatformId platformId)
 	{
-
 		final I_MKTG_ContactPerson contactPerson = newInstance(I_MKTG_ContactPerson.class);
 
 		contactPerson.setAD_User_ID(user.getId().getRepoId());
 		contactPerson.setEMail(emailAddress);
+		contactPerson.setAD_Language(asLanguageString(language));
 		contactPerson.setMKTG_Platform_ID(platformId.getRepoId());
 
 		save(contactPerson);
-
 	}
 
 	private PlatformId createPlatformId()

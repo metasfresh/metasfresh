@@ -20,11 +20,11 @@ import org.adempiere.acct.api.impl.TaxDeclarationLinesBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_TaxDeclaration;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Create Tax Declaration

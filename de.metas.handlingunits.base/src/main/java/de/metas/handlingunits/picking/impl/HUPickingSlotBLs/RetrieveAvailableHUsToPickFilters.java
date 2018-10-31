@@ -2,19 +2,20 @@ package de.metas.handlingunits.picking.impl.HUPickingSlotBLs;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -51,15 +52,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class RetrieveAvailableHUsToPickFilters
 {
-
-	private static final Predicate<I_M_HU> NOT_PICKED_NOT_SOURCE_HU = hu -> {
-
-		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-		final SourceHUsService sourceHuService = SourceHUsService.get();
-
-		return !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !sourceHuService.isSourceHu(hu.getM_HU_ID());
-	};
-
 	/**
 	 * Excludes HU that are already picked or already selected as fine picking source HUs.
 	 */
@@ -83,11 +75,21 @@ public class RetrieveAvailableHUsToPickFilters
 		final TopLevelHusQuery topLevelHusRequest = TopLevelHusQuery.builder()
 				.hus(vhus)
 				.includeAll(false)
-				.filter(NOT_PICKED_NOT_SOURCE_HU) // exclude HUs that are already picked or flagged as source HUs
+				.filter(RetrieveAvailableHUsToPickFilters::isNotPickedAndNotSourceHU) // exclude HUs that are already picked or flagged as source HUs
 				.build();
 		final List<I_M_HU> husTopLevel = handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
 		return husTopLevel;
 	}
+
+	private static boolean isNotPickedAndNotSourceHU(final I_M_HU hu)
+	{
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+
+		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
+		final SourceHUsService sourceHuService = SourceHUsService.get();
+
+		return !pickingCandidatesRepo.isHuIdPicked(huId) && !sourceHuService.isSourceHu(huId);
+	};
 
 	/**
 	 * We still need to iterate the HUs trees from the top level HUs.
@@ -109,12 +111,15 @@ public class RetrieveAvailableHUsToPickFilters
 						@Override
 						public Result beforeHU(IMutable<I_M_HU> hu)
 						{
-							if (!NOT_PICKED_NOT_SOURCE_HU.test(hu.getValue()))
+							if (!isNotPickedAndNotSourceHU(hu.getValue()))
 							{
 								return Result.SKIP_DOWNSTREAM;
 							}
-							result.add(hu.getValue());
-							return Result.CONTINUE;
+							else
+							{
+								result.add(hu.getValue());
+								return Result.CONTINUE;
+							}
 						}
 					})
 					.iterate(huTopLevel);

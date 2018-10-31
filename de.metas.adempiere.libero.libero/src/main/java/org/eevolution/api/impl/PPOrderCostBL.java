@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Product;
@@ -28,6 +27,7 @@ import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 public class PPOrderCostBL implements IPPOrderCostBL
 {

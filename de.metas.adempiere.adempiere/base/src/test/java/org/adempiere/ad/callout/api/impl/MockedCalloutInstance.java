@@ -28,8 +28,9 @@ import java.util.UUID;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
-import org.adempiere.util.Check;
 import org.junit.Ignore;
+
+import de.metas.util.Check;
 
 @Ignore
 public class MockedCalloutInstance implements ICalloutInstance

@@ -2,9 +2,8 @@ package de.metas.hostkey.api;
 
 import java.util.function.Supplier;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.hostkey.spi.IHostKeyStorage;
+import de.metas.util.ISingletonService;
 
 /**
  * Service used for manipulating HostKey

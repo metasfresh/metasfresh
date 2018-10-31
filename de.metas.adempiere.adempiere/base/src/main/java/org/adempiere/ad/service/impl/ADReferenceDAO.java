@@ -12,8 +12,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.util.Env;
@@ -23,6 +21,8 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ForwardingTranslatableString;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ADReferenceDAO implements IADReferenceDAO
 {

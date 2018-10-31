@@ -1,8 +1,18 @@
 package de.metas.inoutcandidate.api;
 
-import org.adempiere.util.Check;
+import java.util.Collection;
 
-import de.metas.lang.RepoIdAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -30,16 +40,48 @@ import lombok.Value;
 @Value
 public class ShipmentScheduleId implements RepoIdAware
 {
-
-	public static ShipmentScheduleId offRepoId(final int repoId)
+	@JsonCreator
+	public static ShipmentScheduleId ofRepoId(final int repoId)
 	{
 		return new ShipmentScheduleId(repoId);
 	}
 
+	public static ShipmentScheduleId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static ImmutableSet<Integer> toIntSet(@NonNull final Collection<ShipmentScheduleId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return ids.stream().map(ShipmentScheduleId::getRepoId).collect(ImmutableSet.toImmutableSet());
+	}
+
 	int repoId;
 
-	private ShipmentScheduleId(final int repoId)
+	private ShipmentScheduleId(final int shipmentScheduleRepoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(shipmentScheduleRepoId, "shipmentScheduleRepoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static int toRepoId(final ShipmentScheduleId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	public TableRecordReference toTableRecordReference()
+	{
+		return TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, getRepoId());
 	}
 }

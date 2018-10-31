@@ -7,8 +7,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
@@ -23,6 +21,8 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

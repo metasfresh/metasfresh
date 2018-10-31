@@ -18,18 +18,18 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MUOM;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.Env;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 
 /**
@@ -52,6 +52,7 @@ public class ProductUOMConvert extends JavaProcess
 	/**
 	 * 	Prepare
 	 */
+	@Override
 	protected void prepare ()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -78,6 +79,7 @@ public class ProductUOMConvert extends JavaProcess
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		if (p_M_Product_ID == 0 || p_M_Product_To_ID == 0
@@ -85,12 +87,12 @@ public class ProductUOMConvert extends JavaProcess
 			|| p_Qty == null || Env.ZERO.compareTo(p_Qty) == 0)
 			throw new AdempiereUserError("Invalid Parameter");
 		//
-		MProduct product = MProduct.get(getCtx(), p_M_Product_ID);
-		MProduct productTo = MProduct.get(getCtx(), p_M_Product_To_ID);
-		log.info("Product=" + product + ", ProductTo=" + productTo 
+		final ProductId productId = ProductId.ofRepoId(p_M_Product_ID);
+		final MProduct productTo = MProduct.get(getCtx(), p_M_Product_To_ID);
+		log.info("Product=" + productId + ", ProductTo=" + productTo 
 			+ ", M_Locator_ID=" + p_M_Locator_ID + ", Qty=" + p_Qty);
 		
-		final List<I_C_UOM_Conversion> conversions = Services.get(IUOMConversionBL.class).getProductConversions(getCtx(), product);
+		final List<I_C_UOM_Conversion> conversions = Services.get(IUOMConversionBL.class).getProductConversions(productId);
 		I_C_UOM_Conversion conversion = null;
 		for (I_C_UOM_Conversion conversionCurrent : conversions)
 		{

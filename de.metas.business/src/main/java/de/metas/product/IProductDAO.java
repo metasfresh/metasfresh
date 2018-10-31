@@ -26,10 +26,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_Org;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+
+import de.metas.util.ISingletonService;
 
 public interface IProductDAO extends ISingletonService
 {
@@ -47,13 +48,13 @@ public interface IProductDAO extends ISingletonService
 	/**
 	 *
 	 *
-	 * @param product
-	 * @param org
+	 * @param productId
+	 * @param orgId
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
 	 *         or if there is no pendant in the given <code>org</code>.
 	 * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
-	I_M_Product retrieveMappedProductOrNull(I_M_Product product, I_AD_Org org);
+	ProductId retrieveMappedProductIdOrNull(ProductId productId, OrgId orgId);
 
 	/**
 	 * Retrieve all the products from all the organizations that have the same mapping as the given product
@@ -77,4 +78,10 @@ public interface IProductDAO extends ISingletonService
 	Set<ProductAndCategoryAndManufacturerId> retrieveProductAndCategoryAndManufacturersByProductIds(Set<ProductId> productIds);
 
 	String retrieveProductValueByProductId(ProductId productId);
+
+	I_M_Product_Category getProductCategoryById(ProductCategoryId id);
+
+	<T extends I_M_Product_Category> T getProductCategoryById(ProductCategoryId id, Class<T> modelClass);
+
+	String getProductCategoryNameById(ProductCategoryId id);
 }

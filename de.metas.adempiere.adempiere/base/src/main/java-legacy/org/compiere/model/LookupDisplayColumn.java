@@ -18,7 +18,7 @@ package org.compiere.model;
 
 import java.io.Serializable;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 
 /**

@@ -34,8 +34,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Cash;
@@ -71,6 +69,8 @@ import de.metas.interfaces.I_M_Movement;
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.api.impl.TextTemplateBL;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author teo_sarca

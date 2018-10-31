@@ -2,8 +2,9 @@ package de.metas.jms;
 
 import javax.jms.ConnectionFactory;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.db.CConnection;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

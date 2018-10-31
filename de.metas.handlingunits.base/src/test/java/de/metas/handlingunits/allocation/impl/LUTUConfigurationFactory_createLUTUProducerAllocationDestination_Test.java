@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -40,12 +39,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
@@ -56,7 +55,9 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /**
  * Test {@link AllocationUtils#createLUTUProducerDestinationForTUConfig(I_M_HU_PI_Item_Product, I_M_Product, I_C_UOM)}.
@@ -72,7 +73,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 	private IMutableHUContext huContext;
 
-	private I_M_Product cuProduct;
+	private ProductId cuProductId;
 	private I_C_UOM cuUOM;
 	private I_C_BPartner bpartner;
 
@@ -90,7 +91,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		lutuFactory = (LUTUConfigurationFactory)Services.get(ILUTUConfigurationFactory.class);
 
 		huContext = helper.getHUContext();
-		cuProduct = pTomato;
+		cuProductId = ProductId.ofRepoId(pTomato.getM_Product_ID());
 		cuUOM = uomEach;
 		bpartner = null;
 
@@ -124,7 +125,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 	{
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
 				tuPIItemProduct,
-				cuProduct,
+				cuProductId,
 				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
@@ -141,15 +142,15 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 		final IHUProducerAllocationDestination allocationDestination = createLUTUProducerDestination(tuPIItemProduct);
 
-		final AbstractAllocationSourceDestination allocationSource = helper.createDummySourceDestination(cuProduct, Quantity.QTY_INFINITE, true);
+		final AbstractAllocationSourceDestination allocationSource = helper.createDummySourceDestination(cuProductId, Quantity.QTY_INFINITE, true);
 		final Object referencedModel = allocationSource.getReferenceModel();
 
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
-				cuProduct,
-				cuQty,
-				cuUOM,
+				cuProductId,
+				Quantity.of(cuQty, cuUOM),
 				helper.getTodayDate(),
-				referencedModel);
+				referencedModel,
+				false);
 
 		//
 		// Execute transfer => HUs will be generated
@@ -164,7 +165,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 	{
 		StaticHUAssert.assertHU_PI(hu, expectedPI);
 		final BigDecimal expectedQty = BigDecimal.valueOf(expectedQtyInt);
-		StaticHUAssert.assertStorageLevel(huContext, hu, cuProduct, expectedQty);
+		StaticHUAssert.assertStorageLevel(huContext, hu, cuProductId, expectedQty);
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -172,7 +173,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 	{
 		lutuFactory.createLUTUConfiguration(
 				null, // tuPIItemProduct
-				cuProduct,
+				cuProductId,
 				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
@@ -191,7 +192,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// LU: Palet with 2 IFCOs
 		// TU: IFCO with 10items
 		helper.createHU_PI_Item_IncludedHU(piPalet, piIFCO, new BigDecimal("2"));
-		final I_M_HU_PI_Item_Product piIFCO_Product = helper.assignProduct(piIFCO_Item_Material, cuProduct, new BigDecimal("10"), cuUOM);
+		final I_M_HU_PI_Item_Product piIFCO_Product = helper.assignProduct(piIFCO_Item_Material, cuProductId, new BigDecimal("10"), cuUOM);
 
 		//
 		// Create HUs for cuQty=25
@@ -247,7 +248,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// Configure:
 		// LU: none
 		// TU: IFCO with 10items
-		final I_M_HU_PI_Item_Product piIFCO_Product = helper.assignProduct(piIFCO_Item_Material, cuProduct, new BigDecimal("10"), cuUOM);
+		final I_M_HU_PI_Item_Product piIFCO_Product = helper.assignProduct(piIFCO_Item_Material, cuProductId, new BigDecimal("10"), cuUOM);
 
 		//
 		// Create HUs for cuQty=25

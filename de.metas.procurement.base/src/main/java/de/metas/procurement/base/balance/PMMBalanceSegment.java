@@ -1,12 +1,12 @@
 package de.metas.procurement.base.balance;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.procurement.base.model.I_PMM_Balance;
+import de.metas.util.Check;
 
 /*
  * #%L

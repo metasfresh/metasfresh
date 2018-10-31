@@ -11,8 +11,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.IQuery;
@@ -24,6 +22,8 @@ import org.compiere.util.TimeUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.order.model.I_C_Order;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

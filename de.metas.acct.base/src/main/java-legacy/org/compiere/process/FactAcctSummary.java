@@ -22,12 +22,12 @@ import java.util.List;
 import org.adempiere.acct.api.IFactAcctCubeBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_PA_ReportCube;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /*
  * Populate Fact_Acct_Summary table with pre-calculated totals of

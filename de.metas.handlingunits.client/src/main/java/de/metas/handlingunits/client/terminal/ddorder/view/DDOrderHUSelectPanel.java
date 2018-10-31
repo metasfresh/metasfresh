@@ -25,6 +25,7 @@ package de.metas.handlingunits.client.terminal.ddorder.view;
 
 import java.util.Set;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.adempiere.form.terminal.IConfirmPanel;
@@ -112,7 +113,7 @@ public class DDOrderHUSelectPanel extends AbstractHUSelectPanel<DDOrderHUSelectM
 		model.setContextManufacturingOrder(pp_Order);
 	}
 
-	public void setWarehouseOverrideId(final int warehouseOverrideId)
+	public void setWarehouseOverrideId(final WarehouseId warehouseOverrideId)
 	{
 		final DDOrderHUSelectModel model = getModel();
 		model.setWarehouseOverrideId(warehouseOverrideId);

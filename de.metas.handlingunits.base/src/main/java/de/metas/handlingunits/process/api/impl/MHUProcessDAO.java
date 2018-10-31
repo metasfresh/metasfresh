@@ -4,18 +4,18 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
-import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.HUProcessDescriptor.HUProcessDescriptorBuilder;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
+import de.metas.util.Services;
 
 public class MHUProcessDAO implements IMHUProcessDAO
 {
@@ -54,7 +54,8 @@ public class MHUProcessDAO implements IMHUProcessDAO
 	private static HUProcessDescriptor toHUProcessDescriptor(final I_M_HU_Process huProcessRecord)
 	{
 		final HUProcessDescriptorBuilder builder = HUProcessDescriptor.builder()
-				.processId(huProcessRecord.getAD_Process_ID());
+				.processId(huProcessRecord.getAD_Process_ID())
+				.internalName(huProcessRecord.getAD_Process().getValue());
 
 		if (huProcessRecord.isApplyToLUs())
 		{

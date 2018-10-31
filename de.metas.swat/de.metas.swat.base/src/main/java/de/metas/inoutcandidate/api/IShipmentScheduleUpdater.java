@@ -25,9 +25,9 @@ package de.metas.inoutcandidate.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.PInstanceId;
+import de.metas.util.ISingletonService;
 
 /**
  * Implementors update invalid {@link I_M_ShipmentSchedule} instance and make them valid again.
@@ -40,15 +40,8 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 
 	/**
 	 * Call {@link #updateShipmentSchedule(Properties, int, int, boolean, String)} with <code>updateOnlyLocked == false</code>.
-	 *
-	 * @param ctx
-	 * @param adClientId
-	 * @param adUserId
-	 * @param adPInstanceId
-	 * @param trxName
-	 * @return
 	 */
-	int updateShipmentSchedule(Properties ctx, int adUserId, int adPInstanceId, String trxName);
+	int updateShipmentSchedule(Properties ctx, int adUserId, PInstanceId adPInstanceId);
 
 	/**
 	 *
@@ -59,10 +52,9 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 	 * @param adPInstanceId
 	 * @param updateOnlyLocked if <code>true</code>, then update only those invalid records that are also referenced by a <code>M_ShipmentSchedule_ShipmentRun</code> record whose
 	 *            <code>AD_PInstance_ID</code> is the given <code>adPinstanceId</code>.
-	 * @param trxName
 	 * @return the number of updated schedule entries.
 	 */
-	int updateShipmentSchedule(Properties ctx, int adUserId, int adPInstanceId, boolean updateOnlyLocked, String trxName);
+	int updateShipmentSchedule(Properties ctx, int adUserId, PInstanceId adPInstanceId, boolean updateOnlyLocked);
 
 	/**
 	 *

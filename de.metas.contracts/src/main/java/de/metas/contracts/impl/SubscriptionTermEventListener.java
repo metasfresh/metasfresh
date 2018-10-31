@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -16,6 +15,7 @@ import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.pricing.IPricingResult;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

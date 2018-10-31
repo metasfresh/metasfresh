@@ -26,17 +26,18 @@ package de.metas.contracts.model;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
-import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 public class MCFlatrateTransition extends X_C_Flatrate_Transition implements IDocument
 {
@@ -164,6 +165,12 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements IDo
 	public String getSummary()
 	{
 		return getDocumentInfo();
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getCreated());
 	}
 
 	@Override

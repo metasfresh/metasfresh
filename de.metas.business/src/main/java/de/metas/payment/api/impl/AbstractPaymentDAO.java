@@ -35,8 +35,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
@@ -48,6 +46,8 @@ import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {

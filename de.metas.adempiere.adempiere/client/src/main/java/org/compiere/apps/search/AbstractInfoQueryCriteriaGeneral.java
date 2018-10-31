@@ -29,8 +29,6 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookup;
@@ -43,6 +41,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCriteria
 {

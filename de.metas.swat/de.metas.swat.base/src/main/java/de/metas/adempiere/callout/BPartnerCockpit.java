@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
@@ -42,6 +41,7 @@ import org.compiere.model.GridTab.DataNewCopyMode;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;

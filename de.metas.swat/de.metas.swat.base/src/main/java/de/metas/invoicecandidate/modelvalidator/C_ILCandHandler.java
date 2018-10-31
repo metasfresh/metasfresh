@@ -27,7 +27,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
@@ -35,6 +34,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.util.Services;
 
 @Interceptor(I_C_ILCandHandler.class)
 public class C_ILCandHandler

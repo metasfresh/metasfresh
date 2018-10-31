@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.time.LocalDate;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -21,6 +20,7 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -13,35 +13,29 @@ package org.adempiere.processing.exception;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.process.PInstanceId;
+import lombok.Getter;
+
+@SuppressWarnings("serial")
 public class ProcessingException extends AdempiereException
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3863983572017503444L;
+	@Getter
+	private final PInstanceId pinstanceId;
 
-	private final int adProcessId;
-
-	public ProcessingException(String message, Throwable cause, final int adProcessId)
+	public ProcessingException(String message, Throwable cause, final PInstanceId pinstanceId)
 	{
 		super(message, cause);
-		this.adProcessId = adProcessId;
-	}
-
-	public int getAdPInstanceId()
-	{
-		return adProcessId;
+		this.pinstanceId = pinstanceId;
 	}
 }

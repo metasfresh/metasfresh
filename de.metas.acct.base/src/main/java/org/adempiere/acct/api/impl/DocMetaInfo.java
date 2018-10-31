@@ -26,9 +26,10 @@ package org.adempiere.acct.api.impl;
 import java.lang.reflect.Constructor;
 
 import org.adempiere.acct.api.IDocMetaInfo;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.acct.Doc;
+
+import de.metas.util.Check;
 
 /**
  * Immutable {@link IDocMetaInfo} implementation

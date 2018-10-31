@@ -34,7 +34,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,6 +46,7 @@ import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
+import de.metas.util.Services;
 
 public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 {

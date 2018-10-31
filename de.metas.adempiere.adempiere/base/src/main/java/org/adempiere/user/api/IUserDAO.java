@@ -26,17 +26,16 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import org.adempiere.service.ClientId;
+import org.adempiere.user.UserId;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
+import de.metas.util.ISingletonService;
 
 public interface IUserDAO extends ISingletonService
 {
-	int SYSTEM_USER_ID = Env.CTXVALUE_AD_User_ID_System;
-	int SUPERUSER_USER_ID = 100;
-
 	String MSG_MailOrUsernameNotFound = "MailOrUsernameNotFound";
 
 	/**
@@ -62,7 +61,11 @@ public interface IUserDAO extends ISingletonService
 	I_AD_User retrieveDefaultUser(I_C_BPartner bpartner);
 
 	/** @return user's full name or <code>?</code> if no found */
-	String retrieveUserFullname(int adUserId);
+	String retrieveUserFullname(int userRepoId);
+
+	String retrieveUserFullname(UserId userId);
+
+	UserId retrieveUserIdByEMail(String email, ClientId adClientId);
 
 	/**
 	 * Fetch all system(login) user IDs
@@ -71,4 +74,6 @@ public interface IUserDAO extends ISingletonService
 	 * @return AD_User_IDs
 	 */
 	List<Integer> retrieveSystemUserIds();
+
+	BPartnerId getBPartnerIdByUserId(final UserId userId);
 }

@@ -33,7 +33,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 import org.compiere.model.MDocType;
@@ -44,6 +43,7 @@ import org.slf4j.Logger;
 
 import de.metas.calendar.IPeriodBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public class PeriodBL implements IPeriodBL
 {

@@ -29,7 +29,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -39,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 public class ProductBLTest
 {

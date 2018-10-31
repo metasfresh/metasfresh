@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
@@ -21,6 +20,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.util.RelatedRecordsProvider;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -1,9 +1,9 @@
 package de.metas.material.cockpit.interceptor;
 
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.compiere.util.CacheMgt;
 
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.IModelCacheService;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
 import de.metas.material.cockpit.model.I_MD_Stock;

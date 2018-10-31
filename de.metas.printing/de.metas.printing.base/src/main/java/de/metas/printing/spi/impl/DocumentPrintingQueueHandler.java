@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
@@ -49,6 +48,7 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
+import de.metas.util.Services;
 
 /**
  *

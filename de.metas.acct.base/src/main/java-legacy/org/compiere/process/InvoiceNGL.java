@@ -226,7 +226,7 @@ public class InvoiceNGL extends JavaProcess
 		//FR: [ 2214883 ] Remove SQL code and Replace for Query
  	 	String whereClause = "AD_PInstance_ID=?";
 	 	List <X_T_InvoiceGL> list = new Query(getCtx(), X_T_InvoiceGL.Table_Name, whereClause, get_TrxName())
-			.setParameters(new Object[]{getAD_PInstance_ID()})
+			.setParameters(new Object[]{getPinstanceId()})
 			.setOrderBy("AD_Org_ID")
 			.list(X_T_InvoiceGL.class);	
 		//FR: [ 2214883 ] Remove SQL code and Replace for Query
@@ -368,4 +368,9 @@ public class InvoiceNGL extends JavaProcess
 		}
 	}	//	createBalancing
 
+	
+	private int getAD_PInstance_ID()
+	{
+		return getPinstanceId().getRepoId();
+	}
 }	//	InvoiceNGL

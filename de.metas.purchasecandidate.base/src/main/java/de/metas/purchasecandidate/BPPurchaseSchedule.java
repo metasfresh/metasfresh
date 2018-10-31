@@ -9,13 +9,12 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.time.generator.Frequency;
-
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.CalendarId;
+import de.metas.util.Check;
+import de.metas.util.time.generator.Frequency;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

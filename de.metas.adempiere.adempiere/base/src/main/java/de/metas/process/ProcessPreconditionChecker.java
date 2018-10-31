@@ -4,7 +4,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
@@ -13,6 +12,7 @@ import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

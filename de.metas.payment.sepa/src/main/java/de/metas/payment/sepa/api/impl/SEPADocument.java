@@ -24,9 +24,8 @@ package de.metas.payment.sepa.api.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import de.metas.payment.sepa.api.ISEPADocument;
+import de.metas.util.Check;
 
 public class SEPADocument implements ISEPADocument
 {

@@ -10,9 +10,6 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Locator;
 
@@ -35,6 +32,9 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 /*
  * #%L

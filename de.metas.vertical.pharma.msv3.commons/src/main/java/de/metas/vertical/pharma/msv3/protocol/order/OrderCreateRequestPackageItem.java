@@ -3,9 +3,9 @@ package de.metas.vertical.pharma.msv3.protocol.order;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
@@ -39,7 +39,7 @@ import lombok.Value;
 public class OrderCreateRequestPackageItem
 {
 	@JsonProperty("id")
-	Id id;
+	OrderCreateRequestPackageItemId id;
 
 	@JsonProperty("pzn")
 	PZN pzn;
@@ -50,17 +50,23 @@ public class OrderCreateRequestPackageItem
 	@JsonProperty("deliverySpecifications")
 	DeliverySpecifications deliverySpecifications;
 
+	@JsonProperty("purchaseCandidateId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	MSV3PurchaseCandidateId purchaseCandidateId;
+
 	@Builder
 	@JsonCreator
 	private OrderCreateRequestPackageItem(
-			@JsonProperty("id") final Id id,
+			@JsonProperty("id") final OrderCreateRequestPackageItemId id,
 			@JsonProperty("pzn") @NonNull final PZN pzn,
 			@JsonProperty("qty") @NonNull final Quantity qty,
-			@JsonProperty("deliverySpecifications") @NonNull final DeliverySpecifications deliverySpecifications)
+			@JsonProperty("deliverySpecifications") @NonNull final DeliverySpecifications deliverySpecifications,
+			@JsonProperty("purchaseCandidateId") MSV3PurchaseCandidateId purchaseCandidateId)
 	{
-		this.id = id != null ? id : Id.random();
+		this.id = id != null ? id : OrderCreateRequestPackageItemId.random();
 		this.pzn = pzn;
 		this.qty = qty;
 		this.deliverySpecifications = deliverySpecifications;
+		this.purchaseCandidateId = purchaseCandidateId;
 	}
 }

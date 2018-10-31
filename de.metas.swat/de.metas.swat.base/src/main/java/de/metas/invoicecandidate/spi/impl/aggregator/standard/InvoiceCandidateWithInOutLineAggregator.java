@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -48,6 +46,8 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Aggregates {@link InvoiceCandidateWithInOutLine}s and creates one {@link IInvoiceCandAggregate}.

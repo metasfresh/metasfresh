@@ -6,7 +6,6 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -18,6 +17,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 @SuppressWarnings("serial")
 public class ProductNotOnPriceListException extends AdempiereException

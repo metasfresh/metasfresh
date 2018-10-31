@@ -77,8 +77,6 @@ import org.adempiere.plaf.VPanelUI;
 import org.adempiere.process.event.IProcessEventListener;
 import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.process.event.ProcessEvent;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.Find;
 import org.compiere.apps.search.FindPanelContainer;
@@ -138,6 +136,8 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ui.AProcess;
 import de.metas.process.ui.ProcessDialog;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Main Panel of application window.

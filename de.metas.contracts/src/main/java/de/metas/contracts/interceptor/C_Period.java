@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
@@ -36,6 +35,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.calendar.ICalendarBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.util.Services;
 
 @Validator(I_C_Period.class)
 public class C_Period

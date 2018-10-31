@@ -25,10 +25,11 @@ package org.adempiere.scheduler.housekeeping.spi.impl;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Loggables;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.util.DB;
+
+import de.metas.util.Loggables;
 
 /**
  * Updates <code>AD_Scheduler</code> records from status "Running" to "Started".

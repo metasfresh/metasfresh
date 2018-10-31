@@ -23,11 +23,11 @@ package de.metas.banking.service;
  */
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.util.ISingletonService;
 
 public interface IBankStatementBL extends ISingletonService
 {

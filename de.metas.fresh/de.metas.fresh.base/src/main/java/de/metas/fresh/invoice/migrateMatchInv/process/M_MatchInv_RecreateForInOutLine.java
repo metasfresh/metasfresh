@@ -34,8 +34,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.IProcessor;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableBigDecimal;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
@@ -47,6 +45,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.IProcessor;
+import de.metas.util.Services;
 
 public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 {

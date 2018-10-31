@@ -27,12 +27,12 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class EmptiesInOutLinePackingMaterialDocumentLine extends AbstractPackingMaterialDocumentLine
 {
@@ -52,15 +52,9 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 	}
 
 	@Override
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
-		return inoutLine.getM_Product_ID();
-	}
-
-	@Override
-	public I_M_Product getM_Product()
-	{
-		return inoutLine.getM_Product();
+		return ProductId.ofRepoId(inoutLine.getM_Product_ID());
 	}
 
 	/**
@@ -86,7 +80,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(
-				ctx, getM_Product(), inoutLine.getC_UOM(), qty);
+				ctx, getProductId(), inoutLine.getC_UOM(), qty);
 		inoutLine.setQtyEntered(qtyEntered);
 	}
 }

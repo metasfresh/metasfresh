@@ -31,13 +31,13 @@ import java.util.List;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_TreeBar;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg

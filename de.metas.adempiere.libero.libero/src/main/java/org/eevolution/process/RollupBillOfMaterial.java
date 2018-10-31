@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
@@ -79,6 +78,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  * Roll-UP Bill of Material

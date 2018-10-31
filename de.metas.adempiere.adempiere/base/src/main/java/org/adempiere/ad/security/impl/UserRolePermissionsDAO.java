@@ -48,7 +48,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column_Access;
@@ -73,7 +72,6 @@ import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.X_AD_Table_Access;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -85,7 +83,9 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class UserRolePermissionsDAO implements IUserRolePermissionsDAO

@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
- *                 Teo Sarca, www.arhipac.ro                                  *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
+ * Teo Sarca, www.arhipac.ro *
  *****************************************************************************/
 package org.eevolution.report;
 
@@ -29,15 +29,14 @@ package org.eevolution.report;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -76,7 +75,7 @@ import de.metas.process.ProcessInfoParameter;
 public class CostBillOfMaterial extends JavaProcess
 {
 	private final ICostElementRepository costElementRepo = Adempiere.getBean(ICostElementRepository.class);
-	
+
 	private static final String LEVELS = "....................";
 	//
 	private int p_AD_Org_ID = 0;
@@ -102,13 +101,13 @@ public class CostBillOfMaterial extends JavaProcess
 				p_AD_Org_ID = para.getParameterAsInt();
 			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
 			{
-				p_C_AcctSchema_ID= para.getParameterAsInt();
+				p_C_AcctSchema_ID = para.getParameterAsInt();
 				m_as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
 			}
 			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
-				p_M_CostType_ID= para.getParameterAsInt();
+				p_M_CostType_ID = para.getParameterAsInt();
 			else if (name.equals(X_M_CostElement.COLUMNNAME_CostingMethod))
-				p_ConstingMethod=(String)para.getParameter();
+				p_ConstingMethod = (String)para.getParameter();
 			else if (name.equals(I_M_Cost.COLUMNNAME_M_Product_ID))
 				p_M_Product_ID = para.getParameterAsInt();
 			else
@@ -137,6 +136,7 @@ public class CostBillOfMaterial extends JavaProcess
 
 	/**
 	 * Generate an Explosion for this product
+	 * 
 	 * @param product
 	 * @param isComponent component / header
 	 */
@@ -174,6 +174,7 @@ public class CostBillOfMaterial extends JavaProcess
 
 	/**
 	 * Get BOMs for given product
+	 * 
 	 * @param product
 	 * @param isComponent
 	 * @return list of MPPProductBOM
@@ -191,15 +192,16 @@ public class CostBillOfMaterial extends JavaProcess
 			params.add(product.getValue());
 		}
 		List<MPPProductBOM> list = new Query(getCtx(), MPPProductBOM.Table_Name, whereClause.toString(), null)
-									.setParameters(params)
-									.setOnlyActiveRecords(true)
-									.setOrderBy(MPPProductBOM.COLUMNNAME_Value)
-									.list(MPPProductBOM.class);
+				.setParameters(params)
+				.setOnlyActiveRecords(true)
+				.setOrderBy(MPPProductBOM.COLUMNNAME_Value)
+				.list(MPPProductBOM.class);
 		return list;
 	}
 
 	/**
 	 * Create T_BOMLine
+	 * 
 	 * @param product
 	 * @param costElement
 	 * @param qty
@@ -233,7 +235,7 @@ public class CostBillOfMaterial extends JavaProcess
 			tboml.setC_AcctSchema_ID(p_C_AcctSchema_ID);
 			tboml.setM_CostType_ID(p_M_CostType_ID);
 			tboml.setCostingMethod(p_ConstingMethod);
-			tboml.setAD_PInstance_ID(getAD_PInstance_ID());
+			tboml.setAD_PInstance_ID(getPinstanceId().getRepoId());
 			tboml.setM_CostElement_ID(costElement.getId());
 			tboml.setM_Product_ID(product.get_ID());
 			tboml.setQtyBOM(qty);
@@ -294,8 +296,9 @@ public class CostBillOfMaterial extends JavaProcess
 		}
 		return m_costElements;
 	}
+
 	private List<CostElement> m_costElements = null;
-	
+
 	private static Collection<I_M_Cost> getCostsByElement(final MProduct product, final MAcctSchema as,
 			final int M_CostType_ID, final int AD_Org_ID, final int M_AttributeSetInstance_ID, final int M_CostElement_ID)
 	{

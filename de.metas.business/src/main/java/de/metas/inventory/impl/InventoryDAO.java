@@ -1,16 +1,18 @@
 package de.metas.inventory.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InventoryLine;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.inventory.IInventoryDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -84,6 +86,12 @@ public class InventoryDAO implements IInventoryDAO
 				.updateDirectly()
 				.addSetColumnValue(I_M_InventoryLine.COLUMNNAME_Processed, processed)
 				.execute();
+	}
+
+	@Override
+	public void save(I_M_InventoryLine inventoryLine)
+	{
+		saveRecord(inventoryLine);
 	}
 
 }

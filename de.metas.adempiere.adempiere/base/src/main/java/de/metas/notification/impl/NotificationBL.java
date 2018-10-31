@@ -2,8 +2,6 @@ package de.metas.notification.impl;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
-
 import de.metas.notification.INotificationBL;
 import de.metas.notification.IRoleNotificationsConfigRepository;
 import de.metas.notification.IUserNotificationsConfigRepository;
@@ -13,6 +11,7 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationsConfig;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.CompositeRecordTextProvider;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -26,7 +26,6 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
@@ -43,6 +42,7 @@ import de.metas.event.Type;
 import de.metas.event.log.EventLogSystemBusTools;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.impl.EventLogEntryCollector;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 final class EventBus implements IEventBus

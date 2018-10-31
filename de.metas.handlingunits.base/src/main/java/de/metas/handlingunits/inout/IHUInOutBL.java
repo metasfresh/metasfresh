@@ -28,7 +28,6 @@ import java.util.List;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -37,6 +36,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.util.ISingletonService;
 
 public interface IHUInOutBL extends ISingletonService
 {

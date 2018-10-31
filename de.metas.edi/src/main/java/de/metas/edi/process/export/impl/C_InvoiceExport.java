@@ -28,13 +28,13 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.esb.edi.model.I_EDI_cctop_invoic_v;
+import de.metas.util.Services;
 
 public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 {

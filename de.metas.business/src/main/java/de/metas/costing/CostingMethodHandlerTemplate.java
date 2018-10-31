@@ -5,9 +5,7 @@ import java.math.BigDecimal;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
@@ -15,6 +13,8 @@ import org.compiere.model.MAcctSchema;
 
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

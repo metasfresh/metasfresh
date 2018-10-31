@@ -25,9 +25,10 @@ package org.eevolution.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
+
+import de.metas.util.ISingletonService;
 
 public interface IPPOrderWorkflowBL extends ISingletonService
 {

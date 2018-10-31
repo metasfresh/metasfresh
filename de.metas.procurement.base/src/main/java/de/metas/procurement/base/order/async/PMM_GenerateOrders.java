@@ -4,13 +4,13 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.impl.OrdersGenerator;
+import de.metas.util.Services;
 
 /*
  * #%L

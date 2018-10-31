@@ -42,8 +42,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
@@ -61,8 +59,8 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -77,6 +75,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.stream.StreamUtils;
 import lombok.NonNull;
 
@@ -742,6 +742,24 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	public int getFlatrateConditionsIdByName(@NonNull final String name)
+	{
+		final int flatrateConditionsId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMN_Name, name)
+				.create()
+				.firstIdOnly();
+
+		if (flatrateConditionsId <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @C_Flatrate_Conditions_ID@ (@Name@: " + name + ")");
+		}
+
+		return flatrateConditionsId;
+	}
+
+	@Override
 	public List<I_C_Flatrate_Transition> retrieveTransitionsForCalendar(final I_C_Calendar calendar)
 	{
 		final Properties ctx = getCtx(calendar);
@@ -853,10 +871,10 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		final List<I_C_Invoice_Candidate> icsForCurrentTerm = invoiceCandDAO
 				.fetchInvoiceCandidates(
-				getCtx(contract),
-				I_C_Flatrate_Term.Table_Name,
-				contract.getC_Flatrate_Term_ID(),
-				getTrxName(contract));
+						getCtx(contract),
+						I_C_Flatrate_Term.Table_Name,
+						contract.getC_Flatrate_Term_ID(),
+						getTrxName(contract));
 
 		final List<I_C_Invoice> currentFlatRateTermInvoices = icsForCurrentTerm
 				.stream()

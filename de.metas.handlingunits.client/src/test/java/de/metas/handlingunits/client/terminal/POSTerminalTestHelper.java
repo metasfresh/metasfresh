@@ -25,8 +25,6 @@ package de.metas.handlingunits.client.terminal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
@@ -36,6 +34,8 @@ import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.adempiere.service.IPOSAccessBL;
 import de.metas.adempiere.service.impl.MockedPOSAccessBL;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper class used when testing HU POS terminals.

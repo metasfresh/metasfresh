@@ -36,8 +36,6 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -71,6 +69,8 @@ import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.IOrderDAO;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class EDIDocumentBL implements IEDIDocumentBL
 {

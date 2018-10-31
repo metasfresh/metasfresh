@@ -2,13 +2,13 @@ package de.metas.material.dispo.commons.repository.atp;
 
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

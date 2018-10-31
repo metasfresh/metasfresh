@@ -28,7 +28,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
@@ -36,6 +35,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.fresh.mrp_productinfo.async.spi.impl.UpdateMRPProductInfoTableWorkPackageProcessor;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.util.Services;
 
 @Interceptor(I_M_Movement.class)
 public class M_Movement

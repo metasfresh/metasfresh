@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Services;
+import org.adempiere.uom.UomId;
 import org.slf4j.Logger;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,7 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
@@ -130,7 +131,7 @@ public class OrderCreateRequestRabbitMQListener
 			for (final MSV3OrderSyncRequestPackageItem item : orderPackage.getItems())
 			{
 				final ProductId productId = productDAO.retrieveProductIdByValue(item.getPzn().getValueAsString());
-				final int uomId = productBL.getStockingUOM(productId).getC_UOM_ID();
+				final UomId uomId = productBL.getStockingUOMId(productId);
 				final int huPIItemProductId = -1; // TODO fetch it from item.getPackingMaterialId()
 				olCandRequests.add(OLCandCreateRequest.builder()
 						.externalId(item.getId().getValueAsString())

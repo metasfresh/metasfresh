@@ -27,14 +27,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Handling unit as {@link IHUDocument}

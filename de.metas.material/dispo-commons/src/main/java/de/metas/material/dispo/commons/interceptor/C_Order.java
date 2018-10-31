@@ -33,18 +33,30 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void updateQtyAvailableToPromise(final I_C_Order orderRecord)
 	{
+		if (!orderRecord.isSOTrx())
+		{
+			return; // as of now, ATP values are only of interest for the sales side
+		}
 		OrderAvailableToPromiseTool.updateOrderLineRecords(orderRecord);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void resetQtyAvailableToPromise(final I_C_Order orderRecord)
 	{
+		if (!orderRecord.isSOTrx())
+		{
+			return; // as of now, ATP values are only of interest for the sales side
+		}
 		OrderAvailableToPromiseTool.resetQtyAvailableToPromise(orderRecord);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Order.COLUMNNAME_PreparationDate })
 	public void updateQtyAvailableToPromiseWhenPreparationDateIsChanged(final I_C_Order orderRecord)
 	{
+		if (!orderRecord.isSOTrx())
+		{
+			return; // as of now, ATP values are only of interest for the sales side
+		}
 		OrderAvailableToPromiseTool.updateOrderLineRecords(orderRecord);
 	}
 }

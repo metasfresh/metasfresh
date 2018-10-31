@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
@@ -42,6 +41,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.materialtracking.util.QualityBasedInspectionUtils;
+import de.metas.util.Check;
 
 /**
  * Creates {@link IQualityInspectionLine}s for a given {@link IQualityInspectionOrder}.

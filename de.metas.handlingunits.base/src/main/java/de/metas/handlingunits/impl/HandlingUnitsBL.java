@@ -13,8 +13,6 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -26,6 +24,9 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
@@ -34,6 +35,7 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -51,6 +53,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
@@ -91,26 +95,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContext(ctx, trxName);
-	}
-
-	@Override
-	public boolean isConcretePI(final int piId)
-	{
-		if (piId <= 0)
-		{
-			return false;
-		}
-		final IHandlingUnitsDAO dao = Services.get(IHandlingUnitsDAO.class);
-		if (piId == dao.getPackingItemTemplate_HU_PI_ID())
-		{
-			return false;
-		}
-		if (piId == dao.getVirtual_HU_PI_ID())
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 	@Override
@@ -294,13 +278,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final int piId = piVersion.getM_HU_PI_ID();
-		if (piId == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_ID())
-		{
-			return true;
-		}
-
-		return false;
+		return HuPackingInstructionsId.isVirtualRepoId(piVersion.getM_HU_PI_ID());
 	}
 
 	@Override
@@ -311,13 +289,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final int piId = huPI.getM_HU_PI_ID();
-		if (piId == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_ID())
-		{
-			return true;
-		}
-
-		return false;
+		return HuPackingInstructionsId.isVirtualRepoId(huPI.getM_HU_PI_ID());
 	}
 
 	@Override
@@ -590,36 +562,25 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public LUTUCUPair getTopLevelParentAsLUTUCUPair(final I_M_HU hu)
+	public LUTUCUPair getTopLevelParentAsLUTUCUPair(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
-		//
-		// Get the LU, TU and VHU
-		final I_M_HU luHU;
-		final I_M_HU tuHU;
-		final I_M_HU vhu;
-		if (isVirtual(hu))
+		if (isLoadingUnit(hu))
 		{
-			vhu = hu;
-			tuHU = getTransportUnitHU(vhu);
-			luHU = getLoadingUnitHU(tuHU);
+			return LUTUCUPair.ofLU(hu);
 		}
 		else if (isTransportUnit(hu))
 		{
-			vhu = null;
-			tuHU = hu;
-			luHU = getLoadingUnitHU(tuHU);
+			final I_M_HU tuHU = hu;
+			final I_M_HU luHU = getLoadingUnitHU(tuHU);
+			return LUTUCUPair.ofTU(tuHU, luHU);
 		}
-		else
+		else // virtual or aggregate
 		{
-			vhu = null;
-			tuHU = null;
-			luHU = hu;
-			assertLoadingUnit(luHU); // just to be sure
+			final I_M_HU vhu = hu;
+			final I_M_HU tuHU = getTransportUnitHU(vhu);
+			final I_M_HU luHU = tuHU != null ? getLoadingUnitHU(tuHU) : null;
+			return LUTUCUPair.ofVHU(vhu, tuHU, luHU);
 		}
-
-		return new LUTUCUPair(luHU, tuHU, vhu);
 	}
 
 	@Override
@@ -670,9 +631,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU getTransportUnitHU(final I_M_HU hu)
+	public I_M_HU getTransportUnitHU(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
+		// corner case: top level VHU
+		if (isTopLevel(hu) && isVirtual(hu))
+		{
+			return null;
+		}
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -731,8 +696,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public I_M_HU_PI_Version getPIVersion(final I_M_HU hu)
 	{
-		final int huPIVersionId = hu.getM_HU_PI_Version_ID();
-		return huPIVersionId > 0 ? loadOutOfTrx(huPIVersionId, I_M_HU_PI_Version.class) : null;
+		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
+		return Services.get(IHandlingUnitsDAO.class).retrievePIVersionById(piVersionId);
 	}
 
 	@Override
@@ -750,24 +715,39 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public HuPackingInstructionsVersionId getEffectivePIVersionId(final I_M_HU hu)
+	{
+		I_M_HU_PI_Version piVersion = getEffectivePIVersion(hu);
+		if (piVersion == null)
+		{
+			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
+		}
+
+		return HuPackingInstructionsVersionId.ofRepoId(piVersion.getM_HU_PI_Version_ID());
+	}
+
+	@Override
 	public I_M_HU_PI_Version getEffectivePIVersion(final I_M_HU hu)
 	{
 		if (!isAggregateHU(hu))
 		{
 			return getPIVersion(hu);
 		}
-
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		// note: if hu is an aggregate HU, then there won't be an NPE here.
-		final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
-		if (parentPIItem == null)
+		else
 		{
-			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
-		}
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
-		return handlingUnitsDAO.retrievePICurrentVersionOrNull(included_HU_PI);
+			// note: if hu is an aggregate HU, then there won't be an NPE here.
+			final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
+			if (parentPIItem == null)
+			{
+				// this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
+				return IHUBuilder.BUILDER_INVOCATION_HU_PI_VERSION.getValue(hu);
+			}
+
+			final HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoId(parentPIItem.getIncluded_HU_PI_ID());
+			return handlingUnitsDAO.retrievePICurrentVersionOrNull(includedPIId);
+		}
 	}
 
 	@Override

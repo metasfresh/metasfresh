@@ -25,12 +25,12 @@ package de.metas.handlingunits.attribute;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.util.ISingletonService;
 
 
 public interface IPPOrderProductAttributeDAO extends ISingletonService

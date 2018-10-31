@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
@@ -34,6 +33,7 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.PurchaseCandidateToOrderWorkflow;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
+import de.metas.util.Services;
 
 /*
  * #%L

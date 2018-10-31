@@ -18,9 +18,9 @@ package org.compiere.util;
 
 import java.util.Map;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /**
  * Mime - Content type map.
@@ -59,7 +59,7 @@ public final class MimeType
 	 * Gets file extension by mime type. Note, file extension contains the "." prefix. If extension was not found, empty string is returned.
 	 *
 	 * @param mimeType
-	 * @return 
+	 * @return
 	 */
 	public static String getExtensionByType(final String mimeType)
 	{
@@ -83,7 +83,7 @@ public final class MimeType
 		{
 			return extension;
 		}
-		
+
 		return extension.substring(1); // extension without the leading dot
 	}
 
@@ -91,6 +91,7 @@ public final class MimeType
 	public static final String TYPE_BINARY = "application/octet-stream";
 	public static final String TYPE_PDF = "application/pdf";
 	public static final String TYPE_TextPlain = "text/plain";
+	public static final String TYPE_XML = "text/xml";
 	public static final String TYPE_IMAGE_PNG = "image/png";
 	public static final String TYPE_IMAGE_JPEG = "image/jpeg";
 
@@ -191,7 +192,7 @@ public final class MimeType
 			.put(".csh", "text/x-script.csh")
 			// .put( ".css", "application/x-pointplus")
 			.put(".css", "text/css")
-			.put(".cvs", "application/vnd.ms-excel")
+			.put(".csv", "text/csv")
 			.put(".cxx", TYPE_TextPlain)
 			//
 			.put(".dcr", "application/x-director")
@@ -746,7 +747,7 @@ public final class MimeType
 			// .put( ".xlw", "application/x-msexcel")
 			.put(".xm", "audio/xm")
 			// .put( ".xml", "application/xml")
-			.put(".xml", "text/xml")
+			.put(".xml", TYPE_XML)
 			.put(".xmz", "xgl/movie")
 			.put(".xpix", "application/x-vnd.ls-xpix")
 			// .put( ".xpm", "image/x-xpixmap")

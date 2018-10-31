@@ -1,14 +1,19 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -37,8 +42,8 @@ import lombok.Value;
 @Value
 public class OrderResponsePackageItem
 {
-	@JsonProperty("id")
-	Id id;
+	@JsonProperty("requestId")
+	OrderCreateRequestPackageItemId requestId;
 
 	@JsonProperty("pzn")
 	PZN pzn;
@@ -49,22 +54,38 @@ public class OrderResponsePackageItem
 	@JsonProperty("deliverySpecifications")
 	DeliverySpecifications deliverySpecifications;
 
+	@JsonProperty("parts")
+	List<OrderResponsePackageItemPart> parts;
+
+	@JsonProperty("substitution")
+	OrderResponsePackageItemSubstitution substitution;
+
 	@JsonProperty("olCandId")
 	int olCandId;
+	
+	@JsonProperty("purchaseCandidateId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	MSV3PurchaseCandidateId purchaseCandidateId;
 
 	@Builder
+	@JsonCreator
 	private OrderResponsePackageItem(
-			@JsonProperty("id") @NonNull final Id id,
+			@JsonProperty("requestId") @NonNull final OrderCreateRequestPackageItemId requestId,
 			@JsonProperty("pzn") @NonNull final PZN pzn,
 			@JsonProperty("qty") @NonNull final Quantity qty,
 			@JsonProperty("deliverySpecifications") @NonNull final DeliverySpecifications deliverySpecifications,
-			@JsonProperty("olCandId") int olCandId)
+			@JsonProperty("parts") @NonNull @Singular List<OrderResponsePackageItemPart> parts,
+			@JsonProperty("substitution") final OrderResponsePackageItemSubstitution substitution,
+			@JsonProperty("olCandId") int olCandId,
+			@JsonProperty("purchaseCandidateId") MSV3PurchaseCandidateId purchaseCandidateId)
 	{
-		this.id = id;
+		this.requestId = requestId;
 		this.pzn = pzn;
 		this.qty = qty;
 		this.deliverySpecifications = deliverySpecifications;
+		this.parts = ImmutableList.copyOf(parts);
+		this.substitution = substitution;
 		this.olCandId = olCandId;
+		this.purchaseCandidateId = purchaseCandidateId;
 	}
-
 }

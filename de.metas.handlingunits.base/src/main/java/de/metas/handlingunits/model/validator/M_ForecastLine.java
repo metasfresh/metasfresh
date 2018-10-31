@@ -31,7 +31,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
@@ -40,6 +39,7 @@ import de.metas.adempiere.gui.search.impl.ForecastLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.model.I_M_ForecastLine;
+import de.metas.util.Services;
 
 @Validator(I_M_ForecastLine.class)
 @Callout(I_M_ForecastLine.class)

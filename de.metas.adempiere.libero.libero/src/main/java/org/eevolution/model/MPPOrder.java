@@ -41,14 +41,13 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
@@ -58,6 +57,7 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
@@ -74,6 +74,8 @@ import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * PP Order Model.
@@ -306,6 +308,20 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		return IDocument.STATUS_Completed;
 	} // completeIt
 
+	/**
+	 * Check if the Quantity from all BOM Lines is available (QtyOnHand >= QtyRequired)
+	 *
+	 * @return true if entire Qty is available for this Order
+	 */
+	public boolean isAvailable()
+	{
+		final String whereClause = "QtyOnHand >= QtyRequiered AND PP_Order_ID=?";
+		final boolean available = new Query(getCtx(), "RV_PP_Order_Storage", whereClause, get_TrxName())
+				.setParameters(new Object[] { get_ID() })
+				.match();
+		return available;
+	}
+
 	@Override
 	public boolean voidIt()
 	{
@@ -515,6 +531,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public String getSummary()
 	{
 		return "" + getDocumentNo() + "/" + getDatePromised();
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateOrdered());
 	}
 
 	@Override

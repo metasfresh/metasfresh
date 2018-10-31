@@ -2,7 +2,6 @@ package de.metas.order.voidorderandrelateddocs.process;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
@@ -22,6 +21,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /*
  * #%L

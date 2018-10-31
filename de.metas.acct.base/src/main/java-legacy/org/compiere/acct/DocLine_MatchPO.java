@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Order;
@@ -27,6 +25,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

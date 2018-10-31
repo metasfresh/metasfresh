@@ -34,8 +34,6 @@ import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -62,6 +60,9 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
@@ -163,9 +164,10 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	 */
 	public BigDecimal getQtyToMove(final I_M_ReceiptSchedule rs, final I_C_UOM uom)
 	{
+		ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
 		final BigDecimal qtyToMove = getQtyToMove(rs);
 		final BigDecimal qtyToMoveConv = Services.get(IUOMConversionBL.class)
-				.convertQty(rs.getM_Product_ID(), qtyToMove, rs.getC_UOM(), uom);
+				.convertQty(productId, qtyToMove, rs.getC_UOM(), uom);
 		return qtyToMoveConv;
 	}
 
@@ -642,6 +644,5 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	{
 		return receiptSchedule.isProcessed();
 	}
-
 
 }

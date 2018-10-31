@@ -37,11 +37,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
@@ -49,10 +45,13 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
@@ -68,6 +67,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -115,7 +118,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private boolean processShipments = true;
 
 	private boolean createPackingLines = false;
-	private boolean manualPackingMaterial = false;
+
 	private boolean shipmentDateToday = false;
 
 	/**
@@ -125,7 +128,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 *
 	 * In this way, we {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>true</code> only on first assignment.
 	 */
-	private final Set<Integer> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
+	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
 	public InOutProducerFromShipmentScheduleWithHU(final InOutGenerateResult result)
 	{
@@ -293,11 +296,12 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Document Type
 		{
-			final int docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
 					.adClientId(shipmentSchedule.getAD_Client_ID())
 					.adOrgId(shipmentSchedule.getAD_Org_ID())
-					.build());
+					.build();
+			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 			shipment.setC_DocType_ID(docTypeId);
 			shipment.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 			shipment.setIsSOTrx(true);
@@ -306,8 +310,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// BPartner, Location & Contact
 		{
-			shipment.setC_BPartner_ID(shipmentScheduleEffectiveValuesBL.getC_BPartner_ID(shipmentSchedule));
-			shipment.setC_BPartner_Location_ID(shipmentScheduleEffectiveValuesBL.getBPartnerLocation(shipmentSchedule).getC_BPartner_Location_ID());
+			final BPartnerId bpartnerId = shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule);
+			final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule);
+			shipment.setC_BPartner_ID(bpartnerId.getRepoId());
+			shipment.setC_BPartner_Location_ID(bpLocationId.getRepoId());
 			shipment.setAD_User_ID(shipmentScheduleEffectiveValuesBL.getAD_User_ID(shipmentSchedule));
 		}
 
@@ -321,7 +327,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Warehouse
 		{
-			shipment.setM_Warehouse_ID(shipmentScheduleEffectiveValuesBL.getWarehouseId(shipmentSchedule));
+			shipment.setM_Warehouse_ID(shipmentScheduleEffectiveValuesBL.getWarehouseId(shipmentSchedule).getRepoId());
 		}
 
 		//
@@ -551,13 +557,16 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// => currentShipmentLineBuilder = null;
 		}
 
+		final boolean isManualPackingMaterial = candidate.isCreateManualPackingMaterial();
+
 		//
 		// If we don't have an active shipment line builder
 		// then create one
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
-			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
+			currentShipmentLineBuilder.setManualPackingMaterial(isManualPackingMaterial);
+			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
 
 		}
@@ -588,13 +597,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public InOutProducerFromShipmentScheduleWithHU setManualPackingMaterial(final boolean manualPackingMaterial)
-	{
-		this.manualPackingMaterial = manualPackingMaterial;
-		return this;
-	}
-
-	@Override
 	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday)
 	{
 		this.shipmentDateToday = forceDateToday;
@@ -610,5 +612,4 @@ public class InOutProducerFromShipmentScheduleWithHU
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
 	}
-
 }

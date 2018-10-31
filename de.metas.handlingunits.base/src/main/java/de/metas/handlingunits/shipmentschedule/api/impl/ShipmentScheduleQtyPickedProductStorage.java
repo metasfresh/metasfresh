@@ -25,18 +25,19 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Product storage oriented on {@link I_M_ShipmentSchedule}'s QtyPicked.
@@ -46,12 +47,17 @@ import de.metas.quantity.CapacityInterface;
  */
 public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStorage
 {
+	public static ShipmentScheduleQtyPickedProductStorage of(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return new ShipmentScheduleQtyPickedProductStorage(shipmentSchedule);
+	}
+	
 	private final transient IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private boolean staled = false;
 
-	public ShipmentScheduleQtyPickedProductStorage(final I_M_ShipmentSchedule shipmentSchedule)
+	public ShipmentScheduleQtyPickedProductStorage(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		setConsiderForceQtyAllocationFromRequest(false); // TODO: consider changing it to "true" (default)
 
@@ -113,11 +119,11 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 
 		//
 		// Create the total capacity based on qtyTarget
-		final I_M_Product product = shipmentSchedule.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
 		return Capacity.createCapacity(
 				qtyTarget, // qty
-				product, // product
+				productId, // product
 				uom, // uom
 				false // allowNegativeCapacity
 		);

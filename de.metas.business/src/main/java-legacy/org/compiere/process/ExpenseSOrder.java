@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -36,6 +35,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Create Sales Orders from Expense Reports

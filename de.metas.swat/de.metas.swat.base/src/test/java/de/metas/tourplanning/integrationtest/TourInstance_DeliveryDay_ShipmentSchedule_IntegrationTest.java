@@ -29,8 +29,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
@@ -46,6 +44,8 @@ import de.metas.tourplanning.model.I_M_ShipmentSchedule;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Test a scenario which involves

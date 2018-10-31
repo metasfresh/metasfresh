@@ -31,12 +31,9 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Shipper;
 
 import de.metas.order.IOrderDAO;
 import de.metas.process.IProcessPrecondition;
@@ -44,6 +41,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -51,6 +49,8 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.tourplanning.api.IDeliveryDayDAO;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implements IProcessPrecondition
 {
@@ -67,7 +67,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 	private static final String CreateFromPickingSlots_MSG_DOC_PROCESSED = "CreateFromPickingSlots_Msg_Doc_Processed";
 
 	private I_M_ShipperTransportation shipperTransportation;
-	private I_M_Shipper shipper;
+	private ShipperId shipperId;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -120,7 +120,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 			throw new AdempiereException("@" + CreateFromPickingSlots_MSG_DOC_PROCESSED + "@");
 		}
 
-		shipper = shipperTransportation.getM_Shipper();
+		shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
 
 		final I_M_Tour tour = InterfaceWrapperHelper.create(getCtx(), p_M_Tour_ID, I_M_Tour.class, getTrxName());
 		Check.assumeNotNull(tour, "tour not null");
@@ -183,7 +183,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 
 		// create package
 		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class, partner);
-		mpackage.setM_Shipper_ID(shipper.getM_Shipper_ID());
+		mpackage.setM_Shipper_ID(shipperId.getRepoId());
 		mpackage.setShipDate(deliverydate);
 		mpackage.setC_BPartner_ID(partner.getC_BPartner_ID());
 		mpackage.setC_BPartner_Location_ID(bpLoc.getC_BPartner_Location_ID());

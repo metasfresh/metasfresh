@@ -28,9 +28,6 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.IProcessor;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -50,6 +47,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_HeaderAggregation;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.util.Check;
+import de.metas.util.IProcessor;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class AggregationBL implements IAggregationBL

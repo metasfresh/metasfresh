@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -41,6 +39,8 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterialQuery;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class ProductionMaterialQueryExecutor
 {

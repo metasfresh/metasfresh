@@ -24,14 +24,13 @@ package de.metas.handlingunits.attribute.storage.impl;
 
 
 import java.lang.reflect.Modifier;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.junit.Test;
 import org.reflections.Reflections;
@@ -40,6 +39,7 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -53,6 +53,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.util.Services;
 
 /**
  * This test is making sure current {@link IAttributeValueGenerator} implementations are not failing when {@link HUAttributeStorage#generateInitialAttributes()} is invoked.
@@ -186,7 +187,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 
 		//
 		// Ask it to generate it's initial attributes and hope to not fail ;)
-		final Map<org.compiere.model.I_M_Attribute, Object> defaultAttributesValue = Collections.emptyMap();
+		final Map<AttributeId, Object> defaultAttributesValue = ImmutableMap.of();
 		attributesStorage.generateInitialAttributes(defaultAttributesValue);
 	}
 }

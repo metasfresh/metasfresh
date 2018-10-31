@@ -29,13 +29,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BadPdfFormatException;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
+
+import de.metas.util.Check;
 
 public class PdfCollator
 {

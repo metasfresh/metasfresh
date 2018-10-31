@@ -27,9 +27,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DB;
@@ -41,6 +43,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -290,14 +293,13 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		final int taxCategoryId = Services.get(IOrderLineBL.class).getC_TaxCategory_ID(this);
 
-		final I_M_Warehouse warehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
-		final I_C_Location locationFrom = Services.get(IWarehouseBL.class).getC_Location(warehouse);
-		final int countryFromId = locationFrom.getC_Country_ID();
+		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
+		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
 		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
 				getCtx(),
 				countryFromId,
-				getAD_Org_ID(),
+				OrgId.ofRepoId(getAD_Org_ID()),
 				getC_BPartner_Location(),		// should be bill to
 				getDateOrdered(),
 				taxCategoryId,
@@ -782,9 +784,9 @@ public class MOrderLine extends X_C_OrderLine
 		}
 
 		// Get Defaults from Parent
-		final I_M_Warehouse warehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
+		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
 		if (getC_BPartner_ID() <= 0 || getC_BPartner_Location_ID() <= 0
-				|| warehouse == null || warehouse.getM_Warehouse_ID() <= 0
+				|| warehouseId == null
 				|| getC_Currency_ID() <= 0)
 		{
 			Services.get(IOrderLineBL.class).setOrder(this, getC_Order());

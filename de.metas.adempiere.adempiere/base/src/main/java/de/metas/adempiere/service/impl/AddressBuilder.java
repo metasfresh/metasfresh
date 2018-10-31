@@ -33,8 +33,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
@@ -50,6 +48,8 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AddressBuilder
 {

@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +34,7 @@ import de.metas.materialtracking.WaschprobeOrderData;
 import de.metas.materialtracking.WaschprobeStandardMasterData;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
+import de.metas.util.Services;
 
 public class PPOrderQualityCalculatorTest
 {

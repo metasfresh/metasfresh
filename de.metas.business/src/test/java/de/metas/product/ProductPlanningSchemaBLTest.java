@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistribution;
@@ -17,6 +16,7 @@ import org.junit.Test;
 
 import de.metas.product.model.I_M_Product_PlanningSchema;
 import de.metas.product.model.X_M_Product_PlanningSchema;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -24,7 +24,8 @@ package org.adempiere.mm.attributes.api;
 
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public final class CurrentAttributeValueContextProvider
 {

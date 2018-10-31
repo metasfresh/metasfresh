@@ -4,11 +4,11 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.model.I_M_InOutLine;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

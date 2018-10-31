@@ -1,10 +1,13 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.availability;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,8 +16,10 @@ import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConvertersV2;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3TestingTools;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
 
 /*
  * #%L
@@ -52,7 +57,9 @@ public class MSV3AvailiabilityClientTests
 	@Ignore
 	public void manualTest()
 	{
-		MSV3TestingTools.setDBVersion(MSV3AvailiabilityClientTests.class.getSimpleName());
+		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
+		vendor.setAD_Org_ID(123);
+		saveRecord(vendor);
 
 		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of("10055555", BigDecimal.TEN, UOM_ID);
 		final AvailabilityRequestItem availabilityRequestItem = AvailabilityRequestItem.builder()
@@ -60,13 +67,15 @@ public class MSV3AvailiabilityClientTests
 				.build();
 
 		final AvailabilityRequest request = AvailabilityRequest.builder()
-				.vendorId(999)
+				.vendorId(vendor.getC_BPartner_ID())
 				.availabilityRequestItem(availabilityRequestItem)
 				.build();
 
-		final MSV3AvailiabilityClient msv3AvailiabilityClient = new MSV3AvailiabilityClient(
-				new MSV3ConnectionFactory(),
-				MSV3TestingTools.createMSV3ClientConfig());
+		final MSV3AvailiabilityClient msv3AvailiabilityClient = MSV3AvailiabilityClientImpl.builder()
+				.connectionFactory(new MSV3ConnectionFactory())
+				.config(MSV3TestingTools.createMSV3ClientConfig(MSV3ClientConfig.VERSION_2))
+				.jaxbConverters(StockAvailabilityJAXBConvertersV2.instance)
+				.build();
 
 		final AvailabilityResponse response = msv3AvailiabilityClient.retrieveAvailability(request);
 		assertThat(response).isNotNull();

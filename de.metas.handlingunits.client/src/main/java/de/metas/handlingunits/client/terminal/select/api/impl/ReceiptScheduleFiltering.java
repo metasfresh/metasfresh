@@ -39,13 +39,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Product;
-import org.eevolution.model.X_M_Warehouse_Routing;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.client.terminal.receiptschedule.model.IReceiptScheduleTableRow;
@@ -55,6 +53,8 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg
@@ -70,9 +70,9 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 	}
 
 	@Override
-	public List<I_M_Warehouse> retrieveWarehouses(final Properties ctx)
+	public List<I_M_Warehouse> retrieveWarehouses()
 	{
-		return Services.get(IWarehouseDAO.class).retrieveWarehouses(ctx, X_M_Warehouse_Routing.DOCBASETYPE_MaterialReceipt);
+		return Services.get(IWarehouseDAO.class).getWarehousesAllowedForDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);
 	}
 
 	private ICompositeQueryFilter<I_M_ReceiptSchedule> createFilter(final Properties ctx, final int warehouseId, final int bpartnerId, final int orderId)

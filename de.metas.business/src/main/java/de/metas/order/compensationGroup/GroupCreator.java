@@ -2,9 +2,8 @@ package de.metas.order.compensationGroup;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
-
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -77,13 +76,13 @@ public final class GroupCreator
 		getGroupTemplate()
 				.getLines()
 				.stream()
-				.filter(templateLine -> templateLine.getGroupMatcher().test(group))
+				.filter(templateLine -> templateLine.getGroupMatcher().isMatching(group))
 				.map(templateLine -> compensationLineCreateRequestFactory.createGroupCompensationLineCreateRequest(templateLine, group))
 				.forEach(group::addNewCompensationLine);
 
-		group.moveAllManualCompensationLinesToEnd();
-
+		group.updateAllCompensationLines();
 		groupsRepo.saveGroup(group);
+		
 		return group;
 	}
 

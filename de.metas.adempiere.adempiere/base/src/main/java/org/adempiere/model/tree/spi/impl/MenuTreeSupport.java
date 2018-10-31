@@ -32,8 +32,6 @@ import java.util.List;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Process;
@@ -46,6 +44,8 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
 import de.metas.i18n.Language;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author tsa

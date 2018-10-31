@@ -38,8 +38,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -71,13 +69,17 @@ import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -87,6 +89,8 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
@@ -98,7 +102,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 		GroupCompensationLineCreateRequestFactory.class,
 		PPOrderPojoConverter.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class
-		})
+})
 @ActiveProfiles(Profiles.PROFILE_Test)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
@@ -119,6 +123,8 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 	private I_M_Product pSalad;
 	private I_M_Product pFolie;
+
+	private HuPackingInstructionsVersionId piVersionId;
 
 	@Override
 	protected HUTestHelper createHUTestHelper()
@@ -154,6 +160,9 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		pSalad = createProduct("Salad", uomStuck); // AB Alicesalat 250g - the big product bom
 		pFolie = createProduct("Folie", uomRolle);
+
+		final I_M_HU_PI pi = helper.createHUDefinition("TestTU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		this.piVersionId = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersionId(pi);
 
 		//
 		// Conversion for product Folie: Rolle -> Millimeter
@@ -591,6 +600,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	private I_M_HU createSimpleHuWithFolie(final String qtyOfFolie)
 	{
 		final I_M_HU hu = newInstance(I_M_HU.class);
+		hu.setM_HU_PI_Version_ID(piVersionId.getRepoId());
 		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		save(hu);
 

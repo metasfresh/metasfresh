@@ -26,15 +26,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.storage.IStorageAttributeSegment;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.IStorageSegmentBuilder;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class StorageSegmentBuilder implements IStorageSegmentBuilder
 {
@@ -92,18 +93,14 @@ public class StorageSegmentBuilder implements IStorageSegmentBuilder
 	}
 
 	@Override
-	public IStorageSegmentBuilder addM_Warehouse(final I_M_Warehouse warehouse)
+	public IStorageSegmentBuilder addWarehouseId(@NonNull final WarehouseId warehouseId)
 	{
-		if (warehouse == null)
-		{
-			return this;
-		}
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
-		final List<I_M_Locator> locators = warehouseDAO.retrieveLocators(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
-		for (final I_M_Locator locator : locators)
+		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
+		for (final LocatorId locatorId : locatorIds)
 		{
-			addM_Locator_ID(locator.getM_Locator_ID());
+			addM_Locator_ID(locatorId.getRepoId());
 		}
 
 		return this;

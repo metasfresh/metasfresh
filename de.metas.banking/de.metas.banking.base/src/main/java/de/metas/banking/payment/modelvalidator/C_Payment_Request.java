@@ -29,14 +29,14 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.i18n.IMsgBL;
-import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Payment_Request.class)
 public class C_Payment_Request

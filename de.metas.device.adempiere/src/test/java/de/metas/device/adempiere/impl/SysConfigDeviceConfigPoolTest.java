@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.device.adempiere.AttributesDevicesHub;
 import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
+import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L

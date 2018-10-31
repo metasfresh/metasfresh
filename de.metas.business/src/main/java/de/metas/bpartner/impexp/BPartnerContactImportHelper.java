@@ -4,8 +4,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -15,6 +13,8 @@ import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -149,6 +149,7 @@ import lombok.NonNull;
 		user.setIsDefaultContact(importRecord.isDefaultContact());
 		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
 		user.setIsShipToContact_Default(importRecord.isShipToContact_Default());
+		setUserMemoFields(importRecord, user);
 	}
 
 	/**
@@ -201,10 +202,10 @@ import lombok.NonNull;
 
 	private static void setUserMemoFields(@NonNull final I_I_BPartner importRecord, @NonNull final I_AD_User user)
 	{
-		setUserMemo(user, importRecord.getMemo());
-		setUserMemo(user, importRecord.getMemo1());
-		setUserMemo(user, importRecord.getMemo2());
-		setUserMemo(user, importRecord.getMemo3());
+		setUserMemo(user, importRecord.getAD_User_Memo1());
+		setUserMemo(user, importRecord.getAD_User_Memo2());
+		setUserMemo(user, importRecord.getAD_User_Memo3());
+		setUserMemo(user, importRecord.getAD_User_Memo4());
 	}
 
 	private static void setUserMemo(@NonNull final I_AD_User user, final String newMemoText)

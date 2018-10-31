@@ -29,7 +29,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
@@ -38,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
+import de.metas.util.Services;
 
 /**
  * From {@link MaterialTrackingPPOrderBL} service, tests methods which are about checking if a manufacturing order is Quality Inspection or not.

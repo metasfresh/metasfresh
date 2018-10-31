@@ -26,10 +26,9 @@ package de.metas.javaclasses;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.ISingletonService;
 
 public interface IJavaClassDAO extends ISingletonService
 {

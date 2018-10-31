@@ -25,9 +25,8 @@ package de.metas.inout.api;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inout.model.I_M_Material_Balance_Config;
+import de.metas.util.ISingletonService;
 
 public interface IMaterialBalanceDetailBL extends ISingletonService
 {

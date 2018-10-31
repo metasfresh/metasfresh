@@ -9,7 +9,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_ConversionType_Default;
 import org.compiere.util.Env;
@@ -21,6 +20,7 @@ import org.junit.Test;
 
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

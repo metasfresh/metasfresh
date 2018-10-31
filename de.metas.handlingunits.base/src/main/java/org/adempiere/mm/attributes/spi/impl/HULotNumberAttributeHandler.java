@@ -10,12 +10,11 @@ import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -52,21 +51,18 @@ public class HULotNumberAttributeHandler
 	@Override
 	public void onValueChanged(IAttributeValueContext attributeValueContext, IAttributeSet attributeSet, I_M_Attribute attribute, Object valueOld, Object valueNew)
 	{
-		updateLotNumber(attributeSet, attribute, valueNew);
+		updateLotNumber(attributeSet, valueNew);
 	}
 
 	/**
 	 * Update the lotNumber based on the LotNumberDate
 	 * 
 	 * @param attributeSet
-	 * @param attribute
 	 * @param valueNew
 	 */
-	private void updateLotNumber(final IAttributeSet attributeSet, final I_M_Attribute attribute, final Object valueNew)
+	private void updateLotNumber(final IAttributeSet attributeSet, final Object valueNew)
 	{
 		final Date newDate = (Date)valueNew;
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
 
 		final AttributeId lotNumberId = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttributeId();
 		if (lotNumberId == null)

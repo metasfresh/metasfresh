@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 
@@ -16,6 +15,7 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.request.api.IRequestDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

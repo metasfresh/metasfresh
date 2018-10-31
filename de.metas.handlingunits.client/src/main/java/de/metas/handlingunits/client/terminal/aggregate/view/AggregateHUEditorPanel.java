@@ -28,7 +28,6 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.IContainer;
@@ -44,6 +43,7 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 
 /**
  * Verdichtung (POS) HU Editor View (second window)

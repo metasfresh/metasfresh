@@ -1,24 +1,25 @@
 package de.metas.handlingunits.sourcehu;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -64,33 +65,26 @@ public class HuId2SourceHUsService
 	 * @param huIds
 	 * @return
 	 */
-	public Collection<I_M_HU> retrieveActualSourceHUs(@NonNull final List<Integer> huIds)
+	public Collection<I_M_HU> retrieveActualSourceHUs(@NonNull final Set<HuId> huIds)
 	{
-		final Set<Integer> vhuSourceIds = retrieveVhus(huIds);
-
-		final Set<I_M_HU> topLevelSourceHus = retrieveTopLevelSourceHus(vhuSourceIds);
-
-		return topLevelSourceHus;
+		final Set<HuId> vhuSourceIds = retrieveVhuSourceIds(huIds);
+		return retrieveTopLevelSourceHus(vhuSourceIds);
 	}
 
-	private Set<Integer> retrieveVhus(@NonNull final List<Integer> huIds)
+	private Set<HuId> retrieveVhuSourceIds(@NonNull final Set<HuId> huIds)
 	{
-		final Set<Integer> vhuSourceIds = new HashSet<>();
+		Check.assumeNotEmpty(huIds, "huIds is not empty");
 
-		for (final int huId : huIds)
-		{
-			final HUTraceEventQuery query = HUTraceEventQuery.builder()
-					.type(HUTraceType.TRANSFORM_LOAD)
-					.topLevelHuId(huId)
-					.build();
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
+				.type(HUTraceType.TRANSFORM_LOAD)
+				.topLevelHuIds(huIds)
+				.build();
 
-			final List<HUTraceEvent> traceEvents = huTraceRepository.query(query);
-			for (final HUTraceEvent traceEvent : traceEvents)
-			{
-				vhuSourceIds.add(traceEvent.getVhuSourceId());
-			}
-		}
-		return vhuSourceIds;
+		return huTraceRepository.query(query)
+				.stream()
+				.map(HUTraceEvent::getVhuSourceId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**
@@ -99,23 +93,29 @@ public class HuId2SourceHUsService
 	 * @param vhuSourceIds
 	 * @return
 	 */
-	private Set<I_M_HU> retrieveTopLevelSourceHus(@NonNull final Set<Integer> vhuSourceIds)
+	private List<I_M_HU> retrieveTopLevelSourceHus(@NonNull final Set<HuId> vhuSourceIds)
 	{
-		final Set<I_M_HU> topLevelSourceHus = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
-		for (int vhuSourceId : vhuSourceIds)
+		if (vhuSourceIds.isEmpty())
 		{
-			final HUTraceEventQuery query = HUTraceEventQuery.builder()
-					.type(HUTraceType.TRANSFORM_LOAD)
-					.vhuId(vhuSourceId)
-					.build();
-			final List<HUTraceEvent> traceEvents = huTraceRepository.query(query);
-			for (final HUTraceEvent traceEvent : traceEvents)
-			{
-				final I_M_HU topLevelSourceHu = load(traceEvent.getTopLevelHuId(), I_M_HU.class);
-				topLevelSourceHus.add(topLevelSourceHu);
-			}
+			return ImmutableList.of();
 		}
-		return topLevelSourceHus;
+
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
+				.type(HUTraceType.TRANSFORM_LOAD)
+				.vhuIds(vhuSourceIds)
+				.build();
+
+		final Set<HuId> topLevelSourceHuIds = huTraceRepository.query(query)
+				.stream()
+				.map(HUTraceEvent::getTopLevelHuId)
+				.collect(ImmutableSet.toImmutableSet());
+		if (topLevelSourceHuIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsDAO.getByIds(topLevelSourceHuIds);
 	}
 
 	public Collection<HuId> retrieveMatchingSourceHUIds(final HuId huId)

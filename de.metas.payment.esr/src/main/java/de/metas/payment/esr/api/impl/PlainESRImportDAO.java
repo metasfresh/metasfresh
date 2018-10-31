@@ -32,7 +32,6 @@ import java.util.regex.Pattern;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 
@@ -42,6 +41,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.util.Services;
 
 public class PlainESRImportDAO extends AbstractESRImportDAO
 {

@@ -27,11 +27,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.document.impl.AbstractHUDocument;
+import de.metas.util.Check;
 
 /* package */class ReceiptScheduleHUDocument extends AbstractHUDocument
 {

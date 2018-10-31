@@ -3,8 +3,6 @@ package de.metas.event.remote;
 import java.util.Map;
 import java.util.Objects;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -19,6 +17,8 @@ import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*

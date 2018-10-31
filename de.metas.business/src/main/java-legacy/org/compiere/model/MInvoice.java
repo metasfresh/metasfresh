@@ -26,6 +26,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,15 +37,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.print.ReportEngine;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -57,6 +55,7 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.cache.CCache;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocument;
@@ -69,6 +68,9 @@ import de.metas.invoice.IMatchInvBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Invoice Model.
@@ -1902,7 +1904,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		if (dt.isOverwriteDateOnComplete())
 		{
-			setDateInvoiced(SystemTime.asTimestamp());  // metas: use SystemTime
+			setDateInvoiced(SystemTime.asTimestamp());
 		}
 		if (dt.isOverwriteSeqOnComplete())
 		{
@@ -2381,6 +2383,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		}
 		return sb.toString();
 	}	// getSummary
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateInvoiced());
+	}
 
 	/**
 	 * Get Process Message

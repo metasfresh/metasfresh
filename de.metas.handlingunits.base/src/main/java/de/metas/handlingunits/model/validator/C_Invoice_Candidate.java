@@ -27,18 +27,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.model.I_C_Invoice_Candidate;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate

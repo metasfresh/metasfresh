@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * @author tsa
@@ -54,7 +55,7 @@ public abstract class AbstractTerminalTextField
 	private String action;
 	private float fontSize;
 
-	private boolean showKeyboardButton = false;
+	private KeyboardDisplayMode keyboardDisplayMode = KeyboardDisplayMode.NEVER;
 
 	private ITerminalKeyDialog activeKeyboard = null;
 
@@ -170,7 +171,7 @@ public abstract class AbstractTerminalTextField
 	 * registers a ITerminalKeyListener that needs to be disposed right after the on-screen keyboard closes.
 	 * Otherwise, future key events to other text fields of our panel would update "our" text field.
 	 */
-	protected void showKeyboard()
+	protected final void showKeyboard(final boolean userRequest)
 	{
 		// If keyboard is already active, don't show it again
 		if (activeKeyboard != null)
@@ -191,7 +192,7 @@ public abstract class AbstractTerminalTextField
 		}
 
 		// If this component is not the focus owner, there is no point to automatically show keyboard
-		if (!isFocusOwner())
+		if (!userRequest && !isFocusOwner())
 		{
 			return;
 		}
@@ -258,16 +259,15 @@ public abstract class AbstractTerminalTextField
 		factories.registerFactory(clazz, factory);
 	}
 
-	@Override
-	public final boolean isShowKeyboardButton()
+	protected final KeyboardDisplayMode getKeyboardDisplayMode()
 	{
-		return showKeyboardButton;
+		return keyboardDisplayMode;
 	}
 
 	@Override
-	public void setShowKeyboardButton(final boolean showKeyboardButton)
+	public void setKeyboardDisplayMode(@NonNull final KeyboardDisplayMode keyboardDisplayMode)
 	{
-		this.showKeyboardButton = showKeyboardButton;
+		this.keyboardDisplayMode = keyboardDisplayMode;
 	}
 
 	@Override
@@ -316,7 +316,7 @@ public abstract class AbstractTerminalTextField
 	@Override
 	public String toString()
 	{
-		return "AbstractTerminalTextField [title=" + title + ", displayType=" + displayType + ", showKeyboardButton=" + showKeyboardButton + ", activeKeyboard=" + activeKeyboard + ", action=" + action + ", fontSize=" + fontSize + ", format=" + format + ", keyLayout=" + keyLayout + "]";
+		return "AbstractTerminalTextField [title=" + title + ", displayType=" + displayType + ", keyboardDisplayMode=" + keyboardDisplayMode + ", activeKeyboard=" + activeKeyboard + ", action=" + action + ", fontSize=" + fontSize + ", format=" + format + ", keyLayout=" + keyLayout + "]";
 	}
 
 }

@@ -9,7 +9,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
@@ -18,6 +17,7 @@ import de.metas.logging.LogManager;
 import de.metas.procurement.base.balance.IPMMBalanceChangeEventProcessor;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
 import de.metas.procurement.base.order.model.I_C_OrderLine;
+import de.metas.util.Services;
 
 /*
  * #%L

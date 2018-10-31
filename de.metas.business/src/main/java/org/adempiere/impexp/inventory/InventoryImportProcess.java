@@ -17,10 +17,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -40,6 +37,9 @@ import de.metas.inventory.IInventoryBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -184,12 +184,14 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	private int getDocTypeIdForInternalUseInventory(@NonNull final I_I_Inventory importRecord)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+
+		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 				.docSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
 				.adClientId(importRecord.getAD_Client_ID())
 				.adOrgId(importRecord.getAD_Org_ID())
-				.build());
+				.build();
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**

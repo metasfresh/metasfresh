@@ -14,7 +14,7 @@ public class X_MSV3_Substitution extends org.compiere.model.PO implements I_MSV3
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1610705684L;
+	private static final long serialVersionUID = 1945672850L;
 
     /** Standard Constructor */
     public X_MSV3_Substitution (Properties ctx, int MSV3_Substitution_ID, String trxName)

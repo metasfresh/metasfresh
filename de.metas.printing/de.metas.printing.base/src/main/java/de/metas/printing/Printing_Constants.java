@@ -25,10 +25,10 @@ package de.metas.printing;
 import java.math.BigDecimal;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.util.Services;
 
 public final class Printing_Constants
 {

@@ -32,8 +32,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
@@ -61,7 +59,10 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Service
@@ -329,7 +330,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		}
 
 		//
-		final BigDecimal qtyToIssueEffective = Services.get(IUOMConversionBL.class).convertQty(orderBOMLine.getM_Product_ID(), qtyToIssueEffective_InStdUOM, standardUOM, uom);
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		final BigDecimal qtyToIssueEffective = Services.get(IUOMConversionBL.class).convertQty(productId, qtyToIssueEffective_InStdUOM, standardUOM, uom);
 		return new Quantity(qtyToIssueEffective, uom, qtyToIssueEffective_InStdUOM, standardUOM);
 	}
 
@@ -507,8 +509,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			final I_C_UOM bomLineUOM = orderBOMLine.getC_UOM();
 			Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");
 
+			final ProductId productId = ProductId.ofRepoId(bomProduct.getM_Product_ID());
 			final BigDecimal bomToLineUOMMultiplier = Services.get(IUOMConversionBL.class)
-					.convertQty(bomProduct.getM_Product_ID(), BigDecimal.ONE, bomUOM, bomLineUOM);
+					.convertQty(productId, BigDecimal.ONE, bomUOM, bomLineUOM);
 			qty = qty.multiply(bomToLineUOMMultiplier);
 		}
 		else

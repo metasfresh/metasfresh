@@ -37,8 +37,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 
@@ -51,6 +49,8 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO

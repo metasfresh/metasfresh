@@ -5,9 +5,9 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CacheMgt;
 import org.springframework.stereotype.Component;
 
+import de.metas.cache.CacheMgt;
 import lombok.NonNull;
 
 /*

@@ -30,13 +30,10 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
@@ -44,6 +41,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingQuery;
@@ -55,6 +53,8 @@ import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MaterialTrackingDAO implements IMaterialTrackingDAO
 {

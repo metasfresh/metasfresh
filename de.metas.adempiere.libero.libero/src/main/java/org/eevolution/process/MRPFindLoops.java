@@ -31,7 +31,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
@@ -41,6 +40,7 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.process.JavaProcess;
 

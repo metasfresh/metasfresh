@@ -26,8 +26,9 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 
 
 import org.adempiere.ad.ui.spi.ITabCallout;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.StateChangeEvent;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Creates and registers {@link ICalloutRecord}'s {@link ITabCallout}s.

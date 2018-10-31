@@ -42,13 +42,15 @@ public class SupportIDType
 		return new SupportIDType(valueAsInt);
 	}
 
+	public static final int MAX_VALUE = 999999;
+
 	private final int valueAsInt;
 
 	private SupportIDType(final int valueAsInt)
 	{
-		if (valueAsInt < 1 || valueAsInt > 999999)
+		if (valueAsInt < 1 || valueAsInt > MAX_VALUE)
 		{
-			throw new IllegalArgumentException("value shall be between 1 and 999999");
+			throw new IllegalArgumentException("SupportID value shall be between 1 and " + MAX_VALUE + " but it was: " + valueAsInt);
 		}
 
 		this.valueAsInt = valueAsInt;
@@ -58,5 +60,10 @@ public class SupportIDType
 	public int toJson()
 	{
 		return valueAsInt;
+	}
+
+	public String getValueAsString()
+	{
+		return String.valueOf(getValueAsInt());
 	}
 }

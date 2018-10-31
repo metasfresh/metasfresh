@@ -3,10 +3,10 @@ package de.metas.invoicecandidate.spi;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
 import lombok.ToString;
 
 /*

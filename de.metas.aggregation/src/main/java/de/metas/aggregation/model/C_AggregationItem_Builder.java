@@ -26,10 +26,11 @@ package de.metas.aggregation.model;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Column;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Builder class for {@link I_C_AggregationItem}

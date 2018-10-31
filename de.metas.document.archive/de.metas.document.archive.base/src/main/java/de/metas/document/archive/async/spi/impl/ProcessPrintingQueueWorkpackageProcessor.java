@@ -5,13 +5,13 @@ import java.util.Properties;
 
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

@@ -36,11 +36,12 @@ import org.adempiere.ad.trx.exceptions.IllegalTrxRunStateException;
 import org.adempiere.ad.trx.exceptions.TrxNotFoundException;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.Services;
 
 public class TrxManagerTest
 {

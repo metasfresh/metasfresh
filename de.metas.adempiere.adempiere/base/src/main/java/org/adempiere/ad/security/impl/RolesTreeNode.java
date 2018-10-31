@@ -30,8 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IRolesTreeNode;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.util.Env;
@@ -39,6 +37,9 @@ import org.compiere.util.Env;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 class RolesTreeNode implements IRolesTreeNode
 {

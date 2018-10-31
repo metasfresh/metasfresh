@@ -5,7 +5,6 @@ import java.sql.Timestamp;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
@@ -20,6 +19,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 public final class OrderCreateNewFromProposal extends JavaProcess 
 {

@@ -4,11 +4,11 @@ import java.util.Date;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMMWeekDAO;
 import de.metas.procurement.base.balance.PMMBalanceSegment;
 import de.metas.procurement.base.model.I_PMM_Week;
+import de.metas.util.Services;
 
 /*
  * #%L

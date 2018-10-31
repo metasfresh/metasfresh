@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -32,6 +31,7 @@ import org.compiere.util.ValueNamePair;
 
 import de.metas.document.engine.IDocument;
 import de.metas.order.IOrderBL;
+import de.metas.util.Services;
 
 /**
  * Wrapper for standard order

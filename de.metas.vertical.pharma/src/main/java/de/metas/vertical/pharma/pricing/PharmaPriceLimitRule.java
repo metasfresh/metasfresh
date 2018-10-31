@@ -2,12 +2,11 @@ package de.metas.vertical.pharma.pricing;
 
 import java.util.Set;
 
-import org.adempiere.util.Services;
-
 import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
 import de.metas.pricing.limit.IPriceLimitRule;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.util.Services;
 
 /*
  * #%L

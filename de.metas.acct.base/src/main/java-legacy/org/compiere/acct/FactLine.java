@@ -23,9 +23,6 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner_Location;
@@ -47,7 +44,11 @@ import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import lombok.NonNull;
+
 
 /**
  * Accounting Fact Entry.

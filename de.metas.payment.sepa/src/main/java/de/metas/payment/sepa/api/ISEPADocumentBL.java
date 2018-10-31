@@ -28,11 +28,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.ISingletonService;
-
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.util.ILoggable;
+import de.metas.util.ISingletonService;
 
 public interface ISEPADocumentBL extends ISingletonService
 {

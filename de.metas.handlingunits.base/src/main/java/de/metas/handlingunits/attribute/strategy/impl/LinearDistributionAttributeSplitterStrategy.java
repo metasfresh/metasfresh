@@ -28,7 +28,6 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -36,6 +35,7 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitRequest;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitResult;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.conversion.ConversionHelper;
+import de.metas.util.Services;
 
 /**
  * Linearly distribute a given numeric value to it's children

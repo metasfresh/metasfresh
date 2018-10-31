@@ -1,8 +1,12 @@
 package de.metas.inventory.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -31,18 +35,21 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inventory.IInventoryBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class InventoryBL implements IInventoryBL
@@ -124,8 +131,9 @@ public class InventoryBL implements IInventoryBL
 	@Override
 	public Quantity getMovementQtyInStockingUOM(final I_M_InventoryLine inventoryLine)
 	{
+		ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
 		final Quantity movementQty = getMovementQty(inventoryLine);
-		return Services.get(IUOMConversionBL.class).convertToProductUOM(movementQty, inventoryLine.getM_Product_ID());
+		return Services.get(IUOMConversionBL.class).convertToProductUOM(movementQty, productId);
 	}
 
 	@Override
@@ -144,5 +152,48 @@ public class InventoryBL implements IInventoryBL
 	public boolean isSOTrx(final I_M_InventoryLine inventoryLine)
 	{
 		return getMovementQty(inventoryLine).signum() < 0;
+	}
+
+	@Override
+	public void assignToInventoryCounters(final List<I_M_InventoryLine> inventoryLines, final int numberOfCounters)
+	{
+		final Map<Integer, List<I_M_InventoryLine>> linesToLocators = new HashMap<>();
+
+		GuavaCollectors.groupByAndStream(inventoryLines.stream(), I_M_InventoryLine::getM_Locator_ID)
+				.forEach(
+						inventoryLinesPerLocator -> linesToLocators.put(inventoryLinesPerLocator.get(0).getM_Locator_ID(),
+								inventoryLinesPerLocator));
+
+		final List<Integer> locatorIds = linesToLocators
+				.keySet()
+				.stream()
+				.sorted()
+				.collect(ImmutableList.toImmutableList());
+
+		int i = 0;
+
+		for (int locatorId : locatorIds)
+		{
+			if (i == numberOfCounters)
+			{
+				i = 0;
+			}
+			final char counterIdentifier = (char)('A' + i);
+
+			assignInventoryLinesToCounterIdentifiers(linesToLocators.get(locatorId), counterIdentifier);
+
+			i++;
+		}
+	}
+
+	private void assignInventoryLinesToCounterIdentifiers(final List<I_M_InventoryLine> list, final char counterIdentifier)
+	{
+		list.stream().forEach(inventoryLine -> {
+
+			inventoryLine.setAssignedTo(Character.toString(counterIdentifier));
+
+			save(inventoryLine);
+		});
+
 	}
 }

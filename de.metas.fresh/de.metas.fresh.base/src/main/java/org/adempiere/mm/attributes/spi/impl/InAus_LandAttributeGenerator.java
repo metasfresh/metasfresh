@@ -30,14 +30,15 @@ import org.adempiere.mm.attributes.api.IInAusLandAttributeBL;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeDAO;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class InAus_LandAttributeGenerator extends AbstractAttributeValueGenerator
 {

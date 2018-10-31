@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
 
@@ -35,6 +34,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.util.Check;
 
 /**
  * Collects {@link HUReceiptLinePartCandidate}s and behaves like a candidate for receipt line (i.e. {@link I_M_InOutLine}).

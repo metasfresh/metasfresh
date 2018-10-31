@@ -3,10 +3,9 @@ package de.metas.elasticsearch.indexer;
 import java.util.Collection;
 import java.util.Optional;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerId;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

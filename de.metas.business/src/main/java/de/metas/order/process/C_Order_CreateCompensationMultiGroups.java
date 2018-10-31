@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +16,13 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -115,8 +116,8 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 			return null;
 		}
 		final I_M_Product_Category productCategory = InterfaceWrapperHelper.loadOutOfTrx(product.getM_Product_Category_ID(), I_M_Product_Category.class);
-		final int groupTemplateId = productCategory.getC_CompensationGroup_Schema_ID();
-		if (groupTemplateId <= 0)
+		final GroupTemplateId groupTemplateId = GroupTemplateId.ofRepoIdOrNull(productCategory.getC_CompensationGroup_Schema_ID());
+		if (groupTemplateId == null)
 		{
 			return null;
 		}

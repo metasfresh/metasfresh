@@ -10,9 +10,9 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.impexp.FileImportReader;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
@@ -21,12 +21,15 @@ import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.util.Env;
 
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -52,8 +55,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 
 public class C_DataImport_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
-	private final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
+	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+	private final transient IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 
 	private static final Charset CHARSET = Charset.forName("UTF-8");
 
@@ -153,13 +156,18 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 
 	private byte[] getData()
 	{
-		Check.assume(p_AD_AttachmentEntry_ID > 0, "AD_AttachmentEntry_ID > 0");
-		return attachmentBL.getEntryByIdAsBytes(getDataImport(), p_AD_AttachmentEntry_ID);
+		return attachmentEntryService.retrieveData(getAttachmentEntryId());
 	}
 
 	private void deleteAttachmentEntry()
 	{
-		attachmentBL.deleteEntryById(getDataImport(), p_AD_AttachmentEntry_ID);
+		final AttachmentEntry attachmentEntry = attachmentEntryService.getById(getAttachmentEntryId());
+		attachmentEntryService.unattach(TableRecordReference.of(getDataImport()), attachmentEntry);
+	}
+
+	private AttachmentEntryId getAttachmentEntryId()
+	{
+		return AttachmentEntryId.ofRepoId(p_AD_AttachmentEntry_ID);
 	}
 
 	public Charset getCharset()

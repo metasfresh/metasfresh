@@ -26,12 +26,12 @@ package de.metas.inout.api;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_Material_Balance_Config;
 import de.metas.inout.model.I_M_Material_Balance_Detail;
+import de.metas.util.ISingletonService;
 
 public interface IMaterialBalanceDetailDAO extends ISingletonService
 {

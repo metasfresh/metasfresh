@@ -38,7 +38,6 @@ import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.SwingConstants;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.MImage;
@@ -49,6 +48,7 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * @author tsa

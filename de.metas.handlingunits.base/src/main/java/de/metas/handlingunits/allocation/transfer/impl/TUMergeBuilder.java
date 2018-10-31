@@ -13,25 +13,21 @@ package de.metas.handlingunits.allocation.transfer.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -47,7 +43,10 @@ import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class TUMergeBuilder implements ITUMergeBuilder
 {
@@ -60,7 +59,7 @@ public class TUMergeBuilder implements ITUMergeBuilder
 	private List<I_M_HU> sourceHUs = new ArrayList<>();
 	private I_M_HU targetHU;
 
-	private I_M_Product cuProduct;
+	private ProductId cuProductId;
 	private BigDecimal cuQty = Quantity.QTY_INFINITE;
 	private I_C_UOM cuUOM;
 	private Object cuTrxReferencedModel;
@@ -87,9 +86,9 @@ public class TUMergeBuilder implements ITUMergeBuilder
 	}
 
 	@Override
-	public TUMergeBuilder setCUProduct(final I_M_Product product)
+	public TUMergeBuilder setCUProductId(final ProductId cuProductId)
 	{
-		cuProduct = product;
+		this.cuProductId = cuProductId;
 		return this;
 	}
 
@@ -174,11 +173,11 @@ public class TUMergeBuilder implements ITUMergeBuilder
 		final Timestamp date = SystemTime.asTimestamp();
 		return AllocationUtils.createQtyRequest(
 				huContext,
-				cuProduct, // Product
-				cuQty, // Qty
-				cuUOM, // UOM
+				cuProductId, // Product
+				Quantity.of(cuQty, cuUOM), // quantity
 				date, // Date
-				cuTrxReferencedModel // Referenced model
-				);
+				cuTrxReferencedModel, // Referenced model
+				false // force allocation
+		);
 	}
 }

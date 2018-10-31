@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -33,12 +32,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
@@ -63,15 +61,19 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import it.sauronsoftware.cron4j.Predictor;
 import it.sauronsoftware.cron4j.SchedulingPattern;
 
@@ -108,7 +110,7 @@ public class Scheduler extends AdempiereServer
 		m_model = model;
 
 		// metas us1030 updating status
-		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, AD_PInstance_ID_None); // saveLogs=false
+		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, null); // saveLogs=false
 	}	// Scheduler
 
 	private static final transient Logger log = LogManager.getLogger(Scheduler.class);
@@ -126,23 +128,21 @@ public class Scheduler extends AdempiereServer
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
 
-	private static final int AD_PInstance_ID_None = -1;
-
 	/**
 	 * Sets AD_Scheduler.Status and save the record
 	 *
 	 * @param status
 	 */
-	private void setSchedulerStatus(final String status, final int adPInstanceId)
+	private void setSchedulerStatus(final String status, final PInstanceId pinstanceId)
 	{
 		Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				if (adPInstanceId > 0)
+				if (pinstanceId != null)
 				{
-					saveLogs(adPInstanceId, localTrxName);
+					saveLogs(pinstanceId, localTrxName);
 				}
 
 				m_model.setStatus(status);
@@ -159,7 +159,7 @@ public class Scheduler extends AdempiereServer
 	 *
 	 * @param trxName
 	 */
-	private void saveLogs(final int adPInstanceId, final String trxName)
+	private void saveLogs(final PInstanceId pinstanceId, final String trxName)
 	{
 		final int no = m_model.deleteLog(trxName);
 		m_summary.append("Logs deleted=").append(no);
@@ -173,9 +173,9 @@ public class Scheduler extends AdempiereServer
 		pLog.setIsError(!m_success);
 		pLog.setReference("#" + getRunCount() + " - " + TimeUtil.formatElapsed(getStartWork()));
 
-		if (adPInstanceId > 0)
+		if (pinstanceId != null)
 		{
-			pLog.setAD_PInstance_ID(adPInstanceId);
+			pLog.setAD_PInstance_ID(pinstanceId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.save(pLog);
@@ -190,13 +190,13 @@ public class Scheduler extends AdempiereServer
 	protected void doWork()
 	{
 		// metas us1030 updating staus
-		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, AD_PInstance_ID_None);
+		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, null);
 
 		m_summary = new StringBuffer(m_model.toString()).append(" - ");
 
 		// Prepare a ctx for the report/process - BF [1966880]
 		final Properties schedulerCtx = createSchedulerCtxForDoWork();
-		final AtomicInteger adPInstanceId = new AtomicInteger(AD_PInstance_ID_None);
+		final Mutable<PInstanceId> adPInstanceId = new Mutable<>();
 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(schedulerCtx))
 		{
@@ -223,7 +223,7 @@ public class Scheduler extends AdempiereServer
 				// metas-ts using process with scheduler-ctx
 				final I_AD_Process process = m_model.getAD_Process();
 				final ProcessInfo pi = createProcessInfo(schedulerCtx, m_model);
-				adPInstanceId.set(pi.getAD_PInstance_ID());
+				adPInstanceId.setValue(pi.getPinstanceId());
 
 				//
 				// Create process runner
@@ -255,7 +255,7 @@ public class Scheduler extends AdempiereServer
 					@Override
 					public void doFinally()
 					{
-						adPInstanceId.set(pi.getAD_PInstance_ID());
+						adPInstanceId.setValue(pi.getPinstanceId());
 					}
 				};
 
@@ -280,7 +280,7 @@ public class Scheduler extends AdempiereServer
 		}
 
 		// metas us1030 updating status: Running->Started
-		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, adPInstanceId.get());
+		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, adPInstanceId.getValue());
 		// metas end
 
 	}	// doWork
@@ -387,15 +387,16 @@ public class Scheduler extends AdempiereServer
 		final Integer[] userIDs = m_model.getRecipientAD_User_IDs();
 		for (int i = 0; i < userIDs.length; i++)
 		{
-			final MNote note = new MNote(ctx, AD_Message_ID, userIDs[i].intValue(), ITrx.TRXNAME_ThreadInherited);
-			note.setClientOrg(pi.getAD_Client_ID(), pi.getAD_Org_ID());
-			note.setTextMsg(m_model.getName());
-			note.setDescription(m_model.getDescription());
-			note.setRecord(pi.getTable_ID(), pi.getRecord_ID());
-			note.save();
+			final MNote noteRecord = new MNote(ctx, AD_Message_ID, userIDs[i].intValue(), ITrx.TRXNAME_ThreadInherited);
+			noteRecord.setClientOrg(pi.getAD_Client_ID(), pi.getAD_Org_ID());
+			noteRecord.setTextMsg(m_model.getName());
+			noteRecord.setDescription(m_model.getDescription());
+			noteRecord.setRecord(pi.getTable_ID(), pi.getRecord_ID());
+			noteRecord.save();
 
 			// Attachment
-			Services.get(IAttachmentBL.class).addEntriesFromFiles(note, ImmutableList.of(report));
+			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			attachmentEntryService.createNewAttachment(noteRecord, report);
 		}
 		//
 		return result.getSummary();
@@ -427,7 +428,7 @@ public class Scheduler extends AdempiereServer
 				result.getSummary(),
 				result.getLogInfo(),
 				adPInstanceTableId,
-				result.getAD_PInstance_ID());
+				PInstanceId.toRepoId(result.getPinstanceId()));
 		// metas: c.ghita@metas.ro: end
 
 		m_success = ok; // stored it, so we can persist it in the scheduler log
@@ -497,7 +498,7 @@ public class Scheduler extends AdempiereServer
 		}
 		else
 		{
-			AD_User_ID = IUserDAO.SUPERUSER_USER_ID; // fall back to SuperUser
+			AD_User_ID = UserId.METASFRESH.getRepoId(); // fall back to SuperUser
 		}
 		return AD_User_ID;
 	}

@@ -13,23 +13,19 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Shipper;
 
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
@@ -37,9 +33,12 @@ import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUPackageBL implements IHUPackageBL
 {
@@ -64,16 +63,16 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	@Override
-	public I_M_Package createM_Package(final I_M_HU hu, final I_M_Shipper shipper)
+	public I_M_Package createM_Package(final I_M_HU hu, final ShipperId shipperId)
 	{
 		Check.assumeNotNull(hu, HUException.class, "hu not null");
-		Check.assumeNotNull(shipper, HUException.class, "shipper not null");
+		Check.assumeNotNull(shipperId, HUException.class, "shipper not null");
 
 		Check.errorIf(hu.getC_BPartner_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_ID <= 0", hu);
 		Check.errorIf(hu.getC_BPartner_Location_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_Location_ID <= 0", hu);
 
 		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class);
-		mpackage.setM_Shipper_ID(shipper.getM_Shipper_ID());
+		mpackage.setM_Shipper_ID(shipperId.getRepoId());
 		mpackage.setShipDate(null);
 		mpackage.setC_BPartner_ID(hu.getC_BPartner_ID());
 		mpackage.setC_BPartner_Location_ID(hu.getC_BPartner_Location_ID());

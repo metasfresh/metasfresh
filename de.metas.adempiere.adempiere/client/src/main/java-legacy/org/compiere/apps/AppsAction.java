@@ -32,8 +32,6 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import org.adempiere.images.Images;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBoxMenuItem;
 import org.compiere.swing.CMenuItem;
@@ -41,6 +39,8 @@ import org.compiere.swing.CToggleButton;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Application Action.
@@ -67,7 +67,6 @@ public final class AppsAction extends AbstractAction
 
 	private AppsAction(final Builder builder)
 	{
-		super();
 		_actionCommand = builder.getAction();
 		_acceleratorDefault = builder.getAccelerator();
 		toggleButton = builder.isToggleButton();

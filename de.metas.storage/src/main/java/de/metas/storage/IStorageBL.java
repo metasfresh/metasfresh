@@ -26,7 +26,7 @@ package de.metas.storage;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface IStorageBL extends ISingletonService
 {

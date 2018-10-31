@@ -37,10 +37,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_System;
@@ -53,6 +49,10 @@ import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 public class TableSequenceChecker implements ITableSequenceChecker
 {

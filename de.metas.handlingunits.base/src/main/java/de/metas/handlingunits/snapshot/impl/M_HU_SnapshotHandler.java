@@ -30,12 +30,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Snapshot;
+import de.metas.util.Services;
 
 class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapshot, I_M_HU_Item>
 {

@@ -8,7 +8,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Services;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -25,6 +24,7 @@ import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L

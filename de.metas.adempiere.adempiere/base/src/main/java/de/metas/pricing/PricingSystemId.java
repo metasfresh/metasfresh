@@ -1,8 +1,8 @@
 package de.metas.pricing;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
-import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*

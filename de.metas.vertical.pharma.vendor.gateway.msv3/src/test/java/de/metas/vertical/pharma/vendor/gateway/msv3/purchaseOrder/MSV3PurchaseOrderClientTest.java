@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.function.Function;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -16,13 +17,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.ws.test.client.MockWebServiceServer;
 import org.springframework.ws.test.client.RequestMatchers;
 import org.springframework.ws.test.client.ResponseCreators;
@@ -30,28 +28,20 @@ import org.w3c.dom.Document;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
+import de.metas.util.time.SystemTime;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated;
 import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderClientJAXBConverters;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
+import de.metas.vertical.pharma.msv3.protocol.order.v1.OrderJAXBConvertersV1;
+import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderJAXBConvertersV2;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3TestingTools;
-import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3FaultInfoDataPersister;
-import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3SubstitutionDataPersister;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Auftragsart;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Bestellen;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellenResponse;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAnteil;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortAuftrag;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortPosition;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungDefektgrund;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Liefervorgabe;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
-import lombok.NonNull;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungRueckmeldungTyp;
 
 /*
  * #%L
@@ -75,126 +65,260 @@ import lombok.NonNull;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		MSV3PurchaseOrderRequestPersister.class, Msv3FaultInfoDataPersister.class, Msv3SubstitutionDataPersister.class })
 public class MSV3PurchaseOrderClientTest
 {
-	private static final BigDecimal CONFIRMED_ORDER_QTY = BigDecimal.TEN;
-	private static final BigDecimal QTY_TO_PURCHASE = new BigDecimal("23");
 	private static final int UOM_ID = 1;
 
-	private MockWebServiceServer mockServer;
-	private MSV3PurchaseOrderClient msv3PurchaseOrderClient;
+	@lombok.Value
+	@lombok.Builder
+	private static final class Context
+	{
+		MSV3ClientConfig config;
+		OrderClientJAXBConverters jaxbConverters;
+		MSV3PurchaseOrderClientImpl client;
+
+		Class<?> bestellenClass;
+		Function<Context, Source> responseProducer;
+
+		BigDecimal qtyToPurchase;
+		BigDecimal confirmedOrderQty;
+
+		Type responseItemType;
+	}
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		msv3PurchaseOrderClient = MSV3PurchaseOrderClient.builder()
-				.config(MSV3TestingTools.createMSV3ClientConfig())
-				.connectionFactory(new MSV3ConnectionFactory())
-				.build();
-
-		mockServer = MockWebServiceServer.createServer(msv3PurchaseOrderClient.getWebServiceTemplate());
-		MSV3TestingTools.setDBVersion(MSV3PurchaseOrderClientTest.class.getSimpleName());
 	}
 
 	@Test
-	public void placeOrder() throws Exception
+	public void placeOrder_V1() throws Exception
+	{
+		final MSV3ClientConfig config = MSV3TestingTools.createMSV3ClientConfig(MSV3ClientConfig.VERSION_1);
+		final OrderClientJAXBConverters jaxbConverters = OrderJAXBConvertersV1.instance;
+		final MSV3PurchaseOrderClientImpl client = MSV3PurchaseOrderClientImpl.builder()
+				.connectionFactory(new MSV3ConnectionFactory())
+				.config(config)
+				.supportIdProvider(new MockedSupportIdProvider())
+				.jaxbConverters(jaxbConverters)
+				.build();
+
+		placeOrder(Context.builder()
+				.config(config)
+				.jaxbConverters(jaxbConverters)
+				.client(client)
+				.qtyToPurchase(new BigDecimal("23"))
+				.confirmedOrderQty(new BigDecimal("10"))
+				.responseItemType(Type.NORMAL)
+				.bestellenClass(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellen.class)
+				.responseProducer(this::createResponseV1)
+				.build());
+	}
+
+	@Test
+	public void placeOrder_V2() throws Exception
+	{
+		final MSV3ClientConfig config = MSV3TestingTools.createMSV3ClientConfig(MSV3ClientConfig.VERSION_2);
+		final OrderClientJAXBConverters jaxbConverters = OrderJAXBConvertersV2.instance;
+		final MSV3PurchaseOrderClientImpl client = MSV3PurchaseOrderClientImpl.builder()
+				.connectionFactory(new MSV3ConnectionFactory())
+				.config(config)
+				.supportIdProvider(new MockedSupportIdProvider())
+				.jaxbConverters(jaxbConverters)
+				.build();
+
+		placeOrder(Context.builder()
+				.config(config)
+				.jaxbConverters(jaxbConverters)
+				.client(client)
+				.qtyToPurchase(new BigDecimal("23"))
+				.confirmedOrderQty(new BigDecimal("10"))
+				.responseItemType(Type.NORMAL)
+				.bestellenClass(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellen.class)
+				.responseProducer(this::createResponseV2)
+				.build());
+	}
+
+	private void placeOrder(final Context context) throws Exception
 	{
 		final PurchaseOrderRequestItem purchaseOrderRequestItem = PurchaseOrderRequestItem.builder()
 				.purchaseCandidateId(1)
-				.productAndQuantity(ProductAndQuantity.of("10055555", QTY_TO_PURCHASE, UOM_ID))
+				.productAndQuantity(ProductAndQuantity.of("10055555", context.qtyToPurchase, UOM_ID))
 				.build();
 		final List<PurchaseOrderRequestItem> purchaseOrderRequestItems = ImmutableList.of(purchaseOrderRequestItem);
 
 		final PurchaseOrderRequest request = PurchaseOrderRequest.builder()
 				.orgId(10)
 				.vendorId(20)
-				.purchaseOrderRequestItems(purchaseOrderRequestItems)
+				.items(purchaseOrderRequestItems)
 				.build();
 
-		msv3PurchaseOrderClient.prepare(request);
+		context.client.prepare(request);
 
 		// set up the mock server
-		final Source requestPayload = createRequest(msv3PurchaseOrderClient.getPurchaseOrderRequestPayload());
-		final Source responsePayload = createResponse();
+		final Source requestPayload = createRequest(context);
+		final Source responsePayload = context.responseProducer.apply(context);
+
+		final MockWebServiceServer mockServer = MockWebServiceServer.createServer(context.client.getWebServiceTemplate());
 		mockServer
 				.expect(RequestMatchers.payload(requestPayload))
 				.andRespond(ResponseCreators.withPayload(responsePayload));
 
 		// invoke the method under test
-		final RemotePurchaseOrderCreated purchaseOrderResponse = msv3PurchaseOrderClient.placeOrder();
+		final RemotePurchaseOrderCreated purchaseOrderResponse = context.client.placeOrder();
 
 		assertThat(purchaseOrderResponse).isNotNull();
+
+		if (purchaseOrderResponse.getException() != null)
+		{
+			purchaseOrderResponse.getException().printStackTrace();
+		}
 		assertThat(purchaseOrderResponse.getException()).isNull();
 
 		final List<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = purchaseOrderResponse.getPurchaseOrderResponseItems();
 		assertThat(purchaseOrderResponseItems).hasSize(1);
-		assertThat(purchaseOrderResponseItems.get(0).getInternalItemId()).isGreaterThan(0);
-		assertThat(purchaseOrderResponseItems.get(0).getConfirmedOrderQuantity()).isEqualByComparingTo(CONFIRMED_ORDER_QTY);
+		assertThat(purchaseOrderResponseItems.get(0).getInternalItemId()).isNotNull();
+		assertThat(purchaseOrderResponseItems.get(0).getConfirmedOrderQuantity()).isEqualByComparingTo(context.confirmedOrderQty);
 	}
 
-	private Source createRequest(@NonNull final JAXBElement<Bestellen> requestPayload) throws Exception
+	private static Source createRequest(final Context context) throws Exception
 	{
 		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		final DocumentBuilder db = dbf.newDocumentBuilder();
 		final Document requestDocument = db.newDocument();
 
-		final JAXBContext requestJc = JAXBContext.newInstance(Bestellen.class);
+		final JAXBContext requestJc = JAXBContext.newInstance(context.bestellenClass);
 		final Marshaller requestMarshaller = requestJc.createMarshaller();
-		requestMarshaller.marshal(requestPayload, requestDocument);
+
+		final JAXBElement<?> soap = context.jaxbConverters.encodeRequestToServer(context.client.getRequest(), context.client.getClientSoftwareId());
+		requestMarshaller.marshal(soap, requestDocument);
 		final DOMSource payload = new DOMSource(requestDocument);
 
 		return payload;
 	}
 
-	private Source createResponse() throws Exception
+	private Source createResponseV1(final Context context)
 	{
-		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		final DocumentBuilder db = dbf.newDocumentBuilder();
+		try
+		{
+			final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			final DocumentBuilder db = dbf.newDocumentBuilder();
 
-		final ObjectFactory objectFactory = new ObjectFactory();
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.ObjectFactory objectFactory = new de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.ObjectFactory();
 
-		final GregorianCalendar c = new GregorianCalendar();
-		c.setTime(SystemTime.asDate());
-		final XMLGregorianCalendar lieferzeitpunkt = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+			final GregorianCalendar c = new GregorianCalendar();
+			c.setTime(SystemTime.asDate());
+			final XMLGregorianCalendar lieferzeitpunkt = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
 
-		final BestellungAnteil bestellungAnteil1 = objectFactory.createBestellungAnteil();
-		bestellungAnteil1.setLieferzeitpunkt(lieferzeitpunkt);
-		bestellungAnteil1.setGrund(BestellungDefektgrund.KEINE_ANGABE);
-		bestellungAnteil1.setMenge(CONFIRMED_ORDER_QTY.intValueExact());
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAnteil bestellungAnteil1 = objectFactory.createBestellungAnteil();
+			bestellungAnteil1.setTyp(BestellungRueckmeldungTyp.fromValue(Type.getValueOrNull(context.responseItemType)));
+			bestellungAnteil1.setLieferzeitpunkt(lieferzeitpunkt);
+			bestellungAnteil1.setGrund(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.KEINE_ANGABE);
+			bestellungAnteil1.setMenge(context.confirmedOrderQty.intValueExact());
 
-		final BestellungAnteil bestellungAnteil2 = objectFactory.createBestellungAnteil();
-		bestellungAnteil2.setLieferzeitpunkt(null);
-		bestellungAnteil2.setGrund(BestellungDefektgrund.NICHT_GEFUEHRT);
-		bestellungAnteil2.setMenge(QTY_TO_PURCHASE.subtract(CONFIRMED_ORDER_QTY).intValueExact());
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAnteil bestellungAnteil2 = objectFactory.createBestellungAnteil();
+			bestellungAnteil2.setTyp(BestellungRueckmeldungTyp.NICHT_LIEFERBAR);
+			bestellungAnteil2.setLieferzeitpunkt(null);
+			bestellungAnteil2.setGrund(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.NICHT_GEFUEHRT);
+			bestellungAnteil2.setMenge(context.qtyToPurchase.subtract(context.confirmedOrderQty).intValueExact());
 
-		final BestellungAntwortPosition bestellungAntwortPosition = objectFactory.createBestellungAntwortPosition();
-		bestellungAntwortPosition.getAnteile().add(bestellungAnteil1);
-		bestellungAntwortPosition.getAnteile().add(bestellungAnteil2);
-		bestellungAntwortPosition.setBestellLiefervorgabe(Liefervorgabe.NORMAL);
-		bestellungAntwortPosition.setBestellMenge(QTY_TO_PURCHASE.intValueExact());
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAntwortPosition bestellungAntwortPosition = objectFactory.createBestellungAntwortPosition();
+			bestellungAntwortPosition.getAnteile().add(bestellungAnteil1);
+			bestellungAntwortPosition.getAnteile().add(bestellungAnteil2);
+			bestellungAntwortPosition.setBestellLiefervorgabe(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Liefervorgabe.NORMAL);
+			bestellungAntwortPosition.setBestellMenge(context.qtyToPurchase.intValueExact());
+			bestellungAntwortPosition.setBestellPzn(1234);
 
-		final BestellungAntwortAuftrag bestellungAntwortAuftrag = objectFactory.createBestellungAntwortAuftrag();
-		bestellungAntwortAuftrag.setAuftragsart(Auftragsart.NORMAL);
-		bestellungAntwortAuftrag.setId("bestellungAntwortAuftrag.id");
-		bestellungAntwortAuftrag.getPositionen().add(bestellungAntwortPosition);
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAntwortAuftrag bestellungAntwortAuftrag = objectFactory.createBestellungAntwortAuftrag();
+			bestellungAntwortAuftrag.setId("bestellungAntwortAuftrag.id");
+			bestellungAntwortAuftrag.setAuftragsSupportID(1234);
+			bestellungAntwortAuftrag.setAuftragskennung("1234");
+			bestellungAntwortAuftrag.setAuftragsart(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Auftragsart.NORMAL);
+			bestellungAntwortAuftrag.getPositionen().add(bestellungAntwortPosition);
 
-		final BestellungAntwort bestellungAntwort = objectFactory.createBestellungAntwort();
-		bestellungAntwort.getAuftraege().add(bestellungAntwortAuftrag);
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAntwort bestellungAntwort = objectFactory.createBestellungAntwort();
+			bestellungAntwort.setId("bestellungAntwort.id");
+			bestellungAntwort.setBestellSupportId(1234);
+			bestellungAntwort.getAuftraege().add(bestellungAntwortAuftrag);
 
-		final BestellenResponse bestellenResponse = objectFactory.createBestellenResponse();
-		bestellenResponse.setReturn(bestellungAntwort);
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellenResponse bestellenResponse = objectFactory.createBestellenResponse();
+			bestellenResponse.setReturn(bestellungAntwort);
 
-		final JAXBElement<BestellenResponse> responsePayload = objectFactory.createBestellenResponse(bestellenResponse);
+			final JAXBElement<de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellenResponse> responsePayload = objectFactory.createBestellenResponse(bestellenResponse);
 
-		final JAXBContext responseJc = JAXBContext.newInstance(BestellenResponse.class);
-		final Marshaller responseMarshaller = responseJc.createMarshaller();
-		final Document responseDocument = db.newDocument();
-		responseMarshaller.marshal(responsePayload, responseDocument);
+			final JAXBContext responseJc = JAXBContext.newInstance(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellenResponse.class);
+			final Marshaller responseMarshaller = responseJc.createMarshaller();
+			final Document responseDocument = db.newDocument();
+			responseMarshaller.marshal(responsePayload, responseDocument);
 
-		return new DOMSource(responseDocument);
+			return new DOMSource(responseDocument);
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	private Source createResponseV2(final Context context)
+	{
+		try
+		{
+			final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			final DocumentBuilder db = dbf.newDocumentBuilder();
+
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory objectFactory = new de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory();
+
+			final GregorianCalendar c = new GregorianCalendar();
+			c.setTime(SystemTime.asDate());
+			final XMLGregorianCalendar lieferzeitpunkt = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAnteil bestellungAnteil1 = objectFactory.createBestellungAnteil();
+			bestellungAnteil1.setTyp(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungRueckmeldungTyp.fromValue(Type.getValueOrNull(context.responseItemType)));
+			bestellungAnteil1.setLieferzeitpunkt(lieferzeitpunkt);
+			bestellungAnteil1.setGrund(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.KEINE_ANGABE);
+			bestellungAnteil1.setMenge(context.confirmedOrderQty.intValueExact());
+
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAnteil bestellungAnteil2 = objectFactory.createBestellungAnteil();
+			bestellungAnteil2.setTyp(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungRueckmeldungTyp.NICHT_LIEFERBAR);
+			bestellungAnteil2.setLieferzeitpunkt(null);
+			bestellungAnteil2.setGrund(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.NICHT_GEFUEHRT);
+			bestellungAnteil2.setMenge(context.qtyToPurchase.subtract(context.confirmedOrderQty).intValueExact());
+
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwortPosition bestellungAntwortPosition = objectFactory.createBestellungAntwortPosition();
+			bestellungAntwortPosition.getAnteile().add(bestellungAnteil1);
+			bestellungAntwortPosition.getAnteile().add(bestellungAnteil2);
+			bestellungAntwortPosition.setBestellLiefervorgabe(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe.NORMAL);
+			bestellungAntwortPosition.setBestellMenge(context.qtyToPurchase.intValueExact());
+			bestellungAntwortPosition.setBestellPzn(1234);
+
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwortAuftrag bestellungAntwortAuftrag = objectFactory.createBestellungAntwortAuftrag();
+			bestellungAntwortAuftrag.setId("bestellungAntwortAuftrag.id");
+			bestellungAntwortAuftrag.setAuftragsSupportID(1234);
+			bestellungAntwortAuftrag.setAuftragskennung("1234");
+			bestellungAntwortAuftrag.setAuftragsart(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart.NORMAL);
+			bestellungAntwortAuftrag.getPositionen().add(bestellungAntwortPosition);
+
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwort bestellungAntwort = objectFactory.createBestellungAntwort();
+			bestellungAntwort.setId("bestellungAntwort.id");
+			bestellungAntwort.setBestellSupportId(1234);
+			bestellungAntwort.getAuftraege().add(bestellungAntwortAuftrag);
+
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellenResponse bestellenResponse = objectFactory.createBestellenResponse();
+			bestellenResponse.setReturn(bestellungAntwort);
+
+			final JAXBElement<de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellenResponse> responsePayload = objectFactory.createBestellenResponse(bestellenResponse);
+
+			final JAXBContext responseJc = JAXBContext.newInstance(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellenResponse.class);
+			final Marshaller responseMarshaller = responseJc.createMarshaller();
+			final Document responseDocument = db.newDocument();
+			responseMarshaller.marshal(responsePayload, responseDocument);
+
+			return new DOMSource(responseDocument);
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 }

@@ -25,11 +25,11 @@ package de.metas.invoicecandidate.modelvalidator;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice

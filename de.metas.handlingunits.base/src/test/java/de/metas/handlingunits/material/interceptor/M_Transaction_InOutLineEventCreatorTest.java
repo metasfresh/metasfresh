@@ -17,7 +17,6 @@ import java.util.Set;
 
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -44,6 +43,7 @@ import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import mockit.Expectations;
 

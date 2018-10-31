@@ -21,7 +21,9 @@ import com.google.common.base.Predicates;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -69,6 +71,7 @@ public class BPartnerBL_BillPartnerTests
 		bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bPartnerLocationRecord.getC_BPartner_Location_ID());
 
 		bPartnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, bPartnerBL);
 	}
 
 	@Test

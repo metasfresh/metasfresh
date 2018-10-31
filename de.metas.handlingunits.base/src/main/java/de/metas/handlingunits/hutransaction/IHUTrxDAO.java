@@ -25,12 +25,11 @@ package de.metas.handlingunits.hutransaction;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.util.ISingletonService;
 
 public interface IHUTrxDAO extends ISingletonService
 {

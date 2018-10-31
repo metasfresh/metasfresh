@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
-import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -15,6 +14,7 @@ import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Services;
 
 /*
  * #%L

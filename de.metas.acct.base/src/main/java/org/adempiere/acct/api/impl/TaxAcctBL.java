@@ -28,16 +28,16 @@ import java.util.Properties;
 import org.adempiere.acct.api.ITaxAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Tax_Acct;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class TaxAcctBL implements ITaxAcctBL
 {

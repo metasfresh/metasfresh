@@ -24,11 +24,11 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 /**
  *	Cash Line Model

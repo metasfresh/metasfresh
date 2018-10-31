@@ -1,7 +1,5 @@
 package de.metas.util;
 
-import org.adempiere.util.ISingletonService;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

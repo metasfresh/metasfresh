@@ -3,7 +3,6 @@ package de.metas.handlingunits.storage.impl;
 import java.util.List;
 import java.util.Objects;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_UOM;
 
@@ -12,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.util.Check;
 
 /* package */abstract class AbstractHUStorageDAO implements IHUStorageDAO
 {

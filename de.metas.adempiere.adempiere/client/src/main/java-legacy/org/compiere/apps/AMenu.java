@@ -57,7 +57,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.ui.api.IWindowBL;
 import org.adempiere.ui.notifications.SwingEventNotifierService;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
@@ -86,6 +85,7 @@ import de.metas.adempiere.model.I_AD_Form;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Application Menu Controller

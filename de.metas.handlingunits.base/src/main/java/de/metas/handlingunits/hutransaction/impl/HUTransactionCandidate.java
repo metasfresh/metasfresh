@@ -27,10 +27,8 @@ import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -40,7 +38,10 @@ import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -60,13 +61,13 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	// Product/Qty/UOM
 
 	@Getter
-	private final I_M_Product product;
+	private final ProductId productId;
 
 	@Getter
 	private final Quantity quantity;
 
 	// Physical position and status
-	private final I_M_Locator locator;
+	private final LocatorId locatorId;
 
 	private final String huStatus;
 
@@ -92,7 +93,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 				referencedModel, // model
 				huItem, // HU item
 				vhuItem, // virtual HU Item
-				request.getProduct(),
+				request.getProductId(),
 				// Transaction Quantity/UOM
 				// NOTE: we use source quantity/uom because those are in storage's internal UOM
 				// to avoid precision errors while converting again from working UOM to internal storage UOM
@@ -104,14 +105,14 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	public HUTransactionCandidate(final Object model,
 			final I_M_HU_Item huItem,
 			final I_M_HU_Item vhuItem,
-			final I_M_Product product,
+			final ProductId productId,
 			final Quantity quantity,
 			final Date date)
 	{
 		this(model,
 				huItem,
 				vhuItem,
-				product,
+				productId,
 				quantity,
 				date,
 				null, // locator, will be handled
@@ -121,10 +122,10 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	public HUTransactionCandidate(final Object model,
 			final I_M_HU_Item huItem,
 			final I_M_HU_Item vhuItem,
-			@NonNull final I_M_Product product,
+			@NonNull final ProductId productId,
 			@NonNull final Quantity quantity,
 			@NonNull final Date date,
-			final I_M_Locator locator,
+			final LocatorId locatorId,
 			final String huStatus)
 	{
 		id = UUID.randomUUID().toString();
@@ -169,7 +170,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 		this.vhuItem = vhuItem;
 
 		// Product
-		this.product = product;
+		this.productId = productId;
 
 		// Qty/UOM
 		this.quantity = quantity;
@@ -180,17 +181,18 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 		final I_M_HU effectiveHU = getEffectiveHU();
 
 		// Locator
-		if (locator != null)
+		if (locatorId != null)
 		{
-			this.locator = locator;
+			this.locatorId = locatorId;
 		}
 		else if (effectiveHU != null)
 		{
-			this.locator = effectiveHU.getM_Locator();
+			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+			this.locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(effectiveHU.getM_Locator_ID());
 		}
 		else
 		{
-			this.locator = null;
+			this.locatorId = null;
 		}
 
 		// HUStatus
@@ -213,7 +215,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	{
 		final StringBuilder sb = new StringBuilder();
 		sb.append(getClass().getSimpleName() + " ["
-				+ "product=" + product.getValue()
+				+ "product=" + productId
 				+ ", qty=" + quantity
 				+ ", date=" + date);
 
@@ -359,9 +361,9 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	}
 
 	@Override
-	public I_M_Locator getM_Locator()
+	public LocatorId getLocatorId()
 	{
-		return locator;
+		return locatorId;
 	}
 
 	@Override

@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_GL_Category;
 import org.compiere.model.I_GL_Journal;
@@ -18,6 +16,8 @@ import org.compiere.model.X_GL_Category;
 import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -7,7 +7,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.contracts.refund.UnassignedPairOfCandidates.UnassignedPairOfCandidatesBuilder;
+import de.metas.contracts.refund.AssignCandidatesRequest.AssignCandidatesRequestBuilder;
 
 /*
  * #%L
@@ -48,11 +48,12 @@ public class UnassignedPairOfCandidatesTest
 	{
 		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateWithAssignment();
 
-		final UnassignedPairOfCandidatesBuilder builder = UnassignedPairOfCandidates
+		final AssignCandidatesRequestBuilder builder = AssignCandidatesRequest
 				.builder()
 				.assignableInvoiceCandidate(assignableInvoiceCandidate)
 				.refundInvoiceCandidate(assignableInvoiceCandidate
-						.getAssignmentToRefundCandidate()
+						.getAssignmentsToRefundCandidates()
+						.get(0)
 						.getRefundInvoiceCandidate());
 
 		final Throwable thrown = catchThrowable(() -> builder.build());

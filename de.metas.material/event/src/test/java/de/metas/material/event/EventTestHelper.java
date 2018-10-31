@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -13,6 +12,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

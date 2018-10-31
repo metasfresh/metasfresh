@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
 
@@ -38,6 +37,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /* package */class HUAttributeStorage extends AbstractHUAttributeStorage

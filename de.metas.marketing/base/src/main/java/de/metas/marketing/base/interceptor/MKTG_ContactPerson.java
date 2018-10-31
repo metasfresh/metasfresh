@@ -5,16 +5,17 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.Language;
 import de.metas.marketing.base.UserService;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -53,12 +54,15 @@ public class MKTG_ContactPerson
 		this.contactPersonRepo = contactPersonRepo;
 	}
 
+	/**
+	 * When MKTG_ContactPerson.AD_User_ID changes, then update MKTG_Campaign_ContactPerson.AD_User_ID accordingly
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID)
 	public void updateCampaignContactPersonAdUserId(@NonNull final I_MKTG_ContactPerson contactPerson)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		// note AD_User_ID=0 needs special threatment
+		// note AD_User_ID=0 needs special treatment
 		final Integer newAdUserID = contactPerson.getAD_User_ID() <= 0 ? null : contactPerson.getAD_User_ID();
 
 		final IQueryUpdater<I_MKTG_Campaign_ContactPerson> updater = queryBL
@@ -86,15 +90,21 @@ public class MKTG_ContactPerson
 				.create();
 	}
 
-	@ModelChange(timings = {
-			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
-	}, ifColumnsChanged = I_MKTG_ContactPerson.COLUMNNAME_EMail)
-	public void onChangeEmail(final I_MKTG_ContactPerson contactPersonRecord)
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
+			ifColumnsChanged = { I_MKTG_ContactPerson.COLUMNNAME_EMail, I_MKTG_ContactPerson.COLUMNNAME_AD_Language })
+	public void updateUserFromContactPerson(final I_MKTG_ContactPerson contactPersonRecord)
 	{
 		final I_MKTG_ContactPerson oldContactPerson = InterfaceWrapperHelper.createOld(contactPersonRecord, I_MKTG_ContactPerson.class);
 
 		final String oldContactPersonMail = oldContactPerson.getEMail();
+		final Language oldContactPersonLanguage = Language.asLanguage(oldContactPerson.getAD_Language());
+
 		final ContactPerson contactPerson = contactPersonRepo.asContactPerson(contactPersonRecord);
-		userService.updateUserEmailFromContactPerson(contactPerson, oldContactPersonMail);
+
+		userService.updateUserFromContactPersonIfFeasible(
+				contactPerson,
+				oldContactPersonMail,
+				oldContactPersonLanguage);
 	}
 }

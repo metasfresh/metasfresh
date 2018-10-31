@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.Singular;
 
 /*
@@ -37,7 +38,21 @@ import lombok.Singular;
 @Builder
 public class JsonOLCandCreateBulkRequest
 {
+	public static JsonOLCandCreateBulkRequest of(@NonNull final JsonOLCandCreateRequest request)
+	{
+		return builder().request(request).build();
+	}
+
 	@JsonProperty("requests")
 	@Singular
 	private List<JsonOLCandCreateRequest> requests;
+
+	public JsonOLCandCreateBulkRequest validate()
+	{
+		for (final JsonOLCandCreateRequest request : requests)
+		{
+			request.validate();
+		}
+		return this;
+	}
 }

@@ -2,11 +2,11 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

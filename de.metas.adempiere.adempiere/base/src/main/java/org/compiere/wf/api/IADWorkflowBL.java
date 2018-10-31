@@ -24,11 +24,12 @@ package org.compiere.wf.api;
 
 import java.util.Date;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.wf.exceptions.WorkflowNotValidException;
+
+import de.metas.util.ISingletonService;
 
 public interface IADWorkflowBL extends ISingletonService
 {

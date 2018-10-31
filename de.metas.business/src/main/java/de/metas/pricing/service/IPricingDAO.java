@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 public interface IPricingDAO extends ISingletonService
 {

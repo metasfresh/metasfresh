@@ -15,77 +15,73 @@ import java.math.BigDecimal;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionDAO;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 
-import de.metas.adempiere.util.CacheCtx;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class UOMConversionDAO implements IUOMConversionDAO
 {
 	@Override
-	public List<I_C_UOM_Conversion> retrieveProductConversions(final Properties ctx, final I_M_Product product)
+	public List<I_C_UOM_Conversion> retrieveProductConversions(@NonNull final ProductId productId)
 	{
-		if (product == null || product.getM_Product_ID() <= 0)
-		{
-			return Collections.emptyList();
-		}
-
-		return retrieveProductConversions(ctx, product.getM_Product_ID());
-
-	}	// getProductConversions
+		return retrieveProductConversions(Env.getCtx(), productId);
+	}
 
 	/**
 	 * Task 09304: cache and never expire, but note that the cache will be invalidated if someone changes the master data remotely.
 	 * 
-	 * @see org.compiere.util.CacheMgt#enableRemoteCacheInvalidationForTableName(String)
+	 * @see de.metas.cache.CacheMgt#enableRemoteCacheInvalidationForTableName(String)
 	 */
 	// old javadoc, keeping it for reference: "task 09261: cache, but expire after 1 minute because the masterdata could be changed by another user."
 	@Cached(cacheName = I_C_UOM_Conversion.Table_Name
 			+ "#by"
-			+ "#" + I_C_UOM_Conversion.COLUMNNAME_M_Product_ID
-			, expireMinutes = Cached.EXPIREMINUTES_Never)
-	public List<I_C_UOM_Conversion> retrieveProductConversions(@CacheCtx final Properties ctx, final int productID)
+			+ "#" + I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, expireMinutes = Cached.EXPIREMINUTES_Never)
+	public List<I_C_UOM_Conversion> retrieveProductConversions(@CacheCtx final Properties ctx, final ProductId productId)
 	{
-		List<I_C_UOM_Conversion> list = new ArrayList<I_C_UOM_Conversion>();
+		List<I_C_UOM_Conversion> list = new ArrayList<>();
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productID, I_M_Product.class, ITrx.TRXNAME_None);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		// Add default conversion
 		I_C_UOM_Conversion defaultRate = createProductDefaultConversion(product);
 		list.add(defaultRate);
 
 		// All the conversions defined for the product
-		final List<I_C_UOM_Conversion> conversions = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class, ctx, ITrx.TRXNAME_None)
-				.filter(new EqualsQueryFilter<I_C_UOM_Conversion>(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productID))
-				// .filter(new EqualsQueryFilter<I_C_UOM_Conversion>(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, product.))
+		final List<I_C_UOM_Conversion> conversions = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_UOM_Conversion.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_C_UOM_Conversion.class);
 
 		list.addAll(conversions);
 
-		return Collections.unmodifiableList(list);
+		return ImmutableList.copyOf(list);
 	}
 
 	/**

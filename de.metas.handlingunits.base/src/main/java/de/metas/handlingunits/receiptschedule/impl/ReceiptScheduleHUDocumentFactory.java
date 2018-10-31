@@ -35,8 +35,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ProcessInfoSelectionQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.slf4j.Logger;
 
@@ -49,6 +47,8 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ReceiptScheduleHUDocumentFactory implements IHUDocumentFactory
 {

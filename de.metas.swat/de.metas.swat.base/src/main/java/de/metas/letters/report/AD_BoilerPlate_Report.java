@@ -10,9 +10,9 @@ import org.compiere.print.MPrintFormat;
 import de.metas.letters.model.I_T_BoilerPlate_Spool;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.X_T_BoilerPlate_Spool;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 /**
  * @author teo_sarca
@@ -70,7 +70,7 @@ public class AD_BoilerPlate_Report extends JavaProcess
 
 	private void createRecord(String text)
 	{
-		MADBoilerPlate.createSpoolRecord(getCtx(), getAD_Client_ID(), getAD_PInstance_ID(), text, get_TrxName());
+		MADBoilerPlate.createSpoolRecord(getCtx(), getAD_Client_ID(), getPinstanceId(), text, get_TrxName());
 	}
 
 	private boolean isJasperReport()
@@ -88,7 +88,7 @@ public class AD_BoilerPlate_Report extends JavaProcess
 				.setCtx(getCtx())
 				.setAD_Client_ID(getAD_Client_ID())
 				.setAD_User_ID(getAD_User_ID())
-				.setAD_PInstance_ID(getAD_PInstance_ID())
+				.setPInstanceId(getPinstanceId())
 				.setAD_Process_ID(0)
 				.setTableName(I_T_BoilerPlate_Spool.Table_Name)
 				//

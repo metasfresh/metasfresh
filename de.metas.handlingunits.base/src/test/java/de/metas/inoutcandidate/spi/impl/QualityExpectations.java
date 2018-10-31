@@ -26,12 +26,12 @@ package de.metas.inoutcandidate.spi.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.junit.Assert;
 
 import de.metas.handlingunits.expectations.AbstractHUExpectation;
 import de.metas.handlingunits.expectations.IExpectationProducer;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.util.Check;
 
 public class QualityExpectations<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

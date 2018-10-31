@@ -1,8 +1,8 @@
 package de.metas.letters.model;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 
+import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 
 /*

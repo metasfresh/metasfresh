@@ -1,6 +1,7 @@
 package de.metas.order.compensationGroup;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
 import lombok.Value;
 
@@ -27,7 +28,7 @@ import lombok.Value;
  */
 
 @Value
-public class GroupTemplateId
+public class GroupTemplateId implements RepoIdAware
 {
 	int repoId;
 

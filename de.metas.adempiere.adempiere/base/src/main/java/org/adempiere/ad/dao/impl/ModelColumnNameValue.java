@@ -25,7 +25,8 @@ package org.adempiere.ad.dao.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public final class ModelColumnNameValue<T>
 {

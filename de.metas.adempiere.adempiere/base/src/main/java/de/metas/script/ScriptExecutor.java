@@ -8,8 +8,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
+
+import de.metas.util.Check;
 
 /*
  * #%L

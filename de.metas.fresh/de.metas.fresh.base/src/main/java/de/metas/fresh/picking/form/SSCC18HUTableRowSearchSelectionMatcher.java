@@ -26,11 +26,11 @@ package de.metas.fresh.picking.form;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Gets HU by SSCC18 attribute and matches rows which have HU's products

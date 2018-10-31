@@ -29,7 +29,6 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
@@ -40,6 +39,7 @@ import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.client.IPrintingClientDelegate;
 import de.metas.printing.model.I_AD_Printer_Config;
+import de.metas.util.Services;
 
 /**
  * Printing client thread lifecycle manager. This validator is responsible with setup and starting the printing client.

@@ -6,12 +6,12 @@ import javax.annotation.concurrent.Immutable;
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -45,7 +45,7 @@ import com.google.common.base.MoreObjects;
  */
 @SuppressWarnings("serial")
 @Immutable
-public class MailAuthenticator extends Authenticator implements Serializable
+final class MailAuthenticator extends Authenticator implements Serializable
 {
 	public static final MailAuthenticator of(final String username, final String password)
 	{
@@ -59,20 +59,15 @@ public class MailAuthenticator extends Authenticator implements Serializable
 	@JsonIgnore
 	private transient PasswordAuthentication _passwordAuthenticator;
 
-	/**
-	 * Constructor
-	 *
-	 * @param username user name
-	 * @param password user password
-	 */
 	@JsonCreator
-	private MailAuthenticator(@JsonProperty("username") final String username, @JsonProperty("password") final String password)
+	private MailAuthenticator(
+			@JsonProperty("username") final String username,
+			@JsonProperty("password") final String password)
 	{
-		super();
-
 		Check.assumeNotEmpty(username, "username not empty");
-		this.username = username;
 		Check.assumeNotEmpty(password, "password not empty");
+
+		this.username = username;
 		this.password = password;
 	}
 

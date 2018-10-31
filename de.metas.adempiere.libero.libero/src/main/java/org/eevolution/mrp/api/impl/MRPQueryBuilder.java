@@ -41,8 +41,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
@@ -66,6 +64,8 @@ import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.MRPFirmType;
 
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /* package */class MRPQueryBuilder implements IMRPQueryBuilder

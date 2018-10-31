@@ -8,17 +8,19 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.I_AD_User;
+import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*
@@ -98,16 +100,17 @@ public class AD_User
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_AD_User.COLUMNNAME_EMail })
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ifColumnsChanged = { I_AD_User.COLUMNNAME_EMail, I_AD_User.COLUMNNAME_AD_Language })
 	public void onChangeEmail(final I_AD_User userRecord)
 	{
-
 		final User user = userRepository.ofRecord(userRecord);
 
 		final I_AD_User oldUser = InterfaceWrapperHelper.createOld(userRecord, I_AD_User.class);
 
-		final String oldUserEmail = oldUser.getEMail();
+		final String oldEmail = oldUser.getEMail();
+		final Language oldLanguage = Language.asLanguage(oldUser.getAD_Language());
 
-		contactPersonService.updateContactPersonsEmailFromUser(user, oldUserEmail);
+		contactPersonService.updateContactPersonsEmailFromUser(user, oldEmail, oldLanguage);
 	}
 }

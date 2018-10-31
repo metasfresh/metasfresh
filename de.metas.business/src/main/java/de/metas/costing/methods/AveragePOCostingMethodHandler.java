@@ -12,7 +12,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -34,6 +33,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -38,10 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
@@ -62,6 +59,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.freighcost.api.IFreightCostBL;
@@ -78,6 +76,10 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+
 import lombok.NonNull;
 
 public class OrderBL implements IOrderBL
@@ -355,7 +357,9 @@ public class OrderBL implements IOrderBL
 					.adClientId(order.getAD_Client_ID())
 					.adOrgId(order.getAD_Org_ID())
 					.build();
-			final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQuery);
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
+			final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(docTypeQuery));
 			if (docTypeId <= 0)
 			{
 				logger.error("No POO found for {}", docTypeQuery);
@@ -377,7 +381,9 @@ public class OrderBL implements IOrderBL
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
 				.build();
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQuery);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
+		final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(docTypeQuery));
 		if (docTypeId <= 0)
 		{
 			logger.error("Not found for {}", docTypeQuery);
@@ -887,7 +893,7 @@ public class OrderBL implements IOrderBL
 		//
 		// Create conversion context
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(orderLine.getM_Product());
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
 
 		//
 		// Calculate QtyOrdered as QtyEntered converted to stocking UOM

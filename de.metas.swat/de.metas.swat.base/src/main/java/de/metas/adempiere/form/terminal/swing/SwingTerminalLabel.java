@@ -2,12 +2,12 @@ package de.metas.adempiere.form.terminal.swing;
 
 import java.awt.Component;
 
-import org.adempiere.util.Services;
 import org.compiere.swing.CLabel;
 
 import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /* package */class SwingTerminalLabel implements ITerminalLabel, IComponentSwing
 {

@@ -28,12 +28,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLinesCollection;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
+import de.metas.util.Check;
 
 public class QualityInspectionLinesCollection implements IQualityInspectionLinesCollection
 {

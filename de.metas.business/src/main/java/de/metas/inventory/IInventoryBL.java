@@ -1,14 +1,16 @@
 package de.metas.inventory;
 
-import org.adempiere.util.ISingletonService;
+import java.util.List;
+
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 
 /**
  * @author ad
- * 
+ *
  */
 public interface IInventoryBL extends ISingletonService
 {
@@ -39,5 +41,7 @@ public interface IInventoryBL extends ISingletonService
 	Quantity getMovementQty(I_M_InventoryLine inventoryLine);
 
 	Quantity getMovementQtyInStockingUOM(I_M_InventoryLine inventoryLine);
+
+	void assignToInventoryCounters(List<I_M_InventoryLine> inventoryLines, int numberOfCounters);
 
 }

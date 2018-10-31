@@ -25,10 +25,11 @@ package de.metas.material.planning.ddorder;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
+
+import de.metas.util.ISingletonService;
 
 public interface IDistributionNetworkDAO extends ISingletonService
 {

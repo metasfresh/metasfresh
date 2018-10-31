@@ -5,20 +5,30 @@ import static java.math.BigDecimal.ZERO;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.collections.CollectionUtils;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,6 +58,10 @@ import lombok.Value;
 @Value
 public class Money
 {
+	public static final Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
+	{
+		return of(new BigDecimal(value), currencyId);
+	}
 
 	public static final Money of(final int value, @NonNull final CurrencyId currencyId)
 	{
@@ -57,6 +71,24 @@ public class Money
 	public static final Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
 	{
 		return new Money(value, currencyId);
+	}
+
+	public static final Money ofOrNull(@Nullable final BigDecimal value, @Nullable final CurrencyId currencyId)
+	{
+		if (value == null || currencyId == null)
+		{
+			return null;
+		}
+		return new Money(value, currencyId);
+	}
+
+	public static final Money toZeroOrNull(@Nullable final Money money)
+	{
+		if (money == null)
+		{
+			return null;
+		}
+		return money.toZero();
 	}
 
 	public static final Money zero(@NonNull final CurrencyId currencyId)
@@ -205,5 +237,29 @@ public class Money
 		{
 			throw new AdempiereException("Amount has invalid currencyId: " + amt + ". Expected: " + currencyId);
 		}
+	}
+
+	public static Collector<Money, ?, Stream<Money>> sumByCurrencyAndStream()
+	{
+		return sumByCurrencyAnd(map -> map.values().stream());
+	}
+
+	public static Collector<Money, ?, ImmutableMap<CurrencyId, Money>> sumByCurrency()
+	{
+		return sumByCurrencyAnd(ImmutableMap::copyOf);
+	}
+
+	public static <T> Collector<Money, ?, T> sumByCurrencyAnd(final Function<Map<CurrencyId, Money>, T> finisher)
+	{
+		final Supplier<Map<CurrencyId, Money>> supplier = HashMap::new;
+		final BiConsumer<Map<CurrencyId, Money>, Money> accumulator = (map, money) -> {
+			map.compute(money.getCurrencyId(), (currency, moneyOld) -> moneyOld != null ? moneyOld.add(money) : money);
+		};
+		final BinaryOperator<Map<CurrencyId, Money>> combiner = (l, r) -> {
+			r.values().forEach(money -> accumulator.accept(l, money));
+			return l;
+		};
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 }

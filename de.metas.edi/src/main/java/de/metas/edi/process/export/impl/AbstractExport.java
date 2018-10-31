@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.exp.ExportHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.MReplicationStrategy;
 import org.compiere.model.PO;
@@ -38,6 +37,7 @@ import org.compiere.model.X_AD_ReplicationTable;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.util.Check;
 
 /**
  * 

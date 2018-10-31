@@ -26,7 +26,6 @@ package de.metas.handlingunits.test;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
@@ -38,6 +37,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 public class HUAssertsBuilder
 {
@@ -71,11 +72,12 @@ public class HUAssertsBuilder
 
 	public HUAssertsBuilder assumeQty(final I_M_Product product, final BigDecimal qty)
 	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final I_C_UOM uom = product.getC_UOM();
 
 		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 		final IHUStorage storage = storageFactory.getStorage(hu);
-		final BigDecimal qtyActual = storage.getQty(product, uom);
+		final BigDecimal qtyActual = storage.getQty(productId, uom);
 
 		Assert.assertThat(assertPrefix + "Invalid qty for product " + product.getValue(),
 				qtyActual,

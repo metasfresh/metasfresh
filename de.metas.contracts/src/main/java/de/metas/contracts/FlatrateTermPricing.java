@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
@@ -18,6 +17,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -40,4 +40,6 @@ public final class Dunning_Constants
 	 * Internal Name for dunning docs async batch
 	 */
 	public static final String C_Async_Batch_InternalName_DunningDoc = "DunningDoc";
+
+	public static final String DocBaseType_Dunnig = "DUN";
 }

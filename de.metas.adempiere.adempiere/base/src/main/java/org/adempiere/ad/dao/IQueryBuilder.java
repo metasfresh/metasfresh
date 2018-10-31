@@ -30,7 +30,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.process.PInstanceId;
+import de.metas.util.lang.RepoIdAware;
 
 /**
  *
@@ -355,12 +356,9 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> setJoinAnd();
 
 	/**
-	 * Will only return records that are referenced by a <code>T_Selection</code> records which has the given <code>AD_PInstance_ID</code>.
-	 *
-	 * @param AD_PInstance_ID
-	 * @return
+	 * Will only return records that are referenced by a <code>T_Selection</code> records which has the given selection ID.
 	 */
-	IQueryBuilder<T> setOnlySelection(int AD_PInstance_ID);
+	IQueryBuilder<T> setOnlySelection(PInstanceId pinstanceId);
 
 	/**
 	 * Start an aggregation of different columns, everything grouped by given <code>column</code>
@@ -390,4 +388,5 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
 
 	String getModelTableName();
+
 }

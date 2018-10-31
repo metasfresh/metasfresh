@@ -1,7 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,15 +13,12 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -37,9 +33,17 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -76,6 +80,7 @@ import lombok.ToString;
 @ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "huShipmentScheduleBL", "invoiceCandDAO", "invoiceCandBL", "trxManager" })
 public class HUShippingFacade
 {
+	private static final Logger logger = LogManager.getLogger(HUShippingFacade.class);
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
@@ -95,6 +100,7 @@ public class HUShippingFacade
 	private LocalDate _shipperDeliveryOrderPickupDate = null; // lazy, will be fetched from Shipper Transportation
 	private final ImmutableList<I_M_HU> hus;
 	private final ILoggable loggable;
+	private final boolean failIfNoShipmentCandidatesFound;
 
 	//
 	// State
@@ -109,7 +115,8 @@ public class HUShippingFacade
 			final boolean completeShipments,
 			@Nullable final BillAssociatedInvoiceCandidates invoiceMode,
 			final boolean createShipperDeliveryOrders,
-			@Nullable final ILoggable loggable)
+			@Nullable final ILoggable loggable,
+			final boolean failIfNoShipmentCandidatesFound)
 	{
 		Check.assumeNotEmpty(hus, "hus is not empty");
 
@@ -119,6 +126,7 @@ public class HUShippingFacade
 		this.invoiceMode = invoiceMode;
 		this.createShipperDeliveryOrders = createShipperDeliveryOrders;
 		this.loggable = loggable != null ? loggable : Loggables.getNullLoggable();
+		this.failIfNoShipmentCandidatesFound = failIfNoShipmentCandidatesFound;
 	}
 
 	@VisibleForTesting
@@ -165,11 +173,19 @@ public class HUShippingFacade
 	private void generateShipments()
 	{
 		final List<ShipmentScheduleWithHU> candidates = getCandidates();
+		if (candidates.isEmpty())
+		{
+			new AdempiereException("No shipment candidates found")
+					.appendParametersToMessage()
+					.setParameter("context", this)
+					.throwOrLogWarning(failIfNoShipmentCandidatesFound, logger);
+			return;
+		}
+
 		shipmentsGenerateResult = huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(completeShipments)
 				.setCreatePackingLines(false) // the packing lines shall only be created when the shipments are completed
-				.setManualPackingMaterial(false) // use the HUs!
 				.computeShipmentDate(true) // if this is ever used, it should be on true to keep legacy
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
@@ -220,20 +236,21 @@ public class HUShippingFacade
 
 		mpackagesCreated
 				.stream()
-				.collect(GuavaCollectors.toImmutableListMultimap(I_M_Package::getM_Shipper_ID))
+				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> extractShipperId(mpackage)))
 				.asMap()
 				.forEach(this::generateShipperDeliveryOrderIfNeeded);
 	}
 
+	private static ShipperId extractShipperId(I_M_Package mpackage)
+	{
+		return ShipperId.ofRepoId(mpackage.getM_Shipper_ID());
+	}
+
 	private void generateShipperDeliveryOrderIfNeeded(
-			final int shipperId,
+			final ShipperId shipperId,
 			@NonNull final Collection<I_M_Package> mpackages)
 	{
-		final I_M_Shipper shipper = Check.assumeNotNull(
-				loadOutOfTrx(shipperId, I_M_Shipper.class),
-				"An M_Shipper record for shipperId={} exists",
-				shipperId);
-
+		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
 		final String shipperGatewayId = shipper.getShipperGateway();
 		if (Check.isEmpty(shipperGatewayId, true))
 		{

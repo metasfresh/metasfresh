@@ -35,8 +35,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
@@ -49,6 +47,8 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class PPOrderBOMDAO implements IPPOrderBOMDAO
 {

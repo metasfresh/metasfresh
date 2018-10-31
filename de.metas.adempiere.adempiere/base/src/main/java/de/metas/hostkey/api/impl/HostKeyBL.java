@@ -29,7 +29,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -38,6 +37,7 @@ import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.hostkey.spi.IHostKeyStorage;
 import de.metas.hostkey.spi.impl.IniBasedHostKeyStorage;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public class HostKeyBL implements IHostKeyBL
 {

@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.ListSelectionModel;
@@ -49,7 +50,6 @@ import javax.swing.table.TableModel;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.ui.DefaultTableColorProvider;
 import org.adempiere.ad.ui.ITableColorProvider;
-import org.adempiere.util.Check;
 import org.compiere.apps.search.Info_Column;
 import org.compiere.grid.ed.VCellRenderer;
 import org.compiere.grid.ed.VHeaderRenderer;

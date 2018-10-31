@@ -3,9 +3,9 @@ package de.metas.payment.grossprofit;
 import org.springframework.stereotype.Service;
 
 import de.metas.money.MoneyService;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import de.metas.money.grossprofit.ProfitPriceActualComponent;
 import de.metas.money.grossprofit.ProfitPriceActualComponentProvider;
-import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import lombok.NonNull;
 
 /*
@@ -35,7 +35,7 @@ public class PaymentProfitPriceActualComponentProvider implements ProfitPriceAct
 {
 	private final MoneyService moneyService;
 
-	public PaymentProfitPriceActualComponentProvider(MoneyService moneyService)
+	public PaymentProfitPriceActualComponentProvider(@NonNull final MoneyService moneyService)
 	{
 		this.moneyService = moneyService;
 

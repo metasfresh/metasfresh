@@ -11,8 +11,6 @@ import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
@@ -44,6 +42,8 @@ import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentLine
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.handlingunits.report.HUReceiptScheduleReportExecutor;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Wareneingang (POS).

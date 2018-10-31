@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 
 import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.api.IAggregationDAO;
@@ -37,6 +36,7 @@ import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 {

@@ -2,8 +2,9 @@ package de.metas.fresh.mrp_productinfo;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.api.IParams;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

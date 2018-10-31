@@ -7,8 +7,6 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.slf4j.Logger;
 
@@ -22,6 +20,8 @@ import de.metas.logging.LogManager;
 import de.metas.procurement.base.contracts.ProcurementFlatrateHandler;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

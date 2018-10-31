@@ -33,7 +33,6 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Constants;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
@@ -47,6 +46,7 @@ import org.compiere.util.DisplayType;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.ProductAcctType;
+import de.metas.util.Services;
 
 /**
  * Post Invoice Documents.
@@ -231,6 +231,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	public BigDecimal getBalance()
 	{
 		BigDecimal retValue = BigDecimal.ZERO;
+		
 		// Total
 		retValue = retValue.add(getAmount(Doc.AMTTYPE_Gross));
 

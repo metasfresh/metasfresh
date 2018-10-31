@@ -31,8 +31,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_BPartner;
@@ -48,6 +46,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 {

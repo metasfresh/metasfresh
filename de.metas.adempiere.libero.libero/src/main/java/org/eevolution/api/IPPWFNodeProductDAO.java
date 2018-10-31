@@ -26,9 +26,10 @@ package org.eevolution.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_WF_Node;
 import org.eevolution.model.I_PP_WF_Node_Product;
+
+import de.metas.util.ISingletonService;
 
 public interface IPPWFNodeProductDAO extends ISingletonService
 {

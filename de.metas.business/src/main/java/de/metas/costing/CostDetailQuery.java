@@ -1,8 +1,8 @@
 package de.metas.costing;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.util.Check;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

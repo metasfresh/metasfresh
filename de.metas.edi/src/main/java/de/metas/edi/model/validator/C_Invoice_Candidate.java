@@ -26,12 +26,12 @@ package de.metas.edi.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IEDIInvoiceCandBL;
 import de.metas.edi.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 @Validator(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate

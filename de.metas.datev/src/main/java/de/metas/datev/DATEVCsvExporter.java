@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ThreadLocalDecimalFormatter;
 import org.compiere.util.TimeUtil;
 
 import de.metas.data.export.api.IExportDataDestination;
 import de.metas.data.export.api.IExportDataSource;
 import de.metas.data.export.api.impl.AbstractExporter;
 import de.metas.data.export.api.impl.CSVWriter;
+import de.metas.util.ThreadLocalDecimalFormatter;
 import lombok.Builder;
 import lombok.NonNull;
 

@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Util;
 
 import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
@@ -39,6 +37,8 @@ import de.metas.handlingunits.attribute.strategy.IAttributeStrategyFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AttributeStrategyFactory implements IAttributeStrategyFactory
 {

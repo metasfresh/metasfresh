@@ -2,11 +2,10 @@ package de.metas.shipper.gateway.go;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

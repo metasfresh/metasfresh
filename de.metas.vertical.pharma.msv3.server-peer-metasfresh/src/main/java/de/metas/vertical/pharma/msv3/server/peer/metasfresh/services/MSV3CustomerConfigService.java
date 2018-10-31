@@ -3,12 +3,12 @@ package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Customer_Config;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;

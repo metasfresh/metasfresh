@@ -3,8 +3,6 @@
  */
 package org.eevolution.exceptions;
 
-import org.adempiere.util.Services;
-
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -36,6 +34,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Services;
 
 /**
  * @author teo_sarca

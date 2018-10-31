@@ -24,13 +24,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.MImage;
 import org.slf4j.Logger;

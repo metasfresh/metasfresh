@@ -29,9 +29,10 @@ package org.adempiere.ad.migration.logger;
 import java.util.Set;
 
 import org.adempiere.ad.session.MFSession;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
+
+import de.metas.util.ISingletonService;
 
 /**
  * @author tsa

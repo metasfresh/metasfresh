@@ -32,7 +32,6 @@ import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.model.I_C_POS_Profile;
 import org.adempiere.model.I_C_POS_Profile_Warehouse;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table_Process;
@@ -62,6 +61,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.util.Services;
 
 /**
  * This helper class declares master data and objects that are useful for testing.
@@ -278,8 +278,9 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		// No-HU PI
 		// Default attributes
 		{
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
-					.setM_HU_PI(huDefNone));
+// this is already done in HUTestHelper.setupNoPIAttributes(); if we do it again, we violate the uniqueness assumption for M_HU_PI_Attributes
+//			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+//					.setM_HU_PI(huDefNone));
 
 			//
 			// Add some more Text attributes to this PI (just to see how it works in UI)
@@ -296,7 +297,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO = createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO);
-			huDefIFCO_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
+			huDefIFCO_pip_Tomato = assignProduct(itemMA, pTomatoProductId, BigDecimal.TEN, uomEach);
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 			pmIFCO.setAllowedPackingWeight(new BigDecimal("100"));
@@ -315,8 +316,8 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO2 = createHUDefinition(HUTestHelper.NAME_IFCO_Product + "_2", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO2);
-			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN,uomEach);
-			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSalad, BigDecimal.TEN, uomEach);
+			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomatoProductId, BigDecimal.TEN,uomEach);
+			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSaladProductId, BigDecimal.TEN, uomEach);
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO2, pmIFCO);
 

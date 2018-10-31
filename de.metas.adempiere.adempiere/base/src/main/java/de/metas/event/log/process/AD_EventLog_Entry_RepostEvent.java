@@ -1,6 +1,5 @@
 package de.metas.event.log.process;
 
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
@@ -14,6 +13,7 @@ import de.metas.event.log.EventLogService;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

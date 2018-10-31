@@ -37,8 +37,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 
@@ -48,6 +46,8 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 {

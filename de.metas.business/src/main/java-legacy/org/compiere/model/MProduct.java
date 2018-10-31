@@ -16,19 +16,21 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
+import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 
 /**
  * Product Model
@@ -44,10 +46,13 @@ import de.metas.product.IProductBL;
  */
 public class MProduct extends X_M_Product
 {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 285926961771269935L;
 
 	@Deprecated
-	public static MProduct get(final Properties ctx_NOTUSED, final int M_Product_ID)
+	public static MProduct get(Properties ctx_IGNORED, int M_Product_ID)
 	{
 		if (M_Product_ID <= 0)
 		{
@@ -55,14 +60,37 @@ public class MProduct extends X_M_Product
 		}
 
 		// NOTE: we rely on table cache config
-		final I_M_Product product = loadOutOfTrx(M_Product_ID, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(M_Product_ID);
 		return LegacyAdapters.convertToPO(product);
 	}	// get
 
+	/**
+	 * Get MProduct using UPC/EAN (case sensitive)
+	 *
+	 * @param ctx Context
+	 * @param upc The upc to look for
+	 * @return List of MProduct
+	 */
+	@Deprecated
+	public static List<MProduct> getByUPC(Properties ctx, String upc, String trxName)
+	{
+		String whereClause = "AD_Client_ID=? AND UPC=?";
+		Query q = new Query(ctx, Table_Name, whereClause, trxName);
+		q.setParameters(new Object[] { Env.getAD_Client_ID(ctx), upc });
+		return (q.list(MProduct.class));
+	}
+
+	/**************************************************************************
+	 * Standard Constructor
+	 *
+	 * @param ctx context
+	 * @param M_Product_ID id
+	 * @param trxName transaction
+	 */
 	public MProduct(Properties ctx, int M_Product_ID, String trxName)
 	{
 		super(ctx, M_Product_ID, trxName);
-		if (is_new())
+		if (M_Product_ID == 0)
 		{
 			// setValue (null);
 			// setName (null);
@@ -86,10 +114,44 @@ public class MProduct extends X_M_Product
 		}
 	}	// MProduct
 
+	/**
+	 * Load constructor
+	 *
+	 * @param ctx context
+	 * @param rs result set
+	 * @param trxName transaction
+	 */
 	public MProduct(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}	// MProduct
+
+	/**
+	 * Parent Constructor
+	 *
+	 * @param et parent
+	 */
+	MProduct(MExpenseType et)
+	{
+		this(et.getCtx(), 0, et.get_TrxName());
+		setProductType(X_M_Product.PRODUCTTYPE_ExpenseType);
+		setExpenseType(et);
+	}	// MProduct
+
+//	/**
+//	 * Parent Constructor
+//	 *
+//	 * @param resource parent
+//	 * @param resourceType resource type
+//	 */
+//	public MProduct(MResource resource, MResourceType resourceType)
+//	{
+//		this(resource.getCtx(), 0, resource.get_TrxName());
+//		setAD_Org_ID(resource.getAD_Org_ID());
+//		setProductType(X_M_Product.PRODUCTTYPE_Resource);
+//		setResource(resource);
+//		setResource(resourceType);
+//	}	// MProduct
 
 	/**
 	 * Import Constructor
@@ -124,6 +186,62 @@ public class MProduct extends X_M_Product
 		setM_ProductPlanningSchema_Selector(impP.getM_ProductPlanningSchema_Selector()); // #3406
 	}	// MProduct
 
+	/**
+	 * Set Expense Type
+	 *
+	 * @param parent expense type
+	 * @return true if changed
+	 */
+	boolean setExpenseType(MExpenseType parent)
+	{
+		boolean changed = false;
+		if (!PRODUCTTYPE_ExpenseType.equals(getProductType()))
+		{
+			setProductType(PRODUCTTYPE_ExpenseType);
+			changed = true;
+		}
+		if (parent.getS_ExpenseType_ID() != getS_ExpenseType_ID())
+		{
+			setS_ExpenseType_ID(parent.getS_ExpenseType_ID());
+			changed = true;
+		}
+		if (parent.isActive() != isActive())
+		{
+			setIsActive(parent.isActive());
+			changed = true;
+		}
+		//
+		if (!parent.getValue().equals(getValue()))
+		{
+			setValue(parent.getValue());
+			changed = true;
+		}
+		if (!parent.getName().equals(getName()))
+		{
+			setName(parent.getName());
+			changed = true;
+		}
+		if ((parent.getDescription() == null && getDescription() != null)
+				|| (parent.getDescription() != null && !parent.getDescription().equals(getDescription())))
+		{
+			setDescription(parent.getDescription());
+			changed = true;
+		}
+		if (parent.getC_UOM_ID() != getC_UOM_ID())
+		{
+			setC_UOM_ID(parent.getC_UOM_ID());
+			changed = true;
+		}
+		if (parent.getM_Product_Category_ID() != getM_Product_Category_ID())
+		{
+			setM_Product_Category_ID(parent.getM_Product_Category_ID());
+			changed = true;
+		}
+
+		// metas 05129 end
+		return changed;
+	}	// setExpenseType
+
 	/** UOM Precision */
 	private Integer m_precision = null;
 
@@ -147,6 +265,17 @@ public class MProduct extends X_M_Product
 		}
 		return m_precision.intValue();
 	}	// getUOMPrecision
+
+	/**
+	 * Create Asset Group for this product
+	 *
+	 * @return asset group id
+	 */
+	public int getA_Asset_Group_ID()
+	{
+		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
+		return pc.getA_Asset_Group_ID();
+	}	// getA_Asset_Group_ID
 
 	/**
 	 * Create Asset for this product
@@ -175,15 +304,33 @@ public class MProduct extends X_M_Product
 		return ag.isOneAssetPerUOM();
 	}	// isOneAssetPerUOM
 
-	@Override
-	protected boolean beforeSave(final boolean newRecord)
+	/**
+	 * Get UOM Symbol
+	 *
+	 * @return UOM Symbol
+	 */
+	public String getUOMSymbol()
 	{
-		// it checks if UOM has been changed , if so disallow the change if the condition is true.
-		if ((!newRecord) && is_ValueChanged(COLUMNNAME_C_UOM_ID) && hasInventoryTrxs())
+		int C_UOM_ID = getC_UOM_ID();
+		if (C_UOM_ID == 0)
 		{
-			throw new AdempiereException("@SaveUomError@");
+			return "";
 		}
+		return MUOM.get(getCtx(), C_UOM_ID).getUOMSymbol();
+	}	// getUOMSymbol
 
+	@Override
+	public String toString()
+	{
+		StringBuffer sb = new StringBuffer("MProduct[");
+		sb.append(get_ID()).append("-").append(getValue()).append("_").append(getName())
+				.append("]");
+		return sb.toString();
+	}	// toString
+
+	@Override
+	protected boolean beforeSave(boolean newRecord)
+	{
 		// Reset Stocked if not Item
 		// AZ Goodwill: Bug Fix isStocked always return false
 		// if (isStocked() && !PRODUCTTYPE_Item.equals(getProductType()))
@@ -193,26 +340,16 @@ public class MProduct extends X_M_Product
 		}
 
 		// UOM reset
-		if (m_precision != null && is_ValueChanged(COLUMNNAME_C_UOM_ID))
+		if (m_precision != null && is_ValueChanged("C_UOM_ID"))
 		{
 			m_precision = null;
 		}
 
 		return true;
 	}	// beforeSave
-	
-	private boolean hasInventoryTrxs()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Transaction.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Transaction.COLUMN_M_Product_ID, getM_Product_ID())
-				.create()
-				.match();
-	}
 
 	@Override
-	protected boolean afterSave(final boolean newRecord, final boolean success)
+	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (!success)
 		{
@@ -220,13 +357,13 @@ public class MProduct extends X_M_Product
 		}
 
 		// Value/Name change in Account
-		if (!newRecord && (is_ValueChanged(COLUMNNAME_Value) || is_ValueChanged(COLUMNNAME_Name)))
+		if (!newRecord && (is_ValueChanged("Value") || is_ValueChanged("Name")))
 		{
 			MAccount.updateValueDescription(getCtx(), "M_Product_ID=" + getM_Product_ID(), get_TrxName());
 		}
 
 		// Name/Description Change in Asset MAsset.setValueNameDescription
-		if (!newRecord && (is_ValueChanged(COLUMNNAME_Name) || is_ValueChanged(COLUMNNAME_Description)))
+		if (!newRecord && (is_ValueChanged("Name") || is_ValueChanged("Description")))
 		{
 			String sql = DB.convertSqlToNative("UPDATE A_Asset a "
 					+ "SET (Name, Description)="
@@ -240,17 +377,16 @@ public class MProduct extends X_M_Product
 			log.debug("Asset Description updated #" + no);
 		}
 
-		// New - Acct, Tree
+		// New - Acct, Tree, Old Costing
 		if (newRecord)
 		{
 			insert_Accounting(I_M_Product_Acct.Table_Name,
 					I_M_Product_Category_Acct.Table_Name,
 					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
-			
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
 
-		return true;
+		return success;
 	}	// afterSave
 
 	@Override
@@ -262,6 +398,44 @@ public class MProduct extends X_M_Product
 		}
 
 		//
-		return delete_Accounting(I_M_Product_Acct.Table_Name);
+		return delete_Accounting("M_Product_Acct");
 	}	// beforeDelete
+
+	/**
+	 * Gets Material Management Policy. Tries: Product Category, Client (in this order)
+	 *
+	 * @return Material Management Policy
+	 * @deprecated Please use {@link IProductBL#getMMPolicy(I_M_Product)}
+	 */
+	@Deprecated
+	public String getMMPolicy()
+	{
+		return Services.get(IProductBL.class).getMMPolicy(this);
+	}
+
+	/**
+	 * Get Product Costing Level
+	 *
+	 * @param as accounting schema
+	 * @return product costing level
+	 * @deprecated Please use {@link IProductBL#getCostingLevel(I_M_Product, I_C_AcctSchema)}.
+	 */
+	@Deprecated
+	public CostingLevel getCostingLevel(final I_C_AcctSchema as)
+	{
+		return Services.get(IProductBL.class).getCostingLevel(this, as);
+	}
+
+	/**
+	 * Get Product Costing Method
+	 *
+	 * @param C_AcctSchema_ID accounting schema ID
+	 * @return product costing method
+	 * @deprecated Please use {@link IProductBL#getCostingMethod(I_M_Product, I_C_AcctSchema)}.
+	 */
+	@Deprecated
+	public CostingMethod getCostingMethod(I_C_AcctSchema as)
+	{
+		return Services.get(IProductBL.class).getCostingMethod(this, as);
+	}
 }	// MProduct

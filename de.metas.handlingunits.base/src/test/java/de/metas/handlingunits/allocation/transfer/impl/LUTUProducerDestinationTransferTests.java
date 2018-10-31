@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
@@ -21,11 +20,11 @@ import org.w3c.dom.Node;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
@@ -33,6 +32,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -89,10 +89,10 @@ public class LUTUProducerDestinationTransferTests
 	{
 
 		final LUTUProducerDestination lutuProducer1 = mkLUTUProducerForSingleIFCO();
-		data.helper.load(lutuProducer1, data.helper.pTomato, new BigDecimal("20"), data.helper.uomKg);
+		data.helper.load(lutuProducer1, data.helper.pTomatoProductId, new BigDecimal("20"), data.helper.uomKg);
 
 		final LUTUProducerDestination lutuProducer2 = mkLUTUProducerForSingleIFCO();
-		data.helper.load(lutuProducer2, data.helper.pTomato, new BigDecimal("20"), data.helper.uomKg);
+		data.helper.load(lutuProducer2, data.helper.pTomatoProductId, new BigDecimal("20"), data.helper.uomKg);
 
 		assertThat(lutuProducer1.getCreatedHUsCount(), is(1));
 		final Node sourceXML1 = HUXmlConverter.toXml(lutuProducer1.getCreatedHUs().get(0));
@@ -202,7 +202,7 @@ public class LUTUProducerDestinationTransferTests
 		{
 			final LUTUProducerDestination lutuProducer = mkLUTUProducerDestination();
 
-			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("23"), data.helper.uomKg);
+			data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("23"), data.helper.uomKg);
 			huPalets = lutuProducer.getCreatedHUs();
 
 			assertThat(huPalets.size(), is(1));
@@ -438,7 +438,7 @@ public class LUTUProducerDestinationTransferTests
 			lutuProducer.setNoLU();
 
 			// one ifco can hold 40kg tomatoes
-			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), data.helper.uomKg);
+			data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("35"), data.helper.uomKg);
 
 			createdIFCOs = lutuProducer.getCreatedHUs();
 			// guards
@@ -512,7 +512,7 @@ public class LUTUProducerDestinationTransferTests
 			lutuProducer.setNoLU();
 
 			// one IFCO can hold 40kg tomatoes
-			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), data.helper.uomKg);
+			data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("35"), data.helper.uomKg);
 
 			createdIFCOs = lutuProducer.getCreatedHUs();
 			// guards
@@ -530,7 +530,7 @@ public class LUTUProducerDestinationTransferTests
 			lutuProducer.setLUItemPI(data.piLU_Item_IFCO);
 			lutuProducer.setMaxLUs(99);
 			lutuProducer.setMaxTUsPerLU(2);
-			lutuProducer.addCUPerTU(data.helper.pTomato, new BigDecimal("20"), data.helper.uomKg); // only allow 20kg, so that the 35kg don't fit into one IFCO
+			lutuProducer.addCUPerTU(data.helper.pTomatoProductId, new BigDecimal("20"), data.helper.uomKg); // only allow 20kg, so that the 35kg don't fit into one IFCO
 			lutuProducer.setCreateTUsForRemainingQty(false);
 
 			data.helper.transferMaterialToNewHUs(createdIFCOs,
@@ -600,7 +600,7 @@ public class LUTUProducerDestinationTransferTests
 			lutuProducer.setTUPI(data.piTU_IFCO);
 
 			// one IFCO can hold 40kg tomatoes
-			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("120"), data.helper.uomKg);
+			data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("120"), data.helper.uomKg);
 
 			// guard: we did not need lutuConfig.
 			assertThat(lutuProducer.getM_HU_LUTU_Configuration(), nullValue());
@@ -722,7 +722,7 @@ public class LUTUProducerDestinationTransferTests
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		// one IFCO can hold 40kg tomatoes
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("110"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("110"), data.helper.uomKg);
 
 		// guard: we did not need lutuConfig.
 		assertThat(lutuProducer.getM_HU_LUTU_Configuration(), nullValue());
@@ -794,7 +794,7 @@ public class LUTUProducerDestinationTransferTests
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		// one IFCO can hold 40kg tomatoes
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("110"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("110"), data.helper.uomKg);
 
 		// guard: we did not need lutuConfig.
 		assertThat(lutuProducer.getM_HU_LUTU_Configuration(), nullValue());
@@ -922,7 +922,7 @@ public class LUTUProducerDestinationTransferTests
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		// one IFCO can hold 40kg tomatoes, so we will have one "real" IFCO with 5kg
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("85"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("85"), data.helper.uomKg);
 
 		// guard: we did not need lutuConfig.
 
@@ -937,7 +937,7 @@ public class LUTUProducerDestinationTransferTests
 		transferLutuProducer.setMaxLUs(1);
 		transferLutuProducer.setMaxTUsPerLU(1);
 		transferLutuProducer.setCreateTUsForRemainingQty(false);
-		transferLutuProducer.addCUPerTU(data.helper.pTomato, new BigDecimal("5"), data.helper.uomKg);
+		transferLutuProducer.addCUPerTU(data.helper.pTomatoProductId, new BigDecimal("5"), data.helper.uomKg);
 
 		data.helper.transferMaterialToNewHUs(ImmutableList.of(luPalet),
 				transferLutuProducer,
@@ -964,7 +964,7 @@ public class LUTUProducerDestinationTransferTests
 		final I_M_HU_PI piTU_IFCO_with3kg = data.helper.createHUDefinition("TU_IFCO", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		final I_M_HU_PI_Item piTU_Item_IFCO_with3kg = data.helper.createHU_PI_Item_Material(piTU_IFCO_with3kg);
-		data.helper.assignProduct(piTU_Item_IFCO_with3kg, data.helper.pTomato, new BigDecimal("3"), data.helper.uomKg);
+		data.helper.assignProduct(piTU_Item_IFCO_with3kg, data.helper.pTomatoProductId, new BigDecimal("3"), data.helper.uomKg);
 
 		data.helper.createHU_PI_Item_PackingMaterial(piTU_IFCO_with3kg, data.helper.pmIFCO);
 
@@ -976,7 +976,7 @@ public class LUTUProducerDestinationTransferTests
 		lutuProducer.setTUPI(piTU_IFCO_with3kg);
 
 		// create one LU with and aggregate HU representing 8 x 3kg = 24kg
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("24"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("24"), data.helper.uomKg);
 
 		// guards to make sure the HU-tree under test is what we expect
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();

@@ -30,7 +30,6 @@ import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_Org;
@@ -45,6 +44,7 @@ import org.junit.Test;
 
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.util.Services;
 
 /**
  * Tests {@link HUMovementBL}.

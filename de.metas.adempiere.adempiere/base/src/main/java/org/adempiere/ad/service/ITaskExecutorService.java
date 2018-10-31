@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /**
  * Service responsible for executing asynchronous tasks. Maintain a map of thread pool executors, one for each thread name prefix.

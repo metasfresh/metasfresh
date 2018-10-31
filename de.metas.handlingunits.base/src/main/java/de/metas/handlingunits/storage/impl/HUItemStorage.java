@@ -30,10 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -51,9 +48,12 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUItemStorage implements IHUItemStorage
@@ -76,7 +76,7 @@ public class HUItemStorage implements IHUItemStorage
 	 */
 	private final boolean allowRequestReleaseIncludedHU;
 
-	private final Map<Integer, Capacity> productId2customCapacity = new HashMap<>();
+	private final Map<ProductId, Capacity> productId2customCapacity = new HashMap<>();
 
 	/**
 	 * Creates a new instance. Actual {@link I_M_HU_Item_Storage} records will be loaded and saved only when needed.
@@ -84,16 +84,16 @@ public class HUItemStorage implements IHUItemStorage
 	 * @param storageFactory
 	 * @param item
 	 */
-	public HUItemStorage(final IHUStorageFactory storageFactory, final I_M_HU_Item item)
+	public HUItemStorage(
+			@NonNull final IHUStorageFactory storageFactory,
+			@NonNull final I_M_HU_Item item)
 	{
-		Check.assumeNotNull(storageFactory, "storageFactory not null");
 		this.storageFactory = storageFactory;
 
 		dao = storageFactory.getHUStorageDAO();
 		Check.assumeNotNull(dao, "dao not null");
 
-		Check.assumeNotNull(item, "item not null");
-		Check.assumeNotNull(item.getM_HU_Item_ID() > 0, "item is saved: {}", item);
+		Check.assume(item.getM_HU_Item_ID() > 0, "item is saved: {}", item);
 		this.item = item;
 		virtualHUItem = handlingUnitsBL.isVirtual(item);
 		pureVirtualHUItem = handlingUnitsBL.isPureVirtual(item);
@@ -118,20 +118,14 @@ public class HUItemStorage implements IHUItemStorage
 		return item;
 	}
 
-	@Override
-	public IHUStorageFactory getHUStorageFactory()
+	private I_M_HU_Item_Storage getCreateStorageLine(@NonNull final ProductId productId, @NonNull final I_C_UOM uom)
 	{
-		return storageFactory;
-	}
-
-	private I_M_HU_Item_Storage getCreateStorageLine(final I_M_Product product, final I_C_UOM uom)
-	{
-		I_M_HU_Item_Storage storage = dao.retrieveItemStorage(item, product);
+		I_M_HU_Item_Storage storage = dao.retrieveItemStorage(item, productId);
 		if (storage == null)
 		{
 			storage = dao.newInstance(I_M_HU_Item_Storage.class, item);
 			storage.setM_HU_Item_ID(item.getM_HU_Item_ID());
-			storage.setM_Product(product);
+			storage.setM_Product_ID(productId.getRepoId());
 			storage.setQty(BigDecimal.ZERO);
 			storage.setC_UOM(uom);
 
@@ -150,7 +144,7 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public void addQty(final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
+	public void addQty(final ProductId productId, final BigDecimal qty, final I_C_UOM uom)
 	{
 		// NOTE: we allow to add/remove qty even if HU Item is not of type Material
 		// because rollupIncremental is updating the storage on all levels
@@ -160,10 +154,10 @@ public class HUItemStorage implements IHUItemStorage
 			return;
 		}
 
-		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(product, uom);
+		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(productId, uom);
 
 		final I_C_UOM uomStorage = storageLine.getC_UOM();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(product, qty, uom, uomStorage);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, uom, uomStorage);
 		//
 		// Update storage line
 		final BigDecimal qtyOld = storageLine.getQty();
@@ -176,25 +170,25 @@ public class HUItemStorage implements IHUItemStorage
 
 		//
 		// Roll-up
-		rollupIncremental(product, qtyConv, uomStorage);
+		rollupIncremental(productId, qtyConv, uomStorage);
 	}
 
-	private void rollupIncremental(final I_M_Product product, final BigDecimal qtyDelta, final I_C_UOM uom)
+	private void rollupIncremental(final ProductId productId, final BigDecimal qtyDelta, final I_C_UOM uom)
 	{
 		final IGenericHUStorage parentStorage = getParentStorage();
 		if (parentStorage != null)
 		{
-			parentStorage.addQty(product, qtyDelta, uom);
+			parentStorage.addQty(productId, qtyDelta, uom);
 		}
 	}
 
 	@Override
-	public BigDecimal getQty(final I_M_Product product, final I_C_UOM uom)
+	public BigDecimal getQty(final ProductId productId, final I_C_UOM uom)
 	{
-		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(product, uom);
+		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(productId, uom);
 
 		final BigDecimal qty = storageLine.getQty();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(product, qty, storageLine.getC_UOM(), uom);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, storageLine.getC_UOM(), uom);
 
 		return qtyConv;
 	}
@@ -213,13 +207,13 @@ public class HUItemStorage implements IHUItemStorage
 
 	@Override
 	public CapacityInterface getCapacity(
-			@NonNull final I_M_Product product,
+			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
 			@NonNull final Date date)
 	{
 		//
 		// In case there is a custom capacity set, we use that right away
-		final CapacityInterface customCapacity = getCustomCapacityOrNull(product, uom);
+		final CapacityInterface customCapacity = getCustomCapacityOrNull(productId, uom);
 		if (customCapacity != null)
 		{
 			return customCapacity;
@@ -227,18 +221,18 @@ public class HUItemStorage implements IHUItemStorage
 
 		//
 		// Get directly
-		final CapacityInterface capacity = capacityBL.getCapacity(item, product, uom, date);
+		final CapacityInterface capacity = capacityBL.getCapacity(item, productId, uom, date);
 		return capacity;
 	}
 
-	private final CapacityInterface getCustomCapacityOrNull(final I_M_Product product, final I_C_UOM uom)
+	private final CapacityInterface getCustomCapacityOrNull(final ProductId productId, final I_C_UOM uom)
 	{
-		if (product == null)
+		if (productId == null)
 		{
 			return null;
 		}
 
-		final CapacityInterface customCapacity = productId2customCapacity.get(product.getM_Product_ID());
+		final CapacityInterface customCapacity = productId2customCapacity.get(productId);
 		if (customCapacity == null)
 		{
 			return null;
@@ -248,34 +242,33 @@ public class HUItemStorage implements IHUItemStorage
 		return customCapacityConv;
 	}
 
-	private final boolean hasCustomCapacityDefined(final I_M_Product product)
+	private final boolean hasCustomCapacityDefined(final ProductId productId)
 	{
-		if (product == null)
+		if (productId == null)
 		{
 			return false;
 		}
 
-		final CapacityInterface customCapacity = productId2customCapacity.get(product.getM_Product_ID());
+		final CapacityInterface customCapacity = productId2customCapacity.get(productId);
 		return customCapacity != null;
 	}
 
 	@Override
 	public void setCustomCapacity(final Capacity capacity)
 	{
-		final I_M_Product product = capacity.getM_Product();
-		Check.assumeNotNull(product, "product not null");
+		final ProductId productId = capacity.getProductId();
+		Check.assumeNotNull(productId, "productId not null");
 
-		final int productId = product.getM_Product_ID();
 		productId2customCapacity.put(productId, capacity);
 	}
 
 	@Override
 	public CapacityInterface getAvailableCapacity(
-			@NonNull final I_M_Product product,
+			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
 			@NonNull final Date date)
 	{
-		final CapacityInterface capacity = getCapacity(product, uom, date);
+		final CapacityInterface capacity = getCapacity(productId, uom, date);
 		if (handlingUnitsBL.isAggregateHU(getM_HU_Item().getM_HU()))
 		{
 			// if this is an aggregate HU's item, then ignore the qty that was already added and ignore the item's full capacity
@@ -283,7 +276,7 @@ public class HUItemStorage implements IHUItemStorage
 			// fixes gh #1162!
 			return capacity;
 		}
-		final BigDecimal qty = getQty(product, uom);
+		final BigDecimal qty = getQty(productId, uom);
 
 		final CapacityInterface capacityAvailable = capacity.subtractQuantity(Quantity.of(qty, uom));
 		return capacityAvailable;
@@ -312,9 +305,9 @@ public class HUItemStorage implements IHUItemStorage
 			return request;
 		}
 
-		final I_M_Product product = request.getProduct();
+		final ProductId productId = request.getProductId();
 		final I_C_UOM uom = request.getC_UOM();
-		final CapacityInterface availableCapacityDefinition = getAvailableCapacity(product, uom, request.getDate());
+		final CapacityInterface availableCapacityDefinition = getAvailableCapacity(productId, uom, request.getDate());
 
 		//
 		// Infinite capacity check
@@ -368,8 +361,8 @@ public class HUItemStorage implements IHUItemStorage
 
 		// If Custom capacity is enforced, then that rule is stronger than force allocation
 		// e.g. use-case where is used: LU/TU producer is creating TUs enforcing this custom max capacity for CUs/TU... and we want to respect that rule.
-		final I_M_Product product = request.getProduct();
-		if (hasCustomCapacityDefined(product))
+		final ProductId productId = request.getProductId();
+		if (hasCustomCapacityDefined(productId))
 		{
 			return false;
 		}
@@ -400,7 +393,7 @@ public class HUItemStorage implements IHUItemStorage
 
 		Check.assume(qtyRequired.signum() > 0, "qtyRequired({}) > 0", qtyRequired);
 
-		final BigDecimal qtyAvailable = getQty(request.getProduct(), request.getC_UOM());
+		final BigDecimal qtyAvailable = getQty(request.getProductId(), request.getC_UOM());
 
 		if (qtyAvailable.compareTo(qtyRequired) >= 0)
 		{
@@ -507,9 +500,9 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public IProductStorage getProductStorage(final I_M_Product product, final I_C_UOM uom, final Date date)
+	public IProductStorage getProductStorage(final ProductId productId, final I_C_UOM uom, final Date date)
 	{
-		return new HUItemProductStorage(this, product, uom, date);
+		return new HUItemProductStorage(this, productId, uom, date);
 	}
 
 	@Override
@@ -519,9 +512,9 @@ public class HUItemStorage implements IHUItemStorage
 		final List<IProductStorage> result = new ArrayList<>(storages.size());
 		for (final I_M_HU_Item_Storage storage : storages)
 		{
-			final I_M_Product product = storage.getM_Product();
+			final ProductId productId = ProductId.ofRepoId(storage.getM_Product_ID());
 			final I_C_UOM uom = storage.getC_UOM();
-			final HUItemProductStorage productStorage = new HUItemProductStorage(this, product, uom, date);
+			final HUItemProductStorage productStorage = new HUItemProductStorage(this, productId, uom, date);
 			result.add(productStorage);
 		}
 
@@ -555,9 +548,9 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public boolean isEmpty(final I_M_Product product)
+	public boolean isEmpty(final ProductId productId)
 	{
-		final I_M_HU_Item_Storage storage = dao.retrieveItemStorage(item, product);
+		final I_M_HU_Item_Storage storage = dao.retrieveItemStorage(item, productId);
 		if (storage == null)
 		{
 			return true;

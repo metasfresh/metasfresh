@@ -63,6 +63,7 @@ public class C_OrderLine
 				.date(orderLine.getDatePromised().toLocalDate())
 				.baseAmount(orderLine.getPriceActual())
 				.paymentTermId(orderLine.getPaymentTermId())
+				.quantity(orderLine.getOrderedQty())
 				.build();
 
 		final Money profitBasePrice = profitPriceActualFactory.calculateProfitPriceActual(request);

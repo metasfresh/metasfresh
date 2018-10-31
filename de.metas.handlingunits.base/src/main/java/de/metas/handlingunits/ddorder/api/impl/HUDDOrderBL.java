@@ -8,7 +8,6 @@ import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -22,6 +21,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IWarehouseDAO;
+import de.metas.adempiere.service.impl.WarehouseDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -29,13 +29,13 @@ import de.metas.handlingunits.ddorder.api.QuarantineInOutLine;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 public class HUDDOrderBL implements IHUDDOrderBL
 {
-	private static final String MSG_M_Warehouse_NoQuarantineWarehouse = "M_Warehouse_NoQuarantineWarehouse";
 
 	@Override
 	public DDOrderLinesAllocator createMovements()
@@ -86,7 +86,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.stream()
 				.map(hu -> HUToDistribute.builder()
 						.hu(hu)
-						.lockLotNo(receiptLine.getLockLotNo())
+						.quarantineLotNo(receiptLine.getLotNumberQuarantine())
 						.bpartnerId(receiptLine.getBpartnerId())
 						.bpartnerLocationId(receiptLine.getBpartnerLocationId())
 						.build())
@@ -102,7 +102,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		final I_M_Warehouse quarantineWarehouse = warehouseDAO.retrieveQuarantineWarehouseOrNull();
 		if (quarantineWarehouse == null)
 		{
-			throw new AdempiereException("@" + MSG_M_Warehouse_NoQuarantineWarehouse + "@");
+			throw new AdempiereException("@" + WarehouseDAO.MSG_M_Warehouse_NoQuarantineWarehouse + "@");
 		}
 
 		final I_M_Locator defaultLocator = warehouseBL.getDefaultLocator(quarantineWarehouse);

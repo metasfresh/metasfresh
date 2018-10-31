@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.junit.Assert;
@@ -39,6 +38,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationUtils;
+import de.metas.util.Services;
 
 /**
  * Listens to InvoiceGenerated topic, collects the invoices which were notified and later can compare with a given list.

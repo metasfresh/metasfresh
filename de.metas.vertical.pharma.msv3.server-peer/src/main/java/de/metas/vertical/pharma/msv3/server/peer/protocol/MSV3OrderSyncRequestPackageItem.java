@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.vertical.pharma.msv3.protocol.types.Id;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItemId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
@@ -39,7 +39,7 @@ import lombok.Value;
 public class MSV3OrderSyncRequestPackageItem
 {
 	@JsonProperty("id")
-	Id id;
+	OrderCreateRequestPackageItemId id;
 	@JsonProperty("pzn")
 	PZN pzn;
 	@JsonProperty("qty")
@@ -48,7 +48,7 @@ public class MSV3OrderSyncRequestPackageItem
 	@Builder
 	@JsonCreator
 	private MSV3OrderSyncRequestPackageItem(
-			@JsonProperty("id") @NonNull final Id id,
+			@JsonProperty("id") @NonNull final OrderCreateRequestPackageItemId id,
 			@JsonProperty("pzn") @NonNull final PZN pzn,
 			@JsonProperty("qty") @NonNull final Quantity qty)
 	{

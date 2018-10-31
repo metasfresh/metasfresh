@@ -25,14 +25,14 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.junit.Before;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 /**
  * Makes sure the invoice candidates get the right locks along the "enqueue to invoice" process.
@@ -45,7 +45,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 	@Before
 	public void registerService()
 	{
-		final AsyncBPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new AsyncBPartnerStatisticsUpdater();
+		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 	}
 

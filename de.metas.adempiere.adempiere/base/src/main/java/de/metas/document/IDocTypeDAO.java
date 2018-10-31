@@ -27,10 +27,10 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -45,7 +45,7 @@ public interface IDocTypeDAO extends ISingletonService
 	/**
 	 * @return C_DocType_ID or -1 if not found
 	 */
-	int getDocTypeIdOrNull(final DocTypeQuery query);
+	DocTypeId getDocTypeIdOrNull(final DocTypeQuery query);
 
 	/**
 	 * @return C_DocType_ID
@@ -54,7 +54,7 @@ public interface IDocTypeDAO extends ISingletonService
 	@Deprecated
 	int getDocTypeId(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
 
-	int getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
+	DocTypeId getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
 
 	/**
 	 * @param docSubType doc sub type or {@link #DOCSUBTYPE_Any}.

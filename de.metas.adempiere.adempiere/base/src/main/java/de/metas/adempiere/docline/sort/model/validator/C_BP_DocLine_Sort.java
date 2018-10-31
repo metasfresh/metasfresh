@@ -31,10 +31,11 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_DocLine_Sort;
 import org.compiere.model.I_C_DocLine_Sort;
 import org.compiere.model.ModelValidator;
+
+import de.metas.util.Services;
 
 @Validator(I_C_BP_DocLine_Sort.class)
 public class C_BP_DocLine_Sort

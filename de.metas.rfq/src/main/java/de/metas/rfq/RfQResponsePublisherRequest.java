@@ -1,11 +1,10 @@
 package de.metas.rfq;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import com.google.common.base.MoreObjects;
 
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

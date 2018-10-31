@@ -27,12 +27,12 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
+import de.metas.util.Services;
 
 @Interceptor(I_M_DeliveryDay_Alloc.class)
 public class M_DeliveryDay_Alloc

@@ -25,7 +25,7 @@ package org.adempiere.util.comparator;
 
 import java.util.Comparator;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 public class ReverseComparator<T> implements Comparator<T>
 {

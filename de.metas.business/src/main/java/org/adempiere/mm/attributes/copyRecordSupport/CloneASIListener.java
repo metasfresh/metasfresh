@@ -2,8 +2,9 @@ package org.adempiere.mm.attributes.copyRecordSupport;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.CopyRecordSupport.IOnRecordCopiedListener;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
+
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -28,8 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -39,6 +37,8 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.MoreHUKey;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *

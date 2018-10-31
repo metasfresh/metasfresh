@@ -12,10 +12,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.commons.EventDescriptor;
@@ -63,6 +62,7 @@ import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -177,7 +177,7 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.pickingSlotId(10)
 				.shipmentScheduleId(20)
-				.topLevelHuIdsToPick(ImmutableList.of(30, 40))
+				.topLevelHuIdsToPick(ImmutableSet.of(30, 40))
 				.build();
 
 		event.assertValid();

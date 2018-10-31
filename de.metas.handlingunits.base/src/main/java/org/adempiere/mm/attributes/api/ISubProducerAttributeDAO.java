@@ -26,8 +26,9 @@ package org.adempiere.mm.attributes.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
+
+import de.metas.util.ISingletonService;
 
 public interface ISubProducerAttributeDAO extends ISingletonService
 {

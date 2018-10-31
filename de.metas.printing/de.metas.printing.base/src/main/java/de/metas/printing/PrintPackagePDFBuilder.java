@@ -10,7 +10,6 @@ import java.io.OutputStream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.pdf.PdfCopy;
@@ -22,6 +21,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.util.Services;
 
 /**
  * @author cg

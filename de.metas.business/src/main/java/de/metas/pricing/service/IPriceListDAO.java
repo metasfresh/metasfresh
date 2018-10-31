@@ -1,5 +1,8 @@
 package de.metas.pricing.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -27,7 +30,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -38,6 +40,8 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 
 public interface IPriceListDAO extends ISingletonService
 {
@@ -45,6 +49,8 @@ public interface IPriceListDAO extends ISingletonService
 	public static final int M_PriceList_ID_None = PriceListId.NONE.getRepoId();
 
 	I_M_PricingSystem getPricingSystemById(PricingSystemId pricingSystemId);
+
+	PricingSystemId getPricingSystemIdByValue(String value);
 
 	I_M_PriceList getById(PriceListId priceListId);
 
@@ -123,4 +129,6 @@ public interface IPriceListDAO extends ISingletonService
 	String getPriceListName(final PriceListId priceListId);
 
 	Set<Integer> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
+
+	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
 }

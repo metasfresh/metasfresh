@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -15,6 +12,9 @@ import com.google.common.base.MoreObjects;
 import de.metas.logging.LogManager;
 import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.RfQResponsePublisherRequest;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 
 /*
  * #%L

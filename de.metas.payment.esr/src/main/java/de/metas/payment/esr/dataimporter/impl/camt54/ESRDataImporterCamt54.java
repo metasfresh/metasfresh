@@ -12,7 +12,6 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -27,6 +26,7 @@ import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*

@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Movement;
@@ -31,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.ICostingService;
+import de.metas.util.Services;
 
 /**
  * Post Invoice Documents.

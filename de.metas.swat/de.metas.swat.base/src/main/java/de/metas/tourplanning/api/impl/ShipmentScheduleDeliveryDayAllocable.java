@@ -25,13 +25,12 @@ package de.metas.tourplanning.api.impl;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Wraps a {@link I_M_ShipmentSchedule} and behave like {@link IDeliveryDayAllocable}

@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Comparator which sorts a given set by using the item's cardinality in a given list.

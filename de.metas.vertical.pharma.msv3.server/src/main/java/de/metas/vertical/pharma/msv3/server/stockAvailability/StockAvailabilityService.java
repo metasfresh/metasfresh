@@ -24,6 +24,10 @@ import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.jpa.JpaProductExclude;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.jpa.JpaProductExcludeRepository;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.jpa.JpaStockAvailability;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.jpa.JpaStockAvailabilityRepository;
 import lombok.NonNull;
 
 /*

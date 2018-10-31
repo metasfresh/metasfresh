@@ -7,7 +7,6 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -19,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
+import de.metas.util.Services;
 
 /*
  * #%L

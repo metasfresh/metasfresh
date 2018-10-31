@@ -13,7 +13,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.assertj.core.api.Condition;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -25,6 +24,8 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

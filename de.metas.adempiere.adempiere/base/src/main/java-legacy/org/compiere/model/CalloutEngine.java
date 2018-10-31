@@ -23,10 +23,10 @@ import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 
 /**

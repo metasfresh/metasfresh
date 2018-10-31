@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.util.List;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
@@ -39,6 +38,7 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  * Project Issue.

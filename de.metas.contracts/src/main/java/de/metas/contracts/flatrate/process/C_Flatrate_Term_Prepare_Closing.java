@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.Query;
@@ -46,6 +44,8 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.Msg;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 public class C_Flatrate_Term_Prepare_Closing extends JavaProcess

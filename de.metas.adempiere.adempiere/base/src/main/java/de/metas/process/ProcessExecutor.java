@@ -15,8 +15,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_AD_Rule;
@@ -33,12 +31,14 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 
 import de.metas.i18n.IMsgBL;
-//import de.metas.adempiere.form.IClientUI;
+// import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
 import de.metas.session.jaxrs.IServerService;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -106,7 +106,7 @@ public final class ProcessExecutor
 
 	private final String buildThreadName()
 	{
-		return pi.getTitle() + "-" + pi.getAD_PInstance_ID();
+		return pi.getTitle() + "-" + PInstanceId.toRepoIdOr(pi.getPinstanceId(), 0);
 	}
 
 	/**
@@ -183,7 +183,7 @@ public final class ProcessExecutor
 
 			final ProcessExecutionResult result = pi.getResult();
 
-			final ProcessExecutionResult remoteResult = Services.get(IServerService.class).process(pi.getAD_PInstance_ID());
+			final ProcessExecutionResult remoteResult = Services.get(IServerService.class).process(pi.getPinstanceId().getRepoId());
 			result.updateFrom(remoteResult);
 		}
 		catch (final Exception e)
@@ -231,8 +231,8 @@ public final class ProcessExecutor
 				//
 				// Prepare report
 				final boolean isReport = pi.isReportingProcess();
-				final boolean isJasperReport = pi.getReportTemplate().isPresent();
-				if (isJasperReport)
+				final boolean hasProcessClass = !Check.isEmpty(pi.getClassName());
+				if (isReport && hasProcessClass)
 				{
 					// nothing do to, the Jasper process class implementation is responsible for triggering the report preview if any
 					return;
@@ -356,7 +356,7 @@ public final class ProcessExecutor
 		// Database: lock the AD_PInstance
 		if (runningLocally)
 		{
-			adPInstanceDAO.lock(pi.getCtx(), pi.getAD_PInstance_ID());
+			adPInstanceDAO.lock(pi.getPinstanceId());
 		}
 
 		//
@@ -408,7 +408,7 @@ public final class ProcessExecutor
 		{
 			try
 			{
-				adPInstanceDAO.unlockAndSaveResult(ctx, result);
+				adPInstanceDAO.unlockAndSaveResult(result);
 			}
 			catch (final Throwable e)
 			{
@@ -488,7 +488,7 @@ public final class ProcessExecutor
 				.putArgument("AD_Org_ID", pi.getAD_Org_ID())
 				.putArgument("AD_User_ID", pi.getAD_User_ID())
 				.putArgument("AD_Role_ID", pi.getAD_Role_ID())
-				.putArgument("AD_PInstance_ID", pi.getAD_PInstance_ID());
+				.putArgument("AD_PInstance_ID", PInstanceId.toRepoId(pi.getPinstanceId()));
 
 		final List<ProcessInfoParameter> parameters = pi.getParameter();
 		if (parameters != null)
@@ -552,7 +552,7 @@ public final class ProcessExecutor
 		final ProcessInfo pi = this.pi;
 
 		final JavaProcess process = pi.newProcessClassInstanceOrNull();
-		if(process == null)
+		if (process == null)
 		{
 			throw new AdempiereException("Cannot create process class instance for " + pi); // shall not happen
 		}
@@ -576,7 +576,7 @@ public final class ProcessExecutor
 		logger.debug("startDBProcess: {} ({})", dbProcedureName, pi);
 
 		final String sql = "{call " + dbProcedureName + "(?)}";
-		final Object[] sqlParams = new Object[] { pi.getAD_PInstance_ID() };
+		final Object[] sqlParams = new Object[] { pi.getPinstanceId() };
 		try (final CallableStatement cstmt = DB.prepareCall(sql, ResultSet.CONCUR_UPDATABLE, ITrx.TRXNAME_ThreadInherited))
 		{
 			DB.setParameters(cstmt, sqlParams);
@@ -714,7 +714,7 @@ public final class ProcessExecutor
 			this.onErrorThrowException = true;
 			return this;
 		}
-		
+
 		public Builder onErrorThrowException(final boolean onErrorThrowException)
 		{
 			this.onErrorThrowException = onErrorThrowException;
@@ -737,7 +737,7 @@ public final class ProcessExecutor
 		 * Sets the callback to be executed after AD_PInstance is created but before the actual process is started.
 		 * If the callback fails, the exception is propagated, so the process will not be started.
 		 *
-		 * A common use case of <code>beforeCallback</code> is to create to selections which are linked to this AD_PInstance_ID.
+		 * A common use case of <code>beforeCallback</code> is to create to selections which are linked to this process instance.
 		 *
 		 * @param beforeCallback
 		 */

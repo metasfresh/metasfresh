@@ -28,8 +28,6 @@ import java.math.BigDecimal;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_InOut;
@@ -45,6 +43,8 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.validator.M_InOut;
 import de.metas.inout.IInOutDAO;
 import de.metas.materialtransaction.IMTransactionDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public abstract class AbstractHandlingUnitsBLTest extends AbstractHUTest
 {
@@ -85,7 +85,7 @@ public abstract class AbstractHandlingUnitsBLTest extends AbstractHUTest
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, pTomato, tomatosPerIFCO, uomEach);
+			helper.assignProduct(itemMA, pTomatoId, tomatosPerIFCO, uomEach);
 
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 		}

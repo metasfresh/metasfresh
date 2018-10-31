@@ -5,13 +5,13 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -29,7 +29,6 @@ import javax.swing.JPopupMenu;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.model.I_AD_User;
@@ -55,6 +54,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 
 /**

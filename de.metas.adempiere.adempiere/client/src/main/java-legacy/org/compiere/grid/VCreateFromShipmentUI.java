@@ -61,7 +61,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.VLocator;
 import org.compiere.grid.ed.VLookup;
@@ -83,6 +82,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 
 public class VCreateFromShipmentUI extends CreateFromShipment implements ActionListener, VetoableChangeListener
 {

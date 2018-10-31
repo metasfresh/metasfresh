@@ -8,8 +8,6 @@ import java.util.Properties;
 import org.adempiere.acct.api.GLDistributionResultLine.Sign;
 import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.util.Env;
@@ -17,6 +15,8 @@ import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

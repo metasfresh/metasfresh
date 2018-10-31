@@ -20,9 +20,9 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 /**
  *	Request History Model

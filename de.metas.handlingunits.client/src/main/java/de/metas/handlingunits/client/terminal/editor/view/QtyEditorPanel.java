@@ -26,7 +26,6 @@ package de.metas.handlingunits.client.terminal.editor.view;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.terminal.IComponent;
@@ -39,6 +38,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 import de.metas.adempiere.form.terminal.field.constraint.PositiveNumericFieldConstraint;
 import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants;
+import de.metas.util.Services;
 
 /**
  * Small popup used to ask your for a Quantity.

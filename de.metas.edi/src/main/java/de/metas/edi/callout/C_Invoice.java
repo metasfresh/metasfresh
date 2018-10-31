@@ -1,11 +1,11 @@
 package de.metas.edi.callout;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_C_Invoice;
+import de.metas.util.Services;
 
 public class C_Invoice extends CalloutEngine
 {

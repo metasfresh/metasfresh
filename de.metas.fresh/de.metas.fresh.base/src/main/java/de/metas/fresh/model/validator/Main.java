@@ -13,11 +13,11 @@ package de.metas.fresh.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,15 +48,15 @@ import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceLineInAusLandModel
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
-import de.metas.fresh.picking.form.swing.FreshSwingPickingTerminalPanel;
+import de.metas.fresh.picking.form.SwingPickingTerminalPanel;
 import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
 import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.picking.terminal.form.swing.PickingTerminal;
+import de.metas.util.Services;
 
 public class Main extends AbstractModuleInterceptor
 {
@@ -97,10 +97,10 @@ public class Main extends AbstractModuleInterceptor
 
 		modelAttributeSetInstanceListenerService.registerListener(new InvoiceLineADRModelAttributeSetInstanceListener());
 		modelAttributeSetInstanceListenerService.registerListener(new InvoiceADRModelAttributeSetInstanceListener());
-		
+
 		modelAttributeSetInstanceListenerService.registerListener(new OrderLineLotNumberModelAttributeSetInstanceListener());
 
-		PickingTerminal.setClassName(FreshSwingPickingTerminalPanel.class.getCanonicalName());
+		PickingTerminal.setPickingTerminalPanelClass(SwingPickingTerminalPanel.class);
 
 		//
 		// Setup Time Format (see 06148)

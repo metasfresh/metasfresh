@@ -26,10 +26,9 @@ package de.metas.adempiere.form.terminal.table;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 /* package */class CompositeTerminalTableModelListener implements ITerminalTableModelListener, IDisposable
 {

@@ -35,9 +35,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.apps.AppsAction;
@@ -54,6 +51,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.terminal.AbstractPropertiesPanelModel;
+import de.metas.adempiere.form.terminal.IInputMethod;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModelConfigurator;
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -72,7 +70,9 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.logging.LogManager;
-import de.metas.picking.legacy.form.IInputMethod;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 {

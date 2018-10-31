@@ -13,18 +13,17 @@ package de.metas.fresh.picking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -32,14 +31,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.util.Check;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalBasePanel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
-import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
+import de.metas.fresh.picking.form.SwingPackingTerminalPanel;
+import de.metas.util.Check;
 
 /**
  * @author cg
@@ -47,6 +47,10 @@ import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
  */
 public class PackingMaterialLayout extends KeyLayout
 {
+	public static PackingMaterialLayout cast(final IKeyLayout keyLayout)
+	{
+		return (PackingMaterialLayout)keyLayout;
+	}
 
 	private static final Color COLOR_Default = Color.GRAY;
 	private static final Color COLOR_MatchedForProductKey = Color.GREEN;
@@ -71,20 +75,20 @@ public class PackingMaterialLayout extends KeyLayout
 	}
 
 	@Override
-	protected List<ITerminalKey> createKeys()
+	protected ImmutableList<ITerminalKey> createKeys()
 	{
 		//
 		// If there is no picking slot selected => display nothing to user
 		final PickingSlotKey pickingSlotKey = getSelectedPickingSlotKey();
 		if (pickingSlotKey == null)
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		//
 		// Get the products keys which needs to be checked for compatibility of a packing material key
-		final FreshProductKey productKey = getSelectedProductKey();
-		final List<FreshProductKey> productKeysToCheckForCompatibility;
+		final ProductKey productKey = getSelectedProductKey();
+		final List<ProductKey> productKeysToCheckForCompatibility;
 		if (productKey == null)
 		{
 			productKeysToCheckForCompatibility = getAllProductKeys();
@@ -95,13 +99,13 @@ public class PackingMaterialLayout extends KeyLayout
 		}
 		if (productKeysToCheckForCompatibility.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		//
 		// Start with all available Packing Material Keys,
 		// and then take out those which are not compatible.
-		final List<ITerminalKey> packingMaterialKeys = new ArrayList<ITerminalKey>(getAvailablePackingMaterialKeys());
+		final ArrayList<ITerminalKey> packingMaterialKeys = new ArrayList<>(getAvailablePackingMaterialKeys());
 		final ITerminalContext terminalContext = getTerminalContext();
 		for (final Iterator<ITerminalKey> it = packingMaterialKeys.iterator(); it.hasNext();)
 		{
@@ -122,43 +126,38 @@ public class PackingMaterialLayout extends KeyLayout
 			}
 		}
 
-		return Collections.unmodifiableList(packingMaterialKeys);
+		return ImmutableList.copyOf(packingMaterialKeys);
 	}
 
 	private PickingSlotKey getSelectedPickingSlotKey()
 	{
-		final FreshSwingPackageItems productKeysPanel = getBasePanel().getProductKeysPanel();
-		return productKeysPanel.getSelectedPickingSlotKey();
+		return getPackingTerminalPanel().getSelectedPickingSlotKey();
 	}
 
-	private FreshProductKey getSelectedProductKey()
+	private ProductKey getSelectedProductKey()
 	{
-		final FreshSwingPackageItems productKeysPanel = getBasePanel().getProductKeysPanel();
-		return productKeysPanel.getSelectedProduct();
+		return getPackingTerminalPanel().getSelectedProductKey();
 	}
 
-	private List<FreshProductKey> getAllProductKeys()
+	private List<ProductKey> getAllProductKeys()
 	{
-		final FreshSwingPackageItems productKeysPanel = getBasePanel().getProductKeysPanel();
-		return productKeysPanel.getAllProductKeys();
+		return getPackingTerminalPanel().getAllProductKeys();
 	}
 
-	private List<PackingMaterialKey> getAvailablePackingMaterialKeys()
+	private ImmutableList<PackingMaterialKey> getAvailablePackingMaterialKeys()
 	{
-		final FreshPackingDetailsMd model = getBasePanel().getModel();
-		return model.getAvailablePackingMaterialKeys();
+		return getPackingTerminalPanel().getAvailablePackingMaterialKeys();
 	}
 
-	@Override
-	public FreshSwingPackageTerminalPanel getBasePanel()
+	private SwingPackingTerminalPanel getPackingTerminalPanel()
 	{
-		return (FreshSwingPackageTerminalPanel)super.getBasePanel();
+		return SwingPackingTerminalPanel.cast(super.getBasePanel());
 	}
 
 	@Override
 	public void setBasePanel(final ITerminalBasePanel basePanel)
 	{
-		Check.assumeInstanceOfOrNull(basePanel, FreshSwingPackageTerminalPanel.class, "basePanel");
+		Check.assumeInstanceOfOrNull(basePanel, SwingPackingTerminalPanel.class, "basePanel");
 		super.setBasePanel(basePanel);
 	}
 
@@ -177,7 +176,7 @@ public class PackingMaterialLayout extends KeyLayout
 	/**
 	 * Gets default {@link PackingMaterialKey} background color. i.e.
 	 * <ul>
-	 * <li> {@link #COLOR_MatchedForProductKey}, if the current selected {@link FreshProductKey} has exactly the same default packing materials as this key has
+	 * <li>{@link #COLOR_MatchedForProductKey}, if the current selected {@link ProductKey} has exactly the same default packing materials as this key has
 	 * <li>else {@link #COLOR_Default}
 	 * </ul>
 	 */
@@ -190,7 +189,7 @@ public class PackingMaterialLayout extends KeyLayout
 		}
 		final PackingMaterialKey packingMaterialKey = (PackingMaterialKey)key;
 
-		final FreshProductKey selectedProduct = getSelectedProductKey();
+		final ProductKey selectedProduct = getSelectedProductKey();
 		if (!packingMaterialKey.hasSamePackingMaterials(selectedProduct))
 		{
 			return super.getDefaultColor(key);

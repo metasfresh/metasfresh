@@ -15,19 +15,17 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -43,13 +41,17 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.product.IProductBL;
 import de.metas.storage.impl.ImmutableStorageSegment;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
@@ -118,6 +120,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				"The new M_ShipmentSchedule has the same AD_Client_ID as " + subscriptionLine + ", i.e." + newSched.getAD_Client_ID() + " == " + subscriptionLine.getAD_Client_ID());
 
 		// only display item products
+		// note: at least for C_Subscription_Progress records, we won't even create records for non-items
 		final boolean display = Services.get(IProductBL.class).isItem(term.getM_Product());
 		newSched.setIsDisplayed(display);
 
@@ -139,7 +142,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.getBean(ShipmentScheduleSubscriptionReferenceProvider.class)
 				.provideFor(newSched);
 
-		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId());
+		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId().getRepoId());
 		newSched.setPreparationDate(subscriptionFromgressInfos.getPreparationDate());
 		newSched.setDeliveryDate(subscriptionFromgressInfos.getDeliveryDate());
 	}
@@ -147,8 +150,6 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	@Override
 	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
 		final I_C_SubscriptionProgress subscriptionLine = InterfaceWrapperHelper.create(model, I_C_SubscriptionProgress.class);
 		if (subscriptionLine.getM_ShipmentSchedule_ID() >= 0)
 		{
@@ -156,7 +157,9 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		}
 
 		final ImmutableStorageSegment segment = createStorageSegmentFor(subscriptionLine);
-		shipmentSchedulePA.invalidate(ImmutableSet.of(segment));
+
+		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+		invalidSchedulesRepo.invalidateStorageSegments(ImmutableSet.of(segment));
 	}
 
 	private ImmutableStorageSegment createStorageSegmentFor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
@@ -164,16 +167,13 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
-		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(subscriptionLine.getM_ShipmentSchedule());
-		final ImmutableSet<Integer> locatorIds = warehouseDAO.retrieveLocators(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
-				.stream()
-				.map(I_M_Locator::getM_Locator_ID)
-				.collect(ImmutableSet.toImmutableSet());
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(subscriptionLine.getM_ShipmentSchedule());
+		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
 		final ImmutableStorageSegment segment = ImmutableStorageSegment.builder()
 				.M_Product_ID(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
 				.C_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID())
-				.M_Locator_IDs(locatorIds)
+				.M_Locator_IDs(LocatorId.toRepoIds(locatorIds))
 				.build();
 		return segment;
 	}
@@ -192,8 +192,15 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final int daysInAdvance = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		final Timestamp eventDateMaximum = TimeUtil.addDays(SystemTime.asTimestamp(), daysInAdvance);
 
-		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_C_Flatrate_Term> itemProductQuery = queryBL.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMN_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_M_Product_ID)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
 		final Iterator<I_C_SubscriptionProgress> subscriptionLines = queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
@@ -202,6 +209,10 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_Qty, Operator.GREATER, ZERO)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
+				.addInSubQueryFilter(
+						I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID,
+						I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID,
+						itemProductQuery)
 				.addOnlyContextClient(ctx)
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()
 				.create()
@@ -213,13 +224,16 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched)
+	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine)
+	{
+		final I_C_SubscriptionProgress subscriptionLine = getSubscriptionProgress(sched);
+		return subscriptionLine::getQty;
+	}
+
+	private I_C_SubscriptionProgress getSubscriptionProgress(final I_M_ShipmentSchedule sched)
 	{
 		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(sched);
-		final TableRecordReference ref = new TableRecordReference(sched.getAD_Table_ID(), sched.getRecord_ID());
-
-		final I_C_SubscriptionProgress subscriptionLine = ref.getModel(contextAware, I_C_SubscriptionProgress.class);
-
-		return () -> subscriptionLine.getQty();
+		final TableRecordReference ref = TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID());
+		return ref.getModel(contextAware, I_C_SubscriptionProgress.class);
 	}
 }

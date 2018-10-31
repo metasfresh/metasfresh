@@ -3,14 +3,14 @@ package de.metas.document.model.interceptor;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.document.ICounterDocBL;
 import de.metas.document.engine.IDocument;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

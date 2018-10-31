@@ -1,7 +1,6 @@
 package org.adempiere.ad.security;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;

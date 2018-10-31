@@ -14,7 +14,7 @@ public class X_MSV3_Vendor_Config extends org.compiere.model.PO implements I_MSV
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1652367961L;
+	private static final long serialVersionUID = 1883451624L;
 
     /** Standard Constructor */
     public X_MSV3_Vendor_Config (Properties ctx, int MSV3_Vendor_Config_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_MSV3_Vendor_Config extends org.compiere.model.PO implements I_MSV
 			setMSV3_Vendor_Config_ID (0);
 			setPassword (null);
 			setUserID (null);
+			setVersion (null); // 1
         } */
     }
 
@@ -153,5 +154,34 @@ public class X_MSV3_Vendor_Config extends org.compiere.model.PO implements I_MSV
 	public java.lang.String getUserID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_UserID);
+	}
+
+	/** 
+	 * Version AD_Reference_ID=540904
+	 * Reference name: MSV3_Version
+	 */
+	public static final int VERSION_AD_Reference_ID=540904;
+	/** 1 = 1 */
+	public static final String VERSION_1 = "1";
+	/** 2 = 2 */
+	public static final String VERSION_2 = "2";
+	/** Set Version.
+		@param Version 
+		Version of the table definition
+	  */
+	@Override
+	public void setVersion (java.lang.String Version)
+	{
+
+		set_Value (COLUMNNAME_Version, Version);
+	}
+
+	/** Get Version.
+		@return Version of the table definition
+	  */
+	@Override
+	public java.lang.String getVersion () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Version);
 	}
 }

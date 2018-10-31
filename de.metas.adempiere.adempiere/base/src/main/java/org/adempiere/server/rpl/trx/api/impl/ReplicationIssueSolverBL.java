@@ -41,8 +41,9 @@ import org.adempiere.server.rpl.trx.api.IReplicationTrxDAO;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxLinesProcessorResult;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueAware;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueSolver;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.Params;
+
+import de.metas.util.Services;
 
 public class ReplicationIssueSolverBL implements IReplicationIssueSolverBL
 {

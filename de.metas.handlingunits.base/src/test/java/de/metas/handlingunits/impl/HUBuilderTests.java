@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,6 +24,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.util.Services;
 
 /*
  * #%L

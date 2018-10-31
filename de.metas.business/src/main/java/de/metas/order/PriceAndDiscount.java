@@ -9,8 +9,9 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
-import de.metas.lang.Percent;
 import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -166,7 +167,7 @@ public class PriceAndDiscount
 	public void applyTo(final I_C_OrderLine orderLine)
 	{
 		orderLine.setPriceEntered(priceEntered);
-		orderLine.setDiscount(discount.getValueAsBigDecimal());
+		orderLine.setDiscount(discount.getValue());
 		orderLine.setPriceActual(priceActual);
 		orderLine.setPriceLimit(priceLimit);
 	}

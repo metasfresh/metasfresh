@@ -27,8 +27,9 @@ import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerBL;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerResult;
 import org.adempiere.process.rpl.requesthandler.spi.ReplRequestHandlerAdapter;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
+
+import de.metas.util.Services;
 
 public class XLS_C_OLCand_RequestHandler extends ReplRequestHandlerAdapter
 {

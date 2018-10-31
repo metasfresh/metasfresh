@@ -31,7 +31,6 @@ import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.slf4j.Logger;
@@ -43,6 +42,7 @@ import de.metas.handlingunits.attribute.IWeightableBL;
 import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Common super class of all weight related callouts.

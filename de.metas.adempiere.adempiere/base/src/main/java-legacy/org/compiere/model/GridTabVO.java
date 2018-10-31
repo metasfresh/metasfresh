@@ -33,9 +33,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -47,6 +44,10 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.Getter;
 
 /**
  *  Model Tab Value Object
@@ -57,7 +58,7 @@ import de.metas.logging.LogManager;
 public class GridTabVO implements Evaluatee, Serializable
 {
 	private static final long serialVersionUID = -1425513230093430761L;
-	
+
 	public static final int MAIN_TabNo = 0;
 
 	/**************************************************************************
@@ -116,9 +117,11 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			vo.AD_Tab_ID = rs.getInt("AD_Tab_ID");
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AD_Tab_ID, String.valueOf(vo.AD_Tab_ID));
-			
+
 			vo.templateTabId = rs.getInt(I_AD_Tab.COLUMNNAME_Template_Tab_ID);
-			
+
+			vo.internalName = rs.getString("InternalName");
+
 			vo.name = rs.getString("Name");
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_Name, vo.name);
 			//
@@ -131,7 +134,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			vo.CommitWarning = rs.getString("CommitWarning");
 			if (vo.CommitWarning == null)
 				vo.CommitWarning = "";
-			
+
 			if(loadAllLanguages)
 			{
 				final String adLanguage = rs.getString("AD_Language");
@@ -139,14 +142,14 @@ public class GridTabVO implements Evaluatee, Serializable
 				vo.setDescription(adLanguage, vo.description);
 				vo.setHelp(adLanguage, vo.help);
 				vo.setCommitWarning(adLanguage, vo.CommitWarning);
-				
+
 				final String baseAD_Language = Language.getBaseAD_Language();
 				vo.setName(baseAD_Language, rs.getString("Name_BaseLang"));
 				vo.setDescription(baseAD_Language, rs.getString("Description_BaseLang"));
 				vo.setHelp(baseAD_Language, rs.getString("Help_BaseLang"));
 				vo.setCommitWarning(baseAD_Language, rs.getString("CommitWarning_BaseLang"));
 			}
-			
+
 			vo.entityType = rs.getString("EntityType");
 
 			vo.AD_Table_ID = rs.getInt("AD_Table_ID");
@@ -208,7 +211,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			//	Table Access
 			vo.AD_Table_ID = rs.getInt("AD_Table_ID");
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AD_Table_ID, String.valueOf(vo.AD_Table_ID));
-			
+
 			//
 			// Apply role permissions
 			if(vo.applyRolePermissions)
@@ -267,7 +270,7 @@ public class GridTabVO implements Evaluatee, Serializable
 				if (vo.WhereClause.indexOf("=null") > 0)
 				{
 					logger.warn("Replaced '=null' with 'IS NULL' for " + vo);
-					vo.WhereClause.replaceAll("=null", " IS NULL ");
+					vo.WhereClause = vo.WhereClause.replaceAll("=null", " IS NULL ");
 				}
 				// Where Clauses should be surrounded by parenthesis - teo_sarca, BF [ 1982327 ]
 				if (vo.WhereClause.trim().length() > 0) {
@@ -343,7 +346,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	/**
 	 * Return the SQL statement used for {@link GridTabVO#create(GridWindowVO, int, ResultSet, boolean, boolean)}.
-	 * 
+	 *
 	 * @param ctx context
 	 * @return SQL SELECT String
 	 */
@@ -426,17 +429,21 @@ public class GridTabVO implements Evaluatee, Serializable
 	/**	Tab	ID			*/
 	private int AD_Tab_ID;
 	private int templateTabId;
+
+	@Getter
+	private String internalName;
+
 	/** Name			*/
 	private String name = "";
 	private Map<String, String> nameTrls = null;
-	
+
 	/** Description		*/
 	private String description = "";
 	private Map<String, String> descriptionTrls = null;
 	/** Help			*/
 	private String help = "";
 	private Map<String, String> helpTrls = null;
-	
+
 	private String entityType = null;
 	/** Single Row		*/
 	public	boolean	    IsSingleRow = false;
@@ -469,7 +476,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Commit Warning	*/
 	private String CommitWarning;
 	private Map<String, String> commitWarningTrls = null;
-	
+
 	/** Where			*/
 	private String WhereClause;
 //	private static final IStringExpression DEFAULT_WhereClauseExpression = IStringExpression.NULL;
@@ -505,7 +512,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	private List<GridFieldVO> _fields = null; // lazy
 	private Optional<GridFieldVO> _keyField = null; // lazy
 	private Set<String> _linkColumnNames = null; // lazy
-	
+
 	@Override
 	public String toString()
 	{
@@ -541,7 +548,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		}
 		return _fields;
 	}
-	
+
 	/** @return {@link GridFieldVO} or <code>null</code> */
 	public GridFieldVO getFieldByAD_Field_ID(final int adFieldId)
 	{
@@ -549,7 +556,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			return null;
 		}
-		
+
 		for (final GridFieldVO gridFieldVO : getFields())
 		{
 			if (gridFieldVO.getAD_Field_ID() == adFieldId)
@@ -557,10 +564,10 @@ public class GridTabVO implements Evaluatee, Serializable
 				return gridFieldVO;
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public GridFieldVO getFieldByColumnName(final String columnName)
 	{
 		Check.assumeNotEmpty(columnName, "columnName is not empty");
@@ -571,7 +578,7 @@ public class GridTabVO implements Evaluatee, Serializable
 				return gridFieldVO;
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -582,7 +589,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			return null;
 		}
-		
+
 		for (final GridFieldVO gridFieldVO : getFields())
 		{
 			if(adColumnId == gridFieldVO.getAD_Column_ID())
@@ -590,10 +597,10 @@ public class GridTabVO implements Evaluatee, Serializable
 				return gridFieldVO;
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	/** @return column name or null if not found */
 	public String getColumnNameByAD_Column_ID(final int adColumnId)
 	{
@@ -601,12 +608,12 @@ public class GridTabVO implements Evaluatee, Serializable
 		return field == null ? null : field.getColumnName();
 	}
 
-	
+
 	public boolean hasField(final String columnName)
 	{
 		return getFieldByColumnName(columnName) != null;
 	}
-	
+
 	/**
 	 * @return Key(ID) field or null
 	 */
@@ -615,7 +622,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		if (_keyField == null)
 		{
 			GridFieldVO keyField = null;
-			
+
 			for (final GridFieldVO gridFieldVO : getFields())
 			{
 				if (gridFieldVO.isKey())
@@ -624,13 +631,13 @@ public class GridTabVO implements Evaluatee, Serializable
 					break;
 				}
 			}
-			
+
 			_keyField = Optional.fromNullable(keyField);
 		}
-		
+
 		return _keyField.orNull();
 	}
-	
+
 	public String getKeyColumnName()
 	{
 		final GridFieldVO keyField = getKeyField();
@@ -739,7 +746,7 @@ public class GridTabVO implements Evaluatee, Serializable
 					continue;
 				cloneFields.add(cloneField);
 			}
-			
+
 			clone._fields = cloneFields.build();
 		}
 
@@ -786,7 +793,9 @@ public class GridTabVO implements Evaluatee, Serializable
 		if (vo.DefaultWhereClause == null)
 			vo.DefaultWhereClause = "";
 		if (vo.DefaultWhereClause.indexOf("=null") > 0)
-			vo.DefaultWhereClause.replaceAll("=null", " IS NULL ");
+		{
+			vo.DefaultWhereClause = vo.DefaultWhereClause.replaceAll("=null", " IS NULL ");
+		}
 		if (vo.DefaultWhereClause.trim().length() > 0)
 			vo.DefaultWhereClause = "(" + vo.DefaultWhereClause + ")";
 
@@ -844,22 +853,22 @@ public class GridTabVO implements Evaluatee, Serializable
 		return DisplayLogicExpr;
 	}
 // metas: end
-	
+
 	public String getTableName()
 	{
 		return TableName;
 	}
-	
+
 	public int getAD_Window_ID()
 	{
 		return AD_Window_ID;
 	}
-	
+
 	public int getAD_Tab_ID()
 	{
 		return AD_Tab_ID;
 	}
-	
+
 	public int getTemplateTabId()
 	{
 		return templateTabId;
@@ -869,7 +878,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return WindowNo;
 	}
-	
+
 	public int getAD_Table_ID()
 	{
 		return AD_Table_ID;
@@ -904,7 +913,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return entityType;
 	}
-	
+
 	public int getTabNo()
 	{
 		return TabNo;
@@ -914,48 +923,48 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return TabLevel;
 	}
-	
+
 	public String getName()
 	{
 		return name;
 	}
-	
+
 	public void setName(final String name)
 	{
 		this.name = name;
 	}
-	
+
 	public Map<String, String> getNameTrls()
 	{
 		return nameTrls;
 	}
-	
+
 	private void setName(final String adLanguage, final String nameTrl)
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-		
+
 		if(nameTrl == null)
 		{
 			return;
 		}
-		
+
 		if(nameTrls == null)
 		{
 			nameTrls = new HashMap<>();
 		}
 		nameTrls.put(adLanguage, nameTrl);
 	}
-	
+
 	public String getDescription()
 	{
 		return description;
 	}
-	
+
 	public void setDescription(final String description)
 	{
 		this.description = description;
 	}
-	
+
 	public Map<String, String> getDescriptionTrls()
 	{
 		return descriptionTrls;
@@ -964,69 +973,69 @@ public class GridTabVO implements Evaluatee, Serializable
 	private void setDescription(final String adLanguage, final String descriptionTrl)
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-		
+
 		if(descriptionTrl == null)
 		{
 			return;
 		}
-		
+
 		if(descriptionTrls == null)
 		{
 			descriptionTrls = new HashMap<>();
 		}
 		descriptionTrls.put(adLanguage, descriptionTrl);
 	}
-	
+
 	public String getHelp()
 	{
 		return help;
 	}
-	
+
 	public void setHelp(final String help)
 	{
 		this.help = help;
 	}
-	
+
 	public Map<String, String> getHelpTrls()
 	{
 		return helpTrls;
 	}
-	
+
 	private void setHelp(final String adLanguage, final String helpTrl)
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-		
+
 		if(helpTrl == null)
 		{
 			return;
 		}
-		
+
 		if(helpTrls == null)
 		{
 			helpTrls = new HashMap<>();
 		}
 		helpTrls.put(adLanguage, helpTrl);
 	}
-	
+
 	public String getCommitWarning()
 	{
 		return CommitWarning;
 	}
-	
+
 	public Map<String, String> getCommitWarningTrls()
 	{
 		return commitWarningTrls;
 	}
-	
+
 	private void setCommitWarning(final String adLanguage, final String commitWarningTrl)
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-		
+
 		if(commitWarningTrl == null)
 		{
 			return;
 		}
-		
+
 		if(commitWarningTrls == null)
 		{
 			commitWarningTrls = new HashMap<>();
@@ -1038,47 +1047,47 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return AD_Process_ID;
 	}
-	
+
 	public boolean isReadOnly()
 	{
 		return IsReadOnly;
 	}
-	
+
 	void setReadOnly(boolean isReadOnly)
 	{
 		IsReadOnly = isReadOnly;
 	}
-	
+
 	public boolean isView()
 	{
 		return IsView;
 	}
-	
+
 	public String getOrderByClause()
 	{
 		return OrderByClause;
 	}
-	
+
 	public String getWhereClause()
 	{
 		return WhereClause;
 	}
-	
+
 	public String getDefaultWhereClause()
 	{
 		return DefaultWhereClause;
 	}
-	
+
 	public boolean isInsertRecord()
 	{
 		return IsInsertRecord;
 	}
-	
+
 	public boolean isDeleteable()
 	{
 		return IsDeleteable;
 	}
-	
+
 	/**
 	 * Get Order column for sort tab
 	 *
@@ -1098,7 +1107,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return AD_ColumnSortYesNo_ID;
 	}
-	
+
 	public Set<String> getLinkColumnNames()
 	{
 		if(_linkColumnNames == null)
@@ -1107,7 +1116,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		}
 		return _linkColumnNames;
 	}
-	
+
 	private Set<String> buildLinkColumnNames()
 	{
 		//

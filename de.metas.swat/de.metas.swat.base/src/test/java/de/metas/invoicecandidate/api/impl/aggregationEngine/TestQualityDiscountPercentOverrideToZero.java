@@ -31,12 +31,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.collections.CollectionUtils;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.collections.CollectionUtils;
 
 /**
  * Two inout lines, one in-dispute. However, <code>QualityDiscount_Override</code> is set to zero.

@@ -3,8 +3,6 @@ package de.metas.shipper.gateway.derkurier.process;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.document.engine.IDocument;
@@ -12,6 +10,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
@@ -19,6 +18,8 @@ import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -86,7 +87,7 @@ public class M_ShipperTransportation_SendDerKurierEMail
 		final ProcessInfo pi = getProcessInfo();
 
 		final IQueryFilter<I_M_ShipperTransportation> filter = pi.getQueryFilterOrElse(ConstantQueryFilter.of(false));
-		final int pInstanceId = getAD_PInstance_ID();
+		final PInstanceId pinstanceId = getPinstanceId();
 
 		// Create selection for PInstance and make sure we're enqueuing something
 		final int selectionCount = queryBL.createQueryBuilder(I_M_ShipperTransportation.class, this)
@@ -94,9 +95,9 @@ public class M_ShipperTransportation_SendDerKurierEMail
 				.filter(filter)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMN_DocStatus, IDocument.STATUS_Completed)
 				.create()
-				.createSelection(pInstanceId);
+				.createSelection(pinstanceId);
 
-		Check.errorIf(selectionCount <= 0, "No record matches the process info's selection filter; AD_PInstance_ID={}, filter={}", pInstanceId, filter);
+		Check.errorIf(selectionCount <= 0, "No record matches the process info's selection filter; AD_PInstance_ID={}, filter={}", pinstanceId, filter);
 	}
 
 	@Override
@@ -104,7 +105,7 @@ public class M_ShipperTransportation_SendDerKurierEMail
 	{
 		queryBL
 				.createQueryBuilder(I_M_ShipperTransportation.class)
-				.setOnlySelection(getAD_PInstance_ID())
+				.setOnlySelection(getPinstanceId())
 				.create()
 				.iterateAndStream()
 				.filter(this::isCompleted)

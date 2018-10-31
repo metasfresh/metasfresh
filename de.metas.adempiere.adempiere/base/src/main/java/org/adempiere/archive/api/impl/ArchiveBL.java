@@ -33,7 +33,6 @@ import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pdf.Document;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
@@ -45,7 +44,9 @@ import org.compiere.print.layout.LayoutEngine;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerAware;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 
 public class ArchiveBL implements IArchiveBL
 {
@@ -137,7 +138,7 @@ public class ArchiveBL implements IArchiveBL
 		
 		//FRESH-349: Set ad_pinstance
 		
-		archive.setAD_PInstance_ID(info.getAD_PInstance_ID());
+		archive.setAD_PInstance_ID(PInstanceId.toRepoId(info.getAD_PInstance_ID()));
 
 		if (save)
 		{

@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableMap;
 
 /**
  * Immutable document type sequence map (indexed by AD_Client_ID, AD_Org_ID).
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -52,7 +52,6 @@ public final class DocTypeSequenceMap
 
 	private DocTypeSequenceMap(final Builder builder)
 	{
-		super();
 		docTypeSequences = ImmutableMap.copyOf(builder.docTypeSequences);
 		defaultDocNoSequence_ID = builder.defaultDocNoSequence_ID;
 	}
@@ -93,7 +92,6 @@ public final class DocTypeSequenceMap
 
 		private Builder()
 		{
-			super();
 		}
 
 		public DocTypeSequenceMap build()
@@ -118,7 +116,6 @@ public final class DocTypeSequenceMap
 
 	private static final class DocTypeSequence
 	{
-
 		public static final DocTypeSequence of(final int adClientId, final int adOrgId, final int docSequenceId)
 		{
 			return new DocTypeSequence(adClientId, adOrgId, docSequenceId);
@@ -130,7 +127,6 @@ public final class DocTypeSequenceMap
 
 		private DocTypeSequence(final int adClientId, final int adOrgId, final int docSequenceId)
 		{
-			super();
 			this.adClientId = adClientId <= 0 ? Env.CTXVALUE_AD_Client_ID_System : adClientId;
 			this.adOrgId = adOrgId <= 0 ? Env.CTXVALUE_AD_Org_ID_Any : adOrgId;
 			if (docSequenceId <= 0)

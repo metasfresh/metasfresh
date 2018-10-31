@@ -26,13 +26,13 @@ package de.metas.adempiere.service.impl;
 import java.util.HashMap;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import com.akunagroup.uk.postcode.AddressInterface;
 import com.akunagroup.uk.postcode.AddressLookupInterface;
 
 import de.metas.adempiere.service.ILocationBL;
+import de.metas.util.Services;
 
 public class MetasPostalLookup implements AddressLookupInterface
 {

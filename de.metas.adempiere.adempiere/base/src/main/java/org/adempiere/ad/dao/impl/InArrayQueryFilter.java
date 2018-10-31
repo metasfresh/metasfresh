@@ -38,7 +38,8 @@ import org.compiere.util.DB;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.NonNull;
 
 /**

@@ -49,9 +49,13 @@ import org.adempiere.model.ModelColumn;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.process.PInstanceId;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
+import lombok.NonNull;
 
 public interface IQuery<T>
 {
@@ -124,14 +128,18 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> Map<Integer, ET> mapById(Class<ET> clazz) throws DBException;
-	
+
 	default Map<Integer, T> mapById() throws DBException
 	{
 		return mapById(getModelClass());
 	}
 
-
 	int firstId();
+
+	default <ID extends RepoIdAware> ID firstId(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return idMapper.apply(firstId());
+	}
 
 	/**
 	 * Return first ID. If there are more results and exception is thrown.
@@ -140,6 +148,11 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	int firstIdOnly() throws DBException;
+
+	default <ID extends RepoIdAware> ID firstIdOnly(final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return idMapper.apply(firstIdOnly());
+	}
 
 	<ET extends T> ET first() throws DBException;
 
@@ -161,7 +174,7 @@ public interface IQuery<T>
 	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
 
 	/**
-	 * Return first model that match query criteria. If there are more records that match criteria an exception will be thrown.
+	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
 	 *
 	 * @return first PO or null.
 	 * @throws DBMoreThenOneRecordsFoundException
@@ -236,20 +249,18 @@ public interface IQuery<T>
 	/**
 	 * Only records that are in T_Selection with AD_PInstance_ID.
 	 *
-	 * NOTE: {@link #setOnlySelection(int)} and {@link #setNotInSelection(int)} are complementary and NOT exclusive.
-	 *
-	 * @param AD_PInstance_ID
+	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
 	 */
-	IQuery<T> setOnlySelection(int AD_PInstance_ID);
+	IQuery<T> setOnlySelection(PInstanceId pisntanceId);
 
 	/**
 	 * Only records that are NOT in T_Selection with AD_PInstance_ID.
 	 *
-	 * NOTE: {@link #setOnlySelection(int)} and {@link #setNotInSelection(int)} are complementary and NOT exclusive.
+	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
 	 *
 	 * @param AD_PInstance_ID
 	 */
-	IQuery<T> setNotInSelection(int AD_PInstance_ID);
+	IQuery<T> setNotInSelection(PInstanceId pinstanceId);
 
 	/**
 	 * Select only active records (i.e. IsActive='Y')
@@ -414,6 +425,11 @@ public interface IQuery<T>
 	 */
 	List<Integer> listIds();
 
+	default <ID extends RepoIdAware> ImmutableSet<ID> listIds(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return listIds().stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
+	}
+
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.
 	 *
@@ -491,11 +507,8 @@ public interface IQuery<T>
 	 * "Appends" the given {@code query} to {@code this} query be joined as UNION ALL/DISTINCT.
 	 *
 	 * WARNING: atm, the implementation is minimal and was tested only with {@link #list()} methods.
-	 *
-	 * @param query
-	 * @param distinct
 	 */
-	void addUnion(IQuery<T> query, boolean distinct);
+	IQuery<T> addUnion(IQuery<T> query, boolean distinct);
 
 	default IQuery<T> addUnions(final Collection<IQuery<T>> queries, final boolean distinct)
 	{
@@ -522,17 +535,17 @@ public interface IQuery<T>
 	/**
 	 * Creates a NEW selection from this query result.
 	 *
-	 * @return selection's AD_PInstance_ID or <code>-1</code> if there were no records matching
+	 * @return selection's or <code>null</code> if there were no records matching
 	 */
-	int createSelection();
+	PInstanceId createSelection();
 
 	/**
 	 * Appends this query result to an existing selection.
 	 *
-	 * @param AD_PInstance_ID selection ID to be used
+	 * @param pinstanceId selection ID to be used
 	 * @return number of records inserted in selection
 	 */
-	int createSelection(int AD_PInstance_ID);
+	int createSelection(PInstanceId pinstanceId);
 
 	/**
 	 * Use the result of this query and insert it in given <code>toModelClass</code>'s table.

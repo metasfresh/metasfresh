@@ -1,6 +1,5 @@
 package de.metas.banking.bankstatement.match.spi.impl;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
@@ -9,6 +8,7 @@ import de.metas.banking.bankstatement.match.spi.PaymentBatch;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.security.IRoleDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.PO;
@@ -42,6 +41,7 @@ import org.compiere.wf.MWorkflowProcessorLog;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 
 /**

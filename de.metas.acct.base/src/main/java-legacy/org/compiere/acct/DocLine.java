@@ -25,8 +25,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -48,6 +46,8 @@ import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.quantity.Quantity;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

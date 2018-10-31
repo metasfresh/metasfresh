@@ -30,7 +30,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -41,6 +40,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.util.Check;
 
 /**
  * Test {@link HUPIItemProductDisplayNameBuilder}

@@ -1,40 +1,57 @@
 package de.metas.inoutcandidate.api.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseTypeId;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.inoutcandidate.api.IPackageable;
-import de.metas.inoutcandidate.api.IPackageableQuery;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.Packageable;
+import de.metas.inoutcandidate.api.Packageable.PackageableBuilder;
+import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.impl.Packageable.PackageableBuilder;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class PackagingDAO implements IPackagingDAO
 {
-	@Override
-	public IPackageableQuery createPackageableQuery()
-	{
-		return new PackageableQuery();
-	}
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	@Override
-	public List<IPackageable> retrievePackableLines(final IPackageableQuery query)
+	public Stream<Packageable> stream(final PackageableQuery query)
+	{
+		return createQuery(query)
+				.stream(I_M_Packageable_V.class)
+				.map(this::toPackageable);
+	}
+
+	private IQuery<I_M_Packageable_V> createQuery(@NonNull final PackageableQuery query)
 	{
 		final IQueryBuilder<I_M_Packageable_V> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Packageable_V.class)
@@ -45,53 +62,109 @@ public class PackagingDAO implements IPackagingDAO
 				.endOrderBy();
 
 		//
-		// Filter: M_Warehouse_ID
-		queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_M_Warehouse_ID, query.getWarehouseId());
+		// Filter: Customer
+		if (query.getCustomerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_C_BPartner_Customer_ID, query.getCustomerId());
+		}
 
 		//
-		// Filter: today's entries only
-		if (query.isDisplayTodayEntriesOnly())
+		// Filter: M_Warehouse_Type_ID
+		if (query.getWarehouseTypeId() != null)
 		{
-			final Timestamp deliveryDateDay = SystemTime.asDayTimestamp();
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_M_Warehouse_Type_ID, query.getWarehouseTypeId());
+		}
+
+		//
+		// Filter: M_Warehouse_ID
+		if (query.getWarehouseId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_M_Warehouse_ID, query.getWarehouseId());
+		}
+
+		//
+		// Filter: DeliveryDate
+		if (query.getDeliveryDate() != null)
+		{
 			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
-					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, deliveryDateDay, DateTruncQueryFilterModifier.DAY)
+					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, query.getDeliveryDate(), DateTruncQueryFilterModifier.DAY)
 					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, null);
 		}
 
 		//
-		return queryBuilder.create()
-				.stream(I_M_Packageable_V.class)
-				.map(this::createPackageable)
-				.collect(ImmutableList.toImmutableList());
+		// Filter: PreparationDate
+		if (query.getPreparationDate() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+		}
+
+		//
+		// Filter: only those packageables which are created from sales order/lines
+		if (query.isOnlyFromSalesOrder())
+		{
+			queryBuilder.addNotNull(I_M_Packageable_V.COLUMN_C_OrderLineSO_ID);
+		}
+
+		//
+		// Filter: sales order ID
+		if (query.getSalesOrderId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_C_OrderSO_ID, query.getSalesOrderId());
+		}
+
+		//
+		return queryBuilder.create();
 	}
 
 	@Override
-	public IPackageable getByShipmentScheduleId(
-			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public Packageable getByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final I_M_Packageable_V record = Services.get(IQueryBL.class).createQueryBuilder(I_M_Packageable_V.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleId)
-				.create()
-				.firstOnly(I_M_Packageable_V.class);
-		return createPackageable(record);
+		final I_M_Packageable_V record = retrievePackageableRecordByShipmentScheduleId(shipmentScheduleId);
+		if (record == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_Packageable_V@ (@M_ShipmentSchedule_ID@=" + shipmentScheduleId + ")");
+		}
+		return toPackageable(record);
 	}
 
-	private IPackageable createPackageable(final I_M_Packageable_V record)
+	@Override
+	public List<Packageable> getByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		final PackageableBuilder packageable = Packageable.builder();
-		packageable.bpartnerId(record.getC_BPartner_Customer_ID());
-		packageable.bpartnerValue(record.getBPartnerValue());
-		packageable.bpartnerName(record.getBPartnerName());
-		packageable.bpartnerLocationId(record.getC_BPartner_Location_ID());
-		packageable.bpartnerLocationName(record.getBPartnerLocationName());
-		packageable.bpartnerAddress(record.getBPartnerAddress_Override());
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
-		packageable.qtyToDeliver(record.getQtyToDeliver());
+		return retrievePackageableRecordsByShipmentScheduleIds(shipmentScheduleIds)
+				.stream()
+				.map(this::toPackageable)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private Packageable toPackageable(@NonNull final I_M_Packageable_V record)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
+		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
+
+		final PackageableBuilder packageable = Packageable.builder();
+		packageable.customerId(bpartnerId);
+		packageable.customerBPValue(record.getBPartnerValue());
+		packageable.customerName(record.getBPartnerName());
+		packageable.customerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
+		packageable.customerBPLocationName(record.getBPartnerLocationName());
+		packageable.customerAddress(record.getBPartnerAddress_Override());
+
+		packageable.qtyOrdered(Quantity.of(record.getQtyOrdered(), uom));
+		packageable.qtyToDeliver(Quantity.of(record.getQtyToDeliver(), uom));
+		packageable.qtyDelivered(Quantity.of(record.getQtyDelivered(), uom));
+		packageable.qtyPickedAndDelivered(Quantity.of(record.getQtyPickedAndDelivered(), uom));
+		packageable.qtyPickedNotDelivered(Quantity.of(record.getQtyPickedNotDelivered(), uom));
+		packageable.qtyPickedPlanned(Quantity.of(record.getQtyPickedPlanned(), uom));
 
 		packageable.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()));
 		packageable.warehouseName(record.getWarehouseName());
+		packageable.warehouseTypeId(WarehouseTypeId.ofRepoIdOrNull(record.getM_Warehouse_Type_ID()));
 
 		packageable.productId(ProductId.ofRepoId(record.getM_Product_ID()));
 		packageable.productName(record.getProductName());
@@ -99,41 +172,70 @@ public class PackagingDAO implements IPackagingDAO
 
 		packageable.deliveryVia(record.getDeliveryViaRule());
 
-		packageable.shipperId(record.getM_Shipper_ID());
+		packageable.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()));
 		packageable.shipperName(record.getShipperName());
 
-		packageable.deliveryDate(record.getDeliveryDate()); // 01676
-		packageable.preparationDate(record.getPreparationDate());
+		packageable.deliveryDate(TimeUtil.asLocalDateTime(record.getDeliveryDate())); // 01676
+		packageable.preparationDate(TimeUtil.asLocalDateTime(record.getPreparationDate()));
 
-		packageable.shipmentScheduleId(ShipmentScheduleId.offRepoId(record.getM_ShipmentSchedule_ID()));
+		packageable.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()));
 
 		packageable.displayed(record.isDisplayed());
 
-		packageable.orderId(record.getC_OrderSO_ID());
-		packageable.docSubType(record.getDocSubType());
+		packageable.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()));
+		packageable.salesOrderDocumentNo(record.getOrderDocumentNo());
+		packageable.salesOrderDocSubType(record.getDocSubType());
 
-		packageable.orderLineIdOrNull(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()));
+		packageable.salesOrderLineIdOrNull(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()));
+
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID());
+		if (currencyId != null)
+		{
+			packageable.salesOrderLineNetAmt(Money.of(record.getLineNetAmt(), currencyId));
+		}
 
 		packageable.freightCostRule(record.getFreightCostRule());
+
+		final UserId lockedBy = !InterfaceWrapperHelper.isNull(record, I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID) ? UserId.ofRepoId(record.getLockedBy_User_ID()) : null;
+		packageable.lockedBy(lockedBy);
 
 		return packageable.build();
 	}
 
 	@Override
-	public BigDecimal retrieveQtyPickedPlannedOrNull(final I_M_ShipmentSchedule sched)
+	public Optional<Quantity> retrieveQtyPickedPlanned(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final I_M_Packageable_V packageableEntry = Services.get(IQueryBL.class)
+		final I_M_Packageable_V record = retrievePackageableRecordByShipmentScheduleId(shipmentScheduleId);
+		if (record == null)
+		{
+			return Optional.empty();
+		}
+
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(record.getC_UOM_ID());
+		final Quantity qtyPickedPlanned = Quantity.of(record.getQtyPickedPlanned(), uom);
+		return Optional.of(qtyPickedPlanned);
+	}
+
+	private List<I_M_Packageable_V> retrievePackageableRecordsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Packageable_V.class)
-				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, sched.getM_ShipmentSchedule_ID())
+				.addInArrayFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.list(I_M_Packageable_V.class);
+	}
+
+	private I_M_Packageable_V retrievePackageableRecordByShipmentScheduleId(final ShipmentScheduleId shipmentScheduleId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Packageable_V.class)
+				.addEqualsFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
 				.firstOnly(I_M_Packageable_V.class);
-
-		if (packageableEntry == null)
-		{
-			return null;
-		}
-		return packageableEntry.getQtyPickedPlanned();
-
 	}
 }

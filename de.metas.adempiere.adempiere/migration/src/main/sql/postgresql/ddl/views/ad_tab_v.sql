@@ -5,6 +5,7 @@ SELECT
 t.ad_tab_id
 , t.Template_Tab_ID
 , t.ad_window_id
+, t.InternalName
 , t.ad_table_id
 , t.name
 , t.description

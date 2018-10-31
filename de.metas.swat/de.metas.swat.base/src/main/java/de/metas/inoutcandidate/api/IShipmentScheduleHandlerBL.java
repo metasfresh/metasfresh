@@ -25,12 +25,13 @@ package de.metas.inoutcandidate.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_OrderLine;
 
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.util.ISingletonService;
 
 /**
  * This interface declares methods to
@@ -91,7 +92,7 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	 * @param sched
 	 * @return
 	 */
-	IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched);
+	IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine);
 
 	ShipmentScheduleHandler getHandlerFor(I_M_ShipmentSchedule sched);
 }

@@ -25,18 +25,18 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
@@ -107,10 +107,10 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		final I_M_Product product = record.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final I_C_UOM uom = record.getC_UOM();
 		final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
-		final Capacity capacity = capacityBL.getCapacity(huPIItemProduct, product, uom);
+		final Capacity capacity = capacityBL.getCapacity(huPIItemProduct, productId, uom);
 		final CapacityInterface capacityMult = capacity.multiply(qtyPacks);
 
 		if (capacityMult.isInfiniteCapacity())
@@ -151,9 +151,8 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		final I_M_Product product = record.getM_Product();
-
-		if (product == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
+		if (productId == null)
 		{
 			// nothing to do; shall not happen
 			return null;
@@ -168,7 +167,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 
 		final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
-		final Capacity capacityDef = capacityBL.getCapacity(huPiItemProduct, product, uom);
+		final Capacity capacityDef = capacityBL.getCapacity(huPiItemProduct, productId, uom);
 
 		final Integer qtyTU = capacityDef.calculateQtyTU(qty, uom);
 		if (qtyTU == null)

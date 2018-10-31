@@ -1,59 +1,49 @@
 package de.metas.document.archive.async.spi.impl;
 
-/*
- * #%L
- * de.metas.document.archive.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
-import de.metas.document.engine.IDocument;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
+import de.metas.letter.BoilerPlate;
+import de.metas.letter.BoilerPlateId;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.process.ProcessExecutor;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Async processor that sends the PDFs of {@link I_C_Doc_Outbound_Log_Line}s' {@link I_AD_Archive}s as Email.
@@ -71,7 +61,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+	private final transient BoilerPlateRepository boilerPlateRepository = Adempiere.getBean(BoilerPlateRepository.class);
+	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = Adempiere.getBean(DocOutBoundRecipientRepository.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
 
@@ -148,7 +142,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				processID,
 				docOutboundLogRecord.getC_DocType(),
 				null, // mailCustomType
-				userFrom  	);
+				userFrom);
 
 		// note that we verified this earlier
 		final String mailTo = Check.assumeNotEmpty(
@@ -158,25 +152,27 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		// Create and send email
 		final String status;
 		{
-			final String subject = msgBL.getMsg(ctx, MSG_EmailSubject);
-			final String message = msgBL.getMsg(ctx, MSG_EmailMessage);
+			final EmailParams emailParams = extractEmailParams(docOutboundLogRecord);
 
-			// FRESH-203: HTML mails don't work for not-HTML texts, which are the majority or (even all?) among out AD_Messages
-			// setting this to false to avoid the formatting from being lost and non-ASCII-chars from being printed wrongly.
-			final boolean html = isHTMLMessage(message);
+			final EMail email = mailBL.createEMail(
+					ctx,
+					mailbox,
+					mailTo,
+					emailParams.getSubject(),
+					emailParams.getMessage(),
+					isHTMLMessage(emailParams.getMessage()));
 
-			final EMail email = mailBL.createEMail(ctx, mailbox, mailTo, subject, message, html);
-
-			final File attachment = getDocumentAttachment(ctx, archive, trxName);
+			final byte[] attachment = archiveBL.getBinaryData(archive);
 			if (attachment == null)
 			{
 				status = IArchiveEventManager.STATUS_MESSAGE_NOT_SENT; // TODO log or do something; do NOT send blank mails without an attachment
 			}
 			else
 			{
-				email.addAttachment(attachment);
-				mailBL.send(email);
+				final String tableName = adTableDAO.retrieveTableName(docOutboundLogRecord.getAD_Table_ID());
+				email.addAttachment(tableName + "_" + docOutboundLogRecord.getRecord_ID() + ".pdf", attachment);
 
+				mailBL.send(email);
 				status = IArchiveEventManager.STATUS_MESSAGE_SENT;
 			}
 		}
@@ -213,15 +209,88 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		return message.toLowerCase().indexOf("<html>") >= 0;
 	}
 
-	private File getDocumentAttachment(final Properties ctx, final I_AD_Archive archive, final String trxName)
+	private EmailParams extractEmailParams(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
-		final int tableId = archive.getAD_Table_ID();
-		final String tableName = adTableDAO.retrieveTableName(tableId);
+		final Language language = extractLanguage(docOutboundLogRecord);
 
-		final int recordId = archive.getRecord_ID();
-		final IDocument doc = InterfaceWrapperHelper.create(ctx, tableName, recordId, IDocument.class, trxName);
+		if (docOutboundLogRecord.getC_DocType_ID() > 0)
+		{
+			final I_C_DocType docType = docOutboundLogRecord.getC_DocType();
+			if (docType.getAD_BoilerPlate_ID() > 0)
+			{
+				final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoId(docType.getAD_BoilerPlate_ID());
+				final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateId, language);
 
-		final File attachment = doc.createPDF();
-		return attachment;
+				Loggables.get().addLog("createEmailParams - Using the boilerPlate with boilerPlateId={} of the C_Doc_Outbound_Log's C_DocType", boilerPlateId);
+
+				return EmailParams
+						.builder()
+						.subject(boilerPlate.getSubject())
+						.message(boilerPlate.getTextSnippet())
+						.build();
+			}
+		}
+
+		Loggables.get().addLog("createEmailParams - AD_Messages with values {} and {}", MSG_EmailSubject, MSG_EmailMessage);
+
+		final String subject = msgBL.getMsg(language.getAD_Language(), MSG_EmailSubject);
+		final String message = msgBL.getMsg(language.getAD_Language(), MSG_EmailMessage);
+
+		return EmailParams
+				.builder()
+				.subject(subject)
+				.message(message)
+				.build();
+	}
+
+	private Language extractLanguage(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		DocOutBoundRecipient recipient = null;
+		if (docOutboundLogRecord.getCurrentEMailRecipient_ID() > 0)
+		{
+			recipient = docOutBoundRecipientRepository.getById(DocOutBoundRecipientId.ofRepoId(docOutboundLogRecord.getCurrentEMailRecipient_ID()));
+			final Language userLanguage = recipient.getUserLanguage();
+			if (userLanguage != null)
+			{
+				Loggables.get().addLog(
+						"extractLanguage - Using the userLanguage={} of the C_Doc_Outbound_Log's CurrentEMailRecipient_ID={}",
+						userLanguage.getAD_Language(), docOutboundLogRecord.getCurrentEMailRecipient_ID());
+				return userLanguage;
+
+			}
+		}
+
+		if (docOutboundLogRecord.getC_BPartner_ID() > 0)
+		{
+			final Language bPartnerLanguage = Services.get(IBPartnerBL.class).getLanguageForModel(docOutboundLogRecord);
+			if (bPartnerLanguage != null)
+			{
+				Loggables.get().addLog(
+						"extractLanguage - Using language={} of the C_Doc_Outbound_Log'sC_BPartner_ID={}",
+						bPartnerLanguage.getAD_Language(), docOutboundLogRecord.getC_BPartner_ID());
+				return bPartnerLanguage;
+			}
+		}
+
+		if (recipient != null && recipient.getBPartnerLanguage() != null)
+		{
+			final Language bPartnerLanguage = recipient.getBPartnerLanguage();
+			Loggables.get().addLog(
+					"extractLanguage - Using the bPartnerLanguage={} of the C_Doc_Outbound_Log's CurrentEMailRecipient_ID={}",
+					bPartnerLanguage.getAD_Language(), docOutboundLogRecord.getCurrentEMailRecipient_ID());
+			return bPartnerLanguage;
+		}
+
+		final Language language = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
+		Loggables.get().addLog("extractLanguage - Using the language={} returned by Env.getADLanguageOrBaseLanguage()", language);
+		return language;
+	}
+
+	@Value
+	@Builder
+	private static class EmailParams
+	{
+		String subject;
+		String message;
 	}
 }

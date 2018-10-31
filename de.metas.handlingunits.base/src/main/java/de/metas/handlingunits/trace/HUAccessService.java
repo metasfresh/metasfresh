@@ -1,16 +1,14 @@
 package de.metas.handlingunits.trace;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_Product;
+import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
@@ -21,6 +19,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -110,7 +112,7 @@ public class HUAccessService
 		return -1;
 	}
 
-	public Optional<IPair<I_M_Product, BigDecimal>> retrieveProductAndQty(@NonNull final I_M_HU vhu)
+	public Optional<IPair<ProductId, Quantity>> retrieveProductAndQty(@NonNull final I_M_HU vhu)
 	{
 		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 		final IHUStorage vhuStorage = storageFactory.getStorage(vhu);
@@ -119,14 +121,15 @@ public class HUAccessService
 			return Optional.empty();
 		}
 
-		final I_M_Product vhuProduct = vhuStorage.getSingleProductOrNull();
-		if (vhuProduct == null)
+		final ProductId vhuProductId = vhuStorage.getSingleProductIdOrNull();
+		if (vhuProductId == null)
 		{
 			return Optional.empty();
 		}
 
-		final BigDecimal qty = vhuStorage.getQty(vhuProduct, vhuProduct.getC_UOM());
+		final I_C_UOM stockingUOM = Services.get(IProductBL.class).getStockingUOM(vhuProductId);
+		final Quantity qty = vhuStorage.getQuantity(vhuProductId, stockingUOM);
 
-		return Optional.of(ImmutablePair.of(vhuProduct, qty));
+		return Optional.of(ImmutablePair.of(vhuProductId, qty));
 	}
 }

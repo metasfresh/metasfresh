@@ -18,7 +18,6 @@
 package org.adempiere.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -28,6 +27,7 @@ import org.compiere.model.MRMALine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  *  Creates Order from RMA document
@@ -119,7 +119,7 @@ public class RMACreateOrder extends JavaProcess
                 orderLine.setC_UOM_ID(originalOLine.getC_UOM_ID());
                 orderLine.setC_Tax_ID(originalOLine.getC_Tax_ID());
                 orderLine.setC_TaxCategory_ID(originalOLine.getC_TaxCategory_ID());
-                orderLine.setM_Warehouse_ID(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(originalOLine).getM_Warehouse_ID());
+                orderLine.setM_Warehouse_ID(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(originalOLine).getRepoId());
                 orderLine.setC_Currency_ID(originalOLine.getC_Currency_ID());
                 orderLine.setQty(line.getQty());
                 orderLine.setC_Project_ID(originalOLine.getC_Project_ID());

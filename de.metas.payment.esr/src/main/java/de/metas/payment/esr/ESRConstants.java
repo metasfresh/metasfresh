@@ -10,12 +10,12 @@ package de.metas.payment.esr;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,14 +27,14 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
+import de.metas.util.Services;
 
 /**
  * Constant values for ESR.
- * 
+ *
  * @author RC
  *
  */
@@ -53,7 +53,7 @@ public final class ESRConstants
 	public static final String ESRTRXTYPE_Payment = "995";
 
 	/**
-	 * ESR type "gutschrift (+)"
+	 * ESR type "Gutschrift (+)"
 	 */
 	public static final String ESRTRXTYPE_Receipt = "999";
 
@@ -61,7 +61,7 @@ public final class ESRConstants
 	 * A type of booking the we don't know how to handle
 	 */
 	public static final String ESRTRXTYPE_UNKNOWN = "???";
-	
+
 	public static final String ESRTRXTYPE_CREDIT_MEMO_LAST_DIGIT = "2";
 	public static final String ESRTRXTYPE_CreditMemo = "00" + ESRTRXTYPE_CREDIT_MEMO_LAST_DIGIT;
 
@@ -82,7 +82,7 @@ public final class ESRConstants
 	/**
 	 * Y/N parameter. If <code>false</code>, then <code>C_Payment.IsAutoAllocateAvailableAmt</code> is <b>only</b> set to <code>Y</code> if an ESR-Line is handled by the
 	 * {@link WithNextInvoiceESRActionHandler}.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/09167_System_generiert_manchmal_generiert_falsche_ESR_%28105649640837%29
 	 */
 	public static final String SYSCONFIG_EAGER_PAYMENT_ALLOCATION = "de.metas.payment.esr.AlwaysAutoAllocateAvailablePayAmount";
@@ -108,7 +108,7 @@ public final class ESRConstants
 	/**
 	 * String is required to compute the check digit. Check out the ESR specification for details. A german specification (current version 01.07) can be found here:<br>
 	 * http://www.tkb.ch/fk/produkte_dienste/zv/zv_klassisch/besr_handbuch.htm
-	 * 
+	 *
 	 * @see #calculateCheckDigit(String, int, int)
 	 */
 	public static int[] CHECK_String =

@@ -2,9 +2,8 @@ package de.metas.vendor.gateway.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import lombok.Value;
 

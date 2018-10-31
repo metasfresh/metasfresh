@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +22,7 @@ import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

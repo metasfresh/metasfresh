@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
 import lombok.Value;
 
@@ -27,7 +28,7 @@ import lombok.Value;
  */
 
 @Value
-public class InvoiceCandidateId
+public class InvoiceCandidateId implements RepoIdAware
 {
 	int repoId;
 

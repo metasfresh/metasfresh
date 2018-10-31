@@ -29,7 +29,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IEDIDocumentBL;
@@ -37,6 +36,7 @@ import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.util.Services;
 
 @Validator(I_C_Invoice.class)
 public class C_Invoice

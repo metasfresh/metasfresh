@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_OrderTax;
@@ -39,6 +38,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 /**
  * Post Order Documents.

@@ -25,8 +25,9 @@ package org.adempiere.model.tree;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.MTreeNode;
+
+import de.metas.util.ISingletonService;
 
 public interface IADTreeBL extends ISingletonService
 {

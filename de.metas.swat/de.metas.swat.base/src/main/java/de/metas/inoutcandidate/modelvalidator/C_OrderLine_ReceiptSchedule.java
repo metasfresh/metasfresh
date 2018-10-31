@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.util.Services;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine_ReceiptSchedule

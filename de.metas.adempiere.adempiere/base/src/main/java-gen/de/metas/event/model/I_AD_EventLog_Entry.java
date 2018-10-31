@@ -1,10 +1,5 @@
 package de.metas.event.model;
 
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_User;
-
 /** Generated Interface for AD_EventLog_Entry
  *  @author Adempiere (generated) 
  */

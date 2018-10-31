@@ -41,7 +41,6 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
@@ -66,6 +65,7 @@ import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.impl.PlainPaymentDAO;
+import de.metas.util.Services;
 
 public class AllocationBLTest
 {

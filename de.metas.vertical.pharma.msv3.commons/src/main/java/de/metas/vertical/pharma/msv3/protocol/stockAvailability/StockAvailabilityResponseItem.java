@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
@@ -49,7 +51,7 @@ public class StockAvailabilityResponseItem
 	private StockAvailabilityResponseItem(
 			@NonNull final PZN pzn,
 			@NonNull final Quantity qty,
-			final StockAvailabilitySubstitution substitution,
+			@Nullable final StockAvailabilitySubstitution substitution,
 			@NonNull @Singular final ImmutableList<StockAvailabilityResponseItemPart> parts)
 	{
 		this.pzn = pzn;

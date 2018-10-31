@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.service.IParameterBL;
@@ -37,6 +36,7 @@ import de.metas.adempiere.service.IParameterizable;
 import de.metas.adempiere.service.IParametersDAO;
 import de.metas.adempiere.service.IParametersDAO.IParameterPO;
 import de.metas.adempiere.util.Parameter;
+import de.metas.util.Services;
 
 public class ParameterBL implements IParameterBL
 {

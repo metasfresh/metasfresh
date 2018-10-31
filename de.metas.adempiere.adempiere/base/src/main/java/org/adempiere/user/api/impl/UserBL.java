@@ -18,22 +18,25 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
-import de.metas.hash.HashableString;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
+import lombok.NonNull;
 
 public class UserBL implements IUserBL
 {
@@ -173,7 +176,7 @@ public class UserBL implements IUserBL
 
 	/**
 	 * Generates and set user's password reset code.
-	 * 
+	 *
 	 * @return generated password reset code
 	 */
 	private static String generateAndSetPasswordResetCode(final I_AD_User user)
@@ -203,7 +206,12 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public void changePassword(final Properties ctx, final int adUserId, final HashableString oldPassword, final String newPassword, final String newPasswordRetype)
+	public void changePassword(
+			final Properties ctx,
+			final int adUserId,
+			final HashableString oldPassword,
+			final String newPassword,
+			final String newPasswordRetype)
 	{
 		//
 		// Make sure the new password and new password retype are matching
@@ -227,7 +235,7 @@ public class UserBL implements IUserBL
 						.setParameter("reason", "User does not have a password set. Please leave empty the OldPassword field.");
 			}
 
-			if (!Objects.equals(oldPassword, userPassword))
+			if (!userPassword.isMatching(oldPassword))
 			{
 				throw new AdempiereException("@OldPasswordNoMatch@");
 			}
@@ -429,5 +437,18 @@ public class UserBL implements IUserBL
 	{
 		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(adUserId);
 		return checkCanSendEMail(user);
+	}
+
+	@Override
+	public Language getUserLanguage(@NonNull final I_AD_User userRecord)
+	{
+		final int bPartnerId = userRecord.getC_BPartner_ID();
+
+		final String languageStr = Util.coalesceSuppliers(
+				() -> userRecord.getAD_Language(),
+				() -> bPartnerId > 0 ? userRecord.getC_BPartner().getAD_Language() : null,
+				() -> Env.getADLanguageOrBaseLanguage());
+
+		return Language.getLanguage(languageStr);
 	}
 }

@@ -10,12 +10,12 @@ package de.metas.dunning.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.dunning.interfaces.I_C_Dunning;
@@ -35,12 +34,13 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.ISingletonService;
 
 public interface IDunningDAO extends ISingletonService
 {
 	/**
 	 * Create a new instance for given bean interface
-	 * 
+	 *
 	 * @param dunningContext
 	 * @param interfaceClass
 	 * @return
@@ -49,7 +49,7 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Save bean
-	 * 
+	 *
 	 * @param model
 	 */
 	void save(Object model);
@@ -58,14 +58,14 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieves the assigned {@link I_C_Dunning} of given business partner.
-	 * 
+	 *
 	 * The algorithm works as follows:
 	 * <ul>
 	 * <li>if bpartner has a dunning assigned, that dunning will be returned
 	 * <li>if BP's group has a dunning assigned, that dunning will be returned
 	 * <li>else return NULL
 	 * </ul>
-	 * 
+	 *
 	 * @param bpartner
 	 * @return
 	 */
@@ -73,7 +73,7 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieves default dunning for given organization.
-	 * 
+	 *
 	 * @param ctx
 	 * @param adOrgId
 	 * @return {@link I_C_Dunning}
@@ -82,7 +82,7 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieve the active dunning-levels of the given <code>dunning</code>, orderd by their <code>DaysAfterDue</code> value.
-	 * 
+	 *
 	 * @param dunning
 	 * @return
 	 */
@@ -94,21 +94,21 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieve all {@link I_C_Dunning_Candidate}s for given tableId/recordId.
-	 * 
+	 *
 	 * Same as calling {@link #retrieveDunningCandidate(IDunningContext, int, int, I_C_DunningLevel)} with empty levels list.
-	 * 
+	 *
 	 * @param context used only for getting session specific parameters (i.e. ctx and trxName)
 	 * @param tableId
 	 * @param recordId
 	 * @return matched {@link I_C_Dunning_Candidate}s
-	 * 
+	 *
 	 * @see #retrieveDunningCandidates(IDunningContext, int, int, List)
 	 */
 	List<I_C_Dunning_Candidate> retrieveDunningCandidates(IDunningContext dunningContext, int tableId, int recordId);
 
 	/**
 	 * Retrieve all {@link I_C_Dunning_Candidate}s for given tableId/recordId and dunning levels.
-	 * 
+	 *
 	 * @param context used only for getting session specific parameters (i.e. ctx and trxName)
 	 * @param tableId
 	 * @param recordId
@@ -124,7 +124,7 @@ public interface IDunningDAO extends ISingletonService
 	 * <li>Processed='Y'
 	 * <li>AD_Client_ID=the given context's Client ID
 	 * </ul>
-	 * 
+	 *
 	 * @param dunningContext
 	 * @return
 	 */
@@ -136,23 +136,23 @@ public interface IDunningDAO extends ISingletonService
 	 * <li>appends the given where clause to the final SQL query.
 	 * <li>only returns records to which the given user/role has read and write access
 	 * </ul>
-	 * 
+	 *
 	 * @param dunningContext
 	 * @param additionalWhere
 	 * @return
 	 */
 	Iterator<I_C_Dunning_Candidate> retrieveNotProcessedCandidatesIteratorRW(IDunningContext dunningContext, String additionalWhere);
 
-	List<I_C_DunningDoc_Line> retrieveDunningDocLines(IDunningContext context, I_C_DunningDoc dunningDoc);
+	List<I_C_DunningDoc_Line> retrieveDunningDocLines(I_C_DunningDoc dunningDoc);
 
-	List<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSources(IDunningContext context, I_C_DunningDoc_Line line);
+	List<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSources(I_C_DunningDoc_Line line);
 
 	Iterator<I_C_DunningDoc> retrieveNotProcessedDocumentsIterator(IDunningContext dunningContext);
 
 	Iterator<I_C_Dunning_Candidate> retrieveNotProcessedCandidatesIteratorByLevel(IDunningContext dunningContext, final I_C_DunningLevel dunningLevel);
 
 	/**
-	 * 
+	 *
 	 * @param candidate
 	 * @return true if given candidate is staled
 	 */
@@ -160,20 +160,20 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieves iterator over all {@link I_C_DunningDoc_Line_Source} that require a write-off.
-	 * 
+	 *
 	 * Candidates suitable for write-off are:
 	 * <ul>
 	 * <li>not processed
 	 * <li>have IsWriteOff flag set
 	 * <li>IsWriteOffApplied flag not set
 	 * </ul>
-	 * 
+	 *
 	 * @param dunningContext
 	 * @return iterator of sources that require a write-off
 	 */
 	Iterator<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSourcesToWriteOff(IDunningContext dunningContext);
 
 	int deleteNotProcessedCandidates(IDunningContext context, I_C_DunningLevel dunningLevel);
-	
+
 	List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(Properties ctx, int tableId, int recordId, String trxName);
 }

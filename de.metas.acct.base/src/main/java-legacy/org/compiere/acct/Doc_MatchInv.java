@@ -25,8 +25,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
@@ -55,6 +53,8 @@ import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

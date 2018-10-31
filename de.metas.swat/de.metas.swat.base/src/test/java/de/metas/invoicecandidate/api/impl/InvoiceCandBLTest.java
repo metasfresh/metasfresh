@@ -38,8 +38,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOut;
@@ -48,11 +46,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.IOrderLineBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg
@@ -78,7 +78,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		POJOWrapper.setDefaultStrictValues(false);
 
-		final AsyncBPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new AsyncBPartnerStatisticsUpdater();
+		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 	}
 

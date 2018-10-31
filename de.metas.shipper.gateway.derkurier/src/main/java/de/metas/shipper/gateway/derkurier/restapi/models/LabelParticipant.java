@@ -1,7 +1,6 @@
 package de.metas.shipper.gateway.derkurier.restapi.models;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 

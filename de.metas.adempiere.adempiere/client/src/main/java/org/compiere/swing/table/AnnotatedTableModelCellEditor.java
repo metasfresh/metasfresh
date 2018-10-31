@@ -33,7 +33,6 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 
-import org.adempiere.util.Services;
 import org.compiere.grid.ed.VCheckBox;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VEditor;
@@ -44,6 +43,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.util.Services;
 
 class AnnotatedTableCellEditor extends AbstractCellEditor implements TableCellEditor
 {

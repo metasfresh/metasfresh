@@ -1,9 +1,8 @@
 package de.metas.purchasecandidate;
 
-import org.adempiere.util.Check;
-
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

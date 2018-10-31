@@ -25,7 +25,6 @@ package de.metas.material.planning.pporder;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
@@ -35,6 +34,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 
 public interface IPPOrderBOMBL extends ISingletonService
 {

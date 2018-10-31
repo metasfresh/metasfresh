@@ -27,9 +27,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
+
+import de.metas.util.ISingletonService;
 
 public interface IGLJournalDAO extends ISingletonService
 

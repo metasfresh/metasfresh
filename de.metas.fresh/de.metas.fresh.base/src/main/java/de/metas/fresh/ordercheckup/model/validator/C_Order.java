@@ -26,13 +26,13 @@ package de.metas.fresh.ordercheckup.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.fresh.ordercheckup.printing.spi.impl.OrderCheckupPrintingQueueHandler;
 import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Order.class)
 public class C_Order

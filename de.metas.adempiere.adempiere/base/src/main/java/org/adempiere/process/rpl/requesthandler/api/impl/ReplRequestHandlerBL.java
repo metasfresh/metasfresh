@@ -34,7 +34,6 @@ import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandler;
 import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandlerType;
 import org.adempiere.process.rpl.requesthandler.spi.IReplRequestHandler;
 import org.adempiere.server.rpl.interfaces.I_EXP_Format;
-import org.adempiere.util.Check;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_ReplicationTable;
@@ -43,6 +42,7 @@ import org.slf4j.Logger;
 import org.w3c.dom.Document;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 {

@@ -29,10 +29,8 @@ import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUCapacityBL;
@@ -51,6 +49,9 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUOrderBL implements IHUOrderBL
@@ -66,7 +67,8 @@ public class HUOrderBL implements IHUOrderBL
 
 		final de.metas.handlingunits.model.I_C_OrderLine ol = InterfaceWrapperHelper.create(olPO, de.metas.handlingunits.model.I_C_OrderLine.class);
 
-		if (olPO.getM_Product_ID() <= 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(olPO.getM_Product_ID());
+		if (productId == null)
 		{
 			return; // No product selected. Nothing to do.
 		}
@@ -96,7 +98,7 @@ public class HUOrderBL implements IHUOrderBL
 			if (isProductChanged(olPO, columnName) || isBPartnerChanged(olPO, columnName))
 			{
 				final boolean allowInfiniteCapacity = true;
-				pip = hupiItemProductDAO.retrieveMaterialItemProduct(olPO.getM_Product(), olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType, allowInfiniteCapacity);
+				pip = hupiItemProductDAO.retrieveMaterialItemProduct(productId, olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType, allowInfiniteCapacity);
 			}
 			// use the existing pip
 			else if (ol.getM_HU_PI_Item_Product_ID() > 0 && (isQtyChanged(olPO, columnName) || isM_HU_PI_Item_ProductChanged(olPO, columnName)))
@@ -138,8 +140,7 @@ public class HUOrderBL implements IHUOrderBL
 			BigDecimal qtyCap = BigDecimal.ZERO;
 			if (!Services.get(IHUCapacityBL.class).isInfiniteCapacity(pip))
 			{
-				final I_M_Product product = ol.getM_Product();
-				qtyCap = Services.get(IHUCapacityBL.class).getCapacity(pip, product, pip.getC_UOM()).getCapacityQty();
+				qtyCap = Services.get(IHUCapacityBL.class).getCapacity(pip, productId, pip.getC_UOM()).getCapacityQty();
 				Check.assume(qtyCap.signum() != 0, "Zero capacity for M_HU_PI_Item_Product {}", pip.getM_HU_PI_Item_Product_ID());
 			}
 			final String description = pip.getDescription();
@@ -199,28 +200,29 @@ public class HUOrderBL implements IHUOrderBL
 		if (packagingProductMightBeInconsistent)
 		{
 			// the packing material product that will be used for packaging the products in the line
-			final I_M_Product packagingProduct;
+			final ProductId packagingProductId;
 
 			final boolean isCounterDoc = ol.getRef_OrderLine_ID() > 0;
 
 			if (ol.getC_PackingMaterial_OrderLine() == null || !isCounterDoc)
 			{
-				packagingProduct = null;
+				packagingProductId = null;
 			}
 			else
 			{
-				packagingProduct = ol.getC_PackingMaterial_OrderLine().getM_Product();
+				packagingProductId = ProductId.ofRepoIdOrNull(ol.getC_PackingMaterial_OrderLine().getM_Product_ID());
 			}
 
 			final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 			// the pm product that will have to fit the piip.
 			// In case this product is null, the PIIPs which allow any product are also eligible.
-			final I_M_Product pmProductToUse;
+			final ProductId pmProductToUse;
 
 			if (isCounterDoc)
 			{
-				pmProductToUse = productDAO.retrieveMappedProductOrNull(packagingProduct, ol.getAD_Org());
+				final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
+				pmProductToUse = productDAO.retrieveMappedProductIdOrNull(packagingProductId, orgId);
 			}
 
 			else
@@ -238,7 +240,7 @@ public class HUOrderBL implements IHUOrderBL
 			else
 			{
 				newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
-						ol.getM_Product(),
+						ProductId.ofRepoId(ol.getM_Product_ID()),
 						ol.getC_BPartner(),
 						ol.getDateOrdered(),
 						huUnitType,
@@ -265,7 +267,7 @@ public class HUOrderBL implements IHUOrderBL
 		else if (inconsistentProduct)
 		{
 			newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
-					ol.getM_Product(),
+					ProductId.ofRepoIdOrNull(ol.getM_Product_ID()),
 					ol.getC_BPartner(),
 					ol.getDateOrdered(),
 					huUnitType,
@@ -452,7 +454,7 @@ public class HUOrderBL implements IHUOrderBL
 	}
 
 	@Override
-	public void findM_HU_PI_Item_Product(final org.compiere.model.I_C_Order order, final I_M_Product product, final Consumer<I_M_HU_PI_Item_Product> pipConsumer)
+	public void findM_HU_PI_Item_Product(final org.compiere.model.I_C_Order order, final ProductId productId, final Consumer<I_M_HU_PI_Item_Product> pipConsumer)
 	{
 		//
 		// services
@@ -474,9 +476,9 @@ public class HUOrderBL implements IHUOrderBL
 		//
 		// Try fetching the PIP from pricing
 		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_C_Order.Table_Name);
-		if (null != handler && product != null && product.getM_Product_ID() > 0)
+		if (null != handler && productId != null)
 		{
-			final I_M_HU_PI_Item_Product overridePip = handler.getM_HU_PI_ItemProductFor(order, product);
+			final I_M_HU_PI_Item_Product overridePip = handler.getM_HU_PI_ItemProductFor(order, productId);
 			// If we have a default price and it has an M_HU_PI_Item_Product, suggest it in quick entry.
 			if (null != overridePip && overridePip.getM_HU_PI_Item_Product_ID() > 0)
 			{
@@ -494,7 +496,7 @@ public class HUOrderBL implements IHUOrderBL
 
 		//
 		// Try fetching best matching PIP
-		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(product, order.getC_BPartner(), order.getDateOrdered(),
+		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(productId, order.getC_BPartner(), order.getDateOrdered(),
 				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit,
 				true); // allowInfiniteCapacity = true
 
@@ -515,7 +517,7 @@ public class HUOrderBL implements IHUOrderBL
 	}
 
 	@Override
-	public void findM_HU_PI_Item_ProductForForecast(@NonNull final I_M_Forecast forecast, final I_M_Product product, final Consumer<I_M_HU_PI_Item_Product> pipConsumer)
+	public void findM_HU_PI_Item_ProductForForecast(@NonNull final I_M_Forecast forecast, final ProductId productId, final Consumer<I_M_HU_PI_Item_Product> pipConsumer)
 	{
 		final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -526,9 +528,9 @@ public class HUOrderBL implements IHUOrderBL
 		}
 
 		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_M_Forecast.Table_Name);
-		if (null != handler && product != null && product.getM_Product_ID() > 0)
+		if (null != handler && productId != null)
 		{
-			final I_M_HU_PI_Item_Product overridePip = handler.getM_HU_PI_ItemProductFor(forecast, product);
+			final I_M_HU_PI_Item_Product overridePip = handler.getM_HU_PI_ItemProductFor(forecast, productId);
 			// If we have a default price and it has an M_HU_PI_Item_Product, suggest it in quick entry.
 			if (null != overridePip && overridePip.getM_HU_PI_Item_Product_ID() > 0)
 			{
@@ -546,7 +548,7 @@ public class HUOrderBL implements IHUOrderBL
 
 		//
 		// Try fetching best matching PIP
-		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(product, forecast.getC_BPartner(), forecast.getDatePromised(),
+		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(productId, forecast.getC_BPartner(), forecast.getDatePromised(),
 				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit,
 				true); // allowInfiniteCapacity = true
 

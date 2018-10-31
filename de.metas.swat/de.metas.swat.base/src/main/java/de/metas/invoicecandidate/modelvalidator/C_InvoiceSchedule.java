@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.modelvalidator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -9,6 +8,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.util.Services;
 
 public class C_InvoiceSchedule implements ModelValidator
 {

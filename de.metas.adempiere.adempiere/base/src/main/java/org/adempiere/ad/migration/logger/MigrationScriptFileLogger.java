@@ -1,6 +1,5 @@
 package org.adempiere.ad.migration.logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -15,8 +14,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_MigrationScript;
 import org.compiere.model.MSequence;
 import org.compiere.util.Ini;
@@ -25,6 +22,9 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -68,6 +68,7 @@ public class MigrationScriptFileLogger
 
 	private final String dbType;
 	private Path _path;
+	private static Path _migrationScriptsDirectory;
 
 	private static final String COLLECTOR_TRXPROPERTYNAME = MigrationScriptFileLogger.class.getName() + ".collectorFactory";
 	private final TrxOnCommitCollectorFactory<StringBuilder, String> collectorFactory = new TrxOnCommitCollectorFactory<StringBuilder, String>()
@@ -165,7 +166,7 @@ public class MigrationScriptFileLogger
 
 		final String filename = scriptId + "_migration_" + FORMATTER_ScriptFilenameTimestamp.format(LocalDate.now()) + "_" + dbType + ".sql";
 
-		return Paths.get(getMigrationScriptDirectory(), filename);
+		return getMigrationScriptDirectory().resolve(filename);
 	}
 
 	private final synchronized Path getCreateFilePath()
@@ -185,15 +186,32 @@ public class MigrationScriptFileLogger
 			{
 				throw AdempiereException.wrapIfNeeded(ex);
 			}
-			
+
 			_path = path;
 		}
 		return _path;
 	}
 
-	public static final String getMigrationScriptDirectory()
+	public final synchronized Path getFilePathOrNull()
 	{
-		return Ini.getMetasfreshHome() + File.separator + "migration_scripts";
+		return _path;
+	}
+
+	public static final Path getMigrationScriptDirectory()
+	{
+		final Path migrationScriptsDirectory = _migrationScriptsDirectory;
+		return migrationScriptsDirectory != null ? migrationScriptsDirectory : getDefaultMigrationScriptDirectory();
+	}
+
+	private static final Path getDefaultMigrationScriptDirectory()
+	{
+		return Paths.get(Ini.getMetasfreshHome(), "migration_scripts");
+	}
+
+	public static final void setMigrationScriptDirectory(@NonNull final Path path)
+	{
+		_migrationScriptsDirectory = path;
+		logger.info("Set migration scripts directory: {}", path);
 	}
 
 	/**

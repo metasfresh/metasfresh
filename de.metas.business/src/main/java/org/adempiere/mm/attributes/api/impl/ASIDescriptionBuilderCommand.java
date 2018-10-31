@@ -13,8 +13,6 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -27,6 +25,8 @@ import org.compiere.util.Evaluatee2;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -14,7 +14,7 @@ public class X_AD_UserQuery extends org.compiere.model.PO implements I_AD_UserQu
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 186147216L;
+	private static final long serialVersionUID = -408957734L;
 
     /** Standard Constructor */
     public X_AD_UserQuery (Properties ctx, int AD_UserQuery_ID, String trxName)
@@ -25,6 +25,8 @@ public class X_AD_UserQuery extends org.compiere.model.PO implements I_AD_UserQu
 			setAD_Tab_ID (0);
 			setAD_Table_ID (0);
 			setAD_UserQuery_ID (0);
+			setIsManadatoryParams (false); // N
+			setIsShowAllParams (false); // N
 			setName (null);
         } */
     }
@@ -213,6 +215,52 @@ public class X_AD_UserQuery extends org.compiere.model.PO implements I_AD_UserQu
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Mandatory Parameters.
+		@param IsManadatoryParams Mandatory Parameters	  */
+	@Override
+	public void setIsManadatoryParams (boolean IsManadatoryParams)
+	{
+		set_Value (COLUMNNAME_IsManadatoryParams, Boolean.valueOf(IsManadatoryParams));
+	}
+
+	/** Get Mandatory Parameters.
+		@return Mandatory Parameters	  */
+	@Override
+	public boolean isManadatoryParams () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsManadatoryParams);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Display All Parameters.
+		@param IsShowAllParams Display All Parameters	  */
+	@Override
+	public void setIsShowAllParams (boolean IsShowAllParams)
+	{
+		set_Value (COLUMNNAME_IsShowAllParams, Boolean.valueOf(IsShowAllParams));
+	}
+
+	/** Get Display All Parameters.
+		@return Display All Parameters	  */
+	@Override
+	public boolean isShowAllParams () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsShowAllParams);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Name.

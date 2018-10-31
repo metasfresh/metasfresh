@@ -1,12 +1,12 @@
 package de.metas.marketing.gateway.cleverreach;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.cleverreach.model.I_MKTG_CleverReach_Config;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

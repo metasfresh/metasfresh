@@ -2,7 +2,7 @@ package de.metas.connection;
 
 import java.sql.Connection;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

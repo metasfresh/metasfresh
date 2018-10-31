@@ -12,8 +12,9 @@ import javax.swing.MenuElement;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
-import org.adempiere.util.Check;
 import org.compiere.swing.PopupMenuListenerAdapter;
+
+import de.metas.util.Check;
 
 /*
  * #%L

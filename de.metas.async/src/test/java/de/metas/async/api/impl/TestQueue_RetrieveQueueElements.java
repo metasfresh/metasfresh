@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,6 +39,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.util.Services;
 
 /**
  * Validate {@link IQueueDAO#retrieveQueueElements(I_C_Queue_WorkPackage, boolean)}.

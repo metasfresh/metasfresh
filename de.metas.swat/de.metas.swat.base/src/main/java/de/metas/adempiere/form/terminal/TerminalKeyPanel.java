@@ -32,19 +32,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * @author tsa
@@ -68,7 +69,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 	private ITerminalKeyListener caller;
 
 	/** Map of KeyLayout_ID to {@link IKeyLayout} */
-	private final Map<String, KeyLayoutInfo> keyLayoutInfoMap = new HashMap<String, KeyLayoutInfo>();
+	private final Map<String, KeyLayoutInfo> keyLayoutInfoMap = new HashMap<>();
 
 	/**
 	 * {@link ITerminalKey} button action listener.
@@ -199,7 +200,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 	{
 		private final IKeyLayout keyLayout;
 		private IComponent keyLayoutComponent;
-		private final Map<String, TerminalKeyInfo> keysInfoMap = new HashMap<String, TerminalKeyInfo>();
+		private final Map<String, TerminalKeyInfo> keysInfoMap = new HashMap<>();
 
 		public KeyLayoutInfo(final IKeyLayout keyLayout)
 		{
@@ -275,7 +276,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 	{
 		buttonActionListener = null;
 
-		 // not created here, so we don't dispose them
+		// not created here, so we don't dispose them
 		caller = NullTerminalKeyListener.instance;
 		renderer = DefaultKeyPanelRenderer.instance;
 
@@ -334,7 +335,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 		final IKeyLayoutSelectionModel keyLayoutSelectionModelOld = keyLayoutSelectionModel;
 
 		final ITerminalKey selectedKeyOld;
-		final List<ITerminalKey> selectedKeysOld = new ArrayList<ITerminalKey>();
+		final List<ITerminalKey> selectedKeysOld = new ArrayList<>();
 		if (keyLayoutSelectionModelOld == null)
 		{
 			//
@@ -719,7 +720,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 			return null;
 		}
 
-		final List<ITerminalKey> list = new ArrayList<ITerminalKey>();
+		final List<ITerminalKey> list = new ArrayList<>();
 		for (final Map.Entry<String, TerminalKeyInfo> e : map.entrySet())
 		{
 			final TerminalKeyInfo keyInfo = e.getValue();
@@ -811,7 +812,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 			return;
 		}
 
-		final List<ITerminalKey> unselectedKeys = new ArrayList<ITerminalKey>(selectedKeysOld);
+		final List<ITerminalKey> unselectedKeys = new ArrayList<>(selectedKeysOld);
 
 		for (final ITerminalKey selectedKeyNew : selectedKeysNew)
 		{
@@ -888,7 +889,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 		{
 			//
 			// Get old selected keys (clone) & clear current selection model
-			final List<ITerminalKey> selectedKeysOld = new ArrayList<ITerminalKey>(keyLayoutSelectionModel.getSelectedKeys());
+			final List<ITerminalKey> selectedKeysOld = new ArrayList<>(keyLayoutSelectionModel.getSelectedKeys());
 			keyLayoutSelectionModel.clearSelection();
 
 			for (final ITerminalKey selectedKeyOld0 : selectedKeysOld)
@@ -1093,7 +1094,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 	@Override
 	public void setKeyFixedWidth(final String keyFixedWidth)
 	{
-		if (Check.equals(this.keyFixedWidth, keyFixedWidth))
+		if (Objects.equals(this.keyFixedWidth, keyFixedWidth))
 		{
 			// nothing changed
 			return;
@@ -1119,7 +1120,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 	@Override
 	public void setKeyFixedHeight(final String keyFixedHeight)
 	{
-		if (Check.equals(this.keyFixedHeight, keyFixedHeight))
+		if (Objects.equals(this.keyFixedHeight, keyFixedHeight))
 		{
 			// nothing changed
 			return;

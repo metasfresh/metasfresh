@@ -41,12 +41,13 @@ import org.adempiere.appdict.validation.spi.impl.ADFormADValidator;
 import org.adempiere.appdict.validation.spi.impl.ADModelValidatorADValidator;
 import org.adempiere.appdict.validation.spi.impl.ADProcessADValidator;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ColumnCallout;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_ModelValidator;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.ModelValidationEngine;
+
+import de.metas.util.Services;
 
 public class ADValidatorRegistryBL implements IADValidatorRegistryBL
 {

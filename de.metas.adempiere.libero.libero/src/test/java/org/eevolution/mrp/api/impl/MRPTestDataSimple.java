@@ -1,37 +1,12 @@
 package org.eevolution.mrp.api.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
@@ -40,6 +15,10 @@ import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.X_PP_Product_Planning;
+
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Simple MRP master data definition.
@@ -63,16 +42,18 @@ public class MRPTestDataSimple
 	public I_S_Resource plant01;
 	public I_S_Resource plant02;
 	public I_M_Warehouse warehouse_plant01;
-	public I_M_Locator warehouse_plant01_locator;
+	public LocatorId warehouse_plant01_locatorId;
 	public I_M_Warehouse warehouse_plant02;
 	public I_M_Warehouse warehouse_picking01;
 	public I_M_Warehouse warehouse_rawMaterials01;
-	public I_M_Locator warehouse_rawMaterials01_locator;
+	public LocatorId warehouse_rawMaterials01_locatorId;
 
 	//
 	// Products and BOMs
 	public I_M_Product pTomato;
+	public ProductId pTomatoId;
 	public I_M_Product pOnion;
+	public ProductId pOnionId;
 	public I_M_Product pSalad_2xTomato_1xOnion;
 	public I_PP_Product_BOM pSalad_2xTomato_1xOnion_BOM;
 
@@ -123,7 +104,7 @@ public class MRPTestDataSimple
 
 		this.plant01 = helper.createResource("Plant01", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, helper.resourceType_Plants);
 		this.warehouse_plant01 = helper.createWarehouse("Plant01_Warehouse01", adOrg01);
-		this.warehouse_plant01_locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse_plant01);
+		this.warehouse_plant01_locatorId = getDefaultLocatorId(warehouse_plant01);
 
 		this.plant02 = helper.createResource("Plant02", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, helper.resourceType_Plants);
 		this.warehouse_plant02 = helper.createWarehouse("Plant02_Warehouse01", adOrg01);
@@ -133,13 +114,20 @@ public class MRPTestDataSimple
 		// Raw Materials Warehouses
 		// NOTE: we are adding them last because of MRP bug regarding how warehouses are iterated and DRP
 		this.warehouse_rawMaterials01 = helper.createWarehouse("RawMaterials_Warehouse01", adOrg01);
-		this.warehouse_rawMaterials01_locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse_rawMaterials01);
+		this.warehouse_rawMaterials01_locatorId = getDefaultLocatorId(warehouse_rawMaterials01);
+	}
+
+	private static LocatorId getDefaultLocatorId(final I_M_Warehouse warehouse)
+	{
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	private final void createProductsAndBOMs()
 	{
 		this.pTomato = helper.createProduct("Tomato", uomKg);
+		this.pTomatoId = ProductId.ofRepoId(pTomato.getM_Product_ID());
 		this.pOnion = helper.createProduct("Onion", uomKg);
+		this.pOnionId = ProductId.ofRepoId(pOnion.getM_Product_ID());
 		this.pSalad_2xTomato_1xOnion = helper.createProduct("Salad_2xTomato_1xOnion", uomEach);
 
 		//@formatter:off

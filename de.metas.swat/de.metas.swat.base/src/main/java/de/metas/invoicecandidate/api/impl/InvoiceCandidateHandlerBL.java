@@ -29,15 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -47,6 +42,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 
 import ch.qos.logback.classic.Level;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -64,6 +60,10 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 
@@ -162,11 +162,10 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 	/**
 	 * Schedule invoice candidates generation for given model (asynchronously).
-	 *
-	 * @param model
-	 * @param handler
 	 */
-	private final void scheduleCreateMissingCandidatesFor(final Object model, final IInvoiceCandidateHandler handler)
+	private final void scheduleCreateMissingCandidatesFor(
+			@NonNull final Object model,
+			@NonNull final IInvoiceCandidateHandler handler)
 	{
 		final Object modelToSchedule = handler.getModelForInvoiceCandidateGenerateScheduling(model);
 		CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(modelToSchedule);
@@ -280,7 +279,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		//
 		// Locking
 		final ILockManager lockManager = Services.get(ILockManager.class);
-		final LockOwner lockOwner = LockOwner.forOwnerName(getClass().getSimpleName() + "#generateInvoiceCandidates");
+		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
 
 		//
 		// Iterate retrieved models and generate invoice candidates for them

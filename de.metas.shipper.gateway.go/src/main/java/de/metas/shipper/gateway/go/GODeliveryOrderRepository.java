@@ -5,8 +5,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
@@ -26,6 +24,8 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.HWBNumber;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.OrderStatus;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

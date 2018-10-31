@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
@@ -51,7 +52,6 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
@@ -670,7 +670,7 @@ public class JTextComponentAutoCompleter
 	/** @return normalized string used for matching */
 	protected final String normalizeSearchString(final String str)
 	{
-		return str == null ? "" : org.adempiere.util.StringUtils.stripDiacritics(str.toUpperCase()).trim();
+		return str == null ? "" : de.metas.util.StringUtils.stripDiacritics(str.toUpperCase()).trim();
 	}
 
 	public final void setTextNoPopup(final String text)

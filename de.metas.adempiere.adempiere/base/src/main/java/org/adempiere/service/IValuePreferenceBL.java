@@ -26,7 +26,7 @@ import java.util.Collection;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface IValuePreferenceBL extends ISingletonService
 {

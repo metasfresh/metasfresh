@@ -5,9 +5,9 @@ import java.beans.PropertyChangeListenerProxy;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /**
  * An {@link PropertyChangeSupport} which makes weak reference to source bean and which is able to register the listeners weakly.

@@ -1,16 +1,21 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import com.google.common.collect.ImmutableMap;
+import org.adempiere.service.OrgId;
+import org.compiere.util.TimeUtil;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3Util;
+import de.metas.vendor.gateway.api.order.MSV3OrderResponsePackageItemPartRepoId;
+import de.metas.vertical.pharma.msv3.protocol.order.MSV3PurchaseCandidateId;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderDefectReason;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3FaultInfoDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3SubstitutionDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAnteil;
@@ -19,12 +24,6 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwo
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwortPosition;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Substitution;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAnteil;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortAuftrag;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortPosition;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungDefektgrund;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungRueckmeldungTyp;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -54,132 +53,113 @@ import lombok.NonNull;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MSV3PurchaseOrderResponsePersister
 {
-	public static MSV3PurchaseOrderResponsePersister createNewForOrgId(
-			final int orgId,
-			@NonNull final Map<BestellungAntwortPosition, Integer> bestellungAntwortPosition2PurchaseCandidateId)
+	public static MSV3PurchaseOrderResponsePersister createNewForOrgId(@NonNull final OrgId orgId)
 	{
-		return new MSV3PurchaseOrderResponsePersister(
-				orgId,
-				bestellungAntwortPosition2PurchaseCandidateId,
-				new HashMap<>());
+		return new MSV3PurchaseOrderResponsePersister(orgId);
 	}
 
-	private final int orgId;
+	@NonNull
+	private final OrgId orgId;
+	private final MSV3OrderResponsePackageItemPartRepoIds responseItemPartRepoIds = MSV3OrderResponsePackageItemPartRepoIds.newMutableInstance();
 
-	private final Map<BestellungAntwortPosition, Integer> bestellungAntwortPosition2PurchaseCandidateId;
-
-	private final Map<BestellungAnteil, Integer> bestellungAnteil2Id;
-
-	public I_MSV3_BestellungAntwort storePurchaseOrderResponse(@NonNull final BestellungAntwort bestellungAntwort)
+	public I_MSV3_BestellungAntwort storePurchaseOrderResponse(@NonNull final OrderResponse response)
 	{
-		final I_MSV3_BestellungAntwort bestellungAntwortRecord = createBestellungAntwortRecord(bestellungAntwort);
-		save(bestellungAntwortRecord);
+		final I_MSV3_BestellungAntwort responseRecord = createRecord(response);
+		saveRecord(responseRecord);
 
-		final List<BestellungAntwortAuftrag> auftraege = bestellungAntwort.getAuftraege();
-		for (final BestellungAntwortAuftrag auftrag : auftraege)
+		for (final OrderResponsePackage responseOrder : response.getOrderPackages())
 		{
-			final I_MSV3_BestellungAntwortAuftrag bestellungAntwortAuftragRecord = //
-					createBestellungAntwortAuftragRecord(auftrag);
+			final I_MSV3_BestellungAntwortAuftrag responseOrderRecord = createRecord(responseOrder);
 
-			bestellungAntwortAuftragRecord.setMSV3_BestellungAntwort(bestellungAntwortRecord);
-			save(bestellungAntwortAuftragRecord);
+			responseOrderRecord.setMSV3_BestellungAntwort(responseRecord);
+			saveRecord(responseOrderRecord);
 
-			final List<BestellungAntwortPosition> positionen = auftrag.getPositionen();
-			for (final BestellungAntwortPosition position : positionen)
+			for (final OrderResponsePackageItem responseOrderItem : responseOrder.getItems())
 			{
-				final I_MSV3_BestellungAntwortPosition bestellungAntwortPositionRecord = //
-						createBestellungAntwortPositionRecord(position);
+				final I_MSV3_BestellungAntwortPosition responseOrderItemRecord = createRecord(responseOrderItem);
 
-				bestellungAntwortPositionRecord.setMSV3_BestellungAntwortAuftrag(bestellungAntwortAuftragRecord);
-				save(bestellungAntwortPositionRecord);
+				responseOrderItemRecord.setMSV3_BestellungAntwortAuftrag(responseOrderRecord);
+				saveRecord(responseOrderItemRecord);
 
-				final List<BestellungAnteil> anteile = position.getAnteile();
-				for (final BestellungAnteil anteil : anteile)
+				for (final OrderResponsePackageItemPart itemPart : responseOrderItem.getParts())
 				{
-					final I_MSV3_BestellungAnteil bestellungAnteilRecord = createBestellungAnteilRecord(anteil);
+					final I_MSV3_BestellungAnteil itemPartRecord = createRecord(itemPart);
 
-					bestellungAnteilRecord.setMSV3_BestellungAntwortPosition(bestellungAntwortPositionRecord);
-					save(bestellungAnteilRecord);
+					itemPartRecord.setMSV3_BestellungAntwortPosition(responseOrderItemRecord);
+					saveRecord(itemPartRecord);
 
-					bestellungAnteil2Id.put(anteil, bestellungAnteilRecord.getMSV3_BestellungAnteil_ID());
+					responseItemPartRepoIds.putRepoId(itemPart.getId(), MSV3OrderResponsePackageItemPartRepoId.ofRepoId(itemPartRecord.getMSV3_BestellungAnteil_ID()));
 				}
 			}
 		}
-		return bestellungAntwortRecord;
+
+		return responseRecord;
 	}
 
-	private I_MSV3_BestellungAntwort createBestellungAntwortRecord(@NonNull final BestellungAntwort bestellungAntwort)
+	private I_MSV3_BestellungAntwort createRecord(@NonNull final OrderResponse response)
 	{
-		final I_MSV3_BestellungAntwort bestellungAntwortRecord = newInstance(I_MSV3_BestellungAntwort.class);
-		bestellungAntwortRecord.setAD_Org_ID(orgId);
-		bestellungAntwortRecord.setMSV3_BestellSupportId(bestellungAntwort.getBestellSupportId());
-		bestellungAntwortRecord.setMSV3_Id(bestellungAntwort.getId());
-		bestellungAntwortRecord.setMSV3_NachtBetrieb(bestellungAntwort.isNachtBetrieb());
+		final I_MSV3_BestellungAntwort record = newInstanceOutOfTrx(I_MSV3_BestellungAntwort.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setMSV3_BestellSupportId(response.getSupportId().getValueAsInt());
+		record.setMSV3_Id(response.getOrderId().getValueAsString());
+		record.setMSV3_NachtBetrieb(response.isNightOperation());
 
-		return bestellungAntwortRecord;
+		return record;
 	}
 
-	private I_MSV3_BestellungAntwortAuftrag createBestellungAntwortAuftragRecord(@NonNull final BestellungAntwortAuftrag auftrag)
+	private I_MSV3_BestellungAntwortAuftrag createRecord(@NonNull final OrderResponsePackage responseOrder)
 	{
-		final I_MSV3_BestellungAntwortAuftrag bestellungAntwortAuftragRecord = newInstance(I_MSV3_BestellungAntwortAuftrag.class);
-		bestellungAntwortAuftragRecord.setAD_Org_ID(orgId);
-		bestellungAntwortAuftragRecord.setMSV3_Auftragsart(auftrag.getAuftragsart().value());
-		bestellungAntwortAuftragRecord.setMSV3_Auftragskennung(auftrag.getAuftragskennung());
-		bestellungAntwortAuftragRecord.setMSV3_AuftragsSupportID(auftrag.getAuftragsSupportID());
-		bestellungAntwortAuftragRecord.setMSV3_GebindeId(auftrag.getGebindeId());
-		bestellungAntwortAuftragRecord.setMSV3_Id(auftrag.getId());
+		final I_MSV3_BestellungAntwortAuftrag record = newInstanceOutOfTrx(I_MSV3_BestellungAntwortAuftrag.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setMSV3_Auftragsart(responseOrder.getOrderType().getV2SoapCode().value());
+		record.setMSV3_Auftragskennung(responseOrder.getOrderIdentification());
+		record.setMSV3_AuftragsSupportID(responseOrder.getSupportId().getValueAsInt());
+		record.setMSV3_GebindeId(responseOrder.getPackingMaterialId());
+		record.setMSV3_Id(responseOrder.getId().getValueAsString());
 
-		final I_MSV3_FaultInfo msv3FaultInfoOrNull = Msv3FaultInfoDataPersister
+		final I_MSV3_FaultInfo faultInfoRecord = Msv3FaultInfoDataPersister
 				.newInstanceWithOrgId(orgId)
-				.storeMsv3FaultInfoOrNull(auftrag.getAuftragsfehler());
-		bestellungAntwortAuftragRecord.setMSV3_Auftragsfehler(msv3FaultInfoOrNull);
+				.storeMsv3FaultInfoOrNull(responseOrder.getFaultInfo());
+		record.setMSV3_Auftragsfehler(faultInfoRecord);
 
-		return bestellungAntwortAuftragRecord;
+		return record;
 	}
 
-	private I_MSV3_BestellungAntwortPosition createBestellungAntwortPositionRecord(
-			@NonNull final BestellungAntwortPosition position)
+	private I_MSV3_BestellungAntwortPosition createRecord(@NonNull final OrderResponsePackageItem responseItem)
 	{
-		final I_MSV3_BestellungAntwortPosition bestellungAntwortPositionRecord = //
-				newInstance(I_MSV3_BestellungAntwortPosition.class);
-		bestellungAntwortPositionRecord.setAD_Org_ID(orgId);
-		bestellungAntwortPositionRecord.setMSV3_BestellLiefervorgabe(position.getBestellLiefervorgabe().value());
-		bestellungAntwortPositionRecord.setMSV3_BestellMenge(position.getBestellMenge());
-		bestellungAntwortPositionRecord.setMSV3_BestellPzn(Long.toString(position.getBestellPzn()));
+		final I_MSV3_BestellungAntwortPosition record = newInstanceOutOfTrx(I_MSV3_BestellungAntwortPosition.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setMSV3_BestellLiefervorgabe(responseItem.getDeliverySpecifications().getV2SoapCode().value());
+		record.setMSV3_BestellMenge(responseItem.getQty().getValueAsInt());
+		record.setMSV3_BestellPzn(responseItem.getPzn().getValueAsString());
+		record.setC_PurchaseCandidate_ID(MSV3PurchaseCandidateId.toRepoId(responseItem.getPurchaseCandidateId()));
 
-		bestellungAntwortPositionRecord.setC_PurchaseCandidate_ID(
-				bestellungAntwortPosition2PurchaseCandidateId.get(position));
+		final I_MSV3_Substitution substitutionRecord = Msv3SubstitutionDataPersister.newInstanceWithOrgId(orgId)
+				.storeSubstitutionOrNull(responseItem.getSubstitution());
+		record.setMSV3_BestellungSubstitution(substitutionRecord);
 
-		final I_MSV3_Substitution substitutionOrNull = Msv3SubstitutionDataPersister
-				.newInstanceWithOrgId(orgId)
-				.storeSubstitutionOrNull(position.getSubstitution());
-		bestellungAntwortPositionRecord.setMSV3_BestellungSubstitution(substitutionOrNull);
-
-		return bestellungAntwortPositionRecord;
+		return record;
 	}
 
-	private I_MSV3_BestellungAnteil createBestellungAnteilRecord(@NonNull final BestellungAnteil anteil)
+	private I_MSV3_BestellungAnteil createRecord(@NonNull final OrderResponsePackageItemPart anteil)
 	{
-		final I_MSV3_BestellungAnteil bestellungAnteilRecord = newInstance(I_MSV3_BestellungAnteil.class);
-		bestellungAnteilRecord.setAD_Org_ID(orgId);
+		final I_MSV3_BestellungAnteil bestellungAnteilRecord = newInstanceOutOfTrx(I_MSV3_BestellungAnteil.class);
+		bestellungAnteilRecord.setAD_Org_ID(orgId.getRepoId());
 
-		Optional.ofNullable(anteil.getGrund())
-				.map(BestellungDefektgrund::value)
+		Optional.ofNullable(anteil.getDefectReason())
+				.map(OrderDefectReason::value)
 				.ifPresent(bestellungAnteilRecord::setMSV3_Grund);
 
-		bestellungAnteilRecord.setMSV3_Lieferzeitpunkt(MSV3Util.toTimestampOrNull(anteil.getLieferzeitpunkt()));
-		bestellungAnteilRecord.setMSV3_Menge(anteil.getMenge());
-		bestellungAnteilRecord.setMSV3_Tourabweichung(anteil.isTourabweichung());
-
-		Optional.ofNullable(anteil.getTyp())
-				.map(BestellungRueckmeldungTyp::value)
-				.ifPresent(bestellungAnteilRecord::setMSV3_Typ);
+		bestellungAnteilRecord.setMSV3_Lieferzeitpunkt(TimeUtil.asTimestamp(anteil.getDeliveryDate()));
+		bestellungAnteilRecord.setMSV3_Menge(anteil.getQty().getValueAsInt());
+		bestellungAnteilRecord.setMSV3_Tourabweichung(anteil.isTourDeviation());
+		bestellungAnteilRecord.setMSV3_Typ(Type.getValueOrNull(anteil.getType()));
 
 		return bestellungAnteilRecord;
 	}
 
-	public ImmutableMap<BestellungAnteil, Integer> getBestellungAnteil2Id()
+	public MSV3OrderResponsePackageItemPartRepoIds getResponseItemPartRepoIds()
 	{
-		return ImmutableMap.copyOf(bestellungAnteil2Id);
+		return responseItemPartRepoIds.copyAsImmutable();
 	}
 }

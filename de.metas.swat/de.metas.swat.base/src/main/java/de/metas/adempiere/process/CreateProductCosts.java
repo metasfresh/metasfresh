@@ -30,13 +30,13 @@ import java.util.Iterator;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggerTrxItemExceptionHandler;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
 
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 
 /**
  * @author tsa

@@ -8,8 +8,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.StringUtils;
-import org.adempiere.util.WeakList;
 
 /*
  * #%L
@@ -38,6 +36,8 @@ import org.slf4j.Logger;
 import com.google.common.base.Predicates;
 
 import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
+import de.metas.util.WeakList;
 import lombok.NonNull;
 
 /**

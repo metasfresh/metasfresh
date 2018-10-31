@@ -29,7 +29,8 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import org.adempiere.facet.IFacet;
 import org.adempiere.facet.IFacetsPoolListener;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 @ThreadSafe
 public class CompositeFacetsPoolListener implements IFacetsPoolListener

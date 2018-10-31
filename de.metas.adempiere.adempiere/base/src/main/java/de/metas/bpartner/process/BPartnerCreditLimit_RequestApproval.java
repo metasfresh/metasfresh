@@ -1,7 +1,6 @@
 package de.metas.bpartner.process;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 
@@ -16,6 +15,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 
 public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements IProcessPrecondition
 {

@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -19,6 +17,8 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -28,13 +28,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TimeUtil;
 
 import de.metas.tourplanning.api.IDeliveryDayGenerator;
 import de.metas.tourplanning.api.ITourBL;
 import de.metas.tourplanning.model.I_M_TourVersion;
+import de.metas.util.Check;
 
 public class TourBL implements ITourBL
 {

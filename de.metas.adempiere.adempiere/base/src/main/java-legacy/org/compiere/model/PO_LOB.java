@@ -20,9 +20,9 @@ import java.io.Serializable;
 import java.sql.PreparedStatement;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TrxRunnable;

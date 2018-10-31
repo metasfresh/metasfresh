@@ -1,0 +1,137 @@
+--
+-- C_Order_MFGWarehouse_Report_PrintInfo_v
+--
+-- 2018-10-11T14:36:36.087
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:36:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560625
+;
+
+-- 2018-10-11T14:36:45.220
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:36:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560631
+;
+
+-- 2018-10-11T14:36:50.165
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:36:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560632
+;
+
+-- 2018-10-11T14:36:58.537
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:36:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560618
+;
+
+-- 2018-10-11T14:37:07.310
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:37:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560615
+;
+
+-- 2018-10-11T14:37:15.569
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:37:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560613
+;
+
+-- 2018-10-11T14:37:33.009
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30, IsParent='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2018-10-11 14:37:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560614
+;
+
+-- 2018-10-11T14:40:41.148
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:40:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560627
+;
+
+-- 2018-10-11T14:40:50.650
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:40:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560629
+;
+
+-- 2018-10-11T14:40:58.493
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:40:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560630
+;
+
+-- 2018-10-11T14:42:10.240
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:42:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560626
+;
+
+-- 2018-10-11T14:42:23.520
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:42:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560621
+;
+
+-- 2018-10-11T14:42:29.097
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:42:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560622
+;
+
+-- 2018-10-11T14:42:43.569
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:42:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560620
+;
+
+-- 2018-10-11T14:42:53.993
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-11 14:42:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560619
+;
+
+-- 2018-10-11T14:50:11.426
+-- URL zum Konzept
+UPDATE AD_Tab SET AD_Column_ID=560614,Updated=TO_TIMESTAMP('2018-10-11 14:50:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=541162
+;
+
+-- 2018-10-19T07:07:11.414
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540274,Updated=TO_TIMESTAMP('2018-10-19 07:07:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541001
+;
+
+
+--
+-- C_Printing_Queue_PrintInfo_v
+--
+-- 2018-10-19T07:00:44.075
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540165,Updated=TO_TIMESTAMP('2018-10-19 07:00:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541002
+;
+
+-- 2018-10-19T07:01:20.245
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-19 07:01:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560637
+;
+
+-- 2018-10-19T07:01:25.485
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-19 07:01:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560638
+;
+
+-- 2018-10-19T07:01:30.862
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-19 07:01:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560648
+;
+
+-- 2018-10-19T07:01:36.101
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-19 07:01:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560650
+;
+
+-- 2018-10-19T07:03:55.023
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30, IsParent='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2018-10-19 07:03:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560636
+;
+
+-- 2018-10-19T07:04:00.439
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-19 07:04:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560639
+;
+
+-- 2018-10-19T07:04:03.976
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-19 07:04:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560646
+;
+
+-- 2018-10-19T07:04:09.024
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-10-19 07:04:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560647
+;
+

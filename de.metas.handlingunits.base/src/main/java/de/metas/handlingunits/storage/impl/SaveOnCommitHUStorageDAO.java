@@ -27,10 +27,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import com.google.common.base.Supplier;
 
@@ -39,6 +36,10 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 {
@@ -115,7 +116,7 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 	}
 
 	@Override
-	public I_M_HU_Storage retrieveStorage(final I_M_HU hu, final int productId)
+	public I_M_HU_Storage retrieveStorage(final I_M_HU hu, final ProductId productId)
 	{
 		final SaveDecoupledHUStorageDAO delegate = getDelegate(hu);
 		return delegate.retrieveStorage(hu, productId);
@@ -150,10 +151,10 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 	}
 
 	@Override
-	public I_M_HU_Item_Storage retrieveItemStorage(final I_M_HU_Item item, final I_M_Product product)
+	public I_M_HU_Item_Storage retrieveItemStorage(final I_M_HU_Item item, @NonNull final ProductId productId)
 	{
 		final SaveDecoupledHUStorageDAO delegate = getDelegate(item);
-		return delegate.retrieveItemStorage(item, product);
+		return delegate.retrieveItemStorage(item, productId);
 	}
 
 	@Override

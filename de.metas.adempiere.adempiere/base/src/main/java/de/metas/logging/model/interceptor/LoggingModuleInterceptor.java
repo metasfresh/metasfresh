@@ -1,12 +1,12 @@
 package de.metas.logging.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.ILoggerCustomizer;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

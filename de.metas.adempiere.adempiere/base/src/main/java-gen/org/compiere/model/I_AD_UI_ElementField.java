@@ -98,6 +98,29 @@ public interface I_AD_UI_ElementField
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set UI Element field.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_UI_ElementField_ID (int AD_UI_ElementField_ID);
+
+	/**
+	 * Get UI Element field.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_UI_ElementField_ID();
+
+    /** Column definition for AD_UI_ElementField_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object> COLUMN_AD_UI_ElementField_ID = new org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object>(I_AD_UI_ElementField.class, "AD_UI_ElementField_ID", null);
+    /** Column name AD_UI_ElementField_ID */
+    public static final String COLUMNNAME_AD_UI_ElementField_ID = "AD_UI_ElementField_ID";
+
+	/**
 	 * Set UI Element.
 	 *
 	 * <br>Type: Search
@@ -123,29 +146,6 @@ public interface I_AD_UI_ElementField
     public static final org.adempiere.model.ModelColumn<I_AD_UI_ElementField, org.compiere.model.I_AD_UI_Element> COLUMN_AD_UI_Element_ID = new org.adempiere.model.ModelColumn<I_AD_UI_ElementField, org.compiere.model.I_AD_UI_Element>(I_AD_UI_ElementField.class, "AD_UI_Element_ID", org.compiere.model.I_AD_UI_Element.class);
     /** Column name AD_UI_Element_ID */
     public static final String COLUMNNAME_AD_UI_Element_ID = "AD_UI_Element_ID";
-
-	/**
-	 * Set UI Element field.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_UI_ElementField_ID (int AD_UI_ElementField_ID);
-
-	/**
-	 * Get UI Element field.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_UI_ElementField_ID();
-
-    /** Column definition for AD_UI_ElementField_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object> COLUMN_AD_UI_ElementField_ID = new org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object>(I_AD_UI_ElementField.class, "AD_UI_ElementField_ID", null);
-    /** Column name AD_UI_ElementField_ID */
-    public static final String COLUMNNAME_AD_UI_ElementField_ID = "AD_UI_ElementField_ID";
 
 	/**
 	 * Get Erstellt.
@@ -228,6 +228,52 @@ public interface I_AD_UI_ElementField
     public static final org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object>(I_AD_UI_ElementField.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Set Tooltip Icon Name.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTooltipIconName (java.lang.String TooltipIconName);
+
+	/**
+	 * Get Tooltip Icon Name.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTooltipIconName();
+
+    /** Column definition for TooltipIconName */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object> COLUMN_TooltipIconName = new org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object>(I_AD_UI_ElementField.class, "TooltipIconName", null);
+    /** Column name TooltipIconName */
+    public static final String COLUMNNAME_TooltipIconName = "TooltipIconName";
+
+	/**
+	 * Set Art.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setType (java.lang.String Type);
+
+	/**
+	 * Get Art.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getType();
+
+    /** Column definition for Type */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_AD_UI_ElementField, Object>(I_AD_UI_ElementField.class, "Type", null);
+    /** Column name Type */
+    public static final String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Aktualisiert.

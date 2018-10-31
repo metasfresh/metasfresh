@@ -26,12 +26,12 @@ package de.metas.handlingunits.storage;
 import java.util.List;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.product.ProductId;
 
 public interface IHUStorageDAO
 {
@@ -55,7 +55,7 @@ public interface IHUStorageDAO
 	 */
 	void initHUItemStorages(I_M_HU_Item item);
 
-	I_M_HU_Storage retrieveStorage(I_M_HU hu, int productId);
+	I_M_HU_Storage retrieveStorage(I_M_HU hu, ProductId productId);
 
 	void save(I_M_HU_Storage storage);
 
@@ -65,7 +65,7 @@ public interface IHUStorageDAO
 
 	List<I_M_HU_Item_Storage> retrieveItemStorages(I_M_HU_Item item);
 
-	I_M_HU_Item_Storage retrieveItemStorage(I_M_HU_Item item, I_M_Product product);
+	I_M_HU_Item_Storage retrieveItemStorage(I_M_HU_Item item, ProductId productId);
 
 	void save(I_M_HU_Item item);
 

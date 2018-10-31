@@ -3,7 +3,6 @@ package de.metas.document.archive.async.spi.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -14,6 +13,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.model.I_C_DunningDoc;
+import de.metas.util.Services;
 
 /*
  * #%L

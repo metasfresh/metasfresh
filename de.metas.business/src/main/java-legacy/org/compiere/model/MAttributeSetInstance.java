@@ -22,12 +22,12 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * Product Attribute Set Instance

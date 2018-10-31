@@ -16,10 +16,9 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.util.Services;
-
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * Renumber Discount Schema

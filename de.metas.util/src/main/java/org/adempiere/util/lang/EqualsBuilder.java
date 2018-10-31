@@ -26,7 +26,7 @@ package org.adempiere.util.lang;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Helper class for building {@link Object#equals(Object)} method.

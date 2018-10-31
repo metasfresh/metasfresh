@@ -1,6 +1,5 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import org.adempiere.util.Services;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -13,6 +12,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.util.Services;
 
 /*
  * #%L

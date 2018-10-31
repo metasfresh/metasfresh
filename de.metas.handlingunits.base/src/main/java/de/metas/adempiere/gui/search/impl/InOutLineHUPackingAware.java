@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -38,6 +37,8 @@ import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class InOutLineHUPackingAware implements IHUPackingAware
@@ -74,7 +75,8 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 		inoutLine.setQtyEntered(qty);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inoutLine);
-		final BigDecimal movementQty = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, getM_Product(), getC_UOM(), qty);
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
+		final BigDecimal movementQty = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, productId, getC_UOM(), qty);
 		inoutLine.setMovementQty(movementQty);
 	}
 

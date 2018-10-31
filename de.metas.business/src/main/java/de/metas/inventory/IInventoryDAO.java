@@ -2,8 +2,9 @@ package de.metas.inventory;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InventoryLine;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L
@@ -47,4 +48,6 @@ public interface IInventoryDAO extends ISingletonService
 	boolean hasLines(int inventoryId);
 
 	void setInventoryLinesProcessed(int inventoryId, boolean processed);
+	
+	void save(I_M_InventoryLine inventoryLine); 
 }

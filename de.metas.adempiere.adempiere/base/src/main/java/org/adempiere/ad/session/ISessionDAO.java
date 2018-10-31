@@ -2,8 +2,9 @@ package org.adempiere.ad.session;
 
 import java.util.Collection;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_ChangeLog;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -26,13 +26,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;

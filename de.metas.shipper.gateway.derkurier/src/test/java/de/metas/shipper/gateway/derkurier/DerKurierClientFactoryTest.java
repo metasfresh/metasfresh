@@ -12,6 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
@@ -54,9 +55,11 @@ public class DerKurierClientFactoryTest
 		final Converters converters = new Converters();
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
 
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
 				derKurierShipperConfigRepository,
-				new DerKurierDeliveryOrderService(),
+				new DerKurierDeliveryOrderService(attachmentEntryService),
 				new DerKurierDeliveryOrderRepository(converters),
 				converters);
 

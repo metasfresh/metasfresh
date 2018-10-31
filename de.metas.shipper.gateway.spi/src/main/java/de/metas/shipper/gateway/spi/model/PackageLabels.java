@@ -2,12 +2,11 @@ package de.metas.shipper.gateway.spi.model;
 
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

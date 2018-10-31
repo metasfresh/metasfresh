@@ -1,6 +1,5 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
@@ -43,16 +42,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
@@ -102,8 +98,16 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.time.SystemTime;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 
@@ -385,8 +389,8 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 		Check.assume(newCand.getAD_Client_ID() == dataEntry.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
 
-		final int orgId = dataEntry.getAD_Org_ID();
-		newCand.setAD_Org_ID(orgId);
+		final OrgId orgId = OrgId.ofRepoId(dataEntry.getAD_Org_ID());
+		newCand.setAD_Org_ID(orgId.getRepoId());
 
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 		newCand.setM_PricingSystem_ID(fc.getM_PricingSystem_ID());
@@ -416,16 +420,12 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setRecord_ID(dataEntry.getC_Flatrate_DataEntry_ID());
 
 		// 07442 activity and tax
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
+		final ActivityId activityId = findActivityIdOrNull(term, productId);
 
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), product);
-
-		newCand.setC_Activity(activity);
+		newCand.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final int taxCategoryId = term.getC_TaxCategory_ID();
-		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
 		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
@@ -435,10 +435,9 @@ public class FlatrateBL implements IFlatrateBL
 				term,
 				taxCategoryId,
 				productId,
-				dataEntry.getDate_Reported(),// billDate
 				dataEntry.getDate_Reported(),// shipDate
 				orgId,
-				warehouse,
+				(WarehouseId)null,
 				shipToLocationId,
 				isSOTrx);
 
@@ -449,6 +448,14 @@ public class FlatrateBL implements IFlatrateBL
 		InterfaceWrapperHelper.save(newCand);
 
 		return newCand;
+	}
+
+	private ActivityId findActivityIdOrNull(final I_C_Flatrate_Term term, final int productId)
+	{
+		return Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+				ClientId.ofRepoId(term.getAD_Client_ID()),
+				OrgId.ofRepoId(term.getAD_Org_ID()),
+				ProductId.ofRepoId(productId));
 	}
 
 	private void setILCandHandler(final Properties ctx, final I_C_Invoice_Candidate newCand)
@@ -544,16 +551,12 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setRecord_ID(dataEntry.getC_Flatrate_DataEntry_ID());
 
 		// 07442 activity and tax
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
+		final ActivityId activityId = findActivityIdOrNull(term, productIdForIc);
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productIdForIc, I_M_Product.class, trxName);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), product);
-
-		newCand.setC_Activity(activity);
+		newCand.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final int taxCategoryId = term.getC_TaxCategory_ID();
-		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
 		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
@@ -562,10 +565,9 @@ public class FlatrateBL implements IFlatrateBL
 				term,
 				taxCategoryId,
 				productIdForIc,
-				dataEntry.getDate_Reported(), // billDate
 				dataEntry.getDate_Reported(), // shipDate
-				dataEntry.getAD_Org_ID(),
-				warehouse,
+				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
+				(WarehouseId)null,
 				shipToLocationId,
 				isSOTrx);
 
@@ -1051,7 +1053,7 @@ public class FlatrateBL implements IFlatrateBL
 				extendContractAndNotifyUserIfRequired(currentRequest);
 
 				final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
-				currentTerm.setAD_PInstance_EndOfTerm_ID(currentRequest.getAD_PInstance_ID());
+				currentTerm.setAD_PInstance_EndOfTerm_ID(PInstanceId.toRepoId(currentRequest.getAD_PInstance_ID()));
 				InterfaceWrapperHelper.save(currentTerm);
 				if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
 				{
@@ -1487,7 +1489,7 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public int getWarehouseId(final I_C_Flatrate_Term term)
+	public WarehouseId getWarehouseId(final I_C_Flatrate_Term term)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 
@@ -1498,8 +1500,8 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else
 		{
-			final List<I_M_Warehouse> warehousesForOrg = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, term.getAD_Org_ID());
-			if (warehousesForOrg.size() == 0)
+			final List<I_M_Warehouse> warehousesForOrg = Services.get(IWarehouseDAO.class).getByOrgId(OrgId.ofRepoId(term.getAD_Org_ID()));
+			if (warehousesForOrg.isEmpty())
 			{
 				throw new AdempiereException(
 						"de.metas.flatrate.Org.Warehouse_Missing",
@@ -1507,7 +1509,8 @@ public class FlatrateBL implements IFlatrateBL
 			}
 			warehouseId = warehousesForOrg.get(0).getM_Warehouse_ID();
 		}
-		return warehouseId;
+
+		return WarehouseId.ofRepoIdOrNull(warehouseId);
 	}
 
 	@Override

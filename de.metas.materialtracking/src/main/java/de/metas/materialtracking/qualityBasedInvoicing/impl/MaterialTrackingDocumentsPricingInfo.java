@@ -14,9 +14,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_InOut;
@@ -40,6 +37,9 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

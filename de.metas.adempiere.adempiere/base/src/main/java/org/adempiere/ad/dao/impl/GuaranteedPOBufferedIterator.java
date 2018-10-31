@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao.impl;
 
+import lombok.NonNull;
+
 import java.io.Closeable;
 
 /*
@@ -34,7 +36,6 @@ import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -43,6 +44,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.
@@ -95,11 +97,8 @@ import de.metas.logging.LogManager;
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
-	/* package */ GuaranteedPOBufferedIterator(final TypedSqlQuery<T> query, final Class<ET> clazz)
+	/* package */ GuaranteedPOBufferedIterator(@NonNull final TypedSqlQuery<T> query, final Class<ET> clazz)
 	{
-		super();
-
-		Check.assumeNotNull(query, "query not null");
 		this.query = query;
 
 		// Check.assume(clazz != null, "clazz != null"); // class can be null
@@ -128,22 +127,26 @@ import de.metas.logging.LogManager;
 			}
 			sqlRowNumber.append(")");
 
-			final StringBuilder sqlInsertIntoSelect = new StringBuilder();
-			sqlInsertIntoSelect.append("INSERT INTO ")
+			final StringBuilder sqlInsertIntoBuilder = new StringBuilder()
+					.append("INSERT INTO ")
 					.append(I_T_Query_Selection.Table_Name)
 					.append(" (")
 					.append(I_T_Query_Selection.COLUMNNAME_UUID)
 					.append(", ").append(I_T_Query_Selection.COLUMNNAME_Line)
 					.append(", ").append(I_T_Query_Selection.COLUMNNAME_Record_ID)
-					.append(")")
+					.append(")");
+
+			final StringBuilder sqlSelectBuilder = new StringBuilder()
 					.append(" SELECT ")
 					.append(DB.TO_STRING(querySelectionUUID))
 					.append(", ").append(sqlRowNumber)
 					.append(", ").append(keyColumnNameFQ)
 					.append(" FROM ").append(tableName);
-
-			final String sql = query.buildSQL(sqlInsertIntoSelect, true); // useOrderByClause = true
+			// be sure to only pass the "SELECT", not the "INSERT" sql to avoid invalid SQL when ORs are exploded to unions
+			final String sqlSelect = query.buildSQL(sqlSelectBuilder, true/*useOrderByClause*/);
 			final List<Object> params = query.getParametersEffective();
+
+			final String sql = sqlInsertIntoBuilder.append(sqlSelect).toString();
 
 			this.rowsCount = DB.executeUpdateEx(sql,
 					params == null ? null : params.toArray(),

@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

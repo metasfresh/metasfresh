@@ -1,8 +1,5 @@
 package de.metas;
 
-import org.adempiere.util.IService;
-import org.adempiere.util.Services;
-import org.adempiere.util.Services.IServiceImplProvider;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
@@ -13,6 +10,9 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.util.IService;
+import de.metas.util.Services;
+import de.metas.util.Services.IServiceImplProvider;
 import lombok.NonNull;
 
 /*

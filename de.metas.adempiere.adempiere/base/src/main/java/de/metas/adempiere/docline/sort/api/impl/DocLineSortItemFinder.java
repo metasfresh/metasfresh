@@ -29,14 +29,14 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.comparator.NullComparator;
 import org.compiere.model.I_C_BP_DocLine_Sort;
 import org.compiere.model.I_C_DocLine_Sort;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortItemFinder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */final class DocLineSortItemFinder implements IDocLineSortItemFinder
 {

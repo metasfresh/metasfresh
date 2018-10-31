@@ -27,7 +27,7 @@ import java.util.Vector;
 
 import javax.swing.table.DefaultTableModel;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Extension on {@link DefaultTableModel} which has following changes:

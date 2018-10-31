@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1362706971L;
+	private static final long serialVersionUID = 832653805L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -143,6 +143,82 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set AD_User_Memo1.
+		@param AD_User_Memo1 
+		Memo Text
+	  */
+	@Override
+	public void setAD_User_Memo1 (java.lang.String AD_User_Memo1)
+	{
+		set_Value (COLUMNNAME_AD_User_Memo1, AD_User_Memo1);
+	}
+
+	/** Get AD_User_Memo1.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getAD_User_Memo1 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_User_Memo1);
+	}
+
+	/** Set AD_User_Memo2.
+		@param AD_User_Memo2 
+		Memo Text
+	  */
+	@Override
+	public void setAD_User_Memo2 (java.lang.String AD_User_Memo2)
+	{
+		set_Value (COLUMNNAME_AD_User_Memo2, AD_User_Memo2);
+	}
+
+	/** Get AD_User_Memo2.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getAD_User_Memo2 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_User_Memo2);
+	}
+
+	/** Set AD_User_Memo3.
+		@param AD_User_Memo3 
+		Memo Text
+	  */
+	@Override
+	public void setAD_User_Memo3 (java.lang.String AD_User_Memo3)
+	{
+		set_Value (COLUMNNAME_AD_User_Memo3, AD_User_Memo3);
+	}
+
+	/** Get AD_User_Memo3.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getAD_User_Memo3 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_User_Memo3);
+	}
+
+	/** Set AD_User_Memo4.
+		@param AD_User_Memo4 
+		Memo Text
+	  */
+	@Override
+	public void setAD_User_Memo4 (java.lang.String AD_User_Memo4)
+	{
+		set_Value (COLUMNNAME_AD_User_Memo4, AD_User_Memo4);
+	}
+
+	/** Get AD_User_Memo4.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getAD_User_Memo4 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_User_Memo4);
 	}
 
 	/** Set Straße und Nr..
@@ -477,6 +553,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set C_BPartner_Memo.
+		@param C_BPartner_Memo 
+		Memo Text
+	  */
+	@Override
+	public void setC_BPartner_Memo (java.lang.String C_BPartner_Memo)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Memo, C_BPartner_Memo);
+	}
+
+	/** Get C_BPartner_Memo.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getC_BPartner_Memo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_C_BPartner_Memo);
 	}
 
 	@Override
@@ -1569,82 +1664,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Memo.
-		@param Memo 
-		Memo Text
-	  */
-	@Override
-	public void setMemo (java.lang.String Memo)
-	{
-		set_Value (COLUMNNAME_Memo, Memo);
-	}
-
-	/** Get Memo.
-		@return Memo Text
-	  */
-	@Override
-	public java.lang.String getMemo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Memo);
-	}
-
-	/** Set Memo1.
-		@param Memo1 
-		Memo Text
-	  */
-	@Override
-	public void setMemo1 (java.lang.String Memo1)
-	{
-		set_Value (COLUMNNAME_Memo1, Memo1);
-	}
-
-	/** Get Memo1.
-		@return Memo Text
-	  */
-	@Override
-	public java.lang.String getMemo1 () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Memo1);
-	}
-
-	/** Set Memo2.
-		@param Memo2 
-		Memo Text
-	  */
-	@Override
-	public void setMemo2 (java.lang.String Memo2)
-	{
-		set_Value (COLUMNNAME_Memo2, Memo2);
-	}
-
-	/** Get Memo2.
-		@return Memo Text
-	  */
-	@Override
-	public java.lang.String getMemo2 () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Memo2);
-	}
-
-	/** Set Memo3.
-		@param Memo3 
-		Memo Text
-	  */
-	@Override
-	public void setMemo3 (java.lang.String Memo3)
-	{
-		set_Value (COLUMNNAME_Memo3, Memo3);
-	}
-
-	/** Get Memo3.
-		@return Memo Text
-	  */
-	@Override
-	public java.lang.String getMemo3 () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Memo3);
 	}
 
 	/** Set NAICS/SIC.

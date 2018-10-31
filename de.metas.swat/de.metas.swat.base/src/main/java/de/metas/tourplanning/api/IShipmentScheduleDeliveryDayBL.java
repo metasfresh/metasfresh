@@ -25,11 +25,10 @@ package de.metas.tourplanning.api;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
+import de.metas.util.ISingletonService;
 
 /**
  * Handles the relation between {@link de.metas.tourplanning.model.I_M_ShipmentSchedule} and {@link I_M_DeliveryDay}.

@@ -1,8 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -16,6 +13,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *
@@ -85,7 +84,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 	private I_M_ShipmentSchedule findShipmentSchedule(final I_M_HU_Trx_Line trxLine)
 	{
 		//
-		// Get the shipment schedule directly from trxName (if any)
+		// Get the shipment schedule directly from trxLine (if any)
 		final IHUTrxBL trxBL = Services.get(IHUTrxBL.class);
 		final I_M_ShipmentSchedule shipmentSchedule_Direct = trxBL.getReferencedObjectOrNull(trxLine, I_M_ShipmentSchedule.class);
 		if (shipmentSchedule_Direct != null)

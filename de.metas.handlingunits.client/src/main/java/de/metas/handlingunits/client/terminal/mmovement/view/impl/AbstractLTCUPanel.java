@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.terminal.IComponent;
@@ -45,6 +44,7 @@ import de.metas.adempiere.form.terminal.field.constraint.PositiveNumericFieldCon
 import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants;
 import de.metas.handlingunits.client.terminal.mmovement.model.ILTCUModel;
 import de.metas.handlingunits.client.terminal.mmovement.view.ILTCUPanel;
+import de.metas.util.Check;
 
 /**
  * Loading / Trading / Customer Unit Panel. Used to easily define CU-TU-LU panels.

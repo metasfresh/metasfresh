@@ -3,7 +3,6 @@ package de.metas.procurement.base.order.impl;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
@@ -12,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.event.DocumentUserNotificationsProducer;
 import de.metas.procurement.base.ProcurementConstants;
+import de.metas.util.Loggables;
 
 /*
  * #%L

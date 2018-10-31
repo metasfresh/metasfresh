@@ -35,11 +35,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.FileUtils;
 
 import com.google.common.io.Closeables;
 
+import de.metas.util.Check;
+import de.metas.util.FileUtils;
 import net.sf.jasperreports.engine.JasperCompileManager;
 
 /**

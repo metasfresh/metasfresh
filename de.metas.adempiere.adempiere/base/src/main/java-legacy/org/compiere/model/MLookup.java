@@ -38,9 +38,6 @@ import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
-import org.adempiere.util.AbstractPropertiesProxy;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.InstantFuture;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -48,6 +45,10 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.util.AbstractPropertiesProxy;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * An intelligent MutableComboBoxModel, which determines what can be cached.
@@ -82,7 +83,6 @@ public final class MLookup extends Lookup implements Serializable
 
 		boolean isDirty();
 
-		// Map<String, NamePair> getValues();
 		boolean containsKey(final Object key);
 
 		NamePair getByKey(final Object key);
@@ -769,7 +769,7 @@ public final class MLookup extends Lookup implements Serializable
 		if (!mandatory)
 		{
 			final NamePair emptyItem;
-			if (m_info.getKeyColumnFQ() != null && isNumbericKey())
+			if (m_info.getKeyColumnFQ() != null && isNumericKey())
 			{
 				emptyItem = KeyNamePair.EMPTY;
 			}
@@ -1096,10 +1096,9 @@ public final class MLookup extends Lookup implements Serializable
 		return m_evalCtx;
 	}
 
-	public boolean isNumbericKey()
+	public boolean isNumericKey()
 	{
-		final boolean isNumeric = getColumnName().endsWith("_ID");
-		return isNumeric;
+		return getColumnName().endsWith("_ID");
 	}
 
 	@Override

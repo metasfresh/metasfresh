@@ -24,7 +24,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -34,6 +33,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoice
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 
 public class QualityInvoiceLine implements IQualityInvoiceLine
 {

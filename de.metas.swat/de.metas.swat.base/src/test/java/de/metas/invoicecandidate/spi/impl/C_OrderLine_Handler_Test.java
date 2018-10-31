@@ -33,10 +33,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -60,6 +60,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -108,25 +109,29 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		InterfaceWrapperHelper.save(bp);
 
 		final I_C_Order order1 = order("1");
-		order1.setAD_Org(org);
+		order1.setAD_Org_ID(orgId.getRepoId());
+		order1.setM_Warehouse_ID(warehouseId.getRepoId());
 		order1.setBill_BPartner_ID(bp.getC_BPartner_ID());
 		InterfaceWrapperHelper.save(order1);
 
 		final I_C_OrderLine oL1 = orderLine("1");
-		oL1.setAD_Org(org);
+		oL1.setAD_Org_ID(orgId.getRepoId());
 		oL1.setC_Order(order1);
+		oL1.setM_Product_ID(productId.getRepoId());
 		InterfaceWrapperHelper.save(oL1);
 
 		setUpActivityAndTaxRetrieval(order1, oL1);
 
 		final I_C_Order order2 = order("2");
-		order2.setAD_Org(org);
+		order2.setAD_Org_ID(orgId.getRepoId());
+		order2.setM_Warehouse_ID(warehouseId.getRepoId());
 		order2.setBill_BPartner_ID(bp.getC_BPartner_ID());
 		InterfaceWrapperHelper.save(order2);
 
 		final I_C_OrderLine oL2 = orderLine("2");
-		oL2.setAD_Org(org);
+		oL2.setAD_Org_ID(orgId.getRepoId());
 		oL2.setC_Order(order2);
+		oL2.setM_Product_ID(productId.getRepoId());
 		InterfaceWrapperHelper.save(oL2);
 
 		setUpActivityAndTaxRetrieval(order2, oL2);
@@ -161,11 +166,17 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		// @formatter:off
 		new Expectations()
 		{{
-				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product);
+				productAcctDAO.retrieveActivityForAcct(
+						clientId,
+						orgId,
+						productId);
 				minTimes = 0;
-				result = activity;
+				result = activityId;
 
-				productAcctDAO.retrieveActivityForAcct((IContextAware)any, withNotEqual(org), withNotEqual(product));
+				productAcctDAO.retrieveActivityForAcct(
+						withNotEqual(clientId),
+						withNotEqual(orgId),
+						withNotEqual(productId));
 				minTimes = 0;
 				result = null;
 
@@ -176,9 +187,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						, -1 // taxCategoryId
 						, oL1.getM_Product_ID()
 						, order1.getDatePromised()
-						, order1.getDatePromised()
-						, order1.getAD_Org_ID()
-						, order1.getM_Warehouse()
+						, OrgId.ofRepoId(order1.getAD_Org_ID())
+						, WarehouseId.ofRepoId(order1.getM_Warehouse_ID())
 						, order1.getC_BPartner_Location_ID()
 						, order1.isSOTrx());
 				minTimes = 0;
@@ -204,7 +214,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		// Taken into consideration: valid Auftrag for creating invoice cand
 		final I_C_Order order1 = order("1");
-		order1.setAD_Org(org);
+		order1.setAD_Org_ID(orgId.getRepoId());
+		order1.setM_Warehouse_ID(warehouseId.getRepoId());
 		order1.setIsSOTrx(true);
 		order1.setC_DocType_ID(1);
 		order1.setBill_BPartner_ID(bp.getC_BPartner_ID());
@@ -212,8 +223,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		InterfaceWrapperHelper.save(order1);
 
 		final I_C_OrderLine oL1 = orderLine("1");
-		oL1.setAD_Org(org);
+		oL1.setAD_Org_ID(orgId.getRepoId());
 		oL1.setC_Order(order1);
+		oL1.setM_Product_ID(productId.getRepoId());
 		oL1.setQtyOrdered(new BigDecimal(5));
 		oL1.setQtyInvoiced(new BigDecimal(0));
 		InterfaceWrapperHelper.save(oL1);
@@ -222,7 +234,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		// Taken into consideration: valid Bestellung for creating invoice cand
 		final I_C_Order order2 = order("2");
-		order2.setAD_Org(org);
+		order2.setAD_Org_ID(orgId.getRepoId());
+		order2.setM_Warehouse_ID(warehouseId.getRepoId());
 		order2.setIsSOTrx(false);
 		order2.setC_DocType_ID(2);
 		order2.setBill_BPartner_ID(bp.getC_BPartner_ID());
@@ -230,8 +243,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		InterfaceWrapperHelper.save(order2);
 
 		final I_C_OrderLine oL2 = orderLine("2");
-		oL2.setAD_Org(org);
+		oL2.setAD_Org_ID(orgId.getRepoId());
 		oL2.setC_Order(order2);
+		oL2.setM_Product_ID(productId.getRepoId());
 		oL2.setQtyOrdered(new BigDecimal(5));
 		oL2.setQtyInvoiced(new BigDecimal(0));
 		InterfaceWrapperHelper.save(oL2);
@@ -240,7 +254,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		// Not taken into consideration: not completed.
 		final I_C_Order order3 = order("3");
-		order3.setAD_Org(org);
+		order3.setAD_Org_ID(orgId.getRepoId());
+		order3.setM_Warehouse_ID(warehouseId.getRepoId());
 		order3.setIsSOTrx(false);
 		order3.setC_DocType_ID(2);
 		order3.setBill_BPartner_ID(bp.getC_BPartner_ID());
@@ -248,8 +263,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		InterfaceWrapperHelper.save(order3);
 
 		final I_C_OrderLine oL3 = orderLine("3");
-		oL3.setAD_Org(org);
+		oL3.setAD_Org_ID(orgId.getRepoId());
 		oL3.setC_Order(order3);
+		oL3.setM_Product_ID(productId.getRepoId());
 		oL3.setQtyOrdered(new BigDecimal(5));
 		oL3.setQtyInvoiced(new BigDecimal(0));
 		InterfaceWrapperHelper.save(oL3);
@@ -258,7 +274,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		// Not taken into consideration: invoiced and ordered quantities are equal
 		final I_C_Order order4 = order("4");
-		order4.setAD_Org(org);
+		order4.setAD_Org_ID(orgId.getRepoId());
+		order4.setM_Warehouse_ID(warehouseId.getRepoId());
 		order4.setIsSOTrx(true);
 		order4.setC_DocType_ID(1);
 		order4.setBill_BPartner_ID(bp.getC_BPartner_ID());
@@ -266,8 +283,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		InterfaceWrapperHelper.save(order4);
 
 		final I_C_OrderLine oL4 = orderLine("4");
-		oL4.setAD_Org(org);
+		oL4.setAD_Org_ID(orgId.getRepoId());
 		oL4.setC_Order(order4);
+		oL4.setM_Product_ID(productId.getRepoId());
 		oL4.setQtyOrdered(new BigDecimal(5));
 		oL4.setQtyInvoiced(new BigDecimal(5));
 		InterfaceWrapperHelper.save(oL4);

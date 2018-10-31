@@ -27,8 +27,6 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
@@ -39,6 +37,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Info Class for Lookup SQL (ValueObject)

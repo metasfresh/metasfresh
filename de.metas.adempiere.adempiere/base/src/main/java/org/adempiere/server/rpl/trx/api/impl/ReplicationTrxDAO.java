@@ -35,7 +35,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxDAO;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 public class ReplicationTrxDAO implements IReplicationTrxDAO
 {

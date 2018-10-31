@@ -30,7 +30,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -54,6 +53,7 @@ import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * Controller to be used for setting ASI in InfoProduct quick input.

@@ -8,8 +8,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.util.Env;
 
 import de.metas.lock.api.ILock;
@@ -20,6 +18,8 @@ import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 
 /*
  * #%L

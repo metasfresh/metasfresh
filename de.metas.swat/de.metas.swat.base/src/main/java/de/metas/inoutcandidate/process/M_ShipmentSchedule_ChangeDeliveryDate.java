@@ -28,13 +28,13 @@ import java.sql.Timestamp;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 public class M_ShipmentSchedule_ChangeDeliveryDate extends JavaProcess
 {
@@ -72,14 +72,11 @@ public class M_ShipmentSchedule_ChangeDeliveryDate extends JavaProcess
 		final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter = getProcessInfo().getQueryFilter();
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilderForShipmentSchedulesSelection = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter);
 		
-		final int adPInstance_ID = getAD_PInstance_ID();
 		//
 		// Create selection and return how many items were added
-		Check.assume(adPInstance_ID > 0, "adPInstanceId > 0");
-	
 		final int selectionCount =  queryBuilderForShipmentSchedulesSelection
 				.create()
-				.createSelection(adPInstance_ID);
+				.createSelection(getPinstanceId());
 		
 		if (selectionCount <= 0)
 		{
@@ -91,30 +88,26 @@ public class M_ShipmentSchedule_ChangeDeliveryDate extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int adPInstanceId = getAD_PInstance_ID();
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
+		final PInstanceId pinstanceId = getPinstanceId();
 
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final String trxName = getTrxName();
-
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
 
 		// update delivery date
 		// no invalidation
-		shipmentSchedulePA.updateDeliveryDate_Override(p_deliveryDate, adPInstanceId, trxName);
+		shipmentSchedulePA.updateDeliveryDate_Override(p_deliveryDate, pinstanceId);
 
 		// In case preparation date is set as parameter, update the preparation date too
 
 		if (p_preparationDate != null)
 		{
 			// no invalidation. Just set the preparation date that was given
-			shipmentSchedulePA.updatePreparationDate_Override(p_preparationDate, adPInstanceId, trxName);
+			shipmentSchedulePA.updatePreparationDate_Override(p_preparationDate, pinstanceId);
 		}
 		else
 		{
 			// Initially, set null in preparation date. It will be calculated later, during the updating process.
 			// This update will invalidate the selected schedules.
-			shipmentSchedulePA.updatePreparationDate_Override(null, adPInstanceId, trxName);
+			shipmentSchedulePA.updatePreparationDate_Override(null, pinstanceId);
 		}
 
 		return MSG_OK;

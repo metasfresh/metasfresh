@@ -18,7 +18,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.swing.CDialog;
@@ -28,6 +27,7 @@ import org.compiere.util.Util;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 import groovy.lang.GroovyShell;
 import groovy.ui.ConsoleTextEditor;
 

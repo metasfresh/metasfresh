@@ -1,7 +1,5 @@
 package de.metas.handlingunits.inventory.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -10,9 +8,8 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
 
@@ -49,7 +46,10 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -128,8 +128,8 @@ public class M_Inventory
 			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
 			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
-					.setProduct(inventoryLine.getM_Product())
-					.setQty(Services.get(IInventoryBL.class).getMovementQty(inventoryLine).getQty())
+					.setProductId(ProductId.ofRepoId(inventoryLine.getM_Product_ID()))
+					.setQty(Services.get(IInventoryBL.class).getMovementQty(inventoryLine).getAsBigDecimal())
 					.setUOM(inventoryLine.getC_UOM())
 					.setAttributeStorageFrom(asiAttributeStorageFrom)
 					.setAttributeStorageTo(huAttributeStorageTo)
@@ -141,7 +141,6 @@ public class M_Inventory
 			return IHUContextProcessor.NULL_RESULT; // we don't care
 		});
 	}
-
 
 	private void addQtyDiffToHU(final I_M_InventoryLine inventoryLine)
 	{
@@ -199,9 +198,9 @@ public class M_Inventory
 
 	private GenericAllocationSourceDestination createInventoryLineAllocationSourceOrDestination(final I_M_InventoryLine inventoryLine)
 	{
-		final I_M_Product product = loadOutOfTrx(inventoryLine.getM_Product_ID(), I_M_Product.class);
+		final ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
 		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
-		final PlainProductStorage productStorage = new PlainProductStorage(product, qtyDiff.getUOM(), qtyDiff.getQty());
+		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.getAsBigDecimal());
 		return new GenericAllocationSourceDestination(productStorage, inventoryLine);
 	}
 
@@ -214,9 +213,12 @@ public class M_Inventory
 		// TODO handle: else if(inventoryLine.getM_HU_PI_Item_Product_ID() > 0)
 		else
 		{
+			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+			final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLine.getM_Locator_ID());
+
 			return HUProducerDestination.ofVirtualPI()
 					.setHUStatus(X_M_HU.HUSTATUS_Active)
-					.setM_Locator(inventoryLine.getM_Locator());
+					.setLocatorId(locatorId);
 		}
 	}
 

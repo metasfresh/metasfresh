@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.table.exception.NoSingleKeyColumnException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
@@ -14,6 +13,7 @@ import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

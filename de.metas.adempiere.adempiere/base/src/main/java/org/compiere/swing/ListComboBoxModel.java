@@ -32,7 +32,7 @@ import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Wraps a given given {@link List} (copy) and behaves like a {@link ComboBoxModel}.

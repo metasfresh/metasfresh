@@ -8,10 +8,10 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

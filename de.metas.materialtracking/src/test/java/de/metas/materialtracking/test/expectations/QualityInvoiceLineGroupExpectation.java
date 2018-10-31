@@ -29,8 +29,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.junit.Assert;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -38,6 +36,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Validates {@link IQualityInvoiceLineGroup}, {@link I_C_Invoice_Candidate}.

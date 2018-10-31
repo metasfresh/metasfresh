@@ -1,11 +1,12 @@
 package de.metas.payment.esr.process;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentDAO;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDuplicateFilePolicy;
@@ -40,9 +41,8 @@ public class ESR_Import_LoadFromAttachmentEntry
 		extends JavaProcess
 {
 	// services
-	private final transient IAttachmentDAO attachmentDAO = Services.get(IAttachmentDAO.class);
+	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
 
-	// Parameters
 	@Param(mandatory = true, parameterName = "AD_AttachmentEntry_ID")
 	private int p_AD_AttachmentEntry_ID;
 
@@ -56,29 +56,30 @@ public class ESR_Import_LoadFromAttachmentEntry
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final AttachmentEntry fromAttachmentEntry = attachmentDAO.retrieveAttachmentEntryById(-1, p_AD_AttachmentEntry_ID); // attachmentId = -1
+		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoId(p_AD_AttachmentEntry_ID);
+		final AttachmentEntry fromAttachmentEntry = attachmentEntryService.getById(attachmentEntryId);
 
 		final I_ESR_Import esrImport = getRecord(I_ESR_Import.class);
 		ESRImportEnqueuer.newInstance()
 				.esrImport(esrImport)
 				.fromDataSource(ESRImportEnqueuerDataSource.builder()
 						.filename(fromAttachmentEntry.getFilename())
-						.content(attachmentDAO.retrieveData(fromAttachmentEntry))
+						.content(attachmentEntryService.retrieveData(attachmentEntryId))
 						.attachmentEntryId(fromAttachmentEntry.getId())
 						.build())
 				//
 				.asyncBatchName(p_AsyncBatchName)
 				.asyncBatchDesc(p_AsyncBatchDesc)
-				.adPInstanceId(getAD_PInstance_ID())
+				.pinstanceId(getPinstanceId())
 				//
 				.loggable(this)
 				//
 				.duplicateFilePolicy(ESRImportEnqueuerDuplicateFilePolicy.NEVER)
 				//
 				.execute();
-		
+
 		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(esrImport));
-		
+
 		return MSG_OK;
 	}
 

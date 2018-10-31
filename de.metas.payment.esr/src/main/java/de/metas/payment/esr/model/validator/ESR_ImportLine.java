@@ -29,7 +29,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -38,6 +37,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.util.Services;
 
 @Validator(I_ESR_ImportLine.class)
 public class ESR_ImportLine

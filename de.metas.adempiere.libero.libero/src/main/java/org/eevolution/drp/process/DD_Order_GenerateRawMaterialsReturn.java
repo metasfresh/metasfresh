@@ -10,12 +10,12 @@ package org.eevolution.drp.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ASICopy;
@@ -37,16 +36,14 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_AD_Org;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
@@ -58,15 +55,19 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *
@@ -85,7 +86,6 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	//
 	// Parameters
 	private int p_M_Warehouse_ID = -1;
-	private I_M_Warehouse _warehouse;
 	private boolean p_IsTest = false;
 
 	@Override
@@ -113,11 +113,11 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_M_Warehouse warehouse = getM_Warehouse();
+		final WarehouseId warehouseId = getWarehouseId();
 
 		final IStorageEngine storageEngine = storageEngineService.getStorageEngine();
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
-		storageQuery.addWarehouse(warehouse);
+		storageQuery.addWarehouseId(warehouseId);
 		final Map<ArrayKey, RawMaterialsReturnDDOrderLineCandidate> key2candidate = new HashMap<>();
 
 		//
@@ -133,7 +133,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 			{
 				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceBL.createASIFromAttributeSet(storageRecord.getAttributes());
 				final PlainAttributeSetInstanceAware attributeSetIinstanceAware = PlainAttributeSetInstanceAware.forProductIdAndAttributeSetInstanceId(
-						storageRecord.getProduct().getM_Product_ID(),
+						storageRecord.getProductId(),
 						attributeSetInstance.getM_AttributeSetInstance_ID());
 
 				candidate = new RawMaterialsReturnDDOrderLineCandidate(
@@ -202,22 +202,16 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		return MSG_OK;
 	}
 
-	private final I_M_Warehouse getM_Warehouse()
+	private final WarehouseId getWarehouseId()
 	{
-		if (_warehouse == null)
-		{
-			_warehouse = InterfaceWrapperHelper.create(getCtx(), p_M_Warehouse_ID, I_M_Warehouse.class, ITrx.TRXNAME_None);
-			Check.assumeNotNull(_warehouse, "warehouse not null");
-		}
-
-		return _warehouse;
+		return WarehouseId.ofRepoId(p_M_Warehouse_ID);
 	}
 
 	private final ArrayKey mkDDOrderLineCandidateKey(final IStorageRecord storageRecord)
 	{
-		final I_M_Product product = storageRecord.getProduct();
+		final ProductId productId = storageRecord.getProductId();
 		final I_M_Locator locator = storageRecord.getLocator();
-		return Util.mkKey(product.getM_Product_ID(), locator.getM_Locator_ID());
+		return Util.mkKey(productId.getRepoId(), locator.getM_Locator_ID());
 	}
 
 	private I_DD_Order createAndComplete(final RawMaterialsReturnDDOrderLineCandidate candidate)
@@ -237,28 +231,28 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 		final Timestamp dateOrdered = candidate.getDateOrdered();
 		final int shipperId = candidate.getDD_NetworkDistributionLine().getM_Shipper_ID();
-		final I_AD_Org org = candidate.getAD_Org();
+		final OrgId orgId = candidate.getOrgId();
 		final I_C_BPartner orgBPartner = candidate.getOrgBPartner();
 		final I_C_BPartner_Location orgBPLocation = candidate.getOrgBPLocation();
 		final int salesRepId = candidate.getPlanner_ID();
-		final I_M_Warehouse warehouseInTrasit = candidate.getInTransitWarehouse();
+		final WarehouseId warehouseInTrasitId = candidate.getInTransitWarehouseId();
 		final I_S_Resource rawMaterialsPlant = candidate.getRawMaterialsPlant();
 
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class, context);
-		ddOrder.setAD_Org(org);
+		ddOrder.setAD_Org_ID(orgId.getRepoId());
 		ddOrder.setPP_Plant(rawMaterialsPlant);
 		ddOrder.setC_BPartner(orgBPartner);
 		ddOrder.setC_BPartner_Location(orgBPLocation);
 		ddOrder.setSalesRep_ID(salesRepId);
 
-		final int docTypeId = docTypeDAO.getDocTypeId(
-				getCtx(),
-				X_C_DocType.DOCBASETYPE_DistributionOrder,
-				ddOrder.getAD_Client_ID(),
-				ddOrder.getAD_Org_ID(),
-				ITrx.TRXNAME_None);
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+				.adClientId(ddOrder.getAD_Client_ID())
+				.adOrgId(ddOrder.getAD_Org_ID())
+				.build();
+		final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 		ddOrder.setC_DocType_ID(docTypeId);
-		ddOrder.setM_Warehouse(warehouseInTrasit);
+		ddOrder.setM_Warehouse_ID(warehouseInTrasitId.getRepoId());
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
 		ddOrder.setDateOrdered(dateOrdered);

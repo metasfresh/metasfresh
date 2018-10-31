@@ -9,8 +9,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
@@ -24,6 +22,8 @@ import de.metas.banking.bankstatement.match.model.IPayment;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -27,7 +27,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -39,6 +38,7 @@ import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.spi.impl.listeners.PPCostCollectorMaterialTrackingListener;
+import de.metas.util.Services;
 
 @Interceptor(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector

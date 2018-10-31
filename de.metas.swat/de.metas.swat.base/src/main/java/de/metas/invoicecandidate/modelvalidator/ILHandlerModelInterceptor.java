@@ -4,14 +4,14 @@ import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

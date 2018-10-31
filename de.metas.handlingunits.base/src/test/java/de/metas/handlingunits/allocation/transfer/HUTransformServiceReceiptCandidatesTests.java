@@ -15,11 +15,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
@@ -35,6 +32,7 @@ import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -55,6 +53,9 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -107,7 +108,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cu);
 
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
-		receiptSchedule.setM_Product(storages.get(0).getM_Product());
+		receiptSchedule.setM_Product_ID(storages.get(0).getProductId().getRepoId());
 		receiptSchedule.setC_UOM(storages.get(0).getC_UOM());
 		InterfaceWrapperHelper.save(receiptSchedule);
 
@@ -175,7 +176,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransformService.builderForHUcontext()
 				.huContext(data.helper.getHUContext()).build()
-				.cuToNewTUs(cuToSplit, Quantity.of(BigDecimal.ONE,data.helper.uomKg), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.cuToNewTUs(cuToSplit, Quantity.of(BigDecimal.ONE, data.helper.uomKg), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -254,8 +255,9 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == existingTU.getM_HU_ID()), is(true));
 		}
 
-		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), data.helper.uomKg);
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+				.setLocatorId(data.defaultLocatorId);
+		data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("3"), data.helper.uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 		final I_M_ReceiptSchedule rs2 = create_receiptSchedule_for_CU(cu2, "3");
 		final TableRecordReference rs2TableRef = TableRecordReference.of(rs2);
@@ -344,8 +346,9 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == tuWithMixedCUs.getM_HU_ID()), is(true));
 		}
 		// create a standalone-CU
-		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, four, data.helper.uomKg);
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+				.setLocatorId(data.defaultLocatorId);
+		data.helper.load(producer, data.helper.pSaladProductId, four, data.helper.uomKg);
 
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 
@@ -410,12 +413,13 @@ public class HUTransformServiceReceiptCandidatesTests
 		//
 		// set up packing instructions as described in the issue (TU that holds 4kg, LU that can hold 10 TUs)
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(data.defaultLocatorId);
 		final I_M_HU_PI_Item piLU_Item_10_IFCOs;
 		{
 			final I_M_HU_PI piTU_IFCO = data.helper.createHUDefinition("TU_IFCO-4kg-tomatoes", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 			final I_M_HU_PI_Item piTU_Item_IFCO = data.helper.createHU_PI_Item_Material(piTU_IFCO);
 
-			data.helper.assignProduct(piTU_Item_IFCO, data.helper.pTomato, new BigDecimal("4"), data.helper.uomKg);
+			data.helper.assignProduct(piTU_Item_IFCO, data.helper.pTomatoProductId, new BigDecimal("4"), data.helper.uomKg);
 			data.helper.createHU_PI_Item_PackingMaterial(piTU_IFCO, data.helper.pmIFCO);
 			piLU_Item_10_IFCOs = data.helper.createHU_PI_Item_IncludedHU(data.piLU, piTU_IFCO, new BigDecimal("10"));
 
@@ -426,7 +430,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		}
 		//
 		// create our initial HU hierarchy
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("40"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("40"), data.helper.uomKg);
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
 		//
@@ -444,10 +448,10 @@ public class HUTransformServiceReceiptCandidatesTests
 
 			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 			final IHUStorageDAO storageDAO = storageFactory.getHUStorageDAO();
-			final I_M_HU_Storage luTomatoStorage = storageDAO.retrieveStorage(firstLU, data.helper.pTomato.getM_Product_ID());
+			final I_M_HU_Storage luTomatoStorage = storageDAO.retrieveStorage(firstLU, data.helper.pTomatoProductId);
 			assertThat(luTomatoStorage.getQty(), comparesEqualTo(new BigDecimal("40")));
 
-			final I_M_HU_Storage tuTomatoStorage = storageDAO.retrieveStorage(aggregateTU, data.helper.pTomato.getM_Product_ID());
+			final I_M_HU_Storage tuTomatoStorage = storageDAO.retrieveStorage(aggregateTU, data.helper.pTomatoProductId);
 			assertThat(tuTomatoStorage.getQty(), comparesEqualTo(new BigDecimal("40")));
 		}
 
@@ -604,7 +608,7 @@ public class HUTransformServiceReceiptCandidatesTests
 							{
 								return Result.CONTINUE;
 							}
-							actualStorageQtyCU.setValue(actualStorageQtyCU.getValue().add(itemStorage.getQty(data.helper.pTomato, data.helper.uomKg)));
+							actualStorageQtyCU.setValue(actualStorageQtyCU.getValue().add(itemStorage.getQty(data.helper.pTomatoProductId, data.helper.uomKg)));
 							return Result.CONTINUE;
 						}
 					})
@@ -618,8 +622,9 @@ public class HUTransformServiceReceiptCandidatesTests
 
 	private I_M_HU mkRealStandAloneCUToSplit(final String strCuQty)
 	{
-		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pTomato, new BigDecimal(strCuQty), data.helper.uomKg);
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+				.setLocatorId(data.defaultLocatorId);
+		data.helper.load(producer, data.helper.pTomatoProductId, new BigDecimal(strCuQty), data.helper.uomKg);
 
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
 		assertThat(createdCUs.size(), is(1));
@@ -631,11 +636,12 @@ public class HUTransformServiceReceiptCandidatesTests
 	private I_M_HU mkRealCUWithTUToSplit(final String strCuQty)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(data.defaultLocatorId);
 		lutuProducer.setNoLU();
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		final BigDecimal cuQty = new BigDecimal(strCuQty);
-		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, cuQty, data.helper.uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdTUs.size(), is(1));

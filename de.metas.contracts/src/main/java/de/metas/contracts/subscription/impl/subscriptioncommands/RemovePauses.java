@@ -8,8 +8,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Services;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -21,6 +19,7 @@ import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.impl.SubscriptionService;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

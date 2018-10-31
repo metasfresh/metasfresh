@@ -40,13 +40,12 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.util.CCache;
+import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -57,6 +56,8 @@ import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer.OnMissingCandidate;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -256,9 +257,9 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	}
 
 	@Override
-	public IDeliverRequest createDeliverRequest(@NonNull final I_M_ShipmentSchedule sched)
+	public IDeliverRequest createDeliverRequest(@NonNull final I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine)
 	{
-		return getHandlerFor(sched).createDeliverRequest(sched);
+		return getHandlerFor(sched).createDeliverRequest(sched, salesOrderLine);
 	}
 
 	@Override

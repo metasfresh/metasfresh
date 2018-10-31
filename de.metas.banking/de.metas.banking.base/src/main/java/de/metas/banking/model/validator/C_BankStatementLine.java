@@ -26,7 +26,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine;
@@ -35,6 +34,7 @@ import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.util.Services;
 
 @Interceptor(I_C_BankStatementLine.class)
 public class C_BankStatementLine

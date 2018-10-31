@@ -36,18 +36,18 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.adempiere.util.CacheCtx;
 import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.I_C_AggregationItem;
 import de.metas.aggregation.model.X_C_AggregationItem;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AggregationDAO implements IAggregationDAO
 {

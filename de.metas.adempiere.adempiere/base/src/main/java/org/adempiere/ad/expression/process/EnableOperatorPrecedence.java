@@ -31,8 +31,6 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -40,6 +38,8 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

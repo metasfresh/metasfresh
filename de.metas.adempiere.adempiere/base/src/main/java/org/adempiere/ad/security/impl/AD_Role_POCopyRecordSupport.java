@@ -6,12 +6,12 @@ import java.util.Properties;
 
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /*
  * #%L

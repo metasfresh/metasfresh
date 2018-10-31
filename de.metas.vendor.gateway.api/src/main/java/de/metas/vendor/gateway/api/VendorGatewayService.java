@@ -36,6 +36,8 @@ public interface VendorGatewayService
 {
 	boolean isProvidedForVendor(int vendorId);
 
+	String testConnection(int configId);
+
 	AvailabilityResponse retrieveAvailability(AvailabilityRequest request);
 
 	/**
@@ -44,4 +46,5 @@ public interface VendorGatewayService
 	RemotePurchaseOrderCreated placePurchaseOrder(PurchaseOrderRequest request);
 
 	void associateLocalWithRemotePurchaseOrderId(LocalPurchaseOrderForRemoteOrderCreated localPurchaseOrderForRemoteOrderCreated);
+
 }

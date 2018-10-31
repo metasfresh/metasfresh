@@ -48,7 +48,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -65,6 +64,7 @@ import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.letters.model.MADBoilerPlateVar;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Check;
 
 /**
  * @author teo_sarca

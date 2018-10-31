@@ -5,11 +5,11 @@ import org.adempiere.ad.persistence.modelgen.ListInfo;
 import org.adempiere.ad.persistence.modelgen.TableAndColumnInfoRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.tools.AdempiereToolsHelper;
-import org.adempiere.util.Check;
 import org.compiere.util.Ini;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

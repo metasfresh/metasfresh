@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,6 +13,7 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.util.Services;
 
 /*
  * #%L

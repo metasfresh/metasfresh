@@ -21,8 +21,6 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.IStringExpressionWrapper;
 import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
@@ -33,6 +31,8 @@ import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.core.joran.conditional.Condition;
 import de.metas.i18n.TranslatableParameterizedString;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

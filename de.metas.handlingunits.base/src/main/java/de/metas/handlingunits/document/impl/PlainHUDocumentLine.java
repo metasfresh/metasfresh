@@ -13,35 +13,34 @@ package de.metas.handlingunits.document.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
+import de.metas.product.ProductId;
 
 public class PlainHUDocumentLine extends AbstractHUDocumentLine
 {
-	public PlainHUDocumentLine(final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
+	public PlainHUDocumentLine(final ProductId productId, final BigDecimal qty, final I_C_UOM uom)
 	{
 		super(
-				new PlainProductStorage(product, uom, qty)
-				, product // reference model; we use product just to have something here
+				new PlainProductStorage(productId, uom, qty),
+				productId.toTableRecordReference() // reference model; we use product just to have something here
 		);
 
 	}

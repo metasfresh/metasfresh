@@ -6,7 +6,6 @@ package de.metas.async.model.validator;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
@@ -15,6 +14,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Log;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * @author cg

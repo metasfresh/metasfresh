@@ -35,9 +35,6 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
 import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -58,6 +55,7 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -68,6 +66,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
@@ -279,7 +280,8 @@ public class ContractChangeBL implements IContractChangeBL
 	private void creditInvoice(@NonNull final de.metas.adempiere.model.I_C_Invoice openInvoice, final String reason)
 	{
 		final String docbasetype = openInvoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_APCreditMemo;
-		final int targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class)
+				.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(docbasetype)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(openInvoice.getAD_Client_ID())
@@ -287,7 +289,7 @@ public class ContractChangeBL implements IContractChangeBL
 				.build());
 
 		final IInvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
-				.C_DocType_ID(targetDocTypeID)
+				.C_DocType_ID(targetDocTypeID.getRepoId())
 				.completeAndAllocate(true)
 				.referenceOriginalOrder(true)
 				.referenceInvoice(true)

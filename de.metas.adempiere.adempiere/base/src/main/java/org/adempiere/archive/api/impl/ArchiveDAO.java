@@ -35,12 +35,13 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ArchiveDAO implements IArchiveDAO
 {

@@ -28,12 +28,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocLine_Sort;
 import org.compiere.model.I_C_DocLine_Sort_Item;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Comparator for {@link I_C_DocLine_Sort} header which compares product IDs against {@link I_C_DocLine_Sort_Item} seqNos.

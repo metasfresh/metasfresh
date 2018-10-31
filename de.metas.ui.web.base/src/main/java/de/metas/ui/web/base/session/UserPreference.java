@@ -20,9 +20,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Preference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -30,6 +27,9 @@ import org.compiere.util.Env;
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.Language;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 /**
  *

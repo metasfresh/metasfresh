@@ -24,9 +24,8 @@ package de.metas.materialtracking.qualityBasedInvoicing;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.ISingletonService;
 
 public interface IQualityBasedInvoicingDAO extends ISingletonService
 {

@@ -29,9 +29,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.IProcessor;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_Locator;
@@ -54,6 +51,9 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.IProcessor;
+import de.metas.util.Services;
 
 public class DDOrderBL implements IDDOrderBL
 {

@@ -35,7 +35,6 @@ import org.adempiere.server.rpl.IImportProcessor;
 import org.adempiere.server.rpl.IReplicationProcessor;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_IMP_ProcessorParameter;
 // import org.compiere.model.MIMPProcessor;
@@ -43,6 +42,7 @@ import org.compiere.model.I_IMP_ProcessorParameter;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Aim of this class is to import records from JMS Server.

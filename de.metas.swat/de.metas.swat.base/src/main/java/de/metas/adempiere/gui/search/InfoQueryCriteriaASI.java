@@ -32,7 +32,6 @@ import javax.swing.JFrame;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.VEditorUI;
-import org.adempiere.util.Check;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.IInfoQueryCriteria;
 import org.compiere.apps.search.IInfoSimple;
@@ -40,6 +39,8 @@ import org.compiere.apps.search.InfoPAttribute;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.swing.CButton;
 import org.compiere.util.SwingUtils;
+
+import de.metas.util.Check;
 
 /**
  * @author cg

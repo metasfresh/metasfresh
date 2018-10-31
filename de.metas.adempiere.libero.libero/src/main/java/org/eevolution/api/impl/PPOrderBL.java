@@ -30,8 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
@@ -52,6 +50,8 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class PPOrderBL implements IPPOrderBL
 {
@@ -93,8 +93,7 @@ public class PPOrderBL implements IPPOrderBL
 		final BigDecimal qtyEnteredToUse;
 		if (QtyEntered != null && order.getC_UOM_ID() > 0)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-			final int precision = Services.get(IUOMConversionBL.class).getPrecision(ctx, order.getC_UOM_ID());
+			final int precision = Services.get(IUOMConversionBL.class).getPrecision(order.getC_UOM_ID());
 			qtyEnteredToUse = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
 		else

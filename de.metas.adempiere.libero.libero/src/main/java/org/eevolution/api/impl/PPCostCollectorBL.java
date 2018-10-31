@@ -31,9 +31,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -53,6 +50,7 @@ import org.eevolution.model.I_PP_Order_Workflow;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
@@ -60,6 +58,10 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -198,17 +200,17 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		// Convert our Qtys from their qtyUOM to BOM's UOM
 		final I_C_UOM qtyUOM = request.getQtyUOM();
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final I_M_Product product = orderBOMLine.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
 		final I_C_UOM bomUOM = orderBOMLine.getC_UOM();
-		final BigDecimal qtyIssueConv = uomConversionBL.convertQty(product, request.getQtyIssue(), qtyUOM, bomUOM);
-		final BigDecimal qtyScrapConv = uomConversionBL.convertQty(product, request.getQtyScrap(), qtyUOM, bomUOM);
-		final BigDecimal qtyRejectConv = uomConversionBL.convertQty(product, request.getQtyReject(), qtyUOM, bomUOM);
+		final BigDecimal qtyIssueConv = uomConversionBL.convertQty(productId, request.getQtyIssue(), qtyUOM, bomUOM);
+		final BigDecimal qtyScrapConv = uomConversionBL.convertQty(productId, request.getQtyScrap(), qtyUOM, bomUOM);
+		final BigDecimal qtyRejectConv = uomConversionBL.convertQty(productId, request.getQtyReject(), qtyUOM, bomUOM);
 
 		final I_PP_Cost_Collector cc = createCollector(
 				CostCollectorCreateRequest.builder()
 						.costCollectorType(getCostCollectorTypeToUse(orderBOMLine))
 						.order(order)
-						.productId(product.getM_Product_ID())
+						.productId(productId.getRepoId())
 						.locatorId(request.getLocatorId())
 						.attributeSetInstanceId(request.getAttributeSetInstanceId())
 						.resourceId(order.getS_Resource_ID())
@@ -569,7 +571,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
 		final I_PP_Order ppOrder = request.getOrder();
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+		final DocTypeId docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())
@@ -579,8 +581,8 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		Services.get(IPPCostCollectorBL.class).setPP_Order(cc, ppOrder);
 		cc.setPP_Order_BOMLine_ID(request.getPpOrderBOMLineId());
 		cc.setPP_Order_Node_ID(request.getPpOrderNodeId());
-		cc.setC_DocType_ID(docTypeId);
-		cc.setC_DocTypeTarget_ID(docTypeId);
+		cc.setC_DocType_ID(docTypeId.getRepoId());
+		cc.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		cc.setCostCollectorType(request.getCostCollectorType());
 		cc.setDocAction(X_PP_Cost_Collector.DOCACTION_Complete);
 		cc.setDocStatus(X_PP_Cost_Collector.DOCSTATUS_Drafted);

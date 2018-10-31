@@ -26,7 +26,7 @@ package de.metas.handlingunits;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import org.compiere.model.I_M_Product;
+import de.metas.product.ProductId;
 
 /**
  * Implementations of this interface are handling document lines which are about packing materials
@@ -41,13 +41,7 @@ public interface IPackingMaterialDocumentLine
 	 *
 	 * @return packing material product
 	 */
-	int getM_Product_ID();
-
-	/**
-	 *
-	 * @return packing material product
-	 */
-	I_M_Product getM_Product();
+	ProductId getProductId();
 
 	/**
 	 *

@@ -27,9 +27,6 @@ import java.awt.Color;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -41,6 +38,9 @@ import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 
 /**
  * {@link I_PP_Order_BOMLine}'s Key

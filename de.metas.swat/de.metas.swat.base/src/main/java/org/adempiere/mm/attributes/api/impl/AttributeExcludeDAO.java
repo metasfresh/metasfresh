@@ -30,10 +30,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.api.IAttributeExcludeDAO;
 import org.adempiere.model.I_M_AttributeSetExcludeLine;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
+
+import de.metas.util.Services;
 
 public class AttributeExcludeDAO implements IAttributeExcludeDAO
 {

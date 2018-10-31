@@ -26,8 +26,9 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
+
+import de.metas.util.Check;
 
 /**
  * Window Tab Field Customization

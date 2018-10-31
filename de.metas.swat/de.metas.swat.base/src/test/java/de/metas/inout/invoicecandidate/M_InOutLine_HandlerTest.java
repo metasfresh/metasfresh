@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.assertj.core.api.Condition;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -33,6 +32,8 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -89,6 +90,8 @@ public class M_InOutLine_HandlerTest
 		inout.setIsSOTrx(true);
 		inout.setDocStatus(IDocument.STATUS_Completed); // otherwise the code won't consider the inoutLines' quantities
 		inout.setC_BPartner(bPartner);
+		inout.setM_Warehouse_ID(1);
+		inout.setMovementDate(SystemTime.asTimestamp());
 		save(inout);
 
 		final I_M_Product packagingProduct = newInstance(I_M_Product.class);
@@ -299,11 +302,10 @@ public class M_InOutLine_HandlerTest
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
-		result.forEach(ic ->
-			{
-				inOutLineHandlerUnderTest.setOrderedData(ic);
-				inOutLineHandlerUnderTest.setDeliveredData(ic);
-			});
+		result.forEach(ic -> {
+			inOutLineHandlerUnderTest.setOrderedData(ic);
+			inOutLineHandlerUnderTest.setDeliveredData(ic);
+		});
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_assertInvariants(result);
 	}
 
@@ -340,11 +342,10 @@ public class M_InOutLine_HandlerTest
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_1st_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
-		result.forEach(ic ->
-			{
-				inOutLineHandlerUnderTest.setOrderedData(ic);
-				inOutLineHandlerUnderTest.setDeliveredData(ic);
-			});
+		result.forEach(ic -> {
+			inOutLineHandlerUnderTest.setOrderedData(ic);
+			inOutLineHandlerUnderTest.setDeliveredData(ic);
+		});
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_1st_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 	}
 
@@ -372,11 +373,10 @@ public class M_InOutLine_HandlerTest
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_both_have_smallQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
-		result.forEach(ic ->
-			{
-				inOutLineHandlerUnderTest.setOrderedData(ic);
-				inOutLineHandlerUnderTest.setDeliveredData(ic);
-			});
+		result.forEach(ic -> {
+			inOutLineHandlerUnderTest.setOrderedData(ic);
+			inOutLineHandlerUnderTest.setDeliveredData(ic);
+		});
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_both_have_smallQtyEnteredTU_assertInvariants(result);
 	}
 
@@ -388,20 +388,18 @@ public class M_InOutLine_HandlerTest
 		assertThat(result)
 				.filteredOn(invoiceCandidateWithTerm(paymentTermA))
 				.hasSize(1)
-				.allSatisfy(ic ->
-					{
-						assertThat(ic.isPackagingMaterial()).isTrue();
-						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(ONE);
-					});
+				.allSatisfy(ic -> {
+					assertThat(ic.isPackagingMaterial()).isTrue();
+					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(ONE);
+				});
 
 		assertThat(result)
 				.filteredOn(invoiceCandidateWithTerm(paymentTermB))
 				.hasSize(1)
-				.allSatisfy(ic ->
-					{
-						assertThat(ic.isPackagingMaterial()).isTrue();
-						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(NINE); // we need to account for packagingInOutLine's full qty of TEN
-					});
+				.allSatisfy(ic -> {
+					assertThat(ic.isPackagingMaterial()).isTrue();
+					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(NINE); // we need to account for packagingInOutLine's full qty of TEN
+				});
 	}
 
 	@Test
@@ -414,11 +412,10 @@ public class M_InOutLine_HandlerTest
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_2nd_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
-		result.forEach(ic ->
-			{
-				inOutLineHandlerUnderTest.setOrderedData(ic);
-				inOutLineHandlerUnderTest.setDeliveredData(ic);
-			});
+		result.forEach(ic -> {
+			inOutLineHandlerUnderTest.setOrderedData(ic);
+			inOutLineHandlerUnderTest.setDeliveredData(ic);
+		});
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_2nd_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 	}
 
@@ -456,11 +453,10 @@ public class M_InOutLine_HandlerTest
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_customerReturn_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
-		result.forEach(ic ->
-			{
-				inOutLineHandlerUnderTest.setOrderedData(ic);
-				inOutLineHandlerUnderTest.setDeliveredData(ic);
-			});
+		result.forEach(ic -> {
+			inOutLineHandlerUnderTest.setOrderedData(ic);
+			inOutLineHandlerUnderTest.setDeliveredData(ic);
+		});
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_customerReturn_assertInvariants(result);
 	}
 
@@ -507,7 +503,6 @@ public class M_InOutLine_HandlerTest
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
 	}
-
 
 	@Test
 	public void createCandidatesForInOutLine_two_materialInOutLine_same_payment_term_customer_return()
@@ -581,7 +576,6 @@ public class M_InOutLine_HandlerTest
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate());
 	}
 
-
 	@Test
 	public void createCandidatesForInOutLine_two_materialInOutLine_both_without_payment_term_customer_return()
 	{
@@ -618,11 +612,10 @@ public class M_InOutLine_HandlerTest
 		createCandidatesForInOutLine_three_materialInOutLine_different_payment_terms_3rd_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
-		result.forEach(ic ->
-			{
-				inOutLineHandlerUnderTest.setOrderedData(ic);
-				inOutLineHandlerUnderTest.setDeliveredData(ic);
-			});
+		result.forEach(ic -> {
+			inOutLineHandlerUnderTest.setOrderedData(ic);
+			inOutLineHandlerUnderTest.setDeliveredData(ic);
+		});
 		createCandidatesForInOutLine_three_materialInOutLine_different_payment_terms_3rd_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 	}
 
@@ -658,11 +651,10 @@ public class M_InOutLine_HandlerTest
 		createCandidatesForInOutLine_three_materialInOutLine_different_payment_terms_3rd_materialIOL_exceeds_movementQty_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
-		result.forEach(ic ->
-			{
-				inOutLineHandlerUnderTest.setOrderedData(ic);
-				inOutLineHandlerUnderTest.setDeliveredData(ic);
-			});
+		result.forEach(ic -> {
+			inOutLineHandlerUnderTest.setOrderedData(ic);
+			inOutLineHandlerUnderTest.setDeliveredData(ic);
+		});
 		createCandidatesForInOutLine_three_materialInOutLine_different_payment_terms_3rd_materialIOL_exceeds_movementQty_assertInvariants(result);
 	}
 

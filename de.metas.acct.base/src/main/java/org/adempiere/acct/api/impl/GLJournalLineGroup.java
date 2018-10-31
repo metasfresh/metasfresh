@@ -26,7 +26,8 @@ package org.adempiere.acct.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.acct.api.IGLJournalLineGroup;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public class GLJournalLineGroup implements IGLJournalLineGroup
 {

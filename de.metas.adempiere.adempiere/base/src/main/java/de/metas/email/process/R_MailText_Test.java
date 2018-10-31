@@ -2,12 +2,12 @@ package de.metas.email.process;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_R_MailText;
 
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.process.Param;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /*

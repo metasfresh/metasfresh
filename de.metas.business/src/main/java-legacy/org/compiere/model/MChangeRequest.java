@@ -20,11 +20,11 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 /**
  * 	Change Request Model

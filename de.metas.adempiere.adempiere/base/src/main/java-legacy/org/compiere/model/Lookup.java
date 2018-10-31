@@ -25,7 +25,6 @@ import javax.swing.AbstractListModel;
 import javax.swing.MutableComboBoxModel;
 
 import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
@@ -34,6 +33,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  *	Base Class for MLookup, MLocator.

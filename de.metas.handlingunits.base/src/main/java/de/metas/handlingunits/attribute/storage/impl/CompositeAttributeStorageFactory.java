@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -34,6 +33,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 public class CompositeAttributeStorageFactory implements IAttributeStorageFactory

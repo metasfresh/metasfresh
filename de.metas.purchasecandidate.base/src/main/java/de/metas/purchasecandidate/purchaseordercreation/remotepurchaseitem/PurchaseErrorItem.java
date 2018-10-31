@@ -3,10 +3,10 @@ package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

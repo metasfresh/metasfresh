@@ -8,13 +8,13 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQ_Topic;
 import de.metas.rfq.util.IRfQWorkDatesAware;
 import de.metas.rfq.util.RfQWorkDatesUtil;
+import de.metas.util.Services;
 
 /*
  * #%L

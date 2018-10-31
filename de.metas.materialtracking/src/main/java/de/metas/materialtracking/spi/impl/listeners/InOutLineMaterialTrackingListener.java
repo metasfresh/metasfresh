@@ -26,7 +26,6 @@ package de.metas.materialtracking.spi.impl.listeners;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
@@ -36,6 +35,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocuments;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderQualityCalculator;
+import de.metas.util.Services;
 
 public class InOutLineMaterialTrackingListener extends MaterialTrackingListenerAdapter
 {

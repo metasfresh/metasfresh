@@ -31,7 +31,6 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-import org.adempiere.util.Check;
 import org.compiere.grid.ed.VHeaderRenderer;
 import org.compiere.util.DisplayType;
 
@@ -39,6 +38,7 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
+import de.metas.util.Check;
 
 /* package */ class SwingStringEditor extends AbstractCellEditor
 		implements TableCellRenderer, TableCellEditor

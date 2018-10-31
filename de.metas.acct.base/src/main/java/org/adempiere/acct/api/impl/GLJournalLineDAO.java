@@ -36,12 +36,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.util.DB;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class GLJournalLineDAO implements IGLJournalLineDAO
 {

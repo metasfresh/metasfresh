@@ -1,29 +1,10 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for AD_Attachment
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
  */
+@SuppressWarnings("javadoc")
 public interface I_AD_Attachment 
 {
 
@@ -31,159 +12,321 @@ public interface I_AD_Attachment
     public static final String Table_Name = "AD_Attachment";
 
     /** AD_Table_ID=254 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 6 - System - Client 
+    /** AccessLevel = 6 - System - Client
      */
-    BigDecimal accessLevel = BigDecimal.valueOf(6);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
 
     /** Load Meta Data */
 
+	/**
+	 * Set Anlage.
+	 * Attachment for the document
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Attachment_ID (int AD_Attachment_ID);
+
+	/**
+	 * Get Anlage.
+	 * Attachment for the document
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Attachment_ID();
+
+    /** Column definition for AD_Attachment_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, Object> COLUMN_AD_Attachment_ID = new org.adempiere.model.ModelColumn<I_AD_Attachment, Object>(I_AD_Attachment.class, "AD_Attachment_ID", null);
     /** Column name AD_Attachment_ID */
     public static final String COLUMNNAME_AD_Attachment_ID = "AD_Attachment_ID";
 
-	/** Set Attachment.
-	  * Attachment for the document
-	  */
-	public void setAD_Attachment_ID (int AD_Attachment_ID);
+	/**
+	 * Get Mandant.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
 
-	/** Get Attachment.
-	  * Attachment for the document
-	  */
-	public int getAD_Attachment_ID();
+	public org.compiere.model.I_AD_Client getAD_Client();
 
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_Client>(I_AD_Attachment.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
 
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
+
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_Org>(I_AD_Attachment.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set DB-Tabelle.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Table_ID (int AD_Table_ID);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get DB-Tabelle.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Table_ID();
 
+	public org.compiere.model.I_AD_Table getAD_Table();
+
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
+
+    /** Column definition for AD_Table_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_Table>(I_AD_Attachment.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
     /** Column name AD_Table_ID */
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
-	/** Set Table.
-	  * Database Table information
-	  */
-	public void setAD_Table_ID (int AD_Table_ID);
+	/**
+	 * Set Binärwert.
+	 * Binary Data
+	 *
+	 * <br>Type: Binary
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBinaryData (byte[] BinaryData);
 
-	/** Get Table.
-	  * Database Table information
-	  */
-	public int getAD_Table_ID();
+	/**
+	 * Get Binärwert.
+	 * Binary Data
+	 *
+	 * <br>Type: Binary
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public byte[] getBinaryData();
 
-	public I_AD_Table getAD_Table() throws RuntimeException;
-
+    /** Column definition for BinaryData */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, Object> COLUMN_BinaryData = new org.adempiere.model.ModelColumn<I_AD_Attachment, Object>(I_AD_Attachment.class, "BinaryData", null);
     /** Column name BinaryData */
     public static final String COLUMNNAME_BinaryData = "BinaryData";
 
-	/** Set BinaryData.
-	  * Binary Data
-	  */
-	public void setBinaryData (byte[] BinaryData);
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
 
-	/** Get BinaryData.
-	  * Binary Data
-	  */
-	public byte[] getBinaryData();
-
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Attachment, Object>(I_AD_Attachment.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
 
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_User>(I_AD_Attachment.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Set Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
 
+	/**
+	 * Get Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
+
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Attachment, Object>(I_AD_Attachment.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Migriert am.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMigrationDate (java.sql.Timestamp MigrationDate);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Migriert am.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMigrationDate();
 
+    /** Column definition for MigrationDate */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, Object> COLUMN_MigrationDate = new org.adempiere.model.ModelColumn<I_AD_Attachment, Object>(I_AD_Attachment.class, "MigrationDate", null);
+    /** Column name MigrationDate */
+    public static final String COLUMNNAME_MigrationDate = "MigrationDate";
+
+	/**
+	 * Set Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getRecord_ID();
+
+    /** Column definition for Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_AD_Attachment, Object>(I_AD_Attachment.class, "Record_ID", null);
     /** Column name Record_ID */
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
-	/** Set Record ID.
-	  * Direct internal record ID
-	  */
-	public void setRecord_ID (int Record_ID);
+	/**
+	 * Set Mitteilung.
+	 * Text Message
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTextMsg (java.lang.String TextMsg);
 
-	/** Get Record ID.
-	  * Direct internal record ID
-	  */
-	public int getRecord_ID();
+	/**
+	 * Get Mitteilung.
+	 * Text Message
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTextMsg();
 
+    /** Column definition for TextMsg */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, Object> COLUMN_TextMsg = new org.adempiere.model.ModelColumn<I_AD_Attachment, Object>(I_AD_Attachment.class, "TextMsg", null);
     /** Column name TextMsg */
     public static final String COLUMNNAME_TextMsg = "TextMsg";
 
-	/** Set Text Message.
-	  * Text Message
-	  */
-	public void setTextMsg (String TextMsg);
+	/**
+	 * Set Titel.
+	 * Name this entity is referred to as
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setTitle (java.lang.String Title);
 
-	/** Get Text Message.
-	  * Text Message
-	  */
-	public String getTextMsg();
+	/**
+	 * Get Titel.
+	 * Name this entity is referred to as
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTitle();
 
+    /** Column definition for Title */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, Object> COLUMN_Title = new org.adempiere.model.ModelColumn<I_AD_Attachment, Object>(I_AD_Attachment.class, "Title", null);
     /** Column name Title */
     public static final String COLUMNNAME_Title = "Title";
 
-	/** Set Title.
-	  * Name this entity is referred to as
-	  */
-	public void setTitle (String Title);
+	/**
+	 * Get Aktualisiert.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getUpdated();
 
-	/** Get Title.
-	  * Name this entity is referred to as
-	  */
-	public String getTitle();
-
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Attachment, Object>(I_AD_Attachment.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Aktualisiert durch.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getUpdatedBy();
 
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Attachment, org.compiere.model.I_AD_User>(I_AD_Attachment.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
 }

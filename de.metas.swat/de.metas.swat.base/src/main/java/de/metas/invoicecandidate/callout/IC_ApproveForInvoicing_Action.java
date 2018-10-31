@@ -27,8 +27,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ui.sideactions.model.ExecutableSideAction;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
@@ -36,6 +34,8 @@ import org.compiere.util.Env;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Side Action: set {@link I_C_Invoice_Candidate#COLUMN_ApprovalForInvoicing} to current selected invoice candidates.

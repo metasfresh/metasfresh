@@ -36,9 +36,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.w3c.dom.Document;

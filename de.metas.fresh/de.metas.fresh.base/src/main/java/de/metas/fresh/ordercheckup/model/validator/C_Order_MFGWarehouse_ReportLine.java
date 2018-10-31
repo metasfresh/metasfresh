@@ -24,10 +24,10 @@ package de.metas.fresh.ordercheckup.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Check;
 import org.compiere.model.ModelValidator;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
+import de.metas.util.Check;
 
 @Interceptor(I_C_Order_MFGWarehouse_ReportLine.class)
 public class C_Order_MFGWarehouse_ReportLine

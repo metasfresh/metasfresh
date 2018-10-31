@@ -4,14 +4,13 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocTypeCounter;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MDocTypeCounter;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -24,6 +23,7 @@ import de.metas.document.spi.ICounterDocHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -107,8 +107,8 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		final I_C_BPartner counterBP = retrieveCounterPartnerOrNull(document);
 		counterOrderPO.setBPartner(counterBP);
 
-		final I_M_Warehouse counterWarehouse = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(counterOrder);
-		counterOrder.setM_Warehouse(counterWarehouse);
+		final WarehouseId counterWarehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(counterOrder);
+		counterOrder.setM_Warehouse_ID(counterWarehouseId.getRepoId());
 
 		// References (should not be required)
 		counterOrder.setSalesRep_ID(order.getSalesRep_ID());

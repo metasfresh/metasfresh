@@ -25,7 +25,7 @@ package de.metas.handlingunits.attribute.strategy;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface IAttributeStrategyFactory extends ISingletonService
 {

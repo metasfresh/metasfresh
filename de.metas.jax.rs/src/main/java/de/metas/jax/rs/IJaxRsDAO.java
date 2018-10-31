@@ -3,9 +3,8 @@ package de.metas.jax.rs;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

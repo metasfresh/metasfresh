@@ -4,7 +4,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Test;
 import org.compiere.model.PrintInfo;
@@ -15,6 +14,7 @@ import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.util.Services;
 
 /*
  * #%L

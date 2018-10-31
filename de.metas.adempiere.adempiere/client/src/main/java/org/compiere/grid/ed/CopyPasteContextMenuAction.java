@@ -37,9 +37,10 @@ import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor.CopyPasteActionType;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
-import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
 
 /**
  * Copy/Paste context menu action.

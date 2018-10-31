@@ -7,7 +7,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.ModelValidator;
@@ -18,6 +17,7 @@ import de.metas.costing.CostElementType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostElementRepository;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -48,8 +48,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Table;
@@ -61,7 +59,11 @@ import org.slf4j.Logger;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /**
@@ -207,7 +209,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		return result;
 	}
-	
+
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
 	{
 		if (ids.isEmpty())
@@ -595,6 +597,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			final String trxName = (String)args[0];
 			this.setTrxName(trxName);
 			return null;
+		}
+		else if (methodName.startsWith(IDocument.METHOD_NAME_getDocumentModel) && (args == null || args.length == 0))
+		{
+			return this; // return this instance; similar to the default implementation of IDocument.getDocumentModel()
 		}
 		else if (methodName.startsWith("set") && args.length == 1)
 		{
@@ -1580,6 +1586,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			// Case: C_BPartner.AD_OrgBP_ID
 			final int valueInt = Integer.parseInt(value.toString());
 			return Integer.max(valueInt, idForNewModel(columnName));
+		}
+		else if(value instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)value).getRepoId();
 		}
 		else
 		{

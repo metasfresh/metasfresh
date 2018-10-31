@@ -27,10 +27,9 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.util.Check;
 import lombok.Value;
 
 /**

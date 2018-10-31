@@ -3,6 +3,8 @@ package org.adempiere.mm.attributes.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import lombok.NonNull;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -24,8 +27,6 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Attribute;
@@ -42,10 +43,11 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.lang.SOTrx;
-import lombok.NonNull;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AttributeDAO implements IAttributeDAO
 {
@@ -175,7 +177,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeValue retrieveAttributeValueOrNull(final I_M_Attribute attribute, final String value)
+	public I_M_AttributeValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value)
 	{
 		//
 		// In case we are dealing with a high-volume attribute values set, we can not fetch all of them,
@@ -197,7 +199,9 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeValue retrieveAttributeValueOrNull(final I_M_Attribute attribute, @NonNull final AttributeValueId attributeValueId)
+	public I_M_AttributeValue retrieveAttributeValueOrNull(
+			@NonNull final I_M_Attribute attribute,
+			@NonNull final AttributeValueId attributeValueId)
 	{
 		//
 		// In case we are dealing with a high-volume attribute values set, we can not fetch all of them,
@@ -207,7 +211,7 @@ public class AttributeDAO implements IAttributeDAO
 			return Services.get(IQueryBL.class)
 					.createQueryBuilder(I_M_AttributeValue.class, attribute)
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attribute.getM_Attribute_ID())
-					.addEqualsFilter(I_M_AttributeValue.COLUMN_Value, attributeValueId)
+					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueId)
 					.create()
 					.firstOnly(I_M_AttributeValue.class);
 		}
@@ -275,8 +279,7 @@ public class AttributeDAO implements IAttributeDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Override
-	public List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull final AttributeSetInstanceId asiId)
+	private List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull final AttributeSetInstanceId asiId)
 	{
 		return retrieveAttributeInstances(Env.getCtx(), asiId, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -336,7 +339,7 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			return true;
 		}
-		
+
 		return expectedSOTrx.equals(soTrx);
 	}
 
@@ -548,8 +551,14 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableAttributeSet.EMPTY;
 		}
 
+		final List<I_M_AttributeInstance> instances = retrieveAttributeInstances(asiId);
+		return createImmutableAttributeSet(instances);
+	}
+
+	private ImmutableAttributeSet createImmutableAttributeSet(final Collection<I_M_AttributeInstance> instances)
+	{
 		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
-		for (final I_M_AttributeInstance instance : retrieveAttributeInstances(asiId))
+		for (final I_M_AttributeInstance instance : instances)
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
 			final Object value = extractAttributeInstanceValue(instance);
@@ -586,5 +595,30 @@ public class AttributeDAO implements IAttributeDAO
 					.setParameter("attribute", attribute)
 					.appendParametersToMessage();
 		}
+	}
+
+	@Override
+	public Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(
+			final Set<AttributeSetInstanceId> asiIds,
+			final Set<AttributeId> attributeIds)
+	{
+		Check.assumeNotEmpty(asiIds, "asiIds is not empty");
+		Check.assumeNotEmpty(attributeIds, "attributeIds is not empty");
+
+		final Map<AttributeSetInstanceId, List<I_M_AttributeInstance>> //
+		instancesByAsiId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_AttributeInstance.class)
+				.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, asiIds)
+				.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_Attribute_ID, attributeIds)
+				.create()
+				.list()
+				.stream()
+				.collect(Collectors.groupingBy(ai -> AttributeSetInstanceId.ofRepoId(ai.getM_AttributeSetInstance_ID())));
+
+		final ImmutableMap.Builder<AttributeSetInstanceId, ImmutableAttributeSet> result = ImmutableMap.builder();
+		instancesByAsiId.forEach((asiId, instances) -> result.put(asiId, createImmutableAttributeSet(instances)));
+
+		return result.build();
+
 	}
 }

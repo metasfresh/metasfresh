@@ -36,14 +36,14 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_PrintFormat;
-import org.compiere.util.CCache;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.util.cache.CacheCtxParamDescriptor;
+import de.metas.cache.CCache;
+import de.metas.cache.interceptor.CacheCtxParamDescriptor;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;

@@ -2,16 +2,17 @@ package de.metas.picking.api;
 
 import java.util.List;
 import java.util.Properties;
-
-import org.adempiere.util.ISingletonService;
+import java.util.Set;
 
 import de.metas.picking.model.I_M_PickingSlot;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Value;
+import de.metas.util.ISingletonService;
 
 public interface IPickingSlotDAO extends ISingletonService
 {
+	I_M_PickingSlot getById(PickingSlotId pickingSlotId);
+
+	<T extends I_M_PickingSlot> T getById(PickingSlotId pickingSlotId, Class<T> modelType);
+
 	/**
 	 * Retrieve all picking slots for current tenant/client.
 	 * 
@@ -30,38 +31,5 @@ public interface IPickingSlotDAO extends ISingletonService
 	 */
 	List<I_M_PickingSlot> retrievePickingSlots(PickingSlotQuery query);
 
-	List<Integer> retrievePickingSlotIds(PickingSlotQuery query);
-
-	@Builder
-	@Value
-	public static class PickingSlotQuery
-	{
-		public static final PickingSlotQuery ALL = builder().build();
-
-		/**
-		 * {@code -1} means "no restriction".
-		 */
-		@Default
-		int availableForBPartnerId = -1;
-
-		/**
-		 * {@code -1} means "no restriction".
-		 */
-		@Default
-		int availableForBPartnerLocationId = -1;
-		
-		@Default
-		int assignedToBPartnerId = -1;
-
-		@Default
-		int assignedToBPartnerLocationId = -1;
-
-		/**
-		 * {@code -1} means "no restriction".
-		 */
-		@Default
-		int warehouseId = -1;
-
-		String barcode;
-	}
+	Set<PickingSlotId> retrievePickingSlotIds(PickingSlotQuery query);
 }

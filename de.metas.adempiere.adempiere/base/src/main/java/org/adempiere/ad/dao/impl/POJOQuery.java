@@ -48,14 +48,15 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class POJOQuery<T> extends AbstractTypedQuery<T>
@@ -501,10 +502,10 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public POJOQuery<T> setOnlySelection(final int AD_PInstance_ID)
+	public POJOQuery<T> setOnlySelection(final PInstanceId AD_PInstance_ID)
 	{
 		// If Only selection filter has not changed then do nothing
-		if (filter_inSelection != null && filter_inSelection.getSelectionId() == AD_PInstance_ID)
+		if (filter_inSelection != null && PInstanceId.equals(filter_inSelection.getSelectionId(), AD_PInstance_ID))
 		{
 			return this;
 		}
@@ -514,7 +515,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			removeFilter(filter_inSelection);
 		}
 
-		if (AD_PInstance_ID > 0)
+		if (AD_PInstance_ID != null)
 		{
 			filter_inSelection = POJOInSelectionQueryFilter.inSelection(AD_PInstance_ID);
 			addFilter(filter_inSelection);
@@ -524,10 +525,10 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public POJOQuery<T> setNotInSelection(final int AD_PInstance_ID)
+	public POJOQuery<T> setNotInSelection(final PInstanceId AD_PInstance_ID)
 	{
 		// If Only selection filter has not changed then do nothing
-		if (filter_notInSelection != null && filter_notInSelection.getSelectionId() == AD_PInstance_ID)
+		if (filter_notInSelection != null && PInstanceId.equals(filter_notInSelection.getSelectionId(), AD_PInstance_ID))
 		{
 			return this;
 		}
@@ -537,7 +538,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			removeFilter(filter_notInSelection);
 		}
 
-		if (AD_PInstance_ID > 0)
+		if (AD_PInstance_ID != null)
 		{
 			filter_notInSelection = POJOInSelectionQueryFilter.notInSelection(AD_PInstance_ID);
 			addFilter(filter_notInSelection);
@@ -912,7 +913,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public void addUnion(final IQuery<T> query, final boolean distinct)
+	public IQuery<T> addUnion(final IQuery<T> query, final boolean distinct)
 	{
 		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<>(query, distinct);
 		if (unions == null)
@@ -920,6 +921,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			unions = new ArrayList<>();
 		}
 		unions.add(sqlQueryUnion);
+
+		return this;
 	}
 
 	/* package */ List<SqlQueryUnion<T>> getUnions()
@@ -932,17 +935,17 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public int createSelection()
+	public PInstanceId createSelection()
 	{
 		final List<Integer> ids = listIds();
 		return POJOLookupMap.get().createSelection(ids);
 	}
 
 	@Override
-	public int createSelection(int AD_PInstance_ID)
+	public int createSelection(PInstanceId pinstanceId)
 	{
 		final List<Integer> ids = listIds();
-		POJOLookupMap.get().createSelection(AD_PInstance_ID, ids);
+		POJOLookupMap.get().createSelection(pinstanceId, ids);
 		return ids.size();
 	}
 
@@ -955,7 +958,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		{
 			throw new UnsupportedOperationException("CreateSelectionOfInsertedRows not supported for " + queryInserter);
 		}
-		final int insertSelectionId = -1;
+		final PInstanceId insertSelectionId = null;
 
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();

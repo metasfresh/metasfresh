@@ -6,8 +6,8 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Auftragsart;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -33,31 +33,62 @@ import lombok.Getter;
 
 public enum OrderType
 {
-	NORMAL(Auftragsart.NORMAL), //
-	STACK(Auftragsart.STAPEL), //
-	SPECIAL(Auftragsart.SONDER), //
-	SHIPPING(Auftragsart.VERSAND) //
+	NORMAL(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Auftragsart.NORMAL,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart.NORMAL),
+	//
+	STACK(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Auftragsart.STAPEL,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart.STAPEL),
+	//
+	SPECIAL(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Auftragsart.SONDER,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart.SONDER),
+	//
+	SHIPPING(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Auftragsart.VERSAND,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart.VERSAND)
+	//
 	;
 
 	@Getter
-	private final Auftragsart soapCode;
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Auftragsart v1SoapCode;
+	@Getter
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart v2SoapCode;
 
-	OrderType(final Auftragsart soapCode)
+	OrderType(
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Auftragsart v1SoapCode,
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart v2SoapCode)
 	{
-		this.soapCode = soapCode;
+		this.v1SoapCode = v1SoapCode;
+		this.v2SoapCode = v2SoapCode;
 	}
 
-	public static OrderType fromSoapCode(final Auftragsart soapCode)
+	public String value()
 	{
-		final OrderType type = soapCode2type.get(soapCode);
+		return v2SoapCode.value();
+	}
+
+	public static OrderType fromV1SoapCode(@NonNull final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Auftragsart soapCode)
+	{
+		final OrderType type = typesByValue.get(soapCode.value());
 		if (type == null)
 		{
 			throw new NoSuchElementException("No " + OrderType.class + " found for " + soapCode);
 		}
 		return type;
-
 	}
 
-	private static final ImmutableMap<Auftragsart, OrderType> soapCode2type = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(OrderType::getSoapCode, Function.identity()));
+	public static OrderType fromV2SoapCode(@NonNull final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart soapCode)
+	{
+		final OrderType type = typesByValue.get(soapCode.value());
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + OrderType.class + " found for " + soapCode);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, OrderType> typesByValue = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(OrderType::value, Function.identity()));
 }

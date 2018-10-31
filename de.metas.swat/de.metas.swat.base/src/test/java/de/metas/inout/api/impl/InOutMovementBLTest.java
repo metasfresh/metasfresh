@@ -12,7 +12,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOutLine;
@@ -28,6 +27,7 @@ import org.junit.Test;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.util.Services;
 
 /*
  * #%L

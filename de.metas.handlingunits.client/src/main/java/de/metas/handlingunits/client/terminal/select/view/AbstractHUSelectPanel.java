@@ -27,8 +27,6 @@ import java.beans.PropertyChangeListener;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
@@ -50,6 +48,8 @@ import de.metas.handlingunits.client.terminal.misc.view.swing.WebCamReceiptSched
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
 import de.metas.handlingunits.client.terminal.select.model.AbstractHUSelectModel;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> implements IHUSelectPanel
 {

@@ -25,12 +25,12 @@ package org.adempiere.ad.migration.executor.impl;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
 import org.adempiere.ad.migration.executor.IPostponedExecutable;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;

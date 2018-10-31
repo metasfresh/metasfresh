@@ -22,7 +22,8 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 /**
  *	Organization Info Model

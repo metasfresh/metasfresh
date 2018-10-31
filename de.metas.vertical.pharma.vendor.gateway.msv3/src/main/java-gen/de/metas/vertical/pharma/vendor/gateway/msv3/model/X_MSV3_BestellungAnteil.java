@@ -14,7 +14,7 @@ public class X_MSV3_BestellungAnteil extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2101837388L;
+	private static final long serialVersionUID = 1784646350L;
 
     /** Standard Constructor */
     public X_MSV3_BestellungAnteil (Properties ctx, int MSV3_BestellungAnteil_ID, String trxName)

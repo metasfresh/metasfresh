@@ -29,12 +29,13 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class CountryAttributeDAO implements ICountryAttributeDAO
 {

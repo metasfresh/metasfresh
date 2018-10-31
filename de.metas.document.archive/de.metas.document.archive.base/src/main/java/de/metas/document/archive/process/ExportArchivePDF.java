@@ -2,9 +2,6 @@ package de.metas.document.archive.process;
 
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Ini;
 
@@ -15,6 +12,9 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public class ExportArchivePDF extends JavaProcess implements IProcessPrecondition

@@ -24,18 +24,15 @@ package de.metas.invoicecandidate.spi;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -61,18 +58,6 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	}
 
 	@Override
-	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
-	{
-		return ImmutableList.of(request);
-	}
-
-	@Override
-	public Object getModelForInvoiceCandidateGenerateScheduling(final Object model)
-	{
-		return model;
-	}
-
-	@Override
 	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtDdelivered)
@@ -95,12 +80,6 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		ic.setLineNetAmt(netAmtToInvoice);
 	}
 
-	@Override
-	public void setInvoiceSchedule(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		ic.setC_InvoiceSchedule_ID(ic.getBill_BPartner().getC_InvoiceSchedule_ID());
-	}
-
 	private BigDecimal computeNetAmtUsingQty(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final BigDecimal qty)
@@ -115,26 +94,6 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 				ic);
 
 		return qtyToInvoice.multiply(priceActual).setScale(precision, RoundingMode.HALF_UP);
-	}
-
-	/**
-	 * Returns the AD_User_InCharge_ID set in this handler's {@link I_C_Invoice_Candidate} record.
-	 */
-	@Override
-	public int getAD_User_InCharge_ID(final I_C_Invoice_Candidate ic)
-	{
-		return getHandlerRecord().getAD_User_InCharge_ID();
-	}
-
-	/**
-	 * Default implementation. Might be overridden.
-	 *
-	 * @returns {@link OnInvalidateForModelAction#REVALIDATE}.
-	 */
-	@Override
-	public OnInvalidateForModelAction getOnInvalidateForModelAction()
-	{
-		return OnInvalidateForModelAction.REVALIDATE;
 	}
 
 	/**

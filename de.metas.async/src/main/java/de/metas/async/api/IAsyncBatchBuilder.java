@@ -26,6 +26,7 @@ package de.metas.async.api;
 import java.util.Properties;
 
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.process.PInstanceId;
 
 /**
  * Builds {@link I_C_Async_Batch}.
@@ -52,7 +53,7 @@ public interface IAsyncBatchBuilder
 
 	IAsyncBatchBuilder setDescription(final String description);
 
-	IAsyncBatchBuilder setAD_PInstance_Creator_ID(int adPInstanceId);
+	IAsyncBatchBuilder setAD_PInstance_Creator_ID(PInstanceId adPInstanceId);
 	
 	IAsyncBatchBuilder setParentAsycnBatchId(int parentAsycnBatchId);
 }

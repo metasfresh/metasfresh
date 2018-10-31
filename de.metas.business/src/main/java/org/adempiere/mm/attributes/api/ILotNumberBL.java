@@ -2,8 +2,9 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.Date;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_AttributeSetInstance;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

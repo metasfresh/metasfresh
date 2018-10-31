@@ -5,9 +5,8 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;

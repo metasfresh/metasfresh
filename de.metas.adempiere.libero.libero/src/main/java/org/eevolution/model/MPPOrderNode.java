@@ -45,13 +45,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.eevolution.api.IPPOrderNodeBL;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  * PP Order Workflow Node Model

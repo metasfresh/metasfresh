@@ -8,12 +8,13 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.lang.Percent;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -80,12 +81,12 @@ public class CalculatePricingConditionsRequest
 			final PricingConditionsBreak forcePricingConditionsBreak,
 			final PricingConditionsBreakQuery pricingConditionsBreakQuery)
 	{
-//		if (forcePricingConditionsBreak == null && pricingConditionsBreakQuery == null)
-//		{
-//			throw new AdempiereException("forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified");
-//		}
-//		else
-			if (forcePricingConditionsBreak != null && pricingConditionsBreakQuery != null)
+		if (forcePricingConditionsBreak == null && pricingConditionsBreakQuery == null)
+		{
+			// TODO support PricingConditions that are not backed by discount schema breaks
+			throw new AdempiereException("forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified");
+		}
+		else if (forcePricingConditionsBreak != null && pricingConditionsBreakQuery != null)
 		{
 			throw new AdempiereException("Only forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified but not both");
 		}

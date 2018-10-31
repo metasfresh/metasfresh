@@ -2,7 +2,7 @@ package de.metas.notification;
 
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

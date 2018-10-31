@@ -6,7 +6,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
@@ -15,6 +14,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

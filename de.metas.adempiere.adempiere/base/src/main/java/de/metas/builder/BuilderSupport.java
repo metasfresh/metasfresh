@@ -28,7 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * First try of extracting common code from all builders.

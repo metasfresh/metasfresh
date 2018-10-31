@@ -3,12 +3,12 @@ package de.metas.payment.sepa.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.util.ISingletonService;
 
 public interface ISEPADocumentDAO extends ISingletonService
 {

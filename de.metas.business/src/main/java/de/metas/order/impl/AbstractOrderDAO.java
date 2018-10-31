@@ -1,6 +1,7 @@
 package de.metas.order.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 
 import java.util.Collection;
 
@@ -35,8 +36,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
@@ -45,13 +44,15 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public abstract class AbstractOrderDAO implements IOrderDAO
@@ -60,6 +61,14 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
 		return InterfaceWrapperHelper.load(orderId.getRepoId(), I_C_Order.class);
+	}
+	
+	@Override
+	public <T extends I_C_Order> T getById(
+			@NonNull final OrderId orderId,
+			@NonNull final Class<T> clazz)
+	{
+		return InterfaceWrapperHelper.load(orderId.getRepoId(), clazz);
 	}
 
 	@Override
@@ -71,7 +80,13 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
 	{
-		return InterfaceWrapperHelper.load(orderLineId.getRepoId(), I_C_OrderLine.class);
+		return getOrderLineById(orderLineId, I_C_OrderLine.class);
+	}
+
+	@Override
+	public <T extends I_C_OrderLine> T getOrderLineById(@NonNull final OrderLineId orderLineId, @NonNull final Class<T> modelClass)
+	{
+		return InterfaceWrapperHelper.load(orderLineId.getRepoId(), modelClass);
 	}
 
 	@Override
@@ -88,7 +103,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveOrderLines(final org.compiere.model.I_C_Order order)
+	public List<I_C_OrderLine> retrieveOrderLines(final I_C_Order order)
 	{
 		return retrieveOrderLines(order, I_C_OrderLine.class);
 	}
@@ -205,5 +220,17 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.create()
 				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class);
 		return ImmutableSet.copyOf(userIds);
+	}
+	
+	@Override
+	public List<I_C_Order> getByIds(final Collection<OrderId> orderIds)
+	{
+		return getByIds(orderIds, I_C_Order.class);
+	}
+
+	@Override
+	public <T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
+	{
+		return loadByRepoIdAwaresOutOfTrx(orderIds, clazz);
 	}
 }

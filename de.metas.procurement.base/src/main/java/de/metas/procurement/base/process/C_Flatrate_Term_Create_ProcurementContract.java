@@ -5,7 +5,6 @@ import java.sql.Timestamp;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.TrxCallable;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -25,6 +24,7 @@ import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.util.Services;
 
 /*
  * #%L

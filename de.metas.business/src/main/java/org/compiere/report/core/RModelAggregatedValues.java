@@ -26,7 +26,7 @@ package org.compiere.report.core;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /* package */class RModelAggregatedValues
 {

@@ -28,8 +28,8 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /* package */final class WeakPropertyChangeListener implements PropertyChangeListener
 {

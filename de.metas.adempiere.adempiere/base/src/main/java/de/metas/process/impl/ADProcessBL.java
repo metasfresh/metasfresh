@@ -2,7 +2,6 @@ package de.metas.process.impl;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Table;
@@ -12,6 +11,7 @@ import org.compiere.wf.api.IADWorkflowBL;
 
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.process.IADProcessBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

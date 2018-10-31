@@ -25,12 +25,11 @@ package de.metas.invoicecandidate.api;
 
 import java.util.List;
 
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.IMultitonService;
-import org.adempiere.util.Services;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
+import de.metas.util.ILoggable;
+import de.metas.util.IMultitonService;
+import de.metas.util.Services;
 
 /**
  * Allows a user to aggregate multiple {@link I_C_Invoice_Candidate} records and returns a result that that is suitable to create invoices.

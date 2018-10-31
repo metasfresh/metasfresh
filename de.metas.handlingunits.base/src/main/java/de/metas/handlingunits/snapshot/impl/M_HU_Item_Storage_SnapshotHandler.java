@@ -29,11 +29,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -47,7 +45,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage_Snapshot;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Item_Storage, I_M_HU_Item_Storage_Snapshot, I_M_HU_Item>
 {
@@ -129,8 +130,11 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 
 		final I_M_HU_Item vhuItem = model.getM_HU_Item();
 		final I_M_HU vhu = vhuItem.getM_HU();
-		final I_M_Locator locator = vhu.getM_Locator();
 		final String huStatus = vhu.getHUStatus();
+		
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(vhu.getM_Locator_ID());
+		
 
 		final BigDecimal qtyOld = modelOld.getQty();
 		final BigDecimal qtyNew = model.getQty();
@@ -138,7 +142,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 
 		//
 		// Extract the data needed to create the HU Transactions
-		final I_M_Product product = model.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(model.getM_Product_ID());
 		final I_C_UOM uom = model.getC_UOM();
 		final Quantity quantity = new Quantity(qtyDiff, uom);
 		final Date date = getDateTrx();
@@ -149,10 +153,10 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		final IHUTransactionCandidate huTransactionFrom = new HUTransactionCandidate(referencedModel,
 				null, // huItem
 				null, // vhuItem
-				product,
+				productId,
 				quantity.negate(),
 				date,
-				locator,
+				locatorId,
 				huStatus);
 		huTransactionFrom.setSkipProcessing(); // i.e. don't change HU's storage
 
@@ -161,10 +165,10 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		final IHUTransactionCandidate huTransactionTo = new HUTransactionCandidate(referencedModel,
 				vhuItem, // huItem
 				vhuItem, // vhuItem
-				product,
+				productId,
 				quantity,
 				date,
-				locator,
+				locatorId,
 				huStatus);
 		huTransactionTo.setSkipProcessing(); // i.e. don't change HU's storage
 

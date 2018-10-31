@@ -12,12 +12,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,10 +33,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Shipper;
 
 import com.google.common.collect.ImmutableList;
 
@@ -50,14 +47,17 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import de.metas.lock.api.LockOwner;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
-	private static final LockOwner transportationLockOwner = LockOwner.forOwnerName(HUShipperTransportationBL.class.getName());
+	private static final LockOwner transportationLockOwner = LockOwner.newOwner(HUShipperTransportationBL.class.getName());
 
 	@Override
 	public List<I_M_Package> addHUsToShipperTransportation(final int shipperTransportationId, final Collection<I_M_HU> hus)
@@ -75,14 +75,14 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
 		}
 
-		final I_M_Shipper shipper = shipperTransportation.getM_Shipper();
+		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
 
 		// services
 		final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 		final IHULockBL huLockBL = Services.get(IHULockBL.class);
-		
+
 		//
 		// Iterate HUs and:
 		// * create M_Packages
@@ -100,7 +100,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 			//
 			// Create M_Package
-			final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipper);
+			final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipperId);
 			result.add(mpackage);
 
 			//
@@ -132,7 +132,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				InterfaceWrapperHelper.setTrxName(hu, huTrxNameOld);
 			}
 		}
-		
+
 		//
 		return ImmutableList.copyOf(result);
 	}

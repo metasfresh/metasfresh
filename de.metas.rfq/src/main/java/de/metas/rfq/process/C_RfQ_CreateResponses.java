@@ -2,8 +2,6 @@ package de.metas.rfq.process;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
-
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -14,6 +12,7 @@ import de.metas.rfq.IRfQResponseProducer;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.util.Services;
 
 /*
  * #%L

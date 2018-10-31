@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -42,8 +41,9 @@ import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Create missing reference numbers
@@ -122,8 +122,8 @@ public class CreateMissingReferenceNo extends JavaProcess
 
 	private void clearSelection()
 	{
-		final int countDeleted = DB.deleteT_Selection(getAD_PInstance_ID(), ITrx.TRXNAME_None);
-		log.info("Cleared " + countDeleted + " items from T_Selection");
+		final int countDeleted = DB.deleteT_Selection(getPinstanceId(), ITrx.TRXNAME_None);
+		log.info("Cleared {} items from T_Selection", countDeleted);
 	}
 
 	private Iterator<PO> selectRecordsWithoutReferenceNos(final int adTableId, final List<IReferenceNoGeneratorInstance> generatorInstances)
@@ -151,7 +151,7 @@ public class CreateMissingReferenceNo extends JavaProcess
 		log.info("Iterating " + count + " records from table " + tableName);
 
 		final Iterator<PO> it = new Query(getCtx(), tableName, null, get_TrxName())
-				.setOnlySelection(getAD_PInstance_ID())
+				.setOnlySelection(getPinstanceId())
 				.iterate(null, false); // clazz=null, guaranteed=false (not needed because we already built our selection)
 
 		return it;
@@ -183,7 +183,7 @@ public class CreateMissingReferenceNo extends JavaProcess
 				.setParameters(table.getAD_Table_ID(), referenceNoTypeId)
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
-				.createSelection(getAD_PInstance_ID());
+				.createSelection(getPinstanceId());
 
 		log.info("Selected " + count + " candidates from table " + tableName + " (C_ReferenceNo_Type_ID=" + referenceNoTypeId + ")");
 		return count < 0 ? 0 : count;

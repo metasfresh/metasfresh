@@ -4,11 +4,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.hostkey.spi.IHostKeyStorage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

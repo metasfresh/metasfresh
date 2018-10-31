@@ -1,11 +1,11 @@
 package de.metas.money;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

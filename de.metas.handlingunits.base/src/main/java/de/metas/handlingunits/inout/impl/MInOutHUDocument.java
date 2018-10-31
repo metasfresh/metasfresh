@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.document.impl.AbstractHUDocument;
+import de.metas.util.Check;
 
 /* package */class MInOutHUDocument extends AbstractHUDocument
 {

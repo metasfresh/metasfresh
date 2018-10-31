@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -17,6 +16,7 @@ import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.model.I_C_RfQLineQty;
+import de.metas.util.Services;
 
 /*
  * #%L

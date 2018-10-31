@@ -26,8 +26,9 @@ package de.metas.product;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Locator;
+
+import de.metas.util.ISingletonService;
 
 public interface IStorageBL extends ISingletonService
 {
@@ -45,17 +46,6 @@ public interface IStorageBL extends ISingletonService
 
 	/**
 	 * Enqueue an async-workpackage to be processed by {@link org.adempiere.product.async.spi.impl.M_Storage_Add}, with the given parameters.
-	 *
-	 * @param ctx
-	 * @param M_Warehouse_ID
-	 * @param M_Locator_ID
-	 * @param M_Product_ID
-	 * @param M_AttributeSetInstance_ID
-	 * @param reservationAttributeSetInstance_ID
-	 * @param diffQtyOnHand
-	 * @param diffQtyReserved
-	 * @param diffQtyOrdered
-	 * @param trxName
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/08999_Lieferdisposition_a.frieden_%28104263801724%29
 	 */

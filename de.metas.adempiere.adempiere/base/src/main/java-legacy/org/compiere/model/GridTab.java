@@ -52,6 +52,7 @@ import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -67,8 +68,6 @@ import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupsListModel;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.MQuery.Operator;
@@ -98,6 +97,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -332,7 +333,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		//
 		m_loader.setPriority(Thread.NORM_PRIORITY);
-		log.info("");
 		while (m_loader.isAlive())
 		{
 			try
@@ -344,7 +344,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				log.error("", e);
 			}
 		}
-		log.info("fini");
 	}   // waitLoadComplete
 
 	public boolean isLoadComplete()
@@ -1182,9 +1181,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		// e.g. Column=UPPER(Name), Key=AD_Element_ID, Query=UPPER(AD_Element.Name) LIKE '%CUSTOMER%'
 		if (tableName == null)
 		{
-			log.info("Not successfull - Column="
-					+ colName + ", Key=" + tabKeyColumn
-					+ ", Query=" + query);
+			log.debug("Not successfull - Column={}, Key={}, Query={}", colName, tabKeyColumn, query);
 			return query.getWhereClause();
 		}
 
@@ -1196,7 +1193,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				.append(tableName).append(" xx WHERE ")
 				.append(query.getWhereClause(true))
 				.append(")");
-		log.debug(result.toString());
+		log.debug("{}", result);
 		return result.toString();
 	}	// validateQuery
 
@@ -1308,10 +1305,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			{
 				return false;
 			}
-			final Properties ctx = getCtx();
 			final boolean newRecord = m_mTable.isInserting(); // metas-2009_0021_AP1_CR061:
 			// start: c.ghita@metas.ro: check for warning
-			final String beforeChangeMsg = MIndexTable.getBeforeChangeWarning(ctx, this, newRecord);
+			final String beforeChangeMsg = MIndexTable.getBeforeChangeWarning(this, newRecord);
 			if (!Check.isEmpty(beforeChangeMsg))
 			{
 				if (!clientUI.ask(m_window.getWindowNo(), "Warning", beforeChangeMsg))
@@ -1326,9 +1322,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			if (manualCmd)
 			{
 				setCurrentRow(m_currentRow, false);
-				if (m_lastDataStatusEvent != null && m_lastDataStatusEvent.getCurrentRow() == m_currentRow
-						&& (m_lastDataStatusEvent.Record_ID != null && m_lastDataStatusEvent.Record_ID instanceof Integer
-								&& (Integer)m_lastDataStatusEvent.Record_ID == 0 || m_lastDataStatusEvent.Record_ID == null))
+				if (m_lastDataStatusEvent != null && m_lastDataStatusEvent.getCurrentRow() == m_currentRow)
 				{
 					updateDataStatusEventProperties(m_lastDataStatusEvent);
 				}
@@ -1341,7 +1335,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				refreshParents();
 			}
 			// metas-2009_0021_AP1_CR061: teo_sarca: begin
-			if (retValue && MIndexTable.isAnyIndexedValueChanged(ctx, this, newRecord))   // metas: cg: task 03475
+			if (retValue && MIndexTable.isAnyIndexedValueChanged(this, newRecord))   // metas: cg: task 03475
 			{
 				dataRefreshAll();
 			}
@@ -1597,8 +1591,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		fireStateChangeEvent(StateChangeEventType.DATA_DELETE);
 
 		// metas-2009_0021_AP1_CR061: teo_sarca: begin
-		final Properties ctx = getCtx();
-		if (MIndexTable.isAnyIndexedValueChanged(ctx, this, true))
+		if (MIndexTable.isAnyIndexedValueChanged(this, true))
 		{
 			dataRefreshAll();
 		}
@@ -2516,7 +2509,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			DB.close(rs, pstmt);
 		}
-		log.info("#" + m_Chats.size());
+		log.debug("{} chat records loaded", m_Chats.size());
 	}	// loadChats
 
 	/**
@@ -2697,32 +2690,40 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 	}	// fireDataStatusChanged
 
-	private void updateDataStatusEventProperties(final DataStatusEvent e)
+	private void updateDataStatusEventProperties(final DataStatusEvent event)
 	{
-		final String keyColumnName = getKeyColumnName();
-
-		e.Created = (Timestamp)getValue("Created");
-		e.CreatedBy = (Integer)getValue("CreatedBy");
-		e.Updated = (Timestamp)getValue("Updated");
-		e.UpdatedBy = (Integer)getValue("UpdatedBy");
-		e.Record_ID = getValue(keyColumnName);
-		// Info
-		final StringBuilder info = new StringBuilder(getTableName());
+		event.setCreated((Integer)getValue("CreatedBy"), (Timestamp)getValue("Created"));
+		event.setUpdated((Integer)getValue("UpdatedBy"), (Timestamp)getValue("Updated"));
+		
+		
+		final int adTableId = getAD_Table_ID();
+		final String singleKeyColumnName = getKeyColumnName();
+		
 		// We have a key column
-		if (keyColumnName != null && keyColumnName.length() > 0)
+		if(!Check.isEmpty(singleKeyColumnName, true))
 		{
-			info.append(" - ").append(keyColumnName).append("=").append(e.Record_ID);
-		}
-		else
-		// we have multiple parents
-		{
-			for (int i = 0; i < m_parents.size(); i++)
+			final int recordId = getRecord_ID();
+			if(recordId < 0)
 			{
-				final String keyCol = m_parents.get(i);
-				info.append(" - ").append(keyCol).append("=").append(getValue(keyCol));
+				event.setAdTableId(adTableId);
+			}
+			else
+			{
+				event.setSingleKeyRecord(adTableId, singleKeyColumnName, recordId);
 			}
 		}
-		e.Info = info.toString();
+		// we have multiple parents
+		else if(!m_parents.isEmpty())
+		{
+			final Map<String, Object> valuesByColumnName = new HashMap<>();
+			for (final String keyColumnName : m_parents)
+			{
+				final Object keyValue = getValue(keyColumnName);
+				valuesByColumnName.put(keyColumnName, keyValue);
+			}
+			
+			event.setRecord(adTableId, ComposedRecordId.composedKey(valuesByColumnName));
+		}
 	}
 
 	/**
@@ -2827,7 +2828,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return m_currentRow;
 		}
-		log.info("Row=" + targetRow);
+		log.debug("navigate: row={}", targetRow);
 
 		// Row range check
 		int newRow = verifyRow(targetRow);
@@ -2870,7 +2871,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public int navigateCurrent()
 	{
-		log.info("Row=" + m_currentRow);
+		log.debug("navigateCurrent: row={}", m_currentRow);
 		return setCurrentRow(m_currentRow, true);
 	}   // navigateCurrent
 
@@ -3004,9 +3005,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			// inform APanel/.. -> dataStatus with row updated
 			if (m_DataStatusEvent == null)
 			{
-				m_DataStatusEvent = new DataStatusEvent(this, getRowCount(),
-						isInserting,  		// changed
-						Env.isAutoCommit(Env.getCtx(), m_vo.WindowNo), isInserting);
+				m_DataStatusEvent = DataStatusEvent.builder()
+						.source(this)
+						.totalRows(getRowCount())
+						.changed(isInserting)
+						.autoSave(Env.isAutoCommit(Env.getCtx(), m_vo.WindowNo))
+						.inserting(isInserting)
+						.build();
 			}
 			//
 			m_DataStatusEvent.setCurrentRow(m_currentRow);

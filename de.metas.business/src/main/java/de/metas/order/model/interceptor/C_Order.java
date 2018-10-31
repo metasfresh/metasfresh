@@ -10,8 +10,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 
@@ -22,6 +20,8 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.IOrderPA;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -86,8 +86,10 @@ public class C_Order
 			// I checked the code of OrderBL.updateAddresses() and MOrderLine.setHeaderInfo() to get this list
 			I_C_Order.COLUMNNAME_C_BPartner_ID,
 			I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
+			I_C_Order.COLUMNNAME_AD_User_ID,
 			I_C_Order.COLUMNNAME_DropShip_BPartner_ID,
 			I_C_Order.COLUMNNAME_DropShip_Location_ID,
+			I_C_Order.COLUMNNAME_DropShip_User_ID,
 			I_C_Order.COLUMNNAME_M_PriceList_ID,
 			I_C_Order.COLUMNNAME_IsSOTrx,
 			I_C_Order.COLUMNNAME_C_Currency_ID })
@@ -199,12 +201,15 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_C_DocType_ID,
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID,
 			I_C_Order.COLUMNNAME_C_BPartner_ID
 	})
 	public void updateDescriptionFromDocType(final I_C_Order order)
 	{
-		Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
+		if (!InterfaceWrapperHelper.isCopying(order))
+		{
+			Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
+		}
 	}
 
 	@ModelChange(timings = {

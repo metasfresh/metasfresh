@@ -29,12 +29,12 @@ package de.metas.payment.sepa.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.payment.sepa.api.IIBANValidationBL;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg

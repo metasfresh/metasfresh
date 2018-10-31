@@ -19,14 +19,15 @@ package org.compiere.model;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -39,6 +40,9 @@ import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Physical Inventory Model
@@ -56,7 +60,7 @@ import de.metas.quantity.Quantity;
 public class MInventory extends X_M_Inventory implements IDocument
 {
 	private static final long serialVersionUID = 910998472569265447L;
-	
+
 	private boolean m_justPrepared;
 
 	public MInventory(final Properties ctx, final int M_Inventory_ID, final String trxName)
@@ -86,10 +90,10 @@ public class MInventory extends X_M_Inventory implements IDocument
 	 * @param wh
 	 * @param trxName
 	 */
-	public MInventory(final MWarehouse wh, final String trxName)
+	public MInventory(final I_M_Warehouse wh)
 	{
-		this(wh.getCtx(), 0, trxName);
-		setClientOrg(wh);
+		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
+		setClientOrgFromModel(wh);
 		setM_Warehouse_ID(wh.getM_Warehouse_ID());
 	}
 
@@ -161,11 +165,12 @@ public class MInventory extends X_M_Inventory implements IDocument
 		if (getC_DocType_ID() <= 0)
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-			final int docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 					.adClientId(getAD_Client_ID())
 					.adOrgId(getAD_Org_ID())
-					.build());
+					.build();
+			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 			setC_DocType_ID(docTypeId);
 		}
 		return true;
@@ -501,6 +506,12 @@ public class MInventory extends X_M_Inventory implements IDocument
 		}
 
 		return sb.toString();
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getMovementDate());
 	}
 
 	/**

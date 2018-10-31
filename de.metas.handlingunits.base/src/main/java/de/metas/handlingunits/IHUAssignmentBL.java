@@ -25,10 +25,9 @@ package de.metas.handlingunits;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.util.ISingletonService;
 
 public interface IHUAssignmentBL extends ISingletonService
 {

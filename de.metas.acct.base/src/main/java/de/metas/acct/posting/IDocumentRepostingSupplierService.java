@@ -4,10 +4,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.acct.spi.IDocumentRepostingSupplier;
 import de.metas.document.engine.IDocument;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

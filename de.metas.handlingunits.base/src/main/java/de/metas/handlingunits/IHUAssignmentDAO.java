@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -39,6 +38,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import lombok.Value;
 

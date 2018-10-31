@@ -32,8 +32,6 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TimeUtil;
 
@@ -50,6 +48,8 @@ import de.metas.tourplanning.model.validator.DeliveryDayAllocableInterceptor;
 import de.metas.tourplanning.spi.CompositeDeliveryDayHandler;
 import de.metas.tourplanning.spi.IDeliveryDayCreateHandler;
 import de.metas.tourplanning.spi.IDeliveryDayHandler;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class DeliveryDayBL implements IDeliveryDayBL

@@ -20,11 +20,11 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.util.Services;
 
 /**
  *	Dunning Run Line Model

@@ -36,8 +36,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -46,6 +44,8 @@ import com.google.common.base.Function;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.snapshot.ISnapshotHandler;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModelType>
 		implements ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType>

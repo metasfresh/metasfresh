@@ -34,8 +34,6 @@ import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.api.impl.ArchiveStorageFactory;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Util;
@@ -53,6 +51,8 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Note: all tests are still valid, it's just the architecture that is legacy.

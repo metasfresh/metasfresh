@@ -2,10 +2,9 @@ package de.metas.procurement.base;
 
 import java.util.Date;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.procurement.base.balance.PMMBalanceSegment;
 import de.metas.procurement.base.model.I_PMM_Week;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

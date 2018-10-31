@@ -25,9 +25,10 @@ package de.metas.mforecast;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
+
+import de.metas.util.ISingletonService;
 
 public interface IForecastDAO extends ISingletonService
 {

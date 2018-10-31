@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.util.Check;
 
 /**
  * Expectations for a set of {@link IInvoiceLineAttribute}s.

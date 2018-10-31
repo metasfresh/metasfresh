@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -33,6 +32,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.time.SystemTime;
 
 
 /**

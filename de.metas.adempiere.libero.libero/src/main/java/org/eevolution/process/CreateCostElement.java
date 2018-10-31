@@ -47,7 +47,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
@@ -61,6 +60,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  * Create Cost Element

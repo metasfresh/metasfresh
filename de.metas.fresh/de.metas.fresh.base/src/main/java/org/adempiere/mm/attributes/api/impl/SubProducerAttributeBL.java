@@ -33,17 +33,17 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ISubProducerAttributeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.fresh.model.I_C_BPartner;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class SubProducerAttributeBL implements ISubProducerAttributeBL
 {
@@ -109,7 +109,7 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final AttributeId subProducerAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(Constants.ATTR_SubProducerBPartner_Value);
+		final AttributeId subProducerAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
 		if (subProducerAttributeId == null)
 		{
 			return null;

@@ -26,11 +26,11 @@ package de.metas.tax.api;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 
+import de.metas.util.ISingletonService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

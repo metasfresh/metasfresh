@@ -84,12 +84,13 @@ public class CRPSummary extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		AD_Client_ID = Integer.parseInt(Env.getContext(Env.getCtx(), "#AD_Client_ID"));
                 ProcessInfoParameter[] para = getParametersAsArray();
                 
-        AD_PInstance_ID = getAD_PInstance_ID();        
+        AD_PInstance_ID = getPinstanceId().getRepoId();
                
 		for (int i = 0; i < para.length; i++)
 		{
@@ -119,7 +120,8 @@ public class CRPSummary extends JavaProcess
 		}
 	}	//	prepare
        
-     protected String doIt() throws Exception                
+     @Override
+	protected String doIt() throws Exception                
      {
   
          return runCRP();

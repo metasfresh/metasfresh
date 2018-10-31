@@ -21,7 +21,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 /**
  * Expense Type Model

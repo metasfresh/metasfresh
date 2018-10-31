@@ -35,8 +35,6 @@ import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -44,6 +42,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper class used to compile {@link IMaterialTrackingQuery} to actual {@link IQuery} or {@link IQueryBuilder}.

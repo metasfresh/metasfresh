@@ -22,13 +22,13 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Match Invoice (Receipt<>Invoice) Model.

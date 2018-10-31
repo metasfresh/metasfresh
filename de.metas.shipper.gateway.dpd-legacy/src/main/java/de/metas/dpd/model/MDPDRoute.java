@@ -32,10 +32,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.adempiere.util.Check;
 import org.compiere.model.Query;
 
 import de.metas.dpd.exception.DPDException;
+import de.metas.util.Check;
 
 /**
  * 

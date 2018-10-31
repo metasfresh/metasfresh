@@ -7,7 +7,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Movement;
 import org.compiere.util.TrxRunnable2;
 
@@ -21,6 +20,7 @@ import de.metas.handlingunits.client.terminal.select.model.WarehouseKeyLayout;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.movement.event.MovementUserNotificationsProducer;
+import de.metas.util.Services;
 
 /*
  * #%L

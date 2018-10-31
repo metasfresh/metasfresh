@@ -3,21 +3,23 @@ package de.metas.pricing.service.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
@@ -32,13 +34,17 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class PriceListDAO implements IPriceListDAO
@@ -55,7 +61,25 @@ public class PriceListDAO implements IPriceListDAO
 
 		return loadOutOfTrx(pricingSystemId, I_M_PricingSystem.class);
 	}
-	
+
+	@Override
+	public PricingSystemId getPricingSystemIdByValue(@NonNull final String value)
+	{
+		final int pricingSystemId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_PricingSystem.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_PricingSystem.COLUMNNAME_Value, value)
+				.create()
+				.firstIdOnly();
+
+		if (pricingSystemId <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@ (@Value@=" + value + ")");
+		}
+
+		return PricingSystemId.ofRepoId(pricingSystemId);
+	}
+
 	@Override
 	public I_M_PriceList getById(final int priceListId)
 	{
@@ -342,4 +366,54 @@ public class PriceListDAO implements IPriceListDAO
 
 		return ImmutableSet.copyOf(countryIds);
 	}
+
+	@Override
+	public Set<ProductId> retrieveHighPriceProducts(@NonNull final BigDecimal minimumPrice, @NonNull final LocalDate date)
+	{
+
+		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_M_ProductPrice.COLUMNNAME_PriceStd, Operator.GREATER_OR_EQUAL, minimumPrice)
+				.addFiltersUnboxed(createPriceProductQueryFilter(date));
+
+		queryBuilder.orderBy()
+				.addColumn(I_M_ProductPrice.COLUMNNAME_M_Product_ID);
+
+		return queryBuilder.create()
+				.stream()
+				.map(I_M_ProductPrice::getM_Product_ID)
+				.map(ProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+	}
+
+	private final ICompositeQueryFilter<I_M_ProductPrice> createPriceProductQueryFilter(@NonNull final LocalDate date)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_M_ProductPrice> filters = queryBL.createCompositeQueryFilter(I_M_ProductPrice.class);
+
+		filters.addOnlyActiveRecordsFilter();
+
+		final int currencyId = Services.get(ICurrencyBL.class).getBaseCurrency(Env.getCtx()).getC_Currency_ID();
+
+		final IQuery<I_M_PriceList> currencyPriceListQuery = queryBL.createQueryBuilder(I_M_PriceList.class)
+				.addEqualsFilter(I_M_PriceList.COLUMN_C_Currency_ID, currencyId)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		final IQuery<I_M_PriceList_Version> currencyPriceLisVersiontQuery = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addInSubQueryFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList.COLUMNNAME_M_PriceList_ID, currencyPriceListQuery)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(
+						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
+						CompareQueryFilter.Operator.LESS_OR_EQUAL,
+						date,
+						DateTruncQueryFilterModifier.DAY)
+				.create();
+
+		filters.addInSubQueryFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID, currencyPriceLisVersiontQuery);
+
+		return filters;
+	}
+
 }

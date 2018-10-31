@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -39,6 +38,7 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.util.Services;
 
 /**
  * Post Shipment/Receipt Documents.
@@ -289,7 +289,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		getDocLines().forEach(line -> createFacts_PurchasingReceiptLine(fact, line));
-		
+
 		return ImmutableList.of(fact);
 	}
 

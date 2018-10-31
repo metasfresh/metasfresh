@@ -36,8 +36,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -55,6 +53,8 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder

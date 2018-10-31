@@ -80,10 +80,12 @@ FROM ad_tab t
 JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
 JOIN ad_column c ON c.ad_table_id = t.ad_table_id
 	JOIN ad_column_trl c_trl ON c_trl.ad_column_id = c.ad_column_id
-		JOIN ad_field f ON f.ad_tab_id = t.ad_tab_id AND f.ad_column_id = c.ad_column_id /* if there is no field in this tab, then don't show a row https://github.com/metasfresh/metasfresh/issues/4426 */
+		LEFT JOIN ad_field f ON f.ad_tab_id = t.ad_tab_id AND f.ad_column_id = c.ad_column_id
 			LEFT JOIN ad_field_trl f_trl ON f_trl.ad_field_id = f.ad_field_id AND f_trl.ad_language::text = c_trl.ad_language::text
 				LEFT JOIN ad_fieldgroup fg ON fg.ad_fieldgroup_id = f.ad_fieldgroup_id
 					LEFT JOIN ad_fieldgroup_trl fg_trl ON fg_trl.ad_fieldgroup_id = f.ad_fieldgroup_id AND fg_trl.ad_language::text = c_trl.ad_language::text
 			LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)
-WHERE f.isactive = 'Y' AND c.isactive = 'Y'
+WHERE 
+(f.isactive = 'Y' or f.AD_Field_ID is null)
+AND c.isactive = 'Y'
 ;

@@ -27,11 +27,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.exception.AccountingException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.util.Env;
+
+import de.metas.util.ISingletonService;
 
 public interface IAcctSchemaDAO extends ISingletonService
 {

@@ -28,13 +28,13 @@ import static org.junit.Assert.assertNull;
 import java.util.Collections;
 
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.ModelValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import de.metas.adempiere.test.POTest;
+import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

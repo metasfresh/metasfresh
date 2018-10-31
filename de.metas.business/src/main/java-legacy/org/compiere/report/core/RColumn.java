@@ -20,13 +20,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  *  Report Column

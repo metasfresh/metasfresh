@@ -1,17 +1,17 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.List;
-import java.util.Map;
+import org.adempiere.service.OrgId;
 
+import de.metas.vertical.pharma.msv3.protocol.order.MSV3PurchaseCandidateId;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Bestellung;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungPosition;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Bestellung;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAuftrag;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungPosition;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -41,75 +41,67 @@ import lombok.NonNull;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MSV3PurchaseOrderRequestPersister
 {
-	public static MSV3PurchaseOrderRequestPersister createNewForOrgId(
-			final int orgId,
-			final Map<BestellungPosition, Integer> bestellungPosition2PurchaseCandidateId)
+	public static MSV3PurchaseOrderRequestPersister createNewForOrgId(final OrgId orgId)
 	{
-		return new MSV3PurchaseOrderRequestPersister(
-				orgId,
-				bestellungPosition2PurchaseCandidateId);
+		return new MSV3PurchaseOrderRequestPersister(orgId);
 	}
 
-	private final int orgId;
+	@NonNull
+	private final OrgId orgId;
 
-	private final Map<BestellungPosition, Integer> bestellungPosition2PurchaseCandidateId;
-
-
-	public I_MSV3_Bestellung storePurchaseOrderRequest(@NonNull final Bestellung bestellung)
+	public I_MSV3_Bestellung storePurchaseOrderRequest(@NonNull final OrderCreateRequest request)
 	{
-		final I_MSV3_Bestellung bestellungRecord = createBestellungRecord(bestellung);
+		final I_MSV3_Bestellung bestellungRecord = createRecord(request);
 		save(bestellungRecord);
 
-		final List<BestellungAuftrag> auftraege = bestellung.getAuftraege();
-		for (final BestellungAuftrag auftrag : auftraege)
+		for (final OrderCreateRequestPackage requestOrder : request.getOrderPackages())
 		{
-			final I_MSV3_BestellungAuftrag bestellungAuftragRecord = createBestellungAuftragRecord(auftrag);
-			bestellungAuftragRecord.setMSV3_Bestellung(bestellungRecord);
-			save(bestellungAuftragRecord);
+			final I_MSV3_BestellungAuftrag requestOrderRecord = createRecord(requestOrder);
+			requestOrderRecord.setMSV3_Bestellung(bestellungRecord);
+			save(requestOrderRecord);
 
-			final List<BestellungPosition> positionen = auftrag.getPositionen();
-			for (final BestellungPosition position : positionen)
+			for (final OrderCreateRequestPackageItem requestItem : requestOrder.getItems())
 			{
-				final I_MSV3_BestellungPosition bestellungPositionRecord = createBestellungPosition(position);
-				bestellungPositionRecord.setMSV3_BestellungAuftrag(bestellungAuftragRecord);
+				final I_MSV3_BestellungPosition bestellungPositionRecord = createRecord(requestItem);
+				bestellungPositionRecord.setMSV3_BestellungAuftrag(requestOrderRecord);
 				save(bestellungPositionRecord);
 			}
 		}
 		return bestellungRecord;
 	}
 
-	private I_MSV3_Bestellung createBestellungRecord(@NonNull final Bestellung bestellung)
+	private I_MSV3_Bestellung createRecord(@NonNull final OrderCreateRequest request)
 	{
-		final I_MSV3_Bestellung bestellungRecord = newInstance(I_MSV3_Bestellung.class);
-		bestellungRecord.setAD_Org_ID(orgId);
-		bestellungRecord.setMSV3_BestellSupportId(bestellung.getBestellSupportId());
-		bestellungRecord.setMSV3_Id(bestellung.getId());
+		final I_MSV3_Bestellung record = newInstanceOutOfTrx(I_MSV3_Bestellung.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setMSV3_BestellSupportId(request.getSupportId().getValueAsInt());
+		record.setMSV3_Id(request.getOrderId().getValueAsString());
 
-		return bestellungRecord;
+		return record;
 	}
 
-	private I_MSV3_BestellungAuftrag createBestellungAuftragRecord(@NonNull final BestellungAuftrag auftrag)
+	private I_MSV3_BestellungAuftrag createRecord(@NonNull final OrderCreateRequestPackage requestOrder)
 	{
-		final I_MSV3_BestellungAuftrag bestellungAuftragRecord = newInstance(I_MSV3_BestellungAuftrag.class);
-		bestellungAuftragRecord.setAD_Org_ID(orgId);
-		bestellungAuftragRecord.setMSV3_Auftragsart(auftrag.getAuftragsart().value());
-		bestellungAuftragRecord.setMSV3_Auftragskennung(auftrag.getAuftragskennung());
-		bestellungAuftragRecord.setMSV3_AuftragsSupportID(auftrag.getAuftragsSupportID());
-		bestellungAuftragRecord.setMSV3_GebindeId(auftrag.getGebindeId());
-		bestellungAuftragRecord.setMSV3_Id(auftrag.getId());
+		final I_MSV3_BestellungAuftrag record = newInstanceOutOfTrx(I_MSV3_BestellungAuftrag.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setMSV3_Auftragsart(requestOrder.getOrderType().getV2SoapCode().value());
+		record.setMSV3_Auftragskennung(requestOrder.getOrderIdentification());
+		record.setMSV3_AuftragsSupportID(requestOrder.getSupportId().getValueAsInt());
+		record.setMSV3_GebindeId(requestOrder.getPackingMaterialId());
+		record.setMSV3_Id(requestOrder.getId().getValueAsString());
 
-		return bestellungAuftragRecord;
+		return record;
 	}
 
-	private I_MSV3_BestellungPosition createBestellungPosition(@NonNull final BestellungPosition position)
+	private I_MSV3_BestellungPosition createRecord(@NonNull final OrderCreateRequestPackageItem requestItem)
 	{
-		final I_MSV3_BestellungPosition bestellungPositionRecord = newInstance(I_MSV3_BestellungPosition.class);
-		bestellungPositionRecord.setAD_Org_ID(orgId);
-		bestellungPositionRecord.setMSV3_Liefervorgabe(position.getLiefervorgabe().value());
-		bestellungPositionRecord.setMSV3_Menge(position.getMenge());
-		bestellungPositionRecord.setMSV3_Pzn(Long.toString(position.getPzn()));
-		bestellungPositionRecord.setC_PurchaseCandidate_ID(bestellungPosition2PurchaseCandidateId.get(position));
+		final I_MSV3_BestellungPosition record = newInstanceOutOfTrx(I_MSV3_BestellungPosition.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setMSV3_Liefervorgabe(requestItem.getDeliverySpecifications().getV2SoapCode().value());
+		record.setMSV3_Menge(requestItem.getQty().getValueAsInt());
+		record.setMSV3_Pzn(requestItem.getPzn().getValueAsString());
+		record.setC_PurchaseCandidate_ID(MSV3PurchaseCandidateId.toRepoId(requestItem.getPurchaseCandidateId()));
 
-		return bestellungPositionRecord;
+		return record;
 	}
 }

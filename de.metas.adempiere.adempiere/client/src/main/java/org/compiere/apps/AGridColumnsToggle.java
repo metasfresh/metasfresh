@@ -28,10 +28,11 @@ import java.awt.event.ActionListener;
 
 import javax.swing.AbstractButton;
 
-import org.adempiere.util.Check;
 import org.compiere.grid.GridController;
 import org.compiere.grid.VTable;
 import org.compiere.swing.CColumnControlButton;
+
+import de.metas.util.Check;
 
 /**
  * Toolbar action used to show/hide the grid columns in a standard window tab, grid mode view.

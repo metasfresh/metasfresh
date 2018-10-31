@@ -34,9 +34,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.NumberUtils;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
@@ -53,6 +50,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;

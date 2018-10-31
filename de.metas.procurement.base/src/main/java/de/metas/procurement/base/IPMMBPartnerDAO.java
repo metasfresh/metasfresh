@@ -2,10 +2,10 @@ package de.metas.procurement.base;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.procurement.base.model.I_AD_User;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

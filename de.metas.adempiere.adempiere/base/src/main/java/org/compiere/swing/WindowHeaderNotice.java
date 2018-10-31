@@ -30,9 +30,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
 import org.adempiere.util.Colors;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
 
 /**
  * See http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system

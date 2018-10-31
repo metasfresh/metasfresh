@@ -10,7 +10,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
@@ -36,6 +35,7 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

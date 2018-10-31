@@ -18,7 +18,6 @@ package org.compiere.process;
 
 import java.io.File;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
@@ -39,6 +38,7 @@ import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Dunning Letter Print

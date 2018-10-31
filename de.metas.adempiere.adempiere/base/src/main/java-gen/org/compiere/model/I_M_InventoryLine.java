@@ -69,6 +69,29 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Zugewiesen an.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAssignedTo (java.lang.String AssignedTo);
+
+	/**
+	 * Get Zugewiesen an.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAssignedTo();
+
+    /** Column definition for AssignedTo */
+    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, Object> COLUMN_AssignedTo = new org.adempiere.model.ModelColumn<I_M_InventoryLine, Object>(I_M_InventoryLine.class, "AssignedTo", null);
+    /** Column name AssignedTo */
+    public static final String COLUMNNAME_AssignedTo = "AssignedTo";
+
+	/**
 	 * Set Kosten.
 	 * Additional document charges
 	 *
@@ -102,7 +125,7 @@ public interface I_M_InventoryLine
 	 * Maßeinheit
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_UOM_ID (int C_UOM_ID);
@@ -112,7 +135,7 @@ public interface I_M_InventoryLine
 	 * Maßeinheit
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
@@ -228,6 +251,31 @@ public interface I_M_InventoryLine
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_InventoryLine, Object>(I_M_InventoryLine.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Gezählt.
+	 * Count number of not empty elements
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCounted (boolean IsCounted);
+
+	/**
+	 * Get Gezählt.
+	 * Count number of not empty elements
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCounted();
+
+    /** Column definition for IsCounted */
+    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, Object> COLUMN_IsCounted = new org.adempiere.model.ModelColumn<I_M_InventoryLine, Object>(I_M_InventoryLine.class, "IsCounted", null);
+    /** Column name IsCounted */
+    public static final String COLUMNNAME_IsCounted = "IsCounted";
 
 	/**
 	 * Set Zeile Nr..

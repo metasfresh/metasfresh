@@ -31,12 +31,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.jgoodies.common.base.Objects;
 
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -46,15 +45,17 @@ import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.UpperBoundAllocationStrategy;
-import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Creates TUs.
@@ -71,7 +72,7 @@ import de.metas.quantity.CapacityInterface;
 
 	//
 	// Constrained capacity to use
-	private final Map<Integer, Capacity> productId2capacity = new HashMap<>();
+	private final Map<ProductId, Capacity> productId2capacity = new HashMap<>();
 
 	/** How many TUs to produce (maximum) */
 	private int maxTUs = Integer.MAX_VALUE;
@@ -102,7 +103,7 @@ import de.metas.quantity.CapacityInterface;
 			return;
 		}
 
-		final int productId = capacity.getM_Product().getM_Product_ID();
+		final ProductId productId = capacity.getProductId();
 		productId2capacity.put(productId, capacity);
 	}
 
@@ -204,7 +205,7 @@ import de.metas.quantity.CapacityInterface;
 			// check if the TU's capacity exceeds the current request
 			final CapacityInterface exceedingCapacityOfTU = capacityPerTU.subtractQuantity(request.getQuantity());
 
-			if (HandlingUnitsDAO.VIRTUAL_HU_PI_ID == parentPIItem.getIncluded_HU_PI_ID()
+			if (HuPackingInstructionsId.isVirtualRepoId(parentPIItem.getIncluded_HU_PI_ID())
 					|| exceedingCapacityOfTU.getCapacityQty().signum() > 0)
 			{
 				// Either this loading is about putting CUs directly on an LU which can be done, but then an aggregate HU is not supported and doesn't make sense (issue gh #1194).
@@ -257,7 +258,7 @@ import de.metas.quantity.CapacityInterface;
 	 */
 	private Capacity getCapacity(final IAllocationRequest request, final I_M_HU hu)
 	{
-		final int productId = request.getProduct().getM_Product_ID();
+		final ProductId productId = request.getProductId();
 		final Capacity capacityToUse;
 		final Capacity capacityOverride = productId2capacity.get(productId);
 
@@ -277,10 +278,10 @@ import de.metas.quantity.CapacityInterface;
 					+ "this={}", tuPI, getC_BPartner(), materialPIItems, this);
 
 			final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getC_BPartner(), request.getProduct(), request.getDate());
+			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getC_BPartner(), request.getProductId(), request.getDate());
 
 			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
-			final Capacity capacity = capacityBL.getCapacity(itemProduct, request.getProduct(), request.getC_UOM());
+			final Capacity capacity = capacityBL.getCapacity(itemProduct, request.getProductId(), request.getC_UOM());
 
 			capacityToUse = capacity;
 		}

@@ -31,7 +31,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
@@ -50,6 +49,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_C_Order.class)

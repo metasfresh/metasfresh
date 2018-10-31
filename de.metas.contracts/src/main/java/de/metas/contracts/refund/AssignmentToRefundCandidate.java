@@ -1,6 +1,8 @@
 package de.metas.contracts.refund;
 
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -30,24 +32,62 @@ import lombok.Value;
 public class AssignmentToRefundCandidate
 {
 	@NonNull
+	RefundConfigId refundConfigId;
+
+	@NonNull
+	InvoiceCandidateId assignableInvoiceCandidateId;
+
+	@NonNull
 	RefundInvoiceCandidate refundInvoiceCandidate;
+
+	/** Relevant money amount of the assignable invoice candidate. */
+	@NonNull
+	Money moneyBase;
 
 	@NonNull
 	Money moneyAssignedToRefundCandidate;
 
-	public AssignmentToRefundCandidate withSubtractedMoneyAmount()
+	@NonNull
+	Quantity quantityAssigendToRefundCandidate;
+
+	boolean useAssignedQtyInSum;
+
+	public AssignmentToRefundCandidate withSubtractedAssignedMoneyAndQuantity()
 	{
-		final Money subtrahent = getMoneyAssignedToRefundCandidate();
+		final Money moneySubtrahent = getMoneyAssignedToRefundCandidate();
 		final Money newMoneyAmount = refundInvoiceCandidate
 				.getMoney()
-				.subtract(subtrahent);
+				.subtract(moneySubtrahent);
+
+		final Quantity assignedQuantitySubtrahent = getQuantityAssigendToRefundCandidate();
+		final Quantity newQuantity = refundInvoiceCandidate
+				.getAssignedQuantity()
+				.subtract(assignedQuantitySubtrahent);
 
 		final RefundInvoiceCandidate newRefundCandidate = refundInvoiceCandidate.toBuilder()
 				.money(newMoneyAmount)
+				.assignedQuantity(newQuantity)
 				.build();
 
 		return new AssignmentToRefundCandidate(
+				refundConfigId,
+				assignableInvoiceCandidateId,
 				newRefundCandidate,
-				moneyAssignedToRefundCandidate.toZero());
+				moneyBase,
+				moneyAssignedToRefundCandidate.toZero(),
+				quantityAssigendToRefundCandidate.toZero(),
+				useAssignedQtyInSum);
+	}
+
+	public AssignmentToRefundCandidate withRefundInvoiceCandidate(@NonNull final RefundInvoiceCandidate refundInvoiceCandidate)
+	{
+		return new AssignmentToRefundCandidate(
+				refundConfigId,
+				assignableInvoiceCandidateId,
+				refundInvoiceCandidate,
+				moneyBase,
+				moneyAssignedToRefundCandidate,
+				quantityAssigendToRefundCandidate,
+				useAssignedQtyInSum);
 	}
 }

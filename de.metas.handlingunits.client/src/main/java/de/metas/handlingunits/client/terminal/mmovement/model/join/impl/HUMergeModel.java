@@ -29,8 +29,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -53,6 +51,9 @@ import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTU
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public final class HUMergeModel extends AbstractMaterialMovementModel
 {
@@ -100,7 +101,7 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 		keyLayout.setColumns(layoutConstantsBL.getConstantAsInt(getLayoutConstants(), IHUPOSLayoutConstants.PROPERTY_HUSplit_KeyColumns));
 		// keyLayout.addTerminalKeyListener(listener); // we're not using listeners here
 
-		final List<ITerminalKey> selectedKeysConv = new ArrayList<ITerminalKey>();
+		final List<ITerminalKey> selectedKeysConv = new ArrayList<>();
 		for (final ITerminalKey selectedKey : selectedKeys)
 		{
 			selectedKeysConv.add(selectedKey);
@@ -165,7 +166,7 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 
 	private List<TUJoinKey> createTUJoinKeysRecursively(final List<LUJoinKey> luKeys, final LUJoinKey selectedLUKey)
 	{
-		final List<TUJoinKey> result = new ArrayList<TUJoinKey>();
+		final List<TUJoinKey> result = new ArrayList<>();
 		for (final LUJoinKey luKey : luKeys)
 		{
 			if (luKey.equals(selectedLUKey))
@@ -186,7 +187,7 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 	{
 		final IHUKey huKey = keyFactory.createKey(luKey.getM_HU(), luKey.getHUDocumentLine());
 
-		final List<TUJoinKey> result = new ArrayList<TUJoinKey>();
+		final List<TUJoinKey> result = new ArrayList<>();
 		for (final IHUKey tuHUKey : huKey.getChildren())
 		{
 			final List<TUJoinKey> tuJoinKeys = createTUJoinKeysRecursively(tuHUKey);
@@ -198,7 +199,7 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 
 	private List<TUJoinKey> createTUJoinKeysRecursively(final List<ITerminalKey> selectedTUs, final int tuCountMax)
 	{
-		final List<TUJoinKey> result = new ArrayList<TUJoinKey>();
+		final List<TUJoinKey> result = new ArrayList<>();
 		int tuCountRemaining = tuCountMax;
 		for (final ITerminalKey tuKey : selectedTUs)
 		{
@@ -241,7 +242,7 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 
 	private List<TUJoinKey> createTUJoinKeysRecursively(final IHUKey huKey)
 	{
-		final List<TUJoinKey> result = new ArrayList<TUJoinKey>();
+		final List<TUJoinKey> result = new ArrayList<>();
 
 		if (huKey.isGrouping())
 		{
@@ -334,7 +335,8 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 
 		final IHUProductStorage storage = storages.get(0);
 
-		mergeBuilder.setCUProduct(storage.getM_Product());
+		final ProductId productId = storage.getProductId();
+		mergeBuilder.setCUProductId(productId);
 		mergeBuilder.setCUUOM(storage.getC_UOM());
 
 		final BigDecimal qtyCU = new BigDecimal(getSelectedChildrenCount());
@@ -369,7 +371,7 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 
 	private <T extends ILUTUJoinKey> List<T> getSelectedKeys(final Class<T> keyType)
 	{
-		final List<T> result = new ArrayList<T>(_selectedKeys.size());
+		final List<T> result = new ArrayList<>(_selectedKeys.size());
 		for (final ILUTUJoinKey selectedKey : _selectedKeys)
 		{
 			final T selectedKeyConv = keyType.cast(selectedKey);

@@ -34,13 +34,16 @@ import java.util.Set;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.IPackingMaterialDocumentLine;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -55,14 +58,14 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	 *
 	 * For creating packing material key, see {@link #createPackingMaterialKey(int)}.
 	 */
-	private final Map<ArrayKey, IPackingMaterialDocumentLine> packingMaterialKey2packingMaterialLine = new HashMap<ArrayKey, IPackingMaterialDocumentLine>();
+	private final Map<ArrayKey, IPackingMaterialDocumentLine> packingMaterialKey2packingMaterialLine = new HashMap<>();
 
 	/**
 	 * Set of sources which have no packing materials.
 	 *
 	 * We will use this set to be able to unlink those sources from existing packing material lines (if any).
 	 */
-	private final Set<IPackingMaterialDocumentLineSource> sourcesWithoutPackingMaterials = new HashSet<IPackingMaterialDocumentLineSource>();
+	private final Set<IPackingMaterialDocumentLineSource> sourcesWithoutPackingMaterials = new HashSet<>();
 
 	public AbstractPackingMaterialDocumentLinesBuilder()
 	{
@@ -90,17 +93,17 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	{
 		Check.assumeNotNull(line, "line not null");
 
-		final ArrayKey pmKey = createPackingMaterialKey(line.getM_Product_ID());
+		final ArrayKey pmKey = createPackingMaterialKey(line.getProductId());
 		final IPackingMaterialDocumentLine lineExisting = packingMaterialKey2packingMaterialLine.put(pmKey, line);
 		if (lineExisting != null)
 		{
-			throw new AdempiereException("An packing material line was already added for product " + line.getM_Product());
+			final String productName = Services.get(IProductBL.class).getProductValueAndName(line.getProductId());
+			throw new AdempiereException("An packing material line was already added for product " + productName);
 		}
 	}
 
-	private ArrayKey createPackingMaterialKey(final int productId)
+	private ArrayKey createPackingMaterialKey(@NonNull final ProductId productId)
 	{
-		Check.assume(productId > 0, "productId > 0");
 		return Util.mkKey(productId);
 	}
 
@@ -140,7 +143,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 
 	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(final I_M_HU_PackingMaterial packingMaterial)
 	{
-		final int productId = packingMaterial.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(packingMaterial.getM_Product_ID());
 		final ArrayKey pmKey = createPackingMaterialKey(productId);
 
 		//

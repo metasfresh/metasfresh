@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -35,6 +34,7 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.ISingletonService;
 
 public interface IReceiptScheduleDAO extends ISingletonService
 {

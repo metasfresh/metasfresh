@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.FileUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
@@ -38,6 +37,7 @@ import org.compiere.util.Util;
 
 import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
 import de.metas.document.archive.spi.impl.RestHttpArchiveEndpoint;
+import de.metas.util.FileUtils;
 
 /**
  * Manual test: connect to REST HTTP endpoint and fetch given archive

@@ -25,10 +25,10 @@ package de.metas.currency.impl;
 
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Services;
 
 public class PlainCurrencyBL extends CurrencyBL
 {

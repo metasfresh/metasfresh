@@ -60,7 +60,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.product.LotNumberLockRepository;
+import de.metas.product.LotNumberQuarantineRepository;
 
 /**
  * Test creation of material receipts ({@link I_M_InOut}s) from scheduled receipts ({@link I_M_ReceiptSchedule}s) and how line aggregations are made based on products, packing and ASIs.
@@ -71,7 +71,7 @@ import de.metas.product.LotNumberLockRepository;
 @SpringBootTest(classes = {
 		StartupListener.class,
 		DistributeAndMoveReceiptCreator.class,
-		LotNumberLockRepository.class,
+		LotNumberQuarantineRepository.class,
 		ShutdownListener.class })
 public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocationWithWeightAttributeTest
 {

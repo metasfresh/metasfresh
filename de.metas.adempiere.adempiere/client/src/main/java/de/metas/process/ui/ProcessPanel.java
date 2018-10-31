@@ -21,8 +21,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Process;
@@ -40,6 +38,8 @@ import de.metas.process.IProcessExecutionListener;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

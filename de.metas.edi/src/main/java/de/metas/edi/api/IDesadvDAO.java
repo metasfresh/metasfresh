@@ -25,7 +25,6 @@ package de.metas.edi.api;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.edi.model.I_C_Order;
@@ -36,6 +35,7 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.util.ISingletonService;
 
 public interface IDesadvDAO extends ISingletonService
 {

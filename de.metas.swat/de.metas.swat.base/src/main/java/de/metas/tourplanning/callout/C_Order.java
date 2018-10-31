@@ -28,11 +28,11 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
+import de.metas.util.Services;
 
 @Callout(I_C_Order.class)
 public class C_Order

@@ -27,11 +27,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.ITerminalCheckboxField;
 import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.table.swing.TerminalTableModelListenerAdapter;
+import de.metas.util.Check;
 
 /**
  * Controller class used to bind a given "Select All" checkbox to the given {@link ITerminalTableModel}.

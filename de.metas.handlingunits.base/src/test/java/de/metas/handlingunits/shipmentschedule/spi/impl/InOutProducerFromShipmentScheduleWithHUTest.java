@@ -6,14 +6,14 @@ import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.FixedTimeSource;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.time.FixedTimeSource;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

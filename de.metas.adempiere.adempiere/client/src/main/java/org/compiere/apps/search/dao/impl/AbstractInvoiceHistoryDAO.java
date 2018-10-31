@@ -30,13 +30,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
 import org.compiere.util.Env;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Contains common decoupled methods

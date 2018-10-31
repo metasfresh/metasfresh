@@ -28,9 +28,10 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /**
  * Base class for implementing {@link Permissions} builders.

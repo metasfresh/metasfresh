@@ -28,12 +28,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Form;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
 
 /**
  * {@link IContextMenuAction} abstract implementation to be used when you want to easily open a custom form ( {@link I_AD_Form} ).

@@ -2,9 +2,10 @@ package org.adempiere.ad.element.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_UI_Element;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

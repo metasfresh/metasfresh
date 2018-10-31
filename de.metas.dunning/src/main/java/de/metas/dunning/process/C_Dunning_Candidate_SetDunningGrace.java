@@ -29,11 +29,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.Query;
 
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
 import de.metas.process.JavaProcess;
 
 /**

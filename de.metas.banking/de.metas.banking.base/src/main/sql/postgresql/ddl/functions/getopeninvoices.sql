@@ -67,46 +67,7 @@ FROM
 				-- Include the invoice which were precisely specified, if any
 				OR (i.C_Invoice_ID = $6)
 			)
-		) 
-		--
-		-- Add prepaid orders
-		UNION ALL 
-		(
-			SELECT
-				o.C_Order_ID
-				, DocumentNo
-				, GrandTotal - coalesce(o_paid.paid,0)
-				, 0
-				, GrandTotal
-				, DateOrdered 
-				, C_Currency_ID
-				, C_ConversionType_ID
-				, o.AD_Client_ID
-				, o.AD_Org_ID
-				, 1.0
-				, 1.0
-				, o.C_BPartner_ID 
-				, o.C_DocType_ID
-				, 'Y'::character varying as isPrePayOrder
-				, o.POReference
-				, o.DateAcct
-			FROM 	C_Order o 
-			LEFT OUTER JOIN 
-				(
-					SELECT SUM(amount + discountamt + writeoffamt) AS paid, C_Order_ID 
-					FROM C_AllocationLine al 
-					INNER JOIN C_AllocationHdr hdr ON (hdr.C_AllocationHdr_ID = al.C_AllocationHdr_ID AND hdr.DocStatus <>'RE') 
-					WHERE al.C_Order_ID IS NOT NULL 
-					GROUP BY al.C_Order_ID 
-				) o_paid ON (o.C_Order_ID = o_paid.C_Order_ID)  
-			WHERE o.Docstatus = 'WP'
-			--
-			AND (
-				o.C_BPartner_ID = ANY ( array(select bp.C_BPartner_ID from bpartners bp) ) -- NOTE: we transform subquery to scalar for performances
-				-- Include the order which were precisely specified, if any
-				OR (o.C_Order_ID = $7)
-			)
-		)  
+		)   
 	) i  
 	INNER JOIN C_DocType d ON (i.C_DocType_ID=d.C_DocType_ID)  
 	INNER JOIN C_Currency c ON (i.Cur=c.C_Currency_ID)  

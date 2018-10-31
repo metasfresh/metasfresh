@@ -31,11 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -61,7 +57,11 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.IdentityHashSet;
 
 public class HUKeyFactory implements IHUKeyFactory
 {
@@ -446,7 +446,7 @@ public class HUKeyFactory implements IHUKeyFactory
 				}
 
 				final IHUAllocations huAllocations = documentLine.getHUAllocations();
-				final I_M_Product product = documentLine.getM_Product();
+				final ProductId productId = documentLine.getProductId();
 				final I_C_UOM uom = documentLine.getC_UOM();
 
 				//
@@ -485,7 +485,7 @@ public class HUKeyFactory implements IHUKeyFactory
 
 					//
 					// Get Product Storage
-					final IHUProductStorage vhuProductStorage = vhuKey.getProductStorageOrNull(product);
+					final IHUProductStorage vhuProductStorage = vhuKey.getProductStorageOrNull(productId);
 					if (vhuProductStorage == null)
 					{
 						// HU does not contain document line's product. That's fine, just skip it.

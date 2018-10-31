@@ -13,8 +13,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AcctSchema;
@@ -29,6 +27,8 @@ import org.compiere.model.X_GL_JournalBatch;
 import org.compiere.util.TimeUtil;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

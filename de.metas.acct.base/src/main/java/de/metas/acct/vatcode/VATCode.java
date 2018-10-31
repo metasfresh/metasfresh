@@ -1,10 +1,11 @@
 package de.metas.acct.vatcode;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /*
  * #%L

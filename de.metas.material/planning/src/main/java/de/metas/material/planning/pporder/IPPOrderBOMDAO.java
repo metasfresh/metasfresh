@@ -26,11 +26,12 @@ package de.metas.material.planning.pporder;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
+
+import de.metas.util.ISingletonService;
 
 public interface IPPOrderBOMDAO extends ISingletonService
 {

@@ -6,11 +6,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
@@ -32,6 +27,11 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewa
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 

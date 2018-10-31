@@ -28,25 +28,25 @@ import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.MTable;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.cache.CCache;
 
 /**
  * 

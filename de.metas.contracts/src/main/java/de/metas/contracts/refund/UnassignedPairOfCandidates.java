@@ -1,10 +1,6 @@
 package de.metas.contracts.refund;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.util.Check;
-
-import de.metas.money.Money;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -22,50 +18,25 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
+@Builder
 public class UnassignedPairOfCandidates
 {
+	@NonNull
 	RefundInvoiceCandidate refundInvoiceCandidate;
 
+	@NonNull
 	AssignableInvoiceCandidate assignableInvoiceCandidate;
 
-	Money moneyToAssign;
-
-	@Builder(toBuilder = true)
-	private UnassignedPairOfCandidates(
-			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate,
-			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
-			@Nullable final Money moneyToAssign)
-	{
-		Check.assume(
-				!assignableInvoiceCandidate.isAssigned(),
-				"The given assignableInvoiceCandidate may not have an assignment; assignableInvoiceCandidate={}; refundInvoiceCandidate={}",
-				assignableInvoiceCandidate, refundInvoiceCandidate);
-		Check.assume(
-				moneyToAssign == null || moneyToAssign.getCurrencyId().equals(refundInvoiceCandidate.getMoney().getCurrencyId()),
-				"The given moneyToAssign needs to be in the given refundInvoiceCandidate's currency; moneyToAssign={}; refundInvoiceCandidate={}",
-				moneyToAssign, refundInvoiceCandidate);
-
-		this.refundInvoiceCandidate = refundInvoiceCandidate;
-		this.assignableInvoiceCandidate = assignableInvoiceCandidate;
-		this.moneyToAssign = moneyToAssign;
-	}
-
-	public UnassignedPairOfCandidates withAssignmentToRefundCandidate(
-			@NonNull final AssignmentToRefundCandidate assignmentToRefundCandidate)
-	{
-		return toBuilder()
-				.refundInvoiceCandidate(assignmentToRefundCandidate.getRefundInvoiceCandidate())
-				.moneyToAssign(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate())
-				.build();
-	}
+	@NonNull
+	Quantity unassignedQuantity;
 }

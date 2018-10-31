@@ -35,8 +35,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_PriceList_Version;
@@ -52,6 +50,8 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Import {@link I_I_Product} to {@link I_M_Product}.

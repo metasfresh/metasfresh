@@ -30,13 +30,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.util.Services;
 
 /**
  * Links to the {@link I_M_HU} (which is also containing and instance to this class, it's {@link #DYNATTR_Instance} dynamic attribute), and holds the items of that HU.

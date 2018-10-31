@@ -30,7 +30,8 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /*package*/final class ModelAttributeSetInstanceListenerInterceptor extends AbstractModelInterceptor
 {

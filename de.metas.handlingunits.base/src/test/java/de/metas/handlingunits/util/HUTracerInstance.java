@@ -30,9 +30,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 
@@ -52,6 +50,10 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.IProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class HUTracerInstance
 {
@@ -188,7 +190,7 @@ public class HUTracerInstance
 		// HU Attributes
 		final String linePrefix2 = linePrefix + linePrefixIncrement;
 		final IHUAttributesDAO huAttributesDAO = getHUAttributesDAO();
-		final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu);
+		final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes();
 		if (attrs != null && !attrs.isEmpty())
 		{
 			out.append(linePrefix2).append("Attributes: \n");
@@ -230,7 +232,9 @@ public class HUTracerInstance
 		{
 			return "(null attribute)";
 		}
-		final I_M_Attribute attribute = huAttr.getM_Attribute();
+		
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttr.getM_Attribute_ID());
 		final String attrName = attribute == null ? "(no name?)" : attribute.getName();
 
 		final StringBuilder sb = new StringBuilder();
@@ -288,7 +292,7 @@ public class HUTracerInstance
 	public void dump(final PrintStream out, final String linePrefix, final IProductStorage productStorage)
 	{
 		out.println(linePrefix
-				+ "Product=" + productStorage.getM_Product().getName()
+				+ "Product=" + Services.get(IProductBL.class).getProductValueAndName(productStorage.getProductId())
 				+ ", Qty=" + productStorage.getQty()
 				+ ", UOM=" + productStorage.getC_UOM().getUOMSymbol());
 	}

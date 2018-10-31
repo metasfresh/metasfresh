@@ -2,9 +2,8 @@ package de.metas.datev;
 
 import java.time.format.DateTimeFormatter;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.ThreadLocalDecimalFormatter;
-
+import de.metas.util.Check;
+import de.metas.util.ThreadLocalDecimalFormatter;
 import lombok.Builder;
 import lombok.Value;
 

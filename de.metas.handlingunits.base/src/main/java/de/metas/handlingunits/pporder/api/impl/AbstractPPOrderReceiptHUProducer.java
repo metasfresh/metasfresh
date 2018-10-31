@@ -38,9 +38,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -74,7 +71,11 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.impl.AbstractPPOrderReceiptHUProducer.CreateReceiptCandidateRequest;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -151,7 +152,7 @@ import lombok.NonNull;
 				throw new AdempiereException("Quantity to receive was not determined");
 			}
 
-			return createHUsInTrx(qtyCUsTotal.getQty(), qtyCUsTotal.getUOM());
+			return createHUsInTrx(qtyCUsTotal.getAsBigDecimal(), qtyCUsTotal.getUOM());
 		});
 	}
 
@@ -256,9 +257,9 @@ import lombok.NonNull;
 					.map(productStorage -> CreateReceiptCandidateRequest.builder()
 							.locatorId(locatorId)
 							.topLevelHUId(topLevelHUId)
-							.productId(productStorage.getM_Product().getM_Product_ID())
+							.productId(productStorage.getProductId())
 							.build()
-							.addQty(productStorage.getQty(), productStorage.getC_UOM()))
+							.addQty(productStorage.getQty()))
 					//
 					// Create candidate from request
 					.forEach(this::createReceiptCandidateFromRequest);
@@ -294,8 +295,8 @@ import lombok.NonNull;
 		final I_PP_Order_Qty candidate = newCandidate();
 		candidate.setM_Locator_ID(request.getLocatorId());
 		candidate.setM_HU_ID(request.getTopLevelHUId());
-		candidate.setM_Product_ID(request.getProductId());
-		candidate.setQty(request.getQty().getQty());
+		candidate.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
+		candidate.setQty(request.getQty().getAsBigDecimal());
 		candidate.setC_UOM(request.getQty().getUOM());
 		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		candidate.setProcessed(false);
@@ -411,7 +412,7 @@ import lombok.NonNull;
 			final I_M_HU topLevelHU = Services.get(IHandlingUnitsBL.class).getTopLevelParent(hu);
 
 			final CreateReceiptCandidateRequest request = requestsByTopLevelHUId.computeIfAbsent(topLevelHU.getM_HU_ID(), topLevelHUId -> CreateReceiptCandidateRequest.builder()
-					.locatorId(huTransaction.getM_Locator().getM_Locator_ID())
+					.locatorId(huTransaction.getLocatorId().getRepoId())
 					.topLevelHUId(topLevelHUId)
 					.productId(huTransaction.getProductId())
 					.build());
@@ -425,7 +426,7 @@ import lombok.NonNull;
 	{
 		private final int locatorId;
 		private final int topLevelHUId;
-		private final int productId;
+		private final ProductId productId;
 		private Quantity qty;
 
 		public CreateReceiptCandidateRequest addQty(final Quantity qtyToAdd)

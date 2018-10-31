@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
@@ -41,6 +39,8 @@ import de.metas.document.IDocTypeBL;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Aggregation Key Builder for {@link I_C_Invoice_Candidate}s.

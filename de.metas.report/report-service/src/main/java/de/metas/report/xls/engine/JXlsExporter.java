@@ -11,7 +11,6 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import org.adempiere.util.Check;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.compiere.util.Env;
 import org.jxls.area.Area;
@@ -30,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

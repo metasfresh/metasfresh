@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
@@ -49,6 +48,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inout.IInOutDAO;
 import de.metas.logging.LogManager;
 import de.metas.shipping.interfaces.I_M_Package;
+import de.metas.util.Services;
 
 /**
  * Test case:
@@ -107,10 +107,10 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		final IMutable<I_M_HU> vhu6 = new Mutable<>();
 
 		// split everything from tuHU1 and tuHU2 onto one respective LU each
-		final List<I_M_HU> splitSS1LUs = splitOnLU(tuHU1, pTomato, new BigDecimal("30"));
+		final List<I_M_HU> splitSS1LUs = splitOnLU(tuHU1, pTomatoId, new BigDecimal("30"));
 		assertThat(splitSS1LUs.size(), is(1));
 
-		final List<I_M_HU> splitSS2LUs = splitOnLU(tuHU2, pSalad, new BigDecimal("10"));
+		final List<I_M_HU> splitSS2LUs = splitOnLU(tuHU2, pSaladId, new BigDecimal("10"));
 		assertThat(splitSS2LUs.size(), is(1));
 
 		final I_M_HU splitSS2LU = splitSS2LUs.get(0); // we split full qty on a palette

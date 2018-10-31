@@ -5,9 +5,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
@@ -21,6 +18,9 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 /**
  * Helper panel used to allow user selecting some HUs and then reverse the receipts which are containing those HUs.

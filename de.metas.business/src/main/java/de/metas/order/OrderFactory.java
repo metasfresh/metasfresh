@@ -10,7 +10,6 @@ import java.util.Optional;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -19,6 +18,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

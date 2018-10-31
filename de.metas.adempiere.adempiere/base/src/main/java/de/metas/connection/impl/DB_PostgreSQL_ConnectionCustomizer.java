@@ -24,13 +24,13 @@ package de.metas.connection.impl;
 
 import java.sql.Connection;
 
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.mchange.v2.c3p0.AbstractConnectionCustomizer;
 
 import de.metas.connection.IConnectionCustomizerService;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Use this class to add specific behavior to c3p0 connection handling.

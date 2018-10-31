@@ -25,11 +25,11 @@ package de.metas.payment.esr.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.util.Services;
 
 @Validator(I_ESR_Import.class)
 public class ESR_Import

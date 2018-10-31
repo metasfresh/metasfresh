@@ -2,7 +2,6 @@ package de.metas.handlingunits.materialtracking.impl;
 
 import java.util.Map;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.DisplayType;
@@ -14,6 +13,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.util.Services;
 
 /*
  * #%L

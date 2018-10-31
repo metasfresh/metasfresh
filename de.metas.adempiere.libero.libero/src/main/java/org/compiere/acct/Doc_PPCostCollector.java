@@ -41,7 +41,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.X_C_DocType;
@@ -55,6 +54,7 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostResult;
+import de.metas.util.Services;
 
 /**
  * Post Cost Collector

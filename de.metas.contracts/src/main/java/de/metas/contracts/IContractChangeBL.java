@@ -25,10 +25,9 @@ package de.metas.contracts;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;

@@ -1,8 +1,9 @@
 package de.metas.process.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 
 /*
@@ -35,7 +36,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,9 +44,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance;
@@ -65,11 +62,17 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ADPInstanceDAO implements IADPInstanceDAO
 {
@@ -80,32 +83,28 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	/** Result FALSE = 0 */
 	public static final int RESULT_ERROR = 0;
 
-	private List<I_AD_PInstance_Para> retrieveAD_PInstance_Params(final Properties ctx, final int adPInstanceId)
+	private List<I_AD_PInstance_Para> retrieveAD_PInstance_Params(final PInstanceId pinstanceId)
 	{
-		if (adPInstanceId <= 0)
+		if (pinstanceId == null)
 		{
 			return ImmutableList.of();
 		}
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_PInstance_Para.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_PInstance_Para.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_PInstance_Para.COLUMNNAME_AD_PInstance_ID, adPInstanceId)
-				//
-				.orderBy()
-				.addColumn(I_AD_PInstance_Para.COLUMNNAME_SeqNo)
-				.endOrderBy()
-				//
+				.addEqualsFilter(I_AD_PInstance_Para.COLUMNNAME_AD_PInstance_ID, pinstanceId)
+				.orderBy(I_AD_PInstance_Para.COLUMNNAME_SeqNo)
 				.create()
 				.list(I_AD_PInstance_Para.class);
 	}
 
 	@Override
-	public List<ProcessInfoParameter> retrieveProcessInfoParameters(final Properties ctx, final int adPInstanceId)
+	public List<ProcessInfoParameter> retrieveProcessInfoParameters(final PInstanceId pinstanceId)
 	{
-		return retrieveAD_PInstance_Params(ctx, adPInstanceId)
+		return retrieveAD_PInstance_Params(pinstanceId)
 				.stream()
-				.map(adPInstancePara -> createProcessInfoParameter(adPInstancePara))
+				.map(this::createProcessInfoParameter)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -153,7 +152,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public void saveParameterToDB(final int adPInstanceId, final List<ProcessInfoParameter> piParams)
+	public void saveParameterToDB(@NonNull final PInstanceId pinstanceId, final List<ProcessInfoParameter> piParams)
 	{
 		DB.saveConstraints();
 		try
@@ -162,7 +161,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 					.setOnlyAllowedTrxNamePrefixes(true)
 					.addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 
-			saveParametersToDB0(adPInstanceId, piParams);
+			saveParametersToDB0(pinstanceId, piParams);
 		}
 		finally
 		{
@@ -174,7 +173,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	 *
 	 * Called by {@link #saveParameterToDB(ProcessInfo)} to do the actual work.
 	 */
-	private void saveParametersToDB0(final int adPInstanceId, final List<ProcessInfoParameter> piParams)
+	private void saveParametersToDB0(@NonNull final PInstanceId pinstanceId, final List<ProcessInfoParameter> piParams)
 	{
 		// exit if this ProcessInfo has no Parameters
 		if (piParams == null || piParams.isEmpty())
@@ -182,12 +181,9 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			return;
 		}
 
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
-
 		//
 		// Retrieve parameters from the database, indexed by ParameterName
-		final Properties ctx = Env.getCtx();
-		final Map<String, I_AD_PInstance_Para> adPInstanceParams = retrieveAD_PInstance_Params(ctx, adPInstanceId)
+		final Map<String, I_AD_PInstance_Para> adPInstanceParams = retrieveAD_PInstance_Params(pinstanceId)
 				.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(I_AD_PInstance_Para::getParameterName));
 
@@ -204,10 +200,10 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		{
 			I_AD_PInstance_Para adPInstanceParam = adPInstanceParams.get(piParam.getParameterName());
 
-			if (adPInstanceParam == null)        // if this Parameter is not yet existing in the DB
+			if (adPInstanceParam == null) // if this Parameter is not yet existing in the DB
 			{
 				final int seqNo = lastSeqNo + 10;
-				adPInstanceParam = createAD_PInstance_Para(ctx, adPInstanceId, piParam, seqNo);
+				adPInstanceParam = createAD_PInstance_Para(pinstanceId, piParam, seqNo);
 				lastSeqNo = adPInstanceParam.getSeqNo();
 			}
 			else
@@ -217,93 +213,23 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 	} // saveParameterToDB
 
-	private static I_AD_PInstance_Para createAD_PInstance_Para(final Properties ctx, final int adPInstanceId, final ProcessInfoParameter piPara, final int seqNo)
+	private static I_AD_PInstance_Para createAD_PInstance_Para(@NonNull final PInstanceId pinstanceId, final ProcessInfoParameter from, final int seqNo)
 	{
-		final Object value = piPara.getParameter();
-		final Object valueTo = piPara.getParameter_To();
-		// If ValueTo is null, it won't be set in the Database. Otherwise this Parameter would be split
-		// and renamed to ParameterName + "1" and ParameterName + "2" since Jasper doesn't support range
-		// parameters.
+		final I_AD_PInstance_Para record = newInstanceOutOfTrx(I_AD_PInstance_Para.class);
+		record.setAD_PInstance_ID(pinstanceId.getRepoId());
+		record.setSeqNo(seqNo);
+		record.setParameterName(from.getParameterName());
 
-		final I_AD_PInstance_Para instPara = create(ctx, I_AD_PInstance_Para.class, ITrx.TRXNAME_None);
-		instPara.setAD_PInstance_ID(adPInstanceId);
-		instPara.setSeqNo(seqNo);
+		updateAD_PInstance_Para(record, from);
 
-		instPara.setInfo(piPara.getInfo());
-		instPara.setInfo_To(piPara.getInfo_To());
-		instPara.setParameterName(piPara.getParameterName());
-
-		if (value instanceof java.util.Date || valueTo instanceof java.util.Date)
-		{
-			final Timestamp valueTS = TimeUtil.asTimestamp((java.util.Date)value);
-			instPara.setP_Date(valueTS);
-			if (valueTo != null)
-			{
-				final Timestamp valueToTS = TimeUtil.asTimestamp((java.util.Date)valueTo);
-				instPara.setP_Date_To(valueToTS);
-			}
-		}
-		else if (value instanceof BigDecimal || valueTo instanceof BigDecimal)
-		{
-			instPara.setP_Number((BigDecimal)value);
-			if (valueTo != null)
-			{
-				instPara.setP_Number_To((BigDecimal)valueTo);
-			}
-		}
-		else if (value instanceof Integer || valueTo instanceof Integer)
-		{
-			instPara.setP_Number(BigDecimal.valueOf((Integer)value));
-			if (valueTo != null)
-			{
-				instPara.setP_Number_To(BigDecimal.valueOf((Integer)valueTo));
-			}
-		}
-		else if (value instanceof String || valueTo instanceof String)
-		{
-			instPara.setP_String((String)value);
-			if (valueTo != null)
-			{
-				instPara.setP_String_To((String)valueTo);
-			}
-		}
-		else if (value instanceof Boolean || valueTo instanceof Boolean)
-		{
-			final String valueStr = DisplayType.toBooleanString((Boolean)value);
-			instPara.setP_String(valueStr);
-			if (valueTo != null)
-			{
-				final String valueStrTo = DisplayType.toBooleanString((Boolean)valueTo);
-				instPara.setP_String_To(valueStrTo);
-			}
-		}
-		else if (value == null)
-		{
-			// nothing to set
-		}
-		else
-		{
-			logger.warn("Skip setting parameter value for {} because value type is unknown: {}", instPara, piPara);
-		}
-
-		save(instPara);
-		return instPara;
+		return record;
 	}
 
-	/**
-	 * Overwrites an AD_PInstance Parameter (represented by the Object instParam) with a ProcessInfoParameter (represented by the Object piParam). The new values will be saved to the Database only if
-	 * there's a difference.
-	 *
-	 * @param piParam
-	 * @param adPInstanceParam
-	 * @task US1007
-	 */
-	private static void updateAD_PInstance_Para(final I_AD_PInstance_Para adPInstanceParam, final ProcessInfoParameter piParam)
+	private static void updateAD_PInstance_Para(final I_AD_PInstance_Para record, final ProcessInfoParameter from)
 	{
-		final Object value = piParam.getParameter();
-		final Object valueTo = piParam.getParameter_To();
+		final Object value = from.getParameter();
+		final Object valueTo = from.getParameter_To();
 
-		boolean hasChanges = false;
 		Timestamp valueDate = null;
 		Timestamp valueDateTo = null;
 		String valueString = null;
@@ -316,67 +242,55 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 		if (value == null && valueTo == null)
 		{
-			hasChanges = true;
+			// all values will be null
 		}
-		else if (value instanceof java.util.Date
-				&& (!value.equals(adPInstanceParam.getP_Date()) || !Objects.equals(valueTo, adPInstanceParam.getP_Date_To())) // value changed
-		)
+		else if (TimeUtil.isDateOrTimeObject(value) || TimeUtil.isDateOrTimeObject(valueTo))
 		{
-			hasChanges = true;
-			valueDate = TimeUtil.asTimestamp((java.util.Date)value);
-			valueDateTo = TimeUtil.asTimestamp((java.util.Date)valueTo);
+			valueDate = TimeUtil.asTimestamp(value);
+			valueDateTo = TimeUtil.asTimestamp(valueTo);
 		}
-		else if (value instanceof BigDecimal
-				&& (!value.equals(adPInstanceParam.getP_Number()) || !Objects.equals(valueTo, adPInstanceParam.getP_Number_To())) // value changed
-		)
+		else if (value instanceof BigDecimal || valueTo instanceof BigDecimal)
 		{
-			hasChanges = true;
-			valueBigDecimal = (BigDecimal)value;
-			valueBigDecimalTo = (BigDecimal)valueTo;
+			valueBigDecimal = NumberUtils.asBigDecimal(value, BigDecimal.ZERO);
+			valueBigDecimalTo = NumberUtils.asBigDecimal(valueTo, BigDecimal.ZERO);
 		}
-		else if (value instanceof Integer
-				&& (!value.equals(adPInstanceParam.getP_Number()) || !Objects.equals(valueTo, adPInstanceParam.getP_Number_To())) // value changed
-		)
+		else if (value instanceof Integer || valueTo instanceof Integer)
 		{
-			hasChanges = true;
-			valueBigDecimal = value == null ? BigDecimal.ZERO : BigDecimal.valueOf((Integer)value);
-			valueBigDecimalTo = valueTo == null ? BigDecimal.ZERO : BigDecimal.valueOf((Integer)valueTo);
+			valueBigDecimal = NumberUtils.asBigDecimal(value, BigDecimal.ZERO);
+			valueBigDecimalTo = NumberUtils.asBigDecimal(valueTo, BigDecimal.ZERO);
 		}
-		else if (value instanceof String
-				&& (!value.equals(adPInstanceParam.getP_String()) || !Objects.equals(valueTo, adPInstanceParam.getP_String_To())) // value changed
-		)
+		else if (value instanceof String || valueTo instanceof String)
 		{
-			hasChanges = true;
-			valueString = value == null ? null : value.toString();
-			valueStringTo = valueTo == null ? null : valueTo.toString();
+			valueString = value != null ? value.toString() : null;
+			valueStringTo = valueTo != null ? valueTo.toString() : null;
 		}
-		else if (value instanceof Boolean)
+		else if (value instanceof Boolean || valueTo instanceof Boolean)
 		{
-			hasChanges = true;
 			valueString = DisplayType.toBooleanString((Boolean)value);
 			valueStringTo = DisplayType.toBooleanString((Boolean)valueTo); // assumes valueTo is also boolean
 		}
-
-		if (hasChanges)
+		else
 		{
-			adPInstanceParam.setP_Date(valueDate);
-			adPInstanceParam.setP_Date_To(valueDateTo);
-			adPInstanceParam.setP_String(valueString);
-			adPInstanceParam.setP_String_To(valueStringTo);
-			adPInstanceParam.setP_Number(valueBigDecimal);
-			adPInstanceParam.setP_Number_To(valueBigDecimalTo);
-
-			adPInstanceParam.setInfo(piParam.getInfo());
-			adPInstanceParam.setInfo_To(piParam.getInfo_To());
-
-			save(adPInstanceParam);
+			logger.warn("Don't know how to convert {} and {}", value, valueTo);
 		}
+
+		record.setP_Date(valueDate);
+		record.setP_Date_To(valueDateTo);
+		record.setP_String(valueString);
+		record.setP_String_To(valueStringTo);
+		record.setP_Number(valueBigDecimal);
+		record.setP_Number_To(valueBigDecimalTo);
+
+		record.setInfo(from.getInfo());
+		record.setInfo_To(from.getInfo_To());
+
+		saveRecord(record);
 	}
 
 	@Override
-	public List<ProcessInfoLog> retrieveProcessInfoLogs(final int adPInstanceId)
+	public List<ProcessInfoLog> retrieveProcessInfoLogs(final PInstanceId pinstanceId)
 	{
-		if (adPInstanceId <= 0)
+		if (pinstanceId == null)
 		{
 			return ImmutableList.of();
 		}
@@ -387,7 +301,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 				// Order chronologically
 				// note: sometimes Log_ID=0, sometimes P_Date is null so we sort by both to make sure we will have a chronologically order.
 				+ "ORDER BY Log_ID, P_Date";
-		final Object[] sqlParams = new Object[] { adPInstanceId };
+		final Object[] sqlParams = new Object[] { pinstanceId };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -423,9 +337,9 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 	}
 
-	private void saveProcessInfoLogs(final int AD_PInstance_ID, final List<ProcessInfoLog> logs)
+	private void saveProcessInfoLogs(final PInstanceId pinstanceId, final List<ProcessInfoLog> logs)
 	{
-		if (AD_PInstance_ID <= 0)
+		if (pinstanceId == null)
 		{
 			return;
 		}
@@ -456,7 +370,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			for (final ProcessInfoLog log : logsToSave)
 			{
 				final Object[] sqlParams = new Object[] {
-						AD_PInstance_ID,
+						pinstanceId,
 						log.getLog_ID(),
 						log.getP_Date(),
 						log.getP_Number(),
@@ -493,7 +407,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		final String sql = "SELECT Result, ErrorMsg FROM AD_PInstance "
 				+ "WHERE AD_PInstance_ID=?"
 				+ " AND Result IS NOT NULL";
-		final Object[] sqlParams = new Object[] { result.getAD_PInstance_ID() };
+		final Object[] sqlParams = new Object[] { result.getPinstanceId() };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -528,11 +442,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 				{
 					if (noTry >= 3)
 					{
-						logger.warn("Waiting for AD_PInstance_ID={} to return a result", result.getAD_PInstance_ID());
+						logger.warn("Waiting for {} to return a result", result.getPinstanceId());
 					}
 					else
 					{
-						logger.debug("Waiting for AD_PInstance_ID={} to return a result", result.getAD_PInstance_ID());
+						logger.debug("Waiting for {} to return a result", result.getPinstanceId());
 					}
 					Thread.sleep(sleepTime);
 				}
@@ -555,11 +469,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public void lock(final Properties ctx, final int adPInstanceId)
+	public void lock(final PInstanceId pinstanceId)
 	{
 		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_PInstance.class, ctx, ITrx.TRXNAME_None) // outside trx
-				.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, adPInstanceId)
+				.createQueryBuilderOutOfTrx(I_AD_PInstance.class)
+				.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, pinstanceId)
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
@@ -567,23 +481,23 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public void unlockAndSaveResult(final Properties ctx, final ProcessExecutionResult result)
+	public void unlockAndSaveResult(final ProcessExecutionResult result)
 	{
-		final int adPInstanceId = result.getAD_PInstance_ID();
-		if (adPInstanceId <= 0)
+		final PInstanceId pinstanceId = result.getPinstanceId();
+		if (pinstanceId == null)
 		{
 			throw new AdempiereException("Cannot save process execution result because there is no AD_PInstance_ID: " + result);
 		}
 
-		final I_AD_PInstance adPInstance = create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
-		Check.assumeNotNull(adPInstance, "adPInstance is not null for AD_PInstance_ID={} of {}", adPInstanceId, result);
+		final I_AD_PInstance adPInstance = loadOutOfTrx(pinstanceId, I_AD_PInstance.class);
+		Check.assumeNotNull(adPInstance, "adPInstance is not null for {} of {}", pinstanceId, result);
 
 		adPInstance.setIsProcessing(false); // unlock
 		adPInstance.setResult(result.isError() ? RESULT_ERROR : RESULT_OK);
 		adPInstance.setErrorMsg(result.getSummary());
-		save(adPInstance);
+		saveRecord(adPInstance);
 
-		saveProcessInfoLogs(adPInstanceId, result.getCurrentLogs());
+		saveProcessInfoLogs(pinstanceId, result.getCurrentLogs());
 	}
 
 	@Override
@@ -596,10 +510,10 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		final List<ProcessInfoParameter> parameters = pi.getParametersNoLoad();
 		if (parameters != null && !parameters.isEmpty())
 		{
-			saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
+			saveParameterToDB(pi.getPinstanceId(), parameters);
 		}
 
-		saveSelectedIncludedRecords(pi.getAD_PInstance_ID(), pi.getSelectedIncludedRecords());
+		saveSelectedIncludedRecords(pi.getPinstanceId(), pi.getSelectedIncludedRecords());
 	}
 
 	@Override
@@ -608,15 +522,15 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		//
 		// Create/Load the AD_PInstance
 		final I_AD_PInstance adPInstance;
-		if (pi.getAD_PInstance_ID() <= 0)
+		if (pi.getPinstanceId() == null)
 		{
-			adPInstance = create(pi.getCtx(), I_AD_PInstance.class, ITrx.TRXNAME_None);
+			adPInstance = newInstanceOutOfTrx(I_AD_PInstance.class);
 			setValue(adPInstance, I_AD_PInstance.COLUMNNAME_AD_Client_ID, pi.getAD_Client_ID());
 			adPInstance.setIsProcessing(false);
 		}
 		else
 		{
-			adPInstance = create(pi.getCtx(), pi.getAD_PInstance_ID(), I_AD_PInstance.class, ITrx.TRXNAME_None);
+			adPInstance = loadOutOfTrx(pi.getPinstanceId(), I_AD_PInstance.class);
 			Check.assumeNotNull(adPInstance, "Parameter adPInstance is not null for {}", pi);
 		}
 
@@ -635,26 +549,25 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		final String adLanguage = reportingLanguage == null ? null : reportingLanguage.getAD_Language();
 		adPInstance.setAD_Language(adLanguage);
 
-		save(adPInstance);
+		saveRecord(adPInstance);
 
 		//
 		// Update ProcessInfo's AD_PInstance_ID
-		pi.setAD_PInstance_ID(adPInstance.getAD_PInstance_ID());
+		pi.setPInstanceId(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));
 	}
 
 	@Override
-	public int createAD_PInstance_ID(final Properties ctx)
+	public PInstanceId createPInstanceId()
 	{
 		final String trxName = ITrx.TRXNAME_None;
-		final int adPInstanceId = DB.getNextID(ctx, I_AD_PInstance.Table_Name, trxName);
-		Check.assume(adPInstanceId > 0, "Invalid generated AD_PInstance_ID: {}", adPInstanceId);
-		return adPInstanceId;
+		final int adPInstanceId = DB.getNextID(Env.getCtx(), I_AD_PInstance.Table_Name, trxName);
+		return PInstanceId.ofRepoId(adPInstanceId);
 	}
 
 	@Override
-	public I_AD_PInstance createAD_PInstance(final Properties ctx, final int AD_Process_ID, final int AD_Table_ID, final int recordId)
+	public I_AD_PInstance createAD_PInstance(final int AD_Process_ID, final int AD_Table_ID, final int recordId)
 	{
-		final I_AD_PInstance adPInstance = create(ctx, I_AD_PInstance.class, ITrx.TRXNAME_None);
+		final I_AD_PInstance adPInstance = newInstanceOutOfTrx(I_AD_PInstance.class);
 		adPInstance.setAD_Process_ID(AD_Process_ID);
 		if (AD_Table_ID > 0)
 		{
@@ -666,22 +579,23 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			adPInstance.setAD_Table(null);
 			adPInstance.setRecord_ID(0); // mandatory
 		}
+
+		final Properties ctx = Env.getCtx();
 		adPInstance.setAD_User_ID(Env.getAD_User_ID(ctx));
 		adPInstance.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		adPInstance.setIsProcessing(false);
-		save(adPInstance);
+		saveRecord(adPInstance);
 
 		return adPInstance;
 	}
 
 	@Override
-	public I_AD_PInstance retrieveAD_PInstance(final Properties ctx, final int adPInstanceId)
+	public I_AD_PInstance getById(@NonNull final PInstanceId pinstanceId)
 	{
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
-		final I_AD_PInstance adPInstance = create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
-		if (adPInstance == null || adPInstance.getAD_PInstance_ID() != adPInstanceId)
+		final I_AD_PInstance adPInstance = loadOutOfTrx(pinstanceId, I_AD_PInstance.class);
+		if (adPInstance == null || adPInstance.getAD_PInstance_ID() != pinstanceId.getRepoId())
 		{
-			throw new AdempiereException("@NotFound@ @AD_PInstance_ID@ (ID=" + adPInstanceId + ")");
+			throw new AdempiereException("@NotFound@ @AD_PInstance_ID@: " + pinstanceId);
 		}
 		return adPInstance;
 	}
@@ -691,9 +605,9 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			+ " ORDER BY " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_SeqNo;
 
 	@Override
-	public Set<TableRecordReference> retrieveSelectedIncludedRecords(final int adPInstanceId)
+	public Set<TableRecordReference> retrieveSelectedIncludedRecords(@NonNull final PInstanceId pinstanceId)
 	{
-		final Object[] sqlParams = new Object[] { adPInstanceId };
+		final Object[] sqlParams = new Object[] { pinstanceId };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -724,10 +638,10 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public void saveSelectedIncludedRecords(final int adPInstanceId, final Set<TableRecordReference> recordRefs)
+	public void saveSelectedIncludedRecords(final PInstanceId pinstanceId, final Set<TableRecordReference> recordRefs)
 	{
-		deleteSelectedIncludedRecords(adPInstanceId);
-		insertSelectedIncludedRecords(adPInstanceId, recordRefs);
+		deleteSelectedIncludedRecords(pinstanceId);
+		insertSelectedIncludedRecords(pinstanceId, recordRefs);
 	}
 
 	private static final String SQL_InsertInto_AD_PInstance_SelectedIncludedRecords = "INSERT INTO " + I_AD_PInstance_SelectedIncludedRecords.Table_Name
@@ -737,7 +651,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			+ "," + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_SeqNo
 			+ ") VALUES (?, ?, ?, ?)";
 
-	private void insertSelectedIncludedRecords(final int adPInstanceId, final Set<TableRecordReference> recordRefs)
+	private void insertSelectedIncludedRecords(final PInstanceId pinstanceId, final Set<TableRecordReference> recordRefs)
 	{
 		if (recordRefs.isEmpty())
 		{
@@ -756,7 +670,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 				final int seqNo = nextSeqNo;
 				nextSeqNo++;
 
-				final Object[] sqlParams = new Object[] { adPInstanceId, recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), seqNo };
+				final Object[] sqlParams = new Object[] { pinstanceId, recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), seqNo };
 				DB.setParameters(pstmt, sqlParams);
 				pstmt.addBatch();
 			}
@@ -776,8 +690,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	private static final String SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords = "DELETE FROM " + I_AD_PInstance_SelectedIncludedRecords.Table_Name
 			+ " WHERE " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_PInstance_ID + "=?";
 
-	private final void deleteSelectedIncludedRecords(final int adPInstanceId)
+	private final void deleteSelectedIncludedRecords(final PInstanceId pinstanceId)
 	{
-		DB.executeUpdateEx(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { adPInstanceId }, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pinstanceId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }

@@ -37,13 +37,13 @@ import org.adempiere.mm.attributes.exceptions.AttributeRestrictedException;
 import org.adempiere.mm.attributes.exceptions.NoAttributeGeneratorException;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.fresh.model.I_C_BPartner;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ADRAttributeBL implements IADRAttributeBL
 {

@@ -25,7 +25,7 @@ package org.adempiere.util.agg.key;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /**
  * Registry used for making aggregation keys (tables, columns, values)

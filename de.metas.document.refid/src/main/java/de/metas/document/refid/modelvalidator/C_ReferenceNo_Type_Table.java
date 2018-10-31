@@ -25,11 +25,11 @@ package de.metas.document.refid.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Check;
 import org.compiere.model.ModelValidator;
 
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type_Table;
+import de.metas.util.Check;
 
 @Validator(I_C_ReferenceNo_Type_Table.class)
 public class C_ReferenceNo_Type_Table

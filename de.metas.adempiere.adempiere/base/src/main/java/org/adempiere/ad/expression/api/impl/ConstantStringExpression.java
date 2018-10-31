@@ -7,13 +7,14 @@ import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /*
  * #%L

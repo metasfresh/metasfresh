@@ -2,9 +2,9 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /*
  * #%L

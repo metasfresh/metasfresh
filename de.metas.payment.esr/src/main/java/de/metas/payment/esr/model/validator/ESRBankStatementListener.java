@@ -1,11 +1,10 @@
 package de.metas.payment.esr.model.validator;
 
-import org.adempiere.util.Services;
-
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.BankStatementListenerAdapter;
 import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.util.Services;
 
 /*
  * #%L

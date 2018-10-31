@@ -3,10 +3,10 @@ package org.adempiere.facet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.facet.impl.CompositeFacetCollector;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

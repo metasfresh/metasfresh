@@ -29,9 +29,9 @@ import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /**
  * Helper class to handle components which have UISubClassID support (i.e. implement {@link IUISubClassIDAware}).

@@ -31,8 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -52,6 +50,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocument
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class MaterialTrackingDocuments implements IMaterialTrackingDocuments
 {

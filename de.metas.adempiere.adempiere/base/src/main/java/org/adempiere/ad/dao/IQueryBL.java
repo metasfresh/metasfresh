@@ -26,8 +26,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ISingletonService;
 import org.compiere.util.Env;
+
+import de.metas.util.ISingletonService;
 
 public interface IQueryBL extends ISingletonService
 {

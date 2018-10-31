@@ -27,8 +27,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
+
+import de.metas.util.ISingletonService;
 
 public interface IHUContextFactory extends ISingletonService
 {

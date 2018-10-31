@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1085603347L;
+	private static final long serialVersionUID = 1506625755L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -174,6 +174,43 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public int getC_BPartner_Location_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -387,10 +424,10 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_HoldingFee = "HF";
 	/** Subscription = SU */
 	public static final String DOCSUBTYPE_Subscription = "SU";
-	/** NB - Mengendifferenz = AQ */
-	public static final String DOCSUBTYPE_NB_Mengendifferenz = "AQ";
-	/** NB - Preisdifferenz = AP */
-	public static final String DOCSUBTYPE_NB_Preisdifferenz = "AP";
+	/** AQ = AQ */
+	public static final String DOCSUBTYPE_AQ = "AQ";
+	/** AP = AP */
+	public static final String DOCSUBTYPE_AP = "AP";
 	/** GS - Lieferdifferenz = CQ */
 	public static final String DOCSUBTYPE_GS_Lieferdifferenz = "CQ";
 	/** GS - Preisdifferenz = CR */
@@ -419,6 +456,12 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_Rueckverguetungsrechnung = "RI";
 	/** Rückvergütungsgutschrift = RC */
 	public static final String DOCSUBTYPE_Rueckverguetungsgutschrift = "RC";
+	/** Healthcare_CH-GM = GM */
+	public static final String DOCSUBTYPE_Healthcare_CH_GM = "GM";
+	/** Healthcare_CH-EA = EA */
+	public static final String DOCSUBTYPE_Healthcare_CH_EA = "EA";
+	/** Healthcare_CH-KV = KV */
+	public static final String DOCSUBTYPE_Healthcare_CH_KV = "KV";
 	/** Set Doc Sub Type.
 		@param DocSubType 
 		Document Sub Type
@@ -498,6 +541,62 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Zeilennetto.
+		@param LineNetAmt 
+		Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	  */
+	@Override
+	public void setLineNetAmt (java.math.BigDecimal LineNetAmt)
+	{
+		set_ValueNoCheck (COLUMNNAME_LineNetAmt, LineNetAmt);
+	}
+
+	/** Get Zeilennetto.
+		@return Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	  */
+	@Override
+	public java.math.BigDecimal getLineNetAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getLockedBy_User() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_LockedBy_User_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setLockedBy_User(org.compiere.model.I_AD_User LockedBy_User)
+	{
+		set_ValueFromPO(COLUMNNAME_LockedBy_User_ID, org.compiere.model.I_AD_User.class, LockedBy_User);
+	}
+
+	/** Set Locked By.
+		@param LockedBy_User_ID Locked By	  */
+	@Override
+	public void setLockedBy_User_ID (int LockedBy_User_ID)
+	{
+		if (LockedBy_User_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_LockedBy_User_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_LockedBy_User_ID, Integer.valueOf(LockedBy_User_ID));
+	}
+
+	/** Get Locked By.
+		@return Locked By	  */
+	@Override
+	public int getLockedBy_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LockedBy_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -670,6 +769,40 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_M_Warehouse_Type getM_Warehouse_Type() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class);
+	}
+
+	@Override
+	public void setM_Warehouse_Type(org.compiere.model.I_M_Warehouse_Type M_Warehouse_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class, M_Warehouse_Type);
+	}
+
+	/** Set Warehouse Type.
+		@param M_Warehouse_Type_ID Warehouse Type	  */
+	@Override
+	public void setM_Warehouse_Type_ID (int M_Warehouse_Type_ID)
+	{
+		if (M_Warehouse_Type_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_Type_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_Type_ID, Integer.valueOf(M_Warehouse_Type_ID));
+	}
+
+	/** Get Warehouse Type.
+		@return Warehouse Type	  */
+	@Override
+	public int getM_Warehouse_Type_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_Type_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Order Document No.
 		@param OrderDocumentNo 
 		Document Number of the Order
@@ -759,6 +892,28 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
 	}
 
+	/** Set Gelieferte Menge.
+		@param QtyDelivered 
+		Gelieferte Menge
+	  */
+	@Override
+	public void setQtyDelivered (java.math.BigDecimal QtyDelivered)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyDelivered, QtyDelivered);
+	}
+
+	/** Get Gelieferte Menge.
+		@return Gelieferte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyDelivered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
 		Bestellt/ Beauftragt
@@ -781,20 +936,58 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		return bd;
 	}
 
-	/** Set Kommissionierte Menge.
-		@param QtyPicked Kommissionierte Menge	  */
+	/** Set Menge kommissioniert und geliefert.
+		@param QtyPickedAndDelivered Menge kommissioniert und geliefert	  */
 	@Override
-	public void setQtyPicked (java.math.BigDecimal QtyPicked)
+	public void setQtyPickedAndDelivered (java.math.BigDecimal QtyPickedAndDelivered)
 	{
-		set_ValueNoCheck (COLUMNNAME_QtyPicked, QtyPicked);
+		set_ValueNoCheck (COLUMNNAME_QtyPickedAndDelivered, QtyPickedAndDelivered);
 	}
 
-	/** Get Kommissionierte Menge.
-		@return Kommissionierte Menge	  */
+	/** Get Menge kommissioniert und geliefert.
+		@return Menge kommissioniert und geliefert	  */
 	@Override
-	public java.math.BigDecimal getQtyPicked () 
+	public java.math.BigDecimal getQtyPickedAndDelivered () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPicked);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPickedAndDelivered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge kommissioniert (noch) nicht geliefert.
+		@param QtyPickedNotDelivered Menge kommissioniert (noch) nicht geliefert	  */
+	@Override
+	public void setQtyPickedNotDelivered (java.math.BigDecimal QtyPickedNotDelivered)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyPickedNotDelivered, QtyPickedNotDelivered);
+	}
+
+	/** Get Menge kommissioniert (noch) nicht geliefert.
+		@return Menge kommissioniert (noch) nicht geliefert	  */
+	@Override
+	public java.math.BigDecimal getQtyPickedNotDelivered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPickedNotDelivered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge kommissioniert oder geliefert.
+		@param QtyPickedOrDelivered Menge kommissioniert oder geliefert	  */
+	@Override
+	public void setQtyPickedOrDelivered (java.math.BigDecimal QtyPickedOrDelivered)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyPickedOrDelivered, QtyPickedOrDelivered);
+	}
+
+	/** Get Menge kommissioniert oder geliefert.
+		@return Menge kommissioniert oder geliefert	  */
+	@Override
+	public java.math.BigDecimal getQtyPickedOrDelivered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPickedOrDelivered);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

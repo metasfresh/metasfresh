@@ -10,8 +10,6 @@ import java.util.concurrent.TimeUnit;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
@@ -23,6 +21,8 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class TaskExecutorService implements ITaskExecutorService
 {

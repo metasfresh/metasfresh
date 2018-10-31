@@ -3,9 +3,9 @@
  */
 package de.metas.letter;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
-import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -42,6 +42,11 @@ public class BoilerPlateId implements RepoIdAware
 	public static BoilerPlateId ofRepoId(final int repoId)
 	{
 		return new BoilerPlateId(repoId);
+	}
+
+	public static BoilerPlateId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	private BoilerPlateId(final int repoId)

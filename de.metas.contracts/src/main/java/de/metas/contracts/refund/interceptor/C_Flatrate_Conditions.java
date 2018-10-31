@@ -1,7 +1,9 @@
 package de.metas.contracts.refund.interceptor;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -9,8 +11,10 @@ import org.springframework.stereotype.Component;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -44,6 +48,16 @@ public class C_Flatrate_Conditions
 	public C_Flatrate_Conditions(@NonNull final RefundConfigRepository refundConfigRepository)
 	{
 		this.refundConfigRepository = refundConfigRepository;
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteRefundconfigs(final I_C_Flatrate_Conditions cond)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMN_C_Flatrate_Conditions_ID, cond.getC_Flatrate_Conditions_ID())
+				.create()
+				.delete();
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })

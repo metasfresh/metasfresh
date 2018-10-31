@@ -56,7 +56,8 @@ public class PO_Record
 
 	/**	Cascade Table ID			*/
 	private static int[]	s_cascades =	new int[]{
-		X_AD_Attachment.Table_ID,
+		InterfaceWrapperHelper.getTableId(I_AD_Attachment.class),
+		InterfaceWrapperHelper.getTableId(I_AD_Attachment_MultiRef.class),
 		InterfaceWrapperHelper.getTableId(I_AD_Archive.class),
 	//	X_CM_ContainerTTable.Table_ID,
 	//	X_CM_CStageTTable.Table_ID,
@@ -65,12 +66,13 @@ public class PO_Record
 	};
 	/**	Cascade Table Names			*/
 	private static String[]	s_cascadeNames = new String[]{
-		X_AD_Attachment.Table_Name,
-		X_AD_Archive.Table_Name,
+		I_AD_Attachment.Table_Name,
+		I_AD_Attachment_MultiRef.Table_Name,
+		I_AD_Archive.Table_Name,
 	//	X_CM_ContainerTTable.Table_Name,
 	//	X_CM_CStageTTable.Table_Name,
-		X_K_Index.Table_Name,
-		X_AD_Note.Table_Name
+		I_K_Index.Table_Name,
+		I_AD_Note.Table_Name
 	};
 
 	/**	Restrict Table ID			*/

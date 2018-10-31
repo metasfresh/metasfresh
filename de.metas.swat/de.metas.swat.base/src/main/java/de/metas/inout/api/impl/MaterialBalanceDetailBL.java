@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inout.IInOutDAO;
@@ -38,6 +37,7 @@ import de.metas.inout.api.IMaterialBalanceDetailDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_Material_Balance_Config;
 import de.metas.inout.model.I_M_Material_Balance_Detail;
+import de.metas.util.Services;
 
 public class MaterialBalanceDetailBL implements IMaterialBalanceDetailBL
 {

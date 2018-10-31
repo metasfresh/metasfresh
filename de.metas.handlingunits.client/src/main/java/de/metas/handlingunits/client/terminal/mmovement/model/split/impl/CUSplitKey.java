@@ -26,7 +26,6 @@ package de.metas.handlingunits.client.terminal.mmovement.model.split.impl;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
@@ -36,6 +35,10 @@ import org.compiere.util.Util;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.helper.HUTerminalHelper;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Customer Unit Key (aka Product)
@@ -45,31 +48,30 @@ import de.metas.handlingunits.client.terminal.helper.HUTerminalHelper;
  */
 public class CUSplitKey extends TerminalKey
 {
-	private final I_M_Product product;
+	private final ProductId productId;
 	private final BigDecimal qty;
 	private final I_C_UOM uom;
 
 	private final String id;
 	private final KeyNamePair value;
 
+	private final String productName;
 	private String name;
 
-	public CUSplitKey(final ITerminalContext terminalContext, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
+	public CUSplitKey(final ITerminalContext terminalContext, 
+			@NonNull final ProductId productId, 
+			@NonNull final BigDecimal qty, 
+			@NonNull final I_C_UOM uom)
 	{
 		super(terminalContext);
 
-		Check.assumeNotNull(product, "product not null");
-		this.product = product;
-
-		Check.assumeNotNull(qty, "qty not null");
+		this.productId = productId;
 		this.qty = qty;
-
-		Check.assumeNotNull(uom, "uom not null");
 		this.uom = uom;
-
-		final int productId = product.getM_Product_ID();
-		id = getClass().getName() + "-" + productId;
-		value = new KeyNamePair(productId, product.getName());
+		id = getClass().getName() + "-" + productId.getRepoId();
+		
+		productName = Services.get(IProductBL.class).getProductName(productId);
+		value = KeyNamePair.of(productId, productName);
 
 		updateName();
 	}
@@ -78,7 +80,7 @@ public class CUSplitKey extends TerminalKey
 	{
 		final String nameOld = name;
 
-		final String productName = HUTerminalHelper.truncateName(product.getName());
+		final String productName = HUTerminalHelper.truncateName(this.productName);
 
 		final DecimalFormat qtyFormat = DisplayType.getNumberFormat(DisplayType.Quantity);
 		final String qtyStr = qtyFormat.format(qty)
@@ -117,9 +119,9 @@ public class CUSplitKey extends TerminalKey
 		return value;
 	}
 
-	public I_M_Product getM_Product()
+	public ProductId getProductId()
 	{
-		return product;
+		return productId;
 	}
 
 	public BigDecimal getQty()

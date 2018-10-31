@@ -28,7 +28,6 @@ import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.Util;
@@ -36,6 +35,7 @@ import org.compiere.util.Util;
 import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.util.Check;
 
 public class CopyHandlerBL implements ICopyHandlerBL
 {

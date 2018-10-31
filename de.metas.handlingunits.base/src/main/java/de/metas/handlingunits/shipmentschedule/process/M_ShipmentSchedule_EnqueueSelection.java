@@ -26,8 +26,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Ini;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -41,6 +39,8 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -54,8 +54,8 @@ public class M_ShipmentSchedule_EnqueueSelection
 		implements IProcessPrecondition
 {
 
-	@Param(parameterName = "IsUseQtyPicked", mandatory = true)
-	private boolean isUseQtyPicked;
+	@Param(parameterName = "QuantityType", mandatory = true)
+	private String quantityType;
 
 	@Param(parameterName = "IsCompleteShipments", mandatory = true)
 	private boolean isCompleteShipments;
@@ -88,9 +88,9 @@ public class M_ShipmentSchedule_EnqueueSelection
 		Check.assumeNotNull(queryFilters, "Shipment Schedule queryFiletrs shall not be null");
 
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
-				.adPInstanceId(getAD_PInstance_ID())
+				.adPInstanceId(getPinstanceId())
 				.queryFilters(queryFilters)
-				.useQtyPickedRecords(isUseQtyPicked)
+				.quantityType(quantityType)
 				.completeShipments(isCompleteShipments)
 				.isShipmentDateToday(isShipToday)
 				.build();

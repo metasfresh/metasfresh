@@ -3,11 +3,11 @@ package de.metas.costing;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.X_C_AcctSchema;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 
 /*

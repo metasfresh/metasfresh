@@ -25,7 +25,6 @@ package de.metas.handlingunits.inout.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
@@ -33,6 +32,7 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.InOutLineHUPackingAware;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.util.Services;
 
 @Callout(I_M_InOutLine.class)
 public class M_InOutLine

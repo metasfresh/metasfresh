@@ -2,7 +2,6 @@ package de.metas.banking.payment.process;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
@@ -13,6 +12,7 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

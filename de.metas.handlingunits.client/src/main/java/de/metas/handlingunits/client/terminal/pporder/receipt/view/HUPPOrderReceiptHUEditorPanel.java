@@ -4,7 +4,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.form.terminal.ITerminalDialog;
 import de.metas.adempiere.form.terminal.TerminalException;
@@ -16,6 +15,7 @@ import de.metas.handlingunits.client.terminal.pporder.receipt.model.HUPPOrderRec
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.util.Services;
 
 public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 {

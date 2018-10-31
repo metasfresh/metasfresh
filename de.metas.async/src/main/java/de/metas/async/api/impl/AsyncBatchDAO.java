@@ -34,7 +34,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.Query;
 
 import de.metas.async.api.IAsyncBatchDAO;
@@ -42,6 +41,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.util.Services;
 
 /**
  * @author cg

@@ -1,5 +1,9 @@
 package de.metas.document.archive.spi.impl;
 
+import static de.metas.i18n.Language.AD_Language_en_AU;
+import static de.metas.i18n.Language.AD_Language_en_GB;
+import static de.metas.i18n.Language.AD_Language_en_US;
+import static de.metas.i18n.Language.asLanguage;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -16,11 +20,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.document.archive.DocOutBoundRecipient;
-import de.metas.document.archive.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.impl.InvoiceDocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.order.model.I_C_BPartner;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -56,6 +63,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		AdempiereTestHelper.get().init();
 
 		bPartnerRecord = newInstance(I_C_BPartner.class);
+		bPartnerRecord.setAD_Language(AD_Language_en_US);
 		saveRecord(bPartnerRecord);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
@@ -72,7 +80,14 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		docOutboundLogRecord.setRecord_ID(invoiceRecord.getC_Invoice_ID());
 		saveRecord(docOutboundLogRecord);
 
-		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(new DocOutBoundRecipientRepository(), new BPartnerBL(new UserRepository()));
+		final UserRepository userRepository = new UserRepository();
+
+		final BPartnerBL bPartnerBL = new BPartnerBL(userRepository);
+		Services.registerService(IBPartnerBL.class, bPartnerBL);
+
+		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(
+				new DocOutBoundRecipientRepository(),
+				new BPartnerBL(userRepository));
 	}
 
 	@Test
@@ -82,17 +97,22 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		userRecord2.setName("userRecord2");
 		userRecord2.setEMail(null);
 		userRecord2.setIsBillToContact_Default(true);
+		userRecord2.setAD_Language(AD_Language_en_AU);
 		userRecord2.setC_BPartner(bPartnerRecord);
 
 		final I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setName("userRecord");
 		userRecord.setEMail("userRecord.EMail");
 		userRecord.setC_BPartner(bPartnerRecord);
+		userRecord.setAD_Language(AD_Language_en_GB);
 		saveRecord(userRecord);
 
 		// invoke the method under test
 		final Optional<DocOutBoundRecipient> result = invoiceDocOutboundLogMailRecipientProvider.provideMailRecipient(docOutboundLogRecord);
 		assertThat(result).isPresent();
+		assertThat(result.get().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
 		assertThat(result.get().getEmailAddress()).isEqualTo("userRecord.EMail");
+		assertThat(result.get().getUserLanguage()).isEqualTo(asLanguage(AD_Language_en_GB));
+		assertThat(result.get().getBPartnerLanguage()).isEqualTo(asLanguage(AD_Language_en_US));
 	}
 }

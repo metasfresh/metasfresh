@@ -2,11 +2,11 @@ package de.metas.contracts.subscription.invoicecandidatehandler;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
+import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -43,7 +43,7 @@ public class ExcludeSubscriptionOrderLines
 		final IQueryFilter<I_C_OrderLine> f = Services.get(IQueryBL.class)
 				.createCompositeQueryFilter(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.contracts.subscription.model.I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, null);
+				.addEqualsFilter(de.metas.contracts.order.model.I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, null);
 
 		Services.get(IC_OrderLine_HandlerDAO.class).addAdditionalFilter(f);
 	}

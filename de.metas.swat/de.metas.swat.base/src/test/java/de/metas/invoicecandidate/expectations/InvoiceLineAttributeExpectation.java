@@ -26,7 +26,6 @@ package de.metas.invoicecandidate.expectations;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
@@ -34,6 +33,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.util.Check;
 
 /**
  * {@link IInvoiceLineAttribute} expectation.

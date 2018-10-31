@@ -29,15 +29,16 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 // public only for testing purposes
 public class HUStorageDAO extends AbstractHUStorageDAO
@@ -66,7 +67,7 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	}
 
 	@Override
-	public I_M_HU_Storage retrieveStorage(final I_M_HU hu, final int productId)
+	public I_M_HU_Storage retrieveStorage(final I_M_HU hu, @NonNull final ProductId productId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Storage.class, hu)
 				.filter(new EqualsQueryFilter<I_M_HU_Storage>(I_M_HU_Storage.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
@@ -102,11 +103,11 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	};
 
 	@Override
-	public I_M_HU_Item_Storage retrieveItemStorage(final I_M_HU_Item huItem, final I_M_Product product)
+	public I_M_HU_Item_Storage retrieveItemStorage(final I_M_HU_Item huItem, @NonNull final ProductId productId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Item_Storage.class, huItem)
 				.filter(new EqualsQueryFilter<I_M_HU_Item_Storage>(I_M_HU_Item_Storage.COLUMNNAME_M_HU_Item_ID, huItem.getM_HU_Item_ID()))
-				.filter(new EqualsQueryFilter<I_M_HU_Item_Storage>(I_M_HU_Item_Storage.COLUMNNAME_M_Product_ID, product.getM_Product_ID()))
+				.filter(new EqualsQueryFilter<I_M_HU_Item_Storage>(I_M_HU_Item_Storage.COLUMNNAME_M_Product_ID, productId))
 				.create()
 				.setOnlyActiveRecords(true)
 				.firstOnly(I_M_HU_Item_Storage.class);

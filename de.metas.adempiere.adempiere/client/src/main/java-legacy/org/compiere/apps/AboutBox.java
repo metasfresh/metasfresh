@@ -35,7 +35,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import org.adempiere.plaf.MetasFreshTheme;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
@@ -45,6 +44,7 @@ import org.compiere.util.SupportInfo;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  *	About Dialog
@@ -77,7 +77,7 @@ public final class AboutBox extends CDialog implements ActionListener
 			e.printStackTrace();
 		}
 		//
-		labelVersion.setText(Adempiere.getVersion());
+		labelVersion.setText(Adempiere.getBuildAndDateVersion());
 		labelCopyright.setText(Adempiere.getCopyright());
 		infoArea.setText(SupportInfo.getInfo());
 		//  create 5 pt border

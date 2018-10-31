@@ -1,5 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,22 +15,19 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
@@ -43,6 +42,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
 import de.metas.shipping.interfaces.I_M_Package;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 
 /**
  * Test case:
@@ -63,10 +64,12 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 	@Override
 	protected void step10_createShipmentSchedules()
 	{
+		final BigDecimal qtyOrdered = new BigDecimal("100");
+
 		shipmentSchedules = Arrays.asList(
-				createShipmentSchedule(), // shipment schedule 0
-				createShipmentSchedule() // shipment schedule 1
-				);
+				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered), // shipment schedule 0
+				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered) // shipment schedule 1
+		);
 	}
 
 	@Override

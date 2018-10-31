@@ -5,10 +5,11 @@ package org.adempiere.ad.service;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
+
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg

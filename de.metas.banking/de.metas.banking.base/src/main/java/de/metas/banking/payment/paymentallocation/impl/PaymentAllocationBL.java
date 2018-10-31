@@ -1,11 +1,11 @@
 package de.metas.banking.payment.paymentallocation.impl;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
+import de.metas.util.Services;
 
 /*
  * #%L

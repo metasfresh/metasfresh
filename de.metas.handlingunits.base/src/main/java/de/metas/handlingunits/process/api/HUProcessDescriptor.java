@@ -3,11 +3,11 @@ package de.metas.handlingunits.process.api;
 import java.util.Collection;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,11 +40,12 @@ import lombok.Value;
 @Value
 public class HUProcessDescriptor
 {
-	private final int processId;
+	int processId;
+	String internalName;
 
-	private final boolean provideAsUserAction;
+	boolean provideAsUserAction;
 
-	private final boolean acceptOnlyTopLevelHUs;
+	boolean acceptOnlyTopLevelHUs;
 
 	@Getter(AccessLevel.NONE)
 	private final ImmutableSet<String> acceptHUUnitTypes;
@@ -52,6 +53,7 @@ public class HUProcessDescriptor
 	@Builder
 	private HUProcessDescriptor(
 			final int processId,
+			@NonNull final String internalName,
 			final Boolean provideAsUserAction,
 			final Boolean acceptOnlyTopLevelHUs,
 			@Singular final Set<String> acceptHUUnitTypes)
@@ -60,6 +62,7 @@ public class HUProcessDescriptor
 		Check.assumeNotEmpty(acceptHUUnitTypes, "acceptHUUnitTypes is not empty");
 
 		this.processId = processId;
+		this.internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
 		this.acceptHUUnitTypes = ImmutableSet.copyOf(acceptHUUnitTypes);
 
 		this.provideAsUserAction = Util.coalesce(provideAsUserAction, true);

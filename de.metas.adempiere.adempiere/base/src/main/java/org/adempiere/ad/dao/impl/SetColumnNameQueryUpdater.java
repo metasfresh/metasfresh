@@ -28,7 +28,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /*package*/class SetColumnNameQueryUpdater<T> implements ISqlQueryUpdater<T>
 {

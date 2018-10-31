@@ -26,10 +26,10 @@ package de.metas.banking.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.util.Services;
 
 @Callout(I_C_BankStatement.class)
 public class C_BankStatement

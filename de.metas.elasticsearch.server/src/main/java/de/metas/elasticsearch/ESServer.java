@@ -1,12 +1,12 @@
 package de.metas.elasticsearch;
 
-import org.adempiere.util.Services;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.impl.IESServer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
+import de.metas.util.Services;
 
 /*
  * #%L

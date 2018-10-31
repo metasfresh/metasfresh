@@ -25,11 +25,11 @@ package de.metas.edi.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.model.I_M_InOutLine;
+import de.metas.util.Services;
 
 @Validator(I_M_InOutLine.class)
 public class M_InOutLine

@@ -8,8 +8,6 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Locator;
@@ -28,6 +26,8 @@ import de.metas.inout.api.ReceiptLineFindForwardToLocatorTool;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -64,7 +64,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 
 		if (effectiveLocatorToId == null || effectiveLocatorToId.getRepoId() == inOutLine.getM_Locator_ID())
 		{
-			Optional.empty();
+			return Optional.empty();
 		}
 
 		final I_DD_Order ddOrderHeader = createDDOrderHeader(inOutLine);
@@ -95,12 +95,12 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
 		Check.errorIf(productPlanning == null, "No Product Planning found for product Id {}", productId);
 
-		final int docTypeId = docTypeDAO
-				.getDocTypeId(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
-						.adClientId(inOutLine.getAD_Client_ID())
-						.adOrgId(inOutLine.getAD_Org_ID())
-						.build());
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+				.adClientId(inOutLine.getAD_Client_ID())
+				.adOrgId(inOutLine.getAD_Org_ID())
+				.build();
+		final int docTypeId = docTypeDAO.getDocTypeId(docTypeQuery).getRepoId();
 
 		final I_M_InOut inout = inOutLine.getM_InOut();
 

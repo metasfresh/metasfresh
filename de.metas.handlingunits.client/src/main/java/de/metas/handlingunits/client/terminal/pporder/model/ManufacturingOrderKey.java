@@ -28,9 +28,6 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -43,6 +40,9 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 
 /**
  * @author cg

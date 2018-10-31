@@ -12,10 +12,10 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordSupport.IOnRecordCopiedListener;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

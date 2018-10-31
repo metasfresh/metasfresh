@@ -6,8 +6,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -27,6 +25,8 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

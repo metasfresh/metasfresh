@@ -23,7 +23,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,6 +50,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

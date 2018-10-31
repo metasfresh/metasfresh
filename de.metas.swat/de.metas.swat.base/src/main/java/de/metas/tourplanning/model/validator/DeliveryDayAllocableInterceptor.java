@@ -27,8 +27,6 @@ import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Client;
 
@@ -37,6 +35,8 @@ import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IDeliveryDayDAO;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.tourplanning.spi.IDeliveryDayCreateHandler;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

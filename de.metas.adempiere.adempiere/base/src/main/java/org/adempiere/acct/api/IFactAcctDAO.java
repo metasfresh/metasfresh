@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_Fact_Acct;
 
 import de.metas.document.engine.IDocument;
+import de.metas.util.ISingletonService;
 
 public interface IFactAcctDAO extends ISingletonService
 {

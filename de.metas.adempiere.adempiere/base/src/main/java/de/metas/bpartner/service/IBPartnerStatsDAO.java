@@ -3,9 +3,10 @@ package de.metas.bpartner.service;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

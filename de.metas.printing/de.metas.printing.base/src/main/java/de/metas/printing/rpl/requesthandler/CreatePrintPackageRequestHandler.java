@@ -30,8 +30,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
 import org.adempiere.process.rpl.requesthandler.spi.impl.LoadPORequestHandler;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.util.Util;
 
@@ -42,6 +40,8 @@ import de.metas.printing.api.IPrintPackageCtx;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Package;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

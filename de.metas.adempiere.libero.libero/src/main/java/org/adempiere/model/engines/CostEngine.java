@@ -48,8 +48,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_C_AcctSchema;
@@ -87,6 +85,8 @@ import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Cost Engine

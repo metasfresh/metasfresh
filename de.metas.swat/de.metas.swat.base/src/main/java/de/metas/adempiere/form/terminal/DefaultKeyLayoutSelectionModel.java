@@ -32,11 +32,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 public class DefaultKeyLayoutSelectionModel implements IKeyLayoutSelectionModel
 {

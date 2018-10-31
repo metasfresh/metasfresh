@@ -36,12 +36,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
@@ -49,8 +51,8 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
-import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.expectations.HUsExpectation;
@@ -59,6 +61,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_LUTU_Configuration;
+import de.metas.util.Services;
 
 /**
  * Note the "load" means "to create HUs and load qty into them from somewhere else". It's not about performance and stuff.
@@ -66,6 +69,8 @@ import de.metas.handlingunits.model.X_M_HU_LUTU_Configuration;
 @RunWith(Theories.class)
 public class LUTUProducerDestinationLoadTests
 {
+	@Rule
+	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 	/**
 	 * This dataPoint shall enable us to test with both values of {@code isOwnPackingMaterials}.
 	 */
@@ -95,7 +100,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setCreateTUsForRemainingQty(true);
 
 		// one IFCO can hold 40kg tomatoes
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("35"), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 		assertThat(createdHUs.size(), is(1));
@@ -122,7 +127,7 @@ public class LUTUProducerDestinationLoadTests
 		final I_C_BPartner_Location bPartnerLocation = createBPartnerLocation(bpartner);
 
 		final I_M_Warehouse warehouse = createWarehouse("testWarehouse");
-		final I_M_Locator locator = createLocator("testLocator", warehouse);
+		final LocatorId locatorId = LocatorId.ofRecord(createLocator("testLocator", warehouse));
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 
@@ -132,11 +137,11 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
 		lutuProducer.setC_BPartner(bpartner);
-		lutuProducer.setM_Locator(locator);
+		lutuProducer.setLocatorId(locatorId);
 		lutuProducer.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 
 		// one IFCO can hold 40kg tomatoes
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("35"), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 		assertThat(createdHUs.size(), is(1));
@@ -146,7 +151,7 @@ public class LUTUProducerDestinationLoadTests
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
-		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@M_Locator_ID)", is(Integer.toString(locator.getM_Locator_ID())))); // verify that the locator is propagated
+		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@M_Locator_ID)", is(Integer.toString(locatorId.getRepoId())))); // verify that the locator is propagated
 
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])", is("1")));
@@ -155,7 +160,7 @@ public class LUTUProducerDestinationLoadTests
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
-		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(locator.getM_Locator_ID())))); // verify that the locator is propagated
+		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(locatorId.getRepoId())))); // verify that the locator is propagated
 
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI)", is("1")));
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
@@ -166,7 +171,7 @@ public class LUTUProducerDestinationLoadTests
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
-		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_Locator_ID)", is(Integer.toString(locator.getM_Locator_ID())))); // verify that the locator is propagated
+		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_Locator_ID)", is(Integer.toString(locatorId.getRepoId())))); // verify that the locator is propagated
 
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
@@ -191,7 +196,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("20"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("20"), data.helper.uomKg);
 		assertThat(lutuProducer.getCreatedLUsCount(), is(0));
 		assertThat(lutuProducer.getCreatedHUsCount(), is(1));
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
@@ -237,10 +242,10 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setLUItemPI(piLU_Item_20_IFCO);
 		lutuProducer.setTUPI(data.piTU_IFCO);
-		lutuProducer.addCUPerTU(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
+		lutuProducer.addCUPerTU(data.helper.pTomatoProductId, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("109.4"), data.helper.uomKg);
 		assertThat(lutuProducer.getCreatedHUs().size(), is(1));
 		final I_M_HU createdLU = lutuProducer.getCreatedHUs().get(0);
 
@@ -354,7 +359,7 @@ public class LUTUProducerDestinationLoadTests
 	{
 		performTest(6050, 30,
 				husExpectation -> {
-					//@formatter:off
+				//@formatter:off
 					husExpectation
 						.newHUExpectation()
 						.huPI(data.piLU)
@@ -440,11 +445,11 @@ public class LUTUProducerDestinationLoadTests
 		// TU capacity
 		if (tuCapacityOverride != null)
 		{
-			lutuProducer.addCUPerTU(data.helper.pTomato, tuCapacityOverride, data.helper.uomKg);
+			lutuProducer.addCUPerTU(data.helper.pTomatoProductId, tuCapacityOverride, data.helper.uomKg);
 		}
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(cuQty), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal(cuQty), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 
@@ -522,7 +527,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setMaxLUs(0);
 		lutuProducer.setCreateTUsForRemainingQty(true);
 
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("999999"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("999999"), data.helper.uomKg);
 		final List<I_M_HU> huTruck = lutuProducer.getCreatedHUs();
 
 		//
@@ -555,11 +560,10 @@ public class LUTUProducerDestinationLoadTests
 		final I_C_BPartner bpartner = createBPartner("testPartner");
 		final I_C_BPartner_Location bpLocation = createBPartnerLocation(bpartner);
 
-		final I_M_HU_PI_Item piLU_Item_Virtual = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.helper.huDefVirtual, BigDecimal.ONE);
 
 		final I_M_HU_LUTU_Configuration lutuConfiguration = InterfaceWrapperHelper.newInstance(I_M_HU_LUTU_Configuration.class);
 		lutuConfiguration.setM_LU_HU_PI(data.piLU);
-		lutuConfiguration.setM_LU_HU_PI_Item(piLU_Item_Virtual);
+		lutuConfiguration.setM_LU_HU_PI_Item(data.piLU_Item_Virtual);
 		lutuConfiguration.setIsInfiniteQtyLU(false);
 		lutuConfiguration.setQtyLU(BigDecimal.ONE);
 		lutuConfiguration.setM_TU_HU_PI(data.helper.huDefVirtual);
@@ -577,7 +581,7 @@ public class LUTUProducerDestinationLoadTests
 
 		final ILUTUProducerAllocationDestination lutuProducer = Services.get(ILUTUConfigurationFactory.class).createLUTUProducerAllocationDestination(lutuConfiguration);
 
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("252"), data.helper.uomEach);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("252"), data.helper.uomEach);
 
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 		assertThat(createdLUs.size(), is(1));

@@ -5,14 +5,13 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

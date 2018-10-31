@@ -1,6 +1,13 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import java.math.BigDecimal;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -15,11 +22,11 @@ import java.math.BigDecimal;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,17 +35,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_M_Warehouse;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -52,9 +57,12 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
-import lombok.NonNull;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_OLCand}.
@@ -80,7 +88,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
-		final I_C_OLCand olCand = InterfaceWrapperHelper.create(model, I_C_OLCand.class);
+		final I_C_OLCand olCand = create(model, I_C_OLCand.class);
 		if (!isEligibleForInvoiceCandidateCreate(olCand))
 		{
 			return false;
@@ -105,7 +113,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
+	public InvoiceCandidateGenerateResult createCandidatesFor(@NonNull final InvoiceCandidateGenerateRequest request)
 	{
 		final I_C_OLCand olCand = request.getModel(I_C_OLCand.class);
 
@@ -122,31 +130,28 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 	private boolean isEligibleForInvoiceCandidateCreate(final I_C_OLCand olCand)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
+		final Properties ctx = getCtx(olCand);
+		final String trxName = getTrxName(olCand);
 		return dao.retrieveMissingCandidatesQuery(ctx, trxName)
 				.addEqualsFilter(I_C_OLCand.COLUMN_C_OLCand_ID, olCand.getC_OLCand_ID())
 				.create()
 				.match();
 	}
 
-	private I_C_Invoice_Candidate createInvoiceCandidateForOLCand(final I_C_OLCand olc)
+	private I_C_Invoice_Candidate createInvoiceCandidateForOLCand(@NonNull final I_C_OLCand olc)
 	{
-		//
 		// services
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(olc);
-		final String trxName = InterfaceWrapperHelper.getTrxName(olc);
-
+		final Properties ctx = getCtx(olc);
 		Check.assume(Env.getAD_Client_ID(ctx) == olc.getAD_Client_ID(), "AD_Client_ID of {} and of its Ctx are the same", olc);
 
-		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class, olc);
 
 		// org id
-		final int orgId = olc.getAD_Org_ID();
-		ic.setAD_Org_ID(orgId);
+		final OrgId orgId = OrgId.ofRepoId(olc.getAD_Org_ID());
+		ic.setAD_Org_ID(orgId.getRepoId());
 
 		ic.setC_ILCandHandler(getHandlerRecord());
 
@@ -164,7 +169,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyOrdered(olc.getQty());
 		ic.setDateOrdered(olc.getDateCandidate());
 
-		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
+		ic.setQtyToInvoice(ZERO); // to be computed
 		ic.setC_UOM_ID(olCandEffectiveValuesBL.getC_UOM_Effective_ID(olc));
 
 		ic.setM_PricingSystem_ID(olc.getM_PricingSystem_ID());
@@ -196,26 +201,33 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		// 05265
 		ic.setIsSOTrx(true);
 
+		ic.setDateInvoiced(olc.getDateInvoiced());
+		ic.setC_DocTypeInvoice_ID(olc.getC_DocTypeInvoice_ID());
+
 		// 07442 activity and tax
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(olc);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, olc.getAD_Org(), olCandEffectiveValuesBL.getM_Product_Effective(olc));
-		ic.setC_Activity(activity);
+		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+				ClientId.ofRepoId(olc.getAD_Client_ID()),
+				OrgId.ofRepoId(olc.getAD_Org_ID()),
+				ProductId.ofRepoId(olCandEffectiveValuesBL.getM_Product_Effective_ID(olc)));
+		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
-		final int taxCategoryId = -1; // FIXME for accuracy, we will need the tax category
-		final I_M_Warehouse warehouse = null;
-		final boolean isSOTrx = true;
-
-		final int taxId = Services.get(ITaxBL.class).getTax(ctx
-				, ic
-				, taxCategoryId
-				, productId
-				, olc.getDatePromised()
-				, olc.getDatePromised()
-				, orgId
-				, warehouse
-				, olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olc)
-				, isSOTrx);
+		final ITaxBL taxBL = Services.get(ITaxBL.class);
+		final int taxId = taxBL.getTax(
+				ctx,
+				ic, // model
+				olc.getC_TaxCategory_ID(),
+				productId,
+				Util.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getDateInvoiced()),
+				orgId,
+				(WarehouseId)null,
+				olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olc),
+				true /*isSOTrx*/);
 		ic.setC_Tax_ID(taxId);
+
+		ic.setExternalId(olc.getExternalId());
+
+		olc.setProcessed(true);
+		saveRecord(olc);
 
 		return ic;
 	}
@@ -223,7 +235,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		final I_C_OLCand olc = InterfaceWrapperHelper.create(model, I_C_OLCand.class);
+		final I_C_OLCand olc = create(model, I_C_OLCand.class);
 		invalidateCandidatesForOLCand(olc);
 	}
 
@@ -231,8 +243,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(olc);
-		final String trxName = InterfaceWrapperHelper.getTrxName(olc);
+		final Properties ctx = getCtx(olc);
+		final String trxName = getTrxName(olc);
 
 		final List<I_C_Invoice_Candidate> ics = invoiceCandDAO.fetchInvoiceCandidates(ctx, I_C_OLCand.Table_Name, olc.getC_OLCand_ID(), trxName);
 		invoiceCandDAO.invalidateCands(ics);
@@ -264,7 +276,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 	private I_C_OLCand getOLCand(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_C_OLCand olc =TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
+		final I_C_OLCand olc = TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
 		return olc;
 	}
 
@@ -280,7 +292,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		ic.setQtyDelivered(ic.getQtyOrdered());
+		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 

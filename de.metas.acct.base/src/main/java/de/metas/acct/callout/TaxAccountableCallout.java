@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.acct.api.ITaxAcctBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Tax;
@@ -36,6 +35,7 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.util.Env;
 
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 /**
  * Callout for {@link ITaxAccountable} records

@@ -23,13 +23,13 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MProduct;
 import org.compiere.model.MUOM;
 import org.compiere.util.DB;
 
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  * Order Line Model.

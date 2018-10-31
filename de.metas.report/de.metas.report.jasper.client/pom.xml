@@ -100,5 +100,11 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 			<artifactId>de.metas.report.jasper.commons</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 </project>

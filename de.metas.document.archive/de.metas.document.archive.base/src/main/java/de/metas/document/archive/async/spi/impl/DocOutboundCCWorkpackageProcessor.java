@@ -1,5 +1,7 @@
 package de.metas.document.archive.async.spi.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.document.archive.base
@@ -10,12 +12,12 @@ package de.metas.document.archive.async.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,10 +35,6 @@ import java.util.List;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.FileUtils;
-import org.adempiere.util.Services;
-import org.adempiere.util.StreamUtils;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -47,6 +45,10 @@ import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
+import de.metas.util.Check;
+import de.metas.util.FileUtils;
+import de.metas.util.Services;
+import de.metas.util.StreamUtils;
 
 public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -66,9 +68,10 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(
+			@NonNull final I_C_Queue_WorkPackage workpackage,
+			@NonNull final String localTrxName)
 	{
-
 		final List<I_AD_Archive> archives = queueDAO.retrieveItems(workpackage, I_AD_Archive.class, localTrxName);
 		for (final I_AD_Archive archive : archives)
 		{

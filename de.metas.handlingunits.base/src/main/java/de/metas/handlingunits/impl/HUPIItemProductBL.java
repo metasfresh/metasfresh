@@ -27,12 +27,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
@@ -41,6 +39,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class HUPIItemProductBL implements IHUPIItemProductBL
@@ -51,7 +53,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			@NonNull final I_M_Product product)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final List<I_M_HU_PI_Item_Product> result = new ArrayList<I_M_HU_PI_Item_Product>();
+		final List<I_M_HU_PI_Item_Product> result = new ArrayList<>();
 
 		final I_C_BPartner bpartner = null;
 		final List<I_M_HU_PI_Item> versionPIItems = handlingUnitsDAO.retrievePIItems(version, bpartner);
@@ -79,7 +81,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			return Collections.emptyList();
 		}
 
-		final List<I_M_HU_PI_Item> nestedItemDefinitions = new ArrayList<I_M_HU_PI_Item>();
+		final List<I_M_HU_PI_Item> nestedItemDefinitions = new ArrayList<>();
 		for (final I_M_HU_PI_Item itemDef : itemDefs)
 		{
 			final String itemType = itemDef.getItemType();
@@ -114,7 +116,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	@Override
 	public boolean isVirtualHUPIItemProduct(final I_M_HU_PI_Item_Product piip)
 	{
-		return piip.getM_HU_PI_Item_Product_ID() == HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID;
+		return piip.getM_HU_PI_Item_Product_ID() == HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId();
 	}
 
 	@Override
@@ -146,5 +148,13 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	public IHUPIItemProductDisplayNameBuilder buildDisplayName()
 	{
 		return new HUPIItemProductDisplayNameBuilder();
+	}
+
+	@Override
+	public ITranslatableString getDisplayName(@NonNull final HUPIItemProductId piItemProductId)
+	{
+		final I_M_HU_PI_Item_Product piItemProduct = Services.get(IHUPIItemProductDAO.class).getById(piItemProductId);
+		return InterfaceWrapperHelper.getModelTranslationMap(piItemProduct)
+				.getColumnTrl(I_M_HU_PI_Item_Product.COLUMNNAME_Name, piItemProduct.getName());
 	}
 }

@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1294845685L;
+	private static final long serialVersionUID = -1641104285L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -290,6 +290,43 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public org.compiere.model.I_C_BPartner_Location getBill_Location_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Bill_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setBill_Location_Override(org.compiere.model.I_C_BPartner_Location Bill_Location_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_Bill_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, Bill_Location_Override);
+	}
+
+	/** Set Rechungsadresse abw..
+		@param Bill_Location_Override_ID 
+		Standort des Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public void setBill_Location_Override_ID (int Bill_Location_Override_ID)
+	{
+		if (Bill_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_Bill_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_Location_Override_ID, Integer.valueOf(Bill_Location_Override_ID));
+	}
+
+	/** Get Rechungsadresse abw..
+		@return Standort des Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public int getBill_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_Location_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_AD_User getBill_User() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_Bill_User_ID, org.compiere.model.I_AD_User.class);
@@ -321,6 +358,40 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getBill_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getBill_User_ID_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Bill_User_ID_Override_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setBill_User_ID_Override(org.compiere.model.I_AD_User Bill_User_ID_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_Bill_User_ID_Override_ID, org.compiere.model.I_AD_User.class, Bill_User_ID_Override);
+	}
+
+	/** Set Rechnungskontakt abw..
+		@param Bill_User_ID_Override_ID Rechnungskontakt abw.	  */
+	@Override
+	public void setBill_User_ID_Override_ID (int Bill_User_ID_Override_ID)
+	{
+		if (Bill_User_ID_Override_ID < 1) 
+			set_Value (COLUMNNAME_Bill_User_ID_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_User_ID_Override_ID, Integer.valueOf(Bill_User_ID_Override_ID));
+	}
+
+	/** Get Rechnungskontakt abw..
+		@return Rechnungskontakt abw.	  */
+	@Override
+	public int getBill_User_ID_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1384,6 +1455,22 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
 	}
 
+	/** Set External ID.
+		@param ExternalId External ID	  */
+	@Override
+	public void setExternalId (java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	/** Get External ID.
+		@return External ID	  */
+	@Override
+	public java.lang.String getExternalId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+	}
+
 	@Override
 	public org.compiere.model.I_C_BPartner_Location getFirst_Ship_BPLocation() throws RuntimeException
 	{
@@ -2362,6 +2449,25 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Notiz.
+		@param Note 
+		Optional weitere Information
+	  */
+	@Override
+	public void setNote (java.lang.String Note)
+	{
+		set_Value (COLUMNNAME_Note, Note);
+	}
+
+	/** Get Notiz.
+		@return Optional weitere Information
+	  */
+	@Override
+	public java.lang.String getNote () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Note);
 	}
 
 	/** Set Referenz.

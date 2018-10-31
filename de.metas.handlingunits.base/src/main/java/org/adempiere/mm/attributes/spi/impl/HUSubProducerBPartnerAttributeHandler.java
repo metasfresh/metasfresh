@@ -33,13 +33,13 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGeneratorAdapter;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.conversion.ConversionHelper;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Retrieve all subproducer BPartners for {@link I_M_HU#getC_BPartner_ID()}.

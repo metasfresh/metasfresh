@@ -26,67 +26,27 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
-import org.compiere.model.I_M_Product;
 
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IUOMConversionBL extends ISingletonService
 {
 	/**
-	 * Creates conversion context to be used in other conversion BL methods.
-	 * 
-	 * @return conversion context; never return null
-	 */
-	IUOMConversionContext createConversionContext(int productId);
-
-	@Deprecated
-	default IUOMConversionContext createConversionContext(I_M_Product product)
-	{
-		return createConversionContext(product != null ? product.getM_Product_ID() : -1);
-	}
-
-	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
-	 * 
-	 * @return converted quantity; never return NULL.
-	 * @deprecated please use {@link #convertQty(ProductId, BigDecimal, I_C_UOM, I_C_UOM)}
-	 */
-	@Deprecated
-	default BigDecimal convertQty(
-			final I_M_Product product,
-			final BigDecimal qty,
-			@NonNull final I_C_UOM uomFrom,
-			@NonNull final I_C_UOM uomTo)
-	{
-		final int productId = product != null ? product.getM_Product_ID() : -1;
-		return convertQty(productId, qty, uomFrom, uomTo);
-	}
-	
-	/**
-	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
-	 * 
+	 *
 	 * @return converted quantity; never return NULL.
 	 */
-	default BigDecimal convertQty(
+	BigDecimal convertQty(
 			final ProductId productId,
 			final BigDecimal qty,
 			@NonNull final I_C_UOM uomFrom,
-			@NonNull final I_C_UOM uomTo)
-	{
-		return convertQty(ProductId.toRepoId(productId), qty, uomFrom, uomTo);
-	}
-
-	/**
-	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
-	 * 
-	 * @return converted quantity; never return NULL.
-	 */
-	BigDecimal convertQty(int productId, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo);
+			@NonNull final I_C_UOM uomTo);
 
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
@@ -97,9 +57,18 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param uomTo
 	 * @return converted quantity; never return NULL.
 	 */
-	BigDecimal convertQty(IUOMConversionContext conversionCtx, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo);
+	BigDecimal convertQty(UOMConversionContext conversionCtx, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo);
 
-	Quantity convertQuantityTo(Quantity quantity, IUOMConversionContext conversionCtx, I_C_UOM uomTo);
+	/**
+	 * Creates a new {@link Quantity} object by converting the given {@code quantity} to the given {@code uomTo}.
+	 *
+	 * The new {@link Quantity} object will have {@link #getQty()} and {@link #getUOM()} as their source Qty/UOM.
+	 *
+	 * @return new Quantity converted to given <code>uom</code>.
+	 */
+	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, I_C_UOM uomTo);
+
+	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, UomId uomToId);
 
 	/**
 	 * Convert quantity from <code>uomFrom</code> to product's stocking UOM.
@@ -109,7 +78,7 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param uomFrom
 	 * @return converted quantity; never return NULL.
 	 */
-	BigDecimal convertQtyToProductUOM(IUOMConversionContext conversionCtx, BigDecimal qty, I_C_UOM uomFrom);
+	BigDecimal convertQtyToProductUOM(UOMConversionContext conversionCtx, BigDecimal qty, I_C_UOM uomFrom);
 
 	/**
 	 * Convert price from <code>uomFrom</code> to <code>uomTo</code>
@@ -141,7 +110,7 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param uomId
 	 * @return
 	 */
-	int getPrecision(Properties ctx, int uomId);
+	int getPrecision(int uomId);
 
 	/**
 	 * Round quantity based on uom's standard precision if stdPrecision = true, uom's costing precision otherwise.
@@ -179,7 +148,8 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param qtyToConvert the Qty in the product's stocking UOM
 	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>uomDest</code> and if there is no conversion rate to use.
 	 */
-	BigDecimal convertFromProductUOM(Properties ctx, I_M_Product product, I_C_UOM uomDest, BigDecimal qtyToConvert);
+	BigDecimal convertFromProductUOM(Properties ctx, ProductId productId, I_C_UOM uomDest, BigDecimal qtyToConvert);
+	
 
 	/**
 	 * Derive Standard Conversions
@@ -212,9 +182,9 @@ public interface IUOMConversionBL extends ISingletonService
 	 *
 	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>C_UOM_Source_ID</code> and if there is no conversion rate to use.
 	 */
-	BigDecimal convertToProductUOM(Properties ctx, I_M_Product product, I_C_UOM uomSource, BigDecimal qtyToConvert);
+	BigDecimal convertToProductUOM(Properties ctx, ProductId productId, I_C_UOM uomSource, BigDecimal qtyToConvert);
 
-	Quantity convertToProductUOM(Quantity quantity, int productId);
+	Quantity convertToProductUOM(Quantity quantity, ProductId productId);
 
 	/**
 	 * Get Product Conversions (cached). More detailed: gets those <code>C_UOM_Conversion</code>s that
@@ -227,7 +197,7 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param product
 	 * @return array of conversions
 	 */
-	List<I_C_UOM_Conversion> getProductConversions(Properties ctx, I_M_Product product);
+	List<I_C_UOM_Conversion> getProductConversions(ProductId productId);
 
 	/**
 	 * Get Multiplier Rate to target UOM
@@ -238,17 +208,4 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @return multiplier
 	 */
 	BigDecimal getRate(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo);
-
-	/**
-	 * Convert the given <code> priceInUOMFrom </code> in price per unit of <code> uomTo </code>.<br>
-	 * Literally, it will multiply the <code> priceInUOMFrom </code> with the division rate of the conversion that fits the <code> product</code> , <code> uomFrom </code> and <code> uomTo </code>
-	 *
-	 * @param ctx
-	 * @param product
-	 * @param priceInUOMFrom
-	 * @param uomFrom
-	 * @param uomTo
-	 * @return
-	 */
-	BigDecimal convertPriceToUOMUnit(Properties ctx, I_M_Product product, BigDecimal priceInUOMFrom, I_C_UOM uomFrom, I_C_UOM uomTo);
 }

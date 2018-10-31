@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.Env;
@@ -22,6 +21,7 @@ import org.junit.Assert;
 import com.google.common.base.Function;
 
 import de.metas.procurement.base.model.I_PMM_Week;
+import de.metas.util.Services;
 
 /*
  * #%L

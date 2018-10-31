@@ -3,9 +3,8 @@
  */
 package de.metas.bpartner.service;
 
-import org.adempiere.util.Check;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

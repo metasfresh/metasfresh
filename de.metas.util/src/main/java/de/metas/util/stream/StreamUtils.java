@@ -9,8 +9,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.adempiere.util.collections.IteratorUtils;
-
+import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

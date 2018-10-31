@@ -36,8 +36,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DisplayType;
 
@@ -54,6 +52,7 @@ import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
+import de.metas.adempiere.form.terminal.ITerminalTextField.KeyboardDisplayMode;
 import de.metas.adempiere.form.terminal.TerminalDialogListenerAdapter;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -80,6 +79,8 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUEditorPanel
 		extends TerminalDialogListenerAdapter
@@ -363,7 +364,7 @@ public class HUEditorPanel
 			if (isDisplayBarcode)
 			{
 				barcodeField = factory.createTerminalTextField(MSG_BARCODE, DisplayType.String, HUEditorPanel.DEFAULT_FONT_SIZE);
-				barcodeField.setShowKeyboardButton(false);
+				barcodeField.setKeyboardDisplayMode(KeyboardDisplayMode.NEVER);
 				barcodeField.setKeyLayout(null);
 
 				barcodeLabel = factory.createLabel(MSG_BARCODE, true); // true = translated

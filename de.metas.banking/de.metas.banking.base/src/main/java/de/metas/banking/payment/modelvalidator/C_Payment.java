@@ -32,13 +32,13 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Services;
 
 /**
  * @author cg

@@ -26,8 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -54,6 +52,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.material.planning.MaterialPlanningConfiguration;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * This class tests {@link IPPOrderBOMBL} in convert with {@link IPPOrderBOMDAO}.

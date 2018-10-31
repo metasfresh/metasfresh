@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /*
  * #%L

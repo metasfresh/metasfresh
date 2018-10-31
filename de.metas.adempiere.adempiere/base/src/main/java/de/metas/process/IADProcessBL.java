@@ -1,8 +1,9 @@
 package de.metas.process;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Table;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -24,28 +24,28 @@ package de.metas.handlingunits.allocation;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 
 public interface ILUTUConfigurationFactory extends ISingletonService
 {
 	/**
 	 * 
 	 * @param tuPIItemProduct may not be {@code null}
-	 * @param cuProduct
+	 * @param cuProductId
 	 * @param cuUOM
 	 * @param bpartner
 	 * @param noLUForVirtualTU determines if the method shall attempt to configure the lutuConfig with an LU if the given {@code tuPIItemProduct} is the virtual one.<br>
 	 *            Depending on the use case (and only if the packing instructions permit it!), the option to place a CU directly on a LU might or might not be what the user wants.<br>
 	 * @return
 	 */
-	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, I_M_Product cuProduct, I_C_UOM cuUOM, I_C_BPartner bpartner, boolean noLUForVirtualTU);
+	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, ProductId cuProductId, I_C_UOM cuUOM, I_C_BPartner bpartner, boolean noLUForVirtualTU);
 
 	/**
 	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record

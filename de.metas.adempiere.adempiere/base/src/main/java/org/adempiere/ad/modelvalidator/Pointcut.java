@@ -28,13 +28,13 @@ import java.util.Set;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,8 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -28,9 +27,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 
@@ -40,7 +39,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
@@ -81,15 +82,17 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 			@NonNull final Quantity qtyPicked,
 			@NonNull final Mode mode)
 	{
-		// Convert QtyPicked to shipment schedule's UOM
-		final I_C_UOM schedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
-		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(sched.getM_Product_ID(),
-				qtyPicked.getQty(),
-				qtyPicked.getUOM(), // from UOM
-				schedUOM // to UOM
-		);
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		final BigDecimal qtyPickedToAdd;
+		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
+		final I_C_UOM schedUOM = shipmentScheduleBL.getUomOfProduct(sched);
+
+		// Convert QtyPicked to shipment schedule's UOM
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+		final Quantity qtyPickedConv = uomConversionBL.convertQuantityTo(qtyPicked, conversionCtx, schedUOM);
+
+		final Quantity qtyPickedToAdd;
 		switch (mode)
 		{
 			case JUST_SET_QTY:
@@ -101,17 +104,15 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 				qtyPickedToAdd = qtyPickedConv.subtract(qtyPickedOld);
 				break;
 			default:
-				Check.errorIf(true, "Unexpected mode={}; qtyPicked={}; sched={}", mode, qtyPicked, sched);
-				qtyPickedToAdd = ZERO; // won't be reached
-				break;
+				throw new AdempiereException("Unexpected mode=" + mode + "; qtyPicked=" + qtyPicked + "; sched=" + sched);
 		}
 
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class, sched);
 		schedQtyPicked.setAD_Org_ID(sched.getAD_Org_ID());
 		schedQtyPicked.setM_ShipmentSchedule(sched);
 		schedQtyPicked.setIsActive(true);
-		schedQtyPicked.setQtyPicked(qtyPickedToAdd);
-		save(schedQtyPicked);
+		schedQtyPicked.setQtyPicked(qtyPickedToAdd.getAsBigDecimal());
+		saveRecord(schedQtyPicked);
 
 		return schedQtyPicked;
 	}

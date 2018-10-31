@@ -26,10 +26,9 @@ package org.eevolution.mrp.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.ISingletonService;
 
 public interface IMRPSegmentBL extends ISingletonService
 {

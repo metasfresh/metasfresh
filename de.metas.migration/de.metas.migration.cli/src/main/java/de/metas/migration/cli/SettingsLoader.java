@@ -1,14 +1,13 @@
 package de.metas.migration.cli;
 
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+
 import java.io.File;
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.metas.migration.cli.PropertiesFileLoader.CantLoadPropertiesException;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -51,29 +50,54 @@ public class SettingsLoader
 
 	public Settings loadSettings(@NonNull final Config config)
 	{
-		final File settingsDir;
-		final Settings settings;
-		if (config.getSettingsFileName() != null)
+		try
 		{
-			settingsDir = directoryChecker.checkDirectory("roloutDir", config.getRolloutDirName());
-			settings = new Settings(setSettingsFile(settingsDir, config.getSettingsFileName()));
+			final Settings settings;
+			if (config.getSettingsFile() != null)
+			{
+				final File settigsFileAsSpecified = new File(config.getSettingsFile());
+				if (settigsFileAsSpecified.exists())
+				{
+					logger.info("Settings file {} found", settigsFileAsSpecified);
+					settings = new Settings(setSettingsFile(null, config.getSettingsFile()));
+				}
+				else
+				{
+					final File settingsDir = directoryChecker.checkDirectory("roloutDir", config.getRolloutDirName());
+					logger.info("Settings file {} not found; trying with rollout dir={}", settigsFileAsSpecified, settingsDir);
+
+					settings = new Settings(setSettingsFile(settingsDir, config.getSettingsFile()));
+				}
+			}
+			else
+			{
+				logger.info("No settings file specified; looking for");
+				final File settingsDir = directoryChecker.checkDirectory("user.home", System.getProperty("user.home"));
+				settings = new Settings(setSettingsFile(settingsDir, Config.DEFAULT_SETTINGS_FILENAME));
+			}
+			return settings;
 		}
-		else
+		catch (Exception e)
 		{
-			settingsDir = directoryChecker.checkDirectory("user.home", System.getProperty("user.home"));
-			settings = new Settings(setSettingsFile(settingsDir, Config.DEFAULT_SETTINGS_FILENAME));
+			throw new CantLoadSettingsException(e);
 		}
-		return settings;
 	}
 
-	private Properties setSettingsFile(@NonNull final File dir, @NonNull final String settingsFilename)
+	private Properties setSettingsFile(final File dir, @NonNull final String settingsFilename)
 	{
 		final Properties fileProperties;
 		try
 		{
-			fileProperties = propertiesFileLoader.loadFromFile(dir, settingsFilename);
+			if (dir != null)
+			{
+				fileProperties = propertiesFileLoader.loadFromFile(dir, settingsFilename);
+			}
+			else
+			{
+				fileProperties = propertiesFileLoader.loadFromFile(new File(settingsFilename));
+			}
 		}
-		catch (final CantLoadPropertiesException e)
+		catch (final Exception e)
 		{
 			throw new CantLoadSettingsException(e);
 		}
@@ -106,10 +130,10 @@ public class SettingsLoader
 		private CantLoadSettingsException(final Exception e)
 		{
 			super("Unable to load the settings file. It shall be a properties file that looks as follows:\n\n" +
-					"METASFRESH_DB_SERVER=localhost\n" +
-					"METASFRESH_DB_PORT=5432\n" +
-					"METASFRESH_DB_NAME=metasfresh\n" +
-					"METASFRESH_DB_USER=metasfresh\n" +
+					"METASFRESH_DB_SERVER=<DBMS hostname> # e.g. localhost\n" +
+					"METASFRESH_DB_PORT=<DBMS hostname> # e.g. 5432\n" +
+					"METASFRESH_DB_NAME=<DB name> # e.g. metasfresh\n" +
+					"METASFRESH_DB_USER=<DB user name> # e.g. metasfresh\n" +
 					"METASFRESH_DB_PASSWORD=<pasword>\n", e);
 		}
 	}

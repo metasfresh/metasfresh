@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

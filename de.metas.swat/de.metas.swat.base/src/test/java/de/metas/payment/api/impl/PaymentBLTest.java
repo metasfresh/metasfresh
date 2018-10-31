@@ -32,8 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
@@ -47,6 +45,8 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class PaymentBLTest
 {

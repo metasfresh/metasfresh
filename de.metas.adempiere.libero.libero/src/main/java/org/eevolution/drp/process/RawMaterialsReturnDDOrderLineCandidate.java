@@ -32,14 +32,10 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
-import org.adempiere.util.time.SystemTime;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -58,6 +54,10 @@ import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageRecord;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -98,10 +98,10 @@ import lombok.NonNull;
 	private I_M_Locator rawMaterialsLocator;
 	// Org, Organization BP, In Transit Warehouse /Locator
 	//
-	private I_AD_Org org;
+	private OrgId orgId;
 	private I_C_BPartner orgBPartner;
 	private I_C_BPartner_Location orgBPLocation;
-	private I_M_Warehouse inTransitWarehouse;
+	private WarehouseId inTransitWarehouseId;
 
 	public RawMaterialsReturnDDOrderLineCandidate(
 			@NonNull final Properties ctx,
@@ -229,23 +229,18 @@ import lombok.NonNull;
 
 		//
 		// Org / Linked BPartner
-		org = rawMaterialsWarehouse.getAD_Org();
-		orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
+		orgId = OrgId.ofRepoId(rawMaterialsWarehouse.getAD_Org_ID());
+		orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(orgId.getRepoId());
 		if (orgBPartner == null)
 		{
-			notValidReasons.add("@NotFound@ @AD_OrgBP_ID@: " + org.getName());
+			notValidReasons.add("@NotFound@ @AD_OrgBP_ID@: " + orgId);
 			return;
 		}
-		orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(ctx, org.getAD_Org_ID(), ITrx.TRXNAME_None);
+		orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(ctx, orgId.getRepoId(), ITrx.TRXNAME_None);
 
 		//
 		// InTransit Warehouse
-		inTransitWarehouse = warehouseDAO.retrieveWarehouseInTransitForOrg(ctx, org.getAD_Org_ID());
-		if (inTransitWarehouse == null)
-		{
-			notValidReasons.add("@NotFound@ @M_Warehouse_ID@ @IsInTransit@: " + org.getName());
-			return;
-		}
+		inTransitWarehouseId = warehouseDAO.getInTransitWarehouseId(orgId);
 	}
 
 	public void addStorageRecord(final IStorageRecord storageRecord)
@@ -325,10 +320,10 @@ import lombok.NonNull;
 		return rawMaterialsLocator;
 	}
 
-	public I_AD_Org getAD_Org()
+	public OrgId getOrgId()
 	{
 		loadIfNeeded();
-		return org;
+		return orgId;
 	}
 
 	public I_C_BPartner getOrgBPartner()
@@ -349,9 +344,9 @@ import lombok.NonNull;
 		return productPlanning == null ? 0 : productPlanning.getPlanner_ID();
 	}
 
-	public I_M_Warehouse getInTransitWarehouse()
+	public WarehouseId getInTransitWarehouseId()
 	{
 		loadIfNeeded();
-		return inTransitWarehouse;
+		return inTransitWarehouseId;
 	}
 }

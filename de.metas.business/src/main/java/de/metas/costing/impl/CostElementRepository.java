@@ -8,10 +8,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostElement;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +16,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

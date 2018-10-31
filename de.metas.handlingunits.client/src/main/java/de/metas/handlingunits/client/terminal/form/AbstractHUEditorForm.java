@@ -1,6 +1,5 @@
 package de.metas.handlingunits.client.terminal.form;
 
-import org.adempiere.util.Check;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 
@@ -8,6 +7,7 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.AbstractHUEditor
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
 
 /*
  * #%L

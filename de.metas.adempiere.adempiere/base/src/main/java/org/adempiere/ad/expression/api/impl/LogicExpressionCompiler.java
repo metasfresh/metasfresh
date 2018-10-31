@@ -33,11 +33,12 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpressionCompiler;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import com.google.common.base.Joiner;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class LogicExpressionCompiler implements ILogicExpressionCompiler
 {

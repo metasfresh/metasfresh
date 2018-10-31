@@ -27,11 +27,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IBPartnerAware;
 import org.adempiere.mm.attributes.api.IBPartnerAwareFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.fresh.model.I_C_BPartner;
+import de.metas.util.Check;
 
 public class OrderLineBPartnerAware implements IBPartnerAware
 {

@@ -17,21 +17,22 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.I_AD_UserQuery;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -216,7 +217,8 @@ public class UserQueryRepository
 		return createUserQuery(adUserQuery);
 	}
 
-	private IUserQuery createUserQuery(final I_AD_UserQuery adUserQuery)
+	@VisibleForTesting
+	IUserQuery createUserQuery(final I_AD_UserQuery adUserQuery)
 	{
 		final String code = adUserQuery.getCode();
 		if (code == null || code.isEmpty())
@@ -234,9 +236,13 @@ public class UserQueryRepository
 				segmentStr = Join.AND.getCode() + segmentStr;
 			}
 
-			final IUserQueryRestriction row = parseUserQuerySegment(segmentStr);
+			final UserQueryRestriction row = parseUserQuerySegment(segmentStr);
 			if (row != null)
 			{
+				row.setInternalParameter(computeIsInternalParameter(adUserQuery, row));
+
+				row.setMandatory(computeIsMandatory(adUserQuery, row));
+
 				userQueryRestrictions.add(row);
 			}
 		}
@@ -247,9 +253,10 @@ public class UserQueryRepository
 		return UserQuery.of(id, caption, adUserId, userQueryRestrictions);
 	}
 
-	private final IUserQueryRestriction parseUserQuerySegment(final String segment)
+	@VisibleForTesting
+	final UserQueryRestriction parseUserQuerySegment(final String segment)
 	{
-		final IUserQueryRestriction row = new UserQueryRestriction();
+		final UserQueryRestriction row = new UserQueryRestriction();
 		row.setJoin(Join.AND);
 		row.setOperator(Operator.EQUAL);
 
@@ -298,6 +305,32 @@ public class UserQueryRepository
 		}
 
 		return row;
+	}
+
+	private static boolean computeIsInternalParameter(final I_AD_UserQuery userQuery, final UserQueryRestriction row)
+	{
+		if (userQuery.isShowAllParams())
+		{
+			return false;
+		}
+
+		return !row.hasNullValues();
+	}
+
+	private static boolean computeIsMandatory(final I_AD_UserQuery userQuery, final UserQueryRestriction row)
+	{
+		final boolean internalParameter = computeIsInternalParameter(userQuery, row);
+		if (internalParameter)
+		{
+			return false;
+		}
+
+		if (userQuery.isManadatoryParams())
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

@@ -7,12 +7,11 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 
 /*

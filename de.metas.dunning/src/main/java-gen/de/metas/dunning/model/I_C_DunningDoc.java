@@ -150,6 +150,35 @@ public interface I_C_DunningDoc
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DocType_ID (int C_DocType_ID);
+
+	/**
+	 * Get Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DocType_ID();
+
+	public org.compiere.model.I_C_DocType getC_DocType();
+
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
+
+    /** Column definition for C_DocType_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_DunningDoc, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_DunningDoc, org.compiere.model.I_C_DocType>(I_C_DunningDoc.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
 	 * Set Mahnkontakt.
 	 *
 	 * <br>Type: Table
@@ -280,6 +309,56 @@ public interface I_C_DunningDoc
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocAction (java.lang.String DocAction);
+
+	/**
+	 * Get Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocAction();
+
+    /** Column definition for DocAction */
+    public static final org.adempiere.model.ModelColumn<I_C_DunningDoc, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_C_DunningDoc, Object>(I_C_DunningDoc.class, "DocAction", null);
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
+
+	/**
+	 * Set Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocStatus();
+
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_DunningDoc, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_C_DunningDoc, Object>(I_C_DunningDoc.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
 	 * Set Nr..
 	 * Document sequence number of the document
 	 *
@@ -376,6 +455,31 @@ public interface I_C_DunningDoc
     public static final org.adempiere.model.ModelColumn<I_C_DunningDoc, Object> COLUMN_IsUseBPartnerAddress = new org.adempiere.model.ModelColumn<I_C_DunningDoc, Object>(I_C_DunningDoc.class, "IsUseBPartnerAddress", null);
     /** Column name IsUseBPartnerAddress */
     public static final String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
+
+	/**
+	 * Set Massenaustritt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setIsWriteOff (boolean IsWriteOff);
+
+	/**
+	 * Get Massenaustritt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public boolean isWriteOff();
+
+    /** Column definition for IsWriteOff */
+    public static final org.adempiere.model.ModelColumn<I_C_DunningDoc, Object> COLUMN_IsWriteOff = new org.adempiere.model.ModelColumn<I_C_DunningDoc, Object>(I_C_DunningDoc.class, "IsWriteOff", null);
+    /** Column name IsWriteOff */
+    public static final String COLUMNNAME_IsWriteOff = "IsWriteOff";
 
 	/**
 	 * Set Verarbeitet.

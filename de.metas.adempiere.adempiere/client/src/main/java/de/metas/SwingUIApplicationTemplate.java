@@ -3,7 +3,6 @@ package de.metas;
 import java.awt.KeyboardFocusManager;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
@@ -27,6 +26,7 @@ import org.springframework.context.event.EventListener;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

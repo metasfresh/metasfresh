@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -41,6 +40,7 @@ import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.workflow.TrackingWFExecutionListener;
+import de.metas.util.Services;
 import de.metas.workflow.api.IWFExecutionFactory;
 
 public class Main implements ModelValidator

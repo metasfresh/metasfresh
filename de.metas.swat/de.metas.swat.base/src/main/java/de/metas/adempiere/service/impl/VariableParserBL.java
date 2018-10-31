@@ -3,7 +3,6 @@ package de.metas.adempiere.service.impl;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 /*
  * #%L
@@ -34,6 +33,7 @@ import de.metas.adempiere.model.TableColumnPathException;
 import de.metas.adempiere.service.ITableColumnPathBL;
 import de.metas.adempiere.service.IVariableParserBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public class VariableParserBL implements IVariableParserBL
 {

@@ -3,11 +3,11 @@ package de.metas.procurement.base.order.interceptor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
 import de.metas.procurement.base.order.IPMMPurchaseCandidateDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

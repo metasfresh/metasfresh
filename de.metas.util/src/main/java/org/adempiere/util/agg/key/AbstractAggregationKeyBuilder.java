@@ -25,7 +25,7 @@ package org.adempiere.util.agg.key;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
+import de.metas.util.Services;
 
 /**
  * Base class for normal {@link IAggregationKeyBuilder}s

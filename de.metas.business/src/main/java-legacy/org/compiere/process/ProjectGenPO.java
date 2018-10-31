@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;

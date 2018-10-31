@@ -4,13 +4,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
 import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
 import de.metas.dlm.model.interceptor.PartitionerInterceptor.AddToPartitionInterceptor;
+import de.metas.util.Services;
 
 /*
  * #%L

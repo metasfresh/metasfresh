@@ -5,11 +5,11 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

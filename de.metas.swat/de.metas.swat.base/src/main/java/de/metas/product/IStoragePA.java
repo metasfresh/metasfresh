@@ -26,14 +26,16 @@ package de.metas.product;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import org.adempiere.util.ISingletonService;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Storage;
+
+import de.metas.util.ISingletonService;
 
 public interface IStoragePA extends ISingletonService {
 
 	Collection<I_M_Storage> retrieveStorages(int productId, String trxName);
 
-	int retrieveWarehouseId(I_M_Storage storage, String trxName);
+	WarehouseId retrieveWarehouseId(I_M_Storage storage);
 
 	BigDecimal retrieveQtyAvailable(int M_Warehouse_ID, int M_Locator_ID,
 			int M_Product_ID, int M_AttributeSetInstance_ID, String trxName);

@@ -27,15 +27,15 @@ package de.metas.invoicecandidate.process;
 
 
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.util.ADHyperlinkBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * @author tsa
@@ -80,7 +80,7 @@ public class C_Invoice_Candidate_GenerateInvoice extends JavaProcess
 
 		final IInvoiceCandBL service = Services.get(IInvoiceCandBL.class);
 		final IInvoiceGenerateResult result =
-				service.generateInvoicesFromSelection(getCtx(), getAD_PInstance_ID(), p_IgnoreInvoiceSchedule, this, get_TrxName());
+				service.generateInvoicesFromSelection(getCtx(), getPinstanceId(), p_IgnoreInvoiceSchedule, this, get_TrxName());
 
 		final ADHyperlinkBuilder linkHelper = new ADHyperlinkBuilder();
 		final StringBuffer summary = new StringBuffer("@Generated@");

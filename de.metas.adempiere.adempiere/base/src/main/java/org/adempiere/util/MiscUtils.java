@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
@@ -43,6 +42,7 @@ import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.time.SystemTime;
 
 /**
  * Misc utils

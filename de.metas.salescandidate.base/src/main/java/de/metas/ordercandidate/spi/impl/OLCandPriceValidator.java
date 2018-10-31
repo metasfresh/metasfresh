@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.spi.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,18 +12,17 @@ package de.metas.ordercandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -31,7 +32,6 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.MUOM;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -44,6 +44,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.Services;
 
 /**
  * Validates and sets the given OLCand's pricing data.
@@ -56,11 +57,10 @@ public class OLCandPriceValidator implements IOLCandValidator
 
 	/**
 	 * Dynamic attribute name used to pass on the pricing result obtained by this class to potential listeners like {@link OLCandPricingASIListener}.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
-	/* package */static final ModelDynAttributeAccessor<I_C_OLCand, IPricingResult> DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT =
-			new ModelDynAttributeAccessor<>( OLCandPriceValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);
+	/* package */static final ModelDynAttributeAccessor<I_C_OLCand, IPricingResult> DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT = new ModelDynAttributeAccessor<>(OLCandPriceValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);
 
 	@Override
 	public boolean validate(final I_C_OLCand olCand)
@@ -73,26 +73,40 @@ public class OLCandPriceValidator implements IOLCandValidator
 			// Set the price actual as the price entered
 			olCand.setPriceActual(olCand.getPriceEntered());
 
+			final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
+
 			// still, make sure that we have a currency set
 			if (olCand.getC_Currency_ID() <= 0)
 			{
 				olCand.setIsError(true);
-				final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-
 				final String msg = "@NotFound@ @C_Currency@";
 
 				olCand.setErrorMsg(Services.get(IMsgBL.class).parseTranslation(ctx, msg));
 				return false;
 			}
 
-			// set the internal pricing info for the user's information, if we have it
-			final boolean setErrorIfNoResult = false;
-			final IPricingResult pricingResult = getPricingResult(olCand, setErrorIfNoResult);
-			if (pricingResult != null)
+			final IPricingResult pricingResult = getPricingResult(olCand);
+			if (pricingResult == null || pricingResult.getPricingSystemId() == null || pricingResult.getPricingSystemId().isNone())
 			{
-				olCand.setPriceInternal(pricingResult.getPriceStd());
-				olCand.setPrice_UOM_Internal_ID(pricingResult.getPrice_UOM_ID());
+				olCand.setIsError(true);
+				final String msg = "@NotFound@ @M_PricingSystem_ID@";
+				olCand.setErrorMsg(Services.get(IMsgBL.class).parseTranslation(ctx, msg));
+				return false;
 			}
+			olCand.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
+
+			if (pricingResult == null || pricingResult.getC_TaxCategory_ID() <= 0)
+			{
+				olCand.setIsError(true);
+				final String msg = "@NotFound@ @C_TaxCategory_ID@";
+				olCand.setErrorMsg(Services.get(IMsgBL.class).parseTranslation(ctx, msg));
+				return false;
+			}
+			olCand.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
+
+			// set the internal pricing info for the user's information, if we have it
+			olCand.setPriceInternal(pricingResult.getPriceStd());
+			olCand.setPrice_UOM_Internal_ID(pricingResult.getPrice_UOM_ID());
 
 			// further validation on manual price is not needed
 			return true;
@@ -109,8 +123,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 		// NOTE: this was introduced mainly for EDI C_OLCand imports.
 		olCand.setM_AttributeSetInstance(null);
 
-		final boolean setErrorIfNoResult = true;
-		final IPricingResult pricingResult = getPricingResult(olCand, setErrorIfNoResult);
+		final IPricingResult pricingResult = getPricingResult(olCand);
 		if (pricingResult == null)
 		{
 			return false;
@@ -122,7 +135,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 		// FIXME: move this part to handlingUnits !!!
 		if ("TU".equals(MUOM.get(InterfaceWrapperHelper.getCtx(olCand), priceUOMInternalId).getX12DE355()))
 		{
-			// this olCand has a TU/Gebinde price-UOMthat mean that despite the importated UOM may be PCE, we import UOM="TU" into our order line.
+			// this olCand has a TU/Gebinde price-UOMthat mean that despite the imported UOM may be PCE, we import UOM="TU" into our order line.
 			olCand.setC_UOM_Internal_ID(priceUOMInternalId);
 		}
 		else
@@ -140,6 +153,8 @@ public class OLCandPriceValidator implements IOLCandValidator
 		olCand.setPriceActual(priceInternal);
 		olCand.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
+		olCand.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
+
 		olCand.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
 
 		// task 08803: we provide the pricing result and expect that OLCandPricingASIListener will keep the ASI up to date
@@ -148,13 +163,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 		return true;
 	}
 
-	/**
-	 * 
-	 * @param olCand
-	 * @param setErrorIfNoResult
-	 * @return
-	 */
-	private IPricingResult getPricingResult(final I_C_OLCand olCand, final boolean setErrorIfNoResult)
+	private IPricingResult getPricingResult(@NonNull final I_C_OLCand olCand)
 	{
 		try
 		{
@@ -162,25 +171,23 @@ public class OLCandPriceValidator implements IOLCandValidator
 			final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 			final BigDecimal qtyOverride = null;
-			final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromisedEffective(olCand);
+			final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
 			final IPricingResult pricingResult = olCandBL.computePriceActual(olCand, qtyOverride, PricingSystemId.NULL, datePromisedEffective);
 
 			return pricingResult;
 		}
 		catch (final AdempiereException e)
 		{
-			if (setErrorIfNoResult)
-			{
-				olCand.setErrorMsg(e.getLocalizedMessage());
-				olCand.setIsError(true);
+			olCand.setErrorMsg(e.getLocalizedMessage());
+			olCand.setIsError(true);
 
-				// Warn developer that something went wrong.
-				// In this way he/she can early see the issue and where it happend.
-				if (Services.get(IDeveloperModeBL.class).isEnabled())
-				{
-					logger.warn(e.getLocalizedMessage(), e);
-				}
+			// Warn developer that something went wrong.
+			// In this way he/she can early see the issue and where it happened.
+			if (Services.get(IDeveloperModeBL.class).isEnabled())
+			{
+				logger.warn(e.getLocalizedMessage(), e);
 			}
+
 		}
 		return null;
 	}

@@ -2,11 +2,11 @@ package de.metas.handlingunits.client.terminal.inventory.model;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
+import de.metas.util.Check;
 
 /**
  *

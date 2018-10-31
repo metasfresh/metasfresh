@@ -1,7 +1,6 @@
 package de.metas.notification;
 
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.slf4j.Logger;
@@ -9,6 +8,7 @@ import org.slf4j.Logger;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.event.EventMessageFormatTemplate;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

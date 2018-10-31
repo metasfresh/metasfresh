@@ -1,8 +1,16 @@
 package org.adempiere.user;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
 import lombok.Value;
 
@@ -28,19 +36,44 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class UserId
+public class UserId implements RepoIdAware
 {
-	int repoId;
+	public static final UserId SYSTEM = new UserId(0);
+	public static final UserId METASFRESH = new UserId(100);
 
+	@JsonCreator
 	public static UserId ofRepoId(final int repoId)
 	{
-		return new UserId(repoId);
+		if (repoId == SYSTEM.getRepoId())
+		{
+			return SYSTEM;
+		}
+		else if (repoId == METASFRESH.getRepoId())
+		{
+			return METASFRESH;
+		}
+		else
+		{
+			return new UserId(repoId);
+		}
 	}
 
 	public static UserId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new UserId(repoId) : null;
+		if (repoId == SYSTEM.getRepoId())
+		{
+			return SYSTEM;
+		}
+		else if (repoId == METASFRESH.getRepoId())
+		{
+			return METASFRESH;
+		}
+		else
+		{
+			return repoId >= 0 ? new UserId(repoId) : null;
+		}
 	}
 
 	public static int toRepoIdOr(
@@ -50,8 +83,22 @@ public class UserId
 		return userId != null ? userId.getRepoId() : defaultValue;
 	}
 
-	private UserId(final int repoId)
+	public static boolean equals(final UserId userId1, final UserId userId2)
 	{
-		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
+		return Objects.equals(userId1, userId2);
+	}
+
+	int repoId;
+
+	private UserId(final int userRepoId)
+	{
+		this.repoId = Check.assumeGreaterOrEqualToZero(userRepoId, "userRepoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

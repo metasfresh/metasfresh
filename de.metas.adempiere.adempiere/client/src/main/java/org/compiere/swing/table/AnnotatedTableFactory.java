@@ -30,8 +30,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableModel;
 
-import org.adempiere.util.Check;
 import org.jdesktop.swingx.JXTable;
+
+import de.metas.util.Check;
 
 /**
  * Factory used to create swing {@link JXTable}s which supports {@link AnnotatedTableModel} implementations.

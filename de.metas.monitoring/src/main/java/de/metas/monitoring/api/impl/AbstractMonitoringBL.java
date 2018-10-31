@@ -26,10 +26,9 @@ package de.metas.monitoring.api.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-
 import de.metas.monitoring.api.IMeter;
 import de.metas.monitoring.api.IMonitoringBL;
+import de.metas.util.Check;
 
 public abstract class AbstractMonitoringBL implements IMonitoringBL
 {

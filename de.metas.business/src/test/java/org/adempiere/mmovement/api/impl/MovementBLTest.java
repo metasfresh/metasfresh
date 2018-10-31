@@ -31,7 +31,6 @@ import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_Org;
@@ -44,6 +43,8 @@ import org.compiere.model.I_M_Product_Acct;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.Services;
 
 public class MovementBLTest
 {

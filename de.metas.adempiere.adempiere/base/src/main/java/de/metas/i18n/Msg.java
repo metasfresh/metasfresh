@@ -16,14 +16,10 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Message;
 import org.compiere.util.AmtInWords;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -33,7 +29,11 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Singular;
 
@@ -42,7 +42,7 @@ import lombok.Singular;
  *
  * @author metas-dev <dev@metasfresh.com>
  * @author based on initial version of Jorg Janke
- * 
+ *
  * @deprecated Please use {@link IMsgBL}
  */
 @Deprecated
@@ -72,11 +72,10 @@ public final class Msg
 	 */
 	private Msg()
 	{
-		super();
 	}
 
 	/** Messages cache: AD_Language to MessageValue to Translated message text */
-	private final CCache<String, CCache<String, Message>> adLanguage2messages = CCache.newCache("msg_lang", 10, CCache.EXPIREMINUTES_Never);
+	private final CCache<String, CCache<String, Message>> adLanguage2messages = CCache.newCache(I_AD_Message.Table_Name + "#by#ADLanguage", 10, CCache.EXPIREMINUTES_Never);
 	private final CCache<String, Element> elementsByElementName = CCache.newLRUCache(I_AD_Element.Table_Name, 500, CCache.EXPIREMINUTES_Never);
 
 	/**
@@ -185,9 +184,9 @@ public final class Msg
 	{
 		// clear all languages
 		new ArrayList<>(adLanguage2messages.values()).forEach(CCache::reset);
-		adLanguage2messages.clear();
+		adLanguage2messages.reset();
 
-		elementsByElementName.clear();
+		elementsByElementName.reset();
 	}   // reset
 
 	public static void cacheReset()
@@ -271,7 +270,7 @@ public final class Msg
 
 	/**************************************************************************
 	 * Get translated text for AD_Message
-	 * 
+	 *
 	 * @param adLanguage - Language
 	 * @param adMessage - Message Key
 	 * @return translated text
@@ -312,7 +311,7 @@ public final class Msg
 
 	/**
 	 * Get translated text message for AD_Message
-	 * 
+	 *
 	 * @param ctx Context to retrieve language
 	 * @param AD_Message - Message Key
 	 * @return translated text
@@ -324,7 +323,7 @@ public final class Msg
 
 	/**
 	 * Get translated text message for AD_Message
-	 * 
+	 *
 	 * @param language Language
 	 * @param AD_Message - Message Key
 	 * @return translated text
@@ -336,7 +335,7 @@ public final class Msg
 
 	/**
 	 * Get translated text message for AD_Message
-	 * 
+	 *
 	 * @param adLanguage - Language
 	 * @param adMessage - Message Key
 	 * @param getText if true only return Text, if false only return Tip
@@ -350,7 +349,7 @@ public final class Msg
 
 	/**
 	 * Get translated text message for AD_Message
-	 * 
+	 *
 	 * @param ctx Context to retrieve language
 	 * @param adMessage Message Key
 	 * @param getText if true only return Text, if false only return Tip
@@ -363,7 +362,7 @@ public final class Msg
 
 	/**
 	 * Get clear text for AD_Message with parameters
-	 * 
+	 *
 	 * @param ctx Context to retrieve language
 	 * @param AD_Message Message key
 	 * @param args MessageFormat arguments
@@ -377,7 +376,7 @@ public final class Msg
 
 	/**
 	 * Get clear text for AD_Message with parameters
-	 * 
+	 *
 	 * @param language Language
 	 * @param AD_Message Message key
 	 * @param args MessageFormat arguments
@@ -391,7 +390,7 @@ public final class Msg
 
 	/**
 	 * Get clear text for AD_Message with parameters
-	 * 
+	 *
 	 * @param adLanguage Language
 	 * @param AD_Message Message key
 	 * @param args MessageFormat arguments
@@ -401,11 +400,11 @@ public final class Msg
 	public static String getMsg(final String adLanguage, final String AD_Message, final Object[] args)
 	{
 		final String msg = getMsg(adLanguage, AD_Message);
-		if(args == null || args.length == 0)
+		if (args == null || args.length == 0)
 		{
 			return msg;
 		}
-		
+
 		String retStr = msg;
 		try
 		{
@@ -437,7 +436,7 @@ public final class Msg
 
 	/**************************************************************************
 	 * Get Amount in Words
-	 * 
+	 *
 	 * @param language language
 	 * @param amount numeric amount (352.80)
 	 * @return amount in words (three*five*two 80/100)
@@ -501,7 +500,7 @@ public final class Msg
 
 	/**************************************************************************
 	 * Get Translation for Element
-	 * 
+	 *
 	 * @param adLanguage language
 	 * @param columnName column name
 	 * @param isSOTrx if false PO terminology is used (if exists)
@@ -626,7 +625,7 @@ public final class Msg
 
 	/**
 	 * Get Translation for Element using Sales terminology
-	 * 
+	 *
 	 * @param ctx context
 	 * @param ColumnName column name
 	 * @return Name of the Column or "" if not found
@@ -638,7 +637,7 @@ public final class Msg
 
 	/**
 	 * Get Translation for Element
-	 * 
+	 *
 	 * @param ctx context
 	 * @param ColumnName column name
 	 * @param isSOTrx sales transaction
@@ -651,14 +650,14 @@ public final class Msg
 
 	/**************************************************************************
 	 * "Translate" text.
-	 * 
+	 *
 	 * <pre>
 	 *		- Check AD_Message.AD_Message 	->	MsgText
 	 *		- Check AD_Element.ColumnName	->	Name
 	 * </pre>
-	 * 
+	 *
 	 * If checking AD_Element, the SO terminology is used.
-	 * 
+	 *
 	 * @param adLanguage Language
 	 * @param isSOTrx sales order context
 	 * @param text Text - AD_Message or Element Name
@@ -666,7 +665,7 @@ public final class Msg
 	 */
 	public static String translate(final String adLanguage, final boolean isSOTrx, final String text)
 	{
-		if (text == null || text.equals(""))
+		if (text == null || text.isEmpty())
 		{
 			return "";
 		}
@@ -717,14 +716,14 @@ public final class Msg
 
 	/***
 	 * "Translate" text (SO Context).
-	 * 
+	 *
 	 * <pre>
 	 *		- Check AD_Message.AD_Message 	->	MsgText
 	 *		- Check AD_Element.ColumnName	->	Name
 	 * </pre>
-	 * 
+	 *
 	 * If checking AD_Element, the SO terminology is used.
-	 * 
+	 *
 	 * @param adLanguage Language
 	 * @param text Text - MsgText or Element Name
 	 * @return translated text or original text if not found
@@ -736,12 +735,12 @@ public final class Msg
 
 	/**
 	 * "Translate" text.
-	 * 
+	 *
 	 * <pre>
 	 *		- Check AD_Message.AD_Message 	->	MsgText
 	 *		- Check AD_Element.ColumnName	->	Name
 	 * </pre>
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param text Text - MsgText or Element Name
 	 * @return translated text or original text if not found
@@ -768,12 +767,12 @@ public final class Msg
 
 	/**
 	 * "Translate" text.
-	 * 
+	 *
 	 * <pre>
 	 *		- Check AD_Message.AD_Message 	->	MsgText
 	 *		- Check AD_Element.ColumnName	->	Name
 	 * </pre>
-	 * 
+	 *
 	 * @param language Language
 	 * @param text Text
 	 * @return translated text or original text if not found
@@ -786,7 +785,7 @@ public final class Msg
 
 	/**
 	 * Translate elements enclosed in "@" (at sign)
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param text Text
 	 * @return translated text or original text if not found
@@ -799,7 +798,7 @@ public final class Msg
 
 	/**
 	 * Translate elements enclosed in "@" (at sign)
-	 * 
+	 *
 	 * @return translated text or original text if not found
 	 */
 	public static String parseTranslation(final String adLanguage, final String text)

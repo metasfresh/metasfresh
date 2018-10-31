@@ -33,9 +33,10 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class TrxItemExecutorBuilder<IT, RT> implements ITrxItemExecutorBuilder<IT, RT>
 {

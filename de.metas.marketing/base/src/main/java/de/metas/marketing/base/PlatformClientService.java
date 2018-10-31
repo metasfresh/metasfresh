@@ -1,6 +1,5 @@
 package de.metas.marketing.base;
 
-import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
 import de.metas.marketing.base.model.Platform;
@@ -8,6 +7,7 @@ import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.PlatformRepository;
 import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.marketing.base.spi.PlatformClientFactory;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

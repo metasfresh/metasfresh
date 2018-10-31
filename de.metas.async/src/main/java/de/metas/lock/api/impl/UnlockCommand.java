@@ -28,8 +28,6 @@ import java.util.concurrent.Future;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.FutureValue;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
@@ -38,6 +36,9 @@ import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.lock.spi.ILockDatabase;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class UnlockCommand implements IUnlockCommand
 {
@@ -136,7 +137,7 @@ public class UnlockCommand implements IUnlockCommand
 	}
 
 	@Override
-	public IUnlockCommand setRecordsBySelection(final Class<?> modelClass, final int adPIstanceId)
+	public IUnlockCommand setRecordsBySelection(final Class<?> modelClass, final PInstanceId adPIstanceId)
 	{
 		_recordsToUnlock.setRecordsBySelection(modelClass, adPIstanceId);
 		return this;
@@ -149,9 +150,9 @@ public class UnlockCommand implements IUnlockCommand
 	}
 
 	@Override
-	public final int getSelectionToUnlock_AD_PInstance_ID()
+	public final PInstanceId getSelectionToUnlock_AD_PInstance_ID()
 	{
-		return _recordsToUnlock.getSelection_AD_PInstance_ID();
+		return _recordsToUnlock.getSelection_PInstanceId();
 	}
 
 	@Override

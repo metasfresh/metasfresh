@@ -169,4 +169,17 @@ public class MaterialDescriptor extends ProductDescriptor
 				.build();
 		return result.asssertMaterialDescriptorComplete();
 	}
+
+	public MaterialDescriptor withStorageAttributes(
+			@NonNull final AttributesKey storageAttributesKey,
+			final int attributeSetInstanceId)
+	{
+		final ProductDescriptor newProductDescriptor = ProductDescriptor
+				.forProductAndAttributes(
+						getProductId(),
+						storageAttributesKey,
+						attributeSetInstanceId);
+
+		return withProductDescriptor(newProductDescriptor);
+	}
 }

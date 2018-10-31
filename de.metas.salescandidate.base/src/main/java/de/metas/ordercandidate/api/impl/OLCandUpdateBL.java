@@ -29,12 +29,12 @@ import java.util.Properties;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 
 import de.metas.ordercandidate.api.IOLCandUpdateBL;
 import de.metas.ordercandidate.api.OLCandUpdateResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.Services;
 
 public class OLCandUpdateBL implements IOLCandUpdateBL
 {

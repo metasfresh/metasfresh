@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -22,7 +22,7 @@ import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 
 /*
  * #%L

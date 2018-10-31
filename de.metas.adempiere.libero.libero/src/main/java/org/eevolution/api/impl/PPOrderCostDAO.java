@@ -27,10 +27,11 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Cost;
+
+import de.metas.util.Services;
 
 public class PPOrderCostDAO implements IPPOrderCostDAO
 {

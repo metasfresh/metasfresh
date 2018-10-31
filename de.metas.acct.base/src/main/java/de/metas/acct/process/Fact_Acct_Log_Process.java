@@ -2,7 +2,6 @@ package de.metas.acct.process;
 
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
 
@@ -12,6 +11,7 @@ import de.metas.acct.aggregation.async.FactAcctLogProcessRequest;
 import de.metas.acct.aggregation.async.FactAcctLogWorkpackageProcessor;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

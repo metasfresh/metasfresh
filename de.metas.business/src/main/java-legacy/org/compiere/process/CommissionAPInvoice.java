@@ -18,7 +18,6 @@ package org.compiere.process;
 
 
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MCommission;
 import org.compiere.model.MCommissionRun;
@@ -29,6 +28,7 @@ import org.compiere.util.Env;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Create AP Invoices for Commission

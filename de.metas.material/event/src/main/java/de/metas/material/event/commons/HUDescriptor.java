@@ -4,11 +4,10 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

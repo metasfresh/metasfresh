@@ -2,12 +2,12 @@ package de.metas.contracts.subscription.invoicecandidatehandler;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 
 /*

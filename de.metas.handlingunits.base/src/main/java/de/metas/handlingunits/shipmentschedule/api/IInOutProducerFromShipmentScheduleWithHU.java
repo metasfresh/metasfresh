@@ -5,7 +5,6 @@ import java.util.List;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 
 import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 
@@ -34,16 +33,6 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	 * @return this instance
 	 */
 	IInOutProducerFromShipmentScheduleWithHU setCreatePackingLines(boolean createPackingLines);
-
-	/**
-	 * Sets if shipment lines shall be flagged as manual packing materials.<br>
-	 * Makes sense for dirty "adhoc" shipments that don't have actually picked handling units.
-	 *
-	 * @param manualPackingMaterial
-	 * @return this
-	 * @see I_M_InOutLine#setIsManualPackingMaterial(boolean)
-	 */
-	IInOutProducerFromShipmentScheduleWithHU setManualPackingMaterial(boolean manualPackingMaterial);
 
 	/**
 	 * If the flag IsShipmentDateToday is true, the shipment will be created for today, no matter what delivery dates are set in the shipment schedules.

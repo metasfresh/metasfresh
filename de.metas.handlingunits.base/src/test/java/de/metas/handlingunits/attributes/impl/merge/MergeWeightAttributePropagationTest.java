@@ -104,7 +104,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find a TU with 5 x CU
 
 		// now merge 2xCU onto that IFCOs currently already filled with 5xCU
-		helper.mergeTUs(huContext, sourceTUsInLoadingUnit, targetTUInLoadingUnit, getCUProduct(), BigDecimal.valueOf(2), getCUUOM());
+		helper.mergeTUs(huContext, sourceTUsInLoadingUnit, targetTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(2), getCUUOM());
 
 		// commitAndDumpHU(loadingUnit);
 
@@ -168,7 +168,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find a TU with 5 x CU
 		
 		// we "offer" both TUs to the merge method, but expect it not to touch the second TU since only 2 CU shall be transferred
-		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProduct(), 
+		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProductId(), 
 				BigDecimal.valueOf(2), 
 				getCUUOM());
 	
@@ -251,7 +251,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		// Finally, merge 2 x TUs from both palettes at the same time
 		final I_M_HU sourceTUInLoadingUnit = findTUInLUWithQty(splitLU, 5); // find a TU with 5 x CU in the LU TO which CUs were split
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find a TU with 5 x CU in the LU FROM which we split
-		helper.mergeTUs(huContext, Collections.singletonList(sourceTUInLoadingUnit), targetTUInLoadingUnit, getCUProduct(), BigDecimal.valueOf(5), getCUUOM());
+		helper.mergeTUs(huContext, Collections.singletonList(sourceTUInLoadingUnit), targetTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
 		Assert.assertEquals("Target TU is planning", targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
 		Assert.assertEquals("Source TU is destroyed", sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Destroyed);
@@ -309,7 +309,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU sourceTUInLoadingUnit = listWithSingleTU.get(0);
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5);
 
-		helper.mergeTUs(huContext, ImmutableList.of(sourceTUInLoadingUnit), targetTUInLoadingUnit, getCUProduct(),
+		helper.mergeTUs(huContext, ImmutableList.of(sourceTUInLoadingUnit), targetTUInLoadingUnit, getCUProductId(),
 				BigDecimal.valueOf(5),
 				getCUUOM());
 
@@ -325,7 +325,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
 				newHUWeightsExpectation("61.353", "54.353", "7", "0"));
 
-		helper.mergeTUs(huContext, Collections.singletonList(targetTUInLoadingUnit), sourceTUInLoadingUnit, getCUProduct(), BigDecimal.valueOf(5), getCUUOM());
+		helper.mergeTUs(huContext, Collections.singletonList(targetTUInLoadingUnit), sourceTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
 		Assert.assertEquals("Target TU is planning", targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
 		Assert.assertEquals("Source TU is planning", sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
@@ -387,7 +387,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		// Merge the 2 trading units within the palette
 		final I_M_HU sourceTUInLoadingUnit = splitTradingUnits.get(0);
 		final I_M_HU targetTUInLoadingUnit = splitTradingUnits.get(1);
-		helper.mergeTUs(huContext, Collections.singletonList(sourceTUInLoadingUnit), targetTUInLoadingUnit, getCUProduct(), BigDecimal.valueOf(5), getCUUOM());
+		helper.mergeTUs(huContext, Collections.singletonList(sourceTUInLoadingUnit), targetTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
 		Assert.assertEquals("Target TU is planning", targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
 		Assert.assertEquals("Source TU is destroyed", sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Destroyed);
@@ -443,7 +443,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Finally, merge 2 x TUs from both palettes at the same time
 		final I_M_HU sourceTUInLoadingUnit = findTUInLUWithQty(splitLU, 5); // find a TU with 5 x CU in the LU onto which CUs were split
-		helper.mergeTUs(huContext, Collections.singletonList(sourceTUInLoadingUnit), loadingUnit, getCUProduct(), BigDecimal.valueOf(5), getCUUOM());
+		helper.mergeTUs(huContext, Collections.singletonList(sourceTUInLoadingUnit), loadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
 		Assert.assertEquals("Target TU is planning", X_M_HU.HUSTATUS_Planning, loadingUnit.getHUStatus());
 		Assert.assertEquals("Source TU is destroyed", X_M_HU.HUSTATUS_Destroyed, sourceTUInLoadingUnit.getHUStatus());
@@ -499,7 +499,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		// Merge the 1st of the 2 trading units one the palette's IFCO
 		// note that we "offer" both TUs to the merge method, but due to the qty of 5, we expect only the first one to be completely mergen and destroyed, and the second one to remain untouched.
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find the "real" IFCO with 5 x CU
-		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProduct(), BigDecimal.valueOf(5), getCUUOM());
+		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
 		assertThat("Target TU is planning", targetTUInLoadingUnit.getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
 		assertThat("Source TU is destroyed", splitTradingUnits.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Destroyed));

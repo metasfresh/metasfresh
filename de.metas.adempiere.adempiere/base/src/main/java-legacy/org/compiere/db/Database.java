@@ -23,11 +23,12 @@ import java.text.SimpleDateFormat;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+
+import de.metas.util.Check;
 
 /**
  * General Database Constants and Utilities

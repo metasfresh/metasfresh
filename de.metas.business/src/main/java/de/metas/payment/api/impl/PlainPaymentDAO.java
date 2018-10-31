@@ -30,12 +30,12 @@ import java.util.Properties;
 import org.adempiere.ad.wrapper.IPOJOFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.util.Services;
 
 public class PlainPaymentDAO extends AbstractPaymentDAO
 {

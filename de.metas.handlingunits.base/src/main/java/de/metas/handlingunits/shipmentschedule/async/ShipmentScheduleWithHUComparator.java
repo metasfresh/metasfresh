@@ -25,7 +25,6 @@ package de.metas.handlingunits.shipmentschedule.async;
 
 import java.util.Comparator;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -33,6 +32,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 
 /**
  * Sort {@link IShipmentScheduleWithHU} records by

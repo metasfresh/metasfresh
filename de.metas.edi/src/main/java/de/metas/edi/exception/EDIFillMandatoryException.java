@@ -39,7 +39,8 @@ package de.metas.edi.exception;
 import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Throwed when there are some fields that are mandatory but unfilled.

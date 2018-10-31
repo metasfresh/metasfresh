@@ -13,23 +13,20 @@ package de.metas.handlingunits;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -47,6 +44,10 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.MTransactionProductStorage;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public final class StaticHUAssert
 {
@@ -107,16 +108,16 @@ public final class StaticHUAssert
 	 * @deprecated please use {@link HUAssert#hasStorage(de.metas.product.ProductId, de.metas.quantity.Quantity)}.
 	 */
 	@Deprecated
-	public static void assertHUStorage(final I_M_HU hu, final I_M_Product product, final BigDecimal qtyExpected)
+	public static void assertHUStorage(final I_M_HU hu, final ProductId productId, final BigDecimal qtyExpected)
 	{
-		final I_C_UOM uom = product.getC_UOM();
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(productId);
 
 		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 		final IHUStorage huStorage = storageFactory.getStorage(hu);
-		final BigDecimal qtyActual = huStorage.getQty(product, uom);
+		final BigDecimal qtyActual = huStorage.getQty(productId, uom);
 
 		final String message = "Invalid HU Storage Qty: "
-				+ "\nproduct=" + product.getValue()
+				+ "\nproduct=" + productId
 				+ "\nHU=" + hu;
 		Assert.assertThat(message, qtyActual, Matchers.comparesEqualTo(qtyExpected));
 	}
@@ -156,25 +157,40 @@ public final class StaticHUAssert
 				storage.getQtyFree(),
 				Matchers.comparesEqualTo(new BigDecimal(qtyFreeStr)));
 		Assert.assertThat("Invalid storage qty: " + storage,
-				storage.getQty(),
+				storage.getQty().getAsBigDecimal(),
 				Matchers.comparesEqualTo(new BigDecimal(qtyStr)));
 	}
 
+	@Deprecated
 	public static void assertStorageLevel(final I_M_HU hu, final I_M_Product product, final BigDecimal qtyExpected)
+	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		assertStorageLevel(hu, productId, qtyExpected);
+	}
+
+	public static void assertStorageLevel(final I_M_HU hu, final ProductId productId, final BigDecimal qtyExpected)
 	{
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(hu);
 		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(contextProvider);
-		assertStorageLevel(huContext, hu, product, qtyExpected);
+		assertStorageLevel(huContext, hu, productId, qtyExpected);
 	}
 
+	@Deprecated
 	public static void assertStorageLevel(final IHUContext huContext, final I_M_HU hu, final I_M_Product product, final BigDecimal qtyExpected)
+	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		assertStorageLevel(huContext, hu, productId, qtyExpected);
+	}
+
+	public static void assertStorageLevel(final IHUContext huContext, final I_M_HU hu, final ProductId productId, final BigDecimal qtyExpected)
 	{
 		final BigDecimal qtyActual = huContext.getHUStorageFactory()
 				.getStorage(hu)
-				.getProductStorage(product)
-				.getQty();
+				.getProductStorage(productId)
+				.getQty()
+				.getAsBigDecimal();
 
-		Assert.assertThat("Invalid storage qty for HU=" + hu + ", product=" + product,
+		Assert.assertThat("Invalid storage qty for HU=" + hu + ", product=" + productId,
 				qtyActual,
 				Matchers.comparesEqualTo(qtyExpected));
 	}

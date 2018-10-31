@@ -7,8 +7,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product_Category;
@@ -18,6 +16,8 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostElementType;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

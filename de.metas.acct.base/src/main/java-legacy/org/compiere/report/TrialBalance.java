@@ -22,14 +22,15 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import de.metas.i18n.Language;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MElementValue;
 import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
+
+import de.metas.i18n.Language;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 
 /**
@@ -104,10 +105,11 @@ public class TrialBalance extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		StringBuffer sb = new StringBuffer ("AD_PInstance_ID=")
-			.append(getAD_PInstance_ID());
+			.append(getPinstanceId().getRepoId());
 		//	Parameter
 		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
@@ -280,6 +282,7 @@ public class TrialBalance extends JavaProcess
 	 *  Perform process.
 	 *  @return Message to be translated
 	 */
+	@Override
 	protected String doIt()
 	{
 		createBalanceLine();
@@ -299,7 +302,7 @@ public class TrialBalance extends JavaProcess
 	{
 		StringBuffer sql = new StringBuffer (s_insert);
 		//	(AD_PInstance_ID, Fact_Acct_ID,
-		sql.append("SELECT ").append(getAD_PInstance_ID()).append(",0,");
+		sql.append("SELECT ").append(getPinstanceId().getRepoId()).append(",0,");
 		//	AD_Client_ID, AD_Org_ID, Created,CreatedBy, Updated,UpdatedBy,
 		sql.append(getAD_Client_ID()).append(",");
 		if (p_AD_Org_ID == 0)
@@ -426,7 +429,7 @@ public class TrialBalance extends JavaProcess
 	{
 		StringBuffer sql = new StringBuffer (s_insert);
 		//	(AD_PInstance_ID, Fact_Acct_ID,
-		sql.append("SELECT ").append(getAD_PInstance_ID()).append(",Fact_Acct_ID,");
+		sql.append("SELECT ").append(getPinstanceId().getRepoId()).append(",Fact_Acct_ID,");
 		//	AD_Client_ID, AD_Org_ID, Created,CreatedBy, Updated,UpdatedBy,
 		sql.append(getAD_Client_ID()).append(",AD_Org_ID,Created,CreatedBy, Updated,UpdatedBy,");
 		//	C_AcctSchema_ID, Account_ID, DateTrx, AccountValue, DateAcct, C_Period_ID,

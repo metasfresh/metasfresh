@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.MResourceType;
 import org.compiere.model.MResourceUnAvailable;
@@ -58,6 +57,7 @@ import org.eevolution.model.MPPOrder;
 import org.eevolution.model.MPPOrderNode;
 
 import de.metas.material.planning.IResourceProductService;
+import de.metas.util.Services;
 
 
 /**

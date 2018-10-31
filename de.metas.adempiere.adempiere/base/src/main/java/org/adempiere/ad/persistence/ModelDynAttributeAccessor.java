@@ -26,9 +26,9 @@ import java.util.Optional;
  */
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

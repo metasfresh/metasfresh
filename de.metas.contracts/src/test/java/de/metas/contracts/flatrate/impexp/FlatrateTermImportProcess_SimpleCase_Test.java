@@ -12,7 +12,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -25,6 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.impl.AbstractFlatrateTermTest;
 import de.metas.contracts.impl.FlatrateTermDataFactory;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionReferenceProvider;
@@ -43,6 +43,7 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -77,7 +78,8 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 		GroupTemplateRepository.class,
 		GroupCompensationLineCreateRequestFactory.class,
 		BPartnerBL.class,
-		UserRepository.class })
+		UserRepository.class,
+		ContractLibraryConfiguration.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);

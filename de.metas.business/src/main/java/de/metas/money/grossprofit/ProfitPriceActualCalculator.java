@@ -1,7 +1,5 @@
 package de.metas.money.grossprofit;
 
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.money.Money;
@@ -44,14 +42,7 @@ class ProfitPriceActualCalculator
 	@Singular
 	ImmutableList<ProfitPriceActualComponent> profitPriceActualComponents;
 
-	ExtendedMemorizingSupplier<Money> netPriceSupplier = ExtendedMemorizingSupplier.of(this::computeProfitPriceActual);
-
 	public Money getProfitPriceActual()
-	{
-		return netPriceSupplier.get();
-	}
-
-	private Money computeProfitPriceActual()
 	{
 		Money profitPriceActual = basePrice;
 		for (final ProfitPriceActualComponent profitPriceActualComponent : profitPriceActualComponents)

@@ -30,8 +30,6 @@ import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -41,6 +39,8 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.mmovement.model.IMaterialMovementModel;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public abstract class AbstractMaterialMovementModel implements IMaterialMovementModel
 {

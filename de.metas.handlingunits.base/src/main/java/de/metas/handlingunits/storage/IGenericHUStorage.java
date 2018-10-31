@@ -25,8 +25,8 @@ package de.metas.handlingunits.storage;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /**
@@ -41,12 +41,6 @@ public interface IGenericHUStorage
 {
 	/**
 	 *
-	 * @return storage factory used to create this storage
-	 */
-	IHUStorageFactory getHUStorageFactory();
-
-	/**
-	 *
 	 * @return parent storage or null
 	 */
 	IGenericHUStorage getParentStorage();
@@ -54,23 +48,23 @@ public interface IGenericHUStorage
 	/**
 	 * Add or removed given <code>qty</code> to storage.
 	 *
-	 * @param product
+	 * @param productId
 	 * @param qty the qty to add (or to remove, if negative)
 	 * @param uom qty's UOM
 	 */
-	void addQty(I_M_Product product, BigDecimal qty, I_C_UOM uom);
+	void addQty(ProductId productId, BigDecimal qty, I_C_UOM uom);
 
 	/**
 	 *
-	 * @param product
+	 * @param productId
 	 * @param uom
 	 * @return storage qty for <code>product</code> in <code>uom</code> unit of measure
 	 */
-	BigDecimal getQty(I_M_Product product, I_C_UOM uom);
+	BigDecimal getQty(ProductId productId, I_C_UOM uom);
 
-	default Quantity getQuantity(I_M_Product product, I_C_UOM uom)
+	default Quantity getQuantity(ProductId productId, I_C_UOM uom)
 	{
-		return Quantity.of(getQty(product, uom), uom);
+		return Quantity.of(getQty(productId, uom), uom);
 	}
 
 	/**
@@ -81,10 +75,10 @@ public interface IGenericHUStorage
 
 	/**
 	 *
-	 * @param product
+	 * @param productId
 	 * @return true if storage is empty for given product
 	 */
-	boolean isEmpty(I_M_Product product);
+	boolean isEmpty(ProductId productId);
 
 	/**
 	 * @return true if this is a virtual storage (i.e. a storage for a virtual HU, HU Item etc)

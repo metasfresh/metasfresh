@@ -37,12 +37,13 @@ import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
-import org.adempiere.util.Check;
 import org.compiere.apps.ADialog;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
 
 /**
  * 	URL Editor

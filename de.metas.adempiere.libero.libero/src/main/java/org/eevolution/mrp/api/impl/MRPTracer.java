@@ -32,8 +32,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
@@ -44,6 +42,8 @@ import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPDAO;
 
 import de.metas.material.planning.IMRPSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper class to help developer tracing shits while debugging.

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 
@@ -38,7 +37,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.util.ISingletonService;
 
 public interface IHUPickingSlotDAO extends ISingletonService
 {
@@ -97,7 +97,7 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 */
 	List<I_M_PickingSlot> retrievePickingSlots(I_C_BPartner partner, I_M_Locator locator);
 
-	SetMultimap<Integer, HuId> retrieveAllHUIdsIndexedByPickingSlotId(Collection<? extends de.metas.picking.model.I_M_PickingSlot> pickingSlots);
+	SetMultimap<PickingSlotId, HuId> retrieveAllHUIdsIndexedByPickingSlotId(Collection<? extends de.metas.picking.model.I_M_PickingSlot> pickingSlots);
 
 	/**
 	 * Creates an {@link I_M_HU} query filter which will select only those HUs which are currently on a picking slot or are in a picking slot queue.
@@ -107,21 +107,7 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 */
 	IQueryFilter<I_M_HU> createHUOnPickingSlotQueryFilter(final Object contextProvider);
 
-	/**
-	 * Return {@code true} if the given {@code M_HU_ID} is referenced by an active {@link I_M_Picking_Candidate}.<br>
-	 * Note that we use the ID for performance reasons.
-	 *
-	 * @param huId
-	 * @return
-	 */
-	boolean isHuIdPicked(int huId);
+	boolean isPickingRackSystem(final PickingSlotId pickingSlotId);
 
-	default boolean isHuIdPicked(final HuId huId)
-	{
-		return isHuIdPicked(huId.getRepoId());
-	}
-
-	boolean isPickingRackSystem(final int pickingSlotId);
-
-	Set<Integer> retrieveAllPickingSlotIdsWhichAreRackSystems();
+	Set<PickingSlotId> retrieveAllPickingSlotIdsWhichAreRackSystems();
 }

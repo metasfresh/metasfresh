@@ -28,8 +28,6 @@ import java.sql.Timestamp;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -39,6 +37,8 @@ import org.junit.Test;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.impl.ADPInstanceDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class ADPInstanceDAOTest
 {

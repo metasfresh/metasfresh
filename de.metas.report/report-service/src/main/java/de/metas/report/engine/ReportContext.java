@@ -5,9 +5,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
@@ -16,7 +13,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -49,7 +50,7 @@ public final class ReportContext
 
 	private final Properties ctx;
 	private final int AD_Process_ID;
-	private final int AD_PInstance_ID;
+	private final PInstanceId pinstanceId;
 	private final String AD_Language;
 	private OutputType outputType;
 	private final int AD_Table_ID;
@@ -61,13 +62,12 @@ public final class ReportContext
 
 	private ReportContext(final Builder builder)
 	{
-		super();
 		ctx = builder.ctx;
 
 		AD_Process_ID = builder.AD_Process_ID;
 		Check.assume(AD_Process_ID > 0, "AD_Process_ID > 0");
 
-		AD_PInstance_ID = builder.AD_PInstance_ID;
+		pinstanceId = builder.pinstanceId;
 		AD_Language = builder.AD_Language;
 		outputType = builder.outputType;
 		AD_Table_ID = builder.AD_Table_ID;
@@ -84,10 +84,8 @@ public final class ReportContext
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				// .add("ctx", ctx)
 				.add("AD_Process_ID", AD_Process_ID)
-				// .add("adProcess", adProcess)
-				.add("AD_PInstance_ID", AD_PInstance_ID)
+				.add("pinstanceId", pinstanceId)
 				.add("AD_Language", AD_Language)
 				.add("outputType", outputType)
 				.add("AD_Table_ID", AD_Table_ID)
@@ -119,9 +117,9 @@ public final class ReportContext
 		return AD_Process_ID;
 	}
 
-	public int getAD_PInstance_ID()
+	public PInstanceId getPinstanceId()
 	{
-		return AD_PInstance_ID;
+		return pinstanceId;
 	}
 
 	public String getAD_Language()
@@ -177,7 +175,7 @@ public final class ReportContext
 	{
 		private Properties ctx;
 		private int AD_Process_ID;
-		private int AD_PInstance_ID;
+		private PInstanceId pinstanceId;
 		private String AD_Language;
 		private OutputType outputType;
 		private int AD_Table_ID;
@@ -208,9 +206,9 @@ public final class ReportContext
 			return this;
 		}
 
-		public Builder setAD_PInstance_ID(final int AD_PInstance_ID)
+		public Builder setPInstanceId(final PInstanceId pinstanceId)
 		{
-			this.AD_PInstance_ID = AD_PInstance_ID;
+			this.pinstanceId = pinstanceId;
 			return this;
 		}
 
@@ -253,7 +251,7 @@ public final class ReportContext
 
 		private final List<ProcessInfoParameter> getProcessInfoParameters()
 		{
-			return Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(ctx, AD_PInstance_ID)
+			return Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(pinstanceId)
 					.stream()
 					.map(this::transformProcessInfoParameter)
 					.collect(GuavaCollectors.toImmutableList());
@@ -269,7 +267,7 @@ public final class ReportContext
 				final String parameterValue = piParam.getParameterAsString();
 				if (parameterValue != null)
 				{
-					final String parameterValueEffective = parameterValue.replace(JasperConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder, String.valueOf(AD_PInstance_ID));
+					final String parameterValueEffective = parameterValue.replace(JasperConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder, String.valueOf(pinstanceId.getRepoId()));
 					return ProcessInfoParameter.of(JasperConstants.REPORT_PARAM_SQL_QUERY, parameterValueEffective);
 				}
 			}

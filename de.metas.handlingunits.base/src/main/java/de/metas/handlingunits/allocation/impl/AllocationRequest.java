@@ -25,7 +25,6 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -33,6 +32,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 
 /* package */final class AllocationRequest implements IAllocationRequest
 {
@@ -61,7 +61,7 @@ import de.metas.quantity.Quantity;
 		this.product = product;
 
 		Check.assumeNotNull(quantity, "quantity not null");
-		Check.assumeNotNull(quantity.getQty().signum() >= 0, "qty >= 0 ({})", quantity);
+		Check.assumeNotNull(quantity.signum() >= 0, "qty >= 0 ({})", quantity);
 		this.quantity = quantity;
 
 		Check.assumeNotNull(date, "date not null");
@@ -107,7 +107,7 @@ import de.metas.quantity.Quantity;
 	@Override
 	public BigDecimal getQty()
 	{
-		return quantity.getQty();
+		return quantity.getAsBigDecimal();
 	}
 
 	@Override

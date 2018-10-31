@@ -30,9 +30,10 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExecutor<ToModelType, FromModelType>
 {

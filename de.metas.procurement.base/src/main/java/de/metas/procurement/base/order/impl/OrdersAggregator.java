@@ -3,10 +3,10 @@ package de.metas.procurement.base.order.impl;
 import java.util.List;
 
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.util.collections.MapReduceAggregator;
 
 /*
  * #%L

@@ -11,9 +11,7 @@ import java.util.stream.Stream;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
@@ -40,8 +38,8 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandler;
 import de.metas.costing.ICostDetailRepository;
-import de.metas.costing.ICostingService;
 import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
@@ -49,6 +47,8 @@ import de.metas.currency.ICurrencyRate;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

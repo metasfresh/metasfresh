@@ -49,12 +49,13 @@ import javax.sql.RowSet;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
-import org.adempiere.util.Check;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.util.CCachedRowSet;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.DB;
+
+import de.metas.util.Check;
 
 /* package */class CPreparedStatementProxy extends AbstractCStatementProxy<PreparedStatement>implements CPreparedStatement
 {

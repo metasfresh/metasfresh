@@ -26,12 +26,11 @@ package de.metas.handlingunits.snapshot.impl;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Attribute_Snapshot;
+import de.metas.util.Check;
 
 public class M_HU_Attribute_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Attribute, I_M_HU_Attribute_Snapshot, I_M_HU>
 {

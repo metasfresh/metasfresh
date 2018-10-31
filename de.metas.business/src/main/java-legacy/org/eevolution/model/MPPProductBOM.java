@@ -22,8 +22,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.eevolution.api.IProductBOMDAO;
+
+import de.metas.util.Services;
 
 /**
  * PP Product BOM Model.

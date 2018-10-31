@@ -7,13 +7,14 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
-import de.metas.lang.Percent;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*
@@ -76,7 +77,7 @@ public class PaymentTermService
 				.createQueryBuilderOutOfTrx(I_C_PaymentTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsValid, true)
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount, discount.getValueAsBigDecimal())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount, discount.getValue())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Client_ID, basePaymentTermRecord.getAD_Client_ID())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID, basePaymentTermRecord.getAD_Org_ID())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount2, basePaymentTermRecord.getDiscount2())
@@ -100,9 +101,9 @@ public class PaymentTermService
 
 		final I_C_PaymentTerm newPaymentTerm = newInstance(I_C_PaymentTerm.class);
 		InterfaceWrapperHelper.copyValues(basePaymentTermRecord, newPaymentTerm);
-		newPaymentTerm.setDiscount(discount.getValueAsBigDecimal());
+		newPaymentTerm.setDiscount(discount.getValue());
 
-		final String newName = basePaymentTermRecord.getName() + " (=>" + discount.getValueAsBigDecimal() + " %)";
+		final String newName = basePaymentTermRecord.getName() + " (=>" + discount.getValue() + " %)";
 		newPaymentTerm.setName(newName);
 		saveRecord(newPaymentTerm);
 

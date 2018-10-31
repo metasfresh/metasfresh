@@ -1,10 +1,10 @@
 package de.metas.dlm.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.util.Services;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.swingui.PreferenceCustomizer;
+import de.metas.util.Services;
 
 /*
  * #%L

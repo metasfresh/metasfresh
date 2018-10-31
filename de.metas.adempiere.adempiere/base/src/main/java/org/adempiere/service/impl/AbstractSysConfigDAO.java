@@ -26,8 +26,9 @@ package org.adempiere.service.impl;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.service.ISysConfigDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_SysConfig;
+
+import de.metas.util.Services;
 
 public abstract class AbstractSysConfigDAO implements ISysConfigDAO
 {

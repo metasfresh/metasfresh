@@ -48,8 +48,6 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.db.DBConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.search.FieldAutoCompleter;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookupFactory;
@@ -64,6 +62,8 @@ import org.slf4j.Logger;
 
 import de.metas.autocomplete.model.I_AD_Table;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *

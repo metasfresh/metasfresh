@@ -1,11 +1,11 @@
 package de.metas.process.processtools;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.Services;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Services;
 
 /*
  * #%L

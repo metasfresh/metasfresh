@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Transaction;
@@ -28,6 +27,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -69,7 +69,7 @@ public class M_Transaction_HuDescriptorTest
 		// HU PI: IFCO
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-		helper.assignProduct(itemMA, helper.pTomato, FOURTY_TOMATOES_PER_IFCO, helper.uomEach);
+		helper.assignProduct(itemMA, helper.pTomatoProductId, FOURTY_TOMATOES_PER_IFCO, helper.uomEach);
 		helper.createHU_PI_Item_PackingMaterial(huDefIFCO, helper.pmIFCO);
 
 		// HU PI: Palet

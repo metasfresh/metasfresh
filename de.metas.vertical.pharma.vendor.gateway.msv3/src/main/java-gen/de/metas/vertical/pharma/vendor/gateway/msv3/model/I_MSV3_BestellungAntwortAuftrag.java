@@ -249,29 +249,6 @@ public interface I_MSV3_BestellungAntwortAuftrag
     public static final String COLUMNNAME_MSV3_AuftragsSupportID = "MSV3_AuftragsSupportID";
 
 	/**
-	 * Set MSV3_BestellungAntwortAuftrag.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMSV3_BestellungAntwortAuftrag_ID (int MSV3_BestellungAntwortAuftrag_ID);
-
-	/**
-	 * Get MSV3_BestellungAntwortAuftrag.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getMSV3_BestellungAntwortAuftrag_ID();
-
-    /** Column definition for MSV3_BestellungAntwortAuftrag_ID */
-    public static final org.adempiere.model.ModelColumn<I_MSV3_BestellungAntwortAuftrag, Object> COLUMN_MSV3_BestellungAntwortAuftrag_ID = new org.adempiere.model.ModelColumn<I_MSV3_BestellungAntwortAuftrag, Object>(I_MSV3_BestellungAntwortAuftrag.class, "MSV3_BestellungAntwortAuftrag_ID", null);
-    /** Column name MSV3_BestellungAntwortAuftrag_ID */
-    public static final String COLUMNNAME_MSV3_BestellungAntwortAuftrag_ID = "MSV3_BestellungAntwortAuftrag_ID";
-
-	/**
 	 * Set MSV3_BestellungAntwort.
 	 *
 	 * <br>Type: Search
@@ -297,6 +274,29 @@ public interface I_MSV3_BestellungAntwortAuftrag
     public static final org.adempiere.model.ModelColumn<I_MSV3_BestellungAntwortAuftrag, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort> COLUMN_MSV3_BestellungAntwort_ID = new org.adempiere.model.ModelColumn<I_MSV3_BestellungAntwortAuftrag, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort>(I_MSV3_BestellungAntwortAuftrag.class, "MSV3_BestellungAntwort_ID", de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort.class);
     /** Column name MSV3_BestellungAntwort_ID */
     public static final String COLUMNNAME_MSV3_BestellungAntwort_ID = "MSV3_BestellungAntwort_ID";
+
+	/**
+	 * Set MSV3_BestellungAntwortAuftrag.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMSV3_BestellungAntwortAuftrag_ID (int MSV3_BestellungAntwortAuftrag_ID);
+
+	/**
+	 * Get MSV3_BestellungAntwortAuftrag.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMSV3_BestellungAntwortAuftrag_ID();
+
+    /** Column definition for MSV3_BestellungAntwortAuftrag_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_BestellungAntwortAuftrag, Object> COLUMN_MSV3_BestellungAntwortAuftrag_ID = new org.adempiere.model.ModelColumn<I_MSV3_BestellungAntwortAuftrag, Object>(I_MSV3_BestellungAntwortAuftrag.class, "MSV3_BestellungAntwortAuftrag_ID", null);
+    /** Column name MSV3_BestellungAntwortAuftrag_ID */
+    public static final String COLUMNNAME_MSV3_BestellungAntwortAuftrag_ID = "MSV3_BestellungAntwortAuftrag_ID";
 
 	/**
 	 * Set GebindeId.

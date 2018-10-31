@@ -23,18 +23,13 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
+import org.adempiere.user.UserId;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.api.RangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -52,6 +47,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -350,7 +351,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		// We might want to access this information (currently in AD_ChangeLog)
 		// Note: using copyCtx because derviveCtx is not safe with Env.switchContext()
 		_ctx = Env.copyCtx(pi.getCtx());
-		Env.setContext(_ctx, Env.CTXNAME_AD_PInstance_ID, pi.getAD_PInstance_ID());
+		Env.setContext(_ctx, Env.CTXNAME_AD_PInstance_ID, PInstanceId.toRepoId(pi.getPinstanceId()));
 
 		//
 		// Load annotated parameters
@@ -855,15 +856,10 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getTitle();
 	}   // getName
 
-	/**
-	 * Get Process Instance
-	 *
-	 * @return Process Instance
-	 */
-	public final int getAD_PInstance_ID()
+	public final PInstanceId getPinstanceId()
 	{
-		return getProcessInfo().getAD_PInstance_ID();
-	}   // getAD_PInstance_ID
+		return getProcessInfo().getPinstanceId();
+	}
 
 	/**
 	 * Get Table_ID
@@ -1126,12 +1122,16 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		}
 	}
 
-	protected final <T> int createSelection(@NonNull final IQueryBuilder<T> queryBuilder, final int adPInstanceId)
+	protected final <T> int createSelection(@NonNull final IQueryBuilder<T> queryBuilder, @NonNull final PInstanceId pinstanceId)
 	{
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
 		return queryBuilder
 				.create()
 				.setApplyAccessFilterRW(false)
-				.createSelection(adPInstanceId);
+				.createSelection(pinstanceId);
+	}
+	
+	protected final UserId getLoggedUserId()
+	{
+		return Env.getLoggedUserId();
 	}
 }

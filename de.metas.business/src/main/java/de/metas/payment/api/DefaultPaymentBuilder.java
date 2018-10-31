@@ -10,12 +10,12 @@ package de.metas.payment.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,21 +28,23 @@ import java.sql.Timestamp;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.builder.IBuilder;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class DefaultPaymentBuilder implements IBuilder
 {
-	private final Object contextProvider;
+	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	private final I_C_Payment payment;
 	private String _docbaseType;
 	private boolean _built = false;
@@ -68,20 +70,19 @@ public class DefaultPaymentBuilder implements IBuilder
 		}
 	}
 
-	public DefaultPaymentBuilder(Object contextProvider)
+	public DefaultPaymentBuilder(final Object contextProvider)
 	{
-		this.contextProvider = contextProvider;
 		payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class, contextProvider);
 		payment.setProcessed(false);
 		payment.setDocStatus(IDocument.STATUS_Drafted);
 		payment.setDocAction(IDocument.ACTION_Complete);
 	}
-	
+
 	private final void assertNotBuilt()
 	{
 		Check.assume(!_built, "payment already built");
 	}
-	
+
 	private final void markAsBuilt()
 	{
 		assertNotBuilt();
@@ -108,7 +109,7 @@ public class DefaultPaymentBuilder implements IBuilder
 		this._docbaseType = docBaseType;
 		return this;
 	}
-	
+
 	private final String getDocBaseType()
 	{
 		if (_docbaseType == null)
@@ -118,36 +119,37 @@ public class DefaultPaymentBuilder implements IBuilder
 		}
 		return _docbaseType;
 	}
-	
+
 	private DefaultPaymentBuilder setDocAction(final String docAction)
 	{
 		assertNotBuilt();
 		payment.setDocAction(docAction);
 		return this;
 	}
-	
+
 	/**
 	 * Creates the payment but it does not save it.
-	 * @return payment 
+	 * @return payment
 	 */
 	public I_C_Payment createNoSave()
 	{
 		markAsBuilt();
 
 		// note: the only reason why we are calling the "...OrNull" method is because some unit tests are failing.
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(DocTypeQuery.builder()
+		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(getDocBaseType())
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(payment.getAD_Client_ID())
 				.adOrgId(payment.getAD_Org_ID())
-				.build());
+				.build();
+		final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
 		payment.setC_DocType_ID(docTypeId);
-		
+
 		return payment;
 	}
-	
+
 	/**
-	 * Creates the draft payment. 
+	 * Creates the draft payment.
 	 * @return payment
 	 */
 	public I_C_Payment createDraft()
@@ -267,7 +269,7 @@ public class DefaultPaymentBuilder implements IBuilder
 	 * <li>C_Currency_ID
 	 * <li>IsReceipt: set from the invoice's <code>SOTrx</code> (negated if the invoice is a credit memo)
 	 * </ul>
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 */
@@ -293,7 +295,7 @@ public class DefaultPaymentBuilder implements IBuilder
 
 		return this;
 	}
-	
+
 	public final DefaultPaymentBuilder setDescription(final String description)
 	{
 		assertNotBuilt();

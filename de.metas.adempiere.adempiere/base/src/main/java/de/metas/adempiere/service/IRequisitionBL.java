@@ -25,8 +25,9 @@ package de.metas.adempiere.service;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_RequisitionLine;
+
+import de.metas.util.ISingletonService;
 
 public interface IRequisitionBL extends ISingletonService
 {

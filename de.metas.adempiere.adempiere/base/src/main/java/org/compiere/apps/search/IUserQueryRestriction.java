@@ -17,11 +17,11 @@ import com.google.common.collect.ImmutableMap;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -86,8 +86,14 @@ public interface IUserQueryRestriction
 	void setValueTo(Object valueTo);
 	//@formatter:on
 
-	/**
-	 * @return true if restriction is empty (i.e. has nothing set)
-	 */
+	/** @return true if restriction is empty (i.e. has nothing set) */
 	boolean isEmpty();
+
+	boolean isMandatory();
+
+	void setMandatory(boolean mandatory);
+
+	boolean isInternalParameter();
+
+	void setInternalParameter(boolean internalParameter);
 }

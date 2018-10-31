@@ -26,12 +26,10 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +50,9 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.TraceUtils;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /**
  * Tests for {@link FIFOAllocationStrategy} and {@link FIFODeallocationStrategy}.
@@ -84,7 +84,7 @@ public class FIFOAllocationDeallocationStrategyTest
 	@SuppressWarnings("unused")
 	private Object piTU_ItemProduct;
 	//
-	private I_M_Product product;
+	private ProductId productId;
 	private I_C_UOM productUOM;
 
 	//
@@ -95,7 +95,7 @@ public class FIFOAllocationDeallocationStrategyTest
 	{
 		huTestHelper = new HUTestHelper();
 
-		product = huTestHelper.pTomato;
+		productId = huTestHelper.pTomatoProductId;
 		productUOM = huTestHelper.uomKg;
 
 		strategyFactory = new AllocationStrategyFactory();
@@ -158,7 +158,7 @@ public class FIFOAllocationDeallocationStrategyTest
 				.qtyToAllocate(BigDecimal.ZERO) // nothing remaining to allocate
 				.completed(true)
 				.newHUTransactionExpectation()
-					.product(product)
+					.product(productId)
 					.qty("10")
 					.uom(productUOM)
 					.hu(hu)
@@ -220,7 +220,7 @@ public class FIFOAllocationDeallocationStrategyTest
 						.capture(vhu1)
 						.newVirtualHUItemExpectation()
 							.newItemStorageExpectation()
-								.product(product).uom(productUOM).qty("10")
+								.product(productId).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
 						.endExpectation()
@@ -228,7 +228,7 @@ public class FIFOAllocationDeallocationStrategyTest
 						.capture(vhu2)
 						.newVirtualHUItemExpectation()
 							.newItemStorageExpectation()
-								.product(product).uom(productUOM).qty("10")
+								.product(productId).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
 						.endExpectation()
@@ -236,7 +236,7 @@ public class FIFOAllocationDeallocationStrategyTest
 						.capture(vhu3)
 						.newVirtualHUItemExpectation()
 							.newItemStorageExpectation()
-								.product(product).uom(productUOM).qty("10")
+								.product(productId).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
 						.endExpectation()
@@ -259,13 +259,13 @@ public class FIFOAllocationDeallocationStrategyTest
 				.qtyToAllocate("0") // nothing remaining to allocate
 				.completed(true)
 				.newHUTransactionExpectation()
-					.product(product).qty("-10").uom(productUOM).hu(hu).virtualHU(vhu1)
+					.product(productId).qty("-10").uom(productUOM).hu(hu).virtualHU(vhu1)
 					.endExpectation()
 				.newHUTransactionExpectation()
-					.product(product).qty("-10").uom(productUOM).hu(hu).virtualHU(vhu2)
+					.product(productId).qty("-10").uom(productUOM).hu(hu).virtualHU(vhu2)
 					.endExpectation()
 				.newHUTransactionExpectation()
-					.product(product).qty("-3").uom(productUOM).hu(hu).virtualHU(vhu3)
+					.product(productId).qty("-3").uom(productUOM).hu(hu).virtualHU(vhu3)
 					.endExpectation()
 				//
 				.assertExpected("result1", result1);
@@ -309,7 +309,7 @@ public class FIFOAllocationDeallocationStrategyTest
 		if (qtyCUsPerTU != null)
 		{
 			piTU_Item = huTestHelper.createHU_PI_Item_Material(piTU);
-			piTU_ItemProduct = huTestHelper.assignProduct(piTU_Item, product, qtyCUsPerTU, productUOM);
+			piTU_ItemProduct = huTestHelper.assignProduct(piTU_Item, productId, qtyCUsPerTU, productUOM);
 		}
 
 		if (qtyTUsPerLU != null)
@@ -331,7 +331,7 @@ public class FIFOAllocationDeallocationStrategyTest
 		final IHUContext huContext = huTestHelper.createMutableHUContext();
 		return AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
-				.setProduct(product)
+				.setProduct(productId)
 				.setQuantity(new Quantity(new BigDecimal(qtyStr), uom))
 				.setDate(new Date()) // not important
 				.setFromReferencedModel(huTestHelper.createDummyReferenceModel()) // not important

@@ -21,8 +21,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Types;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
@@ -34,6 +32,8 @@ import org.compiere.util.DisplayType;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 
 /**

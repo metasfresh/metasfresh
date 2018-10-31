@@ -14,7 +14,7 @@ public class X_MSV3_Verfuegbarkeit_Transaction extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 818030169L;
+	private static final long serialVersionUID = -997147813L;
 
     /** Standard Constructor */
     public X_MSV3_Verfuegbarkeit_Transaction (Properties ctx, int MSV3_Verfuegbarkeit_Transaction_ID, String trxName)
@@ -112,35 +112,23 @@ public class X_MSV3_Verfuegbarkeit_Transaction extends org.compiere.model.PO imp
 		return ii.intValue();
 	}
 
+	/** Set MSV3_Verfuegbarkeit_Transaction.
+		@param MSV3_Verfuegbarkeit_Transaction_ID MSV3_Verfuegbarkeit_Transaction	  */
 	@Override
-	public de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort getMSV3_VerfuegbarkeitsanfrageEinzelneAntwort() throws RuntimeException
+	public void setMSV3_Verfuegbarkeit_Transaction_ID (int MSV3_Verfuegbarkeit_Transaction_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.class);
-	}
-
-	@Override
-	public void setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort(de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort MSV3_VerfuegbarkeitsanfrageEinzelneAntwort)
-	{
-		set_ValueFromPO(COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.class, MSV3_VerfuegbarkeitsanfrageEinzelneAntwort);
-	}
-
-	/** Set MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.
-		@param MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID MSV3_VerfuegbarkeitsanfrageEinzelneAntwort	  */
-	@Override
-	public void setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID (int MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID)
-	{
-		if (MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID < 1) 
-			set_Value (COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID, null);
+		if (MSV3_Verfuegbarkeit_Transaction_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MSV3_Verfuegbarkeit_Transaction_ID, null);
 		else 
-			set_Value (COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID, Integer.valueOf(MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID));
+			set_ValueNoCheck (COLUMNNAME_MSV3_Verfuegbarkeit_Transaction_ID, Integer.valueOf(MSV3_Verfuegbarkeit_Transaction_ID));
 	}
 
-	/** Get MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.
-		@return MSV3_VerfuegbarkeitsanfrageEinzelneAntwort	  */
+	/** Get MSV3_Verfuegbarkeit_Transaction.
+		@return MSV3_Verfuegbarkeit_Transaction	  */
 	@Override
-	public int getMSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID () 
+	public int getMSV3_Verfuegbarkeit_Transaction_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_MSV3_Verfuegbarkeit_Transaction_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -180,23 +168,35 @@ public class X_MSV3_Verfuegbarkeit_Transaction extends org.compiere.model.PO imp
 		return ii.intValue();
 	}
 
-	/** Set MSV3_Verfuegbarkeit_Transaction.
-		@param MSV3_Verfuegbarkeit_Transaction_ID MSV3_Verfuegbarkeit_Transaction	  */
 	@Override
-	public void setMSV3_Verfuegbarkeit_Transaction_ID (int MSV3_Verfuegbarkeit_Transaction_ID)
+	public de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort getMSV3_VerfuegbarkeitsanfrageEinzelneAntwort() throws RuntimeException
 	{
-		if (MSV3_Verfuegbarkeit_Transaction_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MSV3_Verfuegbarkeit_Transaction_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MSV3_Verfuegbarkeit_Transaction_ID, Integer.valueOf(MSV3_Verfuegbarkeit_Transaction_ID));
+		return get_ValueAsPO(COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.class);
 	}
 
-	/** Get MSV3_Verfuegbarkeit_Transaction.
-		@return MSV3_Verfuegbarkeit_Transaction	  */
 	@Override
-	public int getMSV3_Verfuegbarkeit_Transaction_ID () 
+	public void setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort(de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort MSV3_VerfuegbarkeitsanfrageEinzelneAntwort)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MSV3_Verfuegbarkeit_Transaction_ID);
+		set_ValueFromPO(COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.class, MSV3_VerfuegbarkeitsanfrageEinzelneAntwort);
+	}
+
+	/** Set MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.
+		@param MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID MSV3_VerfuegbarkeitsanfrageEinzelneAntwort	  */
+	@Override
+	public void setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID (int MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID)
+	{
+		if (MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID < 1) 
+			set_Value (COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID, null);
+		else 
+			set_Value (COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID, Integer.valueOf(MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID));
+	}
+
+	/** Get MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.
+		@return MSV3_VerfuegbarkeitsanfrageEinzelneAntwort	  */
+	@Override
+	public int getMSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

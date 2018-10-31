@@ -3,7 +3,7 @@ package de.metas.ui.web.base.util;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

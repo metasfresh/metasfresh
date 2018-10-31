@@ -27,12 +27,12 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice extends MaterialTrackableDocumentByASIInterceptor<I_C_Invoice, I_C_InvoiceLine>

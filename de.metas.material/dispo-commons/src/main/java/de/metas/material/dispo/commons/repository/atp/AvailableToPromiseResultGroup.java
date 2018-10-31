@@ -9,11 +9,11 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

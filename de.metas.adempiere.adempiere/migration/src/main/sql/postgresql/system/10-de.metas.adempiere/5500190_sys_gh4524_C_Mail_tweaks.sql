@@ -1,0 +1,10 @@
+-- 2018-08-29T18:34:38.533
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=40000,Updated=TO_TIMESTAMP('2018-08-29 18:34:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560829
+;
+
+-- 2018-08-29T18:43:19.351
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540475,Updated=TO_TIMESTAMP('2018-08-29 18:43:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541012
+;
+

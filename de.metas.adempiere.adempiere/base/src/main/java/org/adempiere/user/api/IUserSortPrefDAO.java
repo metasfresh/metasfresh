@@ -26,11 +26,12 @@ package org.adempiere.user.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
+
+import de.metas.util.ISingletonService;
 
 /**
  * User default sorting preferences for sequencing in Application Windows (applies to all types of windows)

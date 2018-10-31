@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Before;
@@ -16,6 +15,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.util.time.SystemTime;
 import mockit.Expectations;
 import mockit.Mocked;
 

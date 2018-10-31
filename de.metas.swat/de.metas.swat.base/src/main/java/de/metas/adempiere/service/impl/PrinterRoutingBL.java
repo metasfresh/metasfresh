@@ -33,12 +33,12 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -50,7 +50,7 @@ import de.metas.adempiere.model.X_AD_PrinterRouting;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.IPrintingService;
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 

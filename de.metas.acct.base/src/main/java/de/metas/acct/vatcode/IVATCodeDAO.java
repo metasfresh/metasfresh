@@ -1,6 +1,6 @@
 package de.metas.acct.vatcode;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

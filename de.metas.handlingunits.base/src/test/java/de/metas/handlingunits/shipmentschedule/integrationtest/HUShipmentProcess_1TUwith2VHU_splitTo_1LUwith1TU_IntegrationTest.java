@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
@@ -50,7 +49,9 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
+import de.metas.product.ProductId;
 import de.metas.shipping.interfaces.I_M_Package;
+import de.metas.util.Services;
 
 /**
  * Test case:
@@ -66,9 +67,11 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 	@Override
 	protected void step10_createShipmentSchedules()
 	{
+		final BigDecimal qtyOrdered = new BigDecimal("100");
+
 		shipmentSchedules = Arrays.asList(
-				createShipmentSchedule(), // shipment schedule 0
-				createShipmentSchedule() // shipment schedule 1
+				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered), // shipment schedule 0
+				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered) // shipment schedule 1
 		);
 	}
 
@@ -200,7 +203,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.setTU_M_HU_PI_Item(piTU_Item)
 				.setTUPerLU(new BigDecimal("1"))
 				// CU
-				.setCUProduct(product)
+				.setCUProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.setCUPerTU(new BigDecimal("15"))
 				.setCUUOM(productUOM)
 				//

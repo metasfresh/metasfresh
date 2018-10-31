@@ -24,12 +24,12 @@ package de.metas.handlingunits;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IMutable;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
+import de.metas.util.Check;
 
 /**
  * {@link IHUIteratorListener} adapter, can be used if there is an existing listener implementation <b>"A"</b> and you want to use <b>most</b> most of <b>"A"</b>'s method implementations. In that case

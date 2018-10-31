@@ -32,7 +32,8 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Value;
 
 public class InArrayQueryFilterTest

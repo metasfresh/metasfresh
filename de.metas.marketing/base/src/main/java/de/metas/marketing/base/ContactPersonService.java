@@ -1,14 +1,19 @@
 package de.metas.marketing.base;
 
+import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.user.User;
-import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
+import de.metas.i18n.Language;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.EmailAddress;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -44,42 +49,74 @@ public class ContactPersonService
 		this.contactPersonRepo = contactPersonRepo;
 	}
 
-	public void updateContactPersonsEmailFromUser(final User user, final String oldUserEmail)
+	public void updateContactPersonsEmailFromUser(
+			@NonNull final User user,
+			@Nullable final String oldUserEmail,
+			@Nullable final Language oldUserLanguage)
 	{
 		final Set<ContactPerson> contactPersonsForUser = contactPersonRepo.getByUserId(user.getId());
 
-		if (contactPersonsForUser.isEmpty())
+		for (final ContactPerson contactPerson : contactPersonsForUser)
 		{
-			// no contact person to update email
-			return;
+			updateIfFeasible(contactPerson,
+					user,
+					oldUserEmail,
+					oldUserLanguage);
 		}
-
-		final EmailAddress userNewMailaddress = Check.isEmpty(user.getEmailAddress(), true) ? null : EmailAddress.of(user.getEmailAddress());
-
-		contactPersonsForUser.stream()
-				.filter(contactPerson -> isFitForEmailUpdate(contactPerson.getEmailAddessStringOrNull(), oldUserEmail))
-				.forEach(contactPerson -> updateContactPersonEmail(contactPerson, userNewMailaddress));
 	}
 
-	private ContactPerson updateContactPersonEmail(final ContactPerson contactPerson, final EmailAddress newEmailaddress)
+	private void updateIfFeasible(
+			@NonNull final ContactPerson contactPerson,
+			@NonNull final User user,
+			@Nullable final String oldUserEmail,
+			@Nullable final Language oldUserLanguage)
 	{
-		final ContactPerson updatedContactPerson = contactPerson.toBuilder()
-				.address(newEmailaddress)
-				.build();
-
-		contactPersonRepo.save(updatedContactPerson);
-
-		return updatedContactPerson;
-	}
-
-	private boolean isFitForEmailUpdate(final String currentEmailAddress, final String oldEmailAddress)
-	{
-
-		if (Check.isEmpty(currentEmailAddress))
+		final boolean updateContactMail = isFitForUpdate(contactPerson.getEmailAddessStringOrNull(), oldUserEmail);
+		final boolean updateContactLanguage = isFitForUpdate(contactPerson.getLanguage(), oldUserLanguage);
+		if (!updateContactMail && !updateContactLanguage)
 		{
-			return true;
+			return; // nothing to do
 		}
 
-		return currentEmailAddress.equals(oldEmailAddress);
+		final ContactPersonBuilder updatedContactPerson = contactPerson.toBuilder();
+		if (updateContactMail)
+		{
+			final EmailAddress userNewMailaddress = EmailAddress.ofStringOrNull(user.getEmailAddress());
+			updatedContactPerson.address(userNewMailaddress);
+		}
+		if (updateContactLanguage)
+
+		{
+			updatedContactPerson.language(user.getUserLanguage());
+		}
+		contactPersonRepo.save(updatedContactPerson.build());
+
+	}
+
+	// private ContactPerson updateContactPersonEmail(
+	// @NonNull final ContactPerson contactPerson,
+	// final EmailAddress newEmailaddress)
+	// {
+	// final ContactPerson updatedContactPerson = contactPerson.toBuilder()
+	// .address(newEmailaddress)
+	// .build();
+	//
+	// contactPersonRepo.save(updatedContactPerson);
+	//
+	// return updatedContactPerson;
+	// }
+
+	private boolean isFitForUpdate(
+			@Nullable final Object currentContactValue,
+			@Nullable final Object oldUserValue)
+	{
+		if (Check.isEmpty(currentContactValue))
+		{
+			return true; // contact has no value, so let's give him/her one
+		}
+
+		// if user and contact were in sync, then keep them in sync, i.e. forward the new user value to the contact.
+		final boolean userValueInSyncWithOldcontactValue = Objects.equals(currentContactValue, oldUserValue);
+		return userValueInSyncWithOldcontactValue;
 	}
 }

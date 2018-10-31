@@ -3,11 +3,10 @@ package de.metas.session.jaxrs;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.process.ProcessExecutionResult;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

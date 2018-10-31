@@ -14,7 +14,7 @@ public class X_MSV3_VerfuegbarkeitAnteil extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1888553787L;
+	private static final long serialVersionUID = -1063027639L;
 
     /** Standard Constructor */
     public X_MSV3_VerfuegbarkeitAnteil (Properties ctx, int MSV3_VerfuegbarkeitAnteil_ID, String trxName)

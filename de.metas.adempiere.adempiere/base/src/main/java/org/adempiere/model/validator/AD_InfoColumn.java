@@ -25,9 +25,10 @@ package org.adempiere.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.ModelValidator;
+
+import de.metas.util.Check;
 
 @Validator(I_AD_InfoColumn.class)
 public class AD_InfoColumn

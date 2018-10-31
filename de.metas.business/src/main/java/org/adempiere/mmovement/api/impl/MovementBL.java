@@ -13,26 +13,23 @@ package org.adempiere.mmovement.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_Activity;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
@@ -40,8 +37,12 @@ import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class MovementBL implements IMovementBL
@@ -60,8 +61,8 @@ public class MovementBL implements IMovementBL
 		final Quantity movementQty = new Quantity(movementQtyValue, movementQtyUOM);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final I_M_Product product = movementLine.getM_Product();
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+		final int productId = movementLine.getM_Product_ID();
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 
 		return uomConversionBL.convertQuantityTo(movementQty, uomConversionCtx, uom);
 	}
@@ -69,11 +70,11 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void setMovementQty(final I_M_MovementLine movementLine, final BigDecimal movementQty, final I_C_UOM uom)
 	{
-		final I_M_Product product = movementLine.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(movementLine.getM_Product_ID());
 		final I_C_UOM uomTo = getC_UOM(movementLine);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal movementQtyConv = uomConversionBL.convertQty(product, movementQty, uom, uomTo);
+		final BigDecimal movementQtyConv = uomConversionBL.convertQty(productId, movementQty, uom, uomTo);
 
 		movementLine.setMovementQty(movementQtyConv);
 	}
@@ -81,21 +82,20 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void setC_Activities(final I_M_MovementLine movementLine)
 	{
-		final I_M_Product product = movementLine.getM_Product();
-		final IContextAware contextAwareMovement = InterfaceWrapperHelper.getContextAware(movementLine);
-
-		final I_C_Activity productActivity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextAwareMovement, movementLine.getAD_Org(), product);
+		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+				ClientId.ofRepoId(movementLine.getAD_Client_ID()),
+				OrgId.ofRepoId(movementLine.getAD_Org_ID()),
+				ProductId.ofRepoId(movementLine.getM_Product_ID()));
 
 		final I_M_Locator locatorFrom = movementLine.getM_Locator();
-		final I_C_Activity activityFrom = getActivity(locatorFrom, productActivity);
+		final ActivityId activityFromId = getActivity(locatorFrom, productActivityId);
 
-		movementLine.setC_ActivityFrom(activityFrom);
+		movementLine.setC_ActivityFrom_ID(ActivityId.toRepoId(activityFromId));
 
 		final I_M_Locator locatorTo = movementLine.getM_LocatorTo();
+		final ActivityId activityToId = getActivity(locatorTo, productActivityId);
 
-		final I_C_Activity activityTo = getActivity(locatorTo, productActivity);
-
-		movementLine.setC_Activity(activityTo);
+		movementLine.setC_Activity_ID(ActivityId.toRepoId(activityToId));
 
 		InterfaceWrapperHelper.save(movementLine);
 	}
@@ -103,17 +103,16 @@ public class MovementBL implements IMovementBL
 	/**
 	 * @return the activity from the warehouse, if it exists. Otherwise, return the defaultValue.
 	 */
-	private I_C_Activity getActivity(@NonNull final I_M_Locator locator, final I_C_Activity defaultValue)
+	private ActivityId getActivity(@NonNull final I_M_Locator locator, final ActivityId defaultActivityId)
 	{
 		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = InterfaceWrapperHelper.create(locator.getM_Warehouse(), org.adempiere.warehouse.model.I_M_Warehouse.class);
 
-		final I_C_Activity warehouseActivity = warehouse.getC_Activity();
-
-		if (warehouseActivity != null)
+		final ActivityId warehouseActivityId = ActivityId.ofRepoIdOrNull(warehouse.getC_Activity_ID());
+		if (warehouseActivityId != null)
 		{
-			return warehouseActivity;
+			return warehouseActivityId;
 		}
-		return defaultValue;
+		return defaultActivityId;
 	}
 
 	@Override

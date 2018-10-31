@@ -12,9 +12,6 @@ import java.util.concurrent.ExecutionException;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -51,6 +48,9 @@ import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.procurement.sync.protocol.SyncUser;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

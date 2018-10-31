@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.apache.ecs.xhtml.b;
 import org.apache.ecs.xhtml.hr;
 import org.apache.ecs.xhtml.p;
@@ -36,6 +35,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * 	Chat Model

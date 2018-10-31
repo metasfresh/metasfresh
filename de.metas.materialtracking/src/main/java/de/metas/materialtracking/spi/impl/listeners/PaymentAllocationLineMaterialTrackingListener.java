@@ -23,7 +23,6 @@ package de.metas.materialtracking.spi.impl.listeners;
  */
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 
@@ -32,6 +31,7 @@ import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.MaterialTrackingListenerAdapter;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.validator.MaterialTrackableDocumentByASIInterceptor;
+import de.metas.util.Services;
 
 /**
  * Links and unlinks payments as {@link I_C_AllocationLine}s are linked and unlinked.

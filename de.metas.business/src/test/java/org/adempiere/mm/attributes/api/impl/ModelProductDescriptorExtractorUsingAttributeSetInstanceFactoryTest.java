@@ -8,7 +8,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -29,6 +28,7 @@ import de.metas.StartupListener;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

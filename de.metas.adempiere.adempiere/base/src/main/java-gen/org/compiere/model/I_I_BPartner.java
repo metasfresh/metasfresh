@@ -152,6 +152,106 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set AD_User_Memo1.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_Memo1 (java.lang.String AD_User_Memo1);
+
+	/**
+	 * Get AD_User_Memo1.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_User_Memo1();
+
+    /** Column definition for AD_User_Memo1 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_AD_User_Memo1 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "AD_User_Memo1", null);
+    /** Column name AD_User_Memo1 */
+    public static final String COLUMNNAME_AD_User_Memo1 = "AD_User_Memo1";
+
+	/**
+	 * Set AD_User_Memo2.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_Memo2 (java.lang.String AD_User_Memo2);
+
+	/**
+	 * Get AD_User_Memo2.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_User_Memo2();
+
+    /** Column definition for AD_User_Memo2 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_AD_User_Memo2 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "AD_User_Memo2", null);
+    /** Column name AD_User_Memo2 */
+    public static final String COLUMNNAME_AD_User_Memo2 = "AD_User_Memo2";
+
+	/**
+	 * Set AD_User_Memo3.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_Memo3 (java.lang.String AD_User_Memo3);
+
+	/**
+	 * Get AD_User_Memo3.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_User_Memo3();
+
+    /** Column definition for AD_User_Memo3 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_AD_User_Memo3 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "AD_User_Memo3", null);
+    /** Column name AD_User_Memo3 */
+    public static final String COLUMNNAME_AD_User_Memo3 = "AD_User_Memo3";
+
+	/**
+	 * Set AD_User_Memo4.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_Memo4 (java.lang.String AD_User_Memo4);
+
+	/**
+	 * Get AD_User_Memo4.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_User_Memo4();
+
+    /** Column definition for AD_User_Memo4 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_AD_User_Memo4 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "AD_User_Memo4", null);
+    /** Column name AD_User_Memo4 */
+    public static final String COLUMNNAME_AD_User_Memo4 = "AD_User_Memo4";
+
+	/**
 	 * Set Straße und Nr..
 	 * Adresszeile 1 für diesen Standort
 	 *
@@ -489,6 +589,31 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner_Location>(I_I_BPartner.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set C_BPartner_Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_Memo (java.lang.String C_BPartner_Memo);
+
+	/**
+	 * Get C_BPartner_Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getC_BPartner_Memo();
+
+    /** Column definition for C_BPartner_Memo */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_C_BPartner_Memo = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "C_BPartner_Memo", null);
+    /** Column name C_BPartner_Memo */
+    public static final String COLUMNNAME_C_BPartner_Memo = "C_BPartner_Memo";
 
 	/**
 	 * Set Land.
@@ -1713,106 +1838,6 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_M_Shipper>(I_I_BPartner.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
     /** Column name M_Shipper_ID */
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
-
-	/**
-	 * Set Memo.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMemo (java.lang.String Memo);
-
-	/**
-	 * Get Memo.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMemo();
-
-    /** Column definition for Memo */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Memo", null);
-    /** Column name Memo */
-    public static final String COLUMNNAME_Memo = "Memo";
-
-	/**
-	 * Set Memo1.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMemo1 (java.lang.String Memo1);
-
-	/**
-	 * Get Memo1.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMemo1();
-
-    /** Column definition for Memo1 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Memo1 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Memo1", null);
-    /** Column name Memo1 */
-    public static final String COLUMNNAME_Memo1 = "Memo1";
-
-	/**
-	 * Set Memo2.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMemo2 (java.lang.String Memo2);
-
-	/**
-	 * Get Memo2.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMemo2();
-
-    /** Column definition for Memo2 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Memo2 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Memo2", null);
-    /** Column name Memo2 */
-    public static final String COLUMNNAME_Memo2 = "Memo2";
-
-	/**
-	 * Set Memo3.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMemo3 (java.lang.String Memo3);
-
-	/**
-	 * Get Memo3.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMemo3();
-
-    /** Column definition for Memo3 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Memo3 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Memo3", null);
-    /** Column name Memo3 */
-    public static final String COLUMNNAME_Memo3 = "Memo3";
 
 	/**
 	 * Set NAICS/SIC.

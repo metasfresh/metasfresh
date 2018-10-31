@@ -33,9 +33,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -49,7 +46,7 @@ import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -58,6 +55,10 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 
 public class ManualCandidateHandlerTest extends AbstractICTestSupport
 {
@@ -84,7 +85,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		// Register model interceptors
 		registerModelInterceptors();
 
-		final AsyncBPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new AsyncBPartnerStatisticsUpdater();
+		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 
 		LogManager.setLevel(Level.DEBUG);
@@ -610,7 +611,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic1);
 
 		/* final IInvoiceGenerateResult result = */
-		invoiceCandBL.generateInvoicesFromSelection(ctx, 0, true, NullLoggable.instance, trxName);
+		invoiceCandBL.generateInvoicesFromSelection(ctx, PInstanceId.ofRepoIdOrNull(0), true, NullLoggable.instance, trxName);
 
 		// FIXME Commented out for now, as we need to persist the transaction between the order and invoice.
 		// assertThat(result.getInvoiceCount(), comparesEqualTo(2));

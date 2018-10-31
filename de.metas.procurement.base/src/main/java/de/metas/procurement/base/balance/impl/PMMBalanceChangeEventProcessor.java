@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -14,6 +13,7 @@ import de.metas.procurement.base.balance.IPMMBalanceDAO;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
 import de.metas.procurement.base.balance.PMMBalanceSegment;
 import de.metas.procurement.base.model.I_PMM_Balance;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -16,13 +16,12 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -41,6 +40,8 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -54,12 +55,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -124,7 +125,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 			// we know for sure the huAssignments are for inoutlines
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
-			
+
 			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.builder()
 					.inoutLine(inOutLine)
 					.collectHUPipToSource(false)
@@ -251,14 +252,15 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
-		return Services.get(IDocTypeDAO.class)
-				.getDocTypeIdOrNull(DocTypeQuery.builder()
-						.docBaseType(docBaseType)
-						.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
-						.isSOTrx(isSOTrx)
-						.adClientId(adClientId)
-						.adOrgId(adOrgId)
-						.build());
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
+				.isSOTrx(isSOTrx)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build();
+		return DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
 	}
 
 	@Override

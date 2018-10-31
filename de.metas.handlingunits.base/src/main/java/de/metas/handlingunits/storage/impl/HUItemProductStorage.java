@@ -26,16 +26,17 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * It's an {@link IHUItemStorage} but on given product level.
@@ -46,35 +47,28 @@ import de.metas.quantity.Quantity;
 /* package */class HUItemProductStorage implements IProductStorage
 {
 	private final IHUItemStorage itemStorage;
-	private final I_M_Product product;
+	private final ProductId productId;
 	private final I_C_UOM uom;
 	private final Date date;
 
-	public HUItemProductStorage(final IHUItemStorage itemStorage,
-			final I_M_Product product,
-			final I_C_UOM uom,
-			final Date date)
+	public HUItemProductStorage(
+			@NonNull final IHUItemStorage itemStorage,
+			@NonNull final ProductId productId,
+			@NonNull final I_C_UOM uom,
+			@NonNull final Date date)
 	{
-		super();
-
-		Check.assumeNotNull(itemStorage, "itemStorage not null");
 		this.itemStorage = itemStorage;
-
-		Check.assumeNotNull(product, "product not null");
-		this.product = product;
-
-		Check.assumeNotNull(uom, "uom not null");
+		this.productId = productId;
 		this.uom = uom;
-
-		Check.assumeNotNull(date, "date not null");
 		this.date = date;
+
 	}
 
 	@Override
 	public String toString()
 	{
 		return getClass().getSimpleName() + "["
-				+ "\nProduct: " + product.getName()
+				+ "\nProduct: " + productId
 				+ "\nQty: " + getQty()
 				+ "\nCapacity: " + getTotalCapacity()
 				+ "\nItem storage: " + itemStorage
@@ -84,13 +78,13 @@ import de.metas.quantity.Quantity;
 
 	public CapacityInterface getTotalCapacity()
 	{
-		return itemStorage.getCapacity(product, uom, date);
+		return itemStorage.getCapacity(productId, uom, date);
 	}
 
 	@Override
-	public I_M_Product getM_Product()
+	public ProductId getProductId()
 	{
-		return product;
+		return productId;
 	}
 
 	@Override
@@ -102,7 +96,7 @@ import de.metas.quantity.Quantity;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final CapacityInterface capacityAvailable = itemStorage.getAvailableCapacity(getM_Product(), getC_UOM(), date);
+		final CapacityInterface capacityAvailable = itemStorage.getAvailableCapacity(getProductId(), getC_UOM(), date);
 		if (capacityAvailable.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;
@@ -111,23 +105,20 @@ import de.metas.quantity.Quantity;
 	}
 
 	@Override
-	public BigDecimal getQty()
+	public Quantity getQty()
 	{
-		final BigDecimal qty = itemStorage.getQty(getM_Product(), getC_UOM());
-		return qty;
+		return itemStorage.getQuantity(getProductId(), getC_UOM());
 	}
 
 	@Override
 	public final Quantity getQty(final I_C_UOM uom)
 	{
-		final I_M_Product product = getM_Product();
-		final BigDecimal qty = getQty();
-		final I_C_UOM uomFrom = getC_UOM();
+		final ProductId productId = getProductId();
+		final Quantity qty = getQty();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal convertQty = uomConversionBL.convertQty(product.getM_Product_ID(), qty, uomFrom, uom);
-
-		return Quantity.of(convertQty, uom);
+		final UOMConversionContext conversionCtx= UOMConversionContext.of(productId);
+		return uomConversionBL.convertQuantityTo(qty, conversionCtx, uom);
 	}
 
 	@Override
@@ -158,7 +149,7 @@ import de.metas.quantity.Quantity;
 	@Override
 	public boolean isEmpty()
 	{
-		return itemStorage.isEmpty(getM_Product());
+		return itemStorage.isEmpty(getProductId());
 	}
 
 	@Override

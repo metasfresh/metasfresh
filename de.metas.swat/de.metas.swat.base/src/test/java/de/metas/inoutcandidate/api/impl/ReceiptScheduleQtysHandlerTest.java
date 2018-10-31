@@ -29,7 +29,6 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 import org.junit.Before;
@@ -39,6 +38,7 @@ import de.metas.inoutcandidate.expectations.ReceiptScheduleExpectation;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
+import de.metas.util.Services;
 
 public class ReceiptScheduleQtysHandlerTest
 {

@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -22,6 +20,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -40,6 +39,8 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -76,8 +77,8 @@ import lombok.Value;
  */
 class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 {
-	
-	
+
+
 	public static final VendorReturnsInOutProducer newInstance()
 	{
 		return new VendorReturnsInOutProducer();
@@ -130,8 +131,8 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 			collector.setisCollectTUNumberPerOrigin(true);
 			collector.setisCollectAggregatedHUs(true);
 			final I_M_HU hu = huToReturnInfo.getHu();
-			
-		
+
+
 
 			// we know for sure the huAssignments are for inoutlines
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
@@ -140,7 +141,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 					.inoutLine(inOutLine)
 					.collectHUPipToSource(false)
 					.build();
-			
+
 			collector.releasePackingMaterialForHURecursively(hu, inOutLineSource);
 
 			// Create product (non-packing material) lines
@@ -169,7 +170,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 			}
 
 			huPIPToInOutLines.putAll(huPIPToOriginInOutLinesMap);
-			
+
 			huSnapshotProducer.addModel(hu);
 		}
 
@@ -215,7 +216,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	protected void afterInOutProcessed(final I_M_InOut inout)
 	{
 		huAssignmentBL.setAssignedHandlingUnits(inout, getHUsReturned(), ITrx.TRXNAME_ThreadInherited);
-		
+
 		createHUSnapshots();
 	}
 
@@ -229,14 +230,15 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
-		return Services.get(IDocTypeDAO.class)
-				.getDocTypeIdOrNull(DocTypeQuery.builder()
-						.docBaseType(docBaseType)
-						.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
-						.isSOTrx(isSOTrx)
-						.adClientId(adClientId)
-						.adOrgId(adOrgId)
-						.build());
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
+				.isSOTrx(isSOTrx)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build();
+		return DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
 	}
 
 	@Override

@@ -1,9 +1,8 @@
 package de.metas.purchasing.api;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

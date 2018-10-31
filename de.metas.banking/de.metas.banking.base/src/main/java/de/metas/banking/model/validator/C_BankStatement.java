@@ -25,11 +25,11 @@ package de.metas.banking.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.util.Services;
 
 @Interceptor(I_C_BankStatement.class)
 public class C_BankStatement

@@ -5,9 +5,6 @@ import java.util.Map;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
 import de.metas.document.ICounterDocBL;
@@ -16,6 +13,9 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.model.interceptor.CounterDocHandlerInterceptor;
 import de.metas.document.spi.ICounterDocHandler;
+import de.metas.util.Check;
+import de.metas.util.Pair;
+import de.metas.util.Services;
 
 /*
  * #%L

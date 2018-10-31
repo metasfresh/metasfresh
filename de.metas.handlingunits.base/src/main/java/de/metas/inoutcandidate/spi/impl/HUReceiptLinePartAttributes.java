@@ -27,12 +27,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -40,6 +38,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * A wrapper for an {@link I_M_HU} (a TU to be more precise), to access those HU attributes that are relevant for receipt {@link I_M_InOutLine}s.<br>
@@ -100,9 +100,9 @@ import de.metas.inout.model.I_M_QualityNote;
 		id = String.valueOf(tuHU.getM_HU_ID());
 
 		//
-		attr_QualityDiscountPercent = attributeDAO.retrieveAttributeByValue(Constants.ATTR_QualityDiscountPercent_Value);
-		attr_QualityNotice = attributeDAO.retrieveAttributeByValue(Constants.ATTR_QualityNotice_Value);
-		attr_SubProducerBPartner = attributeDAO.retrieveAttributeByValue(Constants.ATTR_SubProducerBPartner_Value);
+		attr_QualityDiscountPercent = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_QualityDiscountPercent_Value);
+		attr_QualityNotice = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_QualityNotice_Value);
+		attr_SubProducerBPartner = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
 	}
 
 	@Override

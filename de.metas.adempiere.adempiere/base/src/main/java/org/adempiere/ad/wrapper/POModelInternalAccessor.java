@@ -28,9 +28,10 @@ import java.util.Set;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.model.POWrapper;
-import org.adempiere.util.Check;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
+
+import de.metas.util.Check;
 
 /**
  * Implementation of {@link IModelInternalAccessor} which directly wraps a given {@link PO}.

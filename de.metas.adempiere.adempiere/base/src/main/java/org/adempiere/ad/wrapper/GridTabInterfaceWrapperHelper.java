@@ -275,4 +275,10 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 	{
 		return GridTabWrapper.getGridTab(model).getTableModel().isRecordCopyingMode();
 	}
+	
+	@Override
+	public boolean isCopying(final Object model)
+	{
+		return isCopy(model);
+	}
 }

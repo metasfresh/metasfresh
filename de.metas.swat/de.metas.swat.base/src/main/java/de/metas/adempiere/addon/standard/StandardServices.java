@@ -19,7 +19,6 @@ import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.process.event.impl.ProcessEventSupport;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.addon.IAddOn;
 import de.metas.adempiere.addon.IAddonService;
@@ -42,6 +41,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.impl.PriceListDAO;
+import de.metas.util.Services;
 
 /**
  * <b>IMPORTANT</p>: this class is old. Most of the stuff done in here is obsolete and could be removed.

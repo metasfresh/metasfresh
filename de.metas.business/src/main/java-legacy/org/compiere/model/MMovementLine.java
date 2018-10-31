@@ -23,12 +23,15 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.MDDOrderLine;
 
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  *	Inventory Move Line Model
@@ -278,8 +281,8 @@ public class MMovementLine extends X_M_MovementLine
 			//
 			if (Services.get(IProductBL.class).isItem(product))
 			{ 
-				MWarehouse w = MWarehouse.get(getCtx(), oLine.getDD_Order().getM_Warehouse_ID());
-				MLocator locator_inTransit = MLocator.getDefault(w);
+				final WarehouseId warehouseId = WarehouseId.ofRepoId(oLine.getDD_Order().getM_Warehouse_ID());
+				LocatorId locator_inTransit = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 				if(locator_inTransit == null)
 				{
 					throw new AdempiereException("Do not exist Locator for the  Warehouse in transit");
@@ -287,13 +290,13 @@ public class MMovementLine extends X_M_MovementLine
 				
 				if (isReceipt)
 				{
-					setM_Locator_ID(locator_inTransit.getM_Locator_ID()); 
+					setM_Locator_ID(locator_inTransit.getRepoId()); 
 					setM_LocatorTo_ID(oLine.getM_LocatorTo_ID()); 
 				}
 				else 
 				{
 					setM_Locator_ID(oLine.getM_Locator_ID()); 
-					setM_LocatorTo_ID(locator_inTransit.getM_Locator_ID()); 
+					setM_LocatorTo_ID(locator_inTransit.getRepoId()); 
 				}
 			} 
 			else 

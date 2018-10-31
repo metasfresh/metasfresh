@@ -7,9 +7,11 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -50,6 +52,7 @@ public class InvoiceSchedule
 		TWICE_MONTHLY;
 	}
 
+	/** may be {@code null} if the record was not persisted yet. */
 	InvoiceScheduleId id;
 
 	Frequency frequency;
@@ -60,11 +63,12 @@ public class InvoiceSchedule
 	/** ignored unless frequency=monthly; if bigger than the respective month's last day, then the last day is used instead */
 	int invoiceDayOfMonth;
 
+	/** number of units (the value of #frequency) between two invoices */
 	int invoiceDistance;
 
-	@Builder
+	@Builder(toBuilder=true)
 	public InvoiceSchedule(
-			@NonNull final InvoiceScheduleId id,
+			@Nullable final InvoiceScheduleId id,
 			@NonNull final Frequency frequency,
 			final int invoiceDistance,
 			final DayOfWeek invoiceDayOfWeek,
@@ -151,7 +155,9 @@ public class InvoiceSchedule
 		return dateToInvoice;
 	}
 
-	private LocalDate computeNextMonthlyInvoiceDate(@NonNull final LocalDate deliveryDate, final int offset)
+	private LocalDate computeNextMonthlyInvoiceDate(
+			@NonNull final LocalDate deliveryDate,
+			final int offset)
 	{
 		final LocalDate dateToInvoice;
 		final int invoiceDayOfMonthToUse = Integer.min(deliveryDate.lengthOfMonth(), getInvoiceDayOfMonth());

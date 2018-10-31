@@ -34,8 +34,9 @@ import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ReplicationTrxBL implements IReplicationTrxBL
 {

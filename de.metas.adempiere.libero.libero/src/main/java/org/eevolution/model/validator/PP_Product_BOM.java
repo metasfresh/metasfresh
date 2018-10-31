@@ -31,12 +31,13 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
+
+import de.metas.util.Services;
 
 @Validator(I_PP_Product_BOM.class)
 public class PP_Product_BOM

@@ -27,8 +27,9 @@ package org.adempiere.impexp;
 
 import java.util.Properties;
 
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.api.IParams;
+
+import de.metas.util.ILoggable;
 
 /**
  * All processes that are importing data should implement this interface.

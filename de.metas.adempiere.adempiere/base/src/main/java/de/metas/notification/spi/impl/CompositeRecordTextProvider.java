@@ -3,7 +3,6 @@ package de.metas.notification.spi.impl;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.slf4j.Logger;
 
@@ -11,6 +10,7 @@ import com.google.common.base.Optional;
 
 import de.metas.logging.LogManager;
 import de.metas.notification.spi.IRecordTextProvider;
+import de.metas.util.Check;
 
 /*
  * #%L

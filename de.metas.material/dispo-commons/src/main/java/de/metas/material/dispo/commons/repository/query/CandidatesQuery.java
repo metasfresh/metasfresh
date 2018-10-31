@@ -3,8 +3,6 @@ package de.metas.material.dispo.commons.repository.query;
 import java.util.List;
 import java.util.Objects;
 
-import org.adempiere.util.Check;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -15,6 +13,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

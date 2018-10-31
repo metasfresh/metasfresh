@@ -22,11 +22,11 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.util.Services;
 
 /**
  * 	Time + Expense Line Model

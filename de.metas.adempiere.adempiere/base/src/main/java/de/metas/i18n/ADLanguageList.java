@@ -10,8 +10,6 @@ import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
@@ -21,6 +19,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 

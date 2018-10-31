@@ -43,15 +43,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.X_M_DiscountSchemaBreak;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -60,11 +56,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -83,13 +79,19 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 public class PricingConditionsRepository implements IPricingConditionsRepository
 {
-	private final CCache<PricingConditionsId, PricingConditions> //
-	pricingConditionsById = CCache.<PricingConditionsId, PricingConditions> newCache(I_M_DiscountSchema.Table_Name, 10, CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_M_DiscountSchemaBreak.Table_Name);
+	private final CCache<PricingConditionsId, PricingConditions> pricingConditionsById = CCache.<PricingConditionsId, PricingConditions> builder()
+			.tableName(I_M_DiscountSchema.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_M_DiscountSchemaBreak.Table_Name)
+			.build();
 
 	@Override
 	public PricingConditions getPricingConditionsById(@NonNull final PricingConditionsId pricingConditionsId)
@@ -385,7 +387,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		updateSchemaBreakRecordFromPrice(schemaBreak, request.getPrice());
 		if (request.getDiscount() != null)
 		{
-			schemaBreak.setBreakDiscount(request.getDiscount().getValueAsBigDecimal());
+			schemaBreak.setBreakDiscount(request.getDiscount().getValue());
 		}
 
 		if (request.getPaymentTermId() != null)
@@ -397,7 +399,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 			final BigDecimal paymentDiscountValue = request
 					.getPaymentDiscount()
-					.map(Percent::getValueAsBigDecimal)
+					.map(Percent::getValue)
 					.orElse(null);
 			schemaBreak.setPaymentDiscount(paymentDiscountValue);
 		}

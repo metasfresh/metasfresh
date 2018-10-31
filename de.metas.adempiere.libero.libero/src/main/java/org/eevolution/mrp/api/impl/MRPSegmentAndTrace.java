@@ -27,12 +27,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.mrp.api.IMRPSegmentBL;
 
 import de.metas.material.planning.IMRPSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Group an {@link IMRPSegment} together if some previous segments which were evaluated, called here the "trace" (see {@link #getTrace()}).

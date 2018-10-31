@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -88,10 +88,13 @@ public class FactTrxLines
 		// https://github.com/metasfresh/metasfresh/issues/4147
 		// if
 		// * all not-zero lines are in dr and sum up to zero
-		// * and we have one zero line,
-		// then move that zero-line to cr
+		// * and we have at least one zero line,
+		// then move the last one of those zero-line to cr
+		// why the last: the line we add to cr defines which account is linked.
+		// we want to cover the case of invoices when customer receivables/vendor liability is zero and link that account
+		//
 		// ..likewise for cr
-		if (zeroLines.size() == 1)
+		if (!zeroLines.isEmpty())// if (zeroLines.size() == 1)
 		{
 			if (drLines.isEmpty())
 			{
@@ -100,8 +103,7 @@ public class FactTrxLines
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
 				if (crLineSum.signum() == 0)
 				{
-					drLines.add(zeroLines.get(0));
-					zeroLines.clear();
+					drLines.add(zeroLines.remove(zeroLines.size() - 1));
 				}
 			}
 			else if (crLines.isEmpty())
@@ -111,8 +113,7 @@ public class FactTrxLines
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
 				if (drLineSum.signum() == 0)
 				{
-					crLines.add(zeroLines.get(0));
-					zeroLines.clear();
+					crLines.add(zeroLines.remove(zeroLines.size() - 1));
 				}
 			}
 		}

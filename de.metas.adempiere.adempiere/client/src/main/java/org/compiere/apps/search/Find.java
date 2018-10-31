@@ -29,15 +29,15 @@ import java.awt.event.WindowEvent;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.FindPanelUI;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CDialog;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import org.compiere.util.Env;
+import de.metas.util.Services;
 
 /**
  * Find/Search Records.
@@ -135,7 +135,6 @@ public final class Find extends CDialog
 	@Override
 	public void dispose()
 	{
-		log.info("");
 		findPanel.dispose();
 		removeAll();
 		super.dispose();

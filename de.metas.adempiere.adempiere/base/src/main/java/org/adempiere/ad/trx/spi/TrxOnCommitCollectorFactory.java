@@ -5,9 +5,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 
 import com.google.common.base.Supplier;
+
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -60,7 +61,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 
 		final String trxName = extractTrxNameFromItem(item);
 		final ITrx trx = trxManager.getTrx(trxName);
-		if (trxManager.isNull(trx))
+		if (!trxManager.isActive(trx))
 		{
 			final CollectorType collector = newCollector(item);
 			collectItem(collector, item);

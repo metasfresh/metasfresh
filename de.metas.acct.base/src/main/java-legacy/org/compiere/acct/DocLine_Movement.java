@@ -1,7 +1,6 @@
 package org.compiere.acct;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
@@ -16,6 +15,7 @@ import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L

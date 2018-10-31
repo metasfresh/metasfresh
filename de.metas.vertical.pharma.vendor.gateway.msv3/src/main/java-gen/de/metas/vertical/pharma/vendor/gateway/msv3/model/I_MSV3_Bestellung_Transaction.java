@@ -98,35 +98,6 @@ public interface I_MSV3_Bestellung_Transaction
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Bestellung.
-	 * Bestellung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_OrderPO_ID (int C_OrderPO_ID);
-
-	/**
-	 * Get Bestellung.
-	 * Bestellung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_OrderPO_ID();
-
-	public org.compiere.model.I_C_Order getC_OrderPO();
-
-	public void setC_OrderPO(org.compiere.model.I_C_Order C_OrderPO);
-
-    /** Column definition for C_OrderPO_ID */
-    public static final org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, org.compiere.model.I_C_Order> COLUMN_C_OrderPO_ID = new org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, org.compiere.model.I_C_Order>(I_MSV3_Bestellung_Transaction.class, "C_OrderPO_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_OrderPO_ID */
-    public static final String COLUMNNAME_C_OrderPO_ID = "C_OrderPO_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -182,33 +153,6 @@ public interface I_MSV3_Bestellung_Transaction
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set MSV3_BestellungAntwort.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMSV3_BestellungAntwort_ID (int MSV3_BestellungAntwort_ID);
-
-	/**
-	 * Get MSV3_BestellungAntwort.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getMSV3_BestellungAntwort_ID();
-
-	public de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort getMSV3_BestellungAntwort();
-
-	public void setMSV3_BestellungAntwort(de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort MSV3_BestellungAntwort);
-
-    /** Column definition for MSV3_BestellungAntwort_ID */
-    public static final org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort> COLUMN_MSV3_BestellungAntwort_ID = new org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort>(I_MSV3_Bestellung_Transaction.class, "MSV3_BestellungAntwort_ID", de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort.class);
-    /** Column name MSV3_BestellungAntwort_ID */
-    public static final String COLUMNNAME_MSV3_BestellungAntwort_ID = "MSV3_BestellungAntwort_ID";
-
-	/**
 	 * Set MSV3_Bestellung.
 	 *
 	 * <br>Type: Search
@@ -257,6 +201,33 @@ public interface I_MSV3_Bestellung_Transaction
     public static final org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, Object> COLUMN_MSV3_Bestellung_Transaction_ID = new org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, Object>(I_MSV3_Bestellung_Transaction.class, "MSV3_Bestellung_Transaction_ID", null);
     /** Column name MSV3_Bestellung_Transaction_ID */
     public static final String COLUMNNAME_MSV3_Bestellung_Transaction_ID = "MSV3_Bestellung_Transaction_ID";
+
+	/**
+	 * Set MSV3_BestellungAntwort.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMSV3_BestellungAntwort_ID (int MSV3_BestellungAntwort_ID);
+
+	/**
+	 * Get MSV3_BestellungAntwort.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getMSV3_BestellungAntwort_ID();
+
+	public de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort getMSV3_BestellungAntwort();
+
+	public void setMSV3_BestellungAntwort(de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort MSV3_BestellungAntwort);
+
+    /** Column definition for MSV3_BestellungAntwort_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort> COLUMN_MSV3_BestellungAntwort_ID = new org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort>(I_MSV3_Bestellung_Transaction.class, "MSV3_BestellungAntwort_ID", de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort.class);
+    /** Column name MSV3_BestellungAntwort_ID */
+    public static final String COLUMNNAME_MSV3_BestellungAntwort_ID = "MSV3_BestellungAntwort_ID";
 
 	/**
 	 * Set MSV3_FaultInfo.

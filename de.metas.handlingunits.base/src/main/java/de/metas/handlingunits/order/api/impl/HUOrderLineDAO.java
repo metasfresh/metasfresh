@@ -31,11 +31,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.order.api.IHUOrderLineDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUOrderLineDAO implements IHUOrderLineDAO
 {

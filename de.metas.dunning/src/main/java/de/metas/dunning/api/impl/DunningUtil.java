@@ -27,10 +27,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-
 import de.metas.currency.ICurrencyBL;
 import de.metas.dunning.api.IDunningUtil;
+import de.metas.util.Services;
 
 public class DunningUtil implements IDunningUtil
 {

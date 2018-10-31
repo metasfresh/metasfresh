@@ -1,7 +1,9 @@
 package de.metas.vertical.pharma.msv3.protocol.util;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -20,12 +22,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,17 +46,48 @@ public final class JAXBDateUtils
 			{
 				return DatatypeFactory.newInstance();
 			}
-			catch (DatatypeConfigurationException e)
+			catch (final DatatypeConfigurationException e)
 			{
 				throw new IllegalStateException("failed to create " + DatatypeFactory.class.getSimpleName(), e);
 			}
 		}
 	};
 
-	public static XMLGregorianCalendar toXMLGregorianCalendar(LocalDateTime date)
+	public static XMLGregorianCalendar toXMLGregorianCalendar(final LocalDateTime date)
 	{
+		if (date == null)
+		{
+			return null;
+		}
+
 		final GregorianCalendar c = new GregorianCalendar();
 		c.setTimeInMillis(date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
 		return datatypeFactoryHolder.get().newXMLGregorianCalendar(c);
 	}
+
+	public static LocalDateTime toLocalDateTime(final XMLGregorianCalendar xml)
+	{
+		if (xml == null)
+		{
+			return null;
+		}
+
+		return xml.toGregorianCalendar().toZonedDateTime().toLocalDateTime();
+	}
+
+	public static java.util.Date toDate(final XMLGregorianCalendar xml)
+	{
+		return xml == null ? null : xml.toGregorianCalendar().getTime();
+	}
+
+	public static Timestamp toTimestamp(final XMLGregorianCalendar xmlGregorianCalendar)
+	{
+		final Date date = toDate(xmlGregorianCalendar);
+		if (date == null)
+		{
+			return null;
+		}
+		return new Timestamp(date.getTime());
+	}
+
 }

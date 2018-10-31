@@ -19,7 +19,6 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.MAccount;
@@ -30,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.util.Services;
 
 /**
  * Post Inventory Documents.

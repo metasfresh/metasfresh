@@ -31,7 +31,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -39,6 +38,7 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_Order;
 
 import de.metas.document.engine.IDocument;
+import de.metas.util.Services;
 
 public class OrderDAO extends AbstractOrderDAO
 {

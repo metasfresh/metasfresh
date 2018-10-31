@@ -3,11 +3,11 @@ package de.metas.procurement.base.order;
 import java.util.Date;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

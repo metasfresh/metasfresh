@@ -64,14 +64,14 @@ public interface IInvoiceCandRecomputeTagger
 	/**
 	 * Delete all invoice candidates schedulers for recompute of current tag.
 	 */
-	void deleteAllTagged();
+	void deleteAllTaggedAndInvalidateCache();
 
 	/**
 	 * Delete given invoice candidates which were scheduled for recompute and are tagged with current tag.
 	 * 
 	 * @param invoiceCandidateIds
 	 */
-	void deleteTagged(Collection<Integer> invoiceCandidateIds);
+	void deleteTaggedAndInvalidateCache(Collection<Integer> invoiceCandidateIds);
 
 	/**
 	 * Retrieves tagged invoice candidates.

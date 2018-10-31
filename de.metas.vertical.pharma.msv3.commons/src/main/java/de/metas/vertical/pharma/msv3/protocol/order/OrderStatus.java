@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Bestellstatus;
 import lombok.Getter;
 
 /*
@@ -33,31 +32,59 @@ import lombok.Getter;
 
 public enum OrderStatus
 {
-	UNKNOWN_ID(Bestellstatus.KENNUNG_UNBEKANNT), //
-	RESPONSE_NOT_AVAILABLE(Bestellstatus.BESTELLANTWORT_NICHT_VERFUEGBAR), //
-	RESPONSE_AVAILABLE(Bestellstatus.BESTELLANTWORT_VERFUEGBAR) //
+	UNKNOWN_ID(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellstatus.KENNUNG_UNBEKANNT,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellstatus.KENNUNG_UNBEKANNT),
+	//
+	RESPONSE_NOT_AVAILABLE(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellstatus.BESTELLANTWORT_NICHT_VERFUEGBAR,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellstatus.BESTELLANTWORT_NICHT_VERFUEGBAR),
+	//
+	RESPONSE_AVAILABLE(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellstatus.BESTELLANTWORT_VERFUEGBAR,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellstatus.BESTELLANTWORT_VERFUEGBAR)
+	//
 	;
 
 	@Getter
-	private final Bestellstatus soapCode;
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellstatus v1SoapCode;
+	@Getter
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellstatus v2SoapCode;
 
-	OrderStatus(final Bestellstatus soapCode)
+	OrderStatus(
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellstatus v1SoapCode,
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellstatus v2SoapCode)
 	{
-		this.soapCode = soapCode;
+		this.v1SoapCode = v1SoapCode;
+		this.v2SoapCode = v2SoapCode;
 	}
 
-	public static OrderStatus fromSoapCode(final Bestellstatus soapCode)
+	public String value()
 	{
-		final OrderStatus type = soapCode2type.get(soapCode);
+		return v2SoapCode.value();
+	}
+
+	public static OrderStatus fromV1SoapCode(final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellstatus v1SoapCode)
+	{
+		final OrderStatus type = typesByValue.get(v1SoapCode.value());
 		if (type == null)
 		{
-			throw new NoSuchElementException("No " + OrderStatus.class + " found for " + soapCode);
+			throw new NoSuchElementException("No " + OrderStatus.class + " found for " + v1SoapCode);
 		}
 		return type;
-
 	}
 
-	private static final ImmutableMap<Bestellstatus, OrderStatus> soapCode2type = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(OrderStatus::getSoapCode, Function.identity()));
+	public static OrderStatus fromV2SoapCode(final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellstatus v2SoapCode)
+	{
+		final OrderStatus type = typesByValue.get(v2SoapCode.value());
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + OrderStatus.class + " found for " + v2SoapCode);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, OrderStatus> typesByValue = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(OrderStatus::value, Function.identity()));
 
 }

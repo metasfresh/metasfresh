@@ -2,7 +2,7 @@ package org.adempiere.util.lang;
 
 import java.util.function.Supplier;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /*
  * #%L

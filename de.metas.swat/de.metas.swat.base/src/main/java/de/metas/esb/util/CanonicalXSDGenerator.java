@@ -58,9 +58,7 @@ import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.RPL_Constants;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_EXP_Format;
@@ -81,6 +79,8 @@ import org.xml.sax.SAXException;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper tool that generates XSD Schema for Canonical Messages

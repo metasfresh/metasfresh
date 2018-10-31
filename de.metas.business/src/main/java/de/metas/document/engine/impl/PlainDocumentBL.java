@@ -10,21 +10,20 @@ package de.metas.document.engine.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.reflect.Method;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -35,19 +34,20 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.document.engine.DocumentWrapper;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Database decoupled implementation for {@link IDocumentBL}
- * 
+ *
  * @author tsa
- * 
+ *
  */
-// @Ignore
 public class PlainDocumentBL extends AbstractDocumentBL
 {
 	public static Boolean isDocumentTableResponse = null;
@@ -61,44 +61,6 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		}
 
 		return isDocumentTableResponse;
-	}
-
-	@Override
-	protected IDocument getDocument(Object document, boolean throwEx)
-	{
-		if (document == null)
-		{
-			if (throwEx)
-			{
-				throw new IllegalArgumentException("document is null");
-			}
-			return null;
-		}
-
-		if (document instanceof IDocument)
-		{
-			return (IDocument)document;
-		}
-
-		//
-		// WARNING: this is just a partial implementation
-		final POJOWrapper wrapper = POJOWrapper.getWrapper(document);
-		final Class<?> interfaceClass = wrapper.getInterfaceClass();
-		if (hasMethod(interfaceClass, String.class, "getDocStatus")
-				&& hasMethod(interfaceClass, String.class, "getDocAction")
-				// allow for now to consider documents also the ones that don't have DocumentNo; see <code>I_C_Flatrate_Term</code>
-//				&& hasMethod(interfaceClass, String.class, "getDocumentNo") 
-				)
-			
-		{
-			return POJOWrapper.create(document, IDocument.class);
-		}
-
-		if (throwEx)
-		{
-			throw new IllegalArgumentException("Document '" + document + "' cannot be converted to " + IDocument.class);
-		}
-		return null;
 	}
 
 	private static final boolean hasMethod(Class<?> clazz, Class<?> returnType, String methodName, Class<?>... parameterTypes)
@@ -183,20 +145,27 @@ public class PlainDocumentBL extends AbstractDocumentBL
 	}
 
 	@Override
-	protected boolean processIt0(final IDocument doc, final String action) throws Exception
+	protected boolean processIt0(@NonNull final IDocument document, final String action) throws Exception
 	{
-		Check.assumeNotEmpty(action, "action not empty");
+		if (document instanceof DocumentWrapper)
+		{
+			return super.processIt0(document, action);
+		}
+
+		// for "normal" POJOWrappers what are not backed by a DocumentHandler, we need to use IProcessInterceptor and simulate the whole thing
+
+		Check.assumeNotEmpty(action, "The given 'action' parameter needs to be not-empty");
 
 		final DocTimingType timingTypeBefore = DocTimingType.forAction(action, BeforeAfterType.Before);
 		final DocTimingType timingTypeAfter = DocTimingType.forAction(action, BeforeAfterType.After);
 
-		final String tableName = InterfaceWrapperHelper.getModelTableName(doc);
-		
+		final String tableName = InterfaceWrapperHelper.getModelTableName(document);
+
 		//
 		// To better emulate doc processing workflow, in case we are asked to Complete a document fire Prepare first
 		if (IDocument.ACTION_Complete.equals(action))
 		{
-			final boolean prepared = processIt0(doc, IDocument.ACTION_Prepare);
+			final boolean prepared = processIt0(document, IDocument.ACTION_Prepare);
 			if (!prepared)
 			{
 				return prepared;
@@ -205,21 +174,22 @@ public class PlainDocumentBL extends AbstractDocumentBL
 
 		//
 		// Fire Before Action
-		POJOLookupMap.get().fireDocumentChange(doc, timingTypeBefore);
+		POJOLookupMap.get().fireDocumentChange(document, timingTypeBefore);
 
-		//
 		// Actual processing
+		final boolean result;
+
 		final ArrayKey key = new ArrayKey(tableName, action);
 		IProcessInterceptor interceptor = processInterceptors.get(key);
 		if (interceptor == null)
 		{
 			interceptor = defaultProcessInterceptor;
 		}
-		final boolean result = interceptor.processIt(doc, action);
+		result = interceptor.processIt(document, action);
 
 		//
 		// Fire After Action
-		POJOLookupMap.get().fireDocumentChange(doc, timingTypeAfter);
+		POJOLookupMap.get().fireDocumentChange(document, timingTypeAfter);
 
 		return result;
 	}
@@ -244,10 +214,10 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		this.defaultProcessInterceptor = defaultProcessInterceptor;
 	}
 
-	private static void setDocStatus(final IDocument doc, final String docStatus, final String docAction, final boolean processed)
+	private static void setDocStatus(final IDocument document, final String docStatus, final String docAction, final boolean processed)
 	{
-		doc.setDocStatus(docStatus);
-		final POJOWrapper wrapper = POJOWrapper.getWrapper(doc);
+		document.setDocStatus(docStatus);
+		final POJOWrapper wrapper = POJOWrapper.getWrapper(document);
 		wrapper.setValue("DocAction", docAction);
 		wrapper.setValue("Processed", processed);
 		wrapper.setValue("Processing", false);
@@ -255,9 +225,9 @@ public class PlainDocumentBL extends AbstractDocumentBL
 
 		// Check if DocStatus was really set
 		// NOTE: in past we had a bug which was clearing/refreshing the object and it was discarding all it's changed values
-		if (!docStatus.equals(doc.getDocStatus()))
+		if (!docStatus.equals(document.getDocStatus()))
 		{
-			throw new AdempiereException("Cannot set DocStatus=" + docStatus + " to " + doc);
+			throw new AdempiereException("Cannot set DocStatus=" + docStatus + " to " + document);
 		}
 	}
 
@@ -319,9 +289,33 @@ public class PlainDocumentBL extends AbstractDocumentBL
 	};
 
 	@Override
-	public Timestamp getDocumentDate(Properties ctx, int adTableID, int recordId)
+	public LocalDate getDocumentDate(Properties ctx, int adTableID, int recordId)
 	{
 		final Object model = POJOLookupMap.get().lookup(adTableID, recordId);
 		return getDocumentDate(model);
 	}
+
+	@Override
+	protected IDocument getLegacyDocumentOrNull(Object documentObj, boolean throwEx)
+	{
+		final POJOWrapper wrapper = POJOWrapper.getWrapper(documentObj);
+
+		final Class<?> interfaceClass = wrapper.getInterfaceClass();
+		if (hasMethod(interfaceClass, String.class, "getDocStatus")
+				&& hasMethod(interfaceClass, String.class, "getDocAction")
+		// allow for now to consider documents also the ones that don't have DocumentNo; see <code>I_C_Flatrate_Term</code>
+		// && hasMethod(interfaceClass, String.class, "getDocumentNo")
+		)
+		{
+			final IDocument pojoWrapper = POJOWrapper.create(documentObj, IDocument.class);
+			return pojoWrapper;
+		}
+		if (throwEx)
+		{
+			throw new AdempiereException("Cannot extract " + IDocument.class + " from " + documentObj);
+		}
+		return null;
+	}
+
+
 }

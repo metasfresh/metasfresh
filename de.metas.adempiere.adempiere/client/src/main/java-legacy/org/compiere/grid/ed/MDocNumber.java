@@ -21,6 +21,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
@@ -28,7 +29,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;

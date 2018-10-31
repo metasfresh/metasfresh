@@ -3,8 +3,8 @@ package de.metas.shipper.gateway.commons;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,8 @@ import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
 /*
@@ -47,7 +49,7 @@ public class ShipperGatewayServicesRegistry
 
 	private final ImmutableMap<String, DeliveryOrderRepository> repositoriesByGatewayId;
 	private final ImmutableMap<String, ShipperGatewayClientFactory> clientFactoriesByGatewayId;
-	private final ImmutableMap<String, DraftDeliveryOrderCreator> servicesByGatewayId;
+	private final ImmutableMap<String, DraftDeliveryOrderCreator> draftDeliveryOrderCreatorsByGatewayId;
 
 	public ShipperGatewayServicesRegistry(
 			@NonNull final Optional<List<DeliveryOrderRepository>> deliveryOrderRepositories,
@@ -64,7 +66,7 @@ public class ShipperGatewayServicesRegistry
 				.filter(Predicates.notNull())
 				.collect(GuavaCollectors.toImmutableMapByKey(ShipperGatewayClientFactory::getShipperGatewayId));
 
-		servicesByGatewayId = services.orElse(ImmutableList.of())
+		draftDeliveryOrderCreatorsByGatewayId = services.orElse(ImmutableList.of())
 				.stream()
 				.filter(Predicates.notNull())
 				.collect(GuavaCollectors.toImmutableMapByKey(DraftDeliveryOrderCreator::getShipperGatewayId));
@@ -86,12 +88,16 @@ public class ShipperGatewayServicesRegistry
 
 	public DraftDeliveryOrderCreator getShipperGatewayService(@NonNull final String shipperGatewayId)
 	{
-		final DraftDeliveryOrderCreator service = servicesByGatewayId.get(shipperGatewayId);
+		final DraftDeliveryOrderCreator service = draftDeliveryOrderCreatorsByGatewayId.get(shipperGatewayId);
 		return Check.assumeNotNull(service, "service shall exist for shipperGatewayId={}", shipperGatewayId);
 	}
 
-	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
+	public boolean hasServiceSupport(@Nullable final String shipperGatewayId)
 	{
-		return servicesByGatewayId.containsKey(shipperGatewayId);
+		if(Check.isEmpty(shipperGatewayId,true))
+		{
+			return false;
+		}
+		return draftDeliveryOrderCreatorsByGatewayId.containsKey(shipperGatewayId);
 	}
 }

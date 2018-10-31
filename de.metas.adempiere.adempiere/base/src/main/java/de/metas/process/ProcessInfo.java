@@ -31,12 +31,9 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
@@ -59,6 +56,9 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -86,7 +86,7 @@ public final class ProcessInfo implements Serializable
 		this.ctx = ctx;
 
 		adProcessId = builder.getAD_Process_ID();
-		adPInstanceId = builder.getAD_PInstance_ID();
+		pinstanceId = builder.getPInstanceId();
 
 		adClientId = builder.getAD_Client_ID();
 		adOrgId = builder.getAD_Org_ID();
@@ -133,7 +133,7 @@ public final class ProcessInfo implements Serializable
 			this.parametersOverride = null;
 		}
 
-		result = ProcessExecutionResult.newInstanceForADPInstanceId(adPInstanceId);
+		result = ProcessExecutionResult.newInstanceForADPInstanceId(pinstanceId);
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
@@ -170,7 +170,7 @@ public final class ProcessInfo implements Serializable
 	private final boolean serverProcess;
 
 	/** Process Instance ID */
-	private int adPInstanceId;
+	private PInstanceId pinstanceId;
 
 	private Boolean async = null;
 
@@ -197,7 +197,7 @@ public final class ProcessInfo implements Serializable
 				.omitNullValues()
 				.add("title", title)
 				.add("AD_Process_ID", adProcessId)
-				.add("AD_PInstance_ID", adPInstanceId)
+				.add("pinstanceId", pinstanceId)
 				.add("AD_Table_ID", adTableId)
 				.add("Record_ID", recordId)
 				.add("Classname", className.orElse(null))
@@ -241,25 +241,15 @@ public final class ProcessInfo implements Serializable
 		this.async = async;
 	}
 
-	/**
-	 * Method getAD_PInstance_ID
-	 *
-	 * @return int
-	 */
-	public int getAD_PInstance_ID()
+	public PInstanceId getPinstanceId()
 	{
-		return adPInstanceId;
+		return pinstanceId;
 	}
 
-	/**
-	 * Method setAD_PInstance_ID
-	 *
-	 * @param AD_PInstance_ID int
-	 */
-	public void setAD_PInstance_ID(final int AD_PInstance_ID)
+	public void setPInstanceId(final PInstanceId pinstanceId)
 	{
-		adPInstanceId = AD_PInstance_ID;
-		result.setAD_PInstance_ID(AD_PInstance_ID);
+		this.pinstanceId = pinstanceId;
+		result.setPInstanceId(pinstanceId);
 	}
 
 	/**
@@ -528,7 +518,7 @@ public final class ProcessInfo implements Serializable
 	{
 		if (parameters == null)
 		{
-			final List<ProcessInfoParameter> parametersFromDB = Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(getCtx(), getAD_PInstance_ID());
+			final List<ProcessInfoParameter> parametersFromDB = Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(getPinstanceId());
 			parameters = mergeParameters(parametersFromDB, parametersOverride);
 		}
 		return parameters;
@@ -733,7 +723,7 @@ public final class ProcessInfo implements Serializable
 		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
 		private static final String SYSCONFIG_UseLoginLanguageForDraftDocuments = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
 
-		private int adPInstanceId;
+		private PInstanceId pInstanceId;
 		private transient I_AD_PInstance _adPInstance;
 		private int adProcessId;
 		private transient I_AD_Process _adProcess;
@@ -817,7 +807,10 @@ public final class ProcessInfo implements Serializable
 			final int adClientId = getAD_Client_ID();
 			final I_AD_Client processClient = clientDAO.retriveClient(ctx, adClientId);
 			Env.setContext(processCtx, Env.CTXNAME_AD_Client_ID, processClient.getAD_Client_ID());
-			Env.setContext(processCtx, Env.CTXNAME_AD_Language, processClient.getAD_Language());
+
+			final String contextLanguage = Env.getAD_Language(ctx);
+			final String languagetoUse = contextLanguage != null ? contextLanguage : processClient.getAD_Language();
+			Env.setContext(processCtx, Env.CTXNAME_AD_Language, languagetoUse);
 
 			//
 			// AD_Org, M_Warehouse
@@ -999,38 +992,38 @@ public final class ProcessInfo implements Serializable
 
 		private I_AD_PInstance getAD_PInstanceOrNull()
 		{
-			final int adPInstanceId = getAD_PInstance_ID();
-			if (adPInstanceId <= 0)
+			final PInstanceId adPInstanceId = getPInstanceId();
+			if (adPInstanceId == null)
 			{
 				return null;
 			}
-			if (_adPInstance != null && _adPInstance.getAD_PInstance_ID() != adPInstanceId)
+			if (_adPInstance != null && _adPInstance.getAD_PInstance_ID() != adPInstanceId.getRepoId())
 			{
 				_adPInstance = null;
 			}
 			if (_adPInstance == null)
 			{
-				_adPInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(getCtx(), adPInstanceId);
+				_adPInstance = Services.get(IADPInstanceDAO.class).getById(adPInstanceId);
 			}
 			return _adPInstance;
 		}
 
-		public ProcessInfoBuilder setAD_PInstance_ID(final int adPInstanceId)
+		public ProcessInfoBuilder setPInstanceId(final PInstanceId pinstanceId)
 		{
-			this.adPInstanceId = adPInstanceId;
+			this.pInstanceId = pinstanceId;
 			return this;
 		}
 
 		public ProcessInfoBuilder setAD_PInstance(final I_AD_PInstance adPInstance)
 		{
 			this._adPInstance = adPInstance;
-			setAD_PInstance_ID(adPInstance.getAD_PInstance_ID());
+			setPInstanceId(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));
 			return this;
 		}
 
-		private int getAD_PInstance_ID()
+		private PInstanceId getPInstanceId()
 		{
-			return adPInstanceId;
+			return pInstanceId;
 		}
 
 		private int getAD_Process_ID()
@@ -1318,10 +1311,10 @@ public final class ProcessInfo implements Serializable
 				return selectedIncludedRecords;
 			}
 
-			final int adPInstanceId = getAD_PInstance_ID();
-			if (adPInstanceId > 0)
+			final PInstanceId pinstanceId = getPInstanceId();
+			if (pinstanceId != null)
 			{
-				return Services.get(IADPInstanceDAO.class).retrieveSelectedIncludedRecords(adPInstanceId);
+				return Services.get(IADPInstanceDAO.class).retrieveSelectedIncludedRecords(pinstanceId);
 			}
 
 			return ImmutableSet.of();
@@ -1399,12 +1392,15 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		/**
+		 * Relevant for report processes.
+		 * {@code true} means that the system shall just if the report data shall just be returned
+		 */
 		public boolean isPrintPreview()
 		{
-			final Boolean printPreview = this.printPreview;
-			if (printPreview != null)
+			if (this.printPreview != null)
 			{
-				return printPreview;
+				return this.printPreview;
 			}
 
 			if (Ini.isClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))

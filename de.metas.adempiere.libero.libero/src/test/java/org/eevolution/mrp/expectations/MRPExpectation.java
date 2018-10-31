@@ -34,8 +34,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_C_BPartner;
@@ -55,6 +53,8 @@ import org.eevolution.mrp.api.impl.PlainMRPDAO;
 import org.junit.Assert;
 
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MRPExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {

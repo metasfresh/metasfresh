@@ -41,7 +41,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
@@ -57,6 +56,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Validator(I_C_Print_Job_Instructions.class)

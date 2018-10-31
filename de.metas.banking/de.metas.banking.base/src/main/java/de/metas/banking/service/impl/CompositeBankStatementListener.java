@@ -2,11 +2,10 @@ package de.metas.banking.service.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.Check;
-
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementListener;
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -3,7 +3,6 @@ package de.metas.inventory.event;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
@@ -16,6 +15,7 @@ import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

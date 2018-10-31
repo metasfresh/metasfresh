@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -22,6 +21,7 @@ import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.util.Services;
 
 /*
  * #%L

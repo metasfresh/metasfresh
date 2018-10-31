@@ -33,12 +33,10 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Assert;
 import org.junit.Before;
@@ -56,6 +54,8 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 public abstract class AbstractHUReceiptProcessIntegrationTest
 {
@@ -71,7 +71,7 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 	protected IContextAware contextGlobal;
 
 	// Config: Product
-	protected I_M_Product product;
+	protected ProductId productId;
 	protected I_C_UOM productUOM;
 
 	// Config: BPartner
@@ -101,7 +101,7 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 
 		//
 		// Product/UOM
-		product = huTestHelper.pTomato;
+		productId = ProductId.ofRepoId(huTestHelper.pTomato.getM_Product_ID());
 		productUOM = huTestHelper.pTomato.getC_UOM();
 
 		//
@@ -118,7 +118,7 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 		piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			piTU_Item = huTestHelper.createHU_PI_Item_Material(piTU);
-			piTU_Item_Product = huTestHelper.assignProduct(piTU_Item, product, BigDecimal.TEN, productUOM);
+			piTU_Item_Product = huTestHelper.assignProduct(piTU_Item, productId, BigDecimal.TEN, productUOM);
 		}
 
 		piLU = huTestHelper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);

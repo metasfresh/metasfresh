@@ -37,8 +37,6 @@ import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.IQuery.Aggregate;
@@ -64,6 +62,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MRPDAO implements IMRPDAO
 {

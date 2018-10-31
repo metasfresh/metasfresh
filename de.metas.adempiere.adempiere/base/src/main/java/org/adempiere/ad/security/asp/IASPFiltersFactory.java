@@ -25,7 +25,7 @@ package org.adempiere.ad.security.asp;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /**
  * {@link IASPFilters} factory.

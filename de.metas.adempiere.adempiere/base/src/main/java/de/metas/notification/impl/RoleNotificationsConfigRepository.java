@@ -3,20 +3,20 @@ package de.metas.notification.impl;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_NotificationGroup;
-import org.compiere.util.CCache;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.IRoleNotificationsConfigRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.RoleNotificationsConfig;
 import de.metas.notification.UserNotificationsGroup;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -43,12 +43,12 @@ import lombok.NonNull;
 
 public class RoleNotificationsConfigRepository implements IRoleNotificationsConfigRepository
 {
-	private final CCache<Integer, RoleNotificationsConfig> roleNotificationsConfigsByRoleId = CCache.<Integer, RoleNotificationsConfig> newLRUCache(
-			I_AD_Role_NotificationGroup.Table_Name,
-			10,
-			CCache.EXPIREMINUTES_Never)
-			.addResetForTableName(I_AD_Role.Table_Name)
-			.addResetForTableName(I_AD_Role_NotificationGroup.Table_Name);
+	private final CCache<Integer, RoleNotificationsConfig> roleNotificationsConfigsByRoleId = CCache.<Integer, RoleNotificationsConfig> builder()
+			.tableName(I_AD_Role_NotificationGroup.Table_Name)
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_AD_Role.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Role_NotificationGroup.Table_Name)
+			.build();
 
 	@Override
 	public RoleNotificationsConfig getByRoleId(final int adRoleId)

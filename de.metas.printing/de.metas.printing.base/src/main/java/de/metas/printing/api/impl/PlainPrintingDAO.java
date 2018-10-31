@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,8 +37,6 @@ import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
@@ -63,6 +62,8 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class PlainPrintingDAO extends AbstractPrintingDAO
 {
@@ -155,7 +156,7 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	public List<I_AD_PrinterTray_Matching> retrievePrinterTrayMatchings(final I_AD_Printer_Matching matching)
 	{
 		return lookupMap.getRecords(I_AD_PrinterTray_Matching.class, pojo -> {
-			if (!Check.equals(pojo.getAD_Printer_Matching_ID(), matching.getAD_Printer_Matching_ID()))
+			if (!Objects.equals(pojo.getAD_Printer_Matching_ID(), matching.getAD_Printer_Matching_ID()))
 			{
 				return false;
 			}
@@ -220,9 +221,9 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	@Override
 	public IQuery<I_C_Printing_Queue> createQuery(final Properties ctx, final IPrintingQueueQuery queueQuery, final String trxName)
 	{
-		if (queueQuery.getOnlyAD_PInstance_ID() > 0)
+		if (queueQuery.getOnlyAD_PInstance_ID() != null)
 		{
-			throw new UnsupportedOperationException("Calling with AD_PInstance_ID > 0 not supported");
+			throw new UnsupportedOperationException("Calling with AD_PInstance_ID set is not supported");
 		}
 		if (queueQuery.getFilter() != null)
 		{
@@ -297,7 +298,7 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	@Override
 	public I_AD_PrinterHW_Calibration retrieveCalibration(final I_AD_PrinterHW_MediaSize hwMediaSize, final I_AD_PrinterHW_MediaTray hwTray)
 	{
-		return lookupMap.getFirstOnly(I_AD_PrinterHW_Calibration.class, pojo -> Check.equals(pojo.getAD_PrinterHW_MediaSize(), hwMediaSize) && Check.equals(pojo.getAD_PrinterHW_MediaTray(), hwTray));
+		return lookupMap.getFirstOnly(I_AD_PrinterHW_Calibration.class, pojo -> Objects.equals(pojo.getAD_PrinterHW_MediaSize(), hwMediaSize) && Objects.equals(pojo.getAD_PrinterHW_MediaTray(), hwTray));
 	}
 
 	@Override

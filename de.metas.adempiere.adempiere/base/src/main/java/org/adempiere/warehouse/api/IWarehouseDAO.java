@@ -25,75 +25,95 @@ import java.util.Collection;
  */
 
 import java.util.List;
-import java.util.Properties;
+import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.util.ISingletonService;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.model.WarehousePickingGroup;
-import org.compiere.model.I_C_DocType;
+import org.adempiere.warehouse.WarehousePickingGroup;
+import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.WarehouseType;
+import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.util.ISingletonService;
+
 public interface IWarehouseDAO extends ISingletonService
 {
+	I_M_Warehouse getById(WarehouseId warehouseId);
+
+	<T extends I_M_Warehouse> T getById(WarehouseId warehouseId, Class<T> modelType);
+
 	List<I_M_Warehouse> getByIds(Collection<WarehouseId> warehouseIds);
+
+	<T extends I_M_Warehouse> List<T> getByIds(Collection<WarehouseId> warehouseIds, Class<T> modelType);
+
+	String getWarehouseName(WarehouseId warehouseId);
 
 	/**
 	 * Checks if the warehouse is covered in M_Warehouse_Routing as specific to one or more doc types
 	 *
 	 * @return true if the warehouse is generic (can be used for all doc types).
 	 */
-	boolean hasAvailableDocTypes(final Properties ctx, final int warehouseId, final String trxName);
+	boolean isAllowAnyDocType(WarehouseId warehouseId);
 
 	/**
 	 * Checks if the warehouse is valid for the given doc type.
 	 */
-	boolean isDocTypeAllowed(final Properties ctx, final int warehouseId, final I_C_DocType docType, final String trxName);
+	boolean isDocTypeAllowed(WarehouseId warehouseId, final String docBaseType);
 
-	List<I_M_Locator> retrieveLocators(WarehouseId warehouseId);
+	@Deprecated
+	WarehouseId getWarehouseIdByLocatorRepoId(int locatorId);
+
+	@Deprecated
+	Set<WarehouseId> getWarehouseIdsForLocatorRepoIds(Set<Integer> locatorRepoIds);
+
+	@Deprecated
+	I_M_Locator getLocatorByRepoId(final int locatorId);
+
+	LocatorId getLocatorIdByRepoIdOrNull(int locatorId);
+
+	I_M_Locator getLocatorById(final LocatorId locatorId);
+
+	<T extends I_M_Locator> T getLocatorById(final LocatorId locatorId, Class<T> modelClass);
+
+	List<I_M_Locator> getLocators(WarehouseId warehouseId);
+
+	<T extends I_M_Locator> List<T> getLocators(WarehouseId warehouseId, Class<T> modelType);
+
+	List<LocatorId> getLocatorIds(WarehouseId warehouseId);
 
 	/**
 	 * Retrieve warehouses for a specific docBaseType
 	 */
-	List<I_M_Warehouse> retrieveWarehouses(final Properties ctx, final String docBaseType);
+	List<I_M_Warehouse> getWarehousesAllowedForDocBaseType(final String docBaseType);
 
 	/**
-	 * Retrieve the warehouse for the given org. The warehouse is taken from AD_OrgInfo. if no warehouse found returns null.
+	 * @return all warehouses for given organization
 	 */
-	I_M_Warehouse retrieveOrgWarehouse(Properties ctx, int adOrgId);
+	List<I_M_Warehouse> getByOrgId(OrgId orgId);
 
-	WarehouseId retrieveOrgWarehousePOId(OrgId orgId);
+	WarehouseId getInTransitWarehouseId(OrgId adOrgId);
 
-	/**
-	 * Retrieve all warehouses for given organization
-	 */
-	List<I_M_Warehouse> retrieveForOrg(Properties ctx, int AD_Org_ID);
+	Optional<WarehouseId> getInTransitWarehouseIdIfExists(OrgId adOrgId);
 
-	/**
-	 * Retrieve all warehouses that have the IsInTransit flag set, for given organization.
-	 *
-	 * @return list of in transit warehouses
-	 */
-	List<I_M_Warehouse> retrieveWarehousesInTransitForOrg(Properties ctx, int adOrgId);
+	List<I_M_Warehouse> getAllWarehouses();
 
-	/**
-	 * Retrieve first InTransit warehouse
-	 *
-	 * @return in transit warehouse or null
-	 * @see #retrieveWarehousesInTransitForOrg(Properties, int)
-	 */
-	I_M_Warehouse retrieveWarehouseInTransitForOrg(Properties ctx, int adOrgId);
+	Set<WarehouseId> getWarehouseIdsOfSamePickingGroup(WarehouseId warehouseId);
 
-	List<I_M_Warehouse> retrieveWarehousesForCtx(Properties ctx);
-
-	List<WarehouseId> getWarehouseIdsOfSamePickingGroup(WarehouseId warehouseId);
-
-	WarehousePickingGroup getWarehousePickingGroupById(int warehousePickingGroupId);
+	WarehousePickingGroup getWarehousePickingGroupById(WarehousePickingGroupId warehousePickingGroupId);
 
 	int retrieveLocatorIdByBarcode(String barcode);
 
 	int retrieveOrgIdByLocatorId(int locatorId);
 
-	int retrieveLocatorIdByValueAndWarehouseId(String locatorvalue, int warehouseId);
+	LocatorId retrieveLocatorIdByValueAndWarehouseId(String locatorValue, WarehouseId warehouseId);
+
+	I_M_Locator getOrCreateLocatorByCoordinates(WarehouseId warehouseId, String value, String x, String y, String z);
+
+	LocatorId createDefaultLocator(WarehouseId warehouseId);
+
+	WarehouseType getWarehouseTypeById(WarehouseTypeId id);
 }

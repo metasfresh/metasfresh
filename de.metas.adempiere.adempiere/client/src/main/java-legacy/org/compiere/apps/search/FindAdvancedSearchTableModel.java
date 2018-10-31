@@ -7,12 +7,12 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
-import org.adempiere.util.Services;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  * Advanced search table model.

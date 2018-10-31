@@ -1,6 +1,7 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -8,6 +9,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
@@ -54,7 +56,7 @@ public class OrderCreateResponseTest
 						.orderId(Id.of("123"))
 						.supportId(SupportIDType.of(222))
 						.bpartnerId(BPartnerId.of(1, 2))
-						.nightOperation(false)
+						.nightOperation(true)
 						.orderPackage(OrderResponsePackage.builder()
 								.id(Id.of("123/1"))
 								.supportId(SupportIDType.of(2221))
@@ -62,11 +64,21 @@ public class OrderCreateResponseTest
 								.orderIdentification("orderIdentification")
 								.packingMaterialId("packingMaterialId")
 								.item(OrderResponsePackageItem.builder()
-										.id(Id.random())
+										.requestId(OrderCreateRequestPackageItemId.random())
 										.pzn(PZN.of(1000123))
 										.qty(Quantity.of(66))
 										.deliverySpecifications(DeliverySpecifications.NORMAL)
 										.olCandId(1234567)
+										.purchaseCandidateId(MSV3PurchaseCandidateId.ofRepoId(1234))
+										.part(OrderResponsePackageItemPart.builder()
+												.qty(Quantity.of(66))
+												.type(Type.KEINE_LIEFERUNG_ABER_DISPO_MOEGLICH)
+												.defectReason(OrderDefectReason.MANUFACTURER_NOT_AVAILABLE)
+												.deliveryDate(LocalDateTime.now())
+												.tour("tour")
+												.tourId("tourId")
+												.tourDeviation(true)
+												.build())
 										.build())
 								.build())
 						.build()));

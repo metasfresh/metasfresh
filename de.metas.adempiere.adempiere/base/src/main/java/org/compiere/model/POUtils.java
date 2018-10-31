@@ -6,12 +6,12 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*

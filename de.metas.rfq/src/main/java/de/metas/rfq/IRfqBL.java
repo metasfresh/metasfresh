@@ -2,12 +2,11 @@ package de.metas.rfq;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

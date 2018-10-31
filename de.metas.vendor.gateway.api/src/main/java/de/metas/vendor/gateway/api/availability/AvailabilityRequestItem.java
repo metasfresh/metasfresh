@@ -1,5 +1,7 @@
 package de.metas.vendor.gateway.api.availability;
 
+import javax.annotation.Nullable;
+
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,7 +41,7 @@ public class AvailabilityRequestItem
 	private AvailabilityRequestItem(
 			final TrackingId trackingId,
 			@NonNull final ProductAndQuantity productAndQuantity,
-			final int salesOrderLineId,
+			@Nullable final int salesOrderLineId,
 			final int purchaseCandidateId)
 	{
 		this.trackingId = trackingId != null ? trackingId : TrackingId.random();

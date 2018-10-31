@@ -27,12 +27,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.ModelValidator;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 @Validator(I_AD_Note.class)
 public class AD_Note

@@ -30,12 +30,12 @@ import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.BPartnerAwareAttributeUpdater;
 import org.adempiere.mm.attributes.api.impl.OrderLineBPartnerAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.util.Services;
 
 public class OrderLineAllocADRModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

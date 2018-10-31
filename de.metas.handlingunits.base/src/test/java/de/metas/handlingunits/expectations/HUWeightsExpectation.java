@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 
 import de.metas.handlingunits.attribute.IWeightable;
@@ -35,6 +34,7 @@ import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.util.Services;
 
 public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

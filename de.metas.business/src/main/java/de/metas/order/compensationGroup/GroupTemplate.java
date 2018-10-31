@@ -2,11 +2,10 @@ package de.metas.order.compensationGroup;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.product.ProductCategoryId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

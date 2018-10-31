@@ -1,42 +1,17 @@
 package de.metas.handlingunits.client.terminal.editor.model.filter.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.client
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.KeyNamePair;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
@@ -45,6 +20,10 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Scan keys, get available product categories from product storages and filter by them
@@ -63,58 +42,43 @@ public class ProductCategoryHUKeyFilter extends AbstractHUKeyFilter
 	@Override
 	public List<KeyNamePair> getPropertyAvailableValues(final IHUKey key)
 	{
-		final List<KeyNamePair> result = new ArrayList<>();
-
-		final Set<Integer> seenProductCategoryIds = new HashSet<>();
-
-		final List<IProductStorage> productStorages = getProductStorages(key);
-		for (final IProductStorage productStorage : productStorages)
-		{
-			final I_M_Product product = productStorage.getM_Product();
-
-			if (!seenProductCategoryIds.add(product.getM_Product_Category_ID()))
-			{
-				continue; // skip added
-			}
-
-			final I_M_Product_Category category = InterfaceWrapperHelper.create(product.getM_Product_Category(), I_M_Product_Category.class);
-			if (category == null)
-			{
-				continue; // shall not happen (DB constraint)
-			}
-
-			final KeyNamePair knp = createKeyNamePair(category);
-			result.add(knp);
-		}
-		return result;
-	}
-
-	private final KeyNamePair createKeyNamePair(final I_M_Product_Category category)
-	{
-		final int knpKey = category.getM_Product_Category_ID();
-		final String knpName = category.getName();
-		final KeyNamePair knp = new KeyNamePair(knpKey, knpName);
-		return knp;
+		final ImmutableSet<ProductId> productIds = getProductStorages(key)
+				.stream()
+				.map(IProductStorage::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+		
+		return getProductCategoriesKeyNamePairs(productIds);
 	}
 
 	@Override
 	public List<KeyNamePair> getPropertyAvailableValues(final IQueryBuilder<I_M_HU> queryBuilder)
 	{
-		final List<I_M_Product_Category> productCategories = queryBuilder
+		final ImmutableSet<ProductId> productIds = retrieveProductIds(queryBuilder);
+		return getProductCategoriesKeyNamePairs(productIds);
+	}
+
+	private ImmutableSet<ProductId> retrieveProductIds(final IQueryBuilder<I_M_HU> queryBuilder)
+	{
+		return queryBuilder
 				.andCollectChildren(I_M_HU_Storage.COLUMN_M_HU_ID, I_M_HU_Storage.class)
 				.addOnlyActiveRecordsFilter()
-				.andCollect(I_M_HU_Storage.COLUMN_M_Product_ID)
-				.andCollect(I_M_Product.COLUMN_M_Product_Category_ID)
 				.create()
-				.list(I_M_Product_Category.class);
+				.listDistinct(I_M_HU_Storage.COLUMNNAME_M_Product_ID, Integer.class)
+				.stream()
+				.map(ProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
-		final List<KeyNamePair> knps = new ArrayList<>();
-		for (final I_M_Product_Category category : productCategories)
-		{
-			final KeyNamePair knp = createKeyNamePair(category);
-			knps.add(knp);
-		}
-		return knps;
+	private List<KeyNamePair> getProductCategoriesKeyNamePairs(final Set<ProductId> productIds)
+	{
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
+		return productIds.stream()
+				.map(productsRepo::retrieveProductCategoryByProductId)
+				.distinct()
+				.map(productCategoryId -> KeyNamePair.of(productCategoryId.getRepoId(), productsRepo.getProductCategoryNameById(productCategoryId)))
+				.collect(ImmutableList.toImmutableList());
+
 	}
 
 	@Override

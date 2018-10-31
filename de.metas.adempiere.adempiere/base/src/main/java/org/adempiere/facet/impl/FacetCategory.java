@@ -26,12 +26,12 @@ package org.adempiere.facet.impl;
 import java.util.Properties;
 
 import org.adempiere.facet.IFacetCategory;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Facet category. It is used to group facets and define common features.

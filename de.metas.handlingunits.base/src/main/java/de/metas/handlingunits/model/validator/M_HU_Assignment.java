@@ -26,13 +26,10 @@ package de.metas.handlingunits.model.validator;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.LazyInitializer;
@@ -41,11 +38,14 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 @Validator(I_M_HU_Assignment.class)
 public class M_HU_Assignment

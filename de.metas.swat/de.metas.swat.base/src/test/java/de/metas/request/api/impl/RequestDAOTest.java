@@ -8,8 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_R_RequestType;
 import org.compiere.model.X_R_Request;
@@ -26,6 +24,8 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.model.I_R_Request;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

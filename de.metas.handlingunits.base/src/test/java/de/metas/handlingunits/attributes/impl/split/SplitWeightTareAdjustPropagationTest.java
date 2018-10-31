@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -37,6 +36,7 @@ import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Services;
 
 /**
  * NOTE: Tests propagation WITH TareAdjsut VARIABLE.

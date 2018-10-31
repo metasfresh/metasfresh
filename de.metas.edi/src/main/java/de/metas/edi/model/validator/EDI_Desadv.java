@@ -27,7 +27,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IDesadvBL;
@@ -38,6 +37,7 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 @Validator(I_EDI_Desadv.class)
 public class EDI_Desadv

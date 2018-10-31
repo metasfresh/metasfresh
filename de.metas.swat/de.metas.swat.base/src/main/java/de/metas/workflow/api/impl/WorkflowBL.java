@@ -29,13 +29,13 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Responsible;
 import org.compiere.model.X_AD_WF_Responsible;
 import org.compiere.util.Env;
 
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.workflow.api.IWorkflowBL;
 import de.metas.workflow.api.IWorkflowDAO;
 import de.metas.workflow.model.I_AD_OrgInfo;

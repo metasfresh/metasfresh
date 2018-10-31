@@ -31,8 +31,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.ModelValidator;
 
@@ -52,6 +50,8 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.movement.event.MovementUserNotificationsProducer;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 @Interceptor(I_M_Movement.class)
 public class M_Movement

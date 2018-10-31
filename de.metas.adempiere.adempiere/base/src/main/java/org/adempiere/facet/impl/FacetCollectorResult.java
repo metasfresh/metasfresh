@@ -30,11 +30,12 @@ import java.util.Set;
 import org.adempiere.facet.IFacet;
 import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.IFacetCollectorResult;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /**
  * Immutable {@link IFacetCollectorResult}.

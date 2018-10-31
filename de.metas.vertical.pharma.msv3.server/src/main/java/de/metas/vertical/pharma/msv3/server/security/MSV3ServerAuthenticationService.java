@@ -16,9 +16,12 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent.ChangeType;
+import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUser;
+import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUserRepository;
 import lombok.NonNull;
 
 /*
@@ -100,11 +103,17 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 				.build();
 	}
 
+	@Deprecated
 	public void assertValidClientSoftwareId(final String clientSoftwareId)
 	{
 		// TODO implement
 	}
-	
+
+	public void assertValidClientSoftwareId(final ClientSoftwareId clientSoftwareId)
+	{
+		// TODO implement
+	}
+
 	public BPartnerId getCurrentBPartner()
 	{
 		return getCurrentUser().getBpartnerId();

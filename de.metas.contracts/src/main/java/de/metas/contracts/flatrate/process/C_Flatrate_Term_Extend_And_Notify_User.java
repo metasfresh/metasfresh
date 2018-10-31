@@ -34,10 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Issue;
 
@@ -50,6 +47,9 @@ import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class C_Flatrate_Term_Extend_And_Notify_User
@@ -87,7 +87,7 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 
 			// we are called from a given term => extend the term
 			final ContractExtendingRequest context = ContractExtendingRequest.builder()
-					.AD_PInstance_ID(getAD_PInstance_ID())
+					.AD_PInstance_ID(getPinstanceId())
 					.contract(contractToExtend)
 					.forceExtend(true)
 					.forceComplete(forceComplete)
@@ -126,7 +126,7 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 			{
 				final I_C_Flatrate_Term contractToExtend = termsToExtend.next();
 				final ContractExtendingRequest context = ContractExtendingRequest.builder()
-						.AD_PInstance_ID(getAD_PInstance_ID())
+						.AD_PInstance_ID(getPinstanceId())
 						.contract(contractToExtend)
 						.forceExtend(false)
 						.forceComplete(forceComplete)
@@ -141,11 +141,11 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 				errorCounter++;
 			}
 		}
-		addLog("Processed {} terms; Processing failed for {} terms, see the log for AD_PInstance_ID={} for details", extendedCounter, errorCounter, getAD_PInstance_ID());
+		addLog("Processed {} terms; Processing failed for {} terms, see the log for AD_PInstance_ID={} for details", extendedCounter, errorCounter, getPinstanceId());
 
 		if (errorCounter > 0)
 		{
-			throw new AdempiereException("At least one C_Flatrate_Term could not be extended; Check AD_PInstance_ID=" + getAD_PInstance_ID() + " for details");
+			throw new AdempiereException("At least one C_Flatrate_Term could not be extended; Check AD_PInstance_ID=" + getPinstanceId() + " for details");
 		}
 	}
 

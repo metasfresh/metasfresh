@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L

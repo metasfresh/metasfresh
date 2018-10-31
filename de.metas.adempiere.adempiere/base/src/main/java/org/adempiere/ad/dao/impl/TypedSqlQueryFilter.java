@@ -34,10 +34,11 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
 
 /**
  * Immutable SQL query filter.

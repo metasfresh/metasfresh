@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
@@ -15,6 +14,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Services;
 
 /*
  * #%L

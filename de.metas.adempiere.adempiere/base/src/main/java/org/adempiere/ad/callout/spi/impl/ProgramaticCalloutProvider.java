@@ -14,10 +14,10 @@ import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramaticCalloutProvider

@@ -30,17 +30,17 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Session;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
 
 public class SessionBL implements ISessionBL
 {
@@ -100,7 +100,7 @@ public class SessionBL implements ISessionBL
 			sessionPO.setClient_Info("N/A");
 		}
 
-		sessionPO.setDescription(Adempiere.getMainVersion() + "_" + Adempiere.getDateVersion() + " " + Adempiere.getImplementationVersion());
+		sessionPO.setDescription(Adempiere.getBuildVersion() + "_" + Adempiere.getDateVersion() + " " + Adempiere.getImplementationVersion());
 		sessionPO.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		sessionPO.setLoginDate(Env.getDate(ctx));
 		

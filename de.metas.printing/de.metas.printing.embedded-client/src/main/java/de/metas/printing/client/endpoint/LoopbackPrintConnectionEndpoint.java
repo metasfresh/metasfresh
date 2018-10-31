@@ -44,7 +44,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IImportHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -69,6 +68,7 @@ import de.metas.printing.esb.base.jaxb.generated.PRTCPrintJobInstructionsConfirm
 import de.metas.printing.esb.base.jaxb.generated.PRTCPrintPackageDataType;
 import de.metas.printing.esb.base.jaxb.generated.PRTCPrintPackageType;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.util.Services;
 
 /**
  * Implementation of {@link IPrintConnectionEndpoint} which calls the replication module (i.e. {@link IImportHelper}) directly.

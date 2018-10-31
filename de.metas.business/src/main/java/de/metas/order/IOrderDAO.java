@@ -32,28 +32,44 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IOrderDAO extends ISingletonService
 {
 	I_C_Order getById(final OrderId orderId);
+	
+	/**
+	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
+	 * 
+	 * @param orderId
+	 * @param clazz
+	 * @return order for given orderId
+	 */
+	<T extends I_C_Order> T getById(final OrderId orderId, Class<T> clazz);
 
 	I_C_OrderLine getOrderLineById(final int orderLineId);
 
 	I_C_OrderLine getOrderLineById(final OrderLineId orderLineId);
 
+	<T extends I_C_OrderLine> T getOrderLineById(final OrderLineId orderLineId, Class<T> modelClass);
+
 	Map<OrderAndLineId, I_C_OrderLine> getOrderLinesByIds(Collection<OrderAndLineId> orderAndLineIds);
 
 	default I_C_OrderLine getOrderLineById(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		return getOrderLineById(orderAndLineId.getOrderLineId());
+		return getOrderLineById(orderAndLineId, I_C_OrderLine.class);
+	}
+
+	default <T extends I_C_OrderLine> T getOrderLineById(@NonNull final OrderAndLineId orderAndLineId, @NonNull final Class<T> modelClass)
+	{
+		return getOrderLineById(orderAndLineId.getOrderLineId(), modelClass);
 	}
 
 	default <T extends org.compiere.model.I_C_OrderLine> List<T> getOrderLinesByIds(final Collection<OrderAndLineId> orderAndLineIds, final Class<T> modelType)
@@ -128,4 +144,8 @@ public interface IOrderDAO extends ISingletonService
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
 
 	Set<Integer> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
+	
+	<T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
+
+	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
 }

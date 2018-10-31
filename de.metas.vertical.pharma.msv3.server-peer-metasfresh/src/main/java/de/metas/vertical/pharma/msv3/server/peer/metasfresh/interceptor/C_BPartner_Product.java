@@ -6,8 +6,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.ModelValidator;
@@ -15,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;
 import lombok.NonNull;
 

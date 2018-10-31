@@ -1,7 +1,6 @@
 package de.metas.shipper.gateway.spi.model;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 
 /*

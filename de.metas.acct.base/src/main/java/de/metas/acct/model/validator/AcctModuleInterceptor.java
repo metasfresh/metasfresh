@@ -28,11 +28,9 @@ import java.util.Properties;
 import org.adempiere.acct.api.IFactAcctListenersService;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
@@ -43,7 +41,6 @@ import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -54,8 +51,11 @@ import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.GLJournalDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.InvoiceDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.PaymentDocumentRepostingSupplier;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.IModelCacheService;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Accounting module activator

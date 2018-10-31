@@ -34,8 +34,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.util.Ini;
 
@@ -48,8 +46,11 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess
 {
@@ -129,8 +130,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int adPInstanceId = getAD_PInstance_ID();
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
+		final PInstanceId pinstanceId = getPinstanceId();
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx(), get_TrxName())
@@ -140,7 +140,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 				.setTotalNetAmtToInvoiceChecksum(totalNetAmtToInvoiceChecksum)
 				// .setFailOnChanges(true) // NOTE: use the standard settings (which will fallback on SysConfig)
 				//
-				.enqueueSelection(adPInstanceId);
+				.enqueueSelection(pinstanceId);
 
 		return enqueueResult.getSummaryTranslated(getCtx());
 	}
@@ -154,8 +154,8 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 		//
 		// Create selection and return how many items were added
-		final int adPInstanceId = getAD_PInstance_ID();
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
+		final PInstanceId adPInstanceId = getPinstanceId();
+		Check.assumeNotNull(adPInstanceId, "adPInstanceId is not null");
 		final int selectionCount = queryBuilder
 				.create()
 				.setApplyAccessFilterRW(false) // 04471: enqueue only those records on which user has access to

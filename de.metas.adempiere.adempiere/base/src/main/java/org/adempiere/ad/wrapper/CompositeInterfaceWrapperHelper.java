@@ -6,13 +6,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -301,5 +301,11 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	public boolean isCopy(@NonNull final Object model)
 	{
 		return getHelperThatCanHandle(model).isCopy(model);
+	}
+	
+	@Override
+	public boolean isCopying(@NonNull final Object model)
+	{
+		return getHelperThatCanHandle(model).isCopying(model);
 	}
 }

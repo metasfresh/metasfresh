@@ -29,8 +29,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.handlingunits.IHUContext;
@@ -39,6 +37,8 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUIterator extends AbstractHUIterator
 {

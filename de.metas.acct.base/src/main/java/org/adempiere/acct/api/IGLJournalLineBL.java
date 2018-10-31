@@ -24,9 +24,10 @@ package org.adempiere.acct.api;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
+
+import de.metas.util.ISingletonService;
 
 public interface IGLJournalLineBL extends ISingletonService
 {

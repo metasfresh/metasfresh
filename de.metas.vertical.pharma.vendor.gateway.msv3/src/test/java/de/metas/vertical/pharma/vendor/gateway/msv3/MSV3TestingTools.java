@@ -1,16 +1,14 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-import java.util.List;
+import org.adempiere.exceptions.AdempiereException;
 
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.compiere.model.I_AD_System;
-
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
-import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.Version;
 import lombok.NonNull;
 
 /*
@@ -41,34 +39,27 @@ public final class MSV3TestingTools
 	{
 	};
 
-	public static void setDBVersion(@NonNull final String dbVersion)
+	public static MSV3ClientConfig createMSV3ClientConfig(@NonNull final Version version)
 	{
-		final List<I_AD_System> adSystemRecords = POJOLookupMap.get().getRecords(I_AD_System.class);
-		assertThat(adSystemRecords.size()).isLessThanOrEqualTo(1);
-
-		final I_AD_System adSystem;
-		if (adSystemRecords.isEmpty())
-		{
-			// AD_System is needed because we send the metasfresh-version to the MSV3 server
-			adSystem = newInstance(I_AD_System.class);
-		}
-		else
-		{
-			adSystem = adSystemRecords.get(0);
-		}
-		adSystem.setDBVersion(dbVersion);
-		save(adSystem);
+		return MSV3ClientConfig.builder()
+				.baseUrl(parseURL("http://localhost:8089/msv3/v2.0"))
+				.authUsername("PLA\\apotheke1")
+				.authPassword("passwort")
+				.bpartnerId(BPartnerId.of(999))
+				.version(version)
+				.clientSoftwareId(ClientSoftwareId.of("junit-test"))
+				.build();
 	}
 
-	public static MSV3ClientConfig createMSV3ClientConfig()
+	private static final URL parseURL(final String str)
 	{
-		final I_MSV3_Vendor_Config configRecord = newInstance(I_MSV3_Vendor_Config.class);
-		configRecord.setMSV3_BaseUrl("http://localhost:8089/msv3/v2.0");
-		configRecord.setUserID("PLA\\apotheke1");
-		configRecord.setPassword("passwort");
-		configRecord.setC_BPartner_ID(999);
-		save(configRecord);
-
-		return MSV3ClientConfig.ofdataRecord(configRecord);
+		try
+		{
+			return new URL(str);
+		}
+		catch (MalformedURLException ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 }

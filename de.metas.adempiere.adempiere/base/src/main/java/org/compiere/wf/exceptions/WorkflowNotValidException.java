@@ -24,8 +24,9 @@ package org.compiere.wf.exceptions;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Workflow;
+
+import de.metas.util.Check;
 
 public class WorkflowNotValidException extends AdempiereException
 {

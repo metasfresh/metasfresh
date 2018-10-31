@@ -30,12 +30,12 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Copy selected columns to given table.

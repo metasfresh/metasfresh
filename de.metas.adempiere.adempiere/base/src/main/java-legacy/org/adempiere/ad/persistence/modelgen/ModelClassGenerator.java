@@ -31,13 +31,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Generate Model Classes extending PO.

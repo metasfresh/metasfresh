@@ -23,7 +23,6 @@ package org.eevolution.mrp;
  */
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.util.Services;
 import org.eevolution.LiberoConfiguration;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
@@ -38,6 +37,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.MaterialPlanningConfiguration;
+import de.metas.util.Services;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {

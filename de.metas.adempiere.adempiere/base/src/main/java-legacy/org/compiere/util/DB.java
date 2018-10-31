@@ -55,9 +55,6 @@ import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
@@ -71,11 +68,17 @@ import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
+import de.metas.cache.CacheMgt;
 import de.metas.i18n.ILanguageDAO;
-import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /**
@@ -723,8 +726,7 @@ public final class DB
 	 * @param stmt statements
 	 * @param params parameters array; if null or empty array, no parameters are set
 	 */
-	public static void setParameters(PreparedStatement stmt, Object[] params)
-			throws SQLException
+	public static void setParameters(final PreparedStatement stmt, final Object... params) throws SQLException
 	{
 		if (params == null || params.length == 0)
 		{
@@ -790,6 +792,8 @@ public final class DB
 		//
 		else if(param instanceof RepoIdAware)
 			pstmt.setInt(index, ((RepoIdAware)param).getRepoId());
+		else if(param instanceof ReferenceListAwareEnum)
+			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		//
 		else
 			throw new DBException("Unknown parameter type " + index + " - " + param + " (" + param.getClass() + ")");
@@ -1781,22 +1785,45 @@ public final class DB
 	{
 		// TODO: check and refactor together with buildSqlList(...)
 		if (param == null)
+		{
 			return "NULL";
+		}
 		else if (param instanceof String)
+		{
 			return TO_STRING((String)param);
+		}
 		else if (param instanceof Integer)
+		{
 			return String.valueOf(param);
+		}
+		else if(param instanceof RepoIdAware)
+		{
+			return String.valueOf(((RepoIdAware)param).getRepoId());
+		}
 		else if (param instanceof BigDecimal)
+		{
 			return TO_NUMBER((BigDecimal)param, DisplayType.Number);
+		}
 		else if (param instanceof Timestamp)
+		{
 			return TO_DATE((Timestamp)param);
+		}
 		else if (param instanceof java.util.Date)
+		{
 			return TO_DATE(TimeUtil.asTimestamp((java.util.Date)param));
+		}
+		else if(TimeUtil.isDateOrTimeObject(param))
+		{
+			return TO_DATE(TimeUtil.asTimestamp(param));
+		}
 		else if (param instanceof Boolean)
+		{
 			return TO_STRING(DisplayType.toBooleanString((Boolean)param));
+		}
 		else
+		{
 			throw new DBException("Unknown parameter type: " + param + " (" + param.getClass() + ")");
-
+		}
 	}
 
 	/**
@@ -2179,13 +2206,11 @@ public final class DB
 
 	/**
 	 * Create persistent selection in T_Selection table
-	 *
-	 * @param AD_PInstance_ID
-	 * @param selection
-	 * @param trxName
 	 */
-	public static void createT_Selection(int AD_PInstance_ID, Iterable<Integer> selection, String trxName)
+	public static void createT_Selection(@NonNull final PInstanceId pinstanceId, Iterable<Integer> selection, String trxName)
 	{
+		final int pinstanceRepoId = pinstanceId.getRepoId();
+		
 		StringBuilder insert = new StringBuilder();
 		insert.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ");
 		int counter = 0;
@@ -2195,7 +2220,7 @@ public final class DB
 			if (counter > 1)
 				insert.append(" UNION ");
 			insert.append("SELECT ");
-			insert.append(AD_PInstance_ID);
+			insert.append(pinstanceRepoId);
 			insert.append(", ");
 			insert.append(selectedId);
 			// insert.append(" FROM DUAL "); -- oracle
@@ -2217,28 +2242,26 @@ public final class DB
 	/**
 	 * Create persistent selection in T_Selection table
 	 *
-	 * @param selection
-	 * @param trxName
 	 * @return generated AD_PInstance_ID that can be used to identify the selection
 	 */
-	public static int createT_Selection(Iterable<Integer> selection, String trxName)
+	public static PInstanceId createT_Selection(Iterable<Integer> selection, String trxName)
 	{
-		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(Env.getCtx());
-		createT_Selection(adPInstanceId, selection, trxName);
-		return adPInstanceId;
+		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+		createT_Selection(pinstanceId, selection, trxName);
+		return pinstanceId;
 	}
 
 	/**
 	 * Delete T_Selection
 	 *
-	 * @param AD_PInstance_ID
+	 * @param pinstanceId
 	 * @param trxName
 	 * @return number of records that were deleted
 	 */
-	public static int deleteT_Selection(final int AD_PInstance_ID, final String trxName)
+	public static int deleteT_Selection(final PInstanceId pinstanceId, final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
-		int no = DB.executeUpdateEx(sql, new Object[] { AD_PInstance_ID }, trxName);
+		int no = DB.executeUpdateEx(sql, new Object[] { pinstanceId }, trxName);
 		return no;
 	}
 
@@ -2707,6 +2730,38 @@ public final class DB
 		T retrieveRow(ResultSet rs) throws SQLException;
 	}
 
+	public static <T> List<T> retrieveRowsOutOfTrx(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql, ITrx.TRXNAME_None);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			
+			final ArrayList<T> rows = new ArrayList<>();
+			while(rs.next())
+			{
+				T row = loader.retrieveRow(rs);
+				rows.add(row);
+			}
+			
+			return rows;
+		}
+		catch(SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+	}
+
 	public static <T> T retrieveFirstRowOrNull(
 			@NonNull final String sql,
 			@Nullable final List<Object> sqlParams,
@@ -2730,7 +2785,7 @@ public final class DB
 		}
 		catch(SQLException ex)
 		{
-			throw new DBException(sql);
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{

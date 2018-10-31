@@ -5,13 +5,14 @@ import java.util.Date;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.junit.Assert;
+
+import de.metas.util.Services;
 
 /*
  * #%L

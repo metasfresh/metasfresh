@@ -2,7 +2,6 @@ package de.metas.costing.interceptors;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
+import de.metas.util.Check;
 
 /*
  * #%L

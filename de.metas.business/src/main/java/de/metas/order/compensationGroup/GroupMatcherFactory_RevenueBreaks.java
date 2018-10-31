@@ -3,7 +3,6 @@ package de.metas.order.compensationGroup;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
@@ -48,7 +47,7 @@ public final class GroupMatcherFactory_RevenueBreaks implements GroupMatcherFact
 	}
 
 	@Override
-	public Predicate<Group> createPredicate(final I_C_CompensationGroup_SchemaLine schemaLine, final List<I_C_CompensationGroup_SchemaLine> allSchemaLines)
+	public GroupMatcher createPredicate(final I_C_CompensationGroup_SchemaLine schemaLine, final List<I_C_CompensationGroup_SchemaLine> allSchemaLines)
 	{
 		final Optional<I_C_CompensationGroup_SchemaLine> nextSchemaLine = getNextLine(schemaLine, allSchemaLines);
 
@@ -87,7 +86,7 @@ public final class GroupMatcherFactory_RevenueBreaks implements GroupMatcherFact
 	}
 
 	@ToString
-	private static final class RevenueRangeGroupMatcher implements Predicate<Group>
+	private static final class RevenueRangeGroupMatcher implements GroupMatcher
 	{
 		private final Range<BigDecimal> range;
 
@@ -97,7 +96,7 @@ public final class GroupMatcherFactory_RevenueBreaks implements GroupMatcherFact
 		}
 
 		@Override
-		public boolean test(final Group group)
+		public boolean isMatching(final Group group)
 		{
 			final BigDecimal revenueAmt = group.getRegularLinesNetAmt();
 			return range.contains(revenueAmt);

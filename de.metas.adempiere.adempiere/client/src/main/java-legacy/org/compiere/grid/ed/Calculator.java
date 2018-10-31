@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -50,7 +51,6 @@ import javax.swing.SwingConstants;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;

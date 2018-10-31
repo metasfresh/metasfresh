@@ -4,12 +4,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.Value;
 

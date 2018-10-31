@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Promotion;
 import org.compiere.model.I_M_PromotionDistribution;
 import org.compiere.model.I_M_PromotionLine;
@@ -42,6 +41,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
 
 /**
  *

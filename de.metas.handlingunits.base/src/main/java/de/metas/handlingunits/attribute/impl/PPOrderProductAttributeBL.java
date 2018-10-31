@@ -35,8 +35,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -63,6 +61,8 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.ToString;
 
 public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
@@ -240,7 +240,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			return;
 		}
 
-		final List<I_M_HU_Attribute> existingHUAttributes = Services.get(IHUAttributesDAO.class).retrieveAttributesOrdered(hu);
+		final List<I_M_HU_Attribute> existingHUAttributes = Services.get(IHUAttributesDAO.class).retrieveAttributesOrdered(hu).getHuAttributes();
 		for (final I_M_HU_Attribute huAttribute : existingHUAttributes)
 		{
 			final int attributeId = huAttribute.getM_Attribute_ID();
@@ -515,7 +515,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		final IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
 		for (final I_M_HU hu : topLevelHUs)
 		{
-			final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu);
+			final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes();
 
 			ppOrderProductAttributeDAO.addPPOrderProductAttributes(costCollector, huAttributes);
 		}
@@ -528,7 +528,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 		final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 		final IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
-		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(topLevelHU);
+		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(topLevelHU).getHuAttributes();
 
 		ppOrderProductAttributeDAO.addPPOrderProductAttributesFromIssueCandidate(issueCandidate, huAttributes);
 	}

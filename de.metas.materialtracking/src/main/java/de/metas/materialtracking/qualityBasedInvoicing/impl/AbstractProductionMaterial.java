@@ -13,35 +13,34 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */abstract class AbstractProductionMaterial implements IProductionMaterial
 {
 	// Services
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	protected final IUOMConversionContext getUOMConversionContext()
+	protected final UOMConversionContext getUOMConversionContext()
 	{
-		final IUOMConversionContext conversionCtx = uomConversionBL.createConversionContext(getM_Product());
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(getM_Product());
 		return conversionCtx;
 	}
 
@@ -52,7 +51,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 		final BigDecimal qty = getQty();
 		final I_C_UOM qtyUOM = getC_UOM();
 
-		final IUOMConversionContext conversionCtx = getUOMConversionContext();
+		final UOMConversionContext conversionCtx = getUOMConversionContext();
 		final BigDecimal qtyInUOMTo = uomConversionBL.convertQty(conversionCtx, qty, qtyUOM, uomTo);
 		return qtyInUOMTo;
 	}
@@ -61,7 +60,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 	public final BigDecimal getQM_QtyDeliveredAvg(final I_C_UOM uomTo)
 	{
 		Check.assumeNotNull(uomTo, "uomTo not null");
-		final IUOMConversionContext conversionCtx = getUOMConversionContext();
+		final UOMConversionContext conversionCtx = getUOMConversionContext();
 		final BigDecimal qty = getQM_QtyDeliveredAvg();
 		final I_C_UOM qtyUOM = getC_UOM();
 		final BigDecimal qtyInUOMTo = uomConversionBL.convertQty(conversionCtx, qty, qtyUOM, uomTo);

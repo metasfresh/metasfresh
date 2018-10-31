@@ -2,8 +2,6 @@ package de.metas.handlingunits.report;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
@@ -12,6 +10,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 

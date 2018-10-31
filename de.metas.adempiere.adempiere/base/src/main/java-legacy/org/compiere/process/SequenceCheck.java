@@ -21,7 +21,6 @@ import java.util.Properties;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ITableSequenceChecker;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
@@ -29,6 +28,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * System + Document Sequence Check

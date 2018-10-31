@@ -31,8 +31,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
 import de.metas.handlingunits.HUConstants;
@@ -42,6 +40,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUTrxDAO implements IHUTrxDAO
 {

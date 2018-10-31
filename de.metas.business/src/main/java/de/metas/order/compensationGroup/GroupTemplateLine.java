@@ -1,14 +1,12 @@
 package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
-import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.Predicates;
-
-import de.metas.lang.Percent;
 import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,19 +46,19 @@ public class GroupTemplateLine
 	GroupTemplateLineId id;
 	ProductId productId;
 	private Percent percentage;
-	private Predicate<Group> groupMatcher;
+	private GroupMatcher groupMatcher;
 
 	@Builder
 	private GroupTemplateLine(
 			@Nullable final GroupTemplateLineId id,
 			@NonNull final ProductId productId,
 			@Nullable final BigDecimal percentage,
-			@Nullable final Predicate<Group> groupMatcher)
+			@Nullable GroupMatcher groupMatcher)
 	{
 		this.id = id;
 		this.productId = productId;
 		this.percentage = Percent.ofNullable(percentage);
-		this.groupMatcher = groupMatcher != null ? groupMatcher : Predicates.alwaysTrue();
+		this.groupMatcher = groupMatcher != null ? groupMatcher : GroupMatchers.ALWAYS;
 	}
 
 }

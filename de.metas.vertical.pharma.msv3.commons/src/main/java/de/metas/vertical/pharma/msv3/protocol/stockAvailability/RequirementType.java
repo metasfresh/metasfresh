@@ -41,7 +41,10 @@ import lombok.NonNull;
  */
 public enum RequirementType
 {
-	DIRECT("direkt"), STRICT_ONE_OF_SPECIFIED_IN_REQUEST("einsAusN"), NON_SPECIFIC("unspezifisch");
+	DIRECT("direkt"), //
+	STRICT_ONE_OF_SPECIFIED_IN_REQUEST("einsAusN"), //
+	NON_SPECIFIC("unspezifisch") //
+	;
 
 	@Getter
 	private final String code;

@@ -20,8 +20,6 @@ import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,6 +50,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*
@@ -874,7 +874,7 @@ public class HUTransformServiceTests
 		Assert.assertThat(existingTU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), data.helper.uomKg);
+		data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("3"), data.helper.uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 		huStatusBL.setHUStatus(data.helper.getHUContext(), cu2, X_M_HU.HUSTATUS_Active);
 		save(cu2);
@@ -912,7 +912,7 @@ public class HUTransformServiceTests
 
 		// create a standalone-CU
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, four, data.helper.uomKg);
+		data.helper.load(producer, data.helper.pSaladProductId, four, data.helper.uomKg);
 
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 
@@ -941,7 +941,7 @@ public class HUTransformServiceTests
 
 		// create a standalone-CU
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, FOUR, data.helper.uomKg);
+		data.helper.load(producer, data.helper.pSaladProductId, FOUR, data.helper.uomKg);
 
 		final I_M_HU saladCU = producer.getCreatedHUs().get(0);
 
@@ -994,10 +994,10 @@ public class HUTransformServiceTests
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setLUItemPI(piLU_Item_20_IFCO);
 		lutuProducer.setTUPI(data.piTU_IFCO);
-		lutuProducer.addCUPerTU(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
+		lutuProducer.addCUPerTU(data.helper.pTomatoProductId, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("109.4"), data.helper.uomKg);
 		Assert.assertThat(lutuProducer.getCreatedHUs().size(), is(1));
 		final I_M_HU createdLU = lutuProducer.getCreatedHUs().get(0);
 

@@ -25,7 +25,6 @@ package de.metas.calendar.impl;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
@@ -36,6 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.calendar.ICalendarBL;
+import de.metas.util.Services;
 
 public class CalendarBLTest extends CalendarTestBase
 {

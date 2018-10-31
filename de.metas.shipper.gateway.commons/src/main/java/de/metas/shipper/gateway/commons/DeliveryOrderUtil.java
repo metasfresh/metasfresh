@@ -1,14 +1,14 @@
 package de.metas.shipper.gateway.commons;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_Location;
 
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.shipper.gateway.spi.model.CountryCode;
 import lombok.NonNull;
 

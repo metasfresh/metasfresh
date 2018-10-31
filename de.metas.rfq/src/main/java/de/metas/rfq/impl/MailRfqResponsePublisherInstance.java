@@ -7,8 +7,6 @@ import javax.mail.internet.InternetAddress;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 
 import de.metas.document.archive.model.I_AD_Archive;
@@ -24,6 +22,8 @@ import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.exceptions.RfQPublishException;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQ_Topic;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

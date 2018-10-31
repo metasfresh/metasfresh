@@ -2,10 +2,9 @@ package de.metas.shipper.gateway.spi.model;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.Splitter;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

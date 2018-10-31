@@ -6,10 +6,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
-import org.adempiere.util.time.TimeSource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
@@ -18,6 +14,10 @@ import org.junit.Test;
 
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import de.metas.util.time.TimeSource;
 
 public class AsyncBatchBLTest
 {

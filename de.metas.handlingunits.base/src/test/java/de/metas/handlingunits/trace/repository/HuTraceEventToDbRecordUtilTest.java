@@ -5,13 +5,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -78,6 +78,9 @@ public class HuTraceEventToDbRecordUtilTest
 		dbRecord.setEventTime(SystemTime.asTimestamp());
 		dbRecord.setHUTraceType(X_M_HU_Trace.HUTRACETYPE_MATERIAL_MOVEMENT);
 		dbRecord.setVHUStatus(X_M_HU_Trace.VHUSTATUS_Active);
+		dbRecord.setVHU_ID(1);
+		dbRecord.setM_HU_ID(2);
+		dbRecord.setM_Product_ID(3);
 		// save(dbRecord); we might nor might not save in the individual tests
 
 		return dbRecord;

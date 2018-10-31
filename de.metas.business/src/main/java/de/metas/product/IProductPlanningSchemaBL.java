@@ -2,10 +2,10 @@ package de.metas.product;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.product.model.I_M_Product_PlanningSchema;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

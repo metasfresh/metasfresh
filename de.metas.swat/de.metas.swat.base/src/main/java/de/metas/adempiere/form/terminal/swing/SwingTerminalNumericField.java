@@ -32,11 +32,10 @@ import java.awt.Component;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import org.adempiere.util.Services;
-
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  * @author tsa

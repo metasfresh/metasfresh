@@ -26,9 +26,10 @@ package org.adempiere.mm.attributes.api;
 import java.util.List;
 
 import org.adempiere.model.I_M_AttributeSetExcludeLine;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
+
+import de.metas.util.ISingletonService;
 
 public interface IAttributeExcludeDAO extends ISingletonService
 {

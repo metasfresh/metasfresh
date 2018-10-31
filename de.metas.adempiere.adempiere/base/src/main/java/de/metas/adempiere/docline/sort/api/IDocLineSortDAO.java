@@ -25,9 +25,10 @@ package de.metas.adempiere.docline.sort.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocLine_Sort;
 import org.compiere.model.I_C_DocLine_Sort_Item;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Document Line Sort Preferences DAO

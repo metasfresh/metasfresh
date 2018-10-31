@@ -2,6 +2,7 @@ package de.metas.handlingunits.trace;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -10,12 +11,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
-import org.adempiere.util.time.TimeSource;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +35,11 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import de.metas.util.time.TimeSource;
 import mockit.Expectations;
 import mockit.Injectable;
 
@@ -67,6 +72,8 @@ public class HUTraceEventsServiceTests
 	@Injectable
 	private HUAccessService huAccessService;
 
+	private I_C_UOM uom;
+
 	@Before
 	public void init()
 	{
@@ -74,6 +81,8 @@ public class HUTraceEventsServiceTests
 		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService);
 
 		LogManager.setLoggerLevel(HUTraceRepository.class, Level.INFO);
+
+		uom = saveFluent(newInstance(I_C_UOM.class));
 	}
 
 	/**
@@ -96,29 +105,29 @@ public class HUTraceEventsServiceTests
 		final I_M_HU vhu11 = saveFluent(newInstance(I_M_HU.class));
 		vhu11.setHUStatus(X_M_HU.HUSTATUS_Active);
 
-		final I_M_Product prod11 = saveFluent(newInstance(I_M_Product.class));
-		final BigDecimal qty11 = BigDecimal.valueOf(11);
+		final ProductId prod11 = newProduct("prod11");
+		final Quantity qty11 = Quantity.of(11, uom);
 
 		final I_M_HU luHu12 = saveFluent(newInstance(I_M_HU.class));
 		final I_M_HU vhu12 = saveFluent(newInstance(I_M_HU.class));
 		vhu12.setHUStatus(X_M_HU.HUSTATUS_Active);
 
-		final I_M_Product prod12 = saveFluent(newInstance(I_M_Product.class));
-		final BigDecimal qty12 = BigDecimal.valueOf(12);
+		final ProductId prod12 = newProduct("prod12");
+		final Quantity qty12 = Quantity.of(12, uom);
 
 		final I_M_HU luHu21 = saveFluent(newInstance(I_M_HU.class));
 		final I_M_HU vhu21 = saveFluent(newInstance(I_M_HU.class));
 		vhu21.setHUStatus(X_M_HU.HUSTATUS_Active);
 
-		final I_M_Product prod21 = saveFluent(newInstance(I_M_Product.class));
-		final BigDecimal qty21 = BigDecimal.valueOf(21);
+		final ProductId prod21 = newProduct("prod21");
+		final Quantity qty21 = Quantity.of(21, uom);
 
 		final I_M_HU luHu22 = saveFluent(newInstance(I_M_HU.class));
 		final I_M_HU vhu22 = saveFluent(newInstance(I_M_HU.class));
 		vhu22.setHUStatus(X_M_HU.HUSTATUS_Active);
 
-		final I_M_Product prod22 = saveFluent(newInstance(I_M_Product.class));
-		final BigDecimal qty22 = BigDecimal.valueOf(22);
+		final ProductId prod22 = newProduct("prod22");
+		final Quantity qty22 = Quantity.of(22, uom);
 
 		{
 			final TableRecordReference ref1 = TableRecordReference.of(user1);
@@ -193,7 +202,7 @@ public class HUTraceEventsServiceTests
 		}
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.orgId(10)
+				.orgId(OrgId.ofRepoId(10))
 				.inOutId(12).type(HUTraceType.MATERIAL_SHIPMENT); // note: inOutId and type don't really matter for this test
 
 		huTraceEventsService.createAndAddEvents(builder, ImmutableList.of(user1, user2));
@@ -282,9 +291,9 @@ public class HUTraceEventsServiceTests
 		final I_M_HU vhu1 = newInstance(I_M_HU.class);
 		vhu1.setHUStatus(X_M_HU.HUSTATUS_Active);
 		save(vhu1);
-		final I_M_Product vhu1Product = saveFluent(newInstance(I_M_Product.class));
-		final BigDecimal vhu1Qty = new BigDecimal("11");
-		
+		final ProductId vhu1Product = newProduct("vhu1Product");
+		final Quantity vhu1Qty = Quantity.of(11, uom);
+
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		shipmentScheduleQtyPicked.setM_TU_HU(tu1);
 		shipmentScheduleQtyPicked.setVHU(vhu1);
@@ -303,15 +312,25 @@ public class HUTraceEventsServiceTests
 
 		final List<I_M_HU_Trace> allHuTraceRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class).create().list();
 		assertThat(allHuTraceRecords).hasSize(1);
-		
+
 		final I_M_HU_Trace trace = allHuTraceRecords.get(0);
 		assertThat(trace.getHUTraceType()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
 		assertThat(trace.getQty()).isEqualByComparingTo("11");
 	}
 
+	private ProductId newProduct(final String name)
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setValue(name);
+		product.setName(name);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		saveRecord(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
 	private static <T> T saveFluent(final T model)
 	{
-		save(model);
+		saveRecord(model);
 		return model;
 	}
 }

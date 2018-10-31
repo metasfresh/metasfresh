@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_InOutLine;
@@ -14,6 +13,7 @@ import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_PP_Cost_Collector;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

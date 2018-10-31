@@ -3,12 +3,12 @@ package de.metas.material.planning.interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
 
 import de.metas.material.planning.IResourceProductService;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -9,13 +9,13 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

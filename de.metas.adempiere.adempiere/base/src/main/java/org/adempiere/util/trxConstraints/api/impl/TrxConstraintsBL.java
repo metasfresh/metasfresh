@@ -29,14 +29,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class TrxConstraintsBL implements ITrxConstraintsBL
 {

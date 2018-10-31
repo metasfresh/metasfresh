@@ -30,7 +30,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
 
-import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
 import org.jdesktop.swingx.JXTable;
 
@@ -41,6 +40,7 @@ import de.metas.adempiere.form.terminal.table.ITableColumnInfo;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModel;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModel.SelectionMode;
+import de.metas.util.Check;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModelListener;
 
 public class SwingTerminalTable2<T> implements ITerminalTable2<T>

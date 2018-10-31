@@ -31,7 +31,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
@@ -42,6 +41,7 @@ import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_DD_OrderLine;
+import de.metas.util.Services;
 
 /**
  * @author al

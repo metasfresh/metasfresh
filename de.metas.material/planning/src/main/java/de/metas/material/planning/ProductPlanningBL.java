@@ -27,11 +27,11 @@ import java.util.Properties;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.planning.exception.MrpException;
+import de.metas.util.Check;
 
 @Service
 public class ProductPlanningBL

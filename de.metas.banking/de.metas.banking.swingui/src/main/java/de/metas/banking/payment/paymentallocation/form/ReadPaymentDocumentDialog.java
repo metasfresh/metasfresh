@@ -29,10 +29,10 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.swing.CDialog;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  * Payment Document Reader Dialog

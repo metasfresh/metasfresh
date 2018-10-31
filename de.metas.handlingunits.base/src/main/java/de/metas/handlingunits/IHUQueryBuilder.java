@@ -36,7 +36,6 @@ import org.adempiere.model.ModelColumn;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -85,6 +84,8 @@ public interface IHUQueryBuilder
 
 	/** Retrieves all HUs which are matching our criterias */
 	List<I_M_HU> list();
+
+	Set<HuId> listIds();
 
 	/** Retrieves all HUs which are matching our criterias, but no more then <code>limit</code> number. */
 	List<I_M_HU> list(final int limit);
@@ -198,16 +199,6 @@ public interface IHUQueryBuilder
 	 * @return this
 	 */
 	IHUQueryBuilder addOnlyInWarehouseId(final WarehouseId warehouseId);
-
-	/**
-	 * Filter only those HUs which are in any of the given warehouse(s).
-	 *
-	 * NOTE: given warehouse(s) are appended to the list of previously specified ones
-	 *
-	 * @param warehouses
-	 * @return this
-	 */
-	IHUQueryBuilder addOnlyInWarehouses(Collection<? extends I_M_Warehouse> warehouses);
 
 	/**
 	 *
@@ -400,6 +391,8 @@ public interface IHUQueryBuilder
 	 * @param attributeName
 	 */
 	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
+	
+	IHUQueryBuilder allowSqlWhenFilteringAttributes(boolean allow);
 
 	/**
 	 * Filter the HUs by barcode.
@@ -501,7 +494,7 @@ public interface IHUQueryBuilder
 	 * @param huPIVersionId
 	 * @return this
 	 */
-	IHUQueryBuilder addPIVersionToInclude(int huPIVersionId);
+	IHUQueryBuilder addPIVersionToInclude(HuPackingInstructionsVersionId huPIVersionId);
 
 	/**
 	 * Check if given {@link IAttributeSet} is matching the attributes from our query.
@@ -540,4 +533,6 @@ public interface IHUQueryBuilder
 	 * Ignored if also {@link #setExcludeReservedToOtherThan(OrderLineId)} was called.
 	 */
 	IHUQueryBuilder setExcludeReserved();
+
+	IHUQueryBuilder addOnlyInLocatorIds(Collection<Integer> locatorIds);
 }

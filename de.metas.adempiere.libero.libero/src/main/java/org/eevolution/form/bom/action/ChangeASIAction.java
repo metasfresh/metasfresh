@@ -42,7 +42,6 @@ import javax.swing.JFrame;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.search.PAttributeInstance;
 import org.compiere.model.MAttributeSetInstance;
@@ -54,6 +53,7 @@ import org.eevolution.model.wrapper.BOMLineWrapper;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * @author Victor Perez, e-Evolution, S.C.

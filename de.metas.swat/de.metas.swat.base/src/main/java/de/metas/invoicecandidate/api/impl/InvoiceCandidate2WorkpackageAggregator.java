@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,9 +26,9 @@ package de.metas.invoicecandidate.api.impl;
 import java.util.IdentityHashMap;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.MapReduceAggregator;
+import javax.annotation.Nullable;
+
+import org.compiere.util.Env;
 
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.async.api.IWorkPackageBlockBuilder;
@@ -44,6 +44,11 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.LockOwner;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.MapReduceAggregator;
+import lombok.NonNull;
 
 /**
  * Takes {@link I_C_Invoice_Candidate}s, group them by "IC's header aggregation key" and add them {@link InvoiceCandWorkpackageProcessor} workpackages.
@@ -66,14 +71,12 @@ import de.metas.lock.api.LockOwner;
 	private IWorkpackagePrioStrategy workpackagePriority = SizeBasedWorkpackagePrio.INSTANCE;
 	private ILock invoiceCandidatesLock = ILock.NULL;
 	private I_C_Async_Batch _asyncBatch = null;
-	
+
 	// status
 	private final IdentityHashMap<IWorkPackageBuilder, ICNetAmtToInvoiceChecker> group2netAmtToInvoiceChecker = new IdentityHashMap<>();
 
-	public InvoiceCandidate2WorkpackageAggregator(final Properties ctx, final String trxName)
+	public InvoiceCandidate2WorkpackageAggregator(@NonNull final Properties ctx, @Nullable final String trxName)
 	{
-		super();
-
 		Check.assumeNotNull(ctx, "ctx not null");
 		_ctx = ctx;
 		_trxName = trxName; // null/none it's accepted
@@ -129,6 +132,7 @@ import de.metas.lock.api.LockOwner;
 	{
 		final IWorkPackageBuilder workpackageBuilder = _queueBlockBuilder.newWorkpackage()
 				.setPriority(workpackagePriority)
+				.setUserInChargeId(Env.getAD_User_ID()) // we want the enqueuing user to be notified on problems
 				.bindToTrxName(getTrxName());
 
 		//
@@ -192,7 +196,7 @@ import de.metas.lock.api.LockOwner;
 		group.build();
 	}
 
-	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_Creator_ID(final int adPInstanceId)
+	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_Creator_ID(final PInstanceId adPInstanceId)
 	{
 		_queueBlockBuilder.setAD_PInstance_Creator_ID(adPInstanceId);
 		return this;
@@ -203,13 +207,13 @@ import de.metas.lock.api.LockOwner;
 		_asyncBatch = asyncBatch;
 		return this;
 	}
-	
+
 	public InvoiceCandidate2WorkpackageAggregator setPriority(final IWorkpackagePrioStrategy priority)
 	{
 		workpackagePriority = priority;
 		return this;
 	}
-	
+
 	/**
 	 * Gets unprocessed workpackages queue size
 	 */

@@ -28,8 +28,9 @@ package de.metas.adempiere.service;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.MTable;
+
+import de.metas.util.ISingletonService;
 
 /**
  * @author tsa

@@ -34,11 +34,23 @@ import org.compiere.model.I_AD_User;
  */
 public interface IArchiveEventListener
 {
-	void onPdfUpdate(I_AD_Archive archive, I_AD_User user, String action);
+	default void onPdfUpdate(I_AD_Archive archive, I_AD_User user, String action)
+	{
+		// nothing
+	}
 
-	void onEmailSent(I_AD_Archive archive, String action, I_AD_User user, String from, String to, String cc, String bcc, String status);
+	default void onEmailSent(I_AD_Archive archive, String action, I_AD_User user, String from, String to, String cc, String bcc, String status)
+	{
+		// nothing
+	}
 
-	void onPrintOut(I_AD_Archive archive, I_AD_User user, String printerName, int copies, String status);
+	default void onPrintOut(I_AD_Archive archive, I_AD_User user, String printerName, int copies, String status)
+	{
+		// nothing
+	}
 
-	void onVoidDocument(I_AD_Archive archive);
+	default void onVoidDocument(I_AD_Archive archive)
+	{
+		// nothing
+	}
 }

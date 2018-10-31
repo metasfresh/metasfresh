@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 
 import com.google.common.collect.ImmutableList;
@@ -13,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.util.Services;
 
 /*
  * #%L

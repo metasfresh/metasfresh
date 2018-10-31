@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.modelvalidator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -9,6 +8,7 @@ import org.compiere.model.PO;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_M_ProductGroup_Product;
+import de.metas.util.Services;
 
 public class M_ProductGroup_Product implements ModelValidator
 {

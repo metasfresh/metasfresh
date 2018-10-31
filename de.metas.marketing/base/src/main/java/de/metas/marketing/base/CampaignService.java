@@ -5,15 +5,12 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.user.User;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.DefaultAddressType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
@@ -21,6 +18,9 @@ import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.Platform;
 import de.metas.marketing.base.model.PlatformRepository;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -81,7 +81,7 @@ public class CampaignService
 	private void addToCampaignIfHasMaillAddressOrLocation(
 			@NonNull final User user,
 			@NonNull final Campaign campaign,
-			DefaultAddressType defaultAddressType)
+			@Nullable final DefaultAddressType defaultAddressType)
 	{
 
 		final Platform platform = platformRepository.getById(campaign.getPlatformId());

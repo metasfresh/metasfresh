@@ -275,4 +275,29 @@ public interface I_MSV3_Vendor_Config
     public static final org.adempiere.model.ModelColumn<I_MSV3_Vendor_Config, Object> COLUMN_UserID = new org.adempiere.model.ModelColumn<I_MSV3_Vendor_Config, Object>(I_MSV3_Vendor_Config.class, "UserID", null);
     /** Column name UserID */
     public static final String COLUMNNAME_UserID = "UserID";
+
+	/**
+	 * Set Version.
+	 * Version of the table definition
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setVersion (java.lang.String Version);
+
+	/**
+	 * Get Version.
+	 * Version of the table definition
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVersion();
+
+    /** Column definition for Version */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_Vendor_Config, Object> COLUMN_Version = new org.adempiere.model.ModelColumn<I_MSV3_Vendor_Config, Object>(I_MSV3_Vendor_Config.class, "Version", null);
+    /** Column name Version */
+    public static final String COLUMNNAME_Version = "Version";
 }

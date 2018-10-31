@@ -1,5 +1,9 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -35,11 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -73,7 +72,11 @@ import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import lombok.NonNull;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
 
 public class AggregationEngine implements IAggregationEngine
 {
@@ -315,8 +318,8 @@ public class AggregationEngine implements IAggregationEngine
 
 		invoiceHeader.setAD_Org_ID(ic.getAD_Org_ID());
 		invoiceHeader.setBill_BPartner_ID(ic.getBill_BPartner_ID());
-		invoiceHeader.setBill_Location_ID(ic.getBill_Location_ID());
-		invoiceHeader.setBill_User_ID(ic.getBill_User_ID());
+		invoiceHeader.setBill_Location_ID(getBill_Location_ID(ic));
+		invoiceHeader.setBill_User_ID(getBill_User_ID(ic));
 		invoiceHeader.setC_Order_ID(ic.getC_Order_ID());
 		invoiceHeader.setPOReference(ic.getPOReference()); // task 07978
 
@@ -342,11 +345,10 @@ public class AggregationEngine implements IAggregationEngine
 			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()), ic.getBill_Location(), SOTrx.ofBoolean(ic.isSOTrx()));
 			if (pl == null)
 			{
-				final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 				throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
 						new Object[] {
-								InterfaceWrapperHelper.create(ctx, ic.getM_PricingSystem_ID(), I_M_PricingSystem.class, ITrx.TRXNAME_None).getName(),
-								InterfaceWrapperHelper.create(ctx, invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class, ITrx.TRXNAME_None).getName() });
+								ic.getM_PricingSystem_ID() > 0 ? loadOutOfTrx(ic.getM_PricingSystem_ID(), I_M_PricingSystem.class).getName() : "NO PRICING-SYTEM",
+								invoiceHeader.getBill_Location_ID() > 0 ? loadOutOfTrx(invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class).getName() : "NO BILL-TO-LOCATION" });
 			}
 			M_PriceList_ID = pl.getM_PriceList_ID();
 		}
@@ -371,6 +373,16 @@ public class AggregationEngine implements IAggregationEngine
 
 		// 06630: set shipment id to header
 		invoiceHeader.setM_InOut_ID(inoutId);
+	}
+
+	private int getBill_Location_ID(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return ic.getBill_Location_Override_ID() > 0 ? ic.getBill_Location_Override_ID() : ic.getBill_Location_ID();
+	}
+
+	private int getBill_User_ID(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return ic.getBill_User_ID_Override_ID() > 0 ? ic.getBill_User_ID_Override_ID() : ic.getBill_User_ID();
 	}
 
 	@Override
@@ -434,8 +446,6 @@ public class AggregationEngine implements IAggregationEngine
 
 		// Set Invoice's DocBaseType
 		setDocBaseType(invoiceHeader);
-
-
 
 		return invoiceHeader;
 	}
@@ -519,9 +529,9 @@ public class AggregationEngine implements IAggregationEngine
 		}
 	}
 
-
 	/**
 	 * extract C_PaymentTerm_ID from invoice candidate
+	 *
 	 * @return
 	 */
 	private int extractC_PaymentTerm_IDFromLines(@NonNull final InvoiceHeaderImpl invoiceHeader)
@@ -533,7 +543,7 @@ public class AggregationEngine implements IAggregationEngine
 		}
 
 		final Map<Integer, IInvoiceLineRW> uniquePaymentTermLines = mapUniqueIInvoiceLineRWPerPaymentTerm(lines);
-		// extract payment term  if all lines have same C_PaymentTerm_ID
+		// extract payment term if all lines have same C_PaymentTerm_ID
 		if (uniquePaymentTermLines.size() == 1)
 		{
 			final Set<Integer> ids = uniquePaymentTermLines.keySet();

@@ -30,7 +30,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 
@@ -40,6 +39,7 @@ import de.metas.tourplanning.api.ITourInstanceDAO;
 import de.metas.tourplanning.exceptions.BPartnerNotVendorException;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.Services;
 
 /**
  * @author cg

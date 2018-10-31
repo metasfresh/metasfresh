@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.util.Ini;
 
 import com.google.common.base.Preconditions;
@@ -19,6 +18,7 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockCommand.AllowAdditionalLocks;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

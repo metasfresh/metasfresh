@@ -1,5 +1,8 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,15 +16,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,10 +33,8 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
@@ -42,9 +42,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.util.Services;
 
 public class HUAssignmentBLTest
 {
@@ -81,8 +86,20 @@ public class HUAssignmentBLTest
 
 		//
 		// Create a dummy record
-		record = InterfaceWrapperHelper.newInstance(I_Test.class, contextProvider);
-		InterfaceWrapperHelper.save(record);
+		record = newInstance(I_Test.class, contextProvider);
+		saveRecord(record);
+
+		//
+		// Virtual PI
+		final I_M_HU_PI virtualPI = newInstance(I_M_HU_PI.class);
+		virtualPI.setM_HU_PI_ID(HuPackingInstructionsId.VIRTUAL.getRepoId());
+		saveRecord(virtualPI);
+		//
+		final I_M_HU_PI_Version virtualPIVersion = newInstance(I_M_HU_PI_Version.class);
+		virtualPIVersion.setM_HU_PI_ID(virtualPI.getM_HU_PI_ID());
+		virtualPIVersion.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
+		virtualPIVersion.setIsCurrent(true);
+		saveRecord(virtualPIVersion);
 
 		//
 		// Create a dummy HU
@@ -91,9 +108,9 @@ public class HUAssignmentBLTest
 
 	private I_M_HU createHU()
 	{
-		final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class, contextProvider);
-
-		InterfaceWrapperHelper.save(hu);
+		final I_M_HU hu = newInstance(I_M_HU.class, contextProvider);
+		hu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
+		saveRecord(hu);
 		return hu;
 	}
 

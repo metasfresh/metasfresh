@@ -44,8 +44,6 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.async.api.IWorkPackageQuery;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
 import de.metas.async.model.I_C_Queue_Block;
@@ -54,6 +52,8 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 
 public class QueueDAO extends AbstractQueueDAO
 {

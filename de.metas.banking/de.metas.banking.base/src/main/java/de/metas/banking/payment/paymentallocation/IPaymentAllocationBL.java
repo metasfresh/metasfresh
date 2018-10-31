@@ -1,6 +1,6 @@
 package de.metas.banking.payment.paymentallocation;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 
 /*

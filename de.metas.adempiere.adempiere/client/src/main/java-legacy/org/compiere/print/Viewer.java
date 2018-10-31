@@ -72,7 +72,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.images.Images;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
@@ -109,6 +108,7 @@ import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -1053,14 +1053,18 @@ public class Viewer extends CFrame
 			else if (ext.equals("html") || ext.equals("htm"))
 				m_reportEngine.createHTML(outFile, false, m_reportEngine.getPrintFormat().getLanguage());
 			else if (ext.equals("xls"))
+			{
 				m_reportEngine.createXLS(outFile, m_reportEngine.getPrintFormat().getLanguage());
+				Env.startBrowser(outFile);
+			}
 			else
+			{
 				ADialog.error(m_WindowNo, this, "FileInvalidExtension");
+			}
 		}
-		catch (Exception e) {
-			ADialog.error(m_WindowNo, this, "Error", e.getLocalizedMessage());
-			if (LogManager.isLevelFinest())
-				e.printStackTrace();
+		catch (Exception ex)
+		{
+			ADialog.error(m_WindowNo, this, ex);
 		}
 		cmd_drill();	//	setCursor
 	}	//	cmd_export

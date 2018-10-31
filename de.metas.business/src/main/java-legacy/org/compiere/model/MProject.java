@@ -23,11 +23,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 
 /**
  * 	Project Model

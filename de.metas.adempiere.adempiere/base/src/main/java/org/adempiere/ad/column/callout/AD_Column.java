@@ -3,15 +3,17 @@ package org.adempiere.ad.column.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
 import org.compiere.util.DisplayType;
+import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -42,12 +44,16 @@ import de.metas.adempiere.service.IColumnBL;
  *
  */
 @Callout(I_AD_Column.class)
+@Component("org.adempiere.ad.column.callout.AD_Column")
 public class AD_Column
 {
-
-	public static final AD_Column instance = new AD_Column();
-
 	public static final String ENTITYTYPE_Dictionary = "D";
+
+	public AD_Column()
+	{
+		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
+		programaticCalloutProvider.registerAnnotatedCallout(this);
+	}
 
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnName })
 	public void onColumnName(final I_AD_Column column, final ICalloutField field)
@@ -75,14 +81,15 @@ public class AD_Column
 	{
 		if (column.getAD_Element_ID() <= 0)
 		{
-			// nothing to do
+			column.setColumnName(null);
+			column.setName(null);
 			return;
 		}
 
 		final I_AD_Element element = column.getAD_Element();
 
 		final String elementColumnName = element.getColumnName();
-		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
+		Check.assumeNotNull(elementColumnName, "The element {} needs to have a column name set", element);
 
 		column.setColumnName(elementColumnName);
 		column.setName(element.getName());

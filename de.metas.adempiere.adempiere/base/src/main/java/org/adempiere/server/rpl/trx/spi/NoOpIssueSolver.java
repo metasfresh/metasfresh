@@ -24,7 +24,8 @@ package org.adempiere.server.rpl.trx.spi;
 
 
 import org.adempiere.server.rpl.trx.api.IReplicationIssueSolverParams;
-import org.adempiere.util.Loggables;
+
+import de.metas.util.Loggables;
 
 /**
  * This implementation does nothing with the given {@link IReplicationIssueAware}.

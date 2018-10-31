@@ -5,7 +5,9 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import de.metas.document.engine.IDocActionOptionsContext;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.document.engine.IDocument;
 import de.metas.rfq.model.I_C_RfQ;
@@ -43,7 +45,7 @@ public class RfQDocActionOptionsCustomizer implements IDocActionOptionsCustomize
 	}
 
 	@Override
-	public void customizeValidActions(final IDocActionOptionsContext optionsCtx)
+	public void customizeValidActions(final DocActionOptionsContext optionsCtx)
 	{
 		final Set<String> docActions = new LinkedHashSet<>(optionsCtx.getDocActions());
 
@@ -54,7 +56,7 @@ public class RfQDocActionOptionsCustomizer implements IDocActionOptionsCustomize
 			docActions.add(IDocument.ACTION_UnClose);
 		}
 
-		optionsCtx.setDocActions(docActions);
+		optionsCtx.setDocActions(ImmutableSet.copyOf(docActions));
 	}
 
 }

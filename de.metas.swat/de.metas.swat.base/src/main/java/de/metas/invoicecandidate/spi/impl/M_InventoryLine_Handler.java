@@ -6,28 +6,25 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_AD_Org;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
@@ -41,8 +38,12 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInventoryLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -122,8 +123,10 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class, inventoryLine);
 
-		final int adOrgId = inventoryLine.getAD_Org_ID();
-		ic.setAD_Org_ID(adOrgId);
+		final ClientId clientId = ClientId.ofRepoId(inventoryLine.getAD_Client_ID());
+
+		final OrgId orgId = OrgId.ofRepoId(inventoryLine.getAD_Org_ID());
+		ic.setAD_Org_ID(orgId.getRepoId());
 
 		ic.setC_ILCandHandler(getHandlerRecord());
 
@@ -144,10 +147,10 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Product
-		final int productId = inventoryLine.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
 
 		{
-			ic.setM_Product_ID(productId);
+			ic.setM_Product_ID(productId.getRepoId());
 			// for the time being, the material disposals do not have packing material lines because we only throw the products, not the boxes
 			ic.setIsPackagingMaterial(false);
 
@@ -179,29 +182,24 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Set C_Activity from Product (07442)
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(inventoryLine);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inventoryLine);
-		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, adOrgId, I_AD_Org.class, trxName);
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, trxName);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, org, product);
-		ic.setC_Activity(activity);
+		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		//
 		// Set C_Tax from Product (07442)
+		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
 		final int taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : -1;
 		final Timestamp shipDate = inOut.getMovementDate();
-		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
+
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				ic,
 				taxCategoryId,
-				productId,
-				billDate,
+				productId.getRepoId(),
 				shipDate,
-				adOrgId,
-				inOut.getM_Warehouse(),
+				orgId,
+				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				locationId, // shipC_BPartner_Location_ID
 				false); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId);
@@ -411,7 +409,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
 		final BigDecimal qtyDelivered = ic.getQtyOrdered();
-		ic.setQtyDelivered(qtyDelivered);
+		ic.setQtyDelivered(qtyDelivered); // when changing this, make sure to threat ProductType.Service specially
 
 	}
 }

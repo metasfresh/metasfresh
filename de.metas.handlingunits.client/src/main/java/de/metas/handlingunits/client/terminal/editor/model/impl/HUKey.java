@@ -31,8 +31,6 @@ import java.util.UUID;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.KeyNamePair;
@@ -42,6 +40,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.Optional;
 
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -58,6 +57,9 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Handling Unit Key
@@ -135,8 +137,8 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		value = new KeyNamePair(huId, name);
 
 		// FIXME: aggregate by CU too
-		final int piId = handlingUnitsBL.getPIVersion(hu).getM_HU_PI_ID();
-		if (handlingUnitsBL.isConcretePI(piId))
+		final HuPackingInstructionsId piId = HuPackingInstructionsId.ofRepoId(handlingUnitsBL.getPIVersion(hu).getM_HU_PI_ID());
+		if (piId.isRealPackingInstructions())
 		{
 			aggregationKey = Util.mkKey(piId);
 		}
@@ -209,14 +211,20 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		return getHUStorage().getProductStorages();
 	}
 
-	public IHUProductStorage getProductStorage(final I_M_Product product)
+	public IHUProductStorage getProductStorage(final ProductId productId)
 	{
-		return getHUStorage().getProductStorage(product);
+		return getHUStorage().getProductStorage(productId);
 	}
 
 	public IHUProductStorage getProductStorageOrNull(final I_M_Product product)
 	{
-		return getHUStorage().getProductStorageOrNull(product);
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		return getHUStorage().getProductStorageOrNull(productId);
+	}
+	
+	public IHUProductStorage getProductStorageOrNull(final ProductId productId)
+	{
+		return getHUStorage().getProductStorageOrNull(productId);
 	}
 
 	public final I_C_UOM getStorageUOMOrNull()

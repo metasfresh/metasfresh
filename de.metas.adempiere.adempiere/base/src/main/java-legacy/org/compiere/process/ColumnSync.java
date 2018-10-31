@@ -18,7 +18,6 @@ package org.compiere.process;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
@@ -27,6 +26,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 
 /**
  * Synchronize Column with Database

@@ -9,15 +9,15 @@ import org.adempiere.ad.security.UserAuthTokenRepository;
 import org.adempiere.ad.security.UserNotAuthorizedException;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Supplier;
 
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

@@ -3,9 +3,8 @@ package de.metas.invoicecandidate.spi;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L
