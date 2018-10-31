@@ -2,13 +2,10 @@ package de.metas.ui.web.login.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.util.Check;
-import de.metas.util.hash.HashableString;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.util.hash.HashableString;
 import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
@@ -52,8 +49,9 @@ public class JSONLoginAuthRequest
 			@JsonProperty("username") final String username,
 			@JsonProperty("password") final String password)
 	{
-		Check.assumeNotEmpty(username, "username is not empty");
-		Check.assumeNotEmpty(password, "password is not empty");
+		// Tolerate null/empty values; we will validate them later and we will throw nice error messages
+		// Check.assumeNotEmpty(username, "username is not empty");
+		// Check.assumeNotEmpty(password, "password is not empty");
 
 		this.username = username;
 		this.password = password;

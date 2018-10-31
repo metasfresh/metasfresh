@@ -9,6 +9,7 @@ import javax.servlet.http.HttpSession;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_User;
@@ -110,6 +111,15 @@ public class LoginRestController
 	@PostMapping("/authenticate")
 	public JSONLoginAuthResponse authenticate(@RequestBody final JSONLoginAuthRequest request)
 	{
+		if (Check.isEmpty(request.getUsername(), true))
+		{
+			throw new FillMandatoryException("Username");
+		}
+		if (Check.isEmpty(request.getPassword(), true))
+		{
+			throw new FillMandatoryException("Password");
+		}
+
 		return authenticate(request.getUsername(), request.getPasswordAsEncryptableString());
 	}
 
