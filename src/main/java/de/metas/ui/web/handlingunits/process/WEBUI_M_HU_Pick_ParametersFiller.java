@@ -23,6 +23,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderLineId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -67,14 +68,14 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 	public static final String PARAM_M_PickingSlot_ID = I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID;
 	public static final String PARAM_M_ShipmentSchedule_ID = I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
 
-	private final int salesOrderLineId;
+	private final OrderLineId salesOrderLineId;
 	private final LookupDataSource shipmentScheduleDataSource;
 	private final ShipmentScheduleId shipmentScheduleId;
 
 	@Builder(builderClassName = "DefaultFillerBuilder", builderMethodName = "defaultFillerBuilder")
 	private WEBUI_M_HU_Pick_ParametersFiller(
 			final HuId huId,
-			final int salesOrderLineId)
+			final OrderLineId salesOrderLineId)
 	{
 		this.salesOrderLineId = salesOrderLineId;
 		this.shipmentScheduleDataSource = createShipmentScheduleDataSource(huId);
@@ -84,7 +85,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 	@Builder(builderClassName = "PickingSlotFillerBuilder", builderMethodName = "pickingSlotFillerBuilder")
 	private WEBUI_M_HU_Pick_ParametersFiller(final ShipmentScheduleId shipmentScheduleId)
 	{
-		this.salesOrderLineId = -1;
+		this.salesOrderLineId = null;
 		this.shipmentScheduleDataSource = null;
 		this.shipmentScheduleId = shipmentScheduleId;
 	}
@@ -192,10 +193,10 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 	{
 		if (PARAM_M_ShipmentSchedule_ID.equals(parameter.getColumnName()))
 		{
-			final int defaultShipmentScheduleId = getDefaultShipmentScheduleId();
-			if (defaultShipmentScheduleId > 0)
+			final ShipmentScheduleId defaultShipmentScheduleId = getDefaultShipmentScheduleId();
+			if (defaultShipmentScheduleId != null)
 			{
-				return defaultShipmentScheduleId;
+				return defaultShipmentScheduleId.getRepoId();
 			}
 		}
 
@@ -203,20 +204,14 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
-	private int getDefaultShipmentScheduleId()
+	private ShipmentScheduleId getDefaultShipmentScheduleId()
 	{
-		if (salesOrderLineId <= 0)
+		if (salesOrderLineId == null)
 		{
-			return -1;
+			return null;
 		}
 
-		final I_M_ShipmentSchedule schedForOrderLine = Services.get(IShipmentSchedulePA.class).retrieveForOrderLine(salesOrderLineId);
-		if (schedForOrderLine == null)
-		{
-			return -1;
-		}
-
-		return schedForOrderLine.getM_ShipmentSchedule_ID();
+		return Services.get(IShipmentSchedulePA.class).getShipmentScheduleIdByOrderLineId(salesOrderLineId);
 	}
 
 }

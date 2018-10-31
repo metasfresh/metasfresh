@@ -15,6 +15,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -151,7 +152,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return filler.getPickingSlotValues(context);
 	}
 
-	private int getSalesOrderLineId()
+	private OrderLineId getSalesOrderLineId()
 	{
 		final IView view = getView();
 		if (view instanceof PPOrderLinesView)
@@ -161,7 +162,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		}
 		else
 		{
-			return -1;
+			return null;
 		}
 	}
 

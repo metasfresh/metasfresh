@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.OrderLineId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -73,7 +74,7 @@ public class PPOrderLinesView implements IView
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
 	private final int ppOrderId;
-	private final int salesOrderLineId;
+	private final OrderLineId salesOrderLineId;
 
 	private final PPOrderLinesViewDataSupplier dataSupplier;
 
@@ -106,7 +107,7 @@ public class PPOrderLinesView implements IView
 		Preconditions.checkArgument(ppOrderId > 0, "PP_Order_ID not provided");
 		this.ppOrderId = ppOrderId;
 		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
-		this.salesOrderLineId = ppOrder.getC_OrderLine_ID();
+		this.salesOrderLineId = OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID());
 
 		this.dataSupplier = dataSupplier;
 	}
@@ -186,7 +187,7 @@ public class PPOrderLinesView implements IView
 		return ppOrderId;
 	}
 
-	public int getSalesOrderLineId()
+	public OrderLineId getSalesOrderLineId()
 	{
 		return salesOrderLineId;
 	}
