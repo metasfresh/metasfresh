@@ -36,7 +36,6 @@ import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -55,52 +54,30 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 {
 	private static final Logger logger = LogManager.getLogger(ValidationRuleQueryFilter.class);
 
-	private final Properties ctx;
 	private final Evaluatee evaluatee;
 
 	private final String tableName;
 	private final int adValRuleId;
-	private final Integer windowNo;
-	private final Integer tabNo;
 
 	public ValidationRuleQueryFilter(@NonNull final Object model, final int adValRuleId)
 	{
 		Check.assumeGreaterThanZero(adValRuleId, "adValRuleId");
 
-		this.ctx = InterfaceWrapperHelper.getCtx(model);
 		this.tableName = InterfaceWrapperHelper.getModelTableName(model);
 		this.adValRuleId = adValRuleId;
-		this.windowNo = InterfaceWrapperHelper.getDynAttribute(model, Env.DYNATTR_WindowNo);
-		this.tabNo = InterfaceWrapperHelper.getDynAttribute(model, Env.DYNATTR_TabNo);
 		this.evaluatee = InterfaceWrapperHelper.getEvaluatee(model);
 	}
 
 	@Override
 	public boolean accept(final T model)
 	{
-		if (isInvalid())
-		{
-			// NOTE: Because we could deal with a huge amount of data, it's better to filter everything out
-			// then running in some performance issues because we need to retrieve a lot of records.
-			return false;
-		}
-
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public String getSql()
 	{
-		if (isInvalid())
-		{
-			// not usable if we don't have information about windowNo and tabNo
-			// Because we could deal with a huge amount of data, it's better to filter everything out
-			// then running in some performance issues because we need to retrieve a lot of records.
-			return "1=0";
-		}
-
 		final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
-		// final IValidationContext evalCtx = validationRuleFactory.createValidationContext(ctx, windowNo, tabNo, tableName);
 		final IValidationContext evalCtx = validationRuleFactory.createValidationContext(evaluatee);
 
 		final IValidationRule valRule = validationRuleFactory.create(
@@ -124,19 +101,5 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 	public List<Object> getSqlParams(final Properties ctx)
 	{
 		return Collections.emptyList();
-	}
-
-	/**
-	 *
-	 * @return true if this filter is NOT valid
-	 */
-	private final boolean isInvalid()
-	{
-		if (windowNo == null || tabNo == null)
-		{
-			return true;
-		}
-
-		return false;
 	}
 }
