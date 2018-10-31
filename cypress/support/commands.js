@@ -225,7 +225,6 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
 
 Cypress.Commands.add('openAdvancedEdit', () => {
   describe('Open the advanced edit overlay via ALT+E shortcut', function() {
-    cy.get('body').type('{alt}N');
     cy.get('body').type('{alt}E');
     cy.get('.panel-modal').should('exist');
   })
@@ -234,6 +233,12 @@ Cypress.Commands.add('openAdvancedEdit', () => {
 Cypress.Commands.add('selectTab', (tabName) => {
   describe('Select and activate the tab with a certain name', function() {
     return cy.get(`#tab_${tabName}`).click()
+  });
+});
+
+Cypress.Commands.add('waitForHeader', (pageName) => {
+  describe('Wait for page name visible in the header', function() {
+    cy.get('.header-item').should('contain', pageName);
   });
 });
 
