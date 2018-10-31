@@ -771,13 +771,17 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 
     > .input-dropdown {
         padding: .3rem .5rem;
-        padding-bottom: 0.125rem;
     }
 
     .input-dropdown-container  {
         width: 100%;
         min-width: 0;
         padding: .3rem .5rem;
+    }
+
+    .input-field {
+        padding-top: 2px;
+        padding-bottom: 0;
     }
 }
 
