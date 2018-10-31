@@ -6,6 +6,8 @@ describe('Product DocumentNote test', function() {
     it('open the product window', function() {
         cy.visit('window/140/2005577');
 
+        cy.waitForHeader('Product Management');
+
         cy.openAdvancedEdit();
         cy.writeIntoTextField('DocumentNote', 'blah-blah-blah');
     });
