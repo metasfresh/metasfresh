@@ -48,7 +48,8 @@ import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -74,7 +75,7 @@ import lombok.Value;
 public class ShipmentScheduleEnqueuer
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
@@ -172,8 +173,9 @@ public class ShipmentScheduleEnqueuer
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 
-			if (shipmentSchedulePA.isInvalid(shipmentSchedule))
+			if (invalidSchedulesService.isInvalid(shipmentScheduleId))
 			{
 				doEnqueueCurrentPackage = false;
 			}

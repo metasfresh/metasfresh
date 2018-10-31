@@ -390,7 +390,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 		trxManager.run(this::updateShipmentSchedulesInTrx);
 	}
 
-	private void updateShipmentSchedulesInTrx(final String localTrxName)
+	private void updateShipmentSchedulesInTrx()
 	{
 		final Properties ctx = getCtx();
 		final int adUserId = Env.getAD_User_ID(ctx);
@@ -401,8 +401,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 				ctx,
 				adUserId,
 				adPInstanceId,
-				updateOnlyLocked,
-				localTrxName);
+				updateOnlyLocked);
 	}
 
 	private final synchronized PInstanceId getADPInstanceId()
