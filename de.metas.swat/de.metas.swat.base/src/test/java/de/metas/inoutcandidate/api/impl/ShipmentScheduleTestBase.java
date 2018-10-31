@@ -7,17 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Builder.ObtainVia;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-import lombok.experimental.UtilityClass;
-import lombok.experimental.Wither;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -45,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_M_Product;
@@ -59,6 +50,14 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.order.DeliveryRule;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Builder.ObtainVia;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import lombok.experimental.UtilityClass;
+import lombok.experimental.Wither;
 
 @UtilityClass
 public class ShipmentScheduleTestBase
@@ -164,7 +163,7 @@ public class ShipmentScheduleTestBase
 			shipmentScheduleRecord.setDeliveryRule(shipmentSchedule.getDeliveryRule().getCode()); // <==
 
 			final OlAndSched olAndSched = OlAndSched.builder()
-					.deliverRequest(() -> orderLineRecord.getQtyOrdered())
+					.deliverRequest(orderLineRecord::getQtyOrdered)
 					.shipmentSchedule(shipmentScheduleRecord)
 					.build();
 			olAndScheds.add(olAndSched);

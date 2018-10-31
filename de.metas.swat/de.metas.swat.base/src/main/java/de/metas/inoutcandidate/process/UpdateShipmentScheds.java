@@ -25,7 +25,7 @@ package de.metas.inoutcandidate.process;
 
 import java.util.Properties;
 
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
@@ -42,20 +42,20 @@ public final class UpdateShipmentScheds extends JavaProcess
 	{
 		if (p_IsFullUpdate)
 		{
-			Services.get(IShipmentSchedulePA.class).invalidateAll(getCtx());
+			final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+			invalidSchedulesRepo.invalidateAll(getCtx());
 		}
-		return updateNow(getCtx(), getAD_User_ID(), getPinstanceId(), get_TrxName());
+		return updateNow(getCtx(), getAD_User_ID(), getPinstanceId());
 	}
 
 	private static String updateNow(
 			final Properties ctx,
 			final int adUserId,
-			final PInstanceId adPInstanceId,
-			final String trxName)
+			final PInstanceId adPInstanceId)
 	{
 		final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 
-		final int result = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, adPInstanceId, trxName);
+		final int result = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, adPInstanceId);
 
 		return "Updated " + result + " shipment schedule entries";
 	}
