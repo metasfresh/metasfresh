@@ -39,6 +39,7 @@ import java.util.function.Function;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -60,7 +61,6 @@ import org.slf4j.Logger;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.cache.CacheMgt;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.translation.api.IElementTranslationBL;
@@ -2203,18 +2203,11 @@ public class GridTable extends AbstractTableModel
 						final int elementIndex = findColumn(I_AD_Element.COLUMNNAME_AD_Element_ID);
 						final int languageIndex = findColumn(I_C_BPartner.COLUMNNAME_AD_Language);
 
-						final int adElementId = (Integer)rowData[elementIndex];
+						final AdElementId adElementId = AdElementId.ofRepoId((Integer)rowData[elementIndex]);
 						final String adLanguage = (String)rowData[languageIndex];
 
 						Services.get(IElementTranslationBL.class).updateTranslations(adElementId, adLanguage);
 
-						final I_AD_Language language = Services.get(ILanguageDAO.class).retrieveByAD_Language(adLanguage);
-						Check.assumeNotNull(language, "AD_Language Not Null");
-
-						if (language.isBaseLanguage())
-						{
-							Services.get(IElementTranslationBL.class).updateElementFromElementTrl(adElementId, adLanguage);
-						}
 					}
 				}
 				else

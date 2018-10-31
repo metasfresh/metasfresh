@@ -1,10 +1,16 @@
 package de.metas.translation.api.impl;
 
+import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.IElementBL;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_AD_Language;
 import org.compiere.util.DB;
 
+import de.metas.i18n.ILanguageDAO;
 import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -42,20 +48,30 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private static final String FUNCTION_Update_AD_Element_Trl_From_AD_Menu_Trl = "update_ad_element_trl_from_ad_menu_trl";
 
 	@Override
-	public void updateTranslations(final int elementId, final String adLanguage)
+	public void updateTranslations(final AdElementId adElementId, final String adLanguage)
 	{
 		// Update Columns, Fields, Parameters, Print Info translation tables
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update, elementId, adLanguage), null);
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update, adElementId, adLanguage), null);
+
+		final I_AD_Language language = Services.get(ILanguageDAO.class).retrieveByAD_Language(adLanguage);
+		Check.assumeNotNull(language, "AD_Language Not Null");
+
+		if (language.isBaseLanguage())
+		{
+			updateElementFromElementTrl(adElementId, adLanguage);
+			Services.get(IElementBL.class).performUpdatesAfterSaveElement(adElementId);
+		}
+
 	}
 
-	private String addUpdateFunctionCall(final String functionCall, final int elementId, final String adLanguage)
+	private String addUpdateFunctionCall(final String functionCall, final AdElementId adElementId, final String adLanguage)
 	{
 		// #1044
 		// Add the prefix DDL so the statement will appear in the migration script
 		// Usually, the select statements are not migrated ( see org.compiere.dbPort.Convert.logMigrationScript(String, String).dontLog())
-		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + elementId + "," + DB.TO_STRING(adLanguage) + ") ";
+		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + "," + DB.TO_STRING(adLanguage) + ") ";
 	}
 
 	@Override
@@ -126,7 +142,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	}
 
 	@Override
-	public void updateElementFromElementTrl(int adElementId, String adLanguage)
+	public void updateElementFromElementTrl(final AdElementId adElementId, final String adLanguage)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		{

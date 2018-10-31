@@ -32,4 +32,6 @@ public interface IElementBL extends ISingletonService
 	public void updateUIElement( I_AD_Element element);
 
 	void createAndAssignElementsToApplicationDictionaryEntries();
+
+	void performUpdatesAfterSaveElement(AdElementId adElementId);
 }

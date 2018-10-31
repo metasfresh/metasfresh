@@ -2,6 +2,8 @@ package de.metas.translation.api;
 
 import java.sql.SQLException;
 
+import org.adempiere.ad.element.api.AdElementId;
+
 import de.metas.util.ISingletonService;
 
 /*
@@ -44,7 +46,7 @@ public interface IElementTranslationBL extends ISingletonService
 	 * @param adLanguage
 	 * @throws SQLException
 	 */
-	void updateTranslations(int elementId, String adLanguage);
+	void updateTranslations(AdElementId adElementId, String adLanguage);
 
 	/**
 	 * Update Fields translation for the fields that have the element given as parameter as AD_Name_ID, delete translation if AD_Name was deleted
@@ -65,6 +67,6 @@ public interface IElementTranslationBL extends ISingletonService
 
 	void updateElementTranslationsFromTab(int elementId, int tabId);
 
-	void updateElementFromElementTrl(int adElementId, String adLanguage);
+	void updateElementFromElementTrl(AdElementId adElementId, String adLanguage);
 
 }

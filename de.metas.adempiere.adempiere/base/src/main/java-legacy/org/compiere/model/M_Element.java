@@ -19,6 +19,8 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.IElementBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
@@ -26,6 +28,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Services;
 
 /**
  * System Element Model
@@ -234,148 +237,7 @@ public class M_Element extends X_AD_Element
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
-		// Update Columns, Fields, Parameters, Print Info
-		if (!newRecord)
-		{
-			StringBuilder sql = new StringBuilder();
-			int no = 0;
-
-			if ((is_ValueChanged(M_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Help)
-					|| is_ValueChanged(M_Element.COLUMNNAME_ColumnName))
-					&& getColumnName() != null)
-			{
-				// Column
-				sql = new StringBuilder("UPDATE AD_Column SET ColumnName=")
-						.append(DB.TO_STRING(getColumnName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Element_ID=").append(get_ID());
-				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-				log.debug("afterSave - Columns updated #" + no);
-
-				// Parameter
-				sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
-						.append(DB.TO_STRING(getColumnName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(", AD_Element_ID=").append(get_ID())
-						.append(" WHERE UPPER(ColumnName)=")
-						.append(DB.TO_STRING(getColumnName().toUpperCase()))
-						.append(" AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL");
-				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-
-				sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
-						.append(DB.TO_STRING(getColumnName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Element_ID=").append(get_ID())
-						.append(" AND IsCentrallyMaintained='Y'");
-				no += DB.executeUpdateEx(sql.toString(), get_TrxName());
-				log.debug("Parameters updated #" + no);
-			}
-
-			if (is_ValueChanged(M_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Help))
-			{
-				// Field
-				sql = new StringBuilder("UPDATE AD_Field SET Name=")
-						.append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=")
-						.append(get_ID())
-						.append(")")
-						.append(" AND ")
-						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" IS NULL ")
-						.append(")")
-						.append(" OR ")
-						.append("(")
-						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(get_ID())
-						.append(")");
-				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-				log.debug("Fields updated #" + no);
-
-				// Info Column - update Name, Description, Help - doesn't have IsCentrallyMaintained currently
-				// no = DB.executeUpdate(sql.toString(), get_TrxName());
-				// log.debug("InfoColumn updated #" + no);
-			}
-
-			if (is_ValueChanged(M_Element.COLUMNNAME_PrintName)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Name))
-			{
-				// Print Info
-				sql = new StringBuilder("UPDATE AD_PrintFormatItem pi SET PrintName=")
-						.append(DB.TO_STRING(getPrintName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(" WHERE IsCentrallyMaintained='Y'")
-						.append(" AND EXISTS (SELECT * FROM AD_Column c ")
-						.append("WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=")
-						.append(get_ID()).append(")");
-				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-				log.debug("PrintFormatItem updated #" + no);
-			}
-
-			// AD_Tab
-			if (is_ValueChanged(I_AD_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Help)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_CommitWarning))
-			{
-
-				sql = new StringBuilder("UPDATE AD_Tab SET Name=")
-						.append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(", ").append(I_AD_Element.COLUMNNAME_CommitWarning).append(" = ").append(DB.TO_STRING(getCommitWarning()))
-						.append(" WHERE AD_Element_ID = ").append(get_ID());
-
-				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-				log.debug("Tabs updated #{}", no);
-			}
-
-			// AD_Window
-			if (is_ValueChanged(I_AD_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Help))
-			{
-
-				sql = new StringBuilder("UPDATE AD_WINDOW SET Name=")
-						.append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Element_ID = ").append(get_ID());
-
-				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-				log.debug("Windows updated #{}", no);
-			}
-
-			// AD_Menu
-			if (is_ValueChanged(I_AD_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_WEBUI_NameNew)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb))
-			{
-
-				sql = new StringBuilder("UPDATE AD_Menu SET Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse).append(" = ").append(DB.TO_STRING(getWEBUI_NameBrowse()))
-						.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNew).append(" = ").append(DB.TO_STRING(getWEBUI_NameNew()))
-						.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb).append(" = ").append(DB.TO_STRING(getWEBUI_NameNewBreadcrumb()))
-
-						.append(" WHERE AD_Element_ID = ").append(get_ID());
-
-				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-				log.debug("Menus updated #{}", no);
-			}
-
-		}
+		Services.get(IElementBL.class).performUpdatesAfterSaveElement(AdElementId.ofRepoId(get_ID()));
 
 		return success;
 	}	// afterSave
