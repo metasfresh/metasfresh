@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -78,8 +79,9 @@ public class AD_Window
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	public void updateTranslationsForElement(final I_AD_Window window)
 	{
-		final int windowElementId = window.getAD_Element_ID();
-		if (windowElementId <= 0)
+		final AdElementId windowElementId = AdElementId.ofRepoIdOrNull(window.getAD_Element_ID());
+
+		if (windowElementId == null)
 		{
 			// nothing to do. It was not yet set
 			return;

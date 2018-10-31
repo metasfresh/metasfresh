@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.menu.api.IADMenuDAO;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -82,9 +83,9 @@ public class AD_Menu
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Menu.COLUMNNAME_AD_Element_ID)
 	public void updateTranslationsForElement(final I_AD_Menu menu)
 	{
-		final int menuElementId = menu.getAD_Element_ID();
 
-		if (menuElementId <= 0)
+		final AdElementId menuElementId = AdElementId.ofRepoIdOrNull(menu.getAD_Element_ID());
+		if (menuElementId != null)
 		{
 			// nothing to do. It was not yet set
 			return;

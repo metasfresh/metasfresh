@@ -53,19 +53,19 @@ public interface IElementTranslationBL extends ISingletonService
 	 *
 	 * @param ad_Element_ID
 	 */
-	void updateFieldTranslationsFromAD_Name(int ad_Element_ID);
+	void updateFieldTranslationsFromAD_Name(AdElementId adElementId);
 
-	void updateWindowTranslationsFromElement(int elementId);
+	void updateWindowTranslationsFromElement(AdElementId adElementId);
 
-	void updateTabTranslationsFromElement(int elementId);
+	void updateTabTranslationsFromElement(AdElementId adElementId);
 
-	void updateMenuTranslationsFromElement(int elementId);
+	void updateMenuTranslationsFromElement( AdElementId adElementId);
 
-	void updateElementTranslationsFromMenu(int elementId, int menuId);
+	void updateElementTranslationsFromMenu(AdElementId adElementId, int menuId);
 
-	void updateElementTranslationsFromWindow(int elementId, int windowId);
+	void updateElementTranslationsFromWindow(AdElementId adElementId, int windowId);
 
-	void updateElementTranslationsFromTab(int elementId, int tabId);
+	void updateElementTranslationsFromTab(AdElementId adElementId, int tabId);
 
 	void updateElementFromElementTrl(AdElementId adElementId, String adLanguage);
 

@@ -98,13 +98,13 @@ public class ElementBL implements IElementBL
 			element.setCommitWarning(tab.getCommitWarning());
 			save(element);
 
-			final int elementId = element.getAD_Element_ID();
+			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
 
 			Services.get(IElementTranslationBL.class).updateElementTranslationsFromTab(elementId, tab.getAD_Tab_ID());
 
 			IADWindowDAO.DYNATTR_AD_Tab_UpdateTranslations.setValue(tab, false);
 
-			tab.setAD_Element_ID(elementId);
+			tab.setAD_Element_ID(elementId.getRepoId());
 			save(tab);
 		}
 	}
@@ -122,13 +122,14 @@ public class ElementBL implements IElementBL
 			element.setHelp(window.getHelp());
 			save(element);
 
-			final int elementId = element.getAD_Element_ID();
+			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
+
 
 			Services.get(IElementTranslationBL.class).updateElementTranslationsFromWindow(elementId, window.getAD_Window_ID());
 
 			IADWindowDAO.DYNATTR_AD_Window_UpdateTranslations.setValue(window, false);
 
-			window.setAD_Element_ID(elementId);
+			window.setAD_Element_ID(elementId.getRepoId());
 			save(window);
 		}
 	}
@@ -148,13 +149,13 @@ public class ElementBL implements IElementBL
 			element.setWEBUI_NameNewBreadcrumb(menu.getWEBUI_NameNewBreadcrumb());
 			save(element);
 
-			final int elementId = element.getAD_Element_ID();
+			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
 
 			Services.get(IElementTranslationBL.class).updateElementTranslationsFromMenu(elementId, menu.getAD_Menu_ID());
 
 			IADMenuDAO.DYNATTR_AD_Menu_UpdateTranslations.setValue(menu, false);
 
-			menu.setAD_Element_ID(elementId);
+			menu.setAD_Element_ID(elementId.getRepoId());
 			save(menu);
 		}
 	}

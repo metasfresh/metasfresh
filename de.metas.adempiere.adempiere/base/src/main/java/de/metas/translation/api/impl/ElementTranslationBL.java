@@ -75,70 +75,70 @@ public class ElementTranslationBL implements IElementTranslationBL
 	}
 
 	@Override
-	public void updateFieldTranslationsFromAD_Name(int elementId)
+	public void updateFieldTranslationsFromAD_Name(AdElementId adElementId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_FieldTranslation_From_AD_Name_Element, elementId), null);
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_FieldTranslation_From_AD_Name_Element, adElementId), null);
 	}
 
 	@Override
-	public void updateTabTranslationsFromElement(int elementId)
+	public void updateTabTranslationsFromElement(AdElementId adElementId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Tab_Translation_From_AD_Element, elementId), null);
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Tab_Translation_From_AD_Element, adElementId), null);
 	}
 
 	@Override
-	public void updateElementTranslationsFromTab(int elementId, int tabId)
+	public void updateElementTranslationsFromTab(AdElementId adElementId, int tabId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForElementTRL(FUNCTION_Update_AD_Element_Trl_From_AD_Tab_Trl, elementId, tabId), null);
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForElementTRL(FUNCTION_Update_AD_Element_Trl_From_AD_Tab_Trl, adElementId, tabId), null);
 	}
 
 	@Override
-	public void updateWindowTranslationsFromElement(int elementId)
+	public void updateWindowTranslationsFromElement(AdElementId adElementId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Window_Translation_From_AD_Element, elementId), null);
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Window_Translation_From_AD_Element, adElementId), null);
 
 	}
 
 	@Override
-	public void updateElementTranslationsFromWindow(int elementId, int windowId)
+	public void updateElementTranslationsFromWindow(AdElementId adElementId, int windowId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForElementTRL(FUNCTION_Update_AD_Element_Trl_From_AD_Window_Trl, elementId, windowId), null);
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForElementTRL(FUNCTION_Update_AD_Element_Trl_From_AD_Window_Trl, adElementId, windowId), null);
 	}
 
 	@Override
-	public void updateElementTranslationsFromMenu(int elementId, int menuId)
+	public void updateElementTranslationsFromMenu(AdElementId adElementId, int menuId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForElementTRL(FUNCTION_Update_AD_Element_Trl_From_AD_Menu_Trl, elementId, menuId), null);
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForElementTRL(FUNCTION_Update_AD_Element_Trl_From_AD_Menu_Trl, adElementId, menuId), null);
 	}
 
 	@Override
-	public void updateMenuTranslationsFromElement(int elementId)
+	public void updateMenuTranslationsFromElement(AdElementId adElementId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Menu_Translation_From_AD_Element, elementId), null);
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Menu_Translation_From_AD_Element, adElementId), null);
 	}
 
-	private String addUpdateFunctionCallForApplicationDictionaryEntryTRL(final String functionCall, int elementId)
+	private String addUpdateFunctionCallForApplicationDictionaryEntryTRL(final String functionCall, AdElementId adElementId)
 	{
-		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + elementId + ") ";
+		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + ") ";
 	}
 
-	private String addUpdateFunctionCallForElementTRL(final String functionCall, int elementId, int applicationDictionaryEntryId)
+	private String addUpdateFunctionCallForElementTRL(final String functionCall, AdElementId adElementId, int applicationDictionaryEntryId)
 	{
-		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + elementId + ", " + applicationDictionaryEntryId + ") ";
+		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + ", " + applicationDictionaryEntryId + ") ";
 	}
 
 	@Override

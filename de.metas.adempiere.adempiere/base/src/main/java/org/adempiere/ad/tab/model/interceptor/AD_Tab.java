@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -72,14 +73,14 @@ public class AD_Tab
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	public void updateTranslationsForElement(final I_AD_Tab tab)
 	{
-		if (!IADWindowDAO.DYNATTR_AD_Tab_UpdateTranslations.getValue(tab,true))
+		if (!IADWindowDAO.DYNATTR_AD_Tab_UpdateTranslations.getValue(tab, true))
 		{
 			// do not copy translations from element to tab
 			return;
 		}
 
-		final int tabElementId = tab.getAD_Element_ID();
-		if (tabElementId <= 0)
+		final AdElementId tabElementId = AdElementId.ofRepoIdOrNull(tab.getAD_Element_ID());
+		if (tabElementId != null)
 		{
 			// nothing to do. It was not yet set
 			return;

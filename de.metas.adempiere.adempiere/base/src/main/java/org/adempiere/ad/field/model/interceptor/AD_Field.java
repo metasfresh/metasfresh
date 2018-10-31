@@ -2,6 +2,7 @@ package org.adempiere.ad.field.model.interceptor;
 
 import java.sql.SQLException;
 
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -25,12 +26,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -93,7 +94,7 @@ public class AD_Field
 		}
 
 		// in the end, make sure the translation fields are also updated
-		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(fieldElement.getAD_Element_ID());
+		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(AdElementId.ofRepoId(fieldElement.getAD_Element_ID()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
