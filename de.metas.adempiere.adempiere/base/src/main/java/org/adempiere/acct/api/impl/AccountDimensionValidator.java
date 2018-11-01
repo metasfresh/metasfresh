@@ -13,21 +13,21 @@ package org.adempiere.acct.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IAccountDimensionValidator;
 import org.adempiere.acct.api.IAcctSchemaDAO;
@@ -42,6 +42,7 @@ import org.compiere.model.X_C_AcctSchema_Element;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /* package */class AccountDimensionValidator implements IAccountDimensionValidator
 {
@@ -132,7 +133,7 @@ import de.metas.util.Services;
 		final List<I_C_AcctSchema_Element> elements = acctSchemaDAO.retrieveSchemaElementsDisplayedInEditor(acctSchema);
 		for (final I_C_AcctSchema_Element ase : elements)
 		{
-			final String elementType = ase.getElementType();
+			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(ase.getElementType());
 			final int segmentId = getSegmentValueId(accountDimension, elementType);
 			if (ase.isMandatory() && segmentId <= 0)
 			{
@@ -161,63 +162,63 @@ import de.metas.util.Services;
 	 * @param elementType see {@link X_C_AcctSchema_Element}.ELEMENTTYPE_*
 	 * @return segment's value (ID)
 	 */
-	private final int getSegmentValueId(final IAccountDimension accountDimension, final String elementType)
+	private final int getSegmentValueId(final IAccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
 	{
 		Check.assumeNotNull(elementType, "elementType not null");
-		
-		if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Organization))
+
+		if (elementType.equals(AcctSchemaElementType.Organization))
 		{
 			return accountDimension.getAD_Org_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Account))
+		else if (elementType.equals(AcctSchemaElementType.Account))
 		{
 			return accountDimension.getC_ElementValue_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_SubAccount))
+		else if (elementType.equals(AcctSchemaElementType.SubAccount))
 		{
 			return accountDimension.getC_SubAcct_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Product))
+		else if (elementType.equals(AcctSchemaElementType.Product))
 		{
 			return accountDimension.getM_Product_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_BPartner))
+		else if (elementType.equals(AcctSchemaElementType.BPartner))
 		{
 			return accountDimension.getC_BPartner_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Campaign))
+		else if (elementType.equals(AcctSchemaElementType.Campaign))
 		{
 			return accountDimension.getC_Campaign_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom))
+		else if (elementType.equals(AcctSchemaElementType.LocationFrom))
 		{
 			return accountDimension.getC_LocFrom_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_LocationTo))
+		else if (elementType.equals(AcctSchemaElementType.LocationTo))
 		{
 			return accountDimension.getC_LocTo_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Project))
+		else if (elementType.equals(AcctSchemaElementType.Project))
 		{
 			return accountDimension.getC_Project_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_SalesRegion))
+		else if (elementType.equals(AcctSchemaElementType.SalesRegion))
 		{
 			return accountDimension.getC_SalesRegion_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx))
+		else if (elementType.equals(AcctSchemaElementType.OrgTrx))
 		{
 			return accountDimension.getAD_OrgTrx_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Activity))
+		else if (elementType.equals(AcctSchemaElementType.Activity))
 		{
 			return accountDimension.getC_Activity_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserList1))
+		else if (elementType.equals(AcctSchemaElementType.UserList1))
 		{
 			return accountDimension.getUser1_ID();
 		}
-		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserList2))
+		else if (elementType.equals(AcctSchemaElementType.UserList2))
 		{
 			return accountDimension.getUser2_ID();
 		}

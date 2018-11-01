@@ -18,6 +18,7 @@ package org.compiere.process;
 
 import java.util.ArrayList;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -89,10 +90,10 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			throw new AdempiereException("NotFound Target C_AcctSchema_Element");
 
 		// Accounting Element must be the same
-		MAcctSchemaElement sourceAcctElement = source.getAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_Account);
+		MAcctSchemaElement sourceAcctElement = source.getAcctSchemaElement(AcctSchemaElementType.Account);
 		if (sourceAcctElement == null)
 			throw new AdempiereException("NotFound Source AC C_AcctSchema_Element");
-		MAcctSchemaElement targetAcctElement = target.getAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_Account);
+		MAcctSchemaElement targetAcctElement = target.getAcctSchemaElement(AcctSchemaElementType.Account);
 		if (targetAcctElement == null)
 			throw new AdempiereException("NotFound Target AC C_AcctSchema_Element");
 		if (sourceAcctElement.getC_Element_ID() != targetAcctElement.getC_Element_ID())
@@ -184,43 +185,41 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int UserElement2_ID = 0;
 		//
 		// Active Elements
-		MAcctSchemaElement[] elements = targetAS.getAcctSchemaElements();
-		for (int i = 0; i < elements.length; i++)
+		for (MAcctSchemaElement ase : targetAS.getAcctSchemaElements())
 		{
-			MAcctSchemaElement ase = elements[i];
-			String elementType = ase.getElementType();
+			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(ase.getElementType());
 			//
-			if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
+			if (elementType.equals(AcctSchemaElementType.Organization))
 				AD_Org_ID = sourceAcct.getAD_Org_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Account))
+			else if (elementType.equals(AcctSchemaElementType.Account))
 				Account_ID = sourceAcct.getAccount_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_SubAccount))
+			else if (elementType.equals(AcctSchemaElementType.SubAccount))
 				C_SubAcct_ID = sourceAcct.getC_SubAcct_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_BPartner))
+			else if (elementType.equals(AcctSchemaElementType.BPartner))
 				C_BPartner_ID = sourceAcct.getC_BPartner_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Product))
+			else if (elementType.equals(AcctSchemaElementType.Product))
 				M_Product_ID = sourceAcct.getM_Product_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Activity))
+			else if (elementType.equals(AcctSchemaElementType.Activity))
 				C_Activity_ID = sourceAcct.getC_Activity_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_LocationFrom))
+			else if (elementType.equals(AcctSchemaElementType.LocationFrom))
 				C_LocFrom_ID = sourceAcct.getC_LocFrom_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_LocationTo))
+			else if (elementType.equals(AcctSchemaElementType.LocationTo))
 				C_LocTo_ID = sourceAcct.getC_LocTo_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Campaign))
+			else if (elementType.equals(AcctSchemaElementType.Campaign))
 				C_Campaign_ID = sourceAcct.getC_Campaign_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_OrgTrx))
+			else if (elementType.equals(AcctSchemaElementType.OrgTrx))
 				AD_OrgTrx_ID = sourceAcct.getAD_OrgTrx_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Project))
+			else if (elementType.equals(AcctSchemaElementType.Project))
 				C_Project_ID = sourceAcct.getC_Project_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_SalesRegion))
+			else if (elementType.equals(AcctSchemaElementType.SalesRegion))
 				C_SalesRegion_ID = sourceAcct.getC_SalesRegion_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_UserList1))
+			else if (elementType.equals(AcctSchemaElementType.UserList1))
 				User1_ID = sourceAcct.getUser1_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_UserList2))
+			else if (elementType.equals(AcctSchemaElementType.UserList2))
 				User2_ID = sourceAcct.getUser2_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_UserElement1))
+			else if (elementType.equals(AcctSchemaElementType.UserElement1))
 				UserElement1_ID = sourceAcct.getUserElement1_ID();
-			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_UserElement2))
+			else if (elementType.equals(AcctSchemaElementType.UserElement2))
 				UserElement2_ID = sourceAcct.getUserElement2_ID();
 			// No UserElement
 		}

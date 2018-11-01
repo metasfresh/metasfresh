@@ -26,6 +26,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -424,11 +425,11 @@ public final class MSetup
 		 */
 		String sql2 = null;
 		if (Env.isBaseLanguage(m_lang, "AD_Reference"))	//	Get ElementTypes & Name
-			sql2 = "SELECT Value, Name FROM AD_Ref_List WHERE AD_Reference_ID=181";
+			sql2 = "SELECT Value, Name FROM AD_Ref_List WHERE AD_Reference_ID=" + AcctSchemaElementType.AD_REFERENCE_ID;
 		else
 			sql2 = "SELECT l.Value, t.Name FROM AD_Ref_List l, AD_Ref_List_Trl t "
-				+ "WHERE l.AD_Reference_ID=181 AND l.AD_Ref_List_ID=t.AD_Ref_List_ID"
-				+ " AND t.AD_Language=" + DB.TO_STRING(m_lang); //bug [ 1638421 ]
+					+ "WHERE l.AD_Reference_ID=" + AcctSchemaElementType.AD_REFERENCE_ID + " AND l.AD_Ref_List_ID=t.AD_Ref_List_ID"
+					+ " AND t.AD_Language=" + DB.TO_STRING(m_lang); // bug [ 1638421 ]
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		try

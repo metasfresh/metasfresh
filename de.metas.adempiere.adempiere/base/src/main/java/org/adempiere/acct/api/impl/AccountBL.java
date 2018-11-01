@@ -26,6 +26,7 @@ package org.adempiere.acct.api.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IAccountDimensionValidator;
@@ -44,9 +45,9 @@ import org.compiere.model.I_C_SalesRegion;
 import org.compiere.model.I_C_SubAcct;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.model.X_C_ElementValue;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -89,10 +90,10 @@ public class AccountBL implements IAccountBL
 			String segmentCombination = SEGMENT_COMBINATION_NA;		// not defined
 			String segmentDescription = SEGMENT_DESCRIPTION_NA;
 
-			final String elementType = element.getElementType();
+			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(element.getElementType());
 			Check.assumeNotNull(elementType, "elementType not null"); // shall not happen
 
-			if (X_C_AcctSchema_Element.ELEMENTTYPE_Organization.equals(elementType))
+			if (AcctSchemaElementType.Organization.equals(elementType))
 			{
 				if (account.getAD_Org_ID() > 0)
 				{
@@ -107,7 +108,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_Account.equals(elementType))
+			else if (AcctSchemaElementType.Account.equals(elementType))
 			{
 				if (account.getAccount_ID() > 0)
 				{
@@ -121,7 +122,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_SubAccount.equals(elementType))
+			else if (AcctSchemaElementType.SubAccount.equals(elementType))
 			{
 				if (account.getC_SubAcct_ID() > 0)
 				{
@@ -130,7 +131,7 @@ public class AccountBL implements IAccountBL
 					segmentDescription = sa.getName();
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_Product.equals(elementType))
+			else if (AcctSchemaElementType.Product.equals(elementType))
 			{
 				if (account.getM_Product_ID() > 0)
 				{
@@ -144,7 +145,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_BPartner.equals(elementType))
+			else if (AcctSchemaElementType.BPartner.equals(elementType))
 			{
 				if (account.getC_BPartner_ID() > 0)
 				{
@@ -158,7 +159,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx.equals(elementType))
+			else if (AcctSchemaElementType.OrgTrx.equals(elementType))
 			{
 				if (account.getAD_OrgTrx_ID() > 0)
 				{
@@ -172,7 +173,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom.equals(elementType))
+			else if (AcctSchemaElementType.LocationFrom.equals(elementType))
 			{
 				if (account.getC_LocFrom_ID() > 0)
 				{
@@ -186,7 +187,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_LocationTo.equals(elementType))
+			else if (AcctSchemaElementType.LocationTo.equals(elementType))
 			{
 				if (account.getC_LocTo_ID() > 0)
 				{
@@ -200,7 +201,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_SalesRegion.equals(elementType))
+			else if (AcctSchemaElementType.SalesRegion.equals(elementType))
 			{
 				if (account.getC_SalesRegion_ID() > 0)
 				{
@@ -214,7 +215,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_Project.equals(elementType))
+			else if (AcctSchemaElementType.Project.equals(elementType))
 			{
 				if (account.getC_Project_ID() > 0)
 				{
@@ -228,7 +229,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_Campaign.equals(elementType))
+			else if (AcctSchemaElementType.Campaign.equals(elementType))
 			{
 				if (account.getC_Campaign_ID() > 0)
 				{
@@ -242,7 +243,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_Activity.equals(elementType))
+			else if (AcctSchemaElementType.Activity.equals(elementType))
 			{
 				if (account.getC_Activity_ID() > 0)
 				{
@@ -256,7 +257,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_UserList1.equals(elementType))
+			else if (AcctSchemaElementType.UserList1.equals(elementType))
 			{
 				if (account.getUser1_ID() > 0)
 				{
@@ -265,7 +266,7 @@ public class AccountBL implements IAccountBL
 					segmentDescription = ev.getName();
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_UserList2.equals(elementType))
+			else if (AcctSchemaElementType.UserList2.equals(elementType))
 			{
 				if (account.getUser2_ID() > 0)
 				{
@@ -274,14 +275,14 @@ public class AccountBL implements IAccountBL
 					segmentDescription = ev.getName();
 				}
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_UserElement1.equals(elementType))
+			else if (AcctSchemaElementType.UserElement1.equals(elementType))
 			{
 				// TODO: implement
 				// if (acct.getUserElement1_ID() > 0)
 				// {
 				// }
 			}
-			else if (X_C_AcctSchema_Element.ELEMENTTYPE_UserElement2.equals(elementType))
+			else if (AcctSchemaElementType.UserElement2.equals(elementType))
 			{
 				// TODO: implement
 				// if (acct.getUserElement2_ID() > 0)

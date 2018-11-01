@@ -42,6 +42,7 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDimension;
@@ -68,7 +69,6 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAccountLookup;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
@@ -382,16 +382,16 @@ public final class VAccountDialog extends CDialog
 		 */
 		for (final I_C_AcctSchema_Element ase : getAcctSchemaElements())
 		{
-			final String type = ase.getElementType();
+			final AcctSchemaElementType type = AcctSchemaElementType.ofCode(ase.getElementType());
 			final boolean isMandatory = ase.isMandatory();
 			//
-			if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Organization))
+			if (type.equals(AcctSchemaElementType.Organization))
 			{
 				GridField field = m_mTab.getField("AD_Org_ID");
 				f_AD_Org_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_AD_Org_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Account))
+			else if (type.equals(AcctSchemaElementType.Account))
 			{
 				GridField field = m_mTab.getField("Account_ID");
 				f_Account_ID = editorFactory.getEditor(m_mTab, field, false);
@@ -399,75 +399,75 @@ public final class VAccountDialog extends CDialog
 				addLine(field, f_Account_ID, isMandatory);
 				f_Account_ID.addVetoableChangeListener(this);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_SubAccount))
+			else if (type.equals(AcctSchemaElementType.SubAccount))
 			{
 				GridField field = m_mTab.getField("C_SubAcct_ID");
 				f_SubAcct_ID = editorFactory.getEditor(m_mTab, field, false);
 				// ((VLookup)f_SubAcct_ID).setWidth(400);
 				addLine(field, f_SubAcct_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Product))
+			else if (type.equals(AcctSchemaElementType.Product))
 			{
 				GridField field = m_mTab.getField("M_Product_ID");
 				f_M_Product_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_M_Product_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_BPartner))
+			else if (type.equals(AcctSchemaElementType.BPartner))
 			{
 				GridField field = m_mTab.getField("C_BPartner_ID");
 				f_C_BPartner_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_BPartner_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Campaign))
+			else if (type.equals(AcctSchemaElementType.Campaign))
 			{
 				GridField field = m_mTab.getField("C_Campaign_ID");
 				f_C_Campaign_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_Campaign_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom))
+			else if (type.equals(AcctSchemaElementType.LocationFrom))
 			{
 				GridField field = m_mTab.getField("C_LocFrom_ID");
 				f_C_LocFrom_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_LocFrom_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_LocationTo))
+			else if (type.equals(AcctSchemaElementType.LocationTo))
 			{
 				GridField field = m_mTab.getField("C_LocTo_ID");
 				f_C_LocTo_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_LocTo_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Project))
+			else if (type.equals(AcctSchemaElementType.Project))
 			{
 				GridField field = m_mTab.getField("C_Project_ID");
 				f_C_Project_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_Project_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_SalesRegion))
+			else if (type.equals(AcctSchemaElementType.SalesRegion))
 			{
 				GridField field = m_mTab.getField("C_SalesRegion_ID");
 				f_C_SalesRegion_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_SalesRegion_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx))
+			else if (type.equals(AcctSchemaElementType.OrgTrx))
 			{
 				GridField field = m_mTab.getField("AD_OrgTrx_ID");
 				f_AD_OrgTrx_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_AD_OrgTrx_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Activity))
+			else if (type.equals(AcctSchemaElementType.Activity))
 			{
 				GridField field = m_mTab.getField("C_Activity_ID");
 				f_C_Activity_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_Activity_ID, isMandatory);
 			}
 			// User1
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserList1))
+			else if (type.equals(AcctSchemaElementType.UserList1))
 			{
 				GridField field = m_mTab.getField("User1_ID");
 				f_User1_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_User1_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserList2))
+			else if (type.equals(AcctSchemaElementType.UserList2))
 			{
 				GridField field = m_mTab.getField("User2_ID");
 				f_User2_ID = editorFactory.getEditor(m_mTab, field, false);

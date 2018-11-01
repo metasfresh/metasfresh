@@ -23,7 +23,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,7 +37,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MTax;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -351,7 +352,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	 */
 	private boolean isInterOrg(final MAcctSchema as)
 	{
-		final I_C_AcctSchema_Element elementOrg = as.getAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_Organization);
+		final I_C_AcctSchema_Element elementOrg = Services.get(IAcctSchemaDAO.class).retrieveFirstAcctSchemaElementOrNull(as, AcctSchemaElementType.Organization);
 		if (elementOrg == null || !elementOrg.isBalanced())
 		{
 			// no org element or not need to be balanced
@@ -406,7 +407,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final BigDecimal qtyInvoiced = getQtyInvoiced();
 		if (qtyInvoiced.signum() != 0) // task 08337: guard against division by zero
 		{
-			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).getQty();
+			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).getAsBigDecimal();
 		}
 		else
 		{

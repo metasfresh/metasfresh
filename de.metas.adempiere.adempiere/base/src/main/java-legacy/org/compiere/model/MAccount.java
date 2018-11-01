@@ -19,10 +19,8 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.IAccountDimension;
@@ -31,6 +29,10 @@ import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Account Object Entity to maintain all segment values. C_ValidCombination
@@ -146,41 +148,41 @@ public class MAccount extends X_C_ValidCombination
 		// Active Elements
 		for (final I_C_AcctSchema_Element ase : acctSchemaDAO.retrieveSchemaElements(acctSchema))
 		{
-			final String elementType = ase.getElementType();
+			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(ase.getElementType());
 			final int defaultValue = acctSchemaBL.getDefaultValue(ase);
 			final boolean setValue = ase.isMandatory() || (!ase.isMandatory() && !optionalNull);
 			//
-			if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Organization))
+			if (elementType.equals(AcctSchemaElementType.Organization))
 				vc.setAD_Org_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Account))
+			else if (elementType.equals(AcctSchemaElementType.Account))
 				vc.setAccount_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_SubAccount) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.SubAccount) && setValue)
 				vc.setC_SubAcct_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_BPartner) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.BPartner) && setValue)
 				vc.setC_BPartner_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Product) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.Product) && setValue)
 				vc.setM_Product_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Activity) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.Activity) && setValue)
 				vc.setC_Activity_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.LocationFrom) && setValue)
 				vc.setC_LocFrom_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_LocationTo) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.LocationTo) && setValue)
 				vc.setC_LocTo_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Campaign) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.Campaign) && setValue)
 				vc.setC_Campaign_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.OrgTrx) && setValue)
 				vc.setAD_OrgTrx_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Project) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.Project) && setValue)
 				vc.setC_Project_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_SalesRegion) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.SalesRegion) && setValue)
 				vc.setC_SalesRegion_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserList1) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.UserList1) && setValue)
 				vc.setUser1_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserList2) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.UserList2) && setValue)
 				vc.setUser2_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement1) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.UserElement1) && setValue)
 				vc.setUserElement1_ID(defaultValue);
-			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement2) && setValue)
+			else if (elementType.equals(AcctSchemaElementType.UserElement2) && setValue)
 				vc.setUserElement2_ID(defaultValue);
 		}
 		

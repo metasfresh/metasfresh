@@ -98,7 +98,7 @@ public interface IAcctSchemaDAO extends ISingletonService
 	 */
 	List<I_C_AcctSchema_Element> retrieveSchemaElementsDisplayedInEditor(I_C_AcctSchema as);
 
-	I_C_AcctSchema_Element retrieveFirstAcctSchemaElementOrNull(I_C_AcctSchema as, String elementType);
+	I_C_AcctSchema_Element retrieveFirstAcctSchemaElementOrNull(I_C_AcctSchema as, AcctSchemaElementType elementType);
 
 	I_C_AcctSchema_GL retrieveAcctSchemaGL(Properties ctx, AcctSchemaId acctSchemaId);
 }

@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.service.ClientId;
@@ -177,10 +178,10 @@ public class MAcctSchema extends X_C_AcctSchema
 	 *  @deprecated please use {@link IAcctSchemaDAO#retrieveFirstAcctSchemaElementOrNull(I_C_AcctSchema, String)}.
 	 */
 	@Deprecated
-	public MAcctSchemaElement getAcctSchemaElement (String elementType)
+	public MAcctSchemaElement getAcctSchemaElement (final AcctSchemaElementType elementType)
 	{
-		return LegacyAdapters.convertToPO(
-				Services.get(IAcctSchemaDAO.class).retrieveFirstAcctSchemaElementOrNull(this, elementType));
+		final I_C_AcctSchema_Element acctSchemaElement = Services.get(IAcctSchemaDAO.class).retrieveFirstAcctSchemaElementOrNull(this, elementType);
+		return LegacyAdapters.convertToPO(acctSchemaElement);
 	}   //  getAcctSchemaElement
 
 	/**
@@ -188,7 +189,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	 *  @param segmentType segment type - AcctSchemaElement.SEGMENT_
 	 *  @return true if schema has segment type
 	 */
-	public boolean isAcctSchemaElement (String segmentType)
+	private boolean isAcctSchemaElement (AcctSchemaElementType segmentType)
 	{
 		return getAcctSchemaElement(segmentType) != null;
 	}   //  isAcctSchemaElement
@@ -298,7 +299,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	 *  @param segment ignored
 	 *  @return Account
 	 */
-	public MAccount getDueTo_Acct(String segment)
+	public MAccount getDueTo_Acct(AcctSchemaElementType segment)
 	{
 		if (m_DueTo_Acct != null)
 			return m_DueTo_Acct;
@@ -313,7 +314,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	 *  @param segment ignored
 	 *  @return Account
 	 */
-	public MAccount getDueFrom_Acct(String segment)
+	public MAccount getDueFrom_Acct(AcctSchemaElementType segment)
 	{
 		if (m_DueFrom_Acct != null)
 			return m_DueFrom_Acct;
@@ -344,8 +345,10 @@ public class MAcctSchema extends X_C_AcctSchema
 	{
 		if (m_onlyOrgs == null)
 		{
-			m_onlyOrgs = MReportTree.getChildIDs(getCtx(), 
-					0, MAcctSchemaElement.ELEMENTTYPE_Organization, 
+			m_onlyOrgs = MReportTree.getChildIDs(
+					getCtx(), 
+					0,
+					AcctSchemaElementType.Organization, 
 					getAD_OrgOnly_ID());
 		}
 		return m_onlyOrgs;

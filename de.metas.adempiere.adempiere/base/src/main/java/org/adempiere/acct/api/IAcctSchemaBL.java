@@ -28,7 +28,7 @@ public interface IAcctSchemaBL extends ISingletonService
 	 * @return column name or "" if not found
 	 * @return
 	 */
-	String getColumnName(String elementType);
+	String getColumnName(AcctSchemaElementType elementType);
 
 	/**
 	 * Get Display ColumnName. The implementation is copied from <code>org.compiere.model.MAcctSchemaElement.getDisplayColumnName()</code>.

@@ -19,6 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -27,6 +28,7 @@ import org.compiere.util.DB;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Account Schema Element Object
@@ -67,7 +69,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	 * @deprecated please use {@link IAcctSchemaBL#getColumnName(String)}.
 	 */
 	@Deprecated
-	public static String getColumnName(String elementType)
+	public static String getColumnName(final AcctSchemaElementType elementType)
 	{
 		return Services.get(IAcctSchemaBL.class).getColumnName(elementType);
 	}   // getColumnName
@@ -78,40 +80,40 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	 * @param elementType ELEMENTTYPE type
 	 * @return query "SELECT Value,Name FROM Table WHERE ID=" or "" if not found
 	 */
-	public static String getValueQuery(String elementType)
+	public static String getValueQuery(@NonNull final AcctSchemaElementType elementType)
 	{
-		if (elementType.equals(ELEMENTTYPE_Organization))
+		if (elementType.equals(AcctSchemaElementType.Organization))
 			return "SELECT Value,Name FROM AD_Org WHERE AD_Org_ID=";
-		else if (elementType.equals(ELEMENTTYPE_Account))
+		else if (elementType.equals(AcctSchemaElementType.Account))
 			return "SELECT Value,Name FROM C_ElementValue WHERE C_ElementValue_ID=";
-		else if (elementType.equals(ELEMENTTYPE_SubAccount))
+		else if (elementType.equals(AcctSchemaElementType.SubAccount))
 			return "SELECT Value,Name FROM C_SubAccount WHERE C_SubAccount_ID=";
-		else if (elementType.equals(ELEMENTTYPE_BPartner))
+		else if (elementType.equals(AcctSchemaElementType.BPartner))
 			return "SELECT Value,Name FROM C_BPartner WHERE C_BPartner_ID=";
-		else if (elementType.equals(ELEMENTTYPE_Product))
+		else if (elementType.equals(AcctSchemaElementType.Product))
 			return "SELECT Value,Name FROM M_Product WHERE M_Product_ID=";
-		else if (elementType.equals(ELEMENTTYPE_Activity))
+		else if (elementType.equals(AcctSchemaElementType.Activity))
 			return "SELECT Value,Name FROM C_Activity WHERE C_Activity_ID=";
-		else if (elementType.equals(ELEMENTTYPE_LocationFrom))
+		else if (elementType.equals(AcctSchemaElementType.LocationFrom))
 			return "SELECT City,Address1 FROM C_Location WHERE C_Location_ID=";
-		else if (elementType.equals(ELEMENTTYPE_LocationTo))
+		else if (elementType.equals(AcctSchemaElementType.LocationTo))
 			return "SELECT City,Address1 FROM C_Location WHERE C_Location_ID=";
-		else if (elementType.equals(ELEMENTTYPE_Campaign))
+		else if (elementType.equals(AcctSchemaElementType.Campaign))
 			return "SELECT Value,Name FROM C_Campaign WHERE C_Campaign_ID=";
-		else if (elementType.equals(ELEMENTTYPE_OrgTrx))
+		else if (elementType.equals(AcctSchemaElementType.OrgTrx))
 			return "SELECT Value,Name FROM AD_Org WHERE AD_Org_ID=";
-		else if (elementType.equals(ELEMENTTYPE_Project))
+		else if (elementType.equals(AcctSchemaElementType.Project))
 			return "SELECT Value,Name FROM C_Project WHERE C_Project_ID=";
-		else if (elementType.equals(ELEMENTTYPE_SalesRegion))
+		else if (elementType.equals(AcctSchemaElementType.SalesRegion))
 			return "SELECT Value,Name FROM C_SalesRegion WHERE C_SalesRegion_ID";
-		else if (elementType.equals(ELEMENTTYPE_UserList1))
+		else if (elementType.equals(AcctSchemaElementType.UserList1))
 			return "SELECT Value,Name FROM C_ElementValue WHERE C_ElementValue_ID=";
-		else if (elementType.equals(ELEMENTTYPE_UserList2))
+		else if (elementType.equals(AcctSchemaElementType.UserList2))
 			return "SELECT Value,Name FROM C_ElementValue WHERE C_ElementValue_ID=";
 		//
-		else if (elementType.equals(ELEMENTTYPE_UserElement1))
+		else if (elementType.equals(AcctSchemaElementType.UserElement1))
 			return null;
-		else if (elementType.equals(ELEMENTTYPE_UserElement2))
+		else if (elementType.equals(AcctSchemaElementType.UserElement2))
 			return null;
 		//
 		return "";
@@ -180,7 +182,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	 */
 	public void setTypeOrg(int SeqNo, String Name, int Org_ID)
 	{
-		setElementType(ELEMENTTYPE_Organization);
+		setElementType(AcctSchemaElementType.Organization.getCode());
 		setSeqNo(SeqNo);
 		setName(Name);
 		setOrg_ID(Org_ID);
@@ -196,7 +198,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	 */
 	public void setTypeAccount(int SeqNo, String Name, int C_Element_ID, int C_ElementValue_ID)
 	{
-		setElementType(ELEMENTTYPE_Account);
+		setElementType(AcctSchemaElementType.Account.getCode());
 		setSeqNo(SeqNo);
 		setName(Name);
 		setC_Element_ID(C_Element_ID);
@@ -212,7 +214,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	 */
 	public void setTypeBPartner(int SeqNo, String Name, int C_BPartner_ID)
 	{
-		setElementType(ELEMENTTYPE_BPartner);
+		setElementType(AcctSchemaElementType.BPartner.getCode());
 		setSeqNo(SeqNo);
 		setName(Name);
 		setC_BPartner_ID(C_BPartner_ID);
@@ -227,7 +229,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	 */
 	public void setTypeProduct(int SeqNo, String Name, int M_Product_ID)
 	{
-		setElementType(ELEMENTTYPE_Product);
+		setElementType(AcctSchemaElementType.Product.getCode());
 		setSeqNo(SeqNo);
 		setName(Name);
 		setM_Product_ID(M_Product_ID);
@@ -242,7 +244,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	 */
 	public void setTypeProject(int SeqNo, String Name, int C_Project_ID)
 	{
-		setElementType(ELEMENTTYPE_Project);
+		setElementType(AcctSchemaElementType.Project.getCode());
 		setSeqNo(SeqNo);
 		setName(Name);
 		setC_Project_ID(C_Project_ID);
@@ -322,13 +324,13 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	{
 		if (getAD_Org_ID() != 0)
 			setAD_Org_ID(0);
-		final String elementType = getElementType();
+		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(getElementType());
 		if (isMandatory() &&
-				(ELEMENTTYPE_UserList1.equals(elementType) || ELEMENTTYPE_UserList2.equals(elementType)
-						|| ELEMENTTYPE_UserElement1.equals(elementType) || ELEMENTTYPE_UserElement2.equals(elementType)))
+				(AcctSchemaElementType.UserList1.equals(elementType) || AcctSchemaElementType.UserList2.equals(elementType)
+						|| AcctSchemaElementType.UserElement1.equals(elementType) || AcctSchemaElementType.UserElement2.equals(elementType)))
 			setIsMandatory(false);
 		// Acct Schema Elements "Account" and "Org" should be mandatory - teo_sarca BF [ 1795817 ]
-		if (ELEMENTTYPE_Account.equals(elementType) || ELEMENTTYPE_Organization.equals(elementType))
+		if (AcctSchemaElementType.Account.equals(elementType) || AcctSchemaElementType.Organization.equals(elementType))
 		{
 			if (!isMandatory())
 				setIsMandatory(true);
@@ -339,27 +341,27 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 		else if (isMandatory())
 		{
 			String errorField = null;
-			if (ELEMENTTYPE_Account.equals(elementType) && getC_ElementValue_ID() == 0)
+			if (AcctSchemaElementType.Account.equals(elementType) && getC_ElementValue_ID() == 0)
 				errorField = COLUMNNAME_C_ElementValue_ID;
-			else if (ELEMENTTYPE_Activity.equals(elementType) && getC_Activity_ID() == 0)
+			else if (AcctSchemaElementType.Activity.equals(elementType) && getC_Activity_ID() == 0)
 				errorField = COLUMNNAME_C_Activity_ID;
-			else if (ELEMENTTYPE_BPartner.equals(elementType) && getC_BPartner_ID() == 0)
+			else if (AcctSchemaElementType.BPartner.equals(elementType) && getC_BPartner_ID() == 0)
 				errorField = COLUMNNAME_C_BPartner_ID;
-			else if (ELEMENTTYPE_Campaign.equals(elementType) && getC_Campaign_ID() == 0)
+			else if (AcctSchemaElementType.Campaign.equals(elementType) && getC_Campaign_ID() == 0)
 				errorField = COLUMNNAME_C_Campaign_ID;
-			else if (ELEMENTTYPE_LocationFrom.equals(elementType) && getC_Location_ID() == 0)
+			else if (AcctSchemaElementType.LocationFrom.equals(elementType) && getC_Location_ID() == 0)
 				errorField = COLUMNNAME_C_Location_ID;
-			else if (ELEMENTTYPE_LocationTo.equals(elementType) && getC_Location_ID() == 0)
+			else if (AcctSchemaElementType.LocationTo.equals(elementType) && getC_Location_ID() == 0)
 				errorField = COLUMNNAME_C_Location_ID;
-			else if (ELEMENTTYPE_Organization.equals(elementType) && getOrg_ID() == 0)
+			else if (AcctSchemaElementType.Organization.equals(elementType) && getOrg_ID() == 0)
 				errorField = COLUMNNAME_Org_ID;
-			else if (ELEMENTTYPE_OrgTrx.equals(elementType) && getOrg_ID() == 0)
+			else if (AcctSchemaElementType.OrgTrx.equals(elementType) && getOrg_ID() == 0)
 				errorField = COLUMNNAME_Org_ID;
-			else if (ELEMENTTYPE_Product.equals(elementType) && getM_Product_ID() == 0)
+			else if (AcctSchemaElementType.Product.equals(elementType) && getM_Product_ID() == 0)
 				errorField = COLUMNNAME_M_Product_ID;
-			else if (ELEMENTTYPE_Project.equals(elementType) && getC_Project_ID() == 0)
+			else if (AcctSchemaElementType.Project.equals(elementType) && getC_Project_ID() == 0)
 				errorField = COLUMNNAME_C_Project_ID;
-			else if (ELEMENTTYPE_SalesRegion.equals(elementType) && getC_SalesRegion_ID() == 0)
+			else if (AcctSchemaElementType.SalesRegion.equals(elementType) && getC_SalesRegion_ID() == 0)
 				errorField = COLUMNNAME_C_SalesRegion_ID;
 			if (errorField != null)
 			{
@@ -368,7 +370,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 		}
 		//
 		if (getAD_Column_ID() <= 0
-				&& (ELEMENTTYPE_UserElement1.equals(elementType) || ELEMENTTYPE_UserElement2.equals(elementType)))
+				&& (AcctSchemaElementType.UserElement1.equals(elementType) || AcctSchemaElementType.UserElement2.equals(elementType)))
 		{
 			throw new AdempiereException(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@IsMandatory@: @AD_Column_ID@"));
 		}
@@ -388,13 +390,14 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 		// Default Value
 		if (isMandatory() && is_ValueChanged(COLUMNNAME_IsMandatory))
 		{
-			if (ELEMENTTYPE_Activity.equals(getElementType()))
+			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(getElementType());
+			if (AcctSchemaElementType.Activity.equals(elementType))
 				updateData(COLUMNNAME_C_Activity_ID, getC_Activity_ID());
-			else if (ELEMENTTYPE_BPartner.equals(getElementType()))
+			else if (AcctSchemaElementType.BPartner.equals(elementType))
 				updateData(COLUMNNAME_C_BPartner_ID, getC_BPartner_ID());
-			else if (ELEMENTTYPE_Product.equals(getElementType()))
+			else if (AcctSchemaElementType.Product.equals(elementType))
 				updateData(COLUMNNAME_M_Product_ID, getM_Product_ID());
-			else if (ELEMENTTYPE_Project.equals(getElementType()))
+			else if (AcctSchemaElementType.Project.equals(elementType))
 				updateData(COLUMNNAME_C_Project_ID, getC_Project_ID());
 		}
 
@@ -429,9 +432,9 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	@Override
 	protected boolean beforeDelete()
 	{
-		final String et = getElementType();
+		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(getElementType());
 		// Acct Schema Elements "Account" and "Org" should be mandatory - teo_sarca BF [ 1795817 ]
-		if (ELEMENTTYPE_Account.equals(et) || ELEMENTTYPE_Organization.equals(et))
+		if (AcctSchemaElementType.Account.equals(elementType) || AcctSchemaElementType.Organization.equals(elementType))
 		{
 			throw new AdempiereException(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@DeleteError@ @IsMandatory@"));
 		}

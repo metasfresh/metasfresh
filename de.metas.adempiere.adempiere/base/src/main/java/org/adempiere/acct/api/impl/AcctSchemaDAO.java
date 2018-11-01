@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
@@ -193,13 +194,13 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
-	public I_C_AcctSchema_Element retrieveFirstAcctSchemaElementOrNull(final I_C_AcctSchema as, final String elementTypeToReturn)
+	public I_C_AcctSchema_Element retrieveFirstAcctSchemaElementOrNull(final I_C_AcctSchema as, @NonNull final AcctSchemaElementType elementTypeToReturn)
 	{
 		Check.assumeNotNull(elementTypeToReturn, "elementTypeToReturn not null");
 
 		for (final I_C_AcctSchema_Element element : retrieveSchemaElements(as))
 		{
-			final String elementType = element.getElementType();
+			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(element.getElementType());
 			if (elementTypeToReturn.equals(elementType))
 			{
 				return element;

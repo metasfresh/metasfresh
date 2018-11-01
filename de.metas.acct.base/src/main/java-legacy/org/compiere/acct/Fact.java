@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -361,9 +362,13 @@ public final class Fact
 		for (MAcctSchemaElement element : elements)
 		{
 			MAcctSchemaElement ase = element;
-			if (ase.isBalanced() && !isSegmentBalanced(ase.getElementType()))
+			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(ase.getElementType());
+			if (ase.isBalanced() && !isSegmentBalanced(elementType))
+			{
 				return false;
+			}
 		}
+
 		return true;
 	}   // isSegmentBalanced
 
@@ -373,9 +378,9 @@ public final class Fact
 	 * @param segmentType - see AcctSchemaElement.SEGMENT_* Implemented only for Org Other sensible candidates are Project, User1/2
 	 * @return true if segments are balanced
 	 */
-	public boolean isSegmentBalanced(String segmentType)
+	private boolean isSegmentBalanced(final AcctSchemaElementType segmentType)
 	{
-		if (segmentType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
+		if (segmentType.equals(AcctSchemaElementType.Organization))
 		{
 			HashMap<Integer, BigDecimal> map = new HashMap<>();
 			// Add up values by key
@@ -403,11 +408,12 @@ public final class Fact
 				}
 			}
 			map.clear();
-			log.trace("(" + segmentType + ") - " + toString());
 			return true;
 		}
-		log.trace("(" + segmentType + ") (not checked) - " + toString());
-		return true;
+		else
+		{
+			return true;
+		}
 	}   // isSegmentBalanced
 
 	/**
@@ -415,12 +421,14 @@ public final class Fact
 	 */
 	public void balanceSegments()
 	{
-		MAcctSchemaElement[] elements = m_acctSchema.getAcctSchemaElements();
 		// check all balancing segments
-		for (MAcctSchemaElement ase : elements)
+		for (final MAcctSchemaElement ase : m_acctSchema.getAcctSchemaElements())
 		{
 			if (ase.isBalanced())
-				balanceSegment(ase.getElementType());
+			{
+				AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(ase.getElementType());
+				balanceSegment(elementType);
+			}
 		}
 	}   // balanceSegments
 
@@ -429,16 +437,16 @@ public final class Fact
 	 *
 	 * @param elementType segment element type
 	 */
-	private void balanceSegment(String elementType)
+	private void balanceSegment(final AcctSchemaElementType elementType)
 	{
 		// no lines -> balanced
-		if (m_lines.size() == 0)
+		if (m_lines.isEmpty())
+		{
 			return;
-
-		log.debug("(" + elementType + ") - " + toString());
+		}
 
 		// Org
-		if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
+		if (elementType.equals(AcctSchemaElementType.Organization))
 		{
 			HashMap<Integer, Balance> map = new HashMap<>();
 			// Add up values by key
@@ -464,7 +472,7 @@ public final class Fact
 			{
 				Integer key = keys.next();
 				Balance difference = map.get(key);
-				log.info(elementType + "=" + key + ", " + difference);
+
 				//
 				if (!difference.isZeroBalance())
 				{

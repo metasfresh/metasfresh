@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -33,7 +34,6 @@ import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MFactAcct;
 import org.compiere.model.MMovement;
 import org.compiere.model.MRevenueRecognitionPlan;
-import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
 
@@ -171,7 +171,7 @@ final class FactLine extends X_Fact_Acct
 		setC_SubAcct_ID(m_acct.getC_SubAcct_ID());
 
 		// User Defined References
-		MAcctSchemaElement ud1 = m_acctSchema.getAcctSchemaElement(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement1);
+		MAcctSchemaElement ud1 = m_acctSchema.getAcctSchemaElement(AcctSchemaElementType.UserElement1);
 		if (ud1 != null)
 		{
 			String ColumnName1 = ud1.getDisplayColumnName();
@@ -190,7 +190,7 @@ final class FactLine extends X_Fact_Acct
 					setUserElement1_ID(ID1);
 			}
 		}
-		final MAcctSchemaElement ud2 = m_acctSchema.getAcctSchemaElement(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement2);
+		final MAcctSchemaElement ud2 = m_acctSchema.getAcctSchemaElement(AcctSchemaElementType.UserElement2);
 		if (ud2 != null)
 		{
 			String ColumnName2 = ud2.getDisplayColumnName();

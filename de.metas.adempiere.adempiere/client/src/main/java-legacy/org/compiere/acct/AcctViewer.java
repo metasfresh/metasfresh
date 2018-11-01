@@ -40,6 +40,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IPostingService;
@@ -59,7 +60,6 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.report.core.RModel;
 import org.compiere.report.core.RModelExcelExporter;
 import org.compiere.report.core.ResultTable;
@@ -763,8 +763,8 @@ public class AcctViewer extends CFrame
 			sortAddItem(new ValueNamePair(columnName, displayColumnNameTrl));
 			
 			//  Additional Elements
-			if (!Check.equals(ase.getElementType(), X_C_AcctSchema_Element.ELEMENTTYPE_Organization)
-					&& !Check.equals(ase.getElementType(), X_C_AcctSchema_Element.ELEMENTTYPE_Account))
+			if (!Check.equals(ase.getElementType(), AcctSchemaElementType.Organization)
+					&& !Check.equals(ase.getElementType(), AcctSchemaElementType.Account))
 			{
 				labels[selectionIndex].setText(displayColumnNameTrl);
 				labels[selectionIndex].setVisible(true);
@@ -1062,7 +1062,7 @@ public class AcctViewer extends CFrame
 		else if (keyColumn.equals(AcctViewerData.COLUMNNAME_Account_ID))
 		{
 			lookupColumn = I_C_ElementValue.COLUMNNAME_C_ElementValue_ID;
-			final I_C_AcctSchema_Element ase = acctSchemaDAO.retrieveFirstAcctSchemaElementOrNull(m_data.getC_AcctSchema(), X_C_AcctSchema_Element.ELEMENTTYPE_Account);
+			final I_C_AcctSchema_Element ase = acctSchemaDAO.retrieveFirstAcctSchemaElementOrNull(m_data.getC_AcctSchema(), AcctSchemaElementType.Account);
 			if (ase != null)
 			{
 				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getC_Element_ID();
@@ -1071,7 +1071,7 @@ public class AcctViewer extends CFrame
 		else if (keyColumn.equals("User1_ID"))
 		{
 			lookupColumn = I_C_ElementValue.COLUMNNAME_C_ElementValue_ID;
-			final I_C_AcctSchema_Element ase = acctSchemaDAO.retrieveFirstAcctSchemaElementOrNull(m_data.getC_AcctSchema(), X_C_AcctSchema_Element.ELEMENTTYPE_UserList1);
+			final I_C_AcctSchema_Element ase = acctSchemaDAO.retrieveFirstAcctSchemaElementOrNull(m_data.getC_AcctSchema(), AcctSchemaElementType.UserList1);
 			if (ase != null)
 			{
 				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getC_Element_ID();
@@ -1080,7 +1080,7 @@ public class AcctViewer extends CFrame
 		else if (keyColumn.equals("User2_ID"))
 		{
 			lookupColumn = I_C_ElementValue.COLUMNNAME_C_ElementValue_ID;
-			final I_C_AcctSchema_Element ase = acctSchemaDAO.retrieveFirstAcctSchemaElementOrNull(m_data.getC_AcctSchema(), X_C_AcctSchema_Element.ELEMENTTYPE_UserList2);
+			final I_C_AcctSchema_Element ase = acctSchemaDAO.retrieveFirstAcctSchemaElementOrNull(m_data.getC_AcctSchema(), AcctSchemaElementType.UserList2);
 			if (ase != null)
 			{
 				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getC_Element_ID();

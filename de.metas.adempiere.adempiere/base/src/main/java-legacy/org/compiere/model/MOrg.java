@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
@@ -154,7 +155,7 @@ public class MOrg extends X_AD_Org
 		{
 			MAccount.updateValueDescription(getCtx(), "AD_Org_ID=" + getAD_Org_ID(), get_TrxName());
 			
-			final String elementOrgTrx = Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx;
+			final String elementOrgTrx = Env.CTXNAME_AcctSchemaElementPrefix + AcctSchemaElementType.OrgTrx.getCode();
 			if ("Y".equals(Env.getContext(getCtx(), elementOrgTrx))) 
 				MAccount.updateValueDescription(getCtx(), "AD_OrgTrx_ID=" + getAD_Org_ID(), get_TrxName());
 		}

@@ -21,14 +21,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MElementValue;
 import org.compiere.model.X_I_ElementValue;
 import org.compiere.util.DB;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Import Accounts from I_ElementValue
@@ -56,6 +58,7 @@ public class ImportAccount extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -87,6 +90,7 @@ public class ImportAccount extends JavaProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		StringBuffer sql = null;
@@ -493,7 +497,7 @@ public class ImportAccount extends JavaProcess
 		log.info("C_AcctSchema_ID=" + C_AcctSchema_ID);
 
 		MAcctSchema as = new MAcctSchema (getCtx(), C_AcctSchema_ID, get_TrxName());
-		if (as.getAcctSchemaElement("AC").getC_Element_ID() != m_C_Element_ID)
+		if (as.getAcctSchemaElement(AcctSchemaElementType.Account).getC_Element_ID() != m_C_Element_ID)
 		{
 			log.error("C_Element_ID=" + m_C_Element_ID + " not in AcctSchema=" + as);
 			return;

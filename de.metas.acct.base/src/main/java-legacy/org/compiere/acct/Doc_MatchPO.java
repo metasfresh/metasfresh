@@ -20,11 +20,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAcctSchemaElement;
 
 import com.google.common.collect.ImmutableList;
 
@@ -212,7 +213,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	 */
 	private boolean isInterOrg(final MAcctSchema as)
 	{
-		final MAcctSchemaElement elementorg = as.getAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_Organization);
+		final I_C_AcctSchema_Element elementorg = as.getAcctSchemaElement(AcctSchemaElementType.Organization);
 		if (elementorg == null || !elementorg.isBalanced())
 		{
 			// no org element or not need to be balanced

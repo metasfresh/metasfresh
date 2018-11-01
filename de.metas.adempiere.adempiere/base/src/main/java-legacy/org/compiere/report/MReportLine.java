@@ -20,8 +20,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
+
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAcctSchemaElement;
@@ -154,21 +158,37 @@ public class MReportLine extends X_PA_ReportLine
 	{
 		final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 		
-		String ColumnName = null;
-		for (int i = 0; i < m_sources.length; i++)
+		final Set<String> columnNames = new HashSet<>();
+		for (final MReportSource source : m_sources)
 		{
-			final String col = acctSchemaBL.getColumnName(m_sources[i].getElementType());
-			if (ColumnName == null || ColumnName.length() == 0)
+			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCodeOrNull(source.getElementType());
+			if(elementType == null)
 			{
-				ColumnName = col;
+				continue;
 			}
-			else if (!ColumnName.equals(col))
+			
+			final String columnName = acctSchemaBL.getColumnName(elementType);
+			if(Check.isEmpty(columnName, true))
 			{
-				log.info("More than one: " + ColumnName + " - " + col);
-				return null;
+				continue;
 			}
+			
+			columnNames.add(columnName);
 		}
-		return ColumnName;
+		
+		if(columnNames.isEmpty())
+		{
+			return null;
+		}
+		else if(columnNames.size() == 1)
+		{
+			return columnNames.iterator().next();
+		}
+		else
+		{
+			log.info("More than one source column found: {}. Returning null", columnNames);
+			return null;
+		}
 	}	//	getColumnName
 
 	/**
@@ -179,7 +199,13 @@ public class MReportLine extends X_PA_ReportLine
 	{
 		if (m_sources != null && m_sources.length > 0)
 		{
-			return MAcctSchemaElement.getValueQuery(m_sources[0].getElementType());
+			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCodeOrNull(m_sources[0].getElementType());
+			if(elementType == null)
+			{
+				return null;
+			}
+			
+			return MAcctSchemaElement.getValueQuery(elementType);
 		}
 		return null;
 	}	//
@@ -344,6 +370,7 @@ public class MReportLine extends X_PA_ReportLine
 	 * 	String Representation
 	 * 	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MReportLine[")
@@ -418,6 +445,7 @@ public class MReportLine extends X_PA_ReportLine
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		checkIncludedReportLineSetCycles(this); // metas

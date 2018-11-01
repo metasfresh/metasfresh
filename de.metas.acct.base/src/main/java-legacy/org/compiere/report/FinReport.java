@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IFactAcctCubeBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -44,7 +45,6 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_PA_ReportCube;
 import org.compiere.model.MAcctSchemaElement;
-import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.MPrintFormatItem;
 import org.compiere.util.AdempiereUserError;
@@ -186,7 +186,7 @@ public class FinReport extends JavaProcess
 		// Optional Org
 		if (p_Org_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Organization, p_Org_ID));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.Organization, p_Org_ID));
 		// Optional Account
 		if (p_C_ElementValue_ID > 0 || p_C_ElementValue_ID_To > 0)
 		{
@@ -195,38 +195,38 @@ public class FinReport extends JavaProcess
 		// Optional BPartner
 		if (p_C_BPartner_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_BPartner, p_C_BPartner_ID));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.BPartner, p_C_BPartner_ID));
 		// Optional Product
 		if (p_M_Product_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Product, p_M_Product_ID));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.Product, p_M_Product_ID));
 		// Optional Project
 		if (p_C_Project_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Project, p_C_Project_ID));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.Project, p_C_Project_ID));
 		// Optional Activity
 		if (p_C_Activity_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Activity, p_C_Activity_ID));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.Activity, p_C_Activity_ID));
 		// Optional Campaign
 		if (p_C_Campaign_ID != 0)
 		{
 			m_parameterWhere.append(" AND C_Campaign_ID=").append(p_C_Campaign_ID);
 			// m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-			// MAcctSchemaElement.ELEMENTTYPE_Campaign, p_C_Campaign_ID));
+			// AcctSchemaElementType.Campaign, p_C_Campaign_ID));
 		}
 		// Optional Sales Region
 		if (p_C_SalesRegion_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_SalesRegion, p_C_SalesRegion_ID));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.SalesRegion, p_C_SalesRegion_ID));
 		// Optional User1_ID
 		if (p_User1_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_UserList1, p_User1_ID));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.UserList1, p_User1_ID));
 		// Optional User2_ID
 		if (p_User2_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_UserList2, p_User2_ID));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.UserList2, p_User2_ID));
 		// Optional UserElement1_ID
 		if (p_UserElement1_ID != 0)
 			m_parameterWhere.append(" AND UserElement1_ID=").append(p_UserElement1_ID);
@@ -270,7 +270,7 @@ public class FinReport extends JavaProcess
 					.create()
 					.listIds();
 
-			final String columnName = Services.get(IAcctSchemaBL.class).getColumnName(X_C_AcctSchema_Element.ELEMENTTYPE_Account);
+			final String columnName = Services.get(IAcctSchemaBL.class).getColumnName(AcctSchemaElementType.Account);
 			final String sql = DB.buildSqlList(elementValueIds, whereClauseSqlParams);
 			whereClause.append(" AND ").append(columnName).append(" IN ").append(sql);
 		}
@@ -282,12 +282,12 @@ public class FinReport extends JavaProcess
 		else if (p_C_ElementValue_ID > 0)
 		{
 			whereClause.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Account, p_C_ElementValue_ID));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.Account, p_C_ElementValue_ID));
 		}
 		else if (p_C_ElementValue_ID_To > 0)
 		{
 			whereClause.append(" AND ").append(MReportTree.getWhereClause(getCtx(),
-					p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Account, p_C_ElementValue_ID_To));
+					p_PA_Hierarchy_ID, AcctSchemaElementType.Account, p_C_ElementValue_ID_To));
 		}
 	}
 
@@ -1125,7 +1125,7 @@ public class FinReport extends JavaProcess
 
 		final MReportSource currentLineSource = lineSources[idxLineSources];
 
-		final String variable = acctSchemaBL.getColumnName(currentLineSource.getElementType());
+		final String variable = acctSchemaBL.getColumnName(AcctSchemaElementType.ofCode(currentLineSource.getElementType()));
 		if (variable == null)
 		{
 			return null;
@@ -1374,7 +1374,7 @@ public class FinReport extends JavaProcess
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE T_Report SET (Name,Description)=(")
 					// .append(currentReportLine.getSourceValueQuery())
-					.append(MAcctSchemaElement.getValueQuery(lineSources[idxLineSources].getElementType()))
+					.append(MAcctSchemaElement.getValueQuery(AcctSchemaElementType.ofCode(lineSources[idxLineSources].getElementType())))
 					.append("T_Report.Record_ID) "
 							//
 							+ "WHERE Record_ID <> 0 AND AD_PInstance_ID=").append(getAD_PInstance_ID())
