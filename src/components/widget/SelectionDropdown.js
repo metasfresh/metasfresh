@@ -19,6 +19,7 @@ export default class SelectionDropdown extends Component {
     empty: PropTypes.node,
     forceEmpty: PropTypes.bool,
     width: PropTypes.number.isRequired,
+    height: PropTypes.number,
     loading: PropTypes.bool,
     onChange: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired,

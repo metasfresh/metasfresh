@@ -584,6 +584,7 @@ Lookup.propTypes = {
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
   forceFullWidth: PropTypes.bool,
+  forceHeight: PropTypes.number,
 };
 
 export default connect()(BarcodeScanner(onClickOutside(Lookup)));

@@ -50,6 +50,7 @@ export const RawWidgetPropTypes = {
   defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   noLabel: PropTypes.bool,
   isOpenDatePicker: PropTypes.bool,
+  forceHeight: PropTypes.number,
 };
 
 export const RawWidgetDefaultProps = {

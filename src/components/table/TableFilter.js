@@ -135,6 +135,7 @@ TableFilter.propTypes = {
   dispatch: PropTypes.func.isRequired,
   tabIndex: PropTypes.number.isRequired,
   modalVisible: PropTypes.bool.isRequired,
+  forceHeight: PropTypes.number,
 };
 
 export default connect(state => ({

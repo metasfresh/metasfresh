@@ -478,7 +478,11 @@ class RawLookup extends Component {
                     ? this.props.forcedWidth
                     : this.wrapper && this.wrapper.offsetWidth
                 }
-                height={this.props.forceHeight ? this.props.forceHeight - this.wrapper.offsetHeight : undefined}
+                height={
+                  this.props.forceHeight
+                    ? this.props.forceHeight - this.wrapper.offsetHeight
+                    : undefined
+                }
                 onChange={this.handleTemporarySelection}
                 onSelect={this.handleSelect}
                 onCancel={this.handleBlur}
@@ -497,6 +501,7 @@ const mapStateToProps = state => ({
 RawLookup.propTypes = {
   selected: PropTypes.object,
   forcedWidth: PropTypes.number,
+  forceHeight: PropTypes.number,
   dispatch: PropTypes.func.isRequired,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
