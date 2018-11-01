@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
@@ -13,6 +14,7 @@ import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Column;
 
@@ -20,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /*
@@ -138,12 +141,20 @@ public class AD_Column_AutoApplyValidationRule implements IModelInterceptor
 		final ITableRefInfo tableRefInfo = extractTableRefInfo(column);
 
 		final ValidationRuleQueryFilter<Object> validationRuleQueryFilter = new ValidationRuleQueryFilter<>(recordModel, column.getAD_Val_Rule_ID());
-		final int resultId = Services.get(IQueryBL.class)
+		final IQuery<Object> query = Services.get(IQueryBL.class)
 				.createQueryBuilder(tableRefInfo.getTableName())
 				.filter(validationRuleQueryFilter)
-				.orderBy(tableRefInfo.getKeyColumn())
-				.create()
-				.firstId();
+				.create();
+
+		final String orderByClause = tableRefInfo.getOrderByClause();
+		if (query instanceof TypedSqlQuery && !Check.isEmpty(orderByClause, true))
+		{
+			@SuppressWarnings("rawtypes")
+			final TypedSqlQuery sqlQuery = (TypedSqlQuery)query;
+			sqlQuery.setOrderBy(orderByClause);
+		}
+
+		final int resultId = query.firstId();
 		return resultId;
 	}
 

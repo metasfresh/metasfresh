@@ -114,3 +114,9 @@ UPDATE AD_Process_Para SET ColumnName='IsAutoApplyValidationRule', Name='Validie
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET ColumnName='IsAutoApplyValidationRule', Name='Validierungsregel automatisch anwenden', Description='If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.', Help=NULL WHERE AD_Element_ID=575835 AND IsCentrallyMaintained='Y'
 ;
+
+-- 2018-11-01T13:54:35.912
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsSameLine='Y', SeqNo=165,Updated=TO_TIMESTAMP('2018-11-01 13:54:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=171
+;
+
