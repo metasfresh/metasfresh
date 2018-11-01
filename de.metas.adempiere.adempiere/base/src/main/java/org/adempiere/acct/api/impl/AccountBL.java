@@ -26,9 +26,10 @@ package org.adempiere.acct.api.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.acct.api.AccountDimension;
 import org.adempiere.acct.api.AcctSchemaElementType;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAccountBL;
-import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IAccountDimensionValidator;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -328,21 +329,21 @@ public class AccountBL implements IAccountBL
 	}
 
 	@Override
-	public IAccountDimension createAccountDimension(final I_C_ElementValue ev, final int acctSchemaId)
+	public AccountDimension createAccountDimension(final I_C_ElementValue ev, final AcctSchemaId acctSchemaId)
 	{
 		return AccountDimension.builder()
 				.setAD_Client_ID(ev.getAD_Client_ID())
 				.setC_ElementValue_ID(ev.getC_ElementValue_ID())
-				.setC_AcctSchema_ID(acctSchemaId)
+				.setAcctSchemaId(acctSchemaId)
 				.build();
 	}
 
 	@Override
-	public IAccountDimension createAccountDimension(final I_C_ValidCombination account)
+	public AccountDimension createAccountDimension(final I_C_ValidCombination account)
 	{
 		return AccountDimension.builder()
 				.setAlias(account.getAlias())
-				.setC_AcctSchema_ID(account.getC_AcctSchema_ID())
+				.setAcctSchemaId(AcctSchemaId.ofRepoId(account.getC_AcctSchema_ID()))
 				.setAD_Client_ID(account.getAD_Client_ID())
 				.setAD_Org_ID(account.getAD_Org_ID())
 				.setC_ElementValue_ID(account.getAccount_ID())

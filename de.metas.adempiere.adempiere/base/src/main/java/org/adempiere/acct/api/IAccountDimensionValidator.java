@@ -29,7 +29,7 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 
 /**
- * {@link IAccountDimension} validator
+ * {@link AccountDimension} validator
  * 
  * @author tsa
  *
@@ -41,7 +41,7 @@ public interface IAccountDimensionValidator
 	 * 
 	 * @param accountDimension
 	 */
-	void validate(final IAccountDimension accountDimension);
+	void validate(final AccountDimension accountDimension);
 
 	/**
 	 * 

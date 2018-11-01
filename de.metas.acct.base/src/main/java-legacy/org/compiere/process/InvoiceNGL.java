@@ -324,6 +324,9 @@ public class InvoiceNGL extends JavaProcess
 	{
 		if (journal == null)
 			throw new IllegalArgumentException("Jornal is null");
+		
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(asDefaultAccts.getC_AcctSchema_ID());
+		
 		//		CR Entry = Gain
 		if (drTotal.signum() != 0)
 		{
@@ -331,7 +334,7 @@ public class InvoiceNGL extends JavaProcess
 			line.setLine(lineNo+1);
 			MAccount base = MAccount.get(getCtx(), asDefaultAccts.getUnrealizedGain_Acct());
 			MAccount acct = MAccount.get(getCtx(), asDefaultAccts.getAD_Client_ID(), AD_Org_ID, 
-				asDefaultAccts.getC_AcctSchema_ID(), base.getAccount_ID(), base.getC_SubAcct_ID(),
+				acctSchemaId, base.getAccount_ID(), base.getC_SubAcct_ID(),
 				base.getM_Product_ID(), base.getC_BPartner_ID(), base.getAD_OrgTrx_ID(), 
 				base.getC_LocFrom_ID(), base.getC_LocTo_ID(), base.getC_SalesRegion_ID(), 
 				base.getC_Project_ID(), base.getC_Campaign_ID(), base.getC_Activity_ID(),
@@ -350,7 +353,7 @@ public class InvoiceNGL extends JavaProcess
 			line.setLine(lineNo+2);
 			MAccount base = MAccount.get(getCtx(), asDefaultAccts.getUnrealizedLoss_Acct());
 			MAccount acct = MAccount.get(getCtx(), asDefaultAccts.getAD_Client_ID(), AD_Org_ID, 
-				asDefaultAccts.getC_AcctSchema_ID(), base.getAccount_ID(), base.getC_SubAcct_ID(),
+				acctSchemaId, base.getAccount_ID(), base.getC_SubAcct_ID(),
 				base.getM_Product_ID(), base.getC_BPartner_ID(), base.getAD_OrgTrx_ID(), 
 				base.getC_LocFrom_ID(), base.getC_LocTo_ID(), base.getC_SalesRegion_ID(), 
 				base.getC_Project_ID(), base.getC_Campaign_ID(), base.getC_Activity_ID(),

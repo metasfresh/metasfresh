@@ -165,7 +165,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 	private MAccount createAccount(MAcctSchema targetAS, MAccount sourceAcct)
 	{
 		int AD_Client_ID = targetAS.getAD_Client_ID();
-		int C_AcctSchema_ID = targetAS.getC_AcctSchema_ID();
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(targetAS.getC_AcctSchema_ID());
 		//
 		int AD_Org_ID = 0;
 		int Account_ID = 0;
@@ -225,7 +225,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 		//
 		return MAccount.get(getCtx(), AD_Client_ID, AD_Org_ID,
-				C_AcctSchema_ID, Account_ID, C_SubAcct_ID,
+				acctSchemaId, Account_ID, C_SubAcct_ID,
 				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
 				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
 				C_Project_ID, C_Campaign_ID, C_Activity_ID,

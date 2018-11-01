@@ -10,8 +10,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IAccountDimension;
-import org.adempiere.acct.api.impl.AccountDimension;
+import org.adempiere.acct.api.AccountDimension;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
@@ -697,7 +697,7 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		// Set/Get Account Combination
 		if (importRecord.getC_ValidCombinationFrom_ID() == 0)
 		{
-			final IAccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountFrom_ID());
+			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountFrom_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
 			if (acct != null && acct.get_ID() == 0)
 				acct.save();
@@ -716,7 +716,7 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		// Set/Get Account Combination
 		if (importRecord.getC_ValidCombinationTo_ID() == 0)
 		{
-			final IAccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountTo_ID());
+			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountTo_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
 			if (acct != null && acct.get_ID() == 0)
 				acct.save();
@@ -756,10 +756,10 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		return wasInsert ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
-	private IAccountDimension newAccountDimension(final I_I_GLJournal importRecord, final int accountId)
+	private AccountDimension newAccountDimension(final I_I_GLJournal importRecord, final int accountId)
 	{
 		return AccountDimension.builder()
-				.setC_AcctSchema_ID(importRecord.getC_AcctSchema_ID())
+				.setAcctSchemaId(AcctSchemaId.ofRepoIdOrNull(importRecord.getC_AcctSchema_ID()))
 				.setAD_Client_ID(importRecord.getAD_Client_ID())
 				.setAD_Org_ID(importRecord.getAD_Org_ID())
 				.setC_ElementValue_ID(accountId)

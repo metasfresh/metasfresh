@@ -3,8 +3,8 @@ package org.adempiere.acct.api.impl;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AccountDimension;
 import org.adempiere.acct.api.IAccountDAO;
-import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -80,12 +80,12 @@ public class AccountDAO implements IAccountDAO
 	}
 
 	@Override
-	public MAccount retrieveAccount(final Properties ctx, final IAccountDimension dimension)
+	public MAccount retrieveAccount(final Properties ctx, final AccountDimension dimension)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_ValidCombination> queryBuilder = queryBL.createQueryBuilder(I_C_ValidCombination.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_ValidCombination.COLUMN_C_AcctSchema_ID, dimension.getC_AcctSchema_ID());
+				.addEqualsFilter(I_C_ValidCombination.COLUMN_C_AcctSchema_ID, dimension.getAcctSchemaId());
 
 		for (final Map.Entry<AcctSegmentType, org.adempiere.model.ModelColumn<I_C_ValidCombination, ?>> e : segmentType2column.entrySet())
 		{

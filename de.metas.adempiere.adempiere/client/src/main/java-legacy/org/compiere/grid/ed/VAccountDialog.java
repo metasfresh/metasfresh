@@ -42,13 +42,12 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
+import org.adempiere.acct.api.AccountDimension;
 import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAccountBL;
-import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IAccountDimensionValidator;
 import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
@@ -840,13 +839,11 @@ public final class VAccountDialog extends CDialog
 		action_Find(false);
 	}	// action_Save
 
-	private IAccountDimension createAccountDimensionFromFields()
+	private AccountDimension createAccountDimensionFromFields()
 	{
-		final I_C_AcctSchema acctSchema = getC_AcctSchema();
-
 		final AccountDimension.Builder accountDimension = AccountDimension.builder();
 		accountDimension.setAD_Client_ID(m_AD_Client_ID);
-		accountDimension.setC_AcctSchema_ID(acctSchema.getC_AcctSchema_ID());
+		accountDimension.setAcctSchemaId(acctSchemaId);
 
 		//
 		// Get fields values
@@ -933,7 +930,7 @@ public final class VAccountDialog extends CDialog
 	{
 		//
 		// Get Account Dimension from fields
-		final IAccountDimension accountDimension = createAccountDimensionFromFields();
+		final AccountDimension accountDimension = createAccountDimensionFromFields();
 
 		//
 		// Validate it

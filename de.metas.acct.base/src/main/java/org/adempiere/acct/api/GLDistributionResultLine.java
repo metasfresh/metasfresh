@@ -2,7 +2,6 @@ package org.adempiere.acct.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.util.Check;
@@ -47,7 +46,7 @@ public class GLDistributionResultLine
 		DETECT
 	};
 	
-	private IAccountDimension accountDimension = AccountDimension.NULL;
+	private AccountDimension accountDimension = AccountDimension.NULL;
 	private BigDecimal percent = BigDecimal.ZERO;
 
 	private BigDecimal amount = BigDecimal.ZERO;
@@ -81,12 +80,12 @@ public class GLDistributionResultLine
 		this.description = description;
 	}
 
-	public IAccountDimension getAccountDimension()
+	public AccountDimension getAccountDimension()
 	{
 		return accountDimension;
 	}
 
-	void setAccountDimension(IAccountDimension accountDimension)
+	void setAccountDimension(AccountDimension accountDimension)
 	{
 		Check.assumeNotNull(accountDimension, "accountDimension not null");
 		this.accountDimension = accountDimension;

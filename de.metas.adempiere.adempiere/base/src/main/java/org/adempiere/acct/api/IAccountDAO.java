@@ -38,6 +38,6 @@ public interface IAccountDAO extends ISingletonService
 	 * @param dimension
 	 * @return account or null
 	 */
-	MAccount retrieveAccount(Properties ctx, IAccountDimension dimension);
+	MAccount retrieveAccount(Properties ctx, AccountDimension dimension);
 
 }

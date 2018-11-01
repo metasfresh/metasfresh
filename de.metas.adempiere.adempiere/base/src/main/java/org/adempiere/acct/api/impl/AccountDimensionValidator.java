@@ -27,8 +27,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.acct.api.AccountDimension;
 import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.IAccountDimension;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAccountDimensionValidator;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -93,20 +94,21 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void validate(final IAccountDimension accountDimension)
+	public void validate(final AccountDimension accountDimension)
 	{
 
 		final I_C_AcctSchema acctSchema = getC_AcctSchema();
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID());
 
 		final Set<String> mandatoryFieldsNotFilled = new HashSet<>();
 
 		//
 		// Validate C_AcctSchema_ID
-		if (accountDimension.getC_AcctSchema_ID() != acctSchema.getC_AcctSchema_ID())
+		if (AcctSchemaId.equals(accountDimension.getAcctSchemaId(), acctSchemaId))
 		{
 			throw new AdempiereException("C_AcctSchema_ID not matched"
 					+ "\n Expected: " + acctSchema
-					+ "\n Was: " + accountDimension.getC_AcctSchema_ID());
+					+ "\n Was: " + accountDimension.getAcctSchemaId());
 		}
 
 		//
@@ -162,7 +164,7 @@ import lombok.NonNull;
 	 * @param elementType see {@link X_C_AcctSchema_Element}.ELEMENTTYPE_*
 	 * @return segment's value (ID)
 	 */
-	private final int getSegmentValueId(final IAccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
+	private final int getSegmentValueId(final AccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
 	{
 		Check.assumeNotNull(elementType, "elementType not null");
 

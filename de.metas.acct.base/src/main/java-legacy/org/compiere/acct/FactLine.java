@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.acct.api.AcctSchemaElementType;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -1202,7 +1203,7 @@ final class FactLine extends X_Fact_Acct
 		log.debug("From Accout_ID=" + Account_ID);
 		// get VC for P_Revenue (from Product)
 		MAccount revenue = MAccount.get(getCtx(),
-				AD_Client_ID, AD_Org_ID, getC_AcctSchema_ID(), Account_ID, C_SubAcct_ID,
+				AD_Client_ID, AD_Org_ID, getAcctSchemaId(), Account_ID, C_SubAcct_ID,
 				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID, C_LocFrom_ID, C_LocTo_ID, C_SRegion_ID,
 				C_Project_ID, C_Campaign_ID, C_Activity_ID,
 				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID);
@@ -1423,6 +1424,11 @@ final class FactLine extends X_Fact_Acct
 	{
 		setQty(quantity.getAsBigDecimal());
 		setC_UOM(quantity.getUOM());
+	}
+	
+	public AcctSchemaId getAcctSchemaId()
+	{
+		return AcctSchemaId.ofRepoIdOrNull(getC_AcctSchema_ID());
 	}
 
 	public void setAD_Org_ID(final OrgId orgId)

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.GLDistributionResultLine.Sign;
-import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
@@ -42,7 +41,7 @@ import lombok.NonNull;
  */
 
 /**
- * Helper class used to execute GL_Distribution on a given {@link IAccountDimension}, amount and qty.
+ * Helper class used to execute GL_Distribution on a given {@link AccountDimension}, amount and qty.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -67,7 +66,7 @@ public class GLDistributionBuilder
 	private BigDecimal _qtyToDistribute;
 	private Integer _currencyId;
 	private Integer _precision;
-	private IAccountDimension _accountDimension;
+	private AccountDimension _accountDimension;
 
 	private GLDistributionBuilder()
 	{
@@ -159,7 +158,7 @@ public class GLDistributionBuilder
 
 	private final GLDistributionResultLine createResultLine(final I_GL_DistributionLine glDistributionLine)
 	{
-		final IAccountDimension accountDimension = createAccountDimension(glDistributionLine);
+		final AccountDimension accountDimension = createAccountDimension(glDistributionLine);
 
 		final GLDistributionResultLine resultLine = new GLDistributionResultLine();
 		resultLine.setDescription(buildDescription(glDistributionLine));
@@ -190,7 +189,7 @@ public class GLDistributionBuilder
 		return resultLine;
 	}	// setAmt
 
-	private final IAccountDimension createAccountDimension(final I_GL_DistributionLine line)
+	private final AccountDimension createAccountDimension(final I_GL_DistributionLine line)
 	{
 		final AccountDimension.Builder builder = AccountDimension.builder()
 				.applyOverrides(getAccountDimension());
@@ -354,13 +353,13 @@ public class GLDistributionBuilder
 		return _qtyToDistribute;
 	}
 
-	public GLDistributionBuilder setAccountDimension(final IAccountDimension accountDimension)
+	public GLDistributionBuilder setAccountDimension(final AccountDimension accountDimension)
 	{
 		_accountDimension = accountDimension;
 		return this;
 	}
 
-	private final IAccountDimension getAccountDimension()
+	private final AccountDimension getAccountDimension()
 	{
 		Check.assumeNotNull(_accountDimension, "_accountDimension not null");
 		return _accountDimension;

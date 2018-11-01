@@ -120,7 +120,8 @@ public class GL_JournalLine_Builder
 	private final I_C_ValidCombination createValidCombination(final I_C_ElementValue ev)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ev);
-		final IAccountDimension dim = accountBL.createAccountDimension(ev, getGL_Journal().getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getGL_Journal().getC_AcctSchema_ID());
+		final AccountDimension dim = accountBL.createAccountDimension(ev, acctSchemaId);
 		return MAccount.get(ctx, dim);
 	}
 }

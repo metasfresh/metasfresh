@@ -1,4 +1,4 @@
-package org.adempiere.acct.api.impl;
+package org.adempiere.acct.api;
 
 /*
  * #%L
@@ -13,11 +13,11 @@ package org.adempiere.acct.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,18 +25,18 @@ package org.adempiere.acct.api.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.acct.api.IAccountDimension;
+import org.adempiere.acct.api.impl.AcctSegmentType;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * Immutable {@link IAccountDimension} implementation
+ * Immutable {@link AccountDimension} implementation
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class AccountDimension implements IAccountDimension
+public final class AccountDimension
 {
 	public static final AccountDimension NULL = builder().build();
 
@@ -46,14 +46,13 @@ public final class AccountDimension implements IAccountDimension
 	}
 
 	private final String alias;
-	private final int C_AcctSchema_ID;
+	private final AcctSchemaId acctSchemaId;
 	private final ImmutableMap<AcctSegmentType, Integer> segmentValues;
 
 	private AccountDimension(final Builder builder)
 	{
-		super();
 		alias = builder.alias;
-		C_AcctSchema_ID = builder.C_AcctSchema_ID;
+		acctSchemaId = builder.acctSchemaId;
 		segmentValues = ImmutableMap.copyOf(builder.segmentValues);
 	}
 
@@ -62,25 +61,22 @@ public final class AccountDimension implements IAccountDimension
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("alias", alias)
-				.add("C_AcctSchema_ID", C_AcctSchema_ID)
+				.add("acctSchemaId", acctSchemaId)
 				.addValue(segmentValues)
 				.toString();
 	}
 
-	@Override
 	public String getAlias()
 	{
 		return alias;
 	}
 
-	@Override
 	public final int getSegmentValue(final AcctSegmentType segmentType)
 	{
 		final Integer value = segmentValues.get(segmentType);
 		return value == null ? 0 : value;
 	}
 
-	@Override
 	public final boolean isSegmentValueSet(final AcctSegmentType segmentType)
 	{
 		return segmentValues.containsKey(segmentType);
@@ -91,8 +87,7 @@ public final class AccountDimension implements IAccountDimension
 		return new Builder(this);
 	}
 
-	@Override
-	public final IAccountDimension applyOverrides(final IAccountDimension overrides)
+	public final AccountDimension applyOverrides(final AccountDimension overrides)
 	{
 		return asBuilder()
 				.setAlias(null) // reset the alias
@@ -100,109 +95,91 @@ public final class AccountDimension implements IAccountDimension
 				.build();
 	}
 
-	@Override
 	public int getAD_Client_ID()
 	{
 		return getSegmentValue(AcctSegmentType.Client);
 	}
 
-	@Override
 	public int getAD_Org_ID()
 	{
 		return getSegmentValue(AcctSegmentType.Organization);
 	}
 
-	@Override
-	public int getC_AcctSchema_ID()
+	public AcctSchemaId getAcctSchemaId()
 	{
-		return C_AcctSchema_ID;
+		return acctSchemaId;
 	}
 
-	@Override
 	public int getC_ElementValue_ID()
 	{
 		return getSegmentValue(AcctSegmentType.Account);
 	}
 
-	@Override
 	public int getC_SubAcct_ID()
 	{
 		return getSegmentValue(AcctSegmentType.SubAccount);
 	}
 
-	@Override
 	public int getM_Product_ID()
 	{
 		return getSegmentValue(AcctSegmentType.Product);
 	}
 
-	@Override
 	public int getC_BPartner_ID()
 	{
 		return getSegmentValue(AcctSegmentType.BPartner);
 	}
 
-	@Override
 	public int getAD_OrgTrx_ID()
 	{
 		return getSegmentValue(AcctSegmentType.OrgTrx);
 	}
 
-	@Override
 	public int getC_LocFrom_ID()
 	{
 		return getSegmentValue(AcctSegmentType.LocationFrom);
 	}
 
-	@Override
 	public int getC_LocTo_ID()
 	{
 		return getSegmentValue(AcctSegmentType.LocationTo);
 	}
 
-	@Override
 	public int getC_SalesRegion_ID()
 	{
 		return getSegmentValue(AcctSegmentType.SalesRegion);
 	}
 
-	@Override
 	public int getC_Project_ID()
 	{
 		return getSegmentValue(AcctSegmentType.Project);
 	}
 
-	@Override
 	public int getC_Campaign_ID()
 	{
 		return getSegmentValue(AcctSegmentType.Campaign);
 	}
 
-	@Override
 	public int getC_Activity_ID()
 	{
 		return getSegmentValue(AcctSegmentType.Activity);
 	}
 
-	@Override
 	public int getUser1_ID()
 	{
 		return getSegmentValue(AcctSegmentType.UserList1);
 	}
 
-	@Override
 	public int getUser2_ID()
 	{
 		return getSegmentValue(AcctSegmentType.UserList2);
 	}
 
-	@Override
 	public int getUserElement1_ID()
 	{
 		return getSegmentValue(AcctSegmentType.UserElement1);
 	}
 
-	@Override
 	public int getUserElement2_ID()
 	{
 		return getSegmentValue(AcctSegmentType.UserElement2);
@@ -211,7 +188,7 @@ public final class AccountDimension implements IAccountDimension
 	public static final class Builder
 	{
 		private String alias = null;
-		private int C_AcctSchema_ID = -1;
+		private AcctSchemaId acctSchemaId;
 		private final Map<AcctSegmentType, Integer> segmentValues = new HashMap<>();
 
 		private Builder()
@@ -222,9 +199,8 @@ public final class AccountDimension implements IAccountDimension
 		/** Constructor used to initialize the builder with the values of given dimension */
 		private Builder(final AccountDimension dim)
 		{
-			super();
 			alias = dim.alias;
-			C_AcctSchema_ID = dim.C_AcctSchema_ID;
+			acctSchemaId = dim.acctSchemaId;
 			segmentValues.putAll(dim.segmentValues);
 		}
 
@@ -256,11 +232,11 @@ public final class AccountDimension implements IAccountDimension
 		 *
 		 * @param overrides
 		 */
-		public final Builder applyOverrides(final IAccountDimension overrides)
+		public final Builder applyOverrides(final AccountDimension overrides)
 		{
-			if (overrides.getC_AcctSchema_ID() > 0)
+			if (overrides.getAcctSchemaId() != null)
 			{
-				setC_AcctSchema_ID(overrides.getC_AcctSchema_ID());
+				setAcctSchemaId(overrides.getAcctSchemaId());
 			}
 
 			for (final AcctSegmentType segmentType : AcctSegmentType.values())
@@ -288,15 +264,15 @@ public final class AccountDimension implements IAccountDimension
 			return this;
 		}
 
-		public Builder setC_AcctSchema_ID(final int C_AcctSchema_ID)
+		public Builder setAcctSchemaId(final AcctSchemaId acctSchemaId)
 		{
-			this.C_AcctSchema_ID = C_AcctSchema_ID;
+			this.acctSchemaId = acctSchemaId;
 			return this;
 		}
 
 		public Builder clearC_AcctSchema_ID()
 		{
-			setC_AcctSchema_ID(-1);
+			setAcctSchemaId(null);
 			return this;
 		}
 

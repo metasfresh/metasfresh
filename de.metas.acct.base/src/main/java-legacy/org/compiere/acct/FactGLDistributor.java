@@ -5,14 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AccountDimension;
 import org.adempiere.acct.api.GLDistributionBuilder;
 import org.adempiere.acct.api.GLDistributionResult;
 import org.adempiere.acct.api.GLDistributionResultLine;
 import org.adempiere.acct.api.GLDistributionResultLine.Sign;
-import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.acct.api.IGLDistributionDAO;
-import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.acct.api.impl.AcctSegmentType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -89,7 +88,7 @@ import lombok.NonNull;
 		// For all fact lines
 		for (final FactLine line : lines)
 		{
-			final IAccountDimension lineDimension = factAcctBL.createAccountDimension(line);
+			final AccountDimension lineDimension = factAcctBL.createAccountDimension(line);
 			final I_GL_Distribution distribution = findGL_Distribution(line, lineDimension);
 			if (distribution == null)
 			{
@@ -160,7 +159,7 @@ import lombok.NonNull;
 	 * @param baseLine
 	 * @return {@link I_GL_Distribution} or null
 	 */
-	private I_GL_Distribution findGL_Distribution(final FactLine baseLine, final IAccountDimension baseLineDimension)
+	private I_GL_Distribution findGL_Distribution(final FactLine baseLine, final AccountDimension baseLineDimension)
 	{
 		final Properties ctx = baseLine.getCtx();
 		final String postingType = baseLine.getPostingType();
@@ -219,7 +218,7 @@ import lombok.NonNull;
 		final DocLine<?> docLine = baseLine.getDocLine();
 		final Properties ctx = doc.getCtx();
 
-		final IAccountDimension accountDimension = glDistributionLine.getAccountDimension();
+		final AccountDimension accountDimension = glDistributionLine.getAccountDimension();
 		final MAccount account = MAccount.get(ctx, accountDimension);
 
 		final FactLine factLine = new FactLine(ctx, baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID(), ITrx.TRXNAME_ThreadInherited);

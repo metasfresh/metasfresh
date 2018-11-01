@@ -17,21 +17,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
-import org.slf4j.Logger;
 
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-
+import org.adempiere.acct.api.AcctSchemaId;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
 import org.compiere.model.MElementValue;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 
 /**
  *  Create Charge from Accounts
@@ -337,7 +336,7 @@ public class Charge
         MAccount account = MAccount.get(Env.getCtx(),
             charge.getAD_Client_ID(),
             charge.getAD_Org_ID(),
-            m_acctSchema.getC_AcctSchema_ID(),
+            AcctSchemaId.ofRepoId(m_acctSchema.getC_AcctSchema_ID()),
             elementValueId,
             defaultAccount.getC_SubAcct_ID(),
             defaultAccount.getM_Product_ID(),

@@ -25,7 +25,8 @@ package org.adempiere.acct.api.impl;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IAccountDimension;
+import org.adempiere.acct.api.AccountDimension;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,16 +52,16 @@ public class FactAcctBL implements IFactAcctBL
 		Check.assumeNotNull(factAcct, "factAcct not null");
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(factAcct);
-		final IAccountDimension accountDimension = createAccountDimension(factAcct);
+		final AccountDimension accountDimension = createAccountDimension(factAcct);
 		final MAccount acct = MAccount.get(ctx, accountDimension);
 		return acct;
 	}
 
 	@Override
-	public IAccountDimension createAccountDimension(final I_Fact_Acct fa)
+	public AccountDimension createAccountDimension(final I_Fact_Acct fa)
 	{
 		return AccountDimension.builder()
-				.setC_AcctSchema_ID(fa.getC_AcctSchema_ID())
+				.setAcctSchemaId(AcctSchemaId.ofRepoId(fa.getC_AcctSchema_ID()))
 				.setAD_Client_ID(fa.getAD_Client_ID())
 				.setAD_Org_ID(fa.getAD_Org_ID())
 				.setC_ElementValue_ID(fa.getAccount_ID())
@@ -82,11 +83,11 @@ public class FactAcctBL implements IFactAcctBL
 	}
 
 	@Override
-	public void updateFactLineFromDimension(final I_Fact_Acct fa, final IAccountDimension dim)
+	public void updateFactLineFromDimension(final I_Fact_Acct fa, final AccountDimension dim)
 	{
-		if (dim.getC_AcctSchema_ID() > 0)
+		if (dim.getAcctSchemaId() != null)
 		{
-			fa.setC_AcctSchema_ID(dim.getC_AcctSchema_ID());
+			fa.setC_AcctSchema_ID(dim.getAcctSchemaId().getRepoId());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.Client))
 		{

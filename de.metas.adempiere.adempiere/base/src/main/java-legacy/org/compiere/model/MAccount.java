@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -20,13 +20,13 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AccountDimension;
 import org.adempiere.acct.api.AcctSchemaElementType;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDAO;
-import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
@@ -38,9 +38,11 @@ import de.metas.util.Services;
  * Account Object Entity to maintain all segment values. C_ValidCombination
  *
  * @author Jorg Janke
- * @author victor.perez@e-evolution.com, www.e-evolution.com <li>RF [ 2214883 ] Remove SQL code and Replace for Query
+ * @author victor.perez@e-evolution.com, www.e-evolution.com
+ *         <li>RF [ 2214883 ] Remove SQL code and Replace for Query
  *         http://sourceforge.net/tracker/index.php?func=detail&aid=2214883&group_id=176962&atid=879335
- * @author Teo Sarca, www.arhipac.ro <li>FR [ 2694043 ] Query. first/firstOnly usage best practice
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>FR [ 2694043 ] Query. first/firstOnly usage best practice
  * @version $Id: MAccount.java,v 1.4 2006/07/30 00:58:04 jjanke Exp $
  */
 public class MAccount extends X_C_ValidCombination
@@ -52,20 +54,33 @@ public class MAccount extends X_C_ValidCombination
 
 	/**
 	 * Get existing Account or create it
+	 * 
 	 * @return account or null
-	 * @deprecated Use {@link #get(Properties,IAccountDimension)} instead
+	 * @deprecated Use {@link #get(Properties,AccountDimension)} instead
 	 */
 	@Deprecated
 	public static MAccount get(Properties ctx,
-			int AD_Client_ID, int AD_Org_ID, int C_AcctSchema_ID,
-			int Account_ID, int C_SubAcct_ID,
-			int M_Product_ID, int C_BPartner_ID, int AD_OrgTrx_ID,
-			int C_LocFrom_ID, int C_LocTo_ID, int C_SalesRegion_ID,
-			int C_Project_ID, int C_Campaign_ID, int C_Activity_ID,
-			int User1_ID, int User2_ID, int UserElement1_ID, int UserElement2_ID)
+			int AD_Client_ID,
+			int AD_Org_ID,
+			AcctSchemaId acctSchemaId,
+			int Account_ID,
+			int C_SubAcct_ID,
+			int M_Product_ID,
+			int C_BPartner_ID,
+			int AD_OrgTrx_ID,
+			int C_LocFrom_ID,
+			int C_LocTo_ID,
+			int C_SalesRegion_ID,
+			int C_Project_ID,
+			int C_Campaign_ID,
+			int C_Activity_ID,
+			int User1_ID,
+			int User2_ID,
+			int UserElement1_ID,
+			int UserElement2_ID)
 	{
 		final AccountDimension dim = AccountDimension.builder()
-				.setC_AcctSchema_ID(C_AcctSchema_ID)
+				.setAcctSchemaId(acctSchemaId)
 				.setAD_Client_ID(AD_Client_ID)
 				.setAD_Org_ID(AD_Org_ID)
 				.setC_ElementValue_ID(Account_ID)
@@ -86,7 +101,7 @@ public class MAccount extends X_C_ValidCombination
 				.build();
 		return get(ctx, dim);
 	}	// get
-	
+
 	/**
 	 * Get existing Account or create it.
 	 *
@@ -94,11 +109,11 @@ public class MAccount extends X_C_ValidCombination
 	 * @param dimension accounting dimension
 	 * @return existing account or a newly created one; never returns null
 	 */
-	public static MAccount get(final Properties ctx, final IAccountDimension dimension)
+	public static MAccount get(final Properties ctx, final AccountDimension dimension)
 	{
 		// services
 		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-		
+
 		// Existing
 		final MAccount existingAccount = accountDAO.retrieveAccount(ctx, dimension);
 		if (existingAccount != null)
@@ -109,7 +124,7 @@ public class MAccount extends X_C_ValidCombination
 		// New
 		final MAccount newAccount = new MAccount(ctx, 0, ITrx.TRXNAME_None);
 		newAccount.setClientOrg(dimension.getAD_Client_ID(), dimension.getAD_Org_ID());
-		newAccount.setC_AcctSchema_ID(dimension.getC_AcctSchema_ID());
+		newAccount.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
 		newAccount.setAccount_ID(dimension.getC_ElementValue_ID());
 		// -- Optional Accounting fields
 		newAccount.setC_SubAcct_ID(dimension.getC_SubAcct_ID());
@@ -185,7 +200,7 @@ public class MAccount extends X_C_ValidCombination
 			else if (elementType.equals(AcctSchemaElementType.UserElement2) && setValue)
 				vc.setUserElement2_ID(defaultValue);
 		}
-		
+
 		return vc;
 	}   // getDefault
 
@@ -266,9 +281,7 @@ public class MAccount extends X_C_ValidCombination
 	private MAccount(final I_C_AcctSchema as)
 	{
 		this(
-				InterfaceWrapperHelper.getCtx(as)
-				, 0
-				, InterfaceWrapperHelper.getTrxName(as));
+				InterfaceWrapperHelper.getCtx(as), 0, InterfaceWrapperHelper.getTrxName(as));
 		setClientOrg(as.getAD_Client_ID(), as.getAD_Org_ID());
 		setC_AcctSchema(as);
 	}	// Account
@@ -370,7 +383,6 @@ public class MAccount extends X_C_ValidCombination
 	{
 		String accountType = getAccountType();
 		return (X_C_ElementValue.ACCOUNTTYPE_Liability.equals(accountType)
-		|| X_C_ElementValue.ACCOUNTTYPE_OwnerSEquity.equals(accountType));
+				|| X_C_ElementValue.ACCOUNTTYPE_OwnerSEquity.equals(accountType));
 	}	// isPassiva
 }	// Account
-
