@@ -142,15 +142,13 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		MAcctSchemaDefault source = MAcctSchemaDefault.get(p_SourceAcctSchema_ID);
 		MAcctSchemaDefault target = new MAcctSchemaDefault(getCtx(), 0, get_TrxName());
 		target.setC_AcctSchema_ID(p_TargetAcctSchema_ID.getRepoId());
-		ArrayList<KeyNamePair> list = source.getAcctInfo();
-		for (int i = 0; i < list.size(); i++)
+		for (final KeyNamePair pp : source.getAcctInfo())
 		{
-			KeyNamePair pp = list.get(i);
-			int sourceC_ValidCombination_ID = pp.getKey();
-			String columnName = pp.getName();
+			final int sourceC_ValidCombination_ID = pp.getKey();
+			final String columnName = pp.getName();
 			MAccount sourceAccount = MAccount.get(getCtx(), sourceC_ValidCombination_ID);
 			MAccount targetAccount = createAccount(targetAS, sourceAccount);
-			target.setValue(columnName, new Integer(targetAccount.getC_ValidCombination_ID()));
+			target.setValue(columnName, targetAccount.getC_ValidCombination_ID());
 		}
 		if (!target.save())
 			throw new AdempiereException("Could not Save Default");

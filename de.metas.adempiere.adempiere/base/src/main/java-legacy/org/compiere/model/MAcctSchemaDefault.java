@@ -18,20 +18,20 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.OrgId;
 import org.compiere.util.KeyNamePair;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
  * Default Accounts for MAcctSchema
- * 
+ *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com, www.e-evolution.com
  *         <li>RF [ 2214883 ] Remove SQL code and Replace for Query http://sourceforge.net/tracker/index.php?func=detail&aid=2214883&group_id=176962&atid=879335
@@ -40,13 +40,13 @@ import lombok.NonNull;
 public class MAcctSchemaDefault extends X_C_AcctSchema_Default
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 199959007595802866L;
 
 	/**
 	 * Get Accounting Schema Default Info
-	 * 
+	 *
 	 * @param ctx context
 	 * @param acctSchemaId id
 	 * @return defaults
@@ -60,48 +60,31 @@ public class MAcctSchemaDefault extends X_C_AcctSchema_Default
 				.firstOnly(MAcctSchemaDefault.class);
 	}	// get
 
-	/** Logger */
-	protected static Logger s_log = LogManager.getLogger(MAcctSchemaDefault.class);
-
-	/**
-	 * Load Constructor
-	 * 
-	 * @param ctx context
-	 * @param C_AcctSchema_ID parent
-	 * @param trxName transaction
-	 */
-	public MAcctSchemaDefault(Properties ctx, int C_AcctSchema_ID, String trxName)
+	public MAcctSchemaDefault(final Properties ctx, final int C_AcctSchema_ID, final String trxName)
 	{
 		super(ctx, C_AcctSchema_ID, trxName);
-	}	// MAcctSchemaDefault
+	}
 
-	/**
-	 * Load Constructor
-	 * 
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
-	public MAcctSchemaDefault(Properties ctx, ResultSet rs, String trxName)
+	public MAcctSchemaDefault(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MAcctSchemaDefault
+	}
 
 	/**
 	 * Get Acct Info list
-	 * 
+	 *
 	 * @return list
 	 */
-	public ArrayList<KeyNamePair> getAcctInfo()
+	public List<KeyNamePair> getAcctInfo()
 	{
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		final ArrayList<KeyNamePair> list = new ArrayList<>();
 		for (int i = 0; i < get_ColumnCount(); i++)
 		{
-			String columnName = get_ColumnName(i);
+			final String columnName = get_ColumnName(i);
 			if (columnName.endsWith("Acct"))
 			{
-				int id = ((Integer)get_Value(i));
-				list.add(new KeyNamePair(id, columnName));
+				final int accountId = get_ValueAsInt(i);
+				list.add(new KeyNamePair(accountId, columnName));
 			}
 		}
 		return list;
@@ -109,28 +92,23 @@ public class MAcctSchemaDefault extends X_C_AcctSchema_Default
 
 	/**
 	 * Set Value (don't use)
-	 * 
+	 *
 	 * @param columnName column name
 	 * @param value value
 	 * @return true if value set
 	 */
-	public boolean setValue(String columnName, Integer value)
+	public boolean setValue(final String columnName, final Integer value)
 	{
 		return super.set_Value(columnName, value);
 	}	// setValue
 
-	/**
-	 * Before Save
-	 * 
-	 * @param newRecord new
-	 * @return true
-	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
-		if (getAD_Org_ID() != 0)
-			setAD_Org_ID(0);
+		if (getAD_Org_ID() != OrgId.ANY.getRepoId())
+		{
+			setAD_Org_ID(OrgId.ANY.getRepoId());
+		}
 		return true;
-	}	// beforeSave
-
-}	// MAcctSchemaDefault
+	}
+}

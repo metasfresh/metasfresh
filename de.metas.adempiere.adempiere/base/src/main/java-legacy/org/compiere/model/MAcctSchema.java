@@ -514,9 +514,9 @@ public class MAcctSchema extends X_C_AcctSchema
 	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
-		if (getAD_Org_ID() != 0)
+		if (getAD_Org_ID() != OrgId.ANY.getRepoId())
 		{
-			setAD_Org_ID(0);
+			setAD_Org_ID(OrgId.ANY.getRepoId());
 		}
 		if (super.getTaxCorrectionType() == null)
 		{
@@ -527,12 +527,12 @@ public class MAcctSchema extends X_C_AcctSchema
 			setGAAP(GAAP_InternationalGAAP);
 
 		//	Check Primary
-		if (getAD_OrgOnly_ID() != 0)
+		if (getAD_OrgOnly_ID() > 0)
 		{
 			final I_AD_ClientInfo info = Services.get(IClientDAO.class).retrieveClientInfo(getCtx(), getAD_Client_ID());
 			if (info.getC_AcctSchema1_ID() == getC_AcctSchema_ID())
 			{
-				setAD_OrgOnly_ID(0);
+				setAD_OrgOnly_ID(OrgId.ANY.getRepoId());
 			}
 		}
 		return true;
