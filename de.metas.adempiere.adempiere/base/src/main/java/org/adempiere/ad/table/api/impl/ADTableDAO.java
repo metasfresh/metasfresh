@@ -272,7 +272,6 @@ public class ADTableDAO implements IADTableDAO
 
 		return queryBL.createQueryBuilder(I_AD_Column.class, table)
 				.addOnlyActiveRecordsFilter()
-				//.addOnlyContextClient()
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, table.getAD_Table_ID())
 				.orderBy()
 				.addColumnAscending(I_AD_Column.COLUMNNAME_AD_Column_ID)
