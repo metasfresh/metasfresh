@@ -411,7 +411,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		// metas: end
 
-		final String sql = buildSQL(null, true);
+		final String sql = buildSQL(null/*selectClause*/, true/*useOrderByClause*/);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -814,7 +814,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		else
 		{
-			setLimit(1); // we don't need more than one row to decide if it matches
+			setLimit(1); // no postQueryFilter => we don't need more than one row to decide if it matches
 			sqlSelect = new StringBuilder("SELECT 1 FROM ")
 					.append(getSqlFrom());
 		}

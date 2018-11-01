@@ -192,7 +192,7 @@ import de.metas.util.Services;
 					sqlWhere.append(" OR ");
 				}
 				sqlWhere.append("UPPER(");
-				if (searchColumn.equals(searchColumnsSQL))
+				if (searchColumnsSQL.contains(searchColumn))
 				{
 					sqlWhere.append(DBConstants.FUNC_unaccent_string(tableName + "." + searchColumn));
 				}
