@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.element.api.IElementBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -28,6 +29,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.ILanguageDAO;
 import de.metas.util.Services;
 
 /**
@@ -237,7 +239,32 @@ public class M_Element extends X_AD_Element
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
-		Services.get(IElementBL.class).performUpdatesAfterSaveElement(AdElementId.ofRepoId(get_ID()));
+
+		if (newRecord)
+		{
+			// the new element is not yet used so no updates are needed
+			return success;
+		}
+
+		final String baseLanguage = Services.get(ILanguageDAO.class).retrieveBaseLanguage();
+
+		Services.get(IElementBL.class).performUpdatesAfterSaveElement(ElementChangedEvent.builder()
+				.adElementId(AdElementId.ofRepoId(getAD_Element_ID()))
+				.adLanguage(baseLanguage)
+				.columnName(getColumnName())
+				.name(getName())
+				.printName(getPrintName())
+				.description(getDescription())
+				.help(getHelp())
+				.commitWarning(getCommitWarning())
+				.poDescription(getPO_Description())
+				.poHelp(getPO_Help())
+				.poName(getPO_Name())
+				.poPrintName(getPO_PrintName())
+				.webuiNameBrowse(getWEBUI_NameBrowse())
+				.webuiNameNew(getWEBUI_NameNew())
+				.webuiNameNewBreadcrumb(getWEBUI_NameNewBreadcrumb())
+				.build());
 
 		return success;
 	}	// afterSave

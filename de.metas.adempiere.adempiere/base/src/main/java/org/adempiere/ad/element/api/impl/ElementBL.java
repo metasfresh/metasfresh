@@ -6,10 +6,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.List;
 
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.element.api.IElementBL;
 import org.adempiere.ad.element.api.IElementDAO;
 import org.adempiere.ad.menu.api.IADMenuDAO;
-import org.adempiere.ad.service.IADElementDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -124,7 +124,6 @@ public class ElementBL implements IElementBL
 
 			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
 
-
 			Services.get(IElementTranslationBL.class).updateElementTranslationsFromWindow(elementId, window.getAD_Window_ID());
 
 			IADWindowDAO.DYNATTR_AD_Window_UpdateTranslations.setValue(window, false);
@@ -161,189 +160,235 @@ public class ElementBL implements IElementBL
 	}
 
 	@Override
-	public void performUpdatesAfterSaveElement(final AdElementId adElementId)
+	public void performUpdatesAfterSaveElement(final ElementChangedEvent event)
 	{
-		final I_AD_Element element = Services.get(IADElementDAO.class).getById(adElementId.getRepoId());
-
-		if (InterfaceWrapperHelper.isNew(element))
+		if (availableUpdatesForADColumn(event))
 		{
-			// only handle the update case
-			return;
+			updateADColumns(event);
 		}
 
-		if (InterfaceWrapperHelper.isValueChanged(element, ImmutableSet.of(
-				I_AD_Element.COLUMNNAME_Name,
-				I_AD_Element.COLUMNNAME_Description,
-				I_AD_Element.COLUMNNAME_Help,
-				I_AD_Element.COLUMNNAME_ColumnName)))
+		if (availableUpdatesForADProcessParas(event))
 		{
-			updateADColumnsFromADElement(element);
-
-			updateADProcessParasFromADElement(element);
+			updateADProcessParas(event);
 		}
 
-		if (InterfaceWrapperHelper.isValueChanged(element, ImmutableSet.of(
-				I_AD_Element.COLUMNNAME_Name,
-				I_AD_Element.COLUMNNAME_Description,
-				I_AD_Element.COLUMNNAME_Help)))
+		if (availableUpdatesForADField(event))
 		{
-			updateADFieldsFromADElement(element);
+			updateADFields(event);
 		}
 
-		if (InterfaceWrapperHelper.isValueChanged(element, ImmutableSet.of(
-				I_AD_Element.COLUMNNAME_PrintName,
-				I_AD_Element.COLUMNNAME_Name)))
+		if (availableUpdatesForPrintFormatItem(event))
 		{
-			updateADPrintFormatItemsFromADElement(element);
+			updateADPrintFormatItems(event);
 		}
 
-		if (InterfaceWrapperHelper.isValueChanged(element, ImmutableSet.of(
-				I_AD_Element.COLUMNNAME_Name,
-				I_AD_Element.COLUMNNAME_Description,
-				I_AD_Element.COLUMNNAME_Help,
-				I_AD_Element.COLUMNNAME_CommitWarning)))
+		if (availableUpdatesForADTab(event))
 		{
-			updateADTabsFromADElement(element);
+			updateADTabs(event);
 		}
 
-		if (InterfaceWrapperHelper.isValueChanged(element, ImmutableSet.of(
-				I_AD_Element.COLUMNNAME_Name,
-				I_AD_Element.COLUMNNAME_Description,
-				I_AD_Element.COLUMNNAME_Help)))
+		if (availableUpdatesForADWindow(event))
 		{
-			updateADWindowsFromADElement(element);
+
+			updateADWindows(event);
 		}
 
-		if (InterfaceWrapperHelper.isValueChanged(element, ImmutableSet.of(
-				I_AD_Element.COLUMNNAME_Name,
-				I_AD_Element.COLUMNNAME_Description,
-				I_AD_Element.COLUMNNAME_WEBUI_NameBrowse,
-				I_AD_Element.COLUMNNAME_WEBUI_NameNew,
-				I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb)))
+		if (availableUpdatesForADMenu(event))
 		{
-			updateADMenusFromADElement(element);
+			updateADMenus(event);
 		}
 	}
 
-	private void updateADMenusFromADElement(final I_AD_Element element)
+	private boolean availableUpdatesForADColumn(final ElementChangedEvent event)
+	{
+		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
+
+		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_ColumnName);
+	}
+
+	private boolean availableUpdatesForADProcessParas(final ElementChangedEvent event)
+	{
+		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
+
+		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_ColumnName);
+	}
+
+	private boolean availableUpdatesForADField(final ElementChangedEvent event)
+	{
+		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
+
+		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help);
+	}
+
+	private boolean availableUpdatesForPrintFormatItem(final ElementChangedEvent event)
+	{
+		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
+
+		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_PrintName);
+	}
+
+	private boolean availableUpdatesForADTab(final ElementChangedEvent event)
+	{
+		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
+
+		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_CommitWarning);
+	}
+
+	private boolean availableUpdatesForADWindow(final ElementChangedEvent event)
+	{
+		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
+
+		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help);
+	}
+
+	private boolean availableUpdatesForADMenu(final ElementChangedEvent event)
+	{
+		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
+
+		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_WEBUI_NameNew) ||
+				updatedColumns.contains(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb);
+	}
+
+	private void updateADMenus(final ElementChangedEvent event)
 	{
 		StringBuilder sql;
 		int no;
-		sql = new StringBuilder("UPDATE AD_Menu SET Name=").append(DB.TO_STRING(element.getName()))
-				.append(", Description=").append(DB.TO_STRING(element.getDescription()))
-				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse).append(" = ").append(DB.TO_STRING(element.getWEBUI_NameBrowse()))
-				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNew).append(" = ").append(DB.TO_STRING(element.getWEBUI_NameNew()))
-				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb).append(" = ").append(DB.TO_STRING(element.getWEBUI_NameNewBreadcrumb()))
+		sql = new StringBuilder("UPDATE AD_Menu SET Name=").append(DB.TO_STRING(event.getName()))
+				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
+				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse).append(" = ").append(DB.TO_STRING(event.getWebuiNameBrowse()))
+				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNew).append(" = ").append(DB.TO_STRING(event.getWebuiNameNew()))
+				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb).append(" = ").append(DB.TO_STRING(event.getWebuiNameNewBreadcrumb()))
 
-				.append(" WHERE AD_Element_ID = ").append(element.getAD_Element_ID());
+				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("Menus updated #{}", no);
 	}
 
-	private void updateADWindowsFromADElement(final I_AD_Element element)
+	private void updateADWindows(final ElementChangedEvent event)
 	{
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE AD_WINDOW SET Name=")
-				.append(DB.TO_STRING(element.getName()))
-				.append(", Description=").append(DB.TO_STRING(element.getDescription()))
-				.append(", Help=").append(DB.TO_STRING(element.getHelp()))
-				.append(" WHERE AD_Element_ID = ").append(element.getAD_Element_ID());
+				.append(DB.TO_STRING(event.getName()))
+				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
+				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
+				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("Windows updated #{}", no);
 	}
 
-	private void updateADTabsFromADElement(final I_AD_Element element)
+	private void updateADTabs(final ElementChangedEvent event)
 	{
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE AD_Tab SET Name=")
-				.append(DB.TO_STRING(element.getName()))
-				.append(", Description=").append(DB.TO_STRING(element.getDescription()))
-				.append(", Help=").append(DB.TO_STRING(element.getHelp()))
-				.append(", ").append(I_AD_Element.COLUMNNAME_CommitWarning).append(" = ").append(DB.TO_STRING(element.getCommitWarning()))
-				.append(" WHERE AD_Element_ID = ").append(element.getAD_Element_ID());
+				.append(DB.TO_STRING(event.getName()))
+				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
+				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
+				.append(", ").append(I_AD_Element.COLUMNNAME_CommitWarning).append(" = ").append(DB.TO_STRING(event.getCommitWarning()))
+				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("Tabs updated #{}", no);
 	}
 
-	private void updateADPrintFormatItemsFromADElement(final I_AD_Element element)
+	private void updateADPrintFormatItems(final ElementChangedEvent event)
 	{
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE AD_PrintFormatItem pi SET PrintName=")
-				.append(DB.TO_STRING(element.getPrintName()))
-				.append(", Name=").append(DB.TO_STRING(element.getName()))
+				.append(DB.TO_STRING(event.getPrintName()))
+				.append(", Name=").append(DB.TO_STRING(event.getName()))
 				.append(" WHERE IsCentrallyMaintained='Y'")
 				.append(" AND EXISTS (SELECT * FROM AD_Column c ")
 				.append("WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=")
-				.append(element.getAD_Element_ID()).append(")");
+				.append(event.getAdElementId().getRepoId()).append(")");
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("PrintFormatItem updated #" + no);
 	}
 
-	private void updateADFieldsFromADElement(final I_AD_Element element)
+	private void updateADFields(final ElementChangedEvent event)
 	{
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE AD_Field SET Name=")
-				.append(DB.TO_STRING(element.getName()))
-				.append(", Description=").append(DB.TO_STRING(element.getDescription()))
-				.append(", Help=").append(DB.TO_STRING(element.getHelp()))
+				.append(DB.TO_STRING(event.getName()))
+				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
+				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
 				.append(" WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=")
-				.append(element.getAD_Element_ID())
+				.append(event.getAdElementId().getRepoId())
 				.append(")")
 				.append(" AND ")
 				.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" IS NULL ")
 				.append(")")
 				.append(" OR ")
 				.append("(")
-				.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(element.getAD_Element_ID())
+				.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(event.getAdElementId().getRepoId())
 				.append(")");
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("Fields updated #" + no);
 	}
 
-	private void updateADProcessParasFromADElement(final I_AD_Element element)
+	private void updateADProcessParas(final ElementChangedEvent event)
 	{
 		StringBuilder sql;
-		int no;
+		int no = 0;
 		// Parameter
-		sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
-				.append(DB.TO_STRING(element.getColumnName()))
-				.append(", Name=").append(DB.TO_STRING(element.getName()))
-				.append(", Description=").append(DB.TO_STRING(element.getDescription()))
-				.append(", Help=").append(DB.TO_STRING(element.getHelp()))
-				.append(", AD_Element_ID=").append(element.getAD_Element_ID())
-				.append(" WHERE UPPER(ColumnName)=")
-				.append(DB.TO_STRING(element.getColumnName().toUpperCase()))
-				.append(" AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL");
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		if (event.getColumnName() != null)
+		{
+			sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
+					.append(DB.TO_STRING(event.getColumnName()))
+					.append(", Name=").append(DB.TO_STRING(event.getName()))
+					.append(", Description=").append(DB.TO_STRING(event.getDescription()))
+					.append(", Help=").append(DB.TO_STRING(event.getHelp()))
+					.append(", AD_Element_ID=").append(event.getAdElementId().getRepoId())
+					.append(" WHERE UPPER(ColumnName)=")
+					.append(DB.TO_STRING(event.getColumnName().toUpperCase()))
+					.append(" AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL");
+			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
 
 		sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
-				.append(DB.TO_STRING(element.getColumnName()))
-				.append(", Name=").append(DB.TO_STRING(element.getName()))
-				.append(", Description=").append(DB.TO_STRING(element.getDescription()))
-				.append(", Help=").append(DB.TO_STRING(element.getHelp()))
-				.append(" WHERE AD_Element_ID=").append(element.getAD_Element_ID())
+				.append(DB.TO_STRING(event.getColumnName()))
+				.append(", Name=").append(DB.TO_STRING(event.getName()))
+				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
+				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
+				.append(" WHERE AD_Element_ID=").append(event.getAdElementId().getRepoId())
 				.append(" AND IsCentrallyMaintained='Y'");
 		no += DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("Parameters updated #" + no);
 	}
 
-	private void updateADColumnsFromADElement(final I_AD_Element element)
+	private void updateADColumns(final ElementChangedEvent event)
 	{
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE AD_Column SET ColumnName=")
-				.append(DB.TO_STRING(element.getColumnName()))
-				.append(", Name=").append(DB.TO_STRING(element.getName()))
-				.append(", Description=").append(DB.TO_STRING(element.getDescription()))
-				.append(", Help=").append(DB.TO_STRING(element.getHelp()))
-				.append(" WHERE AD_Element_ID=").append(element.getAD_Element_ID());
+				.append(DB.TO_STRING(event.getColumnName()))
+				.append(", Name=").append(DB.TO_STRING(event.getName()))
+				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
+				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
+				.append(" WHERE AD_Element_ID=").append(event.getAdElementId().getRepoId());
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("afterSave - Columns updated #" + no);
 	}

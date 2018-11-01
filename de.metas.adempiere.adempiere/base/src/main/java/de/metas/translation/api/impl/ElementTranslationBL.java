@@ -1,6 +1,7 @@
 package de.metas.translation.api.impl;
 
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.element.api.IElementBL;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -48,22 +49,35 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private static final String FUNCTION_Update_AD_Element_Trl_From_AD_Menu_Trl = "update_ad_element_trl_from_ad_menu_trl";
 
 	@Override
-	public void updateTranslations(final AdElementId adElementId, final String adLanguage)
+	public void updateTranslations(final ElementChangedEvent event)
 	{
 		// Update Columns, Fields, Parameters, Print Info translation tables
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update, adElementId, adLanguage), null);
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update, event.getAdElementId(), event.getAdLanguage()), null);
+
+		if (isBaseLanguage(event))
+		{
+			updateElementFromElementTrl(event.getAdElementId(), event.getAdLanguage());
+
+			Services.get(IElementBL.class).performUpdatesAfterSaveElement(event);
+		}
+	}
+
+	private boolean isBaseLanguage(final ElementChangedEvent event)
+	{
+		final String adLanguage = event.getAdLanguage();
+
+		// when language is not set, consider it as base language
+		if (adLanguage == null)
+		{
+			return true;
+		}
 
 		final I_AD_Language language = Services.get(ILanguageDAO.class).retrieveByAD_Language(adLanguage);
 		Check.assumeNotNull(language, "AD_Language Not Null");
 
-		if (language.isBaseLanguage())
-		{
-			updateElementFromElementTrl(adElementId, adLanguage);
-			Services.get(IElementBL.class).performUpdatesAfterSaveElement(adElementId);
-		}
-
+		return language.isBaseLanguage();
 	}
 
 	private String addUpdateFunctionCall(final String functionCall, final AdElementId adElementId, final String adLanguage)
@@ -144,10 +158,10 @@ public class ElementTranslationBL implements IElementTranslationBL
 	@Override
 	public void updateElementFromElementTrl(final AdElementId adElementId, final String adLanguage)
 	{
+
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-		{
-			DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_AD_Element_On_AD_Element_TRL_Update, adElementId, adLanguage), null);
-		}
+
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_AD_Element_On_AD_Element_TRL_Update, adElementId, adLanguage), null);
 	}
 
 }

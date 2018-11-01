@@ -33,13 +33,16 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -57,6 +60,8 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.cache.CacheMgt;
@@ -2201,13 +2206,46 @@ public class GridTable extends AbstractTableModel
 					if ("AD_Element_Trl".equals(getTableName()))
 					{
 						final int elementIndex = findColumn(I_AD_Element.COLUMNNAME_AD_Element_ID);
-						final int languageIndex = findColumn(I_C_BPartner.COLUMNNAME_AD_Language);
 
 						final AdElementId adElementId = AdElementId.ofRepoId((Integer)rowData[elementIndex]);
-						final String adLanguage = (String)rowData[languageIndex];
+						final String adLanguage = extractStringValueFromColumn(rowData, I_C_BPartner.COLUMNNAME_AD_Language);
 
-						Services.get(IElementTranslationBL.class).updateTranslations(adElementId, adLanguage);
+						final Set<String> updatedColumns = ElementChangedEvent.ALL_COLUMN_NAMES.stream()
+								.filter(columnName -> isColumnUpdated(rowData, columnName))
+								.collect(ImmutableSet.toImmutableSet());
 
+						final String name = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_Name);
+						final String columnName = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_ColumnName);
+						final String printName = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PrintName);
+						final String description = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_Description);
+						final String help = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_Help);
+						final String commitWarning = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_CommitWarning);
+						final String poName = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PO_Name);
+						final String poPrintName = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PO_PrintName);
+						final String poDescription = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PO_Description);
+						final String poHelp = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PO_Help);
+						final String webuiNameBrowse = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_WEBUI_NameBrowse);
+						final String webuiNameNew = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_WEBUI_NameNew);
+						final String webuiNameNewBreadcrumb = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb);
+
+						Services.get(IElementTranslationBL.class).updateTranslations(ElementChangedEvent.builder()
+								.adElementId(adElementId)
+								.adLanguage(adLanguage)
+								.updatedColumns(updatedColumns)
+								.name(name)
+								.columnName(columnName)
+								.description(description)
+								.help(help)
+								.printName(printName)
+								.commitWarning(commitWarning)
+								.poName(poName)
+								.poPrintName(poPrintName)
+								.poDescription(poDescription)
+								.poHelp(poHelp)
+								.webuiNameBrowse(webuiNameBrowse)
+								.webuiNameNew(webuiNameNew)
+								.webuiNameNewBreadcrumb(webuiNameNewBreadcrumb)
+								.build());
 					}
 				}
 				else
@@ -2268,6 +2306,24 @@ public class GridTable extends AbstractTableModel
 
 		return SAVE_OK;
 	}	// dataSave
+
+	private String extractStringValueFromColumn(final Object[] rowData, final String columnName)
+	{
+		final int columnIndex = findColumn(columnName);
+		return columnIndex >= 0 ? (String)rowData[columnIndex] : null;
+	}
+
+	private boolean isColumnUpdated(final Object[] rowData, final String columnName)
+	{
+		final int columnIndex = findColumn(columnName);
+
+		if (columnIndex >= 0)
+		{
+			return !Objects.equals(m_rowData[columnIndex], rowData[columnIndex]);
+		}
+
+		return false;
+	}
 
 	/**
 	 * Save via PO
