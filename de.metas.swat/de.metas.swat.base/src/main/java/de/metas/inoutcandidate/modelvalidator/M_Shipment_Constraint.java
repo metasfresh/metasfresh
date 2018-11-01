@@ -9,7 +9,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.impl.ImmutableStorageSegment;
@@ -44,7 +44,9 @@ public class M_Shipment_Constraint
 	public void invalidateShipmentSchedules(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
 	{
 		final Set<IStorageSegment> affectedStorageSegments = extractAffectedStorageSegments(constraint, changeType);
-		Services.get(IShipmentSchedulePA.class).invalidate(affectedStorageSegments);
+		
+		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+		invalidSchedulesRepo.invalidateStorageSegments(affectedStorageSegments);
 	}
 
 	private static final Set<IStorageSegment> extractAffectedStorageSegments(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)

@@ -233,8 +233,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	 * </ul>
 	 */
 	@Override
-	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched)
+	public IDeliverRequest createDeliverRequest(@NonNull final I_M_ShipmentSchedule sched, @NonNull final org.compiere.model.I_C_OrderLine salesOrderLine)
 	{
-		return () -> sched.getC_OrderLine().getQtyOrdered();
+		return salesOrderLine::getQtyOrdered;
 	}
 }

@@ -91,24 +91,23 @@ public class M_ShipmentSchedule_ChangeDeliveryDate extends JavaProcess
 		final PInstanceId pinstanceId = getPinstanceId();
 
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final String trxName = getTrxName();
 
 		// update delivery date
 		// no invalidation
-		shipmentSchedulePA.updateDeliveryDate_Override(p_deliveryDate, pinstanceId, trxName);
+		shipmentSchedulePA.updateDeliveryDate_Override(p_deliveryDate, pinstanceId);
 
 		// In case preparation date is set as parameter, update the preparation date too
 
 		if (p_preparationDate != null)
 		{
 			// no invalidation. Just set the preparation date that was given
-			shipmentSchedulePA.updatePreparationDate_Override(p_preparationDate, pinstanceId, trxName);
+			shipmentSchedulePA.updatePreparationDate_Override(p_preparationDate, pinstanceId);
 		}
 		else
 		{
 			// Initially, set null in preparation date. It will be calculated later, during the updating process.
 			// This update will invalidate the selected schedules.
-			shipmentSchedulePA.updatePreparationDate_Override(null, pinstanceId, trxName);
+			shipmentSchedulePA.updatePreparationDate_Override(null, pinstanceId);
 		}
 
 		return MSG_OK;

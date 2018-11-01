@@ -3,8 +3,6 @@ package de.metas.inoutcandidate.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -65,6 +63,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -95,7 +94,6 @@ import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngine;
@@ -105,6 +103,7 @@ import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * This service computes the quantities to be shipped to customers for a list of {@link I_C_OrderLine}s and their respective {@link I_M_ShipmentSchedule}s.
@@ -257,24 +256,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			sched.setQtyDelivered(qtyDelivered);
 			sched.setQtyReserved(BigDecimal.ZERO.max(deliverRequest.getQtyOrdered().subtract(sched.getQtyDelivered())));
 
-			if (olAndSched.getOl().isPresent())
-			{
-				final I_C_OrderLine ol = olAndSched.getOl().get();
-				final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
-				updateLineNetAmt(ctx, olAndSched.getOl().get(), sched, productId);
-			}
-			else
-			{
-				sched.setLineNetAmt(BigDecimal.ZERO);
-			}
+			updateLineNetAmt(olAndSched);
 
 			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, secondRun);
 
 			InterfaceWrapperHelper.setDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess, Boolean.TRUE);
 
-			if (olAndSched.getOl().isPresent())
+			if (olAndSched.hasSalesOrderLine())
 			{
-				final String orderDocStatus = olAndSched.getOl().get().getC_Order().getDocStatus();
+				final String orderDocStatus = olAndSched.getOrderDocStatus();
 				if (!docActionBL.isStatusCompletedOrClosedOrReversed(orderDocStatus) // task 07355: thread closed orders like completed orders
 						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
 						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
@@ -403,31 +393,48 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		sched.setDeliveryDate(shipmentScheduleOrderDoc.getDeliveryDate());
 	}
 
+	private void updateLineNetAmt(final OlAndSched olAndSched)
+	{
+		final BigDecimal lineNetAmt = computeLineNetAmt(olAndSched);
+		olAndSched.setShipmentScheduleLineNetAmt(lineNetAmt);
+	}
+
 	/**
 	 * Try to get the given <code>ol</code>'s <code>qtyReservedInPriceUOM</code> and update the given <code>sched</code>'s <code>LineNetAmt</code>.
 	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/298
 	 * @throws AdempiereException in developer mode, if there the <code>qtyReservedInPriceUOM</code> can't be obtained.
 	 */
-	private void updateLineNetAmt(final Properties ctx, final I_C_OrderLine ol, final I_M_ShipmentSchedule sched, final ProductId productId)
+	private BigDecimal computeLineNetAmt(final OlAndSched olAndSched)
 	{
+		if (!olAndSched.hasSalesOrderLine())
+		{
+			return BigDecimal.ZERO;
+		}
+
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final de.metas.interfaces.I_C_OrderLine olEx = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, olEx.getPrice_UOM(), ol.getQtyReserved());
+		// final de.metas.interfaces.I_C_OrderLine olEx = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
+		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(
+				Env.getCtx(),
+				olAndSched.getProductId(),
+				olAndSched.getOrderPriceUOM(),
+				olAndSched.getOrderQtyReserved());
 
 		// qtyReservedInPriceUOM might be null. in that case, don't fail the whole updating, but set the value to null
 		if (qtyReservedInPriceUOM == null)
 		{
-			final String msg = "IUOMConversionBL.convertFromProductUOM() failed for M_Product=" + productId + ", and C_OrderLine=" + olEx + "; \n"
-					+ "Therefore we can't set LineNetAmt for M_ShipmentSchedule=" + sched + "; \n"
+			final String msg = "IUOMConversionBL.convertFromProductUOM() failed for " + olAndSched + "; \n"
+					+ "Therefore we can't set LineNetAmt for M_ShipmentSchedule; \n"
 					+ "Note: if this exception was thrown and not just logged, then check for stale M_ShipmentSchedule_Recompute records";
 			new AdempiereException(msg).throwIfDeveloperModeOrLogWarningElse(logger);
-			sched.setLineNetAmt(BigDecimal.ONE.negate());
+			return BigDecimal.ONE.negate();
 		}
 		else
 		{
-			sched.setLineNetAmt(qtyReservedInPriceUOM.multiply(ol.getPriceActual()));
+			final BigDecimal orderPriceActual = olAndSched.getOrderPriceActual();
+			return qtyReservedInPriceUOM.multiply(orderPriceActual);
 		}
+
 	}
 
 	ShipmentSchedulesDuringUpdate generate(
@@ -493,7 +500,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			final I_M_Product product = create(olAndSched.getSched().getM_Product(), I_M_Product.class);
 			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyPickList);
-
 
 			if (!productBL.isStocked(product))
 			{

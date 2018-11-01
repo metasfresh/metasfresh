@@ -229,6 +229,7 @@ public class XmlToOLCandsService
 		}
 
 		final LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getRequestDate());
+		requestBuilder.dateRequired(dateInvoiced); // this will be dateOrdered and dateDelivered
 		requestBuilder.dateInvoiced(dateInvoiced);
 	}
 
