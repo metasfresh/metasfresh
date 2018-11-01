@@ -114,8 +114,3 @@ UPDATE AD_Process_Para SET ColumnName='IsAutoApplyValidationRule', Name='Validie
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET ColumnName='IsAutoApplyValidationRule', Name='Validierungsregel automatisch anwenden', Description='If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.', Help=NULL WHERE AD_Element_ID=575835 AND IsCentrallyMaintained='Y'
 ;
-
-SELECT db_alter_Table(
-	'AD_Column',
-	'ALTER TABLE AD_Column ADD COLUMN IsAutoApplyValidationRule character(1) COLLATE pg_catalog."default" NOT NULL DEFAULT ''N''::bpchar');
-
