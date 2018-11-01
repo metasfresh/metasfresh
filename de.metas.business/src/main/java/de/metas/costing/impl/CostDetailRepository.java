@@ -3,6 +3,7 @@ package de.metas.costing.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -15,7 +16,7 @@ import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -129,10 +130,8 @@ public class CostDetailRepository implements ICostDetailRepository
 	}
 
 	@Override
-	public List<I_M_CostDetail> getAllForDocumentAndAcctSchemaId(@NonNull final CostingDocumentRef documentRef, final int acctSchemaId)
+	public List<I_M_CostDetail> getAllForDocumentAndAcctSchemaId(@NonNull final CostingDocumentRef documentRef, @NonNull final AcctSchemaId acctSchemaId)
 	{
-		Check.assume(acctSchemaId > 0, "acctSchemaId > 0");
-
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_CostDetail.class)
 				.addEqualsFilter(documentRef.getCostDetailColumnName(), documentRef.getRecordId())
@@ -143,7 +142,7 @@ public class CostDetailRepository implements ICostDetailRepository
 	}
 
 	@Override
-	public boolean hasCostDetailsForProductId(final int productId)
+	public boolean hasCostDetailsForProductId(@NonNull final ProductId productId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_CostDetail.class)

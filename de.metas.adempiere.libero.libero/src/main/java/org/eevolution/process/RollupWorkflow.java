@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
@@ -55,7 +56,6 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_CostElement;
-import org.compiere.util.Env;
 import org.compiere.wf.MWFNode;
 import org.compiere.wf.MWorkflow;
 import org.eevolution.api.IPPWorkflowDAO;
@@ -87,7 +87,7 @@ public class RollupWorkflow extends JavaProcess
 	/* Organization */
 	private int p_AD_Org_ID = 0;
 	/* Account Schema */
-	private int p_C_AcctSchema_ID = 0;
+	private AcctSchemaId p_C_AcctSchema_ID;
 	/* Cost Type */
 	private int p_M_CostType_ID = 0;
 	/* Product */
@@ -114,8 +114,8 @@ public class RollupWorkflow extends JavaProcess
 				p_AD_Org_ID = para.getParameterAsInt();
 			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
 			{
-				p_C_AcctSchema_ID = para.getParameterAsInt();
-				m_as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
+				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para.getParameterAsInt());
+				m_as = MAcctSchema.get(p_C_AcctSchema_ID);
 			}
 			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID = para.getParameterAsInt();
@@ -201,10 +201,10 @@ public class RollupWorkflow extends JavaProcess
 			params.add(p_M_Product_Category_ID);
 		}
 
-		Collection<MProduct> products = new Query(getCtx(),MProduct.Table_Name, whereClause.toString(), get_TrxName())
-											.setOrderBy(MProduct.COLUMNNAME_LowLevel)
-											.setParameters(params)
-											.list(MProduct.class);
+		Collection<MProduct> products = new Query(getCtx(), MProduct.Table_Name, whereClause.toString(), get_TrxName())
+				.setOrderBy(MProduct.COLUMNNAME_LowLevel)
+				.setParameters(params)
+				.list(MProduct.class);
 		return products;
 	}
 
@@ -259,7 +259,8 @@ public class RollupWorkflow extends JavaProcess
 			final List<I_M_Cost> costs = d.toQuery(I_M_Cost.class, get_TrxName()).list();
 			for (I_M_Cost cost : costs)
 			{
-				final int precision = MAcctSchema.get(Env.getCtx(), cost.getC_AcctSchema_ID()).getCostingPrecision();
+				final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(cost.getC_AcctSchema_ID());
+				final int precision = MAcctSchema.get(acctSchemaId).getCostingPrecision();
 				BigDecimal segmentCost = BigDecimal.ZERO;
 				for (MWFNode node : nodes)
 				{

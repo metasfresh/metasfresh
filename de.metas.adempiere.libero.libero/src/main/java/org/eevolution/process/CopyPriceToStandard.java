@@ -44,6 +44,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
@@ -79,7 +80,7 @@ public class CopyPriceToStandard extends JavaProcess
 
 	// parameters
 	private int p_AD_Org_ID = 0;
-	private int p_C_AcctSchema_ID = 0;
+	private AcctSchemaId p_C_AcctSchema_ID;
 	private int p_M_CostType_ID = 0;
 	private int p_M_CostElement_ID = 0;
 	private int p_M_PriceList_Version_ID = 0;
@@ -104,7 +105,7 @@ public class CopyPriceToStandard extends JavaProcess
 			}
 			else if (name.equals("C_AcctSchema_ID"))
 			{
-				p_C_AcctSchema_ID = ((BigDecimal)para[i].getParameter()).intValue();
+				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para[i].getParameterAsInt());
 			}
 			else if (name.equals("M_CostElement_ID"))
 			{
@@ -124,7 +125,7 @@ public class CopyPriceToStandard extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
+		MAcctSchema as = MAcctSchema.get(p_C_AcctSchema_ID);
 		CostElement element = Adempiere.getBean(ICostElementRepository.class).getById(CostElementId.ofRepoId(p_M_CostElement_ID));
 		if (CostElementType.Material != element.getCostElementType())
 		{

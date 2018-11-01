@@ -1,12 +1,12 @@
 package de.metas.costing;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,7 +36,7 @@ import lombok.Value;
 @Value
 public class CostSegment
 {
-	int acctSchemaId;
+	AcctSchemaId acctSchemaId;
 	CostTypeId costTypeId;
 	CostingLevel costingLevel;
 	
@@ -48,15 +48,13 @@ public class CostSegment
 	@Builder(toBuilder = true)
 	private CostSegment(
 			@NonNull final CostingLevel costingLevel,
-			final int acctSchemaId,
+			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostTypeId costTypeId,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		Check.assume(acctSchemaId > 0, "acctSchemaId > 0");
-
 		this.costingLevel = costingLevel;
 		this.acctSchemaId = acctSchemaId;
 		this.costTypeId = costTypeId;

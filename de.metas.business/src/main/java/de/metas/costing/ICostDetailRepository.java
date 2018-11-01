@@ -3,7 +3,10 @@ package de.metas.costing;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.compiere.model.I_M_CostDetail;
+
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -41,8 +44,8 @@ public interface ICostDetailRepository
 
 	List<I_M_CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 
-	List<I_M_CostDetail> getAllForDocumentAndAcctSchemaId(CostingDocumentRef documentRef, int acctSchemaId);
+	List<I_M_CostDetail> getAllForDocumentAndAcctSchemaId(CostingDocumentRef documentRef, AcctSchemaId acctSchemaId);
 
-	boolean hasCostDetailsForProductId(int productId);
+	boolean hasCostDetailsForProductId(ProductId productId);
 
 }

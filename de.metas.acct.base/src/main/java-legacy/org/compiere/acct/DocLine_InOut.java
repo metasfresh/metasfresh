@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
@@ -113,10 +114,12 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		
 		if (isReversalLine())
 		{
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getC_AcctSchema_ID())
+					.acctSchemaId(acctSchemaId)
 					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateDoc()))
@@ -126,7 +129,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		{
 			return costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getC_AcctSchema_ID())
+							.acctSchemaId(acctSchemaId)
 							.clientId(getClientId())
 							.orgId(getOrgId())
 							.productId(getProductId())
@@ -143,10 +146,12 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		
 		if (isReversalLine())
 		{
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getC_AcctSchema_ID())
+					.acctSchemaId(acctSchemaId)
 					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateAcct()))
@@ -156,7 +161,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		{
 			return costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getC_AcctSchema_ID())
+							.acctSchemaId(acctSchemaId)
 							.clientId(getClientId())
 							.orgId(getOrgId())
 							.productId(getProductId())

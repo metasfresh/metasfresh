@@ -213,7 +213,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		final ClientId costDetailClientId = ClientId.ofRepoId(costDetail.getAD_Client_ID());
 		Check.assumeEquals(costDetailClientId, request.getClientId(), "AD_Client_ID");
 		costDetail.setAD_Org_ID(request.getOrgId().getRepoId());
-		costDetail.setC_AcctSchema_ID(request.getAcctSchemaId());
+		costDetail.setC_AcctSchema_ID(request.getAcctSchemaId().getRepoId());
 		costDetail.setM_Product_ID(request.getProductId().getRepoId());
 		costDetail.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId().getRepoId());
 
@@ -262,7 +262,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	private CostDetailCreateResult createCostDetailCreateResult(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
 	{
-		final MAcctSchema as = LegacyAdapters.convertToPO(acctSchemaRepo.retrieveAcctSchemaById(request.getAcctSchemaId()));
+		final MAcctSchema as = LegacyAdapters.convertToPO(acctSchemaRepo.getById(request.getAcctSchemaId()));
 		final I_C_UOM uom = productBL.getStockingUOM(costDetail.getM_Product_ID());
 		
 		return CostDetailCreateResult.builder()
@@ -276,7 +276,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	private CostSegment extractCostSegment(final CostDetailCreateRequest request)
 	{
-		final I_C_AcctSchema as = acctSchemaRepo.retrieveAcctSchemaById(request.getAcctSchemaId());
+		final I_C_AcctSchema as = acctSchemaRepo.getById(request.getAcctSchemaId());
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final CostingLevel costingLevel = productBL.getCostingLevel(request.getProductId(), as);
 		final CostTypeId costTypeId = CostTypeId.ofRepoId(as.getM_CostType_ID());

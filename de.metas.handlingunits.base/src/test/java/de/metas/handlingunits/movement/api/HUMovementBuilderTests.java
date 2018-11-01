@@ -15,6 +15,8 @@ import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
@@ -79,7 +81,7 @@ public class HUMovementBuilderTests
 		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
 		{
 			@Override
-			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
+			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final ClientId clientId, final OrgId orgId)
 			{
 				return acctSchema;
 			}

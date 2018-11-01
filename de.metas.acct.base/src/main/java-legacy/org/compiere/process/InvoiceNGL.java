@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaDefault;
@@ -39,11 +40,6 @@ import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-
 /**
  * 	Invoice Not realized Gain & Loss.
  * 	The actual data shown is T_InvoiceGL_v
@@ -54,7 +50,7 @@ import de.metas.process.ProcessInfoParameter;
 public class InvoiceNGL extends JavaProcess
 {
 	/**	Mandatory Acct Schema			*/
-	private int				p_C_AcctSchema_ID = 0;
+	private AcctSchemaId p_C_AcctSchema_ID;
 	/** Mandatory Conversion Type		*/
 	private int				p_C_ConversionTypeReval_ID = 0;
 	/** Revaluation Date				*/
@@ -83,7 +79,7 @@ public class InvoiceNGL extends JavaProcess
 			if (para[i].getParameter() == null)
 				;
 			else if (name.equals("C_AcctSchema_ID"))
-				p_C_AcctSchema_ID = para[i].getParameterAsInt();
+				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para[i].getParameterAsInt());
 			else if (name.equals("C_ConversionTypeReval_ID"))
 				p_C_ConversionTypeReval_ID = para[i].getParameterAsInt();
 			else if (name.equals("DateReval"))
@@ -154,7 +150,7 @@ public class InvoiceNGL extends JavaProcess
 		    + "WHERE i.IsPaid='N'"
 		    + " AND EXISTS (SELECT * FROM C_ElementValue ev "
 		    	+ "WHERE ev.C_ElementValue_ID=fa.Account_ID AND (ev.AccountType='A' OR ev.AccountType='L'))"
-		    + " AND fa.C_AcctSchema_ID=" + p_C_AcctSchema_ID;
+		    + " AND fa.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId();
 		if (!p_IsAllCurrencies)
 			sql += " AND i.C_Currency_ID<>a.C_Currency_ID";
 		if (ONLY_AR.equals(p_APAR))
@@ -235,8 +231,8 @@ public class InvoiceNGL extends JavaProcess
 			return " - No Records found";
 		
 		//
-		MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
-		MAcctSchemaDefault asDefaultAccts = MAcctSchemaDefault.get(getCtx(), p_C_AcctSchema_ID);
+		MAcctSchema as = MAcctSchema.get(p_C_AcctSchema_ID);
+		MAcctSchemaDefault asDefaultAccts = MAcctSchemaDefault.get(p_C_AcctSchema_ID);
 		MGLCategory cat = MGLCategory.getDefaultSystem(getCtx());
 		if (cat == null)
 		{

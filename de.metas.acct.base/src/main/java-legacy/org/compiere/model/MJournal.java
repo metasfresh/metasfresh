@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IGLJournalBL;
 import org.adempiere.acct.api.IGLJournalLineBL;
@@ -497,7 +498,8 @@ public class MJournal extends X_GL_Journal implements IDocument
 		// Unbalanced Jornal & Not Suspense
 		if (AmtAcctDr.compareTo(AmtAcctCr) != 0)
 		{
-			final MAcctSchemaGL gl = MAcctSchemaGL.get(getCtx(), getC_AcctSchema_ID());
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getC_AcctSchema_ID());
+			final MAcctSchemaGL gl = MAcctSchemaGL.get(acctSchemaId);
 			if (gl == null || !gl.isUseSuspenseBalancing())
 			{
 				throw new AdempiereException("@UnbalancedJornal@");
@@ -978,12 +980,13 @@ public class MJournal extends X_GL_Journal implements IDocument
 	// metas: cg: 02476
 	private static void setAmtPrecision(final I_GL_Journal journal)
 	{
-		if (journal.getC_AcctSchema_ID() <= 0)
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(journal.getC_AcctSchema_ID());
+		if (acctSchemaId == null)
 		{
 			return;
 		}
-		final Properties ctx = InterfaceWrapperHelper.getCtx(journal);
-		final MAcctSchema as = MAcctSchema.get(ctx, journal.getC_AcctSchema_ID());
+		
+		final MAcctSchema as = MAcctSchema.get(acctSchemaId);
 		final int precision = as.getStdPrecision();
 		if (journal.getControlAmt().scale() > precision)
 			journal.setControlAmt(journal.getControlAmt().setScale(precision, BigDecimal.ROUND_HALF_UP));

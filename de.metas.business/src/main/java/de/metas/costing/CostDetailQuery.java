@@ -1,8 +1,8 @@
 package de.metas.costing;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,20 +32,18 @@ import lombok.Value;
 @Value
 public class CostDetailQuery
 {
-	int acctSchemaId;
+	AcctSchemaId acctSchemaId;
 	AttributeSetInstanceId attributeSetInstanceId;
 	CostElementId costElementId;
 	CostingDocumentRef documentRef;
 
 	@Builder
 	private CostDetailQuery(
-			int acctSchemaId,
+			@NonNull AcctSchemaId acctSchemaId,
 			AttributeSetInstanceId attributeSetInstanceId,
 			CostElementId costElementId,
 			@NonNull CostingDocumentRef documentRef)
 	{
-		Check.assumeGreaterThanZero(acctSchemaId, "acctSchemaId");
-
 		this.acctSchemaId = acctSchemaId;
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		this.costElementId = costElementId;

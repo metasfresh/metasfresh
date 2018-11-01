@@ -43,11 +43,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
@@ -141,7 +141,8 @@ public class CreateCostElement extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_C_AcctSchema as = InterfaceWrapperHelper.create(getCtx(), p_C_AcctSchema_ID, I_C_AcctSchema.class, ITrx.TRXNAME_None);
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(p_C_AcctSchema_ID);
+		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
 		final CostTypeId costTypeId = CostTypeId.ofRepoId(p_M_CostType_ID);
 
@@ -155,7 +156,7 @@ public class CreateCostElement extends JavaProcess
 
 				final CostSegment costSegment = CostSegment.builder()
 						.costingLevel(costingLevel)
-						.acctSchemaId(as.getC_AcctSchema_ID())
+						.acctSchemaId(acctSchemaId)
 						.costTypeId(costTypeId)
 						.productId(productId)
 						.clientId(clientId)

@@ -2,6 +2,8 @@ package org.adempiere.acct.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema;
 
 /*
@@ -33,7 +35,7 @@ public class PlainAcctSchemaDAO extends AcctSchemaDAO
 	 *         the current practice is to register an anonymous subclass of {@link AcctSchemaDAO}.
 	 */
 	@Override
-	public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
+	public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final ClientId clientId, final OrgId orgId)
 	{
 		return null;
 	}

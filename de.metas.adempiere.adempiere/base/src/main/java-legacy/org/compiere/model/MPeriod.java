@@ -30,8 +30,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -438,7 +440,7 @@ public class MPeriod extends X_C_Period
 			DB.getConstraints().addAllowedTrxNamePrefix("POSave").incMaxTrx(1);
 		
 			// MAcctSchema as = MClient.get(getCtx(), getAD_Client_ID()).getAcctSchema();
-			final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(getCtx(), getAD_Client_ID(), ad_Org_ID);
+			final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(getCtx(), ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(ad_Org_ID));
 			if (as != null && as.isAutoPeriodControl())
 			{
 				Timestamp today = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);

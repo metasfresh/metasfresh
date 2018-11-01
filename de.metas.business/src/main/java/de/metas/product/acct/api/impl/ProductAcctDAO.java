@@ -56,10 +56,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	{
 		final Properties ctx = Env.getCtx();
 
-		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(
-				ctx,
-				clientId.getRepoId(),
-				orgId.getRepoId());
+		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx, clientId, orgId);
 		if (acctSchema == null)
 		{
 			return null;

@@ -29,6 +29,8 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
@@ -61,7 +63,7 @@ public class CurrencyBL implements ICurrencyBL
 	{
 		Check.assume(adClientId >= 0, "adClientId >= 0");
 
-		final I_C_AcctSchema ac = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx, adClientId, adOrgId);
+		final I_C_AcctSchema ac = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx, ClientId.ofRepoId(adClientId), OrgId.ofRepoIdOrAny(adOrgId));
 		Check.assumeNotNull(ac, "Missing C_AcctSchema for AD_Client_ID={} and AD_Org_ID={}", adClientId, adOrgId);
 
 		final I_C_Currency currency = ac.getC_Currency();

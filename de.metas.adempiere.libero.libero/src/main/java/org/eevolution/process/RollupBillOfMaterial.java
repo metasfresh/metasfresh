@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -55,7 +57,6 @@ import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -83,6 +84,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 
@@ -103,21 +105,21 @@ public class RollupBillOfMaterial extends JavaProcess
 	private final transient IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
-	
-	/* Organization 		*/
-	private int		 		p_AD_Org_ID = 0;
-	/* Account Schema 		*/
-	private int				p_C_AcctSchema_ID = 0;
-	/* Cost Type			*/
-	private int				p_M_CostType_ID = 0;
-	/* Costing Method 		*/
-	private String 			p_ConstingMethod = CostingMethod.StandardCosting.getCode();
-	/* Product 				*/
-	private int				p_M_Product_ID = 0;
-	/* Product Category  	*/
-	private int				p_M_Product_Category_ID = 0;
-	/* Product Type			*/
-	private String			p_ProductType = null;
+
+	/* Organization */
+	private OrgId p_AD_Org_ID;
+	/* Account Schema */
+	private AcctSchemaId p_C_AcctSchema_ID;
+	/* Cost Type */
+	private CostTypeId p_M_CostType_ID;
+	/* Costing Method */
+	private CostingMethod p_ConstingMethod = CostingMethod.StandardCosting;
+	/* Product */
+	private ProductId p_M_Product_ID;
+	/* Product Category */
+	private ProductCategoryId p_M_Product_Category_ID;
+	/* Product Type */
+	private String p_ProductType = null;
 
 	/**
 	 * Prepare - e.g., get Parameters.
@@ -135,31 +137,31 @@ public class RollupBillOfMaterial extends JavaProcess
 			}
 			else if (name.equals(I_M_CostElement.COLUMNNAME_AD_Org_ID))
 			{
-				p_AD_Org_ID = para.getParameterAsInt();
+				p_AD_Org_ID = OrgId.ofRepoIdOrNull(para.getParameterAsInt());
 			}
 			else if (name.equals(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID))
 			{
-				p_C_AcctSchema_ID = para.getParameterAsInt();
+				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para.getParameterAsInt());
 			}
 			else if (name.equals(I_M_CostType.COLUMNNAME_M_CostType_ID))
 			{
-				p_M_CostType_ID = para.getParameterAsInt();
+				p_M_CostType_ID = CostTypeId.ofRepoIdOrNull(para.getParameterAsInt());
 			}
 			else if (name.equals(I_M_CostElement.COLUMNNAME_CostingMethod))
 			{
-				p_ConstingMethod = (String)para.getParameter();
+				p_ConstingMethod = CostingMethod.ofNullableCode(para.getParameterAsString());
 			}
 			else if (name.equals(I_M_Product.COLUMNNAME_M_Product_ID))
 			{
-				p_M_Product_ID = para.getParameterAsInt();
+				p_M_Product_ID = ProductId.ofRepoIdOrNull(para.getParameterAsInt());
 			}
 			else if (name.equals(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 			{
-				p_M_Product_Category_ID = para.getParameterAsInt();
+				p_M_Product_Category_ID = ProductCategoryId.ofRepoIdOrNull(para.getParameterAsInt());
 			}
 			else if (name.equals(I_M_Product.COLUMNNAME_ProductType))
 			{
-				p_ProductType = para.getParameter() == null ? null : para.getParameter().toString();
+				p_ProductType = para.getParameterAsString();
 			}
 			else
 			{
@@ -185,7 +187,9 @@ public class RollupBillOfMaterial extends JavaProcess
 		{
 			for (final MProduct product : getProducts(lowLevel))
 			{
-				final I_PP_Product_Planning pp = MPPProductPlanning.find(getCtx(), p_AD_Org_ID,
+				final I_PP_Product_Planning pp = MPPProductPlanning.find(
+						getCtx(),
+						p_AD_Org_ID.getRepoId(),
 						0, // M_Warehouse_ID
 						0, // S_Resource_ID
 						product.getM_Product_ID(),
@@ -251,7 +255,7 @@ public class RollupBillOfMaterial extends JavaProcess
 		for (I_PP_Product_BOMLine bomline : productBOMsRepo.retrieveLines(bom))
 		{
 			final MPPProductBOMLine bomLinePO = LegacyAdapters.convertToPO(bomline);
-			
+
 			if (!bomLinePO.isCoProduct())
 			{
 				continue;
@@ -293,6 +297,7 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	/**
 	 * Get the sum Current Cost Price Level Low for this Cost Element
+	 * 
 	 * @param bom MPPProductBOM
 	 * @param element MCostElement
 	 * @return Cost Price Lower Level
@@ -300,9 +305,9 @@ public class RollupBillOfMaterial extends JavaProcess
 	private CostAmount getCurrentCostPriceLL(I_PP_Product_BOM bom, CostElement element)
 	{
 		log.info("Element: {}", element);
-		
+
 		CostAmount costPriceLL = zeroCosts();
-		if(bom == null)
+		if (bom == null)
 		{
 			return costPriceLL;
 		}
@@ -310,7 +315,7 @@ public class RollupBillOfMaterial extends JavaProcess
 		for (I_PP_Product_BOMLine bomline : productBOMsRepo.retrieveLines(bom))
 		{
 			final MPPProductBOMLine bomLinePO = LegacyAdapters.convertToPO(bomline);
-			
+
 			// Skip co-product
 			if (bomLinePO.isCoProduct())
 			{
@@ -358,18 +363,18 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	private CostSegment createCostSegment(final I_M_Product product)
 	{
-		final MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
+		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
 
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final CostingLevel costingLevel = productBL.getCostingLevel(productId, as);
 
 		return CostSegment.builder()
 				.costingLevel(costingLevel)
-				.acctSchemaId(as.getC_AcctSchema_ID())
-				.costTypeId(CostTypeId.ofRepoId(p_M_CostType_ID))
+				.acctSchemaId(p_C_AcctSchema_ID)
+				.costTypeId(p_M_CostType_ID)
 				.productId(productId)
 				.clientId(ClientId.ofRepoId(product.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(p_AD_Org_ID))
+				.orgId(p_AD_Org_ID)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.build();
 
@@ -377,7 +382,7 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	private int getCurrencyId()
 	{
-		final MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
+		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
 		return as.getC_Currency_ID();
 	}
 
@@ -397,17 +402,17 @@ public class RollupBillOfMaterial extends JavaProcess
 		whereClause.append(" AND ").append(I_M_Product.COLUMNNAME_IsBOM).append("=?");
 		params.add(true);
 
-		if (p_M_Product_ID > 0)
+		if (p_M_Product_ID != null)
 		{
 			whereClause.append(" AND ").append(I_M_Product.COLUMNNAME_M_Product_ID).append("=?");
 			params.add(p_M_Product_ID);
 		}
-		else if (p_M_Product_Category_ID > 0)
+		else if (p_M_Product_Category_ID != null)
 		{
 			whereClause.append(" AND ").append(I_M_Product.COLUMNNAME_M_Product_Category_ID).append("=?");
 			params.add(p_M_Product_Category_ID);
 		}
-		if (p_M_Product_ID <= 0 && p_ProductType != null)
+		if (p_M_Product_ID == null && p_ProductType != null)
 		{
 			whereClause.append(" AND ").append(I_M_Product.COLUMNNAME_ProductType).append("=?");
 			params.add(p_ProductType);
@@ -428,12 +433,12 @@ public class RollupBillOfMaterial extends JavaProcess
 		productWhereClause.append("AD_Client_ID=? AND " + I_M_Product.COLUMNNAME_LowLevel + "=?");
 		params.add(getAD_Client_ID());
 		params.add(0);
-		if (p_M_Product_ID > 0)
+		if (p_M_Product_ID != null)
 		{
 			productWhereClause.append(" AND ").append(I_M_Product.COLUMNNAME_M_Product_ID).append("=?");
 			params.add(p_M_Product_ID);
 		}
-		else if (p_M_Product_Category_ID > 0)
+		else if (p_M_Product_Category_ID != null)
 		{
 			productWhereClause.append(" AND ").append(I_M_Product.COLUMNNAME_M_Product_Category_ID).append("=?");
 			params.add(p_M_Product_Category_ID);
@@ -452,7 +457,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	{
 		if (m_costElements == null)
 		{
-			m_costElements = costElementsRepo.getByCostingMethod(CostingMethod.ofCode(p_ConstingMethod));
+			m_costElements = costElementsRepo.getByCostingMethod(p_ConstingMethod);
 		}
 		return m_costElements;
 	}

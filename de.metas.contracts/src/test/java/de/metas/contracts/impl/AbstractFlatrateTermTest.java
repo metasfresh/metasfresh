@@ -7,9 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import lombok.Getter;
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -18,6 +15,8 @@ import java.util.Properties;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner;
@@ -51,6 +50,8 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -210,7 +211,7 @@ public abstract class AbstractFlatrateTermTest
 		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
 		{
 			@Override
-			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
+			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final ClientId clientId, final OrgId orgId)
 			{
 				return acctSchema;
 			}

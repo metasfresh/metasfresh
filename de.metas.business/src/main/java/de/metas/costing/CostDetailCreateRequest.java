@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -43,7 +44,7 @@ import lombok.Value;
 @ToString(doNotUseGetters = true) // because we are throwing exception on some getters, see below...
 public class CostDetailCreateRequest
 {
-	int acctSchemaId;
+	AcctSchemaId acctSchemaId;
 	ClientId clientId;
 	OrgId orgId;
 	ProductId productId;
@@ -60,7 +61,7 @@ public class CostDetailCreateRequest
 
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
-			final int acctSchemaId,
+			@Nullable final AcctSchemaId acctSchemaId,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId,
@@ -74,8 +75,7 @@ public class CostDetailCreateRequest
 			@NonNull final LocalDate date,
 			@Nullable final String description)
 	{
-		// acctSchema: not set is OK
-		this.acctSchemaId = normalizeAcctSchemaId(acctSchemaId);
+		this.acctSchemaId = acctSchemaId;
 		this.clientId = clientId;
 		this.orgId = orgId;
 		this.productId = productId;
@@ -90,20 +90,15 @@ public class CostDetailCreateRequest
 		this.description = description;
 	}
 
-	private static final int normalizeAcctSchemaId(final int acctSchemaId)
+	public AcctSchemaId getAcctSchemaId()
 	{
-		return acctSchemaId > 0 ? acctSchemaId : 0;
-	}
-
-	public int getAcctSchemaId()
-	{
-		Check.assume(acctSchemaId > 0, "acctSchemaId shall be set for {}", this);
+		Check.assumeNotNull(acctSchemaId, "acctSchemaId shall be set for {}", this);
 		return acctSchemaId;
 	}
 
 	public boolean isAllAcctSchemas()
 	{
-		return acctSchemaId <= 0;
+		return acctSchemaId == null;
 	}
 
 	public CostElement getCostElement()
@@ -122,15 +117,14 @@ public class CostDetailCreateRequest
 		return initialDocumentRef != null;
 	}
 
-	public CostDetailCreateRequest deriveByAcctSchemaId(final int acctSchemaId)
+	public CostDetailCreateRequest deriveByAcctSchemaId(final AcctSchemaId acctSchemaId)
 	{
-		final int acctSchemaIdNorm = normalizeAcctSchemaId(acctSchemaId);
-		if (this.acctSchemaId == acctSchemaIdNorm)
+		if (AcctSchemaId.equals(this.acctSchemaId, acctSchemaId))
 		{
 			return this;
 		}
 
-		return toBuilder().acctSchemaId(acctSchemaIdNorm).build();
+		return toBuilder().acctSchemaId(acctSchemaId).build();
 	}
 
 	public CostDetailCreateRequest deriveByCostElement(final CostElement costElement)

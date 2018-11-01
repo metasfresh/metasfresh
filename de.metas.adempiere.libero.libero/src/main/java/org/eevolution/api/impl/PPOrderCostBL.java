@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -54,7 +55,7 @@ public class PPOrderCostBL implements IPPOrderCostBL
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
 		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx);
-		final int acctSchemaId = as.getC_AcctSchema_ID();
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
 		final CostTypeId costTypeId = CostTypeId.ofRepoId(as.getM_CostType_ID());
 
 		final Set<CostSegment> costSegments = new LinkedHashSet<>();
@@ -139,7 +140,7 @@ public class PPOrderCostBL implements IPPOrderCostBL
 		ppOrderCost.setPP_Order_ID(ppOrder.getPP_Order_ID());
 
 		ppOrderCost.setAD_Org_ID(costSegment.getOrgId().getRepoId());
-		ppOrderCost.setC_AcctSchema_ID(costSegment.getAcctSchemaId());
+		ppOrderCost.setC_AcctSchema_ID(costSegment.getAcctSchemaId().getRepoId());
 		ppOrderCost.setM_CostType_ID(costSegment.getCostTypeId().getRepoId());
 		ppOrderCost.setM_Product_ID(costSegment.getProductId().getRepoId());
 		ppOrderCost.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId().getRepoId());

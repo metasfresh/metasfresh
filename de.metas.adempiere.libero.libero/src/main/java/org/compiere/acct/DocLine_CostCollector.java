@@ -3,6 +3,7 @@
  */
 package org.compiere.acct;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
@@ -103,10 +104,12 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		
 		if (isReversalLine())
 		{
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getC_AcctSchema_ID())
+					.acctSchemaId(acctSchemaId)
 					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateDoc()))
@@ -116,7 +119,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		{
 			return costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getC_AcctSchema_ID())
+							.acctSchemaId(acctSchemaId)
 							.clientId(getClientId())
 							.orgId(getOrgId())
 							.productId(getProductId())

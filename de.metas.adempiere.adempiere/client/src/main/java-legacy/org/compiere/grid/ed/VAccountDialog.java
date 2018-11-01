@@ -42,12 +42,12 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IAccountDimensionValidator;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AccountDimension;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
@@ -66,7 +66,6 @@ import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAccountLookup;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.X_C_AcctSchema_Element;
@@ -81,6 +80,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Dialog to enter Account Info
@@ -139,16 +139,12 @@ public final class VAccountDialog extends CDialog
 			final Frame frame,
 			final String title,
 			final MAccountLookup mAccount,
-			final int C_AcctSchema_ID)
+			@NonNull final AcctSchemaId acctSchemaId)
 	{
 		super(frame, title, true);
-		if (log.isInfoEnabled())
-		{
-			log.info("C_AcctSchema_ID=" + C_AcctSchema_ID + ", C_ValidCombination_ID=" + mAccount.getC_ValidCombination_ID());
-		}
 
 		m_mAccount = mAccount;
-		m_C_AcctSchema_ID = C_AcctSchema_ID;
+		this.acctSchemaId = acctSchemaId;
 		m_WindowNo = Env.createWindowNo(this);
 
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -202,7 +198,7 @@ public final class VAccountDialog extends CDialog
 	/** Result + */
 	private int m_C_ValidCombination_ID;
 	/** Acct Schema */
-	private final int m_C_AcctSchema_ID;
+	private final AcctSchemaId acctSchemaId;
 	/** Client */
 	private int m_AD_Client_ID;
 	/** Where clause for combination search */
@@ -314,7 +310,7 @@ public final class VAccountDialog extends CDialog
 
 		final I_C_AcctSchema s_AcctSchema = getC_AcctSchema();
 		// Get AcctSchema Info
-		Env.setContext(ctx, m_WindowNo, "C_AcctSchema_ID", m_C_AcctSchema_ID);
+		Env.setContext(ctx, m_WindowNo, "C_AcctSchema_ID", acctSchemaId.getRepoId());
 
 		// Model
 		final GridWindowVO wVO = AEnv.getMWindowVO(m_WindowNo, ValidCombination_AD_Window_ID, 0); // AD_Menu_ID=0
@@ -377,7 +373,7 @@ public final class VAccountDialog extends CDialog
 		{
 			final GridField field = m_mTab.getField(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID);
 			f_C_AcctSchema_ID = editorFactory.getEditor(m_mTab, field, false);
-			f_C_AcctSchema_ID.setValue(getC_AcctSchema_ID());
+			f_C_AcctSchema_ID.setValue(acctSchemaId.getRepoId());
 			// NOTE: we are not adding it to the panel
 		}
 
@@ -491,7 +487,7 @@ public final class VAccountDialog extends CDialog
 
 		// Finish
 		m_query = new MQuery();
-		m_query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, m_C_AcctSchema_ID);
+		m_query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, acctSchemaId.getRepoId());
 		m_query.addRestriction("IsFullyQualified", Operator.EQUAL, "Y");
 		if (m_mAccount.getC_ValidCombination_ID() <= 0)
 		{
@@ -500,7 +496,7 @@ public final class VAccountDialog extends CDialog
 		else
 		{
 			final MQuery query = new MQuery();
-			query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, m_C_AcctSchema_ID);
+			query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, acctSchemaId.getRepoId());
 			query.addRestriction("C_ValidCombination_ID", Operator.EQUAL, m_mAccount.getC_ValidCombination_ID());
 			m_mTab.setQuery(query);
 		}
@@ -972,7 +968,7 @@ public final class VAccountDialog extends CDialog
 	private void action_Ignore()
 	{
 		if (f_C_AcctSchema_ID != null)
-			f_C_AcctSchema_ID.setValue(getC_AcctSchema_ID());
+			f_C_AcctSchema_ID.setValue(acctSchemaId.getRepoId());
 		if (f_Alias != null)
 			f_Alias.setValue("");
 		if (f_Combination != null)
@@ -1058,16 +1054,11 @@ public final class VAccountDialog extends CDialog
 		return Env.getCtx();
 	}
 
-	private final int getC_AcctSchema_ID()
-	{
-		return m_C_AcctSchema_ID;
-	}
-
 	private final I_C_AcctSchema getC_AcctSchema()
 	{
-		if (_acctSchema == null || _acctSchema.getC_AcctSchema_ID() != m_C_AcctSchema_ID)
+		if (_acctSchema == null || _acctSchema.getC_AcctSchema_ID() != acctSchemaId.getRepoId())
 		{
-			_acctSchema = new MAcctSchema(getCtx(), m_C_AcctSchema_ID, ITrx.TRXNAME_None);
+			_acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		}
 		Check.assumeNotNull(_acctSchema, "acctSchema not null");
 		return _acctSchema;

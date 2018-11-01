@@ -3,6 +3,7 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -101,9 +102,11 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(getProductCostingLevel(as))
-				.acctSchemaId(as.getC_AcctSchema_ID())
+				.acctSchemaId(acctSchemaId)
 				.costTypeId(CostTypeId.ofRepoId(as.getM_CostType_ID()))
 				.clientId(getClientId())
 				.orgId(getOrgId())
@@ -131,9 +134,11 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final CostAmount costPrice = orderLineBL.getCostPrice(orderLine);
 		final CostAmount amt = costPrice.multiply(qty);
 
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		
 		return costDetailService.createCostDetail(
 				CostDetailCreateRequest.builder()
-						.acctSchemaId(as.getC_AcctSchema_ID())
+						.acctSchemaId(acctSchemaId)
 						.clientId(ClientId.ofRepoId(orderLine.getAD_Client_ID()))
 						.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
 						.productId(getProductId())

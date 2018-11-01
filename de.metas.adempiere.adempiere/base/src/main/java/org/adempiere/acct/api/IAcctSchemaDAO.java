@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.exception.AccountingException;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
@@ -52,17 +53,17 @@ public interface IAcctSchemaDAO extends ISingletonService
 	 */
 	I_C_AcctSchema retrieveAcctSchema(Properties ctx);
 	
-	I_C_AcctSchema retrieveAcctSchemaById(final int acctSchemaId);
+	I_C_AcctSchema getById(final AcctSchemaId acctSchemaId);
 
 	/**
 	 * Similar to {@link #retrieveAcctSchema(Properties)}, but uses the given client and org ID rather than the ones of the given <code>ctx</code>.
 	 * 
 	 * @param ctx
-	 * @param ad_Client_ID
-	 * @param ad_Org_ID
+	 * @param clientId
+	 * @param orgId
 	 * @return
 	 */
-	I_C_AcctSchema retrieveAcctSchema(Properties ctx, int ad_Client_ID, int ad_Org_ID);
+	I_C_AcctSchema retrieveAcctSchema(Properties ctx, ClientId clientId, OrgId orgId);
 
 	/**
 	 * Retrieves all accounting schemas for given AD_Client_ID.
@@ -99,5 +100,5 @@ public interface IAcctSchemaDAO extends ISingletonService
 
 	I_C_AcctSchema_Element retrieveFirstAcctSchemaElementOrNull(I_C_AcctSchema as, String elementType);
 
-	I_C_AcctSchema_GL retrieveAcctSchemaGL(Properties ctx, int acctSchemaId);
+	I_C_AcctSchema_GL retrieveAcctSchemaGL(Properties ctx, AcctSchemaId acctSchemaId);
 }

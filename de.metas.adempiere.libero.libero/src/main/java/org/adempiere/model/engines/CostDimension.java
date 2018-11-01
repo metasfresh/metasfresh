@@ -24,6 +24,8 @@ package org.adempiere.model.engines;
 
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -36,7 +38,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
@@ -72,7 +73,7 @@ public final class CostDimension
 	private int S_Resource_ID;
 	private int M_AttributeSetInstance_ID;
 	private final int M_CostType_ID;
-	private final int C_AcctSchema_ID;
+	private final AcctSchemaId C_AcctSchema_ID;
 	private final int M_CostElement_ID;
 
 	public CostDimension(
@@ -88,7 +89,7 @@ public final class CostDimension
 		this.M_Product_ID = product != null ? product.getM_Product_ID() : ANY;
 		this.M_AttributeSetInstance_ID = M_ASI_ID;
 		this.M_CostType_ID = M_CostType_ID;
-		this.C_AcctSchema_ID = as.getC_AcctSchema_ID();
+		this.C_AcctSchema_ID = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
 		this.M_CostElement_ID = M_CostElement_ID;
 		updateForProduct(product, as);
 	}
@@ -107,7 +108,7 @@ public final class CostDimension
 		this.M_Product_ID = product_ID;
 		this.M_AttributeSetInstance_ID = attributeSetInstance_ID;
 		this.M_CostType_ID = costType_ID;
-		this.C_AcctSchema_ID = acctSchema_ID;
+		this.C_AcctSchema_ID = AcctSchemaId.ofRepoId(acctSchema_ID);
 		this.M_CostElement_ID = costElement_ID;
 		//
 		updateForProduct(null, null);
@@ -147,7 +148,7 @@ public final class CostDimension
 		}
 		if (as == null)
 		{
-			as = MAcctSchema.get(getCtx(), this.C_AcctSchema_ID);
+			as = Services.get(IAcctSchemaDAO.class).getById(this.C_AcctSchema_ID);
 		}
 		final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
 		if (CostingLevel.Client.equals(costingLevel))
@@ -244,7 +245,7 @@ public final class CostDimension
 	/**
 	 * @return the c_AcctSchema_ID
 	 */
-	public int getC_AcctSchema_ID()
+	public AcctSchemaId getC_AcctSchema_ID()
 	{
 		return C_AcctSchema_ID;
 	}
@@ -315,7 +316,7 @@ public final class CostDimension
 
 	public CostSegment toCostSegment()
 	{
-		final I_C_AcctSchema as = MAcctSchema.get(Env.getCtx(), C_AcctSchema_ID);
+		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(C_AcctSchema_ID);
 		return CostSegment.builder()
 				.clientId(ClientId.ofRepoId(AD_Client_ID))
 				.orgId(OrgId.ofRepoId(AD_Org_ID))

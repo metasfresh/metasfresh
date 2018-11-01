@@ -2,7 +2,8 @@ package de.metas.costing;
 
 import java.time.LocalDate;
 
-import de.metas.util.Check;
+import org.adempiere.acct.api.AcctSchemaId;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,7 +33,7 @@ import lombok.Value;
 @Value
 public class CostDetailReverseRequest
 {
-	int acctSchemaId;
+	AcctSchemaId acctSchemaId;
 	CostingDocumentRef reversalDocumentRef;
 	CostingDocumentRef initialDocumentRef;
 	LocalDate date;
@@ -40,13 +41,12 @@ public class CostDetailReverseRequest
 
 	@Builder
 	private CostDetailReverseRequest(
-			int acctSchemaId,
+			@NonNull AcctSchemaId acctSchemaId,
 			@NonNull CostingDocumentRef reversalDocumentRef,
 			@NonNull CostingDocumentRef initialDocumentRef,
 			@NonNull LocalDate date,
 			@NonNull String description)
 	{
-		Check.assume(acctSchemaId > 0, "acctSchemaId > 0");
 		this.acctSchemaId = acctSchemaId;
 		this.reversalDocumentRef = reversalDocumentRef;
 		this.initialDocumentRef = initialDocumentRef;

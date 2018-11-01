@@ -5,13 +5,13 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.GL_JournalLine_Builder;
 import org.adempiere.acct.api.GL_Journal_Builder;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
@@ -90,9 +90,9 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess
 		p_DateFrom = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_YEAR);
 		p_DateTo = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_DAY);
 
-		final int p_C_AcctSchema_ID = params.getParameterAsInt(PARAM_C_AcctSchema_ID);
-		p_C_AcctSchema = InterfaceWrapperHelper.create(getCtx(), p_C_AcctSchema_ID, I_C_AcctSchema.class, ITrx.TRXNAME_None);
-		final I_C_AcctSchema_GL p_C_AcctSchema_GL = acctSchemaDAO.retrieveAcctSchemaGL(getCtx(), p_C_AcctSchema_ID);
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(params.getParameterAsInt(PARAM_C_AcctSchema_ID));
+		p_C_AcctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final I_C_AcctSchema_GL p_C_AcctSchema_GL = acctSchemaDAO.retrieveAcctSchemaGL(getCtx(), acctSchemaId);
 		p_Account_IncomeSummary = p_C_AcctSchema_GL.getIncomeSummary_A();
 		p_Account_RetainedEarning = p_C_AcctSchema_GL.getRetainedEarning_A();
 	}

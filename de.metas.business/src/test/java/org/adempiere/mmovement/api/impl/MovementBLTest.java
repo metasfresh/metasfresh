@@ -30,6 +30,8 @@ import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.model.I_M_Warehouse;
@@ -73,7 +75,7 @@ public class MovementBLTest
 		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
 		{
 			@Override
-			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
+			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final ClientId clientId, final OrgId orgId)
 			{
 				return acctSchema;
 			}

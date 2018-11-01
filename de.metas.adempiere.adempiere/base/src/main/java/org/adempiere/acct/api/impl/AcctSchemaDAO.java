@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.exception.AccountingException;
@@ -37,6 +38,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_ClientInfo;
@@ -65,17 +67,15 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	@Override
 	public I_C_AcctSchema retrieveAcctSchema(final Properties ctx)
 	{
-		final int ad_Client_ID = Env.getAD_Client_ID(ctx);
-		final int ad_Org_ID = Env.getAD_Org_ID(ctx);
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
+		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
 
-		return retrieveAcctSchema(ctx, ad_Client_ID, ad_Org_ID);
+		return retrieveAcctSchema(ctx, clientId, orgId);
 	}
 
 	@Override
-	public I_C_AcctSchema retrieveAcctSchemaById(final int acctSchemaId)
+	public I_C_AcctSchema getById(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		Check.assume(acctSchemaId > 0, "acctSchemaId > 0");
-
 		// NOTE: we assume the C_AcctSchema is cached (see org.adempiere.acct.model.validator.AcctModuleInterceptor.setupCaching(IModelCacheService) )
 		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.loadOutOfTrx(acctSchemaId, I_C_AcctSchema.class);
 		Check.assumeNotNull(acctSchema, "Accounting schema shall exists for {}", acctSchemaId);
@@ -85,12 +85,12 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	@Override
 	@Cached(cacheName = I_C_AcctSchema.Table_Name + "#By#" + "getC_AcctSchema_ID(?,?)", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public I_C_AcctSchema retrieveAcctSchema(final @CacheCtx Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
+	public I_C_AcctSchema retrieveAcctSchema(final @CacheCtx Properties ctx, final ClientId clientId, final OrgId orgId)
 	{
-		final int acctSchemaId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", ad_Client_ID, ad_Org_ID);
+		final int acctSchemaId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId);
 		if (acctSchemaId <= -1)
 		{
-			throw new AccountingException(StringUtils.formatMessage("Found no C_AcctSchema_ID for AD_Client_ID={0} and AD_Org_ID={1}", ad_Client_ID, ad_Org_ID));
+			throw new AccountingException(StringUtils.formatMessage("Found no C_AcctSchema_ID for AD_Client_ID={0} and AD_Org_ID={1}", clientId, orgId));
 		}
 		return InterfaceWrapperHelper.create(ctx, acctSchemaId, I_C_AcctSchema.class, ITrx.TRXNAME_None);
 	}
@@ -226,7 +226,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	@Override
 	@Cached(cacheName = I_C_AcctSchema_GL.Table_Name)
-	public I_C_AcctSchema_GL retrieveAcctSchemaGL(@CacheCtx final Properties ctx, final int acctSchemaId)
+	public I_C_AcctSchema_GL retrieveAcctSchemaGL(@CacheCtx final Properties ctx, @NonNull final AcctSchemaId acctSchemaId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_AcctSchema_GL.class, ctx, ITrx.TRXNAME_None)

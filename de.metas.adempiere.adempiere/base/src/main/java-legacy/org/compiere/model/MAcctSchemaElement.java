@@ -25,7 +25,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 
-import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 
@@ -55,7 +54,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	 * @deprecated please use {@link IAcctSchemaDAO#retrieveSchemaElements(I_C_AcctSchema)}.
 	 */
 	@Deprecated
-	public static MAcctSchemaElement[] getAcctSchemaElements(I_C_AcctSchema as)
+	static MAcctSchemaElement[] getAcctSchemaElements(I_C_AcctSchema as)
 	{
 		return LegacyAdapters.convertToPOArray(Services.get(IAcctSchemaDAO.class).retrieveSchemaElements(as), MAcctSchemaElement.class);
 	}   // getAcctSchemaElements
@@ -117,11 +116,6 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 		//
 		return "";
 	}   // getColumnName
-
-	private static final CCache<Integer, MAcctSchemaElement[]> s_cache = CCache.<Integer, MAcctSchemaElement[]> builder()
-			.tableName(I_C_AcctSchema_Element.Table_Name)
-			.initialCapacity(10)
-			.build();
 
 	/*************************************************************************
 	 * Standard Constructor
@@ -404,13 +398,9 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 				updateData(COLUMNNAME_C_Project_ID, getC_Project_ID());
 		}
 
-		// Clear Cache
-		s_cache.reset();
-
 		// Resequence
 		if (newRecord || is_ValueChanged(COLUMNNAME_SeqNo))
-			MAccount.updateValueDescription(getCtx(),
-					"AD_Client_ID=" + getAD_Client_ID(), get_TrxName());
+			MAccount.updateValueDescription(getCtx(), "AD_Client_ID=" + getAD_Client_ID(), get_TrxName());
 
 		return success;
 	}	// afterSave
@@ -459,8 +449,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	{
 		// Update Account Info
 		MAccount.updateValueDescription(getCtx(), "AD_Client_ID=" + getAD_Client_ID(), get_TrxName());
-		//
-		s_cache.reset();
+		
 		return success;
 	}	// afterDelete
 

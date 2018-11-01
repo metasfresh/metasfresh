@@ -44,6 +44,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -122,13 +124,14 @@ public class CostEngine
 		return getProductStandardCostPrice(
 				cc,
 				resourceProduct,
-				MAcctSchema.get(ctx, d.getC_AcctSchema_ID()),
+				Services.get(IAcctSchemaDAO.class).getById(d.getC_AcctSchema_ID()),
 				Adempiere.getBean(ICostElementRepository.class).getById(CostElementId.ofRepoId(d.getM_CostElement_ID())));
 	}
 
 	public CostAmount getResourceActualCostRate(final I_PP_Cost_Collector cc, final int S_Resource_ID, final CostDimension d, final String trxName)
 	{
-		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), d.getC_AcctSchema_ID());
+		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(d.getC_AcctSchema_ID());
+		
 		if (S_Resource_ID <= 0)
 		{
 			return CostAmount.zero(as.getC_Currency_ID());
@@ -181,7 +184,8 @@ public class CostEngine
 		final CurrentCost cost = retrieveOrCreateCostRecord(cc, product, as, element, trxName);
 
 		final CostAmount price = cost.getCurrentCostPriceTotal();
-		return roundCost(price, as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		return roundCost(price, acctSchemaId);
 	}
 
 	private CurrentCost retrieveOrCreateCostRecord(
@@ -193,7 +197,7 @@ public class CostEngine
 	{
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(Services.get(IProductBL.class).getCostingLevel(product, as))
-				.acctSchemaId(as.getC_AcctSchema_ID())
+				.acctSchemaId(AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID()))
 				.costTypeId(CostTypeId.ofRepoId(as.getM_CostType_ID()))
 				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.clientId(ClientId.ofRepoId(product.getAD_Client_ID()))
@@ -223,12 +227,13 @@ public class CostEngine
 		}
 
 		final CostAmount costs = CostAmount.of(oc.getCurrentCostPrice().add(oc.getCurrentCostPriceLL()), as.getC_Currency_ID());
-		return roundCost(costs, as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		return roundCost(costs, acctSchemaId);
 	}
 
-	protected CostAmount roundCost(final CostAmount price, final int C_AcctSchema_ID)
+	protected CostAmount roundCost(final CostAmount price, final AcctSchemaId C_AcctSchema_ID)
 	{
-		final int precision = MAcctSchema.get(Env.getCtx(), C_AcctSchema_ID).getCostingPrecision();
+		final int precision = MAcctSchema.get(C_AcctSchema_ID).getCostingPrecision();
 		return price.roundToPrecisionIfNeeded(precision);
 	}
 
@@ -281,6 +286,8 @@ public class CostEngine
 
 		for (final I_C_AcctSchema as : getAcctSchema(mtrx))
 		{
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+			
 			// Cost Detail
 			final CostingMethod costingMethod = Services.get(IProductBL.class).getCostingMethod(productId, as);
 			// Check costing method
@@ -298,7 +305,7 @@ public class CostEngine
 				// Get Costs
 				final BigDecimal qty = mtrx.getMovementQty();
 				final CostAmount price = getProductActualCostPriceOrZero(cc, product, as, element, mtrx.get_TrxName());
-				final CostAmount amt = roundCost(price.multiply(qty), as.getC_AcctSchema_ID());
+				final CostAmount amt = roundCost(price.multiply(qty), acctSchemaId);
 				//
 				// Create / Update Cost Detail
 				I_M_CostDetail cd = getCostDetail(model, mtrx, as, element.getId());
@@ -587,10 +594,12 @@ public class CostEngine
 		//
 		for (final I_C_AcctSchema as : getAcctSchema(ccuv))
 		{
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+			
 			for (final CostElement element : getCostElements())
 			{
 				final CostAmount price = getProductActualCostPrice(ccuv, product, as, element, ccuv.get_TrxName());
-				final CostAmount amt = roundCost(price.multiply(qty), as.getC_AcctSchema_ID());
+				final CostAmount amt = roundCost(price.multiply(qty), acctSchemaId);
 				//
 				// Create / Update Cost Detail
 				createVarianceCostDetail(ccuv,
@@ -626,6 +635,8 @@ public class CostEngine
 		I_PP_Cost_Collector ccrv = null; // Cost Collector - Rate Variance
 		for (final MAcctSchema as : getAcctSchema(cc))
 		{
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+			
 			for (final CostElement element : getCostElements())
 			{
 				final I_M_CostDetail cd = getCostDetail(cc, element.getId());
@@ -638,8 +649,8 @@ public class CostEngine
 				final BigDecimal qty = cd.getQty();
 				final CostAmount priceStd = getProductStandardCostPrice(cc, product, as, element);
 				final CostAmount priceActual = getProductActualCostPriceOrZero(cc, product, as, element, cc.get_TrxName());
-				final CostAmount amtStd = roundCost(priceStd.multiply(qty), as.getC_AcctSchema_ID());
-				final CostAmount amtActual = roundCost(priceActual.multiply(qty), as.getC_AcctSchema_ID());
+				final CostAmount amtStd = roundCost(priceStd.multiply(qty), acctSchemaId);
+				final CostAmount amtActual = roundCost(priceActual.multiply(qty), acctSchemaId);
 				if (amtStd.subtract(amtActual).signum() == 0)
 				{
 					continue;

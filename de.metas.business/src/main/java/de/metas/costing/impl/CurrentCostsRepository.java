@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -146,7 +147,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	{
 		final I_M_Cost costRecord = InterfaceWrapperHelper.newInstance(I_M_Cost.class);
 		costRecord.setAD_Org_ID(costSegment.getOrgId().getRepoId());
-		costRecord.setC_AcctSchema_ID(costSegment.getAcctSchemaId());
+		costRecord.setC_AcctSchema_ID(costSegment.getAcctSchemaId().getRepoId());
 		costRecord.setM_CostType_ID(costSegment.getCostTypeId().getRepoId());
 		costRecord.setM_Product_ID(costSegment.getProductId().getRepoId());
 		costRecord.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId().getRepoId());
@@ -185,13 +186,14 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		final IProductBL productBL = Services.get(IProductBL.class);
 		ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
 		final I_C_UOM uom = productBL.getStockingUOM(productId);
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRecord.getC_AcctSchema_ID());
 
-		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), costRecord.getC_AcctSchema_ID());
+		final MAcctSchema as = MAcctSchema.get(acctSchemaId);
 		final CostingLevel costingLevel = productBL.getCostingLevel(productId, as);
 
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(costingLevel)
-				.acctSchemaId(costRecord.getC_AcctSchema_ID())
+				.acctSchemaId(acctSchemaId)
 				.costTypeId(CostTypeId.ofRepoId(costRecord.getM_CostType_ID()))
 				.productId(productId)
 				.clientId(ClientId.ofRepoId(costRecord.getAD_Client_ID()))
@@ -251,14 +253,14 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		final List<CostElement> costElements = costElementRepo.getCostElementsWithCostingMethods(clientId);
 
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(clientId.getRepoId()))
+		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(clientId))
 		{
 			if (as.isSkipOrg(product.getAD_Org_ID()))
 			{
 				continue;
 			}
 
-			final int acctSchemaId = as.getC_AcctSchema_ID();
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
 			final CostTypeId costTypeId = CostTypeId.ofRepoId(as.getM_CostType_ID());
 			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
 

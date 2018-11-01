@@ -1,124 +1,122 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.process;
 
 import java.util.ArrayList;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaDefault;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MAcctSchemaGL;
-import org.compiere.util.AdempiereSystemError;
-import org.compiere.util.AdempiereUserError;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
 /**
- * 	Copy Accounts from one Acct Schema to another
- *	
- *  @author Jorg Janke
- *  @version $Id: AcctSchemaCopyAcct.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
+ * Copy Accounts from one Acct Schema to another
+ * 
+ * @author Jorg Janke
+ * @version $Id: AcctSchemaCopyAcct.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
 public class AcctSchemaCopyAcct extends JavaProcess
 {
-	private int		p_SourceAcctSchema_ID = 0;
-	private int		p_TargetAcctSchema_ID = 0;
-	
+	private AcctSchemaId p_SourceAcctSchema_ID;
+	private AcctSchemaId p_TargetAcctSchema_ID;
+
 	/**
-	 * 	Prepare
+	 * Prepare
 	 */
 	@Override
-	protected void prepare ()
+	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals("C_AcctSchema_ID"))
-				p_SourceAcctSchema_ID = para[i].getParameterAsInt();
+			{
+				p_SourceAcctSchema_ID = AcctSchemaId.ofRepoId(para[i].getParameterAsInt());
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
-		p_TargetAcctSchema_ID = getRecord_ID();
-	}	//	prepare
+		p_TargetAcctSchema_ID = AcctSchemaId.ofRepoId(getRecord_ID());
+	}	// prepare
 
-	/**
-	 * 	Process
-	 *	@return info
-	 *	@throws Exception
-	 */
 	@Override
-	protected String doIt () throws Exception
+	protected String doIt()
 	{
-		log.info("SourceAcctSchema_ID=" + p_SourceAcctSchema_ID 
-			+ ", TargetAcctSchema_ID=" + p_TargetAcctSchema_ID);
-		
-		if (p_SourceAcctSchema_ID == 0 || p_TargetAcctSchema_ID == 0)
-			throw new AdempiereSystemError("ID=0");
-		
-		if (p_SourceAcctSchema_ID == p_TargetAcctSchema_ID)
-			throw new AdempiereUserError("Must be different");
-		
-		MAcctSchema source = new MAcctSchema(getCtx(), p_SourceAcctSchema_ID, ITrx.TRXNAME_None);
+		if (AcctSchemaId.equals(p_SourceAcctSchema_ID, p_TargetAcctSchema_ID))
+		{
+			throw new AdempiereException("Must be different");
+		}
+
+		MAcctSchema source = new MAcctSchema(getCtx(), p_SourceAcctSchema_ID.getRepoId(), ITrx.TRXNAME_None);
 		if (source.get_ID() == 0)
-			throw new AdempiereSystemError("NotFound Source C_AcctSchema_ID=" + p_SourceAcctSchema_ID);
-		MAcctSchema target = new MAcctSchema (getCtx(), p_TargetAcctSchema_ID, get_TrxName());
+			throw new AdempiereException("NotFound Source C_AcctSchema_ID=" + p_SourceAcctSchema_ID);
+		MAcctSchema target = new MAcctSchema(getCtx(), p_TargetAcctSchema_ID.getRepoId(), get_TrxName());
 		if (target.get_ID() == 0)
-			throw new AdempiereSystemError("NotFound Target C_AcctSchema_ID=" + p_TargetAcctSchema_ID);
-		
+			throw new AdempiereException("NotFound Target C_AcctSchema_ID=" + p_TargetAcctSchema_ID);
+
 		//
 		MAcctSchemaElement[] targetElements = target.getAcctSchemaElements();
 		if (targetElements.length == 0)
-			throw new AdempiereUserError("NotFound Target C_AcctSchema_Element");
-		
-		//	Accounting Element must be the same
+			throw new AdempiereException("NotFound Target C_AcctSchema_Element");
+
+		// Accounting Element must be the same
 		MAcctSchemaElement sourceAcctElement = source.getAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_Account);
 		if (sourceAcctElement == null)
-			throw new AdempiereUserError("NotFound Source AC C_AcctSchema_Element");
+			throw new AdempiereException("NotFound Source AC C_AcctSchema_Element");
 		MAcctSchemaElement targetAcctElement = target.getAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_Account);
 		if (targetAcctElement == null)
-			throw new AdempiereUserError("NotFound Target AC C_AcctSchema_Element");
+			throw new AdempiereException("NotFound Target AC C_AcctSchema_Element");
 		if (sourceAcctElement.getC_Element_ID() != targetAcctElement.getC_Element_ID())
-			throw new AdempiereUserError("@C_Element_ID@ different");
-		
-		if (MAcctSchemaGL.get(getCtx(), p_TargetAcctSchema_ID) == null)
+			throw new AdempiereException("@C_Element_ID@ different");
+
+		if (MAcctSchemaGL.get(p_TargetAcctSchema_ID) == null)
 			copyGL(target);
-		if (MAcctSchemaDefault.get(getCtx(), p_TargetAcctSchema_ID) == null)
+		if (MAcctSchemaDefault.get(p_TargetAcctSchema_ID) == null)
 			copyDefault(target);
-		
+
 		return "@OK@";
-	}	//	doIt
-	
+	}	// doIt
+
 	/**
-	 * 	Copy GL 
-	 *	@param targetAS target
-	 *	@throws Exception
+	 * Copy GL
+	 * 
+	 * @param targetAS target
+	 * @throws Exception
 	 */
-	private void copyGL (MAcctSchema targetAS) throws Exception
+	private void copyGL(MAcctSchema targetAS)
 	{
-		MAcctSchemaGL source = MAcctSchemaGL.get(getCtx(), p_SourceAcctSchema_ID);
+		MAcctSchemaGL source = MAcctSchemaGL.get(p_SourceAcctSchema_ID);
 		MAcctSchemaGL target = new MAcctSchemaGL(getCtx(), 0, get_TrxName());
-		target.setC_AcctSchema_ID(p_TargetAcctSchema_ID);
+		target.setC_AcctSchema_ID(p_TargetAcctSchema_ID.getRepoId());
 		ArrayList<KeyNamePair> list = source.getAcctInfo();
 		for (int i = 0; i < list.size(); i++)
 		{
@@ -130,20 +128,20 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			target.setValue(columnName, new Integer(targetAccount.getC_ValidCombination_ID()));
 		}
 		if (!target.save())
-			throw new AdempiereSystemError("Could not Save GL");
-	}	//	copyGL
-	
+			throw new AdempiereException("Could not Save GL");
+	}	// copyGL
+
 	/**
-	 * 	Copy Default
-	 *	@param targetAS target
-	 *	@throws Exception
+	 * Copy Default
+	 * 
+	 * @param targetAS target
+	 * @throws Exception
 	 */
-	private void copyDefault(MAcctSchema targetAS) throws Exception
+	private void copyDefault(MAcctSchema targetAS)
 	{
-		MAcctSchemaDefault source = MAcctSchemaDefault.get(getCtx(), p_SourceAcctSchema_ID);
+		MAcctSchemaDefault source = MAcctSchemaDefault.get(p_SourceAcctSchema_ID);
 		MAcctSchemaDefault target = new MAcctSchemaDefault(getCtx(), 0, get_TrxName());
-		target.setC_AcctSchema_ID(p_TargetAcctSchema_ID);
-		target.setC_AcctSchema_ID(p_TargetAcctSchema_ID);
+		target.setC_AcctSchema_ID(p_TargetAcctSchema_ID.getRepoId());
 		ArrayList<KeyNamePair> list = source.getAcctInfo();
 		for (int i = 0; i < list.size(); i++)
 		{
@@ -155,18 +153,19 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			target.setValue(columnName, new Integer(targetAccount.getC_ValidCombination_ID()));
 		}
 		if (!target.save())
-			throw new AdempiereSystemError("Could not Save Default");
-	}	//	copyDefault
-	
+			throw new AdempiereException("Could not Save Default");
+	}	// copyDefault
+
 	/**
-	 * 	Create Account
-	 *	@param targetAS target AS
-	 *	@param sourceAcct source account
-	 *	@return target account
+	 * Create Account
+	 * 
+	 * @param targetAS target AS
+	 * @param sourceAcct source account
+	 * @return target account
 	 */
 	private MAccount createAccount(MAcctSchema targetAS, MAccount sourceAcct)
 	{
-		int AD_Client_ID = targetAS.getAD_Client_ID(); 
+		int AD_Client_ID = targetAS.getAD_Client_ID();
 		int C_AcctSchema_ID = targetAS.getC_AcctSchema_ID();
 		//
 		int AD_Org_ID = 0;
@@ -177,7 +176,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int AD_OrgTrx_ID = 0;
 		int C_LocFrom_ID = 0;
 		int C_LocTo_ID = 0;
-		int C_SalesRegion_ID = 0; 
+		int C_SalesRegion_ID = 0;
 		int C_Project_ID = 0;
 		int C_Campaign_ID = 0;
 		int C_Activity_ID = 0;
@@ -186,7 +185,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int UserElement1_ID = 0;
 		int UserElement2_ID = 0;
 		//
-		//  Active Elements
+		// Active Elements
 		MAcctSchemaElement[] elements = targetAS.getAcctSchemaElements();
 		for (int i = 0; i < elements.length; i++)
 		{
@@ -225,17 +224,15 @@ public class AcctSchemaCopyAcct extends JavaProcess
 				UserElement1_ID = sourceAcct.getUserElement1_ID();
 			else if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_UserElement2))
 				UserElement2_ID = sourceAcct.getUserElement2_ID();
-			//	No UserElement
+			// No UserElement
 		}
 		//
 		return MAccount.get(getCtx(), AD_Client_ID, AD_Org_ID,
-			C_AcctSchema_ID, Account_ID, C_SubAcct_ID,
-			M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
-			C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID, 
-			C_Project_ID, C_Campaign_ID, C_Activity_ID,
-			User1_ID, User2_ID, UserElement1_ID, UserElement2_ID);
-	}	//	createAccount
-	
-	
-}	//	AcctSchemaCopyAcct
+				C_AcctSchema_ID, Account_ID, C_SubAcct_ID,
+				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
+				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
+				C_Project_ID, C_Campaign_ID, C_Activity_ID,
+				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID);
+	}	// createAccount
 
+}	// AcctSchemaCopyAcct

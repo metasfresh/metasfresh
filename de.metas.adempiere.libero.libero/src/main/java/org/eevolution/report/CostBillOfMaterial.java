@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
@@ -79,7 +80,7 @@ public class CostBillOfMaterial extends JavaProcess
 	private static final String LEVELS = "....................";
 	//
 	private int p_AD_Org_ID = 0;
-	private int p_C_AcctSchema_ID = 0;
+	private AcctSchemaId p_C_AcctSchema_ID;
 	private int p_M_Product_ID = 0;
 	private int p_M_CostType_ID = 0;
 	private String p_ConstingMethod = CostingMethod.StandardCosting.getCode();
@@ -101,8 +102,8 @@ public class CostBillOfMaterial extends JavaProcess
 				p_AD_Org_ID = para.getParameterAsInt();
 			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
 			{
-				p_C_AcctSchema_ID = para.getParameterAsInt();
-				m_as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
+				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para.getParameterAsInt());
+				m_as = MAcctSchema.get(p_C_AcctSchema_ID);
 			}
 			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID = para.getParameterAsInt();
@@ -232,7 +233,7 @@ public class CostBillOfMaterial extends JavaProcess
 			tboml.setAD_Org_ID(p_AD_Org_ID);
 			tboml.setSel_Product_ID(p_M_Product_ID);
 			tboml.setImplosion(p_implosion);
-			tboml.setC_AcctSchema_ID(p_C_AcctSchema_ID);
+			tboml.setC_AcctSchema_ID(p_C_AcctSchema_ID.getRepoId());
 			tboml.setM_CostType_ID(p_M_CostType_ID);
 			tboml.setCostingMethod(p_ConstingMethod);
 			tboml.setAD_PInstance_ID(getPinstanceId().getRepoId());

@@ -20,8 +20,10 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.util.LegacyAdapters;
+import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.util.Services;
@@ -47,15 +49,14 @@ public class MAcctSchemaGL extends X_C_AcctSchema_GL
 	/**
 	 * Get Accounting Schema GL Info
 	 *
-	 * @param ctx context
-	 * @param C_AcctSchema_ID id
+	 * @param acctSchemaId id
 	 * @return defaults
-	 * @deprecated Please use {@link IAcctSchemaDAO#retrieveAcctSchemaGL(Properties, int)}
+	 * @deprecated Please use {@link IAcctSchemaDAO#retrieveAcctSchemaGL(Properties, AcctSchemaId)}
 	 */
 	@Deprecated
-	public static MAcctSchemaGL get(Properties ctx, int C_AcctSchema_ID)
+	public static MAcctSchemaGL get(final AcctSchemaId acctSchemaId)
 	{
-		final I_C_AcctSchema_GL acctSchemaGL = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaGL(ctx, C_AcctSchema_ID);
+		final I_C_AcctSchema_GL acctSchemaGL = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaGL(Env.getCtx(), acctSchemaId);
 		return LegacyAdapters.convertToPO(acctSchemaGL);
 	}	// get
 	

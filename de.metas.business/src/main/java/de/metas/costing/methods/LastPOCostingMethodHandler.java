@@ -5,13 +5,11 @@ import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostAmount;
@@ -124,8 +122,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	 */
 	public static BigDecimal getPOPrice(final CostSegment costSegment, final int C_OrderLine_ID)
 	{
-		final Properties ctx = Env.getCtx();
-		final MAcctSchema as = MAcctSchema.get(ctx, costSegment.getAcctSchemaId());
+		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
 		final int C_Currency_ID = as.getC_Currency_ID();
 
 		final String sql = "SELECT currencyConvert(ol.PriceCost, o.C_Currency_ID, ?, o.DateAcct, o.C_ConversionType_ID, ol.AD_Client_ID, ol.AD_Org_ID),"
@@ -182,11 +179,10 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	 */
 	public static BigDecimal getLastPOPrice(final CostSegment costSegment)
 	{
-		final Properties ctx = Env.getCtx();
 		final int productId = costSegment.getProductId().getRepoId();
 		final int AD_Org_ID = costSegment.getOrgId().getRepoId();
 		final int M_ASI_ID = costSegment.getAttributeSetInstanceId().getRepoId();
-		final MAcctSchema as = MAcctSchema.get(ctx, costSegment.getAcctSchemaId());
+		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
 		final int C_Currency_ID = as.getC_Currency_ID();
 
 		String sql = "SELECT currencyConvert(ol.PriceCost, o.C_Currency_ID, ?, o.DateAcct, o.C_ConversionType_ID, ol.AD_Client_ID, ol.AD_Org_ID),"

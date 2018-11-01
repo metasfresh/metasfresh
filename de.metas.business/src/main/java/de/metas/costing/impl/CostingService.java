@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -200,8 +201,8 @@ public class CostingService implements ICostingService
 
 	private CostDetailVoidRequest createCostDetailVoidRequest(final I_M_CostDetail costDetail)
 	{
-		final int acctSchemaId = costDetail.getC_AcctSchema_ID();
-		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaById(acctSchemaId);
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costDetail.getC_AcctSchema_ID());
+		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		final CostTypeId costTypeId = CostTypeId.ofRepoId(acctSchema.getM_CostType_ID());
 
 		final IProductBL productBL = Services.get(IProductBL.class);
@@ -239,18 +240,21 @@ public class CostingService implements ICostingService
 				.stream()
 				.map(LegacyAdapters::<I_C_AcctSchema, MAcctSchema> convertToPO)
 				.filter(acctSchema -> acctSchema.isAllowPostingForOrg(request.getOrgId()))
-				.map(acctSchema -> request.deriveByAcctSchemaId(acctSchema.getC_AcctSchema_ID()));
+				.map(acctSchema -> AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()))
+				.map(request::deriveByAcctSchemaId);
 	}
 
 	private List<I_C_AcctSchema> extractAcctSchemas(final CostDetailCreateRequest request)
 	{
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+
 		if (request.isAllAcctSchemas())
 		{
-			return Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(request.getClientId());
+			return acctSchemasRepo.retrieveClientAcctSchemas(request.getClientId());
 		}
 		else
 		{
-			I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaById(request.getAcctSchemaId());
+			final I_C_AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
 			return ImmutableList.of(acctSchema);
 		}
 	}

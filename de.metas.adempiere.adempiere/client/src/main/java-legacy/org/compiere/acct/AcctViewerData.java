@@ -29,10 +29,13 @@ import java.util.Properties;
 
 import javax.swing.JComboBox;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_Fact_Acct;
@@ -49,14 +52,12 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.logging.LogManager;
 
 /**
  * Account Viewer State - maintains State information for the Account Viewer
@@ -99,21 +100,21 @@ class AcctViewerData
 		{
 			adClientIdToSet = Env.getContextAsInt(Env.getCtx(), "AD_Client_ID");
 		}
-		this.AD_Client_ID = adClientIdToSet;
+		this.AD_Client_ID = ClientId.ofRepoId(adClientIdToSet);
 
 		this.AD_Table_ID = ad_Table_ID;
 
 		//
-		this.acctSchemas = MAcctSchema.getClientAcctSchema(ctx, AD_Client_ID);
+		this.acctSchemas = MAcctSchema.getClientAcctSchema(AD_Client_ID);
 
-		final I_C_AcctSchema acctSchemaDefault = acctSchemaDAO.retrieveAcctSchema(ctx, AD_Client_ID, ad_Org_ID);
+		final I_C_AcctSchema acctSchemaDefault = acctSchemaDAO.retrieveAcctSchema(ctx, AD_Client_ID, OrgId.ofRepoIdOrNull(ad_Org_ID));
 		setC_AcctSchema(acctSchemaDefault);
 	}   // AcctViewerData
 
 	/** Window */
 	private final int WindowNo;
 	/** Client */
-	private final int AD_Client_ID;
+	private final ClientId AD_Client_ID;
 	/** All Acct Schema */
 	private final MAcctSchema[] acctSchemas;
 	/** This Acct Schema */
@@ -295,7 +296,7 @@ class AcctViewerData
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Client_ID);
+			pstmt.setInt(1, AD_Client_ID.getRepoId());
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -764,7 +765,7 @@ class AcctViewerData
 
 	public int getAD_Client_ID()
 	{
-		return AD_Client_ID;
+		return AD_Client_ID.getRepoId();
 	}
 
 	public void setC_AcctSchema(final KeyNamePair acctSchemaKNP)
@@ -775,9 +776,9 @@ class AcctViewerData
 		}
 		else
 		{
-			final int acctSchemaId = acctSchemaKNP.getKey();
-			this._acctSchema = MAcctSchema.get(Env.getCtx(), acctSchemaId);
-			log.info(this._acctSchema.toString());
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaKNP.getKey());
+			this._acctSchema = MAcctSchema.get(acctSchemaId);
+			log.info("{}", this._acctSchema);
 		}
 	}
 

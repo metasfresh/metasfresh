@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
@@ -33,6 +34,7 @@ import com.google.common.base.Suppliers;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  *  Accounting Schema Model (base)
@@ -48,33 +50,14 @@ public class MAcctSchema extends X_C_AcctSchema
 	 * 
 	 */
 	private static final long serialVersionUID = -7228171623905614596L;
-
-
-	/**
-	 *  Get AccountSchema of Client
-	 * 	@param ctx context
-	 *  @param acctSchemaId schema id
-	 *  @return Accounting schema
-	 *  @deprecated please just load it directly because it's cached
-	 *  @see org.adempiere.acct.model.validator.AcctModuleInterceptor
-	 */
-	@Deprecated
-	public static MAcctSchema get (final Properties ctx_NOTUSED, final int acctSchemaId)
-	{
-		return get(acctSchemaId);
-	}	//	get
 	
 	@Deprecated
-	public static MAcctSchema get (final int acctSchemaId)
+	public static MAcctSchema get (@NonNull final AcctSchemaId acctSchemaId)
 	{
-		if (acctSchemaId <= 0)
-		{
-			return null;
-		}
-		
-		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaById(acctSchemaId);
+		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		return LegacyAdapters.convertToPO(acctSchema);
 	}	//	get
+
 
 
 	/**
@@ -92,9 +75,9 @@ public class MAcctSchema extends X_C_AcctSchema
 	}	//	getClientAcctSchema
 
 	@Deprecated
-	public static MAcctSchema[] getClientAcctSchema (final int AD_Client_ID)
+	public static MAcctSchema[] getClientAcctSchema (@NonNull final ClientId clientId)
 	{
-		final List<I_C_AcctSchema> clientAcctSchemas = Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(ClientId.ofRepoId(AD_Client_ID));
+		final List<I_C_AcctSchema> clientAcctSchemas = Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(clientId);
 		return LegacyAdapters.convertToPOArray(clientAcctSchemas, MAcctSchema.class);
 	}
 
@@ -218,7 +201,8 @@ public class MAcctSchema extends X_C_AcctSchema
 	{
 		if (_acctSchemaGL == null)
 		{
-			_acctSchemaGL = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaGL(getCtx(), getC_AcctSchema_ID());
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getC_AcctSchema_ID());
+			_acctSchemaGL = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaGL(getCtx(), acctSchemaId);
 		}
 		return _acctSchemaGL;
 	}	//	getAcctSchemaGL
@@ -237,10 +221,11 @@ public class MAcctSchema extends X_C_AcctSchema
 		@Override
 		public MAcctSchemaDefault get()
 		{
-			final MAcctSchemaDefault acctSchemaDefault = MAcctSchemaDefault.get(getCtx(), getC_AcctSchema_ID());
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getC_AcctSchema_ID());
+			final MAcctSchemaDefault acctSchemaDefault = MAcctSchemaDefault.get(acctSchemaId);
 			if(acctSchemaDefault == null)
 			{
-				throw new IllegalStateException("No Default Definition for C_AcctSchema_ID=" + getC_AcctSchema_ID());
+				throw new IllegalStateException("No Default Definition for C_AcctSchema_ID=" + acctSchemaId);
 			}
 			return acctSchemaDefault;
 		}

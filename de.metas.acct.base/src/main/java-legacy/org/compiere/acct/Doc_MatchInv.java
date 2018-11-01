@@ -23,6 +23,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -515,9 +516,11 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final I_M_MatchInv matchInv = getM_MatchInv();
 
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		
 		return costDetailService
 				.createCostDetail(CostDetailCreateRequest.builder()
-						.acctSchemaId(as.getC_AcctSchema_ID())
+						.acctSchemaId(acctSchemaId)
 						.clientId(getClientId())
 						.orgId(getOrgId())
 						.productId(getProductId())
