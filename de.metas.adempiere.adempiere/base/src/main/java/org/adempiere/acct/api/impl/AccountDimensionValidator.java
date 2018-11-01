@@ -55,11 +55,8 @@ import lombok.NonNull;
 	private final I_C_AcctSchema _acctSchema;
 	private List<I_C_AcctSchema_Element> acctSchemaElements;
 
-	public AccountDimensionValidator(final I_C_AcctSchema acctSchema)
+	public AccountDimensionValidator(@NonNull final I_C_AcctSchema acctSchema)
 	{
-		super();
-
-		Check.assumeNotNull(acctSchema, "acctSchema not null");
 		this._acctSchema = acctSchema;
 		this._ctx = InterfaceWrapperHelper.getCtx(acctSchema);
 	}
