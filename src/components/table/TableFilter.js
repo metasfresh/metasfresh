@@ -35,7 +35,7 @@ class TableFilter extends Component {
       supportQuickInput,
       allowCreateNew,
       modalVisible,
-      wrapperHeight
+      wrapperHeight,
     } = this.props;
 
     const { isTooltipShow } = this.state;
