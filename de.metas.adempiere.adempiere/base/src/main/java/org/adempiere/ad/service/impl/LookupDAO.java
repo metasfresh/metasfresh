@@ -1,5 +1,9 @@
 package org.adempiere.ad.service.impl;
 
+import lombok.NonNull;
+
+import javax.annotation.concurrent.Immutable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -29,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -76,7 +78,6 @@ import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class LookupDAO implements ILookupDAO
 {
@@ -167,10 +168,8 @@ public class LookupDAO implements ILookupDAO
 		private final int zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
 
-		private TableRefInfo(final TableRefInfoBuilder builder)
+		private TableRefInfo(@NonNull final TableRefInfoBuilder builder)
 		{
-			super();
-
 			name = builder.name;
 
 			Check.assumeNotEmpty(builder.tableName, "tableName not empty");
@@ -631,7 +630,10 @@ public class LookupDAO implements ILookupDAO
 		final Object[] sqlParams = new Object[] { AD_Reference_ID };
 		final String sql = "SELECT t.TableName,ck.ColumnName AS KeyColumn,"				// 1..2
 				+ "cd.ColumnName AS DisplayColumn,rt.IsValueDisplayed,cd.IsTranslated,"	// 3..5
-				+ "rt.WhereClause,rt.OrderByClause,t.AD_Window_ID,t.PO_Window_ID, "		// 6..9
+				+ "rt.WhereClause," // 6
+				+ "rt.OrderByClause," // 7
+				+ "t.AD_Window_ID," // 8
+				+ "t.PO_Window_ID, " // 9
 				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "					// 10..11
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
@@ -640,8 +642,8 @@ public class LookupDAO implements ILookupDAO
 				+ " FROM AD_Ref_Table rt"
 				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
 				+ " INNER JOIN AD_Table t ON (rt.AD_Table_ID=t.AD_Table_ID)"
-				+ " INNER JOIN AD_Column ck ON (rt.AD_Key=ck.AD_Column_ID)"
-				+ " LEFT OUTER JOIN AD_Column cd ON (rt.AD_Display=cd.AD_Column_ID) "
+				+ " INNER JOIN AD_Column ck ON (rt.AD_Key=ck.AD_Column_ID)" // key-column
+				+ " LEFT OUTER JOIN AD_Column cd ON (rt.AD_Display=cd.AD_Column_ID) " // display-column
 				+ " WHERE rt.AD_Reference_ID=?"
 				+ " AND rt.IsActive='Y' AND t.IsActive='Y'";
 

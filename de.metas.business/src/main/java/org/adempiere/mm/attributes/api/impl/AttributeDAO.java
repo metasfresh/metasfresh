@@ -394,13 +394,13 @@ public class AttributeDAO implements IAttributeDAO
 	@Cached(cacheName = I_M_AttributeValue.Table_Name
 			+ "#by#" + I_M_AttributeValue.COLUMNNAME_M_Attribute_ID
 			+ "#" + I_M_AttributeValue.COLUMNNAME_Value)
-	/* package */Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(
+	Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(
 			@CacheCtx final Properties ctx,
 			final int attributeId,
-			// NOTE: we are caching this method only if we dont have a filter.
+			// NOTE: we are caching this method only if we don't have a filter.
 			// If we have a filter:
-			// * that's mutable so it will fuck up our case
-			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karoten ID example from)
+			// * that's mutable so it will screw up up our case
+			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karotten ID example from)
 			@CacheSkipIfNotNull final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter)
 	{
 		final IQueryBuilder<I_M_AttributeValue> queryBuilder = Services.get(IQueryBL.class)

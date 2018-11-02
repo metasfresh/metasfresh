@@ -14,6 +14,10 @@ Here come the actual release notes:
 ## Features
 
 ## Fix
+* metasfresh-webui-frontend
+  * [#2007](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2007) Dropdown fields too small in several places
+    * Fixes the Dropdown width ang heißt in Lookup and Dropdown widgets.
+
 
 # metasfresh 5.79
 ## Features
@@ -115,7 +119,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1063](https://github.com/metasfresh/metasfresh-webui-api/issues/1063) Global QR Code Actions support
+    * New Barcode Feature that allows to Scan a QR Barcode in WebUI via Webcam now.
   * [#1066](https://github.com/metasfresh/metasfresh-webui-api/issues/1066) Don't show KPIs if the ElasticSearch system is disabled
+    * New Configuration feature that allows to hide the KPI's on main Dashboard if Elastic Search service is not enabled.
 
 
 * metasfresh-webui-frontend
@@ -142,6 +148,7 @@ Here come the actual release notes:
   * [#1990](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1990) QR code support
     * New Feature that allows to scan QR Codes now.
   * [#1999](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1999) Process execution result action: render QR code
+    * New Feature in WebUI that allows to scan QR Barcodes.
 
 ## Fixes
 
@@ -151,12 +158,17 @@ Here come the actual release notes:
   * [#4632](https://github.com/metasfresh/metasfresh/issues/4632) Swing Picking Terminal: cannot pick
     * Bugfix for a minor case in Picking Workflow.
   * [#4644](https://github.com/metasfresh/metasfresh/issues/4644) Clone Quotation, switch Sales Order. Wrong Document No
+    * Improvement of the Sales Order Clone Feature. Now switching the Document No Sequence if Doctype is changed.
   * [#4650](https://github.com/metasfresh/metasfresh/issues/4650) Elasticsearch shall use slf4j instead of log4j (again)
+    * Improvement of the Elasticsearch logging. Switched to another logger.
   * [#4657](https://github.com/metasfresh/metasfresh/issues/4657) AD_Message cache in Msg not invalidated on data change
+    * Cache Invalidation Improvement for WebUI.
   * [#4658](https://github.com/metasfresh/metasfresh/issues/4658) Dunning jasper uses untranslated _trl records
+    * Fixed the Translation prossibility of Jasper Dunning Documents.
 
 * metasfresh-webui-api
   * [#1060](https://github.com/metasfresh/metasfresh-webui-api/issues/1060) Allow parent-link relation to be set in AD_Tab
+    * Application Dictionary improvement, now allowing parent link relations to be set in Tab Configuration.
 
 * metasfresh-webui-frontend
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
@@ -168,7 +180,9 @@ Here come the actual release notes:
   * [#1995](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1995) Cypress Test: Manufacturing Order Test fails
     * Bugfix for failing Manufacturing Order Test with Cypress.
   * [#1998](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1998) Open view process action shall support profileId (frontend)
+    * Fix in WebUI Frontend when opening a View. Now the ProfileID is used when opening a View.
   * [#2000](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2000) Modal view shall query the quick actions initially
+    * Bugfix when opening Modal Views initially. Now the Quick Actions are queried too.
 
 # metasfresh 5.76
 ## Features
