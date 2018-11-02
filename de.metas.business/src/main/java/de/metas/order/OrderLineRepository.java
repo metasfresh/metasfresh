@@ -2,6 +2,8 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.time.LocalDateTime;
+
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
@@ -63,14 +65,19 @@ public class OrderLineRepository
 		final int paymentTermId = Util.firstGreaterThanZeroSupplier(
 				() -> orderLineRecord.getC_PaymentTerm_Override_ID(),
 				() -> orderLineRecord.getC_Order().getC_PaymentTerm_ID());
-
+		
+		final LocalDateTime datePromised = Util.firstValidValue(
+				date -> date != null,
+				() -> TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()),
+				() -> TimeUtil.asLocalDateTime(orderLineRecord.getC_Order().getDatePromised()));
+		
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
 				.orderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()))
 				.orgId(OrgId.ofRepoId(orderLineRecord.getAD_Org_ID()))
 				.line(orderLineRecord.getLine())
 				.bPartnerId(BPartnerId.ofRepoId(bPartnerRepoId))
-				.datePromised(TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()))
+				.datePromised(null)
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.priceActual(moneyOfRecordsPriceActual(orderLineRecord))
 				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
