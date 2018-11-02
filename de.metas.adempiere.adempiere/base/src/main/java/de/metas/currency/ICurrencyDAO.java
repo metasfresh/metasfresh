@@ -11,6 +11,7 @@ import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 
+import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -41,6 +42,8 @@ import de.metas.util.ISingletonService;
  */
 public interface ICurrencyDAO extends ISingletonService
 {
+	I_C_Currency getById(CurrencyId currencyId);
+	
 	/**
 	 * retrieves Currency by ID
 	 *

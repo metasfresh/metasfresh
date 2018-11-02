@@ -3,6 +3,8 @@
  */
 package de.metas.currency.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -29,8 +31,10 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,11 +49,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -61,6 +65,12 @@ import de.metas.util.Services;
 @Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
+	@Override
+	public I_C_Currency getById(@NonNull final CurrencyId currencyId)
+	{
+		return loadOutOfTrx(currencyId, I_C_Currency.class);
+	}
+
 	@Override
 	@Cached(cacheName = I_C_Currency.Table_Name)
 	public I_C_Currency retrieveCurrency(@CacheCtx final Properties ctx, final int currencyId)
@@ -91,11 +101,11 @@ public class CurrencyDAO implements ICurrencyDAO
 	@Override
 	public String getISO_Code(Properties ctx, int C_Currency_ID)
 	{
-		if(C_Currency_ID <= 0)
+		if (C_Currency_ID <= 0)
 		{
 			return null;
 		}
-		
+
 		final I_C_Currency currency = retrieveCurrency(ctx, C_Currency_ID);
 		if (currency == null)
 		{
