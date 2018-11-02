@@ -26,7 +26,6 @@ package de.metas.banking.service.impl;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -39,6 +38,7 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementBL;

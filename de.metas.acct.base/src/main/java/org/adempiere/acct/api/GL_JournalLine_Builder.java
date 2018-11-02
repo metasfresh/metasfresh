@@ -11,6 +11,10 @@ import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.X_GL_JournalLine;
 
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

@@ -2,8 +2,6 @@ package de.metas.costing.interceptors;
 
 import java.util.stream.Collectors;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -15,6 +13,8 @@ import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingMethod;
 import de.metas.util.Check;

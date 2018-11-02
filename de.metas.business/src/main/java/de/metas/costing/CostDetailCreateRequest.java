@@ -5,11 +5,11 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;

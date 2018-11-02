@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.util.ISingletonService;
 
 /**

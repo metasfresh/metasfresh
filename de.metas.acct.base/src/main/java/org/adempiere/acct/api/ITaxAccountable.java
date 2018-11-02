@@ -28,6 +28,8 @@ import java.math.BigDecimal;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 
+import de.metas.acct.api.AcctSchemaId;
+
 /**
  * Accountable tax record.
  * 

@@ -29,8 +29,6 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IFactAcctCubeBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -54,6 +52,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;

@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
 import org.adempiere.ad.dao.IQueryBL;
@@ -51,6 +50,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.acct.api.AcctSchema;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;

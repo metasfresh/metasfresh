@@ -20,11 +20,11 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 

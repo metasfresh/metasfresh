@@ -18,13 +18,13 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 
-import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.util.DB;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;

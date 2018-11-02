@@ -22,15 +22,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.compiere.model.MAccount;
 import org.compiere.model.MElementValue;
 import org.compiere.model.X_I_ElementValue;
 import org.compiere.util.DB;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;

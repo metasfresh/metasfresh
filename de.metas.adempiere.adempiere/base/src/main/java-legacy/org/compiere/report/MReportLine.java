@@ -25,11 +25,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_PA_ReportLine;
 import org.compiere.util.DB;
 
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.util.Check;
 
 

@@ -27,14 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaGeneralLedger;
-import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.IDocFactory;
-import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.acct.api.IFactAcctListenersService;
-import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -58,6 +51,13 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.IFactAcctListenersService;
+import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;

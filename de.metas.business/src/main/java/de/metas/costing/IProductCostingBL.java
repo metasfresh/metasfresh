@@ -1,9 +1,9 @@
 package de.metas.costing;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.compiere.model.I_M_Product;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 

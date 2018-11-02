@@ -25,11 +25,12 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.acct.api.AcctSchema;
 
 public class Doc_PPOrder extends Doc<DocLine<Doc_PPOrder>>
 {

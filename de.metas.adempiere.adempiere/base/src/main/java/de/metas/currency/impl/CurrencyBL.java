@@ -27,14 +27,14 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;

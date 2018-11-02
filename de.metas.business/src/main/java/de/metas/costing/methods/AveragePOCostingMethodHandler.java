@@ -8,8 +8,6 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -21,6 +19,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;

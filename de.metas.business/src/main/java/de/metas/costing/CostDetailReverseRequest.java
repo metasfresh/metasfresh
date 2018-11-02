@@ -2,8 +2,7 @@ package de.metas.costing;
 
 import java.time.LocalDate;
 
-import org.adempiere.acct.api.AcctSchemaId;
-
+import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

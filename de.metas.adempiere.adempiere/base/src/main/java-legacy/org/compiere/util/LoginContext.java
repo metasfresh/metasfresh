@@ -4,9 +4,10 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
+
+import de.metas.acct.api.AcctSchema;
 
 /*
  * #%L

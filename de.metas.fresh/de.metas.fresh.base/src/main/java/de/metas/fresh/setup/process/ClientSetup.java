@@ -2,8 +2,6 @@ package de.metas.fresh.setup.process;
 
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -25,6 +23,8 @@ import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.banking.model.I_C_BP_BankAccount;

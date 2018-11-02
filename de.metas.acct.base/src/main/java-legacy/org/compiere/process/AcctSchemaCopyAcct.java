@@ -21,14 +21,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.acct.api.AccountId;
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaElement;
-import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.AcctSchemaElementsMap;
-import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAccountDAO;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema;
@@ -37,6 +29,14 @@ import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.model.MAccount;
 import org.compiere.model.POInfo;
 
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaElementsMap;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.NumberUtils;

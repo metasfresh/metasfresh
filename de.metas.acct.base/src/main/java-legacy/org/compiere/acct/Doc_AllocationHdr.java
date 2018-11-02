@@ -25,10 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IFactAcctBL;
-import org.adempiere.acct.api.TaxCorrectionType;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
@@ -47,6 +44,9 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.TaxCorrectionType;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;

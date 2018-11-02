@@ -18,10 +18,10 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.util.DB;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 

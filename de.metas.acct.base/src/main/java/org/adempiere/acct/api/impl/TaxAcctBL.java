@@ -25,7 +25,6 @@ package org.adempiere.acct.api.impl;
 
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.ITaxAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -35,6 +34,7 @@ import org.compiere.model.I_C_Tax_Acct;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Check;
 import de.metas.util.Services;

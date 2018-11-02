@@ -20,12 +20,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.MCash;
 import org.compiere.model.MCashBook;
+
+import de.metas.acct.api.AcctSchema;
 
 /**
  * Post Invoice Documents.

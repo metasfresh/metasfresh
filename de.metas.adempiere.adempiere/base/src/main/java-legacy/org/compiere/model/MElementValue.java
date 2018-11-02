@@ -19,9 +19,10 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+
+import de.metas.acct.api.AcctSchemaElementType;
 
 /**
  * 	Natural Account

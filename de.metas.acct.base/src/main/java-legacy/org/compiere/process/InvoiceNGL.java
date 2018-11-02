@@ -20,10 +20,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAccountDAO;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.compiere.model.MAccount;
 import org.compiere.model.MDocType;
 import org.compiere.model.MGLCategory;
@@ -36,6 +32,10 @@ import org.compiere.model.Query;
 import org.compiere.model.X_T_InvoiceGL;
 import org.compiere.util.DB;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;

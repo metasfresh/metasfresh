@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceDAO;
@@ -45,6 +43,8 @@ import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.util.Services;
 

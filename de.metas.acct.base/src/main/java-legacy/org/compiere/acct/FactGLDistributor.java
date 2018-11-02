@@ -5,14 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AccountDimension;
 import org.adempiere.acct.api.GLDistributionBuilder;
 import org.adempiere.acct.api.GLDistributionResult;
 import org.adempiere.acct.api.GLDistributionResultLine;
 import org.adempiere.acct.api.GLDistributionResultLine.Sign;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.acct.api.IGLDistributionDAO;
-import org.adempiere.acct.api.impl.AcctSegmentType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
@@ -23,6 +21,8 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;

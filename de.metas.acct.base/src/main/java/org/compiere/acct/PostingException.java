@@ -1,10 +1,10 @@
 package org.compiere.acct;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_Fact_Acct;
 
 import ch.qos.logback.classic.Level;
+import de.metas.acct.api.AcctSchema;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;

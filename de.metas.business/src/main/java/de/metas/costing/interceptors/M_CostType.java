@@ -1,7 +1,5 @@
 package de.metas.costing.interceptors;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -10,6 +8,8 @@ import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostTypeId;
 import de.metas.util.Services;
 

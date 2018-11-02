@@ -2,11 +2,11 @@ package org.adempiere.acct.api.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.acct.api.IFactAcctListener;
-import org.adempiere.acct.api.IFactAcctListenersService;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 
+import de.metas.acct.api.IFactAcctListener;
+import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Check;
 

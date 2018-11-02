@@ -1,6 +1,5 @@
 package de.metas.handlingunits.movement.api.impl;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
@@ -16,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.util.Services;

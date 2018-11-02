@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.MAccount;
@@ -32,6 +30,9 @@ import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.MHRMovement;
 import org.eevolution.model.MHRProcess;
 import org.eevolution.model.X_HR_Concept_Acct;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 
 /**
  * Post Payroll Documents.

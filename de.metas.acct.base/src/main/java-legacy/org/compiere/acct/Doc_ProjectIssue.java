@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
@@ -33,6 +32,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.logging.LogManager;

@@ -3,8 +3,6 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -16,6 +14,8 @@ import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostResult;

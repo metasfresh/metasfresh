@@ -20,8 +20,9 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchemaElementType;
 import org.compiere.model.X_PA_ReportColumn;
+
+import de.metas.acct.api.AcctSchemaElementType;
 
 /**
  *  Report Column Model

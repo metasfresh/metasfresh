@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AccountDimension;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IGLDistributionDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -17,6 +15,8 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.util.Check;

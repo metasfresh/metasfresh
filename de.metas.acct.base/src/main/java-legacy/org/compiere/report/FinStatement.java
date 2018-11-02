@@ -23,13 +23,13 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.adempiere.acct.api.AcctSchemaElementType;
 import org.compiere.model.MElementValue;
 import org.compiere.model.MPeriod;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;

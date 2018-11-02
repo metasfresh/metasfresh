@@ -2,7 +2,6 @@ package de.metas.costing.interceptors;
 
 import java.math.BigDecimal;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -13,6 +12,7 @@ import org.compiere.model.I_M_Cost;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;

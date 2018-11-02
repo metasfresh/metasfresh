@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
@@ -27,6 +26,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_CountryArea;
 import de.metas.adempiere.service.ICountryAreaBL;

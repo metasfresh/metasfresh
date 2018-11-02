@@ -19,9 +19,10 @@ package org.compiere.report;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchemaElementType;
 import org.compiere.model.PO;
 import org.compiere.model.X_PA_ReportSource;
+
+import de.metas.acct.api.AcctSchemaElementType;
 
 /**
  * Report Line Source Model

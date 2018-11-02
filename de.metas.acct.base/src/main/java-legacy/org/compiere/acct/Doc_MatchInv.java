@@ -23,10 +23,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaElement;
-import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,6 +37,10 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;

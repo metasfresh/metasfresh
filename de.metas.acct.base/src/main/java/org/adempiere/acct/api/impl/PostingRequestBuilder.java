@@ -27,11 +27,7 @@ import java.util.Optional;
 
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IDocFactory;
-import org.adempiere.acct.api.IPostingRequestBuilder;
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -49,6 +45,10 @@ import org.compiere.model.I_AD_Client;
 import org.slf4j.Logger;
 
 import de.metas.Profiles;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IPostingRequestBuilder;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.posting.DocumentPostRequest;
 import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.adempiere.form.IClientUI;

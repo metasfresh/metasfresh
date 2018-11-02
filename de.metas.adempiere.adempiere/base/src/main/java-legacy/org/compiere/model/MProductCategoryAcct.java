@@ -20,12 +20,12 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.CCache;
 import de.metas.util.Check;
 import de.metas.util.Services;

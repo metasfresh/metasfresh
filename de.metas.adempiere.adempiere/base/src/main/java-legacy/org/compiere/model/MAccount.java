@@ -20,18 +20,18 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AccountDimension;
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaElement;
-import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAccountBL;
-import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountBL;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;

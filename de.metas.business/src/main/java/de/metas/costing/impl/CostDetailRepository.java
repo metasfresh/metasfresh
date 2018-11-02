@@ -3,7 +3,6 @@ package de.metas.costing.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -12,6 +11,7 @@ import org.compiere.model.I_M_CostDetail;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;

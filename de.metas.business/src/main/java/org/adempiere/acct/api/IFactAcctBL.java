@@ -31,6 +31,7 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.report.core.RColumn;
 
+import de.metas.acct.api.AccountDimension;
 import de.metas.util.ISingletonService;
 
 public interface IFactAcctBL extends ISingletonService

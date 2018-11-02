@@ -1,11 +1,12 @@
 package org.compiere.acct;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MAccount;
+
+import de.metas.acct.api.AcctSchemaId;
 
 /*
  * #%L

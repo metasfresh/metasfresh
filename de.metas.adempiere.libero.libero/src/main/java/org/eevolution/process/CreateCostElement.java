@@ -43,9 +43,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -59,6 +56,9 @@ import org.compiere.model.I_M_Product;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostTypeId;

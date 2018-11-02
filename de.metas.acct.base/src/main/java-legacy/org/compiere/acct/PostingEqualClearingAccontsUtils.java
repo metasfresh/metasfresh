@@ -3,9 +3,9 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.function.Predicate;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.compiere.model.MAccount;
 
+import de.metas.acct.api.AcctSchema;
 import lombok.experimental.UtilityClass;
 
 /*

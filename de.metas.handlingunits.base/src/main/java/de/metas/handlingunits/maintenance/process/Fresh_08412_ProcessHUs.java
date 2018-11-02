@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
@@ -54,6 +53,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.engine.IDocument;

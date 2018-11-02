@@ -34,7 +34,6 @@ import java.util.List;
 
 import javax.swing.text.JTextComponent;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
@@ -48,6 +47,7 @@ import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.autocomplete.model.I_AD_Table;
 import de.metas.util.Services;
 

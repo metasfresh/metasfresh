@@ -23,12 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaElement;
-import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.AcctSchemaElementsMap;
-import org.adempiere.acct.api.AcctSchemaGeneralLedger;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +33,12 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MFactAcct;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaElementsMap;
+import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;

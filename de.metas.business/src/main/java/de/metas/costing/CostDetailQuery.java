@@ -1,8 +1,8 @@
 package de.metas.costing;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
+import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

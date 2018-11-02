@@ -1,7 +1,5 @@
 package org.compiere.acct;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
@@ -11,6 +9,8 @@ import org.compiere.model.MAccount;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;

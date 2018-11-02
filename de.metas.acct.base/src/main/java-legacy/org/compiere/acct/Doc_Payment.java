@@ -19,13 +19,13 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
 
+import de.metas.acct.api.AcctSchema;
 import de.metas.util.Services;
 
 /**

@@ -3,9 +3,9 @@ package de.metas.costing;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.compiere.model.I_M_CostDetail;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 
 /*

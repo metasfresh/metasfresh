@@ -26,10 +26,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.IPostingService;
-import org.adempiere.acct.api.exception.AccountingException;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -40,7 +36,6 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.user.api.IUserBL;
@@ -52,6 +47,9 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IPostingService;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
@@ -95,7 +93,6 @@ public class Login
 	// services
 	private static final transient Logger log = LogManager.getLogger(Login.class);
 
-	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final transient IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
@@ -505,7 +502,6 @@ public class Login
 		final IUserRolePermissions userRolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
 		ctx.setUserOrgs(userRolePermissions.getAD_Org_IDs_AsString());
 
-
 		// Other
 		ctx.setPrinterName(Services.get(IPrinterRoutingBL.class).getDefaultPrinterName()); // Optional Printer
 		ctx.setAutoCommit(Ini.isPropertyBool(Ini.P_A_COMMIT));
@@ -532,8 +528,9 @@ public class Login
 		{
 			loadAccounting();
 		}
-		catch (AccountingException e)
+		catch (Exception ex)
 		{
+			log.warn("Failed loading accounting info", ex);
 			retValue = "NoValidAcctInfo";
 		}
 
@@ -583,10 +580,8 @@ public class Login
 
 	/**
 	 * Loads accounting info
-	 *
-	 * @throws AccountingException if no accounting schema was found.
 	 */
-	private void loadAccounting() throws AccountingException
+	private void loadAccounting()
 	{
 		final LoginContext ctx = getCtx();
 		final int AD_Role_ID = ctx.getAD_Role_ID();
@@ -598,9 +593,8 @@ public class Login
 		}
 
 		final AcctSchema acctSchema = acctSchemaDAO.getByCliendAndOrg(ctx.getSessionContext()); // could throw AccountingException
-
 		ctx.setAcctSchema(acctSchema);
-		
+
 		acctSchema.getSchemaElementTypes()
 				.forEach(elementType -> ctx.setProperty(Env.CTXNAME_AcctSchemaElementPrefix + elementType.getCode(), true));
 	}

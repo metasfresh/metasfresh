@@ -10,8 +10,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AccountDimension;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
@@ -26,6 +24,9 @@ import org.compiere.model.MJournalLine;
 import org.compiere.model.X_I_GLJournal;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
+
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
 
 /*
  * #%L

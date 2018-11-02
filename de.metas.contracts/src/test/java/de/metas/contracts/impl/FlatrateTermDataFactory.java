@@ -7,7 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -28,6 +27,7 @@ import org.compiere.model.X_C_Tax;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Transition;

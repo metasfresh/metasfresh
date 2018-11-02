@@ -26,7 +26,6 @@ package de.metas.acct.callout;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.acct.api.ITaxAcctBL;
 import org.compiere.model.I_C_ElementValue;
@@ -34,6 +33,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Services;
 

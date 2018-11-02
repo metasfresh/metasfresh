@@ -4,12 +4,12 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.service.ClientId;
 import org.compiere.model.POInfo;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;

@@ -2,8 +2,9 @@ package org.compiere.acct;
 
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IDocFactory;
+
+import de.metas.acct.api.AcctSchema;
 
 /**
  * Helper class used to create a new instance of {@link Doc}.

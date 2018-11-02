@@ -31,6 +31,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
 
+import de.metas.acct.api.AcctSchema;
 import de.metas.util.ISingletonService;
 
 /**

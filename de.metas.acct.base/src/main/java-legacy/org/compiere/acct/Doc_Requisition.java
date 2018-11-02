@@ -20,13 +20,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.MRequisition;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.acct.api.AcctSchema;
 
 /**
  * Post Order Documents.

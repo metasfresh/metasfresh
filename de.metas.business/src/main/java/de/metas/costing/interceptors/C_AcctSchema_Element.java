@@ -12,7 +12,6 @@ import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_Org_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_SeqNo;
 
-import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
@@ -25,6 +24,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
+
+import de.metas.acct.api.AcctSchemaElementType;
 
 /*
  * #%L

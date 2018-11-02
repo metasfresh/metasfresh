@@ -12,6 +12,7 @@ import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AccountDimension;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;

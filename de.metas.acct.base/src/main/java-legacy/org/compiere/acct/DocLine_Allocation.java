@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -37,6 +35,8 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.util.Check;

@@ -1,9 +1,9 @@
 package org.adempiere.acct.api.impl;
 
-import org.adempiere.acct.api.IPostingRequestBuilder;
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.service.ISysConfigBL;
 
+import de.metas.acct.api.IPostingRequestBuilder;
+import de.metas.acct.api.IPostingService;
 import de.metas.util.Services;
 
 public class PostingService implements IPostingService

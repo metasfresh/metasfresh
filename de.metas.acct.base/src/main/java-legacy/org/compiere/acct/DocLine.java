@@ -22,8 +22,6 @@ import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -43,6 +41,8 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;

@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
@@ -30,6 +29,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 

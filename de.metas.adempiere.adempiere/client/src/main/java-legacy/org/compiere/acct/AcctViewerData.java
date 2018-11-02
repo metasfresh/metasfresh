@@ -29,10 +29,6 @@ import java.util.Properties;
 
 import javax.swing.JComboBox;
 
-import org.adempiere.acct.api.AcctSchema;
-import org.adempiere.acct.api.AcctSchemaElement;
-import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
@@ -54,6 +50,10 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;

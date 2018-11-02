@@ -3,7 +3,6 @@ package org.adempiere.mmovement.api.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -23,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;

@@ -3,10 +3,6 @@ package de.metas.acct;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.TaxCorrectionType;
-import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema;
@@ -16,6 +12,10 @@ import org.compiere.model.I_C_Currency;
 import org.junit.Ignore;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.TaxCorrectionType;
+import de.metas.acct.api.impl.AcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;

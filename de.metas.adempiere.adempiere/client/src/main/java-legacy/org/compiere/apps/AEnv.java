@@ -46,8 +46,6 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
@@ -70,6 +68,8 @@ import org.compiere.util.Ini;
 import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
