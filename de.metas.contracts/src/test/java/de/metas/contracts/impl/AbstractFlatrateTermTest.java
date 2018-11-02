@@ -10,15 +10,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.impl.AcctSchemaDAO;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
@@ -93,7 +88,7 @@ public abstract class AbstractFlatrateTermTest
 	private I_C_Calendar calendar;
 
 	@Getter
-	private I_C_AcctSchema acctSchema;
+	private AcctSchemaId acctSchemaId;
 
 	@Getter
 	private I_C_Currency currency;
@@ -205,17 +200,19 @@ public abstract class AbstractFlatrateTermTest
 
 	private void createAcctSchema()
 	{
-		acctSchema = newInstance(I_C_AcctSchema.class);
-		save(acctSchema);
+		// NOTE: there is no need for actual accounting schema.
+		// A dummy ID is sufficient.
+		acctSchemaId = AcctSchemaId.ofRepoId(1);
 
-		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
-		{
-			@Override
-			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final ClientId clientId, final OrgId orgId)
-			{
-				return acctSchema;
-			}
-		});
+		// acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		// Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
+		// {
+		// @Override
+		// public AcctSchema getByCliendAndOrg(final ClientId clientId, final OrgId orgId)
+		// {
+		// return getById(acctSchemaId);
+		// }
+		// });
 	}
 
 	private void createWarehouse()
@@ -302,7 +299,7 @@ public abstract class AbstractFlatrateTermTest
 
 		FlatrateTermDataFactory.productAcctNew()
 				.product(product)
-				.acctSchema(getAcctSchema())
+				.acctSchemaId(getAcctSchemaId())
 				.build();
 	}
 

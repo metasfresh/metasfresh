@@ -1,7 +1,11 @@
-package de.metas.money;
+package de.metas.costing.interceptors;
 
-import de.metas.util.Check;
-import lombok.Value;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.service.OrgId;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -13,39 +17,26 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
-public class CurrencyId
+
+@Component
+@Interceptor(I_C_AcctSchema_Default.class)
+public class C_AcctSchema_Default
 {
-	public static CurrencyId ofRepoId(final int repoId)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(final I_C_AcctSchema_Default acctSchemaDefault)
 	{
-		return new CurrencyId(repoId);
+		acctSchemaDefault.setAD_Org_ID(OrgId.ANY.getRepoId());
 	}
 
-	public static CurrencyId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
-	}
-
-	public static int toRepoId(final CurrencyId currencyId)
-	{
-		return currencyId != null ? currencyId.getRepoId() : -1;
-	}
-
-	int repoId;
-
-	private CurrencyId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
 }

@@ -26,9 +26,9 @@ package de.metas.acct.callout;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.acct.api.ITaxAcctBL;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
@@ -164,9 +164,9 @@ import de.metas.util.Services;
 		if (taxId > 0)
 		{
 			final Properties ctx = Env.getCtx();
-			final I_C_AcctSchema acctSchema = taxAccountable.getC_AcctSchema();
+			final AcctSchemaId acctSchemaId = taxAccountable.getAcctSchemaId();
 			final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
-			final I_C_ValidCombination taxAcct = taxAcctBL.getC_ValidCombination(ctx, taxId, acctSchema, taxAcctType);
+			final I_C_ValidCombination taxAcct = taxAcctBL.getC_ValidCombination(ctx, taxId, acctSchemaId, taxAcctType);
 			taxAccountable.setTax_Acct(taxAcct);
 		}
 		else

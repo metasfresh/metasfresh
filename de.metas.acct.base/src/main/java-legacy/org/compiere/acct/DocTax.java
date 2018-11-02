@@ -19,8 +19,8 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.ITaxAcctBL;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.MAccount;
 
 import de.metas.util.Services;
@@ -105,23 +105,23 @@ public final class DocTax
 	/**
 	 * Get Account
 	 * 
-	 * @param AcctType see ACCTTYPE_*
+	 * @param acctType see ACCTTYPE_*
 	 * @param as account schema
 	 * @return Account
 	 */
-	public MAccount getAccount(final int AcctType, final I_C_AcctSchema as)
+	public MAccount getAccount(final int acctType, final AcctSchema as)
 	{
-		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as, AcctType);
+		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as.getId(), acctType);
 	}   // getAccount
 
-	public MAccount getAccount(final I_C_AcctSchema as)
+	public MAccount getAccount(final AcctSchema as)
 	{
-		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as, getAPTaxType());
+		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as.getId(), getAPTaxType());
 	}
 
-	public MAccount getTaxDueAcct(final I_C_AcctSchema as)
+	public MAccount getTaxDueAcct(final AcctSchema as)
 	{
-		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as, ACCTTYPE_TaxDue);
+		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as.getId(), ACCTTYPE_TaxDue);
 	}
 
 	/**

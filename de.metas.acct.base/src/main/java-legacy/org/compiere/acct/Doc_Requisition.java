@@ -20,14 +20,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
-import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MRequisition;
 
-import de.metas.acct.api.ProductAcctType;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Post Order Documents.
@@ -69,65 +68,19 @@ public class Doc_Requisition extends Doc<DocLine_Requisition>
 			DocLine_Requisition docLine = new DocLine_Requisition(line, this);
 			list.add(docLine);
 		}
-		
+
 		return list;
 	}
 
-	/***************************************************************************
-	 * Get Source Currency Balance - subtracts line and tax amounts from total -
-	 * no rounding
-	 * 
-	 * @return positive amount, if total invoice is bigger than lines
-	 */
 	@Override
 	public BigDecimal getBalance()
 	{
 		return BigDecimal.ZERO;
 	}	// getBalance
 
-	/***************************************************************************
-	 * Create Facts (the accounting logic) for POR.
-	 * 
-	 * <pre>
-	 * Reservation
-	 * 	Expense		CR
-	 * 	Offset			DR
-	 * </pre>
-	 * 
-	 * @param as accounting schema
-	 * @return Fact
-	 */
 	@Override
-	public ArrayList<Fact> createFacts(MAcctSchema as)
+	public List<Fact> createFacts(AcctSchema as)
 	{
-		ArrayList<Fact> facts = new ArrayList<>();
-		Fact fact = new Fact(this, as, Fact.POST_Reservation);
-		setC_Currency_ID(as.getC_Currency_ID());
-		
-		//
-		// Commitment
-		if (as.isCreateReservation())
-		{
-			BigDecimal total = BigDecimal.ZERO;
-			for (final DocLine_Requisition line : getDocLines())
-			{
-				BigDecimal cost = line.getAmtSource();
-				total = total.add(cost);
-				// Account
-				MAccount expense = line.getAccount(ProductAcctType.Expense, as);
-				//
-				fact.createLine(line, expense, as.getC_Currency_ID(), cost, null);
-			}
-			// Offset
-			MAccount offset = getAccount(ACCTTYPE_CommitmentOffset, as);
-			if (offset == null)
-			{
-				throw newPostingException().setDetailMessage("@NotFound@ @CommitmentOffset_Acct@");
-			}
-			fact.createLine(null, offset, getC_Currency_ID(), null, total);
-			facts.add(fact);
-		}
-
-		return facts;
-	} // createFact
+		return ImmutableList.of();
+	}
 } // Doc_Requisition

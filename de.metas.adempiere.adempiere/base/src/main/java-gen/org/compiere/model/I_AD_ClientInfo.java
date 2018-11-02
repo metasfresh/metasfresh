@@ -320,9 +320,9 @@ public interface I_AD_ClientInfo
 	 */
 	public int getC_AcctSchema1_ID();
 
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema1();
-
-	public void setC_AcctSchema1(org.compiere.model.I_C_AcctSchema C_AcctSchema1);
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema1();
+//
+//	public void setC_AcctSchema1(org.compiere.model.I_C_AcctSchema C_AcctSchema1);
 
     /** Column definition for C_AcctSchema1_ID */
     public static final org.adempiere.model.ModelColumn<I_AD_ClientInfo, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema1_ID = new org.adempiere.model.ModelColumn<I_AD_ClientInfo, org.compiere.model.I_C_AcctSchema>(I_AD_ClientInfo.class, "C_AcctSchema1_ID", org.compiere.model.I_C_AcctSchema.class);

@@ -1,4 +1,4 @@
-package de.metas.product.acct.api.impl;
+package org.adempiere.acct.api.impl;
 
 /*
  * #%L
@@ -24,14 +24,16 @@ package de.metas.product.acct.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
@@ -41,13 +43,11 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ProductAcctDAO implements IProductAcctDAO
 {
-
 	@Override
 	public ActivityId retrieveActivityForAcct(
 			@NonNull final ClientId clientId,
@@ -56,13 +56,13 @@ public class ProductAcctDAO implements IProductAcctDAO
 	{
 		final Properties ctx = Env.getCtx();
 
-		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx, clientId, orgId);
-		if (acctSchema == null)
+		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(clientId, orgId);
+		if (acctSchemaId == null)
 		{
 			return null;
 		}
 
-		final I_M_Product_Acct acctInfo = retrieveProductAcctOrNull(ctx, acctSchema.getC_AcctSchema_ID(), productId);
+		final I_M_Product_Acct acctInfo = retrieveProductAcctOrNull(ctx, acctSchemaId, productId);
 		if (acctInfo == null)
 		{
 			return null;
@@ -72,7 +72,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	}
 
 	@Cached(cacheName = I_M_Product_Acct.Table_Name)
-	public I_M_Product_Acct retrieveProductAcctOrNull(@CacheCtx final Properties ctx, final int acctSchemaId, final ProductId productId)
+	public I_M_Product_Acct retrieveProductAcctOrNull(@CacheCtx final Properties ctx, final AcctSchemaId acctSchemaId, final ProductId productId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product_Acct.class, ctx, ITrx.TRXNAME_None)
@@ -84,19 +84,18 @@ public class ProductAcctDAO implements IProductAcctDAO
 	}
 
 	@Override
-	public I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, final ProductId productId)
+	public I_M_Product_Acct retrieveProductAcctOrNull(final AcctSchema acctSchema, final ProductId productId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(acctSchema);
-		final int acctSchemaId = acctSchema.getC_AcctSchema_ID();
-		return retrieveProductAcctOrNull(ctx, acctSchemaId, productId);
+		return retrieveProductAcctOrNull(ctx, acctSchema.getId(), productId);
 	}
 
 	@Override
 	public ActivityId getProductActivityId(@NonNull final ProductId productId)
 	{
 		final Properties ctx = Env.getCtx();
-		final I_C_AcctSchema schema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx);
-		final I_M_Product_Acct productAcct = retrieveProductAcctOrNull(ctx, schema.getC_AcctSchema_ID(), productId);
+		final AcctSchema schema = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(ctx);
+		final I_M_Product_Acct productAcct = retrieveProductAcctOrNull(ctx, schema.getId(), productId);
 		if (productAcct == null)
 		{
 			return null;
@@ -107,7 +106,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 
 	@Override
 	@Cached(cacheName = I_M_Product_Category_Acct.Table_Name + "#Default")
-	public I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(@CacheCtx final Properties ctx, final int acctSchemaId)
+	public I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(@CacheCtx final Properties ctx, final AcctSchemaId acctSchemaId)
 	{
 		final I_M_Product_Category pc = Services.get(IProductDAO.class).retrieveDefaultProductCategory(ctx);
 
@@ -121,11 +120,10 @@ public class ProductAcctDAO implements IProductAcctDAO
 	}
 
 	@Override
-	public I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(final I_C_AcctSchema acctSchema)
+	public I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(final AcctSchema acctSchema)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(acctSchema);
-		final int acctSchemaId = acctSchema.getC_AcctSchema_ID();
-		return retrieveDefaultProductCategoryAcct(ctx, acctSchemaId);
+		return retrieveDefaultProductCategoryAcct(ctx, acctSchema.getId());
 	}
 
 }

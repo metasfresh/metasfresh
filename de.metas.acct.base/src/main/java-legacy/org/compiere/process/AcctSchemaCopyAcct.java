@@ -17,42 +17,53 @@
 package org.compiere.process;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.acct.api.AccountId;
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaElement;
 import org.adempiere.acct.api.AcctSchemaElementType;
+import org.adempiere.acct.api.AcctSchemaElementsMap;
 import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.acct.api.IAccountDAO;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAcctSchemaDefault;
-import org.compiere.model.MAcctSchemaElement;
-import org.compiere.model.MAcctSchemaGL;
-import org.compiere.util.KeyNamePair;
+import org.compiere.model.POInfo;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Copy Accounts from one Acct Schema to another
- * 
+ *
  * @author Jorg Janke
  * @version $Id: AcctSchemaCopyAcct.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
 public class AcctSchemaCopyAcct extends JavaProcess
 {
+	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	private static final IAccountDAO accountsRepo = Services.get(IAccountDAO.class);
+
 	private AcctSchemaId p_SourceAcctSchema_ID;
 	private AcctSchemaId p_TargetAcctSchema_ID;
 
-	/**
-	 * Prepare
-	 */
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParametersAsArray();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
-			String name = para[i].getParameterName();
+			final String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)
 			{
 				;
@@ -66,6 +77,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 				log.error("Unknown Parameter: " + name);
 			}
 		}
+
 		p_TargetAcctSchema_ID = AcctSchemaId.ofRepoId(getRecord_ID());
 	}	// prepare
 
@@ -77,95 +89,121 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			throw new AdempiereException("Must be different");
 		}
 
-		MAcctSchema source = new MAcctSchema(getCtx(), p_SourceAcctSchema_ID.getRepoId(), ITrx.TRXNAME_None);
-		if (source.get_ID() == 0)
-			throw new AdempiereException("NotFound Source C_AcctSchema_ID=" + p_SourceAcctSchema_ID);
-		MAcctSchema target = new MAcctSchema(getCtx(), p_TargetAcctSchema_ID.getRepoId(), get_TrxName());
-		if (target.get_ID() == 0)
+		final AcctSchema source = acctSchemasRepo.getById(p_SourceAcctSchema_ID);
+		final AcctSchemaElementsMap sourceElements = source.getSchemaElements();
+
+		final I_C_AcctSchema targetRecord = InterfaceWrapperHelper.create(getCtx(), p_TargetAcctSchema_ID.getRepoId(), I_C_AcctSchema.class, get_TrxName());
+		if (targetRecord.getC_AcctSchema_ID() <= 0)
+		{
 			throw new AdempiereException("NotFound Target C_AcctSchema_ID=" + p_TargetAcctSchema_ID);
+		}
+		final AcctSchema target = acctSchemasRepo.getById(p_TargetAcctSchema_ID);
+		final AcctSchemaElementsMap targetElements = target.getSchemaElements();
 
 		//
-		MAcctSchemaElement[] targetElements = target.getAcctSchemaElements();
-		if (targetElements.length == 0)
+		if (targetElements.isEmpty())
+		{
 			throw new AdempiereException("NotFound Target C_AcctSchema_Element");
+		}
 
 		// Accounting Element must be the same
-		MAcctSchemaElement sourceAcctElement = source.getAcctSchemaElement(AcctSchemaElementType.Account);
+		final AcctSchemaElement sourceAcctElement = sourceElements.getByElementType(AcctSchemaElementType.Account);
 		if (sourceAcctElement == null)
+		{
 			throw new AdempiereException("NotFound Source AC C_AcctSchema_Element");
-		MAcctSchemaElement targetAcctElement = target.getAcctSchemaElement(AcctSchemaElementType.Account);
+		}
+		final AcctSchemaElement targetAcctElement = targetElements.getByElementType(AcctSchemaElementType.Account);
 		if (targetAcctElement == null)
+		{
 			throw new AdempiereException("NotFound Target AC C_AcctSchema_Element");
-		if (sourceAcctElement.getC_Element_ID() != targetAcctElement.getC_Element_ID())
+		}
+		if (sourceAcctElement.getElementId() != targetAcctElement.getElementId())
+		{
 			throw new AdempiereException("@C_Element_ID@ different");
+		}
 
-		if (MAcctSchemaGL.get(p_TargetAcctSchema_ID) == null)
-			copyGL(target);
-		if (MAcctSchemaDefault.get(p_TargetAcctSchema_ID) == null)
-			copyDefault(target);
+		if (retrieveAcctSchemaGLOrNull(p_TargetAcctSchema_ID) == null)
+		{
+			copyGL(targetRecord, targetElements);
+		}
+		if (retrieveAcctSchemaDefaultOrNull(p_TargetAcctSchema_ID) == null)
+		{
+			copyDefault(targetRecord, targetElements);
+		}
 
 		return "@OK@";
 	}	// doIt
 
+	private I_C_AcctSchema_GL retrieveAcctSchemaGLOrNull(final AcctSchemaId acctSchemaId)
+	{
+		return acctSchemasRepo.retrieveAcctSchemaGLRecordOrNull(acctSchemaId);
+	}	// get
+
+	private I_C_AcctSchema_Default retrieveAcctSchemaDefaultOrNull(final AcctSchemaId acctSchemaId)
+	{
+		return acctSchemasRepo.retrieveAcctSchemaDefaultsRecordOrNull(acctSchemaId);
+	}	// get
+
 	/**
 	 * Copy GL
-	 * 
+	 *
 	 * @param targetAS target
+	 * @param targetElements
 	 * @throws Exception
 	 */
-	private void copyGL(MAcctSchema targetAS)
+	private void copyGL(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
-		MAcctSchemaGL source = MAcctSchemaGL.get(p_SourceAcctSchema_ID);
-		MAcctSchemaGL target = new MAcctSchemaGL(getCtx(), 0, get_TrxName());
+		final I_C_AcctSchema_GL source = retrieveAcctSchemaGLOrNull(p_SourceAcctSchema_ID);
+
+		final I_C_AcctSchema_GL target = InterfaceWrapperHelper.newInstance(I_C_AcctSchema_GL.class);
 		target.setC_AcctSchema_ID(p_TargetAcctSchema_ID.getRepoId());
-		ArrayList<KeyNamePair> list = source.getAcctInfo();
-		for (int i = 0; i < list.size(); i++)
+
+		for (final AccountInfo sourceAccountInfo : getAccountInfos(source))
 		{
-			KeyNamePair pp = list.get(i);
-			int sourceC_ValidCombination_ID = pp.getKey();
-			String columnName = pp.getName();
-			MAccount sourceAccount = MAccount.get(getCtx(), sourceC_ValidCombination_ID);
-			MAccount targetAccount = createAccount(targetAS, sourceAccount);
-			target.setValue(columnName, new Integer(targetAccount.getC_ValidCombination_ID()));
+			final AccountId targetAccountId = createAccount(targetAS, targetElements, sourceAccountInfo.getAccountId());
+			setAccount(target, sourceAccountInfo.withAccountId(targetAccountId));
 		}
-		if (!target.save())
-			throw new AdempiereException("Could not Save GL");
+
+		InterfaceWrapperHelper.save(target);
 	}	// copyGL
 
 	/**
 	 * Copy Default
-	 * 
+	 *
 	 * @param targetAS target
 	 * @throws Exception
 	 */
-	private void copyDefault(MAcctSchema targetAS)
+	private void copyDefault(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
-		MAcctSchemaDefault source = MAcctSchemaDefault.get(p_SourceAcctSchema_ID);
-		MAcctSchemaDefault target = new MAcctSchemaDefault(getCtx(), 0, get_TrxName());
+		final I_C_AcctSchema_Default source = retrieveAcctSchemaDefaultOrNull(p_SourceAcctSchema_ID);
+
+		final I_C_AcctSchema_Default target = InterfaceWrapperHelper.newInstance(I_C_AcctSchema_Default.class);
 		target.setC_AcctSchema_ID(p_TargetAcctSchema_ID.getRepoId());
-		for (final KeyNamePair pp : source.getAcctInfo())
+
+		for (final AccountInfo sourceAccountInfo : getAccountInfos(source))
 		{
-			final int sourceC_ValidCombination_ID = pp.getKey();
-			final String columnName = pp.getName();
-			MAccount sourceAccount = MAccount.get(getCtx(), sourceC_ValidCombination_ID);
-			MAccount targetAccount = createAccount(targetAS, sourceAccount);
-			target.setValue(columnName, targetAccount.getC_ValidCombination_ID());
+			final AccountId targetAccountId = createAccount(targetAS, targetElements, sourceAccountInfo.getAccountId());
+			setAccount(target, sourceAccountInfo.withAccountId(targetAccountId));
 		}
-		if (!target.save())
-			throw new AdempiereException("Could not Save Default");
+
+		InterfaceWrapperHelper.save(target);
 	}	// copyDefault
 
 	/**
 	 * Create Account
-	 * 
+	 *
 	 * @param targetAS target AS
+	 * @param targetElements
 	 * @param sourceAcct source account
 	 * @return target account
 	 */
-	private MAccount createAccount(MAcctSchema targetAS, MAccount sourceAcct)
+	private AccountId createAccount(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements, final AccountId sourceAccountId)
 	{
-		int AD_Client_ID = targetAS.getAD_Client_ID();
+		final int AD_Client_ID = targetAS.getAD_Client_ID();
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(targetAS.getC_AcctSchema_ID());
+
+		final MAccount sourceAccount = accountsRepo.getById(getCtx(), sourceAccountId);
+
 		//
 		int AD_Org_ID = 0;
 		int Account_ID = 0;
@@ -185,51 +223,125 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int UserElement2_ID = 0;
 		//
 		// Active Elements
-		for (MAcctSchemaElement ase : targetAS.getAcctSchemaElements())
+		for (final AcctSchemaElement ase : targetElements)
 		{
-			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(ase.getElementType());
+			final AcctSchemaElementType elementType = ase.getElementType();
 			//
 			if (elementType.equals(AcctSchemaElementType.Organization))
-				AD_Org_ID = sourceAcct.getAD_Org_ID();
+			{
+				AD_Org_ID = sourceAccount.getAD_Org_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.Account))
-				Account_ID = sourceAcct.getAccount_ID();
+			{
+				Account_ID = sourceAccount.getAccount_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.SubAccount))
-				C_SubAcct_ID = sourceAcct.getC_SubAcct_ID();
+			{
+				C_SubAcct_ID = sourceAccount.getC_SubAcct_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.BPartner))
-				C_BPartner_ID = sourceAcct.getC_BPartner_ID();
+			{
+				C_BPartner_ID = sourceAccount.getC_BPartner_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.Product))
-				M_Product_ID = sourceAcct.getM_Product_ID();
+			{
+				M_Product_ID = sourceAccount.getM_Product_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.Activity))
-				C_Activity_ID = sourceAcct.getC_Activity_ID();
+			{
+				C_Activity_ID = sourceAccount.getC_Activity_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.LocationFrom))
-				C_LocFrom_ID = sourceAcct.getC_LocFrom_ID();
+			{
+				C_LocFrom_ID = sourceAccount.getC_LocFrom_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.LocationTo))
-				C_LocTo_ID = sourceAcct.getC_LocTo_ID();
+			{
+				C_LocTo_ID = sourceAccount.getC_LocTo_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.Campaign))
-				C_Campaign_ID = sourceAcct.getC_Campaign_ID();
+			{
+				C_Campaign_ID = sourceAccount.getC_Campaign_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.OrgTrx))
-				AD_OrgTrx_ID = sourceAcct.getAD_OrgTrx_ID();
+			{
+				AD_OrgTrx_ID = sourceAccount.getAD_OrgTrx_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.Project))
-				C_Project_ID = sourceAcct.getC_Project_ID();
+			{
+				C_Project_ID = sourceAccount.getC_Project_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.SalesRegion))
-				C_SalesRegion_ID = sourceAcct.getC_SalesRegion_ID();
+			{
+				C_SalesRegion_ID = sourceAccount.getC_SalesRegion_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.UserList1))
-				User1_ID = sourceAcct.getUser1_ID();
+			{
+				User1_ID = sourceAccount.getUser1_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.UserList2))
-				User2_ID = sourceAcct.getUser2_ID();
+			{
+				User2_ID = sourceAccount.getUser2_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.UserElement1))
-				UserElement1_ID = sourceAcct.getUserElement1_ID();
+			{
+				UserElement1_ID = sourceAccount.getUserElement1_ID();
+			}
 			else if (elementType.equals(AcctSchemaElementType.UserElement2))
-				UserElement2_ID = sourceAcct.getUserElement2_ID();
-			// No UserElement
+			{
+				UserElement2_ID = sourceAccount.getUserElement2_ID();
+				// No UserElement
+			}
 		}
-		//
-		return MAccount.get(getCtx(), AD_Client_ID, AD_Org_ID,
+
+		final MAccount account = MAccount.get(getCtx(), AD_Client_ID, AD_Org_ID,
 				acctSchemaId, Account_ID, C_SubAcct_ID,
 				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
 				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
 				C_Project_ID, C_Campaign_ID, C_Activity_ID,
 				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID);
+
+		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
 	}	// createAccount
 
+	public List<AccountInfo> getAccountInfos(final Object acctAwareModel)
+	{
+		final String tableName = InterfaceWrapperHelper.getModelTableName(acctAwareModel);
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+
+		final List<AccountInfo> list = new ArrayList<>();
+		for (int columnIndex = 0; columnIndex < poInfo.getColumnCount(); columnIndex++)
+		{
+			final String columnName = poInfo.getColumnName(columnIndex);
+			if (columnName.endsWith("Acct"))
+			{
+				final Object accountIdObj = InterfaceWrapperHelper.getValueOrNull(acctAwareModel, columnName);
+				final AccountId accountId = AccountId.ofRepoIdOrNull(NumberUtils.asInt(accountIdObj, -1));
+
+				list.add(AccountInfo.builder()
+						.columnName(columnName)
+						.accountId(accountId)
+						.build());
+			}
+		}
+		return list;
+	}
+
+	public void setAccount(final Object acctAwareModel, final AccountInfo accountInfo)
+	{
+		final AccountId accountId = accountInfo.getAccountId();
+		InterfaceWrapperHelper.setValue(acctAwareModel, accountInfo.getColumnName(), AccountId.toRepoId(accountId));
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	private static class AccountInfo
+	{
+		@NonNull
+		String columnName;
+
+		@Nullable
+		@lombok.experimental.Wither
+		AccountId accountId;
+	}
 }	// AcctSchemaCopyAcct

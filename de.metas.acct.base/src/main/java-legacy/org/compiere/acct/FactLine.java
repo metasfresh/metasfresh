@@ -22,16 +22,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AccountId;
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaElement;
 import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MFactAcct;
 import org.compiere.model.MMovement;
 import org.compiere.model.MRevenueRecognitionPlan;
@@ -106,7 +107,7 @@ final class FactLine extends X_Fact_Acct
 	/** Account */
 	private MAccount m_acct = null;
 	/** Accounting Schema */
-	private MAcctSchema m_acctSchema = null;
+	private AcctSchema acctSchema = null;
 	/** Document Header */
 	private Doc<?> m_doc = null;
 	/** Document Line */
@@ -124,7 +125,7 @@ final class FactLine extends X_Fact_Acct
 		FactLine reversal = new FactLine(getCtx(), getAD_Table_ID(), getRecord_ID(), getLine_ID(), get_TrxName());
 		reversal.setClientOrg(this);	// needs to be set explicitly
 		reversal.setDocumentInfo(m_doc, m_docLine);
-		reversal.setAccount(m_acctSchema, m_acct);
+		reversal.setAccount(acctSchema, m_acct);
 		reversal.setPostingType(getPostingType());
 		//
 		reversal.setAmtSource(getC_Currency_ID(), getAmtSourceDr().negate(), getAmtSourceCr().negate());
@@ -145,7 +146,7 @@ final class FactLine extends X_Fact_Acct
 		FactLine accrual = new FactLine(getCtx(), getAD_Table_ID(), getRecord_ID(), getLine_ID(), get_TrxName());
 		accrual.setClientOrg(this);	// needs to be set explicitly
 		accrual.setDocumentInfo(m_doc, m_docLine);
-		accrual.setAccount(m_acctSchema, m_acct);
+		accrual.setAccount(acctSchema, m_acct);
 		accrual.setPostingType(getPostingType());
 		//
 		accrual.setAmtSource(getC_Currency_ID(), getAmtSourceCr(), getAmtSourceDr());
@@ -154,16 +155,16 @@ final class FactLine extends X_Fact_Acct
 		return accrual;
 	}	// reverse
 
-	/**
-	 * Set Account Info
-	 * 
-	 * @param acctSchema account schema
-	 * @param acct account
-	 */
-	public void setAccount(MAcctSchema acctSchema, MAccount acct)
+	public void setAccount(@NonNull final AcctSchema acctSchema, @NonNull final AccountId accountId)
 	{
-		m_acctSchema = acctSchema;
-		super.setC_AcctSchema(acctSchema);
+		final MAccount account = Services.get(IAccountDAO.class).getById(getCtx(), accountId);
+		setAccount(acctSchema, account);
+	}
+
+	public void setAccount(@NonNull final AcctSchema acctSchema, @NonNull final MAccount acct)
+	{
+		this.acctSchema = acctSchema;
+		super.setC_AcctSchema_ID(acctSchema.getId().getRepoId());
 		//
 		m_acct = acct;
 		if (getAD_Client_ID() == 0)
@@ -172,7 +173,7 @@ final class FactLine extends X_Fact_Acct
 		setC_SubAcct_ID(m_acct.getC_SubAcct_ID());
 
 		// User Defined References
-		MAcctSchemaElement ud1 = m_acctSchema.getAcctSchemaElement(AcctSchemaElementType.UserElement1);
+		AcctSchemaElement ud1 = acctSchema.getSchemaElementByType(AcctSchemaElementType.UserElement1);
 		if (ud1 != null)
 		{
 			String ColumnName1 = ud1.getDisplayColumnName();
@@ -191,7 +192,7 @@ final class FactLine extends X_Fact_Acct
 					setUserElement1_ID(ID1);
 			}
 		}
-		final MAcctSchemaElement ud2 = m_acctSchema.getAcctSchemaElement(AcctSchemaElementType.UserElement2);
+		final AcctSchemaElement ud2 = acctSchema.getSchemaElementByType(AcctSchemaElementType.UserElement2);
 		if (ud2 != null)
 		{
 			String ColumnName2 = ud2.getDisplayColumnName();
@@ -212,22 +213,22 @@ final class FactLine extends X_Fact_Acct
 		}
 	}   // setAccount
 
-	final MAcctSchema getAcctSchema()
+	final AcctSchema getAcctSchema()
 	{
-		return m_acctSchema;
+		return acctSchema;
 	}
 
-	/**
-	 * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(MAcctSchema, MAccount)}.
-	 */
-	@Override
-	public final void setC_AcctSchema(final I_C_AcctSchema acctSchema)
-	{
-		throw new UnsupportedOperationException("Please use setAccount()");
-	}
+	// /**
+	// * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(MAcctSchema, MAccount)}.
+	// */
+	// @Override
+	// public final void setC_AcctSchema(final I_C_AcctSchema acctSchema)
+	// {
+	// throw new UnsupportedOperationException("Please use setAccount()");
+	// }
 
 	/**
-	 * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(MAcctSchema, MAccount)}.
+	 * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(AcctSchema, MAccount)}.
 	 */
 	@Override
 	public final void setC_AcctSchema_ID(int C_AcctSchema_ID)
@@ -250,7 +251,7 @@ final class FactLine extends X_Fact_Acct
 	 */
 	public void setAmtSource(final int C_Currency_ID, BigDecimal AmtSourceDr, BigDecimal AmtSourceCr)
 	{
-		if (!m_acctSchema.isAllowNegativePosting())
+		if (!acctSchema.isAllowNegativePosting())
 		{
 			// begin Victor Perez e-evolution 30.08.2005
 			// fix Debit & Credit
@@ -289,7 +290,7 @@ final class FactLine extends X_Fact_Acct
 	 */
 	public void setAmtAcct(BigDecimal AmtAcctDr, BigDecimal AmtAcctCr)
 	{
-		if (!m_acctSchema.isAllowNegativePosting())
+		if (!acctSchema.isAllowNegativePosting())
 		{
 			// begin Victor Perez e-evolution 30.08.2005
 			// fix Debit & Credit
@@ -383,7 +384,7 @@ final class FactLine extends X_Fact_Acct
 			if (log.isDebugEnabled())
 			{
 				final PostingException ex = new PostingException("Precision fixed for " + amountName + ": " + amt + " -> " + amtRounded)
-						.setC_AcctSchema(m_acctSchema)
+						.setAcctSchema(acctSchema)
 						.setDocument(getDoc())
 						.setDocLine(getDocLine())
 						.setFactLine(this)
@@ -895,10 +896,10 @@ final class FactLine extends X_Fact_Acct
 	{
 		// Document has no currency => set it from accounting schema
 		if (getC_Currency_ID() == Doc.NO_CURRENCY)
-			setC_Currency_ID(m_acctSchema.getC_Currency_ID());
+			setC_Currency_ID(acctSchema.getCurrencyId().getRepoId());
 
 		// If same currency as the accounting schema => no conversion is needed
-		if (m_acctSchema.getC_Currency_ID() == getC_Currency_ID())
+		if (acctSchema.getCurrencyId().getRepoId() == getC_Currency_ID())
 		{
 			setAmtAcctDr(getAmtSourceDr());
 			setAmtAcctCr(getAmtSourceCr());
@@ -908,7 +909,7 @@ final class FactLine extends X_Fact_Acct
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final ICurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
-		final ICurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, getC_Currency_ID(), m_acctSchema.getC_Currency_ID());
+		final ICurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, getC_Currency_ID(), acctSchema.getCurrencyId().getRepoId());
 		final BigDecimal amtAcctDr = currencyRate.convertAmount(getAmtSourceDr());
 		final BigDecimal amtAcctCr = currencyRate.convertAmount(getAmtSourceCr());
 
@@ -1425,7 +1426,7 @@ final class FactLine extends X_Fact_Acct
 		setQty(quantity.getAsBigDecimal());
 		setC_UOM(quantity.getUOM());
 	}
-	
+
 	public AcctSchemaId getAcctSchemaId()
 	{
 		return AcctSchemaId.ofRepoIdOrNull(getC_AcctSchema_ID());

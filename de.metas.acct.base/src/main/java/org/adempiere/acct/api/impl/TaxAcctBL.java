@@ -25,12 +25,12 @@ package org.adempiere.acct.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.ITaxAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Tax_Acct;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
@@ -38,14 +38,14 @@ import org.compiere.model.MAccount;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class TaxAcctBL implements ITaxAcctBL
 {
 	@Override
-	public I_C_ValidCombination getC_ValidCombination(final Properties ctx, final int taxId, final I_C_AcctSchema as, final int acctType)
+	public I_C_ValidCombination getC_ValidCombination(final Properties ctx, final int taxId, @NonNull final AcctSchemaId acctSchemaId, final int acctType)
 	{
-		Check.assumeNotNull(as, "as not null");
-		final I_C_Tax_Acct taxAcct = retrieveTaxAcct(ctx, taxId, as.getC_AcctSchema_ID());
+		final I_C_Tax_Acct taxAcct = retrieveTaxAcct(ctx, taxId, acctSchemaId);
 
 		final I_C_ValidCombination validCombination;
 		if (ACCTTYPE_TaxDue == acctType) // 0
@@ -78,9 +78,9 @@ public class TaxAcctBL implements ITaxAcctBL
 	}
 
 	@Override
-	public MAccount getAccount(final Properties ctx, final int taxId, final I_C_AcctSchema as, final int acctType)
+	public MAccount getAccount(final Properties ctx, final int taxId, final AcctSchemaId acctSchemaId, final int acctType)
 	{
-		final I_C_ValidCombination validCombination = getC_ValidCombination(ctx, taxId, as, acctType);
+		final I_C_ValidCombination validCombination = getC_ValidCombination(ctx, taxId, acctSchemaId, acctType);
 		return LegacyAdapters.convertToPO(validCombination);
 	}
 
@@ -95,7 +95,7 @@ public class TaxAcctBL implements ITaxAcctBL
 	@Cached(cacheName = I_C_Tax_Acct.Table_Name
 			+ "#by#" + I_C_Tax_Acct.COLUMNNAME_C_Tax_ID
 			+ "#" + I_C_Tax_Acct.COLUMNNAME_C_AcctSchema_ID)
-	public I_C_Tax_Acct retrieveTaxAcct(@CacheCtx final Properties ctx, final int taxId, final int acctSchemaId)
+	public I_C_Tax_Acct retrieveTaxAcct(@CacheCtx final Properties ctx, final int taxId, final AcctSchemaId acctSchemaId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Tax_Acct.class, ctx, ITrx.TRXNAME_None)

@@ -43,14 +43,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_CostElement;
@@ -65,6 +66,7 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Cost Multi-Level BOM & Formula Review
@@ -88,7 +90,7 @@ public class CostBillOfMaterial extends JavaProcess
 	//
 	private int m_LevelNo = 0;
 	private int m_SeqNo = 0;
-	private MAcctSchema m_as = null;
+	private AcctSchema m_as = null;
 
 	@Override
 	protected void prepare()
@@ -103,7 +105,7 @@ public class CostBillOfMaterial extends JavaProcess
 			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
 			{
 				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para.getParameterAsInt());
-				m_as = MAcctSchema.get(p_C_AcctSchema_ID);
+				m_as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
 			}
 			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID = para.getParameterAsInt();
@@ -302,7 +304,7 @@ public class CostBillOfMaterial extends JavaProcess
 
 	private static Collection<I_M_Cost> getCostsByElement(
 			final MProduct product, 
-			final MAcctSchema as,
+			final AcctSchema as,
 			final int M_CostType_ID, 
 			final int AD_Org_ID, 
 			final int M_AttributeSetInstance_ID,

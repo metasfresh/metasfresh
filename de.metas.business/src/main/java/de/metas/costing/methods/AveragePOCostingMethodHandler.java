@@ -8,6 +8,8 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -15,7 +17,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
@@ -31,6 +32,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -173,7 +175,9 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final int productId = costSegment.getProductId().getRepoId();
 		final int AD_Org_ID = costSegment.getOrgId().getRepoId();
 		final int M_AttributeSetInstance_ID = costSegment.getAttributeSetInstanceId().getRepoId();				
-		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
+		final CurrencyId acctCurencyId = acctSchema.getCurrencyId();
+		final int costingPrecision = acctSchema.getCosting().getCostingPrecision();
 
 		String sql = "SELECT t.MovementQty, mp.Qty, ol.QtyOrdered, ol.PriceCost, ol.PriceActual,"	// 1..5
 				+ " o.C_Currency_ID, o.DateAcct, o.C_ConversionType_ID,"	// 6..8
@@ -240,15 +244,15 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				final int Client_ID = rs.getInt(9);
 				final int Org_ID = rs.getInt(10);
 				final BigDecimal cost = currencyConversionBL.convert(ctx, price,
-						C_Currency_ID, as.getC_Currency_ID(),
+						C_Currency_ID, acctCurencyId.getRepoId(),
 						DateAcct, C_ConversionType_ID, Client_ID, Org_ID);
 				//
 				final BigDecimal oldAverageAmt = newAverageAmt;
 				final BigDecimal averageCurrent = oldStockQty.multiply(oldAverageAmt);
 				final BigDecimal averageIncrease = matchQty.multiply(cost);
 				BigDecimal newAmt = averageCurrent.add(averageIncrease);
-				newAmt = newAmt.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
-				newAverageAmt = newAmt.divide(newStockQty, as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
+				newAmt = newAmt.setScale(costingPrecision, BigDecimal.ROUND_HALF_UP);
+				newAverageAmt = newAmt.divide(newStockQty, costingPrecision, BigDecimal.ROUND_HALF_UP);
 			}
 		}
 		catch (final SQLException e)

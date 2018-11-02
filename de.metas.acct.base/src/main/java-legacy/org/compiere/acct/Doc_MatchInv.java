@@ -23,20 +23,18 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaElement;
 import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MTax;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -176,7 +174,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
 		//
 		// Match invoice on sales side has no accounting consequences
@@ -190,14 +188,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// Cash based accounting not supported
 		if (!as.isAccrual())
 		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("Cash based accounting not supported");
-		}
-
-		//
-		// Commitment release
-		if (as.isAccrual() && as.isCreatePOCommitment())
-		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("PO commitment release posting not supported");
+			throw newPostingException().setAcctSchema(as).setDetailMessage("Cash based accounting not supported");
 		}
 
 		//
@@ -221,7 +212,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		facts.add(fact);
-		setC_Currency_ID(as.getC_Currency_ID());
+		setC_Currency_ID(as.getCurrencyId());
 
 		final CostResult costResult = getCreateCostDetails(as);
 		final CostAmount costs = costResult.getTotalAmount();
@@ -290,7 +281,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			return;
 		}
 
-		final MAcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 
 		//
 		// Determine the InvoicePriceVariance Amount and currency
@@ -313,7 +304,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		else
 		{
 			ipvAmount = cr_InventoryClearing.getAcctBalance().add(dr_NotInvoicedReceipts.getAcctBalance()).negate();
-			ipvCurrencyId = as.getC_Currency_ID();
+			ipvCurrencyId = as.getCurrencyId().getRepoId();
 		}
 
 		// If there is no invoice price variance => do nothing
@@ -350,10 +341,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	 *
 	 * @return true if there are more than one org involved on the posting
 	 */
-	private boolean isInterOrg(final MAcctSchema as)
+	private boolean isInterOrg(final AcctSchema as)
 	{
-		final I_C_AcctSchema_Element elementOrg = Services.get(IAcctSchemaDAO.class).retrieveFirstAcctSchemaElementOrNull(as, AcctSchemaElementType.Organization);
-		if (elementOrg == null || !elementOrg.isBalanced())
+		final AcctSchemaElement orgElement = as.getSchemaElementByType(AcctSchemaElementType.Organization);
+		if (orgElement == null || !orgElement.isBalanced())
 		{
 			// no org element or not need to be balanced
 			return false;
@@ -499,7 +490,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setAD_Org_ID(receiptLine.getAD_Org_ID());
 	}
 
-	private CostResult getCreateCostDetails(final I_C_AcctSchema as)
+	private CostResult getCreateCostDetails(final AcctSchema as)
 	{
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
@@ -517,7 +508,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final I_M_MatchInv matchInv = getM_MatchInv();
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = as.getId();
 		
 		return costDetailService
 				.createCostDetail(CostDetailCreateRequest.builder()

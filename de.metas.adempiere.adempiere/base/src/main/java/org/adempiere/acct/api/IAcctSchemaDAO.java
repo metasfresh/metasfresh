@@ -13,15 +13,14 @@ package org.adempiere.acct.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -30,14 +29,15 @@ import org.adempiere.acct.api.exception.AccountingException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Element;
+import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
-import org.compiere.util.Env;
 
 import de.metas.util.ISingletonService;
 
 public interface IAcctSchemaDAO extends ISingletonService
 {
+	AcctSchema getById(final AcctSchemaId acctSchemaId);
+
 	/**
 	 * Retrieves the accounting schema for the given context's <code>AD_Client_ID</code> and <code>AD_Org_ID</code>.<br>
 	 * It returns the C_AcctSchema with the given AD_Client_ID and AD_OrgOnly_ID. Inactive records are ignored. If no C_AcctSchema record with the given AD_OrgOnly_ID exists, then it falls back and
@@ -51,19 +51,14 @@ public interface IAcctSchemaDAO extends ISingletonService
 	 * @return
 	 * @throws AccountingException if no accounting schema is found.
 	 */
-	I_C_AcctSchema retrieveAcctSchema(Properties ctx);
-	
-	I_C_AcctSchema getById(final AcctSchemaId acctSchemaId);
+	AcctSchema getByCliendAndOrg(Properties ctx);
 
 	/**
-	 * Similar to {@link #retrieveAcctSchema(Properties)}, but uses the given client and org ID rather than the ones of the given <code>ctx</code>.
-	 * 
-	 * @param ctx
-	 * @param clientId
-	 * @param orgId
-	 * @return
+	 * Similar to {@link #getByCliendAndOrg(Properties)}, but uses the given client and org ID rather than the ones of the given <code>ctx</code>.
 	 */
-	I_C_AcctSchema retrieveAcctSchema(Properties ctx, ClientId clientId, OrgId orgId);
+	AcctSchema getByCliendAndOrg(ClientId clientId, OrgId orgId);
+
+	AcctSchemaId getAcctSchemaIdByClientAndOrg(ClientId clientId, OrgId orgId);
 
 	/**
 	 * Retrieves all accounting schemas for given AD_Client_ID.
@@ -74,31 +69,16 @@ public interface IAcctSchemaDAO extends ISingletonService
 	 * @param adClientId AD_Client_ID
 	 * @return client accounting schemas
 	 */
-	List<I_C_AcctSchema> retrieveClientAcctSchemas(Properties ctx, ClientId adClientId);
-	
-	default List<I_C_AcctSchema> retrieveClientAcctSchemas(final ClientId adClientId)
-	{
-		return retrieveClientAcctSchemas(Env.getCtx(), adClientId);
-	}
+	List<AcctSchema> getAllByClient(ClientId adClientId);
 
+	AcctSchemaId getPrimaryAcctSchemaId(ClientId clientId);
 
-	/**
-	 * Retrieve {@link I_C_AcctSchema_Element}s, ordered by SeqNo.
-	 * 
-	 * @param aSchema
-	 * @return
-	 */
-	List<I_C_AcctSchema_Element> retrieveSchemaElements(I_C_AcctSchema aSchema);
+	@Deprecated
+	I_C_AcctSchema getRecordById(AcctSchemaId acctSchemaId);
 
-	/**
-	 * Retrieve {@link I_C_AcctSchema_Element}s which have {@link I_C_AcctSchema_Element#isDisplayInEditor()}, ordered by SeqNo.
-	 * 
-	 * @param aSchema
-	 * @return
-	 */
-	List<I_C_AcctSchema_Element> retrieveSchemaElementsDisplayedInEditor(I_C_AcctSchema as);
+	I_C_AcctSchema_GL retrieveAcctSchemaGLRecordOrNull(AcctSchemaId acctSchemaId);
 
-	I_C_AcctSchema_Element retrieveFirstAcctSchemaElementOrNull(I_C_AcctSchema as, AcctSchemaElementType elementType);
+	I_C_AcctSchema_Default retrieveAcctSchemaDefaultsRecordOrNull(AcctSchemaId acctSchemaId);
 
-	I_C_AcctSchema_GL retrieveAcctSchemaGL(Properties ctx, AcctSchemaId acctSchemaId);
+	void changeAcctSchemaAutomaticPeriodId(AcctSchemaId acctSchemaId, int periodId);
 }

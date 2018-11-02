@@ -13,25 +13,24 @@ package de.metas.currency.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
@@ -43,6 +42,7 @@ import de.metas.currency.ICurrencyConversionResult;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -63,13 +63,11 @@ public class CurrencyBL implements ICurrencyBL
 	{
 		Check.assume(adClientId >= 0, "adClientId >= 0");
 
-		final I_C_AcctSchema ac = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx, ClientId.ofRepoId(adClientId), OrgId.ofRepoIdOrAny(adOrgId));
-		Check.assumeNotNull(ac, "Missing C_AcctSchema for AD_Client_ID={} and AD_Org_ID={}", adClientId, adOrgId);
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(ClientId.ofRepoId(adClientId), OrgId.ofRepoIdOrAny(adOrgId));
+		Check.assumeNotNull(as, "Missing C_AcctSchema for AD_Client_ID={} and AD_Org_ID={}", adClientId, adOrgId);
 
-		final I_C_Currency currency = ac.getC_Currency();
-		Check.assumeNotNull(currency, "C_AcctSchema {} has no currency", ac);
-
-		return currency;
+		final CurrencyId currencyId = as.getCurrencyId();
+		return Services.get(ICurrencyDAO.class).getById(currencyId);
 	}
 
 	@Override
@@ -277,6 +275,5 @@ public class CurrencyBL implements ICurrencyBL
 		result.setC_ConversionType_ID(conversionCtx.getC_ConversionType_ID());
 		return result;
 	}
-
 
 }

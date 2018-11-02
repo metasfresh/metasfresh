@@ -44,7 +44,9 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
@@ -53,7 +55,6 @@ import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 
 import de.metas.costing.CostElement;
@@ -125,7 +126,7 @@ public class CopyPriceToStandard extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		MAcctSchema as = MAcctSchema.get(p_C_AcctSchema_ID);
+		AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
 		CostElement element = Adempiere.getBean(ICostElementRepository.class).getById(CostElementId.ofRepoId(p_M_CostElement_ID));
 		if (CostElementType.Material != element.getCostElementType())
 		{
@@ -140,10 +141,10 @@ public class CopyPriceToStandard extends JavaProcess
 			BigDecimal price = pprice.getPriceStd();
 			final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(plv.getM_PriceList_ID());
 			int C_Currency_ID = pl.getC_Currency_ID();
-			if (C_Currency_ID != as.getC_Currency_ID())
+			if (C_Currency_ID != as.getCurrencyId().getRepoId())
 			{
 				price = currencyConversionBL.convert(getCtx(), pprice.getPriceStd(),
-						C_Currency_ID, as.getC_Currency_ID(),
+						C_Currency_ID, as.getCurrencyId().getRepoId(),
 						getAD_Client_ID(), p_AD_Org_ID);
 			}
 			MProduct product = MProduct.get(getCtx(), pprice.getM_Product_ID());

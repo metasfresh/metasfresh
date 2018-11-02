@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -33,7 +35,6 @@ import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 
 import de.metas.currency.ICurrencyBL;
@@ -109,7 +110,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	private final int m_Counter_AllocationLine_ID;
 	private DocLine_Allocation counterDocLine;
-	private final Set<Integer> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
+	private final Set<AcctSchemaId> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
 
 	private final int m_C_Payment_ID;
 	private final I_C_Payment payment;
@@ -259,10 +260,10 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	}
 
 	/** @return true if this is a sales/purchase compensation line which was not already compensated */
-	public boolean isSalesPurchaseInvoiceToCompensate(final MAcctSchema as)
+	public boolean isSalesPurchaseInvoiceToCompensate(final AcctSchemaId acctSchemaId)
 	{
 		// Check if it was already compensated
-		if (salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.contains(as.getC_AcctSchema_ID()))
+		if (salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.contains(acctSchemaId))
 		{
 			return false;
 		}
@@ -306,9 +307,9 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return true;
 	}
 
-	public void markAsSalesPurchaseInvoiceCompensated(final MAcctSchema as)
+	public void markAsSalesPurchaseInvoiceCompensated(final AcctSchema as)
 	{
-		final boolean added = salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.add(as.getC_AcctSchema_ID());
+		final boolean added = salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.add(as.getId());
 		Check.assume(added, "Line should not be already compensated: {}", this);
 	}
 
@@ -384,7 +385,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getC_BPartner_ID();
 	}
 
-	public MAccount getPaymentAcct(final MAcctSchema as)
+	public MAccount getPaymentAcct(final AcctSchema as)
 	{
 		final I_C_Payment payment = getC_Payment();
 		if (payment != null)
@@ -404,7 +405,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 		throw getDoc().newPostingException()
 				.setDocLine(this)
-				.setC_AcctSchema(as)
+				.setAcctSchema(as)
 				.setDetailMessage("No payment account found because there is not payment or cash line");
 	}
 
@@ -415,7 +416,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	 * @param C_Payment_ID payment
 	 * @return acct
 	 */
-	private MAccount getPaymentAcct(final MAcctSchema as, final int C_Payment_ID)
+	private MAccount getPaymentAcct(final AcctSchema as, final int C_Payment_ID)
 	{
 		final Doc_AllocationHdr doc = getDoc();
 		doc.setC_BP_BankAccount_ID(0);
@@ -471,7 +472,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			// log.error("NONE for C_Payment_ID=" + C_Payment_ID);
 			throw doc.newPostingException()
 					.setDocLine(this)
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setDetailMessage("No payment account found for " + C_Payment_ID);
 		}
 		return doc.getAccount(accountType, as);
@@ -484,7 +485,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	 * @param C_CashLine_ID
 	 * @return acct
 	 */
-	private final MAccount getCashAcct(final MAcctSchema as, final int C_CashLine_ID)
+	private final MAccount getCashAcct(final AcctSchema as, final int C_CashLine_ID)
 	{
 		final Doc_AllocationHdr doc = getDoc();
 		final String sql = "SELECT c.C_CashBook_ID "
@@ -495,7 +496,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		{
 			throw doc.newPostingException()
 					.setDocLine(this)
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setDetailMessage("No cashbook account found for C_CashLine_ID=" + C_CashLine_ID);
 		}
 		return doc.getAccount(Doc.ACCTTYPE_CashTransfer, as);

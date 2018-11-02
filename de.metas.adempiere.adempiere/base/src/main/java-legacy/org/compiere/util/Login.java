@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import lombok.NonNull;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,6 +26,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.acct.api.exception.AccountingException;
@@ -40,7 +39,6 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
@@ -48,9 +46,7 @@ import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
@@ -65,6 +61,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * Login Manager
@@ -600,77 +597,12 @@ public class Login
 			return;
 		}
 
-		final I_C_AcctSchema acctSchema = acctSchemaDAO.retrieveAcctSchema(ctx.getSessionContext()); // could throw AccountingException
-		int C_AcctSchema_ID = acctSchema.getC_AcctSchema_ID();
+		final AcctSchema acctSchema = acctSchemaDAO.getByCliendAndOrg(ctx.getSessionContext()); // could throw AccountingException
 
-		//
-		// Accounting Info
-		ctx.setAcctSchema(acctSchema.getC_AcctSchema_ID(), acctSchema.getC_Currency_ID(), acctSchema.isHasAlias());
-
-		//
-		// Define AcctSchema , Currency, HasAlias for Multi AcctSchema **/
-		// Note: this might override the context values we set above. Leving that code untouched for now..
-		final int AD_Client_ID = ctx.getAD_Client_ID();
-		final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx.getSessionContext(), AD_Client_ID);
-		if (ass != null && ass.length > 1)
-		{
-			final int AD_Org_ID = ctx.getAD_Org_ID();
-			for (final MAcctSchema as : ass)
-			{
-				C_AcctSchema_ID = clientDAO.retrieveClientInfo(ctx.getSessionContext(), AD_Client_ID).getC_AcctSchema1_ID();
-				if (as.getAD_OrgOnly_ID() != 0)
-				{
-					if (as.isSkipOrg(AD_Org_ID))
-					{
-						continue;
-					}
-					else
-					{
-						C_AcctSchema_ID = as.getC_AcctSchema_ID();
-						ctx.setAcctSchema(C_AcctSchema_ID, as.getC_Currency_ID(), as.isHasAlias());
-						break;
-					}
-				}
-			}
-		}
-
-		loadAccountingSchemaElements();
-	}
-
-	private void loadAccountingSchemaElements()
-	{
-		final LoginContext ctx = getCtx();
-		final int C_AcctSchema_ID = ctx.getC_AcctSchema_ID();
-
-		if (C_AcctSchema_ID <= 0)
-		{
-			return;
-		}
-
-		//
-		// Load accounting schema elements
-		final String sql = "SELECT ElementType FROM C_AcctSchema_Element WHERE C_AcctSchema_ID=? AND IsActive=?";
-		final Object[] sqlParams = new Object[] { C_AcctSchema_ID, true };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				ctx.setProperty(Env.CTXNAME_AcctSchemaElementPrefix + rs.getString("ElementType"), true);
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+		ctx.setAcctSchema(acctSchema);
+		
+		acctSchema.getSchemaElementTypes()
+				.forEach(elementType -> ctx.setProperty(Env.CTXNAME_AcctSchemaElementPrefix + elementType.getCode(), true));
 	}
 
 	private void loadPreferences()

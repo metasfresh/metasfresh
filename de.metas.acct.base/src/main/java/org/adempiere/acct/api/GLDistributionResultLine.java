@@ -2,6 +2,7 @@ package org.adempiere.acct.api;
 
 import java.math.BigDecimal;
 
+import org.adempiere.acct.api.AccountDimension;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.util.Check;

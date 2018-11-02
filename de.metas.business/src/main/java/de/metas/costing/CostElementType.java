@@ -73,4 +73,8 @@ public enum CostElementType
 	private static final ImmutableMap<String, CostElementType> code2type = Stream.of(values())
 			.collect(ImmutableMap.toImmutableMap(CostElementType::getCode, Function.identity()));
 
+	public boolean isMaterial()
+	{
+		return this == Material;
+	}
 }

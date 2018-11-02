@@ -1,4 +1,4 @@
-package de.metas.product.acct.api;
+package org.adempiere.acct.api;
 
 /*
  * #%L
@@ -24,33 +24,30 @@ package de.metas.product.acct.api;
 
 import java.util.Properties;
 
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.ISingletonService;
 
 /**
  * @author al
  */
-public interface IProductAcctDAO extends ISingletonService
+public interface IProductAcctDAO extends IProductActivityProvider, ISingletonService
 {
 	/**
-	 * Calls {@link IAcctSchemaDAO#retrieveAcctSchema(java.util.Properties, int, int)} to get the accounting schema for the given <code>org</code>. Then retrieves the
-	 * {@link org.compiere.model.I_M_Product_Acct} for the given <code>product</code> and the found <code>C_AcctSchema</code> and returns that <code>I_M_Product_Acct</code>'s record.
-	 * 
-	 * @param org
-	 * @param product
+	 * Gets the product activity from product accounting record using the matching accounting schema for given client/organization.
 	 *
-	 * @return activity for found {@link org.compiere.model.I_M_Product_Acct}
+	 * @return activity or null
 	 */
+	@Override
 	ActivityId retrieveActivityForAcct(ClientId clientId, OrgId orgId, ProductId productId);
 
-	I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, ProductId productId);
+	I_M_Product_Acct retrieveProductAcctOrNull(AcctSchema acctSchema, ProductId productId);
 
 	ActivityId getProductActivityId(ProductId productId);
 
@@ -60,11 +57,11 @@ public interface IProductAcctDAO extends ISingletonService
 	 * @param acctSchemaId
 	 * @return default product category accounting; never returns null
 	 */
-	I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(Properties ctx, int acctSchemaId);
+	I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(Properties ctx, AcctSchemaId acctSchemaId);
 
 	/**
 	 * @param acctSchema
 	 * @return default product category accounting; never returns null
 	 */
-	I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(I_C_AcctSchema acctSchema);
+	I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(AcctSchema acctSchema);
 }

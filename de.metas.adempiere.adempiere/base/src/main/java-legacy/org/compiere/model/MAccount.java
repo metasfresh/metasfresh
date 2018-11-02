@@ -21,18 +21,20 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.AccountDimension;
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaElement;
 import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDAO;
-import org.adempiere.acct.api.IAcctSchemaBL;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Account Object Entity to maintain all segment values. C_ValidCombination
@@ -153,18 +155,14 @@ public class MAccount extends X_C_ValidCombination
 	 * @param optionalNull if true, the optional values are null
 	 * @return Account
 	 */
-	public static MAccount getDefault(final I_C_AcctSchema acctSchema, final boolean optionalNull)
+	public static MAccount getDefault(final AcctSchema acctSchema, final boolean optionalNull)
 	{
-		// services
-		final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
-		final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-
 		final MAccount vc = new MAccount(acctSchema);
 		// Active Elements
-		for (final I_C_AcctSchema_Element ase : acctSchemaDAO.retrieveSchemaElements(acctSchema))
+		for (final AcctSchemaElement ase : acctSchema.getSchemaElements())
 		{
-			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(ase.getElementType());
-			final int defaultValue = acctSchemaBL.getDefaultValue(ase);
+			final AcctSchemaElementType elementType = ase.getElementType();
+			final int defaultValue = ase.getDefaultValue();
 			final boolean setValue = ase.isMandatory() || (!ase.isMandatory() && !optionalNull);
 			//
 			if (elementType.equals(AcctSchemaElementType.Organization))
@@ -210,12 +208,12 @@ public class MAccount extends X_C_ValidCombination
 	 * @param ctx context
 	 * @param C_ValidCombination_ID combination
 	 * @return Account
-	 * @deprecated Please use {@link IAccountDAO#retrieveAccountById(Properties, int)}
+	 * @deprecated Please use {@link IAccountDAO#getById(Properties, int)}
 	 */
 	@Deprecated
 	public static MAccount get(Properties ctx, int C_ValidCombination_ID)
 	{
-		return Services.get(IAccountDAO.class).retrieveAccountById(ctx, C_ValidCombination_ID);
+		return Services.get(IAccountDAO.class).getById(ctx, C_ValidCombination_ID);
 	}   // getAccount
 
 	/**
@@ -278,12 +276,11 @@ public class MAccount extends X_C_ValidCombination
 	 *
 	 * @param as account schema
 	 */
-	private MAccount(final I_C_AcctSchema as)
+	private MAccount(@NonNull final AcctSchema as)
 	{
-		this(
-				InterfaceWrapperHelper.getCtx(as), 0, InterfaceWrapperHelper.getTrxName(as));
-		setClientOrg(as.getAD_Client_ID(), as.getAD_Org_ID());
-		setC_AcctSchema(as);
+		this(Env.getCtx(), 0, ITrx.TRXNAME_None);
+		setClientOrg(as.getClientId().getRepoId(), as.getOrgId().getRepoId());
+		setC_AcctSchema_ID(as.getId().getRepoId());
 	}	// Account
 
 	@Override

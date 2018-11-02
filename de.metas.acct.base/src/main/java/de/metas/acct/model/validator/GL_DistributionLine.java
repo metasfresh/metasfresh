@@ -1,9 +1,5 @@
 package de.metas.acct.model.validator;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-
 import org.adempiere.acct.api.GLDistributionNotValidException;
 import org.adempiere.acct.api.IGLDistributionBL;
 import org.adempiere.acct.api.IGLDistributionDAO;
@@ -13,6 +9,10 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

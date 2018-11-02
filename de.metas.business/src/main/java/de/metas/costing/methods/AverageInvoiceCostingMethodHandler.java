@@ -7,9 +7,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
@@ -112,7 +114,9 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		final int productId = costSegment.getProductId().getRepoId();
 		final int orgId = costSegment.getOrgId().getRepoId();
 		final int asiId = costSegment.getAttributeSetInstanceId().getRepoId();
-		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
+		final CurrencyId acctCurencyId = acctSchema.getCurrencyId();
+		final int costingPrecision = acctSchema.getCosting().getCostingPrecision();
 
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"
 				+ " i.C_Currency_ID, i.DateAcct, i.C_ConversionType_ID, i.AD_Client_ID, i.AD_Org_ID, t.M_Transaction_ID "
@@ -174,15 +178,15 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 				final int Client_ID = rs.getInt(8);
 				final int Org_ID = rs.getInt(9);
 				final BigDecimal cost = currencyConversionBL.convert(ctx, price,
-						C_Currency_ID, as.getC_Currency_ID(),
+						C_Currency_ID, acctCurencyId.getRepoId(),
 						DateAcct, C_ConversionType_ID, Client_ID, Org_ID);
 				//
 				final BigDecimal oldAverageAmt = newAverageAmt;
 				final BigDecimal averageCurrent = oldStockQty.multiply(oldAverageAmt);
 				final BigDecimal averageIncrease = matchQty.multiply(cost);
 				BigDecimal newAmt = averageCurrent.add(averageIncrease);
-				newAmt = newAmt.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
-				newAverageAmt = newAmt.divide(newStockQty, as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
+				newAmt = newAmt.setScale(costingPrecision, BigDecimal.ROUND_HALF_UP);
+				newAverageAmt = newAmt.divide(newStockQty, costingPrecision, BigDecimal.ROUND_HALF_UP);
 			}
 		}
 		catch (final SQLException e)

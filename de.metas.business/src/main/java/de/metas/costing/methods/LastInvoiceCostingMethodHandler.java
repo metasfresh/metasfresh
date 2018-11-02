@@ -5,9 +5,10 @@ import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -114,8 +116,8 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		final int productId = costSegment.getProductId().getRepoId();
 		final int AD_Org_ID = costSegment.getOrgId().getRepoId();
 		final int M_ASI_ID = costSegment.getAttributeSetInstanceId().getRepoId();
-		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
-		final int C_Currency_ID = as.getC_Currency_ID();
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
+		final int currencyId = as.getCurrencyId().getRepoId();
 
 		String sql = "SELECT currencyConvert(il.PriceActual, i.C_Currency_ID, ?, i.DateAcct, i.C_ConversionType_ID, il.AD_Client_ID, il.AD_Org_ID) "
 				// ,il.PriceActual, il.QtyInvoiced, i.DateInvoiced, il.Line
@@ -138,7 +140,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setInt(1, C_Currency_ID);
+			pstmt.setInt(1, currencyId);
 			pstmt.setInt(2, productId);
 			if (AD_Org_ID != 0)
 			{

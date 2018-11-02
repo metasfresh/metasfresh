@@ -1,5 +1,6 @@
 package org.adempiere.acct.api.impl;
 
+import java.util.List;
 import java.util.Optional;
 
 /*
@@ -26,6 +27,8 @@ import java.util.Optional;
 
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IPostingRequestBuilder;
 import org.adempiere.acct.api.IPostingService;
@@ -43,7 +46,6 @@ import org.compiere.Adempiere;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.MAcctSchema;
 import org.slf4j.Logger;
 
 import de.metas.Profiles;
@@ -184,7 +186,7 @@ import lombok.NonNull;
 
 		try
 		{
-			final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, clientId.getRepoId());
+			final List<AcctSchema> ass = Services.get(IAcctSchemaDAO.class).getAllByClient(clientId);
 
 			final Doc<?> doc = docFactory.getOrNull(ctx, ass, documentRef);
 			if (doc == null)

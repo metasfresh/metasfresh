@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaGeneralLedger;
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IFactAcctDAO;
@@ -43,10 +45,8 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
@@ -65,6 +65,7 @@ import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
@@ -218,7 +219,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		// Accounting schemas
 		Check.assumeNotEmpty(docBuilder.getAcctSchemas(), "ass not empty");
-		m_ass = docBuilder.getAcctSchemas();
+		acctSchemas = docBuilder.getAcctSchemas();
 
 		//
 		// Document model
@@ -230,8 +231,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		// Setup a new context
 		final Properties ctx = InterfaceWrapperHelper.getCtx(p_po);
 		this.m_ctx = Env.deriveCtx(ctx);
-		final MAcctSchema acctSchema1 = m_ass[0]; // first account schema
-		Env.setContext(m_ctx, Env.CTXNAME_AD_Client_ID, acctSchema1.getAD_Client_ID());
+		final AcctSchema acctSchema1 = acctSchemas.get(0); // first account schema
+		Env.setContext(m_ctx, Env.CTXNAME_AD_Client_ID, acctSchema1.getClientId().getRepoId());
 
 		//
 		// DB Transaction
@@ -255,7 +256,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}   // Doc
 
 	/** Accounting Schema Array */
-	private final MAcctSchema[] m_ass;
+	private final List<AcctSchema> acctSchemas;
 	/** Properties */
 	private final Properties m_ctx;
 	/** Transaction Name */
@@ -479,10 +480,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Validate document's AD_Client_ID
-		if (getAD_Client_ID() != m_ass[0].getAD_Client_ID())
+		if (!getClientId().equals(acctSchemas.get(0).getClientId()))
 		{
-			final String errmsg = "AD_Client_ID Conflict - Document=" + getAD_Client_ID()
-					+ ", AcctSchema=" + m_ass[0].getAD_Client_ID();
+			final String errmsg = "AD_Client_ID Conflict - Document=" + getClientId()
+					+ ", AcctSchema=" + acctSchemas.get(0).getClientId();
 			throw newPostingException()
 					.setPreserveDocumentPostedStatus()
 					.setDetailMessage(errmsg);
@@ -526,21 +527,21 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final List<Fact> facts = new ArrayList<>();
 		// for all Accounting Schema
 		{
-			for (final MAcctSchema acctSchema : m_ass)
+			for (final AcctSchema acctSchema : acctSchemas)
 			{
 				// if acct schema has "only" org, skip
 				boolean skip = false;
-				if (acctSchema.getAD_OrgOnly_ID() != 0)
+				if (acctSchema.isPostOnlyForSomeOrgs())
 				{
 					// Header Level Org
-					skip = acctSchema.isSkipOrg(getAD_Org_ID());
+					skip = acctSchema.isDisallowPostingForOrg(getOrgId());
 					// Line Level Org
 					final List<DocLineType> docLines = getDocLines();
 					if (docLines != null)
 					{
 						for (int line = 0; skip && line < docLines.size(); line++)
 						{
-							skip = acctSchema.isSkipOrg(docLines.get(line).getOrgId().getRepoId());
+							skip = acctSchema.isDisallowPostingForOrg(docLines.get(line).getOrgId());
 							if (!skip)
 							{
 								break;
@@ -615,13 +616,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param acctSchema Accounting Schema
 	 * @return
 	 */
-	private final List<Fact> postLogic(final MAcctSchema acctSchema)
+	private final List<Fact> postLogic(final AcctSchema acctSchema)
 	{
 		// rejectUnbalanced
-		if (!acctSchema.isSuspenseBalancing() && !isBalanced())
+		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
+		if (!acctSchemaGL.isSuspenseBalancing() && !isBalanced())
 		{
 			throw newPostingException()
-					.setC_AcctSchema(acctSchema)
+					.setAcctSchema(acctSchema)
 					.setPostingStatus(PostingStatus.NotBalanced);
 		}
 
@@ -632,7 +634,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		if (!isPeriodOpen())
 		{
 			throw newPostingException()
-					.setC_AcctSchema(acctSchema)
+					.setAcctSchema(acctSchema)
 					.setPostingStatus(PostingStatus.PeriodClosed);
 		}
 
@@ -642,7 +644,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		if (facts == null)
 		{
 			throw newPostingException()
-					.setC_AcctSchema(acctSchema)
+					.setAcctSchema(acctSchema)
 					.setPostingStatus(PostingStatus.Error)
 					.setDetailMessage("No facts");
 		}
@@ -652,7 +654,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			if (fact == null)
 			{
 				throw newPostingException()
-						.setC_AcctSchema(acctSchema)
+						.setAcctSchema(acctSchema)
 						.setPostingStatus(PostingStatus.Error)
 						.setDetailMessage("No fact");
 			}
@@ -664,7 +666,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			if (!fact.checkAccounts())
 			{
 				throw newPostingException()
-						.setC_AcctSchema(acctSchema)
+						.setAcctSchema(acctSchema)
 						.setPostingStatus(PostingStatus.InvalidAccount)
 						.setFact(fact);
 			}
@@ -677,7 +679,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			catch (final Exception e)
 			{
 				throw newPostingException(e)
-						.setC_AcctSchema(acctSchema)
+						.setAcctSchema(acctSchema)
 						.setPostingStatus(PostingStatus.Error)
 						.setFact(fact)
 						.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
@@ -690,7 +692,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				if (!fact.isSourceBalanced())
 				{
 					throw newPostingException()
-							.setC_AcctSchema(acctSchema)
+							.setAcctSchema(acctSchema)
 							.setPostingStatus(PostingStatus.NotBalanced)
 							.setFact(fact)
 							.setDetailMessage("Source amounts not balanced");
@@ -704,7 +706,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				if (!fact.isSegmentBalanced())
 				{
 					throw newPostingException()
-							.setC_AcctSchema(acctSchema)
+							.setAcctSchema(acctSchema)
 							.setPostingStatus(PostingStatus.NotBalanced)
 							.setFact(fact)
 							.setDetailMessage("Segment not balanced");
@@ -718,7 +720,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				if (!fact.isAcctBalanced())
 				{
 					throw newPostingException()
-							.setC_AcctSchema(acctSchema)
+							.setAcctSchema(acctSchema)
 							.setPostingStatus(PostingStatus.NotBalanced)
 							.setFact(fact)
 							.setDetailMessage("Accountable amounts not balanced");
@@ -985,7 +987,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @param acctSchema accounting schema
 	 */
-	private final void checkConvertible(final I_C_AcctSchema acctSchema)
+	private final void checkConvertible(final AcctSchema acctSchema)
 	{
 		// No Currency in document
 		if (getC_Currency_ID() == NO_CURRENCY)
@@ -1011,7 +1013,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		// Check
-		final int acctCurrencyId = acctSchema.getC_Currency_ID();
+		final int acctCurrencyId = acctSchema.getCurrencyId().getRepoId();
 		for (final int currencyId : currencyIds)
 		{
 			if (currencyId <= 0)
@@ -1032,7 +1034,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			catch (final NoCurrencyRateFoundException e)
 			{
 				throw newPostingException(e)
-						.setC_AcctSchema(acctSchema)
+						.setAcctSchema(acctSchema)
 						.setPostingStatus(PostingStatus.NotConvertible);
 			}
 		}
@@ -1230,7 +1232,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param as accounting schema
 	 * @return C_ValidCombination_ID
 	 */
-	protected final int getValidCombination_ID(final int AcctType, final I_C_AcctSchema as)
+	protected final int getValidCombination_ID(final int AcctType, final AcctSchema as)
 	{
 		final int para_1;     // first parameter (second is always AcctSchema)
 		final String sql;
@@ -1432,12 +1434,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			if (para_1 == -1)
 			{
-				pstmt.setInt(1, as.getC_AcctSchema_ID());
+				pstmt.setInt(1, as.getId().getRepoId());
 			}
 			else
 			{
 				pstmt.setInt(1, para_1);
-				pstmt.setInt(2, as.getC_AcctSchema_ID());
+				pstmt.setInt(2, as.getId().getRepoId());
 			}
 			rs = pstmt.executeQuery();
 			if (rs.next())
@@ -1472,7 +1474,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param as accounting schema
 	 * @return Account or <code>null</code>
 	 */
-	protected final MAccount getAccount(final int AcctType, final I_C_AcctSchema as)
+	protected final MAccount getAccount(final int AcctType, final AcctSchema as)
 	{
 		final int C_ValidCombination_ID = getValidCombination_ID(AcctType, as);
 		if (C_ValidCombination_ID <= 0)
@@ -1480,18 +1482,18 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return null;
 		}
 		// Return Account
-		final MAccount acct = accountDAO.retrieveAccountById(getCtx(), C_ValidCombination_ID);
+		final MAccount acct = accountDAO.getById(getCtx(), C_ValidCombination_ID);
 		return acct;
 	}	// getAccount
 
-	protected final MAccount getRealizedGainAcct(final MAcctSchema as)
+	protected final MAccount getRealizedGainAcct(final AcctSchema as)
 	{
-		return accountDAO.retrieveAccountById(as.getCtx(), as.getAcctSchemaDefault().getRealizedGain_Acct());
+		return accountDAO.getById(getCtx(), as.getDefaultAccounts().getRealizedGainAcctId());
 	}
 
-	protected final MAccount getRealizedLossAcct(final MAcctSchema as)
+	protected final MAccount getRealizedLossAcct(final AcctSchema as)
 	{
-		return accountDAO.retrieveAccountById(as.getCtx(), as.getAcctSchemaDefault().getRealizedLoss_Acct());
+		return accountDAO.getById(getCtx(), as.getDefaultAccounts().getRealizedLossAcctId());
 	}
 
 	@Override
@@ -1554,6 +1556,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_Description;
 	}
 
+	public final CurrencyId getCurrencyId()
+	{
+		return CurrencyId.ofRepoIdOrNull(getC_Currency_ID());
+	}
+
 	public final int getC_Currency_ID()
 	{
 		if (m_C_Currency_ID == -1)
@@ -1571,6 +1578,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		m_C_Currency_ID = C_Currency_ID;
 		m_precision = -1;
+	}
+	
+	protected final void setC_Currency_ID(final CurrencyId currencyId)
+	{
+		setC_Currency_ID(CurrencyId.toRepoId(currencyId));
 	}
 
 	public final boolean isMultiCurrency()
@@ -1929,7 +1941,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param as accounting schema
 	 * @return Facts
 	 */
-	protected abstract List<Fact> createFacts(final MAcctSchema as);
+	protected abstract List<Fact> createFacts(final AcctSchema as);
 
 	/**
 	 * Method called after everything was Posted and saved to database, right before committing.

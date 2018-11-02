@@ -23,13 +23,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MInOut;
 
 import com.google.common.collect.ImmutableList;
@@ -142,9 +141,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
-		setC_Currency_ID(as.getC_Currency_ID());
+		setC_Currency_ID(as.getCurrencyId());
 
 		final String docBaseType = getDocumentType();
 
@@ -178,18 +177,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 	}
 
-	private List<Fact> createFacts_SalesShipment(final MAcctSchema as)
+	private List<Fact> createFacts_SalesShipment(final AcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		getDocLines().forEach(line -> createFacts_SalesShipmentLine(fact, line));
-
-		//
-		// Commitment release
-		if (as.isAccrual() && as.isCreateSOCommitment())
-		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("SO commitment release not supported");
-		}
-
 		return ImmutableList.of(fact);
 	}
 
@@ -201,7 +192,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return;
 		}
 
-		final I_C_AcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 		final CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
 
 		//
@@ -235,7 +226,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 	}
 
-	private List<Fact> createFacts_SalesReturn(final MAcctSchema as)
+	private List<Fact> createFacts_SalesReturn(final AcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		getDocLines().forEach(line -> createFacts_SalesReturnLine(fact, line));
@@ -251,7 +242,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return;
 		}
 
-		final I_C_AcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 		final CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
 
 		//
@@ -285,7 +276,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setQty(line.getQty().negate());
 	}
 
-	private List<Fact> createFacts_PurchasingReceipt(final MAcctSchema as)
+	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		getDocLines().forEach(line -> createFacts_PurchasingReceiptLine(fact, line));
@@ -301,7 +292,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return;
 		}
 
-		final I_C_AcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmount();
 
 		//
@@ -335,7 +326,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setQty(line.getQty().negate());
 	}
 
-	private List<Fact> createFacts_PurchasingReturn(final MAcctSchema as)
+	private List<Fact> createFacts_PurchasingReturn(final AcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		getDocLines().forEach(line -> createFacts_PurchasingReturnLine(fact, line));
@@ -351,7 +342,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return;
 		}
 
-		final I_C_AcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmount();
 
 		//

@@ -19,13 +19,15 @@ package org.compiere.process;
 import java.math.BigDecimal;
 
 import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAcctSchemaDefault;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.util.DB;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Add or Copy Acct Schema Default Accounts
@@ -71,13 +73,15 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 	protected String doIt()
 	{
 		if (p_C_AcctSchema_ID == null)
-			throw new AdempiereException("C_AcctSchema_ID=0");
-		MAcctSchema as = MAcctSchema.get(p_C_AcctSchema_ID);
-		if (as.get_ID() == 0)
-			throw new AdempiereException("Not Found - C_AcctSchema_ID=" + p_C_AcctSchema_ID);
-		MAcctSchemaDefault acct = MAcctSchemaDefault.get(p_C_AcctSchema_ID);
-		if (acct == null || acct.get_ID() == 0)
+		{
+			throw new FillMandatoryException("C_AcctSchema_ID");
+		}
+
+		final I_C_AcctSchema_Default acctSchemaDefault = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaDefaultsRecordOrNull(p_C_AcctSchema_ID);
+		if (acctSchemaDefault == null)
+		{
 			throw new AdempiereException("Default Not Found - C_AcctSchema_ID=" + p_C_AcctSchema_ID);
+		}
 
 		String sql = null;
 		int updated = 0;
@@ -89,28 +93,28 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE M_Product_Category_Acct pa "
-					+ "SET P_Revenue_Acct=" + acct.getP_Revenue_Acct()
-					+ ", P_Expense_Acct=" + acct.getP_Expense_Acct()
-					+ ", P_CostAdjustment_Acct=" + acct.getP_CostAdjustment_Acct()
-					+ ", P_InventoryClearing_Acct=" + acct.getP_InventoryClearing_Acct()
-					+ ", P_Asset_Acct=" + acct.getP_Asset_Acct()
-					+ ", P_COGS_Acct=" + acct.getP_COGS_Acct()
-					+ ", P_PurchasePriceVariance_Acct=" + acct.getP_PurchasePriceVariance_Acct()
-					+ ", P_InvoicePriceVariance_Acct=" + acct.getP_InvoicePriceVariance_Acct()
-					+ ", P_TradeDiscountRec_Acct=" + acct.getP_TradeDiscountRec_Acct()
-					+ ", P_TradeDiscountGrant_Acct=" + acct.getP_TradeDiscountGrant_Acct()
-					+ ", P_WIP_Acct=" + acct.getP_WIP_Acct()
-					+ ", P_FloorStock_Acct=" + acct.getP_FloorStock_Acct()
-					+ ", P_MethodChangeVariance_Acct=" + acct.getP_MethodChangeVariance_Acct()
-					+ ", P_UsageVariance_Acct=" + acct.getP_UsageVariance_Acct()
-					+ ", P_RateVariance_Acct=" + acct.getP_RateVariance_Acct()
-					+ ", P_MixVariance_Acct=" + acct.getP_MixVariance_Acct()
-					+ ", P_Labor_Acct=" + acct.getP_Labor_Acct()
-					+ ", P_Burden_Acct=" + acct.getP_Burden_Acct()
-					+ ", P_CostOfProduction_Acct=" + acct.getP_CostOfProduction_Acct()
-					+ ", P_OutsideProcessing_Acct=" + acct.getP_OutsideProcessing_Acct()
-					+ ", P_Overhead_Acct=" + acct.getP_Overhead_Acct()
-					+ ", P_Scrap_Acct=" + acct.getP_Scrap_Acct()
+					+ "SET P_Revenue_Acct=" + acctSchemaDefault.getP_Revenue_Acct()
+					+ ", P_Expense_Acct=" + acctSchemaDefault.getP_Expense_Acct()
+					+ ", P_CostAdjustment_Acct=" + acctSchemaDefault.getP_CostAdjustment_Acct()
+					+ ", P_InventoryClearing_Acct=" + acctSchemaDefault.getP_InventoryClearing_Acct()
+					+ ", P_Asset_Acct=" + acctSchemaDefault.getP_Asset_Acct()
+					+ ", P_COGS_Acct=" + acctSchemaDefault.getP_COGS_Acct()
+					+ ", P_PurchasePriceVariance_Acct=" + acctSchemaDefault.getP_PurchasePriceVariance_Acct()
+					+ ", P_InvoicePriceVariance_Acct=" + acctSchemaDefault.getP_InvoicePriceVariance_Acct()
+					+ ", P_TradeDiscountRec_Acct=" + acctSchemaDefault.getP_TradeDiscountRec_Acct()
+					+ ", P_TradeDiscountGrant_Acct=" + acctSchemaDefault.getP_TradeDiscountGrant_Acct()
+					+ ", P_WIP_Acct=" + acctSchemaDefault.getP_WIP_Acct()
+					+ ", P_FloorStock_Acct=" + acctSchemaDefault.getP_FloorStock_Acct()
+					+ ", P_MethodChangeVariance_Acct=" + acctSchemaDefault.getP_MethodChangeVariance_Acct()
+					+ ", P_UsageVariance_Acct=" + acctSchemaDefault.getP_UsageVariance_Acct()
+					+ ", P_RateVariance_Acct=" + acctSchemaDefault.getP_RateVariance_Acct()
+					+ ", P_MixVariance_Acct=" + acctSchemaDefault.getP_MixVariance_Acct()
+					+ ", P_Labor_Acct=" + acctSchemaDefault.getP_Labor_Acct()
+					+ ", P_Burden_Acct=" + acctSchemaDefault.getP_Burden_Acct()
+					+ ", P_CostOfProduction_Acct=" + acctSchemaDefault.getP_CostOfProduction_Acct()
+					+ ", P_OutsideProcessing_Acct=" + acctSchemaDefault.getP_OutsideProcessing_Acct()
+					+ ", P_Overhead_Acct=" + acctSchemaDefault.getP_Overhead_Acct()
+					+ ", P_Scrap_Acct=" + acctSchemaDefault.getP_Scrap_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE pa.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM M_Product_Category p "
@@ -177,19 +181,19 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE C_BP_Group_Acct a "
-					+ "SET C_Receivable_Acct=" + acct.getC_Receivable_Acct()
-					+ ", C_Receivable_Services_Acct=" + acct.getC_Receivable_Services_Acct()
-					+ ", C_Prepayment_Acct=" + acct.getC_Prepayment_Acct()
-					+ ", V_Liability_Acct=" + acct.getV_Liability_Acct()
-					+ ", V_Liability_Services_Acct=" + acct.getV_Liability_Services_Acct()
-					+ ", V_Prepayment_Acct=" + acct.getV_Prepayment_Acct()
-					+ ", PayDiscount_Exp_Acct=" + acct.getPayDiscount_Exp_Acct()
-					+ ", PayDiscount_Rev_Acct=" + acct.getPayDiscount_Rev_Acct()
-					+ ", WriteOff_Acct=" + acct.getWriteOff_Acct()
-					+ ", NotInvoicedReceipts_Acct=" + acct.getNotInvoicedReceipts_Acct()
-					+ ", UnEarnedRevenue_Acct=" + acct.getUnEarnedRevenue_Acct()
-					+ ", NotInvoicedRevenue_Acct=" + acct.getNotInvoicedRevenue_Acct()
-					+ ", NotInvoicedReceivables_Acct=" + acct.getNotInvoicedReceivables_Acct()
+					+ "SET C_Receivable_Acct=" + acctSchemaDefault.getC_Receivable_Acct()
+					+ ", C_Receivable_Services_Acct=" + acctSchemaDefault.getC_Receivable_Services_Acct()
+					+ ", C_Prepayment_Acct=" + acctSchemaDefault.getC_Prepayment_Acct()
+					+ ", V_Liability_Acct=" + acctSchemaDefault.getV_Liability_Acct()
+					+ ", V_Liability_Services_Acct=" + acctSchemaDefault.getV_Liability_Services_Acct()
+					+ ", V_Prepayment_Acct=" + acctSchemaDefault.getV_Prepayment_Acct()
+					+ ", PayDiscount_Exp_Acct=" + acctSchemaDefault.getPayDiscount_Exp_Acct()
+					+ ", PayDiscount_Rev_Acct=" + acctSchemaDefault.getPayDiscount_Rev_Acct()
+					+ ", WriteOff_Acct=" + acctSchemaDefault.getWriteOff_Acct()
+					+ ", NotInvoicedReceipts_Acct=" + acctSchemaDefault.getNotInvoicedReceipts_Acct()
+					+ ", UnEarnedRevenue_Acct=" + acctSchemaDefault.getUnEarnedRevenue_Acct()
+					+ ", NotInvoicedRevenue_Acct=" + acctSchemaDefault.getNotInvoicedRevenue_Acct()
+					+ ", NotInvoicedReceivables_Acct=" + acctSchemaDefault.getNotInvoicedReceivables_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM C_BP_Group_Acct x "
@@ -228,8 +232,8 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE C_BP_Employee_Acct a "
-					+ "SET E_Expense_Acct=" + acct.getE_Expense_Acct()
-					+ ", E_Prepayment_Acct=" + acct.getE_Prepayment_Acct()
+					+ "SET E_Expense_Acct=" + acctSchemaDefault.getE_Expense_Acct()
+					+ ", E_Prepayment_Acct=" + acctSchemaDefault.getE_Prepayment_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM C_BP_Employee_Acct x "
@@ -298,10 +302,10 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE M_Warehouse_Acct a "
-					+ "SET W_Inventory_Acct=" + acct.getW_Inventory_Acct()
-					+ ", W_Differences_Acct=" + acct.getW_Differences_Acct()
-					+ ", W_Revaluation_Acct=" + acct.getW_Revaluation_Acct()
-					+ ", W_InvActualAdjust_Acct=" + acct.getW_InvActualAdjust_Acct()
+					+ "SET W_Inventory_Acct=" + acctSchemaDefault.getW_Inventory_Acct()
+					+ ", W_Differences_Acct=" + acctSchemaDefault.getW_Differences_Acct()
+					+ ", W_Revaluation_Acct=" + acctSchemaDefault.getW_Revaluation_Acct()
+					+ ", W_InvActualAdjust_Acct=" + acctSchemaDefault.getW_InvActualAdjust_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM M_Warehouse_Acct x "
@@ -332,8 +336,8 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE C_Project_Acct a "
-					+ "SET PJ_Asset_Acct=" + acct.getPJ_Asset_Acct()
-					+ ", PJ_WIP_Acct=" + acct.getPJ_Asset_Acct()
+					+ "SET PJ_Asset_Acct=" + acctSchemaDefault.getPJ_Asset_Acct()
+					+ ", PJ_WIP_Acct=" + acctSchemaDefault.getPJ_Asset_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM C_Project_Acct x "
@@ -364,11 +368,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE C_Tax_Acct a "
-					+ "SET T_Due_Acct=" + acct.getT_Due_Acct()
-					+ ", T_Liability_Acct=" + acct.getT_Liability_Acct()
-					+ ", T_Credit_Acct=" + acct.getT_Credit_Acct()
-					+ ", T_Receivables_Acct=" + acct.getT_Receivables_Acct()
-					+ ", T_Expense_Acct=" + acct.getT_Expense_Acct()
+					+ "SET T_Due_Acct=" + acctSchemaDefault.getT_Due_Acct()
+					+ ", T_Liability_Acct=" + acctSchemaDefault.getT_Liability_Acct()
+					+ ", T_Credit_Acct=" + acctSchemaDefault.getT_Credit_Acct()
+					+ ", T_Receivables_Acct=" + acctSchemaDefault.getT_Receivables_Acct()
+					+ ", T_Expense_Acct=" + acctSchemaDefault.getT_Expense_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM C_Tax_Acct x "
@@ -399,18 +403,18 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE C_BP_BankAccount_Acct a "
-					+ "SET B_InTransit_Acct=" + acct.getB_InTransit_Acct()
-					+ ", B_Asset_Acct=" + acct.getB_Asset_Acct()
-					+ ", B_Expense_Acct=" + acct.getB_Expense_Acct()
-					+ ", B_InterestRev_Acct=" + acct.getB_InterestRev_Acct()
-					+ ", B_InterestExp_Acct=" + acct.getB_InterestExp_Acct()
-					+ ", B_Unidentified_Acct=" + acct.getB_Unidentified_Acct()
-					+ ", B_UnallocatedCash_Acct=" + acct.getB_UnallocatedCash_Acct()
-					+ ", B_PaymentSelect_Acct=" + acct.getB_PaymentSelect_Acct()
-					+ ", B_SettlementGain_Acct=" + acct.getB_SettlementGain_Acct()
-					+ ", B_SettlementLoss_Acct=" + acct.getB_SettlementLoss_Acct()
-					+ ", B_RevaluationGain_Acct=" + acct.getB_RevaluationGain_Acct()
-					+ ", B_RevaluationLoss_Acct=" + acct.getB_RevaluationLoss_Acct()
+					+ "SET B_InTransit_Acct=" + acctSchemaDefault.getB_InTransit_Acct()
+					+ ", B_Asset_Acct=" + acctSchemaDefault.getB_Asset_Acct()
+					+ ", B_Expense_Acct=" + acctSchemaDefault.getB_Expense_Acct()
+					+ ", B_InterestRev_Acct=" + acctSchemaDefault.getB_InterestRev_Acct()
+					+ ", B_InterestExp_Acct=" + acctSchemaDefault.getB_InterestExp_Acct()
+					+ ", B_Unidentified_Acct=" + acctSchemaDefault.getB_Unidentified_Acct()
+					+ ", B_UnallocatedCash_Acct=" + acctSchemaDefault.getB_UnallocatedCash_Acct()
+					+ ", B_PaymentSelect_Acct=" + acctSchemaDefault.getB_PaymentSelect_Acct()
+					+ ", B_SettlementGain_Acct=" + acctSchemaDefault.getB_SettlementGain_Acct()
+					+ ", B_SettlementLoss_Acct=" + acctSchemaDefault.getB_SettlementLoss_Acct()
+					+ ", B_RevaluationGain_Acct=" + acctSchemaDefault.getB_RevaluationGain_Acct()
+					+ ", B_RevaluationLoss_Acct=" + acctSchemaDefault.getB_RevaluationLoss_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM C_BP_BankAccount_Acct x "
@@ -447,7 +451,7 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE C_Withholding_Acct a "
-					+ "SET Withholding_Acct=" + acct.getWithholding_Acct()
+					+ "SET Withholding_Acct=" + acctSchemaDefault.getWithholding_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM C_Withholding_Acct x "
@@ -478,8 +482,8 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE C_Charge_Acct a "
-					+ "SET Ch_Expense_Acct=" + acct.getCh_Expense_Acct()
-					+ ", Ch_Revenue_Acct=" + acct.getCh_Revenue_Acct()
+					+ "SET Ch_Expense_Acct=" + acctSchemaDefault.getCh_Expense_Acct()
+					+ ", Ch_Revenue_Acct=" + acctSchemaDefault.getCh_Revenue_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM C_Charge_Acct x "
@@ -510,11 +514,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE C_Cashbook_Acct a "
-					+ "SET CB_Asset_Acct=" + acct.getCB_Asset_Acct()
-					+ ", CB_Differences_Acct=" + acct.getCB_Differences_Acct()
-					+ ", CB_CashTransfer_Acct=" + acct.getCB_CashTransfer_Acct()
-					+ ", CB_Expense_Acct=" + acct.getCB_Expense_Acct()
-					+ ", CB_Receipt_Acct=" + acct.getCB_Receipt_Acct()
+					+ "SET CB_Asset_Acct=" + acctSchemaDefault.getCB_Asset_Acct()
+					+ ", CB_Differences_Acct=" + acctSchemaDefault.getCB_Differences_Acct()
+					+ ", CB_CashTransfer_Acct=" + acctSchemaDefault.getCB_CashTransfer_Acct()
+					+ ", CB_Expense_Acct=" + acctSchemaDefault.getCB_Expense_Acct()
+					+ ", CB_Receipt_Acct=" + acctSchemaDefault.getCB_Receipt_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID
 					+ " AND EXISTS (SELECT * FROM C_Cashbook_Acct x "

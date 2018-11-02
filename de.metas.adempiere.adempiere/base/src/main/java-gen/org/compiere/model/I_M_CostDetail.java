@@ -113,9 +113,9 @@ public interface I_M_CostDetail
 	 */
 	public int getC_AcctSchema_ID();
 
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema();
-
-	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema();
+//
+//	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
 
     /** Column definition for C_AcctSchema_ID */
     public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_C_AcctSchema>(I_M_CostDetail.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);

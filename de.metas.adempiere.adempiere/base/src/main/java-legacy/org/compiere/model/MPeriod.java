@@ -25,7 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.acct.api.impl.AcctSchemaPeriodControl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PeriodClosedException;
@@ -46,6 +48,7 @@ import de.metas.calendar.IPeriodBL;
 import de.metas.calendar.IPeriodDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  *  Calendar Period Model
@@ -439,13 +442,14 @@ public class MPeriod extends X_C_Period
 		{
 			DB.getConstraints().addAllowedTrxNamePrefix("POSave").incMaxTrx(1);
 		
-			// MAcctSchema as = MClient.get(getCtx(), getAD_Client_ID()).getAcctSchema();
-			final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(getCtx(), ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(ad_Org_ID));
-			if (as != null && as.isAutoPeriodControl())
+			final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+			final AcctSchema as = acctSchemasRepo.getByCliendAndOrg(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(ad_Org_ID));
+			final AcctSchemaPeriodControl periodControl = as.getPeriodControl();
+			if (periodControl.isAutomaticPeriodControl())
 			{
-				Timestamp today = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-				Timestamp first = TimeUtil.addDays(today, - as.getPeriod_OpenHistory()); 
-				Timestamp last = TimeUtil.addDays(today, as.getPeriod_OpenFuture());
+				Timestamp today = SystemTime.asDayTimestamp();
+				Timestamp first = TimeUtil.addDays(today, - periodControl.getOpenDaysInPast()); 
+				Timestamp last = TimeUtil.addDays(today, periodControl.getOpenDaysInFuture());
 				Timestamp date1, date2;
 				if (dateAcct != null)
 				{
@@ -471,8 +475,7 @@ public class MPeriod extends X_C_Period
 				//	We are OK
 				if (Services.get(IPeriodBL.class).isInPeriod(this, today))
 				{
-					as.setC_Period_ID(getC_Period_ID());
-					InterfaceWrapperHelper.save(as);
+					acctSchemasRepo.changeAcctSchemaAutomaticPeriodId(as.getId(), getC_Period_ID());
 				}
 				return true;
 			}

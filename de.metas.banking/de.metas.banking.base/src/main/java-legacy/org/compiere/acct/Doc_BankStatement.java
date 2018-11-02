@@ -20,11 +20,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.service.OrgId;
 import org.compiere.acct.Fact.FactLineBuilder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.util.Util;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
@@ -127,7 +127,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		final OrgId bankOrgId = getBankOrgId();	// Bank Account Organization
@@ -248,7 +248,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// We are using the currency conversion for bank transfers (e.g. Spot) and not the default one which could be different (e.g. Company conversion type).
 		//
 
-		final MAcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 		final OrgId bankOrgId = getBankOrgId();	// Bank Account Org
 		final FactLineBuilder factLine_BankTransfer_Builder = fact.createLine()
 				.setDocLine(line)
@@ -311,7 +311,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// and the currency gain/loss is booked in accounting currency.
 		setIsMultiCurrency(true);
 
-		final MAcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 		final MAccount account;
 		final BigDecimal amtSourceDr;
 		final BigDecimal amtSourceCr;
@@ -355,7 +355,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(account)
-				.setC_Currency_ID(as.getC_Currency_ID())
+				.setCurrencyId(as.getCurrencyId())
 				.setAmtSource(amtSourceDr, amtSourceCr)
 				.buildAndAdd();
 	}
@@ -368,7 +368,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	 */
 	private final void createFacts_Payments(final Fact fact, final DocLine_BankStatement line)
 	{
-		final MAcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 		final MAccount acct_BankInTransit = getAccount(Doc.ACCTTYPE_BankInTransit, as);
 		final OrgId bankOrgId = getBankOrgId();	// Bank Account Org
 		final int C_BPartner_ID = line.getC_BPartner_ID();

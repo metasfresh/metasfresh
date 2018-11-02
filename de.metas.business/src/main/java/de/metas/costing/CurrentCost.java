@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -41,7 +42,7 @@ public final class CurrentCost
 	private final CostSegment costSegment;
 	private final CostElement costElement;
 
-	private final int currencyId;
+	private final CurrencyId currencyId;
 	private final int precision;
 	// private final I_C_UOM uom;
 
@@ -57,7 +58,7 @@ public final class CurrentCost
 			final int id,
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
-			final int currencyId,
+			@NonNull final CurrencyId currencyId,
 			final int precision,
 			@NonNull final I_C_UOM uom,
 			@NonNull final BigDecimal currentCostPrice,
@@ -67,7 +68,6 @@ public final class CurrentCost
 			@NonNull final BigDecimal cumulatedQty)
 	{
 		Check.assume(id > 0, "id > 0");
-		Check.assume(currencyId > 0, "currencyId > 0");
 		Check.assume(precision >= 0, "precision >= 0");
 
 		this.id = id;
@@ -109,7 +109,7 @@ public final class CurrentCost
 
 	private final void assertCostCurrency(@NonNull final CostAmount amt)
 	{
-		if (amt.getCurrencyId() != getCurrencyId())
+		if (amt.getCurrencyId() != getCurrencyId().getRepoId())
 		{
 			throw new AdempiereException("Invalid amount currency for `" + amt + "`. Expected: " + getCurrencyId());
 		}

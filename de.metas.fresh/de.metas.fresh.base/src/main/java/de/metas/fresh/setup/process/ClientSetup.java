@@ -2,6 +2,8 @@ package de.metas.fresh.setup.process;
 
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -133,7 +135,9 @@ class ClientSetup
 			orgBankAccount = InterfaceWrapperHelper.create(bankAccountDAO.retrieveDefaultBankAccount(orgBPartner), I_C_BP_BankAccount.class);
 			Check.assumeNotNull(orgBankAccount, "orgBankAccount not null"); // TODO create one if does not exists
 			//
-			acctSchema = adClientInfo.getC_AcctSchema1();
+			final AcctSchemaId primaryAcctSchemaId = AcctSchemaId.ofRepoId(adClientInfo.getC_AcctSchema1_ID());
+			acctSchema = Services.get(IAcctSchemaDAO.class).getRecordById(primaryAcctSchemaId);
+			
 			priceList_None = InterfaceWrapperHelper.create(getCtx(), IPriceListDAO.M_PriceList_ID_None, I_M_PriceList.class, ITrx.TRXNAME_ThreadInherited);
 		}
 	}

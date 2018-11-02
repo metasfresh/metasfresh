@@ -25,7 +25,6 @@ package org.adempiere.acct.api;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
 
@@ -52,7 +51,7 @@ public interface IAccountBL extends ISingletonService
 	 * @param acctSchema
 	 * @return accounting dimension validator
 	 */
-	IAccountDimensionValidator createAccountDimensionValidator(I_C_AcctSchema acctSchema);
+	IAccountDimensionValidator createAccountDimensionValidator(AcctSchema acctSchema);
 
 	/**
 	 * Validate account

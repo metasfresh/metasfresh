@@ -22,10 +22,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.OrgId;
 import org.compiere.model.MHierarchy;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
@@ -33,9 +35,12 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  *	Report Tree Model
@@ -91,6 +96,21 @@ public class MReportTree
 		MReportTree tree = get (ctx, PA_Hierarchy_ID, elementType);
 		return tree.getChildIDs(ID);	
 	}	//	getChildIDs
+	
+	public static Set<OrgId> getChildOrgIds(@NonNull final OrgId orgId)
+	{
+		final Integer[] childOrgIds = getChildIDs(
+				Env.getCtx(),
+				0, // PA_Hierarchy_ID
+				AcctSchemaElementType.Organization,
+				orgId.getRepoId());
+
+		return Stream.of(childOrgIds)
+				.filter(Predicates.notNull())
+				.map(OrgId::ofRepoIdOrNull)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	/**	Map with Tree				*/
 	private static CCache<String,MReportTree> s_trees = new CCache<String,MReportTree>("MReportTree", 20);
@@ -240,7 +260,7 @@ public class MReportTree
 	 */	
 	public String getWhereClause (int ID)
 	{
-		String ColumnName = Services.get(IAcctSchemaBL.class).getColumnName(getElementType());
+		String ColumnName = getElementType().getColumnName();
 		//
 		MTreeNode node = m_tree.getRoot().findNode(ID);
 		log.trace("Root=" + node);

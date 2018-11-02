@@ -23,11 +23,13 @@ package org.compiere.acct;
  */
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.List;
 
-import org.compiere.model.MAcctSchema;
+import org.adempiere.acct.api.AcctSchema;
 import org.compiere.model.MDocType;
 import org.eevolution.model.I_DD_Order;
+
+import com.google.common.collect.ImmutableList;
 
 public class Doc_DDOrder extends Doc<DocLine<Doc_DDOrder>>
 {
@@ -53,12 +55,9 @@ public class Doc_DDOrder extends Doc<DocLine<Doc_DDOrder>>
 	}
 
 	@Override
-	public ArrayList<Fact> createFacts(MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
-		// NOTHING
-
-		final ArrayList<Fact> facts = new ArrayList<>();
-		return facts;
+		return ImmutableList.of();
 	}
 
 }

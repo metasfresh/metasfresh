@@ -1,13 +1,17 @@
 package de.metas.costing.interceptors;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_CostType;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
+
+import de.metas.costing.CostTypeId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -47,9 +51,12 @@ public class M_CostType
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_M_CostType costType)
 	{
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(Env.getCtx(), costType.getAD_Client_ID()))
+		final CostTypeId costTypeId = CostTypeId.ofRepoId(costType.getM_CostType_ID());
+		final ClientId clientId = ClientId.ofRepoId(costType.getAD_Client_ID());
+		
+		for (final AcctSchema as : Services.get(IAcctSchemaDAO.class).getAllByClient(clientId))
 		{
-			if (as.getM_CostType_ID() == costType.getM_CostType_ID())
+			if (as.getCosting().getCostTypeId().equals(costTypeId))
 			{
 				throw new AdempiereException("@CannotDelete@ @C_AcctSchema_ID@");
 			}

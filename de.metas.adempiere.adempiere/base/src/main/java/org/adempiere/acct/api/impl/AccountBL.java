@@ -24,9 +24,10 @@ package org.adempiere.acct.api.impl;
 
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.adempiere.acct.api.AccountDimension;
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaElement;
 import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAccountBL;
@@ -34,8 +35,6 @@ import org.adempiere.acct.api.IAccountDimensionValidator;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Campaign;
@@ -61,7 +60,7 @@ public class AccountBL implements IAccountBL
 	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
-	public IAccountDimensionValidator createAccountDimensionValidator(final I_C_AcctSchema acctSchema)
+	public IAccountDimensionValidator createAccountDimensionValidator(final AcctSchema acctSchema)
 	{
 		return new AccountDimensionValidator(acctSchema);
 	}
@@ -75,15 +74,15 @@ public class AccountBL implements IAccountBL
 		final StringBuilder description = new StringBuilder();
 		boolean fullyQualified = true;
 
-		final I_C_AcctSchema as = account.getC_AcctSchema();
-		final String separator = as.getSeparator();
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(account.getC_AcctSchema_ID());
+		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
+		final String separator = acctSchema.getValidCombinationOptions().getSeparator();
 
 		//
-		final List<I_C_AcctSchema_Element> elements = acctSchemaDAO.retrieveSchemaElements(as);
-		for (final I_C_AcctSchema_Element element : elements)
+		for (final AcctSchemaElement element : acctSchema.getSchemaElements())
 		{
 			// Skip those elements which are not displayed in editor (07546)
-			if (!element.isDisplayInEditor())
+			if (!element.isDisplayedInEditor())
 			{
 				continue;
 			}
@@ -91,7 +90,7 @@ public class AccountBL implements IAccountBL
 			String segmentCombination = SEGMENT_COMBINATION_NA;		// not defined
 			String segmentDescription = SEGMENT_DESCRIPTION_NA;
 
-			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(element.getElementType());
+			final AcctSchemaElementType elementType = element.getElementType();
 			Check.assumeNotNull(elementType, "elementType not null"); // shall not happen
 
 			if (AcctSchemaElementType.Organization.equals(elementType))

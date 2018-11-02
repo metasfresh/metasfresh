@@ -1,238 +1,493 @@
 package org.adempiere.acct.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.acct.api.AccountId;
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaCosting;
+import org.adempiere.acct.api.AcctSchemaDefaultAccounts;
+import org.adempiere.acct.api.AcctSchemaElement;
 import org.adempiere.acct.api.AcctSchemaElementType;
+import org.adempiere.acct.api.AcctSchemaElementsMap;
+import org.adempiere.acct.api.AcctSchemaGeneralLedger;
 import org.adempiere.acct.api.AcctSchemaId;
-import org.adempiere.acct.api.IAcctSchemaBL;
+import org.adempiere.acct.api.AcctSchemaValidCombinationOptions;
 import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.acct.api.TaxCorrectionType;
 import org.adempiere.acct.api.exception.AccountingException;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
+import org.compiere.model.I_C_Currency;
+import org.compiere.model.MColumn;
+import org.compiere.report.MReportTree;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
+import de.metas.cache.CCache;
+import de.metas.costing.CostTypeId;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.ToString;
 
 public class AcctSchemaDAO implements IAcctSchemaDAO
 {
 	private static final Logger logger = LogManager.getLogger(AcctSchemaDAO.class);
 
+	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap> builder()
+			.initialCapacity(1)
+			.tableName(I_C_AcctSchema.Table_Name)
+			.additionalTableNameToResetFor(I_C_AcctSchema_Default.Table_Name)
+			.additionalTableNameToResetFor(I_C_AcctSchema_GL.Table_Name)
+			.additionalTableNameToResetFor(I_C_AcctSchema_Element.Table_Name)
+			.build();
+
 	@Override
-	public I_C_AcctSchema retrieveAcctSchema(final Properties ctx)
+	public I_C_AcctSchema getRecordById(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		return load(acctSchemaId, I_C_AcctSchema.class);
+	}
+
+	@Override
+	public AcctSchema getByCliendAndOrg(final Properties ctx)
 	{
 		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
 		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
 
-		return retrieveAcctSchema(ctx, clientId, orgId);
+		return getByCliendAndOrg(clientId, orgId);
+	}
+	
+	@Override
+	public final AcctSchema getByCliendAndOrg(final ClientId clientId, final OrgId orgId)
+	{
+		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrg(clientId, orgId);
+		return getById(acctSchemaId);
 	}
 
 	@Override
-	public I_C_AcctSchema getById(@NonNull final AcctSchemaId acctSchemaId)
+	public AcctSchemaId getAcctSchemaIdByClientAndOrg(final ClientId clientId, final OrgId orgId)
 	{
-		// NOTE: we assume the C_AcctSchema is cached (see org.adempiere.acct.model.validator.AcctModuleInterceptor.setupCaching(IModelCacheService) )
-		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.loadOutOfTrx(acctSchemaId, I_C_AcctSchema.class);
-		Check.assumeNotNull(acctSchema, "Accounting schema shall exists for {}", acctSchemaId);
-
-		return acctSchema;
-	}
-
-	@Override
-	@Cached(cacheName = I_C_AcctSchema.Table_Name + "#By#" + "getC_AcctSchema_ID(?,?)", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public I_C_AcctSchema retrieveAcctSchema(final @CacheCtx Properties ctx, final ClientId clientId, final OrgId orgId)
-	{
-		final int acctSchemaId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId);
-		if (acctSchemaId <= -1)
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
+		if (acctSchemaId == null)
 		{
 			throw new AccountingException(StringUtils.formatMessage("Found no C_AcctSchema_ID for AD_Client_ID={0} and AD_Org_ID={1}", clientId, orgId));
 		}
-		return InterfaceWrapperHelper.create(ctx, acctSchemaId, I_C_AcctSchema.class, ITrx.TRXNAME_None);
+		return acctSchemaId;
 	}
 
 	@Override
-	@Cached(cacheName = I_C_AcctSchema.Table_Name + "#by#" + I_C_AcctSchema.COLUMNNAME_AD_Client_ID)
-	public List<I_C_AcctSchema> retrieveClientAcctSchemas(@CacheCtx final Properties ctx, @NonNull final ClientId clientId)
+	public AcctSchema getById(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		// services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return getAcctSchemasMap().getById(acctSchemaId);
+	}
+
+	@Override
+	public List<AcctSchema> getAllByClient(@NonNull final ClientId clientId)
+	{
+		final AcctSchemaId primaryAcctSchemaId = getPrimaryAcctSchemaId(clientId);
+		return getAcctSchemasMap().getByClientId(clientId, primaryAcctSchemaId);
+	}
+
+	@Override
+	public AcctSchemaId getPrimaryAcctSchemaId(final ClientId clientId)
+	{
 		final IClientDAO clientDAO = Services.get(IClientDAO.class);
+		final I_AD_ClientInfo clientInfo = clientDAO.retrieveClientInfo(Env.getCtx(), clientId.getRepoId());
+		final AcctSchemaId primaryAcctSchemaId = AcctSchemaId.ofRepoIdOrNull(clientInfo.getC_AcctSchema1_ID());
+		return primaryAcctSchemaId;
+	}
 
-		// Accounting schemas: C_AcctSchema_ID to C_AcctSchema
-		final Map<Integer, I_C_AcctSchema> acctSchemas = new LinkedHashMap<>();
+	private AcctSchemasMap getAcctSchemasMap()
+	{
+		return acctSchemasCache.getOrLoad(0, this::retrieveAcctSchemasMap);
+	}
 
-		//
-		// Retrieve the primary accounting schema for our client
-		final I_AD_ClientInfo info = clientDAO.retrieveClientInfo(ctx, clientId.getRepoId());
-		final I_C_AcctSchema acctSchemaPrimary = info.getC_AcctSchema1();
-		if (acctSchemaPrimary != null && acctSchemaPrimary.getC_AcctSchema_ID() > 0)
+	private AcctSchemasMap retrieveAcctSchemasMap()
+	{
+		final ImmutableList<AcctSchema> acctSchemas = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_AcctSchema.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::toAcctSchema)
+				.collect(ImmutableList.toImmutableList());
+
+		return new AcctSchemasMap(acctSchemas);
+	}
+
+	private AcctSchema toAcctSchema(@NonNull final I_C_AcctSchema acctSchemaRecord)
+	{
+		final Properties ctx = Env.getCtx();
+
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
+
+		final CurrencyId currencyId = CurrencyId.ofRepoId(acctSchemaRecord.getC_Currency_ID());
+		final I_C_Currency cur = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, currencyId.getRepoId());
+		final int standardPrecision = cur.getStdPrecision();
+		final int costingPrecision = cur.getCostingPrecision();
+
+		final I_C_AcctSchema_GL acctSchemaGL = retrieveAcctSchemaGLRecordOrNull(acctSchemaId);
+		if (acctSchemaGL == null)
 		{
-			acctSchemas.put(acctSchemaPrimary.getC_AcctSchema_ID(), acctSchemaPrimary);
+			throw new AdempiereException("No " + I_C_AcctSchema_GL.class + " found for " + acctSchemaId);
 		}
 
-		//
-		// Prepare query to retrieve all other accounting schemas that we have
-		final IQuery<I_C_AcctSchema_GL> acctSchemaGLsQuery = queryBL.createQueryBuilder(I_C_AcctSchema_GL.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.create();
-		final IQuery<I_C_AcctSchema_Default> acctSchemaDefaultsQuery = queryBL.createQueryBuilder(I_C_AcctSchema_Default.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.create();
-		final IQueryBuilder<I_C_AcctSchema> acctSchemaQueryBuilder = queryBL.createQueryBuilder(I_C_AcctSchema.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_C_AcctSchema.COLUMN_C_AcctSchema_ID, I_C_AcctSchema_GL.COLUMN_C_AcctSchema_ID, acctSchemaGLsQuery)
-				.addInSubQueryFilter(I_C_AcctSchema.COLUMN_C_AcctSchema_ID, I_C_AcctSchema_Default.COLUMN_C_AcctSchema_ID, acctSchemaDefaultsQuery)
-				.addEqualsFilter(I_C_AcctSchema.COLUMN_AD_Client_ID, clientId);
+		return AcctSchema.builder()
+				.id(acctSchemaId)
+				.clientId(ClientId.ofRepoId(acctSchemaRecord.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(acctSchemaRecord.getAD_Org_ID()))
+				.name(acctSchemaRecord.getName())
+				//
+				.currencyId(currencyId)
+				.standardPrecision(standardPrecision)
+				//
+				// Costing
+				.costing(toAcctSchemaCosting(acctSchemaRecord, costingPrecision))
+				//
+				// Accounts
+				.validCombinationOptions(toAcctSchemaValidCombinationOptions(acctSchemaRecord))
+				//
+				// Accounting
+				.postOnlyForOrgIds(retrievePostOnlyForOrgIds(acctSchemaRecord))
+				.taxCorrectionType(TaxCorrectionType.ofCode(acctSchemaRecord.getTaxCorrectionType()))
+				.accrual(acctSchemaRecord.isAccrual())
+				.allowNegativePosting(acctSchemaRecord.isAllowNegativePosting())
+				.postTradeDiscount(acctSchemaRecord.isTradeDiscountPosted())
+				.postServices(acctSchemaRecord.isPostServices())
+				.postIfSameClearingAccounts(acctSchemaRecord.isPostIfClearingEqual())
+				//
+				.generalLedger(toAcctSchemaGeneralLedger(acctSchemaGL))
+				//
+				.defaultAccounts(retrieveAcctSchemaDefaults(acctSchemaId))
+				//
+				.periodControl(toAcctSchemaPeriodControl(acctSchemaRecord))
+				//
+				.schemaElements(retrieveAcctSchemaElementsMap(acctSchemaId))
+				//
+				.build();
+	}
 
-		//
-		// Retrieve all other accouting schemas that we have and add them to our map (to make sure they are uniquely fetched)
-		for (final I_C_AcctSchema acctSchema : acctSchemaQueryBuilder.create().list())
+	private AcctSchemaCosting toAcctSchemaCosting(final I_C_AcctSchema acctSchemaRecord, final int costingPrecision)
+	{
+		return AcctSchemaCosting.builder()
+				.costingPrecision(costingPrecision)
+				.costTypeId(CostTypeId.ofRepoId(acctSchemaRecord.getM_CostType_ID()))
+				.costingLevel(CostingLevel.forCode(acctSchemaRecord.getCostingLevel()))
+				.costingMethod(CostingMethod.ofCode(acctSchemaRecord.getCostingMethod()))
+				.build();
+	}
+
+	private AcctSchemaValidCombinationOptions toAcctSchemaValidCombinationOptions(final I_C_AcctSchema acctSchemaRecord)
+	{
+		return AcctSchemaValidCombinationOptions.builder()
+				.separator(acctSchemaRecord.getSeparator())
+				.useAccountAlias(acctSchemaRecord.isHasAlias())
+				.build();
+	}
+
+	private ImmutableSet<OrgId> retrievePostOnlyForOrgIds(final I_C_AcctSchema acctSchemaRecord)
+	{
+		final OrgId onlyOrgId = OrgId.ofRepoIdOrNull(acctSchemaRecord.getAD_OrgOnly_ID());
+		if (onlyOrgId == null || onlyOrgId.isAny())
 		{
-			acctSchemas.put(acctSchema.getC_AcctSchema_ID(), acctSchema);
+			return ImmutableSet.of();
 		}
 
-		return ImmutableList.copyOf(acctSchemas.values());
+		final ImmutableSet.Builder<OrgId> onlyOrgIds = ImmutableSet.builder();
+		onlyOrgIds.add(onlyOrgId);
+
+		final I_AD_Org onlyOrg = Services.get(IOrgDAO.class).getById(onlyOrgId);
+		if (onlyOrg.isSummary())
+		{
+			onlyOrgIds.addAll(MReportTree.getChildOrgIds(onlyOrgId));
+		}
+
+		return onlyOrgIds.build();
+	}
+
+	private AcctSchemaGeneralLedger toAcctSchemaGeneralLedger(final I_C_AcctSchema_GL acctSchemaGL)
+	{
+		final boolean suspenseBalancing = acctSchemaGL.isUseSuspenseBalancing() && acctSchemaGL.getSuspenseBalancing_Acct() > 0;
+		final AccountId suspenseBalancingAcctId = suspenseBalancing ? AccountId.ofRepoId(acctSchemaGL.getSuspenseBalancing_Acct()) : null;
+
+		final boolean useCurrencyBalancing = acctSchemaGL.isUseCurrencyBalancing();
+		final AccountId currencyBalancingAcctId = useCurrencyBalancing ? AccountId.ofRepoId(acctSchemaGL.getCurrencyBalancing_Acct()) : null;
+
+		return AcctSchemaGeneralLedger.builder()
+				.suspenseBalancing(suspenseBalancing)
+				.suspenseBalancingAcctId(suspenseBalancingAcctId)
+				//
+				.currencyBalancing(useCurrencyBalancing)
+				.currencyBalancingAcctId(currencyBalancingAcctId)
+				//
+				.intercompanyDueToAcctId(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueTo_Acct()))
+				.intercompanyDueFromAcctId(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueFrom_Acct()))
+				//
+				.incomeSummaryAcctId(AccountId.ofRepoId(acctSchemaGL.getIncomeSummary_Acct()))
+				.retainedEarningAcctId(AccountId.ofRepoId(acctSchemaGL.getRetainedEarning_Acct()))
+				//
+				.build();
+	}
+
+	private AcctSchemaDefaultAccounts retrieveAcctSchemaDefaults(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final I_C_AcctSchema_Default record = retrieveAcctSchemaDefaultsRecordOrNull(acctSchemaId);
+		if (record == null)
+		{
+			throw new AdempiereException("No " + I_C_AcctSchema_Default.class + " found for " + acctSchemaId);
+		}
+		return toAcctSchemaDefaults(record);
 	}
 
 	@Override
-	public List<I_C_AcctSchema_Element> retrieveSchemaElements(final I_C_AcctSchema as)
+	public I_C_AcctSchema_Default retrieveAcctSchemaDefaultsRecordOrNull(final AcctSchemaId acctSchemaId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(as);
-		final String trxName = InterfaceWrapperHelper.getTrxName(as);
-		final int acctSchemaId = as.getC_AcctSchema_ID();
-		return retrieveSchemaElements(ctx, acctSchemaId, trxName);
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_AcctSchema_Default.class)
+				.addEqualsFilter(I_C_AcctSchema_Default.COLUMN_C_AcctSchema_ID, acctSchemaId)
+				.create()
+				.firstOnly(I_C_AcctSchema_Default.class);
 	}
 
-	@Cached(cacheName = I_C_AcctSchema_Element.Table_Name + "#By#" + I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID, expireMinutes = Cached.EXPIREMINUTES_Never)
-	List<I_C_AcctSchema_Element> retrieveSchemaElements(
-			@CacheCtx final Properties ctx,
-			final int acctSchemaId,
-			@CacheTrx final String trxName)
+	private static AcctSchemaDefaultAccounts toAcctSchemaDefaults(@NonNull final I_C_AcctSchema_Default record)
 	{
-		final IQueryBuilder<I_C_AcctSchema_Element> queryBuilder = mkDefaultAcctSchemaElementQueryBuilder(ctx, acctSchemaId, trxName);
-
-		final List<I_C_AcctSchema_Element> result = queryBuilder.create().list();
-
-		// porting the check + the warning from the old code in MAcctSchemaElement.getAcctSchemaElements()
-		final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
-		for (final I_C_AcctSchema_Element ase : result)
-		{
-			if (ase.isMandatory() && acctSchemaBL.getDefaultValue(ase) == 0)
-			{
-				logger.error("No default value for " + ase.getName());
-			}
-		}
-
-		return result;
+		return AcctSchemaDefaultAccounts.builder()
+				.realizedGainAcctId(AccountId.ofRepoId(record.getRealizedGain_Acct()))
+				.realizedLossAcctId(AccountId.ofRepoId(record.getRealizedLoss_Acct()))
+				.unrealizedGainAcctId(AccountId.ofRepoId(record.getUnrealizedGain_Acct()))
+				.unrealizedLossAcctId(AccountId.ofRepoId(record.getUnrealizedLoss_Acct()))
+				.build();
 	}
 
-	@Override
-	public List<I_C_AcctSchema_Element> retrieveSchemaElementsDisplayedInEditor(final I_C_AcctSchema as)
+	private AcctSchemaPeriodControl toAcctSchemaPeriodControl(final I_C_AcctSchema acctSchemaRecord)
 	{
-		final List<I_C_AcctSchema_Element> result = new ArrayList<>();
-		for (final I_C_AcctSchema_Element element : retrieveSchemaElements(as))
-		{
-			if (!element.isActive())
-			{
-				continue;
-			}
-			if (!element.isDisplayInEditor())
-			{
-				continue;
-			}
-
-			result.add(element);
-		}
-
-		return result;
+		return AcctSchemaPeriodControl.builder()
+				.automaticPeriodControl(acctSchemaRecord.isAutoPeriodControl())
+				.openDaysInPast(acctSchemaRecord.getPeriod_OpenHistory())
+				.openDaysInFuture(acctSchemaRecord.getPeriod_OpenFuture())
+				.build();
 	}
 
-	@Override
-	public I_C_AcctSchema_Element retrieveFirstAcctSchemaElementOrNull(final I_C_AcctSchema as, @NonNull final AcctSchemaElementType elementTypeToReturn)
-	{
-		Check.assumeNotNull(elementTypeToReturn, "elementTypeToReturn not null");
-
-		for (final I_C_AcctSchema_Element element : retrieveSchemaElements(as))
-		{
-			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(element.getElementType());
-			if (elementTypeToReturn.equals(elementType))
-			{
-				return element;
-			}
-		}
-
-		// not found
-		return null;
-	}
-
-	private final IQueryBuilder<I_C_AcctSchema_Element> mkDefaultAcctSchemaElementQueryBuilder(final Properties ctx, int acctSchemaId, final String trxName)
+	private AcctSchemaElementsMap retrieveAcctSchemaElementsMap(@NonNull final AcctSchemaId acctSchemaId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_C_AcctSchema_Element> queryBuilder = queryBL.createQueryBuilder(I_C_AcctSchema_Element.class, ctx, trxName)
+
+		final List<AcctSchemaElement> elements = queryBL.createQueryBuilderOutOfTrx(I_C_AcctSchema_Element.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID, acctSchemaId);
+				.addEqualsFilter(I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.create()
+				.stream()
+				.map(record -> toAcctSchemaElement(record))
+				.collect(ImmutableList.toImmutableList());
 
-		queryBuilder.orderBy()
-				.addColumn(I_C_AcctSchema_Element.COLUMNNAME_SeqNo) // NOTE: ordering by SeqNo first it's uber important! (07539)
-				.addColumn(I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_Element_ID);
+		return AcctSchemaElementsMap.of(elements);
+	}
 
-		return queryBuilder;
+	private static AcctSchemaElement toAcctSchemaElement(final I_C_AcctSchema_Element record)
+	{
+		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(record.getElementType());
+		final AcctSchemaElement element = AcctSchemaElement.builder()
+				.elementType(elementType)
+				.name(record.getName())
+				.seqNo(record.getSeqNo())
+				//
+				.defaultValue(getDefaultValue(record))
+				.elementId(record.getC_Element_ID())
+				//
+				.displayColumnName(getDisplayColumnName(elementType, record.getAD_Column_ID()))
+				//
+				.mandatory(record.isMandatory())
+				.displayedInEditor(record.isDisplayInEditor())
+				.balanced(record.isBalanced())
+				//
+				.build();
+		if (element.isMandatory() && element.getDefaultValue() <= 0)
+		{
+			logger.error("No default value for " + element);
+		}
+		return element;
+	}
+
+	private static int getDefaultValue(final I_C_AcctSchema_Element ase)
+	{
+		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(ase.getElementType());
+		final int defaultValue;
+
+		if (elementType.equals(AcctSchemaElementType.Organization))
+		{
+			defaultValue = ase.getOrg_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.Account))
+		{
+			defaultValue = ase.getC_ElementValue_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.BPartner))
+		{
+			defaultValue = ase.getC_BPartner_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.Product))
+		{
+			defaultValue = ase.getM_Product_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.Activity))
+		{
+			defaultValue = ase.getC_Activity_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.LocationFrom))
+		{
+			defaultValue = ase.getC_Location_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.LocationTo))
+		{
+			defaultValue = ase.getC_Location_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.Campaign))
+		{
+			defaultValue = ase.getC_Campaign_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.OrgTrx))
+		{
+			defaultValue = ase.getOrg_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.Project))
+		{
+			defaultValue = ase.getC_Project_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.SalesRegion))
+		{
+			defaultValue = ase.getC_SalesRegion_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserList1))
+		{
+			defaultValue = ase.getC_ElementValue_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserList2))
+		{
+			defaultValue = ase.getC_ElementValue_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElement1))
+		{
+			defaultValue = 0;
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElement2))
+		{
+			defaultValue = 0;
+		}
+		else
+		{
+			defaultValue = 0;
+		}
+		return defaultValue;
+	}
+
+	private static String getDisplayColumnName(final AcctSchemaElementType elementType, final int adColumnId)
+	{
+		if (AcctSchemaElementType.UserElement1.equals(elementType)
+				|| AcctSchemaElementType.UserElement2.equals(elementType))
+		{
+			return MColumn.getColumnName(Env.getCtx(), adColumnId);
+		}
+		else
+		{
+			return elementType.getColumnName();
+		}
 	}
 
 	@Override
-	@Cached(cacheName = I_C_AcctSchema_GL.Table_Name)
-	public I_C_AcctSchema_GL retrieveAcctSchemaGL(@CacheCtx final Properties ctx, @NonNull final AcctSchemaId acctSchemaId)
+	public I_C_AcctSchema_GL retrieveAcctSchemaGLRecordOrNull(@NonNull final AcctSchemaId acctSchemaId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_C_AcctSchema_GL.class, ctx, ITrx.TRXNAME_None)
+		return queryBL.createQueryBuilderOutOfTrx(I_C_AcctSchema_GL.class)
 				.addEqualsFilter(I_C_AcctSchema_GL.COLUMN_C_AcctSchema_ID, acctSchemaId)
 				.create()
-				.firstOnlyNotNull(I_C_AcctSchema_GL.class);
+				.firstOnly(I_C_AcctSchema_GL.class);
+	}
+
+	@Override
+	public void changeAcctSchemaAutomaticPeriodId(@NonNull final AcctSchemaId acctSchemaId, final int periodId)
+	{
+		Check.assumeGreaterThanZero(periodId, "periodId");
+
+		final I_C_AcctSchema acctSchemaRecord = InterfaceWrapperHelper.loadOutOfTrx(acctSchemaId, I_C_AcctSchema.class);
+		Check.assumeNotNull(acctSchemaRecord, "Accounting schema shall exists for {}", acctSchemaId);
+
+		acctSchemaRecord.setC_Period_ID(periodId);
+		InterfaceWrapperHelper.saveRecord(acctSchemaRecord);
+	}
+
+	@ToString
+	private static class AcctSchemasMap
+	{
+		private final ImmutableMap<AcctSchemaId, AcctSchema> acctSchemas;
+
+		public AcctSchemasMap(final List<AcctSchema> acctSchemas)
+		{
+			this.acctSchemas = Maps.uniqueIndex(acctSchemas, AcctSchema::getId);
+		}
+
+		public AcctSchema getById(@NonNull final AcctSchemaId acctSchemaId)
+		{
+			final AcctSchema acctSchema = acctSchemas.get(acctSchemaId);
+			if (acctSchema == null)
+			{
+				throw new AdempiereException("No accounting schema found for " + acctSchemaId);
+			}
+			return acctSchema;
+		}
+
+		public List<AcctSchema> getByClientId(@NonNull final ClientId clientId, @Nullable final AcctSchemaId primaryAcctSchemaId)
+		{
+			final ImmutableList.Builder<AcctSchema> result = ImmutableList.builder();
+
+			// Primary accounting schema shall be returned first
+			if (primaryAcctSchemaId != null)
+			{
+				result.add(getById(primaryAcctSchemaId));
+			}
+
+			for (final AcctSchema acctSchema : acctSchemas.values())
+			{
+				if (primaryAcctSchemaId != null && primaryAcctSchemaId.equals(acctSchema.getId()))
+				{
+					continue;
+				}
+
+				if (clientId.equals(acctSchema.getClientId()))
+				{
+					result.add(acctSchema);
+				}
+			}
+
+			return result.build();
+		}
 	}
 }

@@ -45,14 +45,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_CostElement;
@@ -97,7 +98,7 @@ public class RollupWorkflow extends JavaProcess
 	/* Costing Method */
 	private String p_ConstingMethod = CostingMethod.StandardCosting.getCode();
 
-	private MAcctSchema m_as = null;
+	private AcctSchema acctSchema = null;
 
 	private RoutingService m_routingService = null;
 
@@ -115,7 +116,7 @@ public class RollupWorkflow extends JavaProcess
 			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
 			{
 				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para.getParameterAsInt());
-				m_as = MAcctSchema.get(p_C_AcctSchema_ID);
+				acctSchema = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
 			}
 			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID = para.getParameterAsInt();
@@ -255,12 +256,12 @@ public class RollupWorkflow extends JavaProcess
 			{
 				continue;
 			}
-			final CostDimension d = new CostDimension(product, m_as, p_M_CostType_ID, p_AD_Org_ID, 0, element.getId().getRepoId());
+			final CostDimension d = new CostDimension(product, acctSchema, p_M_CostType_ID, p_AD_Org_ID, 0, element.getId().getRepoId());
 			final List<I_M_Cost> costs = d.toQuery(I_M_Cost.class, get_TrxName()).list();
 			for (I_M_Cost cost : costs)
 			{
 				final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(cost.getC_AcctSchema_ID());
-				final int precision = MAcctSchema.get(acctSchemaId).getCostingPrecision();
+				final int precision = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId).getCosting().getCostingPrecision();
 				BigDecimal segmentCost = BigDecimal.ZERO;
 				for (MWFNode node : nodes)
 				{

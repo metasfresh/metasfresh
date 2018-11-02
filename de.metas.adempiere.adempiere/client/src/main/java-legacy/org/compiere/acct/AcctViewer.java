@@ -40,9 +40,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
 
+import org.adempiere.acct.api.AcctSchemaElement;
 import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.IAcctSchemaBL;
-import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.acct.api.AcctSchemaElementsMap;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -54,7 +54,6 @@ import org.compiere.apps.AEnv;
 import org.compiere.apps.search.Info;
 import org.compiere.apps.search.InfoBuilder;
 import org.compiere.grid.ed.VDate;
-import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MQuery;
@@ -109,8 +108,6 @@ public class AcctViewer extends CFrame
 	private static final transient Insets INSETS_5_0_0_5 = new Insets(5, 0, 0, 5);
 
 	// Services
-	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	private final transient IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private RModel tableModel = null;
@@ -735,7 +732,7 @@ public class AcctViewer extends CFrame
 		{
 			return;
 		}
-		m_data.setC_AcctSchema(kp);
+		m_data.setAcctSchema(kp);
 		//
 		//  Sort Options
 		sortBy1.removeAllItems();
@@ -751,20 +748,18 @@ public class AcctViewer extends CFrame
 		CButton[] buttons = new CButton[] { sel1, sel2, sel3, sel4, sel5, sel6, sel7, sel8 };
 		int selectionIndex = 0;
 		
-		final List<I_C_AcctSchema_Element> elements = acctSchemaDAO.retrieveSchemaElements(m_data.getC_AcctSchema());
-		
-		for (final I_C_AcctSchema_Element ase : elements)
+		for (final AcctSchemaElement ase : m_data.getAcctSchema().getSchemaElements())
 		{
-			final String columnName = acctSchemaBL.getColumnName(ase);
-			final String displayColumnName = acctSchemaBL.getDisplayColumnName(ase);
+			final String columnName = ase.getColumnName();
+			final String displayColumnName = ase.getDisplayColumnName();
 			final String displayColumnNameTrl = msgBL.translate(Env.getCtx(), displayColumnName);
 			
 			//  Add Sort Option
 			sortAddItem(new ValueNamePair(columnName, displayColumnNameTrl));
 			
 			//  Additional Elements
-			if (!Check.equals(ase.getElementType(), AcctSchemaElementType.Organization)
-					&& !Check.equals(ase.getElementType(), AcctSchemaElementType.Account))
+			if (ase.getElementType() != AcctSchemaElementType.Organization
+					&& ase.getElementType() != AcctSchemaElementType.Account)
 			{
 				labels[selectionIndex].setText(displayColumnNameTrl);
 				labels[selectionIndex].setVisible(true);
@@ -803,9 +798,9 @@ public class AcctViewer extends CFrame
 	private void actionQuery()
 	{
 		//  Parameter Info
-		final StringBuilder para = new StringBuilder();
+		final StringBuilder parametersInfo = new StringBuilder();
 		//  Reset Selection Data
-		m_data.setC_AcctSchema((KeyNamePair)null);
+		m_data.setAcctSchema((KeyNamePair)null);
 		m_data.setAD_Org_ID(0);
 
 		//  Save Selection Choices
@@ -813,43 +808,43 @@ public class AcctViewer extends CFrame
 		// Accounting Schema
 		{
 			final KeyNamePair kp = selAcctSchema.getSelectedItem();
-			m_data.setC_AcctSchema(kp);
-			para.append("C_AcctSchema_ID=").append(m_data.getC_AcctSchema_ID());
+			m_data.setAcctSchema(kp);
+			parametersInfo.append("C_AcctSchema_ID=").append(m_data.getAcctSchema());
 		}
 		// Posting Type
 		{
 			final ValueNamePair vp = selPostingType.getSelectedItem();
 			m_data.setPostingType(vp.getValue());
-			para.append(", PostingType=").append(m_data.getPostingType());
+			parametersInfo.append(", PostingType=").append(m_data.getPostingType());
 		}
 
 		//  Document
 		m_data.setDocumentQuery(selDocument.isSelected());
-		para.append(", DocumentQuery=").append(m_data.isDocumentQuery());
+		parametersInfo.append(", DocumentQuery=").append(m_data.isDocumentQuery());
 		if (m_data.isDocumentQuery())
 		{
 			final int adTableId = m_data.getAD_Table_ID();
 			final int recordId = m_data.getRecord_ID();
 			if (adTableId <= 0 || recordId <= 0)
 				return;
-			para.append(", AD_Table_ID=").append(adTableId)
+			parametersInfo.append(", AD_Table_ID=").append(adTableId)
 				.append(", Record_ID=").append(recordId);
 		}
 		else
 		{
 			m_data.setDateFrom(selDateFrom.getValue());
-			para.append(", DateFrom=").append(m_data.getDateFrom());
+			parametersInfo.append(", DateFrom=").append(m_data.getDateFrom());
 			m_data.setDateTo(selDateTo.getValue());
-			para.append(", DateTo=").append(m_data.getDateTo());
+			parametersInfo.append(", DateTo=").append(m_data.getDateTo());
 			//
 			final KeyNamePair selOrgKNP = selOrg.getSelectedItem();
 			if (selOrgKNP != null)
 			{
 				m_data.setAD_Org_ID(selOrgKNP.getKey());
 			}
-			para.append(", AD_Org_ID=").append(m_data.getAD_Org_ID());
+			parametersInfo.append(", AD_Org_ID=").append(m_data.getAD_Org_ID());
 			//
-			para.append(m_data.getAdditionalWhereClauseInfo());
+			parametersInfo.append(m_data.getAdditionalWhereClauseInfo());
 		}
 		
 		//
@@ -869,27 +864,27 @@ public class AcctViewer extends CFrame
 
 		//  Save Display Choices
 		m_data.displayQty = displayQty.isSelected();
-		para.append(" - Display Qty=").append(m_data.displayQty);
+		parametersInfo.append(" - Display Qty=").append(m_data.displayQty);
 		m_data.displaySourceAmt = displaySourceAmt.isSelected();
-		para.append(", Source=").append(m_data.displaySourceAmt);
+		parametersInfo.append(", Source=").append(m_data.displaySourceAmt);
 		m_data.displayDocumentInfo = displayDocumentInfo.isSelected();
-		para.append(", Doc=").append(m_data.displayDocumentInfo);
+		parametersInfo.append(", Doc=").append(m_data.displayDocumentInfo);
 		m_data.setDisplayEndingBalance(displayEndingBalance.isSelected());
-		para.append(", EndingBalance=").append(m_data.isDisplayEndingBalance());
+		parametersInfo.append(", EndingBalance=").append(m_data.isDisplayEndingBalance());
 		
 		//
 		m_data.sortBy1 = (sortBy1.getSelectedItem()).getValue();
 		m_data.group1 = group1.isSelected();
-		para.append(" - Sorting: ").append(m_data.sortBy1).append("/").append(m_data.group1);
+		parametersInfo.append(" - Sorting: ").append(m_data.sortBy1).append("/").append(m_data.group1);
 		m_data.sortBy2 = (sortBy2.getSelectedItem()).getValue();
 		m_data.group2 = group2.isSelected();
-		para.append(", ").append(m_data.sortBy2).append("/").append(m_data.group2);
+		parametersInfo.append(", ").append(m_data.sortBy2).append("/").append(m_data.group2);
 		m_data.sortBy3 = (sortBy3.getSelectedItem()).getValue();
 		m_data.group3 = group3.isSelected();
-		para.append(", ").append(m_data.sortBy3).append("/").append(m_data.group3);
+		parametersInfo.append(", ").append(m_data.sortBy3).append("/").append(m_data.group3);
 		m_data.sortBy4 = (sortBy4.getSelectedItem()).getValue();
 		m_data.group4 = group4.isSelected();
-		para.append(", ").append(m_data.sortBy4).append("/").append(m_data.group4);
+		parametersInfo.append(", ").append(m_data.sortBy4).append("/").append(m_data.group4);
 
 		final Properties ctx = Env.getCtx();
 
@@ -898,7 +893,7 @@ public class AcctViewer extends CFrame
 		{
 			statusLine.setText(" " + msgBL.getMsg(ctx, "Processing"));
 
-			log.info(para.toString());
+			log.info("Parameters: {}", parametersInfo);
 			Thread.yield();
 
 			// Switch to Result pane
@@ -1048,6 +1043,8 @@ public class AcctViewer extends CFrame
 	 */
 	private int actionButton(final CButton button)
 	{
+		final AcctSchemaElementsMap acctSchemaElements = m_data.getAcctSchema().getSchemaElements();
+		
 		final String keyColumn = button.getActionCommand();
 		log.info(keyColumn);
 		
@@ -1062,28 +1059,28 @@ public class AcctViewer extends CFrame
 		else if (keyColumn.equals(AcctViewerData.COLUMNNAME_Account_ID))
 		{
 			lookupColumn = I_C_ElementValue.COLUMNNAME_C_ElementValue_ID;
-			final I_C_AcctSchema_Element ase = acctSchemaDAO.retrieveFirstAcctSchemaElementOrNull(m_data.getC_AcctSchema(), AcctSchemaElementType.Account);
+			final AcctSchemaElement ase = acctSchemaElements.getByElementType(AcctSchemaElementType.Account);
 			if (ase != null)
 			{
-				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getC_Element_ID();
+				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getElementId();
 			}
 		}
 		else if (keyColumn.equals("User1_ID"))
 		{
 			lookupColumn = I_C_ElementValue.COLUMNNAME_C_ElementValue_ID;
-			final I_C_AcctSchema_Element ase = acctSchemaDAO.retrieveFirstAcctSchemaElementOrNull(m_data.getC_AcctSchema(), AcctSchemaElementType.UserList1);
+			final AcctSchemaElement ase = acctSchemaElements.getByElementType(AcctSchemaElementType.UserList1);
 			if (ase != null)
 			{
-				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getC_Element_ID();
+				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getElementId();
 			}
 		}
 		else if (keyColumn.equals("User2_ID"))
 		{
 			lookupColumn = I_C_ElementValue.COLUMNNAME_C_ElementValue_ID;
-			final I_C_AcctSchema_Element ase = acctSchemaDAO.retrieveFirstAcctSchemaElementOrNull(m_data.getC_AcctSchema(), AcctSchemaElementType.UserList2);
+			final AcctSchemaElement ase = acctSchemaElements.getByElementType(AcctSchemaElementType.UserList2);
 			if (ase != null)
 			{
-				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getC_Element_ID();
+				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getElementId();
 			}
 		}
 		else if (keyColumn.equals("M_Product_ID"))

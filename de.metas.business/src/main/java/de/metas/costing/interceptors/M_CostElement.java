@@ -2,21 +2,21 @@ package de.metas.costing.interceptors;
 
 import java.util.stream.Collectors;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostElementType;
+import de.metas.costing.CostingMethod;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -104,8 +104,8 @@ public class M_CostElement
 	public void beforeDelete(final I_M_CostElement costElement)
 	{
 		final CostElementType costElementType = CostElementType.ofCode(costElement.getCostElementType());
-		final boolean isCostingMethod = CostElementType.Material.equals(costElementType)
-				&& costElement.getCostingMethod() != null;
+		final CostingMethod costingMethod = CostingMethod.ofNullableCode(costElement.getCostingMethod());
+		final boolean isCostingMethod = costElementType.isMaterial() && costingMethod != null;
 		if (!isCostingMethod)
 		{
 			return;
@@ -113,9 +113,9 @@ public class M_CostElement
 
 		// Costing Methods on AS level
 		final ClientId clientId = ClientId.ofRepoId(costElement.getAD_Client_ID());
-		for (final I_C_AcctSchema as : Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(Env.getCtx(), clientId))
+		for (final AcctSchema as : Services.get(IAcctSchemaDAO.class).getAllByClient(clientId))
 		{
-			if (as.getCostingMethod().equals(costElement.getCostingMethod()))
+			if (as.getCosting().getCostingMethod().equals(costingMethod))
 			{
 				throw new AdempiereException("@CannotDeleteUsed@ @C_AcctSchema_ID@");
 			}
@@ -125,7 +125,7 @@ public class M_CostElement
 		final String productCategoriesUsingCostingMethod = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product_Category_Acct.class)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_AD_Client_ID, clientId)
-				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_CostingMethod, costElement.getCostingMethod())
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_CostingMethod, costingMethod.getCode())
 				.andCollect(I_M_Product_Category_Acct.COLUMN_M_Product_Category_ID)
 				.orderBy(I_M_Product_Category.COLUMN_Name)
 				.create()

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -52,10 +53,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
-import org.compiere.model.I_M_CostType;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
@@ -81,11 +80,13 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.IProductCostingBL;
+import de.metas.money.CurrencyId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -103,13 +104,15 @@ public class RollupBillOfMaterial extends JavaProcess
 	private final transient ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
 	private final transient ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
 	private final transient IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 
 	/* Organization */
 	private OrgId p_AD_Org_ID;
 	/* Account Schema */
-	private AcctSchemaId p_C_AcctSchema_ID;
+	private AcctSchema acctSchema;
+	// private AcctSchemaId p_C_AcctSchema_ID;
+
 	/* Cost Type */
 	private CostTypeId p_M_CostType_ID;
 	/* Costing Method */
@@ -135,15 +138,16 @@ public class RollupBillOfMaterial extends JavaProcess
 			{
 				;
 			}
-			else if (name.equals(I_M_CostElement.COLUMNNAME_AD_Org_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_AD_Org_ID))
 			{
 				p_AD_Org_ID = OrgId.ofRepoIdOrNull(para.getParameterAsInt());
 			}
-			else if (name.equals(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
 			{
-				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para.getParameterAsInt());
+				AcctSchemaId p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para.getParameterAsInt());
+				acctSchema = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
 			}
-			else if (name.equals(I_M_CostType.COLUMNNAME_M_CostType_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
 			{
 				p_M_CostType_ID = CostTypeId.ofRepoIdOrNull(para.getParameterAsInt());
 			}
@@ -151,7 +155,7 @@ public class RollupBillOfMaterial extends JavaProcess
 			{
 				p_ConstingMethod = CostingMethod.ofNullableCode(para.getParameterAsString());
 			}
-			else if (name.equals(I_M_Product.COLUMNNAME_M_Product_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_M_Product_ID))
 			{
 				p_M_Product_ID = ProductId.ofRepoIdOrNull(para.getParameterAsInt());
 			}
@@ -363,14 +367,14 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	private CostSegment createCostSegment(final I_M_Product product)
 	{
-		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
+		final AcctSchema as = getAcctSchema();
 
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-		final CostingLevel costingLevel = productBL.getCostingLevel(productId, as);
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, as);
 
 		return CostSegment.builder()
 				.costingLevel(costingLevel)
-				.acctSchemaId(p_C_AcctSchema_ID)
+				.acctSchemaId(as.getId())
 				.costTypeId(p_M_CostType_ID)
 				.productId(productId)
 				.clientId(ClientId.ofRepoId(product.getAD_Client_ID()))
@@ -380,10 +384,16 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	}
 
-	private int getCurrencyId()
+	private CurrencyId getCurrencyId()
 	{
-		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
-		return as.getC_Currency_ID();
+		final AcctSchema as = getAcctSchema();
+		return as.getCurrencyId();
+	}
+
+	private AcctSchema getAcctSchema()
+	{
+		Check.assumeNotNull(acctSchema, "Parameter acctSchema is not null");
+		return acctSchema;
 	}
 
 	private CostAmount zeroCosts()

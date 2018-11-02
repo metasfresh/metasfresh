@@ -21,10 +21,11 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MElementValue;
 import org.compiere.util.DB;
 import org.eevolution.model.I_HR_Process;
@@ -96,7 +97,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 	}
 
 	@Override
-	public ArrayList<Fact> createFacts(MAcctSchema as)
+	public ArrayList<Fact> createFacts(AcctSchema as)
 	{
 		Fact fact = new Fact(this, as, Fact.POST_Actual);
 		String sql = "SELECT m.HR_Concept_id, MAX(c.Name), SUM(m.Amount), MAX(c.AccountSign), MAX(CA.IsBalancing), e.AD_Org_ID, d.C_Activity_ID" // 1,2,3,4,5,6,7
@@ -122,7 +123,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 				int HR_Concept_ID = rs.getInt(1);
 				BigDecimal sumAmount = rs.getBigDecimal(3);
 				// round amount according to currency
-				sumAmount = sumAmount.setScale(as.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+				sumAmount = sumAmount.setScale(as.getStandardPrecision(), BigDecimal.ROUND_HALF_UP);
 				String AccountSign = rs.getString(4);
 				int AD_OrgTrx_ID = rs.getInt(6);
 				int C_Activity_ID = rs.getInt(7);
@@ -131,13 +132,13 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 				{
 					// HR_Expense_Acct DR
 					// HR_Revenue_Acct CR
-					MAccount accountBPD = MAccount.get(getCtx(), getAccountBalancing(as.getC_AcctSchema_ID(), HR_Concept_ID, "D"));
-					FactLine debit = fact.createLine(null, accountBPD, as.getC_Currency_ID(), sumAmount, null);
+					MAccount accountBPD = MAccount.get(getCtx(), getAccountBalancing(as.getId(), HR_Concept_ID, "D"));
+					FactLine debit = fact.createLine(null, accountBPD, as.getCurrencyId(), sumAmount, null);
 					debit.setAD_OrgTrx_ID(AD_OrgTrx_ID);
 					debit.setC_Activity_ID(C_Activity_ID);
 					debit.saveEx();
-					MAccount accountBPC = MAccount.get(getCtx(), this.getAccountBalancing(as.getC_AcctSchema_ID(), HR_Concept_ID, "C"));
-					FactLine credit = fact.createLine(null, accountBPC, as.getC_Currency_ID(), null, sumAmount);
+					MAccount accountBPC = MAccount.get(getCtx(), this.getAccountBalancing(as.getId(), HR_Concept_ID, "C"));
+					FactLine credit = fact.createLine(null, accountBPC, as.getCurrencyId(), null, sumAmount);
 					credit.setAD_OrgTrx_ID(AD_OrgTrx_ID);
 					credit.setC_Activity_ID(C_Activity_ID);
 					credit.saveEx();
@@ -146,7 +147,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		}
 		catch (Exception e)
 		{
-			throw newPostingException(e).setC_AcctSchema(as);
+			throw newPostingException(e).setAcctSchema(as);
 		}
 		finally
 		{
@@ -163,12 +164,12 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 	/**
 	 * get account balancing
 	 * 
-	 * @param AcctSchema_ID
+	 * @param acctSchemaId
 	 * @param HR_Concept_ID
 	 * @param AccountSign D or C only
 	 * @return
 	 */
-	private int getAccountBalancing(int AcctSchema_ID, int HR_Concept_ID, String AccountSign)
+	private int getAccountBalancing(AcctSchemaId acctSchemaId, int HR_Concept_ID, String AccountSign)
 	{
 		String field;
 		if (MElementValue.ACCOUNTSIGN_Debit.equals(AccountSign))
@@ -185,7 +186,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		}
 		final String sqlAccount = "SELECT " + field + " FROM HR_Concept_Acct"
 				+ " WHERE HR_Concept_ID=? AND C_AcctSchema_ID=?";
-		int Account_ID = DB.getSQLValueEx(getTrxName(), sqlAccount, HR_Concept_ID, AcctSchema_ID);
+		int Account_ID = DB.getSQLValueEx(getTrxName(), sqlAccount, HR_Concept_ID, acctSchemaId);
 		return Account_ID;
 	}
 

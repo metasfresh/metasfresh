@@ -3,8 +3,8 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.function.Predicate;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 
 import lombok.experimental.UtilityClass;
 
@@ -37,10 +37,10 @@ class PostingEqualClearingAccontsUtils
 			final Fact fact,
 			final FactLine dr,
 			final FactLine cr,
-			final Predicate<MAcctSchema> isInterOrg)
+			final Predicate<AcctSchema> isInterOrg)
 	{
-		final MAcctSchema as = fact.getAcctSchema();
-		if (as.isPostIfClearingEqual())
+		final AcctSchema as = fact.getAcctSchema();
+		if (as.isPostIfSameClearingAccounts())
 		{
 			return;
 		}

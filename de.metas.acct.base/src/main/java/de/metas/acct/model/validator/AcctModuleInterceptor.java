@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctListenersService;
 import org.adempiere.acct.api.IPostingService;
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -55,6 +56,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductActivityProvider;
 import de.metas.util.Services;
 
 /**
@@ -86,6 +88,8 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		{
 			Services.get(IUserRolePermissionsDAO.class).setAccountingModuleActive();
 		}
+
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 	}
 
 	@Override

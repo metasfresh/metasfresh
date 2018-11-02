@@ -2,15 +2,13 @@ package de.metas.costing;
 
 import java.math.BigDecimal;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
-import org.compiere.model.MAcctSchema;
 
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -262,24 +260,24 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	private CostDetailCreateResult createCostDetailCreateResult(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
 	{
-		final MAcctSchema as = LegacyAdapters.convertToPO(acctSchemaRepo.getById(request.getAcctSchemaId()));
+		final AcctSchema as = acctSchemaRepo.getById(request.getAcctSchemaId());
 		final I_C_UOM uom = productBL.getStockingUOM(costDetail.getM_Product_ID());
 		
 		return CostDetailCreateResult.builder()
 				.costSegment(extractCostSegment(request))
 				.costElement(request.getCostElement())
-				.amt(CostAmount.of(costDetail.getAmt(), as.getC_Currency_ID()))
+				.amt(CostAmount.of(costDetail.getAmt(), as.getCurrencyId()))
 				.qty(Quantity.of(costDetail.getQty(), uom))
-				.costingPrecision(as.getCostingPrecision())
+				.costingPrecision(as.getCosting().getCostingPrecision())
 				.build();
 	}
 
 	private CostSegment extractCostSegment(final CostDetailCreateRequest request)
 	{
-		final I_C_AcctSchema as = acctSchemaRepo.getById(request.getAcctSchemaId());
-		final IProductBL productBL = Services.get(IProductBL.class);
-		final CostingLevel costingLevel = productBL.getCostingLevel(request.getProductId(), as);
-		final CostTypeId costTypeId = CostTypeId.ofRepoId(as.getM_CostType_ID());
+		final AcctSchema as = acctSchemaRepo.getById(request.getAcctSchemaId());
+		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), as);
+		final CostTypeId costTypeId = as.getCosting().getCostTypeId();
 
 		return CostSegment.builder()
 				.costingLevel(costingLevel)

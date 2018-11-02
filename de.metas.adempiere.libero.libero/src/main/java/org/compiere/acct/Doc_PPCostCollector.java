@@ -41,8 +41,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -129,9 +129,9 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	}
 
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
-		setC_Currency_ID(as.getC_Currency_ID());
+		setC_Currency_ID(as.getCurrencyId());
 
 		final Fact fact;
 		final String costCollectorType = getCostCollectorType();
@@ -218,7 +218,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Scrap(expense)     DR
 	 * </pre>
 	 */
-	protected Fact createFacts_MaterialReceipt(final MAcctSchema as)
+	protected Fact createFacts_MaterialReceipt(final AcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
@@ -239,7 +239,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
 			final CostAmount costsReceived = costs.divide(qtyTotal, 12, RoundingMode.HALF_UP)
 					.multiply(qtyReceived)
-					.roundToPrecisionIfNeeded(as.getStdPrecision());
+					.roundToPrecisionIfNeeded(as.getStandardPrecision());
 			final CostAmount costsScrapped = costs.subtract(costsReceived);
 
 			if (costsReceived.signum() != 0)
@@ -264,7 +264,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Product Asset / Floor Stock               CR
 	 * </pre>
 	 */
-	private Fact createFacts_ComponentIssue(final MAcctSchema as)
+	private Fact createFacts_ComponentIssue(final AcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		final boolean isFloorStock = isFloorStock();
@@ -293,7 +293,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Burden/Overhead
 	 * </pre>
 	 */
-	private Fact createFacts_ActivityControl(final MAcctSchema as)
+	private Fact createFacts_ActivityControl(final AcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
@@ -320,7 +320,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Method/Usage/Rate/Mix Variance    DR
 	 * </pre>
 	 */
-	private Fact createFacts_Variance(final MAcctSchema as, final ProductAcctType varianceAcctType)
+	private Fact createFacts_Variance(final AcctSchema as, final ProductAcctType varianceAcctType)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 

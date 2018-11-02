@@ -2,6 +2,7 @@ package de.metas.costing.interceptors;
 
 import java.math.BigDecimal;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -17,7 +18,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostElementRepository;
-import de.metas.product.IProductBL;
+import de.metas.costing.IProductCostingBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 
@@ -58,7 +59,8 @@ public class M_Cost
 		if (userEntry)
 		{
 			final ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
-			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(productId, costRecord.getC_AcctSchema_ID());
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRecord.getC_AcctSchema_ID());
+			final CostingLevel costingLevel = Services.get(IProductCostingBL.class).getCostingLevel(productId, acctSchemaId);
 			if (CostingLevel.Client.equals(costingLevel))
 			{
 				if (costRecord.getAD_Org_ID() > 0 || costRecord.getM_AttributeSetInstance_ID() > 0)

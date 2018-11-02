@@ -29,30 +29,30 @@ import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.uom.api.UOMConversionContext;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category_Acct;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MProductCategory;
-import org.compiere.model.MProductCategoryAcct;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.costing.CostingLevel;
-import de.metas.costing.CostingMethod;
+import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -290,73 +290,6 @@ public final class ProductBL implements IProductBL
 	}	// get
 
 	@Override
-	public CostingLevel getCostingLevel(final I_M_Product product, final I_C_AcctSchema as)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		final String trxName = InterfaceWrapperHelper.getTrxName(product);
-		final I_M_Product_Category_Acct pca = MProductCategoryAcct.get(ctx, product.getM_Product_Category_ID(), as.getC_AcctSchema_ID(), trxName);
-
-		// 07393
-		// pca may be null. In this case, we take the costing level from the accounting schema
-
-		String costingLevel = null;
-
-		if (pca != null)
-		{
-			costingLevel = pca.getCostingLevel();
-		}
-
-		if (costingLevel == null)
-		{
-			costingLevel = as.getCostingLevel();
-		}
-
-		return CostingLevel.forCode(costingLevel);
-	}
-
-	@Override
-	public CostingLevel getCostingLevel(final ProductId productId, final I_C_AcctSchema as)
-	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		return getCostingLevel(product, as);
-	}
-
-	@Override
-	public CostingLevel getCostingLevel(final ProductId productId, final int acctSchemaId)
-	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		final I_C_AcctSchema as = loadOutOfTrx(acctSchemaId, I_C_AcctSchema.class);
-		return getCostingLevel(product, as);
-	}
-
-	@Override
-	public CostingMethod getCostingMethod(final I_M_Product product, final I_C_AcctSchema as)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		final String trxName = InterfaceWrapperHelper.getTrxName(product);
-		final I_M_Product_Category_Acct pca = MProductCategoryAcct.get(ctx, product.getM_Product_Category_ID(), as.getC_AcctSchema_ID(), trxName);
-
-		String costingMethod = null;
-
-		if (pca != null)
-		{
-			costingMethod = pca.getCostingMethod();
-		}
-		if (costingMethod == null)
-		{
-			costingMethod = as.getCostingMethod();
-		}
-		return CostingMethod.ofCode(costingMethod);
-	}
-
-	@Override
-	public CostingMethod getCostingMethod(final ProductId productId, final I_C_AcctSchema as)
-	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		return getCostingMethod(product, as);
-	}
-
-	@Override
 	public boolean isTradingProduct(final I_M_Product product)
 	{
 		Check.assumeNotNull(product, "product not null");
@@ -367,15 +300,22 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isASIMandatory(@NonNull final I_M_Product product, final boolean isSOTrx)
 	{
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+
+		final ClientId adClientId = ClientId.ofRepoId(product.getAD_Client_ID());
+		final OrgId adOrgId = OrgId.ofRepoId(product.getAD_Org_ID());
+
 		//
 		// If CostingLevel is BatchLot ASI is always mandatory - check all client acct schemas
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(Env.getCtx(), product.getAD_Client_ID()))
+		for (final AcctSchema as : acctSchemasRepo.getAllByClient(adClientId))
 		{
-			if (as.isSkipOrg(product.getAD_Org_ID()))
+			if (as.isDisallowPostingForOrg(adOrgId))
 			{
 				continue;
 			}
-			final CostingLevel costingLevel = getCostingLevel(product, as);
+
+			final CostingLevel costingLevel = productCostingBL.getCostingLevel(product, as);
 			if (CostingLevel.BatchLot == costingLevel)
 			{
 				return true;

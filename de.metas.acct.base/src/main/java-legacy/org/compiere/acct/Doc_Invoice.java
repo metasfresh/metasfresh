@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.DBException;
@@ -38,7 +39,6 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -263,12 +263,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	}
 
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
 		// Cash based accounting
 		if (!as.isAccrual())
 		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("Cash based accounting is not supported");
+			throw newPostingException().setAcctSchema(as).setDetailMessage("Cash based accounting is not supported");
 		}
 
 		// ** ARI, ARF
@@ -299,7 +299,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		else
 		{
 			throw newPostingException()
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setPostingStatus(PostingStatus.Error)
 					.setDetailMessage("DocumentType unknown: " + docBaseType);
 		}
@@ -314,7 +314,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 *      Revenue                 CR
 	 * </pre>
 	 */
-	private List<Fact> createFacts_SalesInvoice(final MAcctSchema as)
+	private List<Fact> createFacts_SalesInvoice(final AcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual)
@@ -351,7 +351,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		{
 			BigDecimal lineAmt = line.getAmtSource();
 			BigDecimal dAmt = null;
-			if (as.isTradeDiscountPosted())
+			if (as.isPostTradeDiscount())
 			{
 				final BigDecimal discount = line.getDiscount();
 				if (discount != null && discount.signum() != 0)
@@ -399,7 +399,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// we need this line later, even if it is zero
 		fact.createLine()
 				.setAccount(MAccount.get(getCtx(), receivables_ID))
-				.setAmtSource(getC_Currency_ID(), grossAmt, null)
+				.setAmtSource(getCurrencyId(), grossAmt, null)
 				.alsoAddZeroLine()
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
@@ -420,7 +420,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 *      Revenue         RR
 	 * </pre>
 	 */
-	private List<Fact> createFacts_SalesCreditMemo(final MAcctSchema as)
+	private List<Fact> createFacts_SalesCreditMemo(final AcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
@@ -456,7 +456,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		{
 			BigDecimal lineAmt = line.getAmtSource();
 			BigDecimal dAmt = null;
-			if (as.isTradeDiscountPosted())
+			if (as.isPostTradeDiscount())
 			{
 				final BigDecimal discount = line.getDiscount();
 				if (discount != null && discount.signum() != 0)
@@ -503,7 +503,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// we need this line later, even if it is zero
 		fact.createLine()
 				.setAccount(MAccount.get(getCtx(), receivables_ID))
-				.setAmtSource(getC_Currency_ID(), null, grossAmt)
+				.setAmtSource(getCurrencyId(), null, grossAmt)
 				.alsoAddZeroLine()
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
@@ -524,7 +524,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 *      Expense         DR
 	 * </pre>
 	 */
-	private List<Fact> createFacts_PurchaseInvoice(final MAcctSchema as)
+	private List<Fact> createFacts_PurchaseInvoice(final AcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
@@ -555,7 +555,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		{
 			BigDecimal amt = line.getAmtSource();
 			BigDecimal dAmt = null;
-			if (as.isTradeDiscountPosted() && !line.isItem())
+			if (as.isPostTradeDiscount() && !line.isItem())
 			{
 				final BigDecimal discount = line.getDiscount();
 				if (discount != null && discount.signum() != 0)
@@ -620,7 +620,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// we need this line later, even if it is zero
 		fact.createLine()
 				.setAccount(MAccount.get(getCtx(), payables_ID))
-				.setAmtSource(getC_Currency_ID(), null, grossAmt)
+				.setAmtSource(getCurrencyId(), null, grossAmt)
 				.alsoAddZeroLine()
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
@@ -640,7 +640,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 *      Expense                 CR
 	 * </pre>
 	 */
-	private List<Fact> createFacts_PurchaseCreditMemo(final MAcctSchema as)
+	private List<Fact> createFacts_PurchaseCreditMemo(final AcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
@@ -666,7 +666,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		{
 			BigDecimal amt = line.getAmtSource();
 			BigDecimal dAmt = null;
-			if (as.isTradeDiscountPosted() && !line.isItem())
+			if (as.isPostTradeDiscount() && !line.isItem())
 			{
 				final BigDecimal discount = line.getDiscount();
 				if (discount != null && discount.signum() != 0)
@@ -731,7 +731,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// we need this line later, even if it is zero
 		fact.createLine()
 				.setAccount(MAccount.get(getCtx(), payables_ID))
-				.setAmtSource(getC_Currency_ID(), grossAmt, null)
+				.setAmtSource(getCurrencyId(), grossAmt, null)
 				.alsoAddZeroLine()
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)

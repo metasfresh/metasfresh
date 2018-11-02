@@ -22,15 +22,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaElementType;
+import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MElementValue;
 import org.compiere.model.X_I_ElementValue;
 import org.compiere.util.DB;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Import Accounts from I_ElementValue
@@ -464,7 +467,7 @@ public class ImportAccount extends JavaProcess
 			pstmt.setInt(1, m_C_Element_ID);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
-				updateDefaultAccounts (rs.getInt(1));
+				updateDefaultAccounts (AcctSchemaId.ofRepoId(rs.getInt(1)));
 			rs.close();
 			pstmt.close();
 		}
@@ -490,14 +493,13 @@ public class ImportAccount extends JavaProcess
 	/**
 	 * 	Update Default Accounts.
 	 *	_Default.xxxx = C_ValidCombination_ID  =>  Account_ID=C_ElementValue_ID
-	 * 	@param C_AcctSchema_ID Accounting Schema
 	 */
-	private void updateDefaultAccounts (int C_AcctSchema_ID)
+	private void updateDefaultAccounts (final AcctSchemaId acctSchemaId)
 	{
-		log.info("C_AcctSchema_ID=" + C_AcctSchema_ID);
+		log.info("C_AcctSchema_ID=" + acctSchemaId);
 
-		MAcctSchema as = new MAcctSchema (getCtx(), C_AcctSchema_ID, get_TrxName());
-		if (as.getAcctSchemaElement(AcctSchemaElementType.Account).getC_Element_ID() != m_C_Element_ID)
+		AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		if (as.getSchemaElementByType(AcctSchemaElementType.Account).getElementId() != m_C_Element_ID)
 		{
 			log.error("C_Element_ID=" + m_C_Element_ID + " not in AcctSchema=" + as);
 			return;
@@ -523,7 +525,7 @@ public class ImportAccount extends JavaProcess
 				String ColumnName = rs.getString(3);
 				int I_ElementValue_ID = rs.getInt(4);
 				//	Update it
-				int u = updateDefaultAccount(TableName, ColumnName, C_AcctSchema_ID, C_ElementValue_ID);
+				int u = updateDefaultAccount(TableName, ColumnName, acctSchemaId, C_ElementValue_ID);
 				counts[u]++;
 				if (u != UPDATE_ERROR)
 				{
@@ -559,13 +561,9 @@ public class ImportAccount extends JavaProcess
 		WHERE NOT EXISTS (SELECT * FROM Fact_Acct f WHERE f.Account_ID=e.C_ElementValue_ID)
 		 AND NOT EXISTS (SELECT * FROM C_ValidCombination vc WHERE vc.Account_ID=e.C_ElementValue_ID)
 		 AND NOT EXISTS (SELECT * FROM I_ElementValue i WHERE i.C_ElementValue_ID=e.C_ElementValue_ID);
-	 * 	@param TableName Table Name
-	 * 	@param ColumnName Column Name
-	 * 	@param C_AcctSchema_ID Account Schema
-	 * 	@param C_ElementValue_ID new Account
 	 * 	@return UPDATE_* status
 	 */
-	private int updateDefaultAccount (String TableName, String ColumnName, int C_AcctSchema_ID, int C_ElementValue_ID)
+	private int updateDefaultAccount (String TableName, String ColumnName, AcctSchemaId acctSchemaId, int C_ElementValue_ID)
 	{
 		log.debug(TableName + "." + ColumnName + " - " + C_ElementValue_ID);
 		int retValue = UPDATE_ERROR;
@@ -573,7 +571,7 @@ public class ImportAccount extends JavaProcess
 			.append(ColumnName).append(",Account_ID FROM ")
 			.append(TableName).append(" x INNER JOIN C_ValidCombination vc ON (x.")
 			.append(ColumnName).append("=vc.C_ValidCombination_ID) ")
-			.append("WHERE x.C_AcctSchema_ID=").append(C_AcctSchema_ID);
+			.append("WHERE x.C_AcctSchema_ID=").append(acctSchemaId.getRepoId());
 		try
 		{
 			PreparedStatement pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
@@ -604,7 +602,7 @@ public class ImportAccount extends JavaProcess
 							{
 								sql = new StringBuffer ("UPDATE ").append(TableName)
 									.append(" SET ").append(ColumnName).append("=").append(newC_ValidCombination_ID)
-									.append(" WHERE C_AcctSchema_ID=").append(C_AcctSchema_ID);
+									.append(" WHERE C_AcctSchema_ID=").append(acctSchemaId.getRepoId());
 								int no = DB.executeUpdate(sql.toString(), get_TrxName());
 								log.debug("New #" + no + " - "
 									+ TableName + "." + ColumnName + " - " + C_ElementValue_ID

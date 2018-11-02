@@ -18,7 +18,13 @@ package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import org.compiere.model.*;
+
+import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_CostElement;
+import org.compiere.model.I_M_CostType;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MTable;
 import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for PP_Order_Cost
@@ -91,7 +97,7 @@ public interface I_PP_Order_Cost
 	  */
 	public int getC_AcctSchema_ID();
 
-	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
+//	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
 
     /** Column name CostingMethod */
     public static final String COLUMNNAME_CostingMethod = "CostingMethod";

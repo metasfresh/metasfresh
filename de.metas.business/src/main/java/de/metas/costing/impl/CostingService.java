@@ -8,18 +8,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
-import org.compiere.model.MAcctSchema;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -47,10 +44,12 @@ import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.IProductCostingBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyRate;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -159,9 +158,10 @@ public class CostingService implements ICostingService
 			return request;
 		}
 
-		final MAcctSchema as = MAcctSchema.get(request.getAcctSchemaId());
-		final int acctCurrencyId = as.getC_Currency_ID();
-		if (request.getAmt().getCurrencyId() == acctCurrencyId)
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+		final AcctSchema as = acctSchemasRepo.getById(request.getAcctSchemaId());
+		final CurrencyId acctCurrencyId = as.getCurrencyId();
+		if (request.getAmt().getCurrencyId() == acctCurrencyId.getRepoId())
 		{
 			return request;
 		}
@@ -172,8 +172,8 @@ public class CostingService implements ICostingService
 				request.getCurrencyConversionTypeId(),
 				request.getClientId().getRepoId(),
 				request.getOrgId().getRepoId());
-		final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getAmt().getCurrencyId(), acctCurrencyId);
-		final BigDecimal amtConv = rate.convertAmount(request.getAmt().getValue(), as.getCostingPrecision());
+		final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getAmt().getCurrencyId(), acctCurrencyId.getRepoId());
+		final BigDecimal amtConv = rate.convertAmount(request.getAmt().getValue(), as.getCosting().getCostingPrecision());
 
 		return request.deriveByAmount(CostAmount.of(amtConv, acctCurrencyId));
 	}
@@ -201,14 +201,17 @@ public class CostingService implements ICostingService
 
 	private CostDetailVoidRequest createCostDetailVoidRequest(final I_M_CostDetail costDetail)
 	{
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costDetail.getC_AcctSchema_ID());
-		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
-		final CostTypeId costTypeId = CostTypeId.ofRepoId(acctSchema.getM_CostType_ID());
-
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
+		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costDetail.getC_AcctSchema_ID());
+		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
+		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
+
 		final ProductId productId = ProductId.ofRepoId(costDetail.getM_Product_ID());
-		final CostingLevel costingLevel = productBL.getCostingLevel(productId, acctSchema);
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(productId);
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchema);
+		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
 
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(costingLevel)
@@ -223,7 +226,7 @@ public class CostingService implements ICostingService
 		final CostElementId costElementId = CostElementId.ofRepoId(costDetail.getM_CostElement_ID());
 		final CostElement costElement = costElementRepo.getById(costElementId);
 
-		final CostAmount amt = CostAmount.of(costDetail.getAmt(), acctSchema.getC_Currency_ID());
+		final CostAmount amt = CostAmount.of(costDetail.getAmt(), acctSchema.getCurrencyId());
 		final Quantity qty = Quantity.of(costDetail.getQty(), productUOM);
 
 		return CostDetailVoidRequest.builder()
@@ -238,23 +241,22 @@ public class CostingService implements ICostingService
 	{
 		return extractAcctSchemas(request)
 				.stream()
-				.map(LegacyAdapters::<I_C_AcctSchema, MAcctSchema> convertToPO)
 				.filter(acctSchema -> acctSchema.isAllowPostingForOrg(request.getOrgId()))
-				.map(acctSchema -> AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()))
+				.map(AcctSchema::getId)
 				.map(request::deriveByAcctSchemaId);
 	}
 
-	private List<I_C_AcctSchema> extractAcctSchemas(final CostDetailCreateRequest request)
+	private List<AcctSchema> extractAcctSchemas(final CostDetailCreateRequest request)
 	{
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 
 		if (request.isAllAcctSchemas())
 		{
-			return acctSchemasRepo.retrieveClientAcctSchemas(request.getClientId());
+			return acctSchemasRepo.getAllByClient(request.getClientId());
 		}
 		else
 		{
-			final I_C_AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
+			final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
 			return ImmutableList.of(acctSchema);
 		}
 	}
@@ -349,10 +351,13 @@ public class CostingService implements ICostingService
 
 	private final CostDetailCreateRequest createCostDetailCreateRequestFromReversalRequest(final CostDetailReverseRequest reversalRequest, final I_M_CostDetail costDetail)
 	{
-		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.loadOutOfTrx(reversalRequest.getAcctSchemaId(), I_C_AcctSchema.class);
-		final CostAmount amt = CostAmount.of(costDetail.getAmt().negate(), acctSchema.getC_AcctSchema_ID());
+		final IProductBL productBL = Services.get(IProductBL.class);
+		IAcctSchemaDAO acctScheamsRepo = Services.get(IAcctSchemaDAO.class);
+		
+		final AcctSchema acctSchema = acctScheamsRepo.getById(reversalRequest.getAcctSchemaId());
+		final CostAmount amt = CostAmount.of(costDetail.getAmt().negate(), acctSchema.getCurrencyId());
 
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(costDetail.getM_Product_ID());
+		final I_C_UOM uom = productBL.getStockingUOM(costDetail.getM_Product_ID());
 		final Quantity qty = Quantity.of(costDetail.getQty().negate(), uom);
 
 		return CostDetailCreateRequest.builder()

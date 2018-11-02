@@ -3,17 +3,16 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.TimeUtil;
 
@@ -21,7 +20,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
-import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
@@ -69,20 +67,21 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	}
 
 	/** @return PO cost amount in accounting schema currency */
-	public CostAmount getPOCostAmount(final MAcctSchema as)
+	public CostAmount getPOCostAmount(final AcctSchema as)
 	{
 		I_C_OrderLine orderLine = getOrderLine();
 		final CostAmount poCostPrice = Services.get(IOrderLineBL.class).getCostPrice(orderLine);
 
 		final CostAmount poCost = poCostPrice.multiply(getQty());
-		if (poCost.getCurrencyId() == as.getC_Currency_ID())
+		if (poCost.getCurrencyId() == as.getCurrencyId().getRepoId())
 		{
 			return poCost;
 		}
 
 		final I_C_Order order = orderLine.getC_Order();
 		final BigDecimal rate = currencyConversionBL.getRate(
-				poCost.getCurrencyId(), as.getC_Currency_ID(),
+				poCost.getCurrencyId(),
+				as.getCurrencyId().getRepoId(),
 				order.getDateAcct(),
 				order.getC_ConversionType_ID(),
 				orderLine.getAD_Client_ID(),
@@ -90,24 +89,24 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		if (rate == null)
 		{
 			throw newPostingException()
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setDetailMessage("Purchase Order not convertible");
 		}
 		return poCost
 				.multiply(rate)
-				.roundToPrecisionIfNeeded(as.getCostingPrecision());
+				.roundToPrecisionIfNeeded(as.getCosting().getCostingPrecision());
 	}
 
-	public CostAmount getStandardCosts(final I_C_AcctSchema as)
+	public CostAmount getStandardCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = as.getId();
 		
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(getProductCostingLevel(as))
 				.acctSchemaId(acctSchemaId)
-				.costTypeId(CostTypeId.ofRepoId(as.getM_CostType_ID()))
+				.costTypeId(as.getCosting().getCostTypeId())
 				.clientId(getClientId())
 				.orgId(getOrgId())
 				.productId(getProductId())
@@ -117,7 +116,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return costPrice.multiply(getQty());
 	}
 
-	public CostResult createCostDetails(final I_C_AcctSchema as)
+	public CostResult createCostDetails(final AcctSchema as)
 	{
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");
@@ -134,7 +133,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final CostAmount costPrice = orderLineBL.getCostPrice(orderLine);
 		final CostAmount amt = costPrice.multiply(qty);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = as.getId();
 		
 		return costDetailService.createCostDetail(
 				CostDetailCreateRequest.builder()

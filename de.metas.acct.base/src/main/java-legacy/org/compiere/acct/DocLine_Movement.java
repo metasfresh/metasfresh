@@ -1,11 +1,11 @@
 package org.compiere.acct;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.util.TimeUtil;
 
@@ -74,15 +74,14 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		return movementLine.getM_LocatorTo_ID();
 	}
 
-	public final CostResult getCreateInboundCosts(final I_C_AcctSchema as)
+	public final CostResult getCreateInboundCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		if (isReversalLine())
 		{
-			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(acctSchemaId)
+					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateDoc()))
@@ -93,7 +92,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 			final CostResult outboundCostResult = getCreateOutboundCosts(as);
 			final CostResult inboundCostResult = outboundCostResult.getCostElements()
 					.stream()
-					.map(costElement -> createInboundCostDetailCreateRequest(as, costElement, outboundCostResult.getCostAmountForCostElement(costElement).negate()))
+					.map(costElement -> createInboundCostDetailCreateRequest(as.getId(), costElement, outboundCostResult.getCostAmountForCostElement(costElement).negate()))
 					.map(costDetailService::createCostDetail)
 					.reduce(CostResult::merge)
 					.orElse(null);
@@ -102,16 +101,14 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		}
 	}
 
-	public final CostResult getCreateOutboundCosts(final I_C_AcctSchema as)
+	public final CostResult getCreateOutboundCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		if (isReversalLine())
 		{
-			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
-			
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(acctSchemaId)
+					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateDoc()))
@@ -123,27 +120,23 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		}
 	}
 
-	private CostDetailCreateRequest createOutboundCostDetailCreateRequest(final I_C_AcctSchema as)
+	private CostDetailCreateRequest createOutboundCostDetailCreateRequest(final AcctSchema as)
 	{
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
-		
 		return CostDetailCreateRequest.builder()
-				.acctSchemaId(acctSchemaId)
+				.acctSchemaId(as.getId())
 				.clientId(getClientId())
 				.orgId(getFromOrgId())
 				.productId(getProductId())
 				.attributeSetInstanceId(getAttributeSetInstanceId())
 				.documentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
 				.qty(getQty().negate())
-				.amt(CostAmount.zero(as.getC_Currency_ID())) // expect to be calculated
+				.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 				.date(TimeUtil.asLocalDate(getDateAcct()))
 				.build();
 	}
 
-	private CostDetailCreateRequest createInboundCostDetailCreateRequest(final I_C_AcctSchema as, final CostElement costElement, final CostAmount amt)
+	private CostDetailCreateRequest createInboundCostDetailCreateRequest(final AcctSchemaId acctSchemaId, final CostElement costElement, final CostAmount amt)
 	{
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
-		
 		return CostDetailCreateRequest.builder()
 				.acctSchemaId(acctSchemaId)
 				.clientId(getClientId())

@@ -34,12 +34,11 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
-import org.compiere.model.I_M_Product;
 
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -82,7 +81,7 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void setC_Activities(final I_M_MovementLine movementLine)
 	{
-		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+		final ActivityId productActivityId = Services.get(IProductActivityProvider.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(movementLine.getAD_Client_ID()),
 				OrgId.ofRepoId(movementLine.getAD_Org_ID()),
 				ProductId.ofRepoId(movementLine.getM_Product_ID()));

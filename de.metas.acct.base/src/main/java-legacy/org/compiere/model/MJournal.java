@@ -24,7 +24,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaGeneralLedger;
 import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IGLJournalBL;
 import org.adempiere.acct.api.IGLJournalLineBL;
@@ -498,9 +501,9 @@ public class MJournal extends X_GL_Journal implements IDocument
 		// Unbalanced Jornal & Not Suspense
 		if (AmtAcctDr.compareTo(AmtAcctCr) != 0)
 		{
-			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getC_AcctSchema_ID());
-			final MAcctSchemaGL gl = MAcctSchemaGL.get(acctSchemaId);
-			if (gl == null || !gl.isUseSuspenseBalancing())
+			final AcctSchema acctSchema = getAcctSchema();
+			final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
+			if (!acctSchemaGL.isSuspenseBalancing())
 			{
 				throw new AdempiereException("@UnbalancedJornal@");
 			}
@@ -520,6 +523,14 @@ public class MJournal extends X_GL_Journal implements IDocument
 		m_justPrepared = true;
 		return IDocument.STATUS_InProgress;
 	}	// prepareIt
+
+	private AcctSchema getAcctSchema()
+	{
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getC_AcctSchema_ID());
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
+		return acctSchema;
+	}
 
 	/**
 	 * Approve Document
@@ -986,8 +997,8 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return;
 		}
 		
-		final MAcctSchema as = MAcctSchema.get(acctSchemaId);
-		final int precision = as.getStdPrecision();
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final int precision = as.getStandardPrecision();
 		if (journal.getControlAmt().scale() > precision)
 			journal.setControlAmt(journal.getControlAmt().setScale(precision, BigDecimal.ROUND_HALF_UP));
 	}

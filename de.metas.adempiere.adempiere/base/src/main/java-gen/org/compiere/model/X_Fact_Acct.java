@@ -280,17 +280,17 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
-	}
-
-	@Override
-	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
-	{
-		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
-	}
+//	@Override
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
+//	}
+//
+//	@Override
+//	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
+//	}
 
 	/** Set Buchführungs-Schema.
 		@param C_AcctSchema_ID 

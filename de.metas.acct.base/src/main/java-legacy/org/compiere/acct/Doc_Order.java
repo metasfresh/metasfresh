@@ -23,11 +23,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_OrderTax;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MTax;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -140,7 +140,7 @@ public class Doc_Order extends Doc<DocLine_Order>
 			}  	// correct included Tax
 
 			docLine.setAmount(lineNetAmt, priceList, qtyOrdered);
-			
+
 			docLines.add(docLine);
 		}
 
@@ -247,7 +247,7 @@ public class Doc_Order extends Doc<DocLine_Order>
 	}   // getBalance
 
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
 		final String docBaseType = getDocumentType();
 		if (DOCTYPE_POrder.equals(docBaseType))
@@ -264,32 +264,14 @@ public class Doc_Order extends Doc<DocLine_Order>
 		}
 	}   // createFact
 
-	private List<Fact> createFacts_PurchaseOrder(final MAcctSchema as)
+	private List<Fact> createFacts_PurchaseOrder(final AcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
-		if (as.isCreatePOCommitment())
-		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("PO commitment posting not supported");
-		}
-		if (as.isCreateReservation())
-		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("PO reservation posting not supported");
-		}
-
-		return facts;
+		return ImmutableList.of();
 	}
 
-	private List<Fact> createFacts_SalesOrder(final MAcctSchema as)
+	private List<Fact> createFacts_SalesOrder(final AcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
-
-		// Commitment
-		if (as.isCreateSOCommitment())
-		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("SO commitment posting not supported");
-		}
-
-		return facts;
+		return ImmutableList.of();
 	}
 
 }

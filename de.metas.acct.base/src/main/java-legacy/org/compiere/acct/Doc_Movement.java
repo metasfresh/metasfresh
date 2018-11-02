@@ -19,11 +19,10 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Movement;
-import org.compiere.model.MAcctSchema;
 
 import com.google.common.collect.ImmutableList;
 
@@ -110,10 +109,10 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		setC_Currency_ID(as.getC_Currency_ID());
+		setC_Currency_ID(as.getCurrencyId());
 
 		getDocLines().forEach(line -> createFactsForMovementLine(fact, line));
 
@@ -122,7 +121,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 
 	private void createFactsForMovementLine(final Fact fact, final DocLine_Movement line)
 	{
-		final I_C_AcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 
 		//
 		// Inventory CR/DR (from locator)

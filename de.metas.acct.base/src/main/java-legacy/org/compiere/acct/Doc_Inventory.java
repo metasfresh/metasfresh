@@ -19,10 +19,9 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.compiere.model.I_C_AcctSchema;
+import org.adempiere.acct.api.AcctSchema;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 
 import com.google.common.collect.ImmutableList;
 
@@ -95,9 +94,9 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
-		setC_Currency_ID(as.getC_Currency_ID());
+		setC_Currency_ID(as.getCurrencyId());
 
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		getDocLines().forEach(line -> createFactsForInventoryLine(fact, line));
@@ -114,7 +113,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	 */
 	private void createFactsForInventoryLine(final Fact fact, final DocLine_Inventory line)
 	{
-		final I_C_AcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 
 		final CostAmount costs = line.getCreateCosts(as).getTotalAmount();
 
@@ -146,7 +145,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		}
 	}
 
-	private MAccount getInvDifferencesAccount(final I_C_AcctSchema as, final DocLine_Inventory line, final BigDecimal amount)
+	private MAccount getInvDifferencesAccount(final AcctSchema as, final DocLine_Inventory line, final BigDecimal amount)
 	{
 		final MAccount chargeAcct = line.getChargeAccount(as, amount.negate());
 		if (chargeAcct != null)

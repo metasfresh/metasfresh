@@ -20,8 +20,11 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 
 import de.metas.cache.CCache;
 import de.metas.util.Check;
@@ -46,14 +49,14 @@ public class MProductCategoryAcct extends X_M_Product_Category_Acct
 	 * 	Get Category Acct. If there aren't any records at all, the system creates them the way it does for a newly create product category.
 	 *	@param ctx context
 	 *	@param M_Product_Category_ID category
-	 *	@param C_AcctSchema_ID acct schema
+	 *	@param acctSchemaId acct schema
 	 *	@param trxName trx
 	 *	@return category acct
 	 */
-	public static I_M_Product_Category_Acct get (Properties ctx, int M_Product_Category_ID, int C_AcctSchema_ID, String trxName)
+	public static I_M_Product_Category_Acct get (int M_Product_Category_ID, AcctSchemaId acctSchemaId)
 	{
 		final boolean createIfNotExists = true;
-		return get(ctx, M_Product_Category_ID, C_AcctSchema_ID, createIfNotExists, trxName);
+		return get(Env.getCtx(), M_Product_Category_ID, acctSchemaId, createIfNotExists, ITrx.TRXNAME_None);
 	}
 	
 	/**
@@ -67,24 +70,26 @@ public class MProductCategoryAcct extends X_M_Product_Category_Acct
 	 */
 	private static I_M_Product_Category_Acct get (final Properties ctx, 
 							final int M_Product_Category_ID,
-							final int C_AcctSchema_ID, final boolean createIfNotExists,
+							final AcctSchemaId acctSchemaId,
+							final boolean createIfNotExists,
 							final String trxName)
 	{
-		final String key = M_Product_Category_ID+"#"+C_AcctSchema_ID;
+		final String key = M_Product_Category_ID+"#"+acctSchemaId.getRepoId();
 		return s_cache.get(key, new Callable<I_M_Product_Category_Acct>()
 		{
 			
 			@Override
 			public I_M_Product_Category_Acct call()
 			{
-				return retriveCreateAcct(ctx, M_Product_Category_ID, C_AcctSchema_ID, createIfNotExists, trxName);
+				return retriveCreateAcct(ctx, M_Product_Category_ID, acctSchemaId, createIfNotExists, trxName);
 			}
 		});
 	}
 	
 	private static final I_M_Product_Category_Acct retriveCreateAcct(final Properties ctx,
 			final int M_Product_Category_ID,
-			final int C_AcctSchema_ID, final boolean createIfNotExists,
+			final AcctSchemaId acctSchemaId, 
+			final boolean createIfNotExists,
 			final String trxName)
 	{
 		// NOTE: because we currently have some bugs with "ctx" on server side, we are not filtering the query by AD_Client_ID
@@ -93,7 +98,7 @@ public class MProductCategoryAcct extends X_M_Product_Category_Acct
 		final IQuery<I_M_Product_Category_Acct> query = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product_Category_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, M_Product_Category_ID)
-				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID, C_AcctSchema_ID)
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addOnlyActiveRecordsFilter()
 				.create();
 		I_M_Product_Category_Acct productCategoryAcct = query.firstOnly(I_M_Product_Category_Acct.class);

@@ -26,14 +26,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.acct.api.AcctSchemaElementType;
-import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.X_PA_ReportLine;
 import org.compiere.util.DB;
 
 import de.metas.util.Check;
-import de.metas.util.Services;
 
 
 /**
@@ -156,8 +153,6 @@ public class MReportLine extends X_PA_ReportLine
 	 */
 	public String getSourceColumnName()
 	{
-		final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
-		
 		final Set<String> columnNames = new HashSet<>();
 		for (final MReportSource source : m_sources)
 		{
@@ -167,12 +162,7 @@ public class MReportLine extends X_PA_ReportLine
 				continue;
 			}
 			
-			final String columnName = acctSchemaBL.getColumnName(elementType);
-			if(Check.isEmpty(columnName, true))
-			{
-				continue;
-			}
-			
+			final String columnName = elementType.getColumnName();
 			columnNames.add(columnName);
 		}
 		
@@ -190,25 +180,6 @@ public class MReportLine extends X_PA_ReportLine
 			return null;
 		}
 	}	//	getColumnName
-
-	/**
-	 *  Get Value Query for Segment Type
-	 * 	@return Query for first source element or null
-	 */
-	public String getSourceValueQuery()
-	{
-		if (m_sources != null && m_sources.length > 0)
-		{
-			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCodeOrNull(m_sources[0].getElementType());
-			if(elementType == null)
-			{
-				return null;
-			}
-			
-			return MAcctSchemaElement.getValueQuery(elementType);
-		}
-		return null;
-	}	//
 
 
 	/**

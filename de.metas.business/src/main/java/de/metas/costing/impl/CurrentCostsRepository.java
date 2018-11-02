@@ -6,7 +6,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -18,7 +20,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -184,12 +186,14 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	private CurrentCost toCurrentCost(final I_M_Cost costRecord)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
+		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+		
 		ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
 		final I_C_UOM uom = productBL.getStockingUOM(productId);
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRecord.getC_AcctSchema_ID());
 
-		final MAcctSchema as = MAcctSchema.get(acctSchemaId);
-		final CostingLevel costingLevel = productBL.getCostingLevel(productId, as);
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, as);
 
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(costingLevel)
@@ -208,8 +212,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.id(costRecord.getM_Cost_ID())
 				.costSegment(costSegment)
 				.costElement(costElement)
-				.currencyId(as.getC_Currency_ID())
-				.precision(as.getCostingPrecision())
+				.currencyId(as.getCurrencyId())
+				.precision(as.getCosting().getCostingPrecision())
 				.uom(uom)
 				.currentCostPrice(costRecord.getCurrentCostPrice())
 				.currentCostPriceLL(costRecord.getCurrentCostPriceLL())
@@ -250,19 +254,20 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	{
 		ClientId clientId = ClientId.ofRepoId(product.getAD_Client_ID());
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		final OrgId productOrgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 		final List<CostElement> costElements = costElementRepo.getCostElementsWithCostingMethods(clientId);
 
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(clientId))
+		for (final AcctSchema as : Services.get(IAcctSchemaDAO.class).getAllByClient(clientId))
 		{
-			if (as.isSkipOrg(product.getAD_Org_ID()))
+			if (as.isDisallowPostingForOrg(productOrgId))
 			{
 				continue;
 			}
 
-			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
-			final CostTypeId costTypeId = CostTypeId.ofRepoId(as.getM_CostType_ID());
-			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
+			final AcctSchemaId acctSchemaId = as.getId();
+			final CostTypeId costTypeId = as.getCosting().getCostTypeId();
+			final CostingLevel costingLevel = Services.get(IProductCostingBL.class).getCostingLevel(product, as);
 
 			// Create Std Costing
 			if (costingLevel == CostingLevel.Client)

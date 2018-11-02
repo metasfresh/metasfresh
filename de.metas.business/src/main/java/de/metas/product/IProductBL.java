@@ -27,14 +27,11 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.uom.UomId;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
-import de.metas.costing.CostingLevel;
-import de.metas.costing.CostingMethod;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -107,21 +104,6 @@ public interface IProductBL extends ISingletonService
 
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
 
-	CostingLevel getCostingLevel(I_M_Product product, I_C_AcctSchema as);
-
-	CostingLevel getCostingLevel(ProductId productId, I_C_AcctSchema as);
-
-	CostingLevel getCostingLevel(ProductId productId, int acctSchemaId);
-
-	/**
-	 * Get Product Costing Method
-	 *
-	 * @param C_AcctSchema_ID accounting schema ID
-	 * @return product costing method
-	 */
-	CostingMethod getCostingMethod(I_M_Product product, I_C_AcctSchema as);
-
-	CostingMethod getCostingMethod(ProductId productId, I_C_AcctSchema as);
 
 	/** @return UOM used in material storage; never return null; */
 	I_C_UOM getStockingUOM(I_M_Product product);

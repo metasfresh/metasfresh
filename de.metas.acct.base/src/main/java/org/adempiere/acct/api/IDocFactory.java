@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
-import org.compiere.model.MAcctSchema;
 
 import de.metas.util.ISingletonService;
 
@@ -46,7 +45,7 @@ public interface IDocFactory extends ISingletonService
 	 * @return Document or <code>null</code> if there is no such accountable document for given AD_Table_ID/Record_ID
 	 * @throws PostingExecutionException if the document could not be created
 	 */
-	Doc<?> getOrNull(Properties ctx, MAcctSchema[] ass, TableRecordReference documentRef);
+	Doc<?> getOrNull(Properties ctx, List<AcctSchema> acctSchemas, TableRecordReference documentRef);
 
 	/**
 	 * Create Accountable document
@@ -58,7 +57,7 @@ public interface IDocFactory extends ISingletonService
 	 * @return Document; never returns <code>null</code>
 	 * @throws PostingExecutionException if the document could not be created
 	 */
-	Doc<?> get(final Properties ctx, IDocMetaInfo docMetaInfo, MAcctSchema[] ass, ResultSet rs, String trxName);
+	Doc<?> get(final Properties ctx, IDocMetaInfo docMetaInfo, List<AcctSchema> acctSchemas, ResultSet rs, String trxName);
 
 	/**
 	 * 

@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.grid.ed;
 
@@ -32,7 +32,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -43,7 +42,10 @@ import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
 import org.adempiere.acct.api.AccountDimension;
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaElement;
 import org.adempiere.acct.api.AcctSchemaElementType;
+import org.adempiere.acct.api.AcctSchemaElementsMap;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDimensionValidator;
@@ -61,8 +63,6 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAccountLookup;
@@ -160,7 +160,7 @@ public final class VAccountDialog extends CDialog
 		{
 			// make sure we have a decent size at least
 			setMinimumSize(new Dimension(720, 350));
-			
+
 			AEnv.showCenterWindow(frame, this);
 		}
 		else
@@ -170,7 +170,6 @@ public final class VAccountDialog extends CDialog
 	}	// VLocationDialog
 
 	// Services
-	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final transient IAccountBL accountBL = Services.get(IAccountBL.class);
 	private final transient ISwingEditorFactory editorFactory = Services.get(ISwingEditorFactory.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -307,7 +306,7 @@ public final class VAccountDialog extends CDialog
 		final Properties ctx = Env.getCtx();
 		m_AD_Client_ID = Env.getContextAsInt(ctx, m_WindowNo, "AD_Client_ID");
 
-		final I_C_AcctSchema s_AcctSchema = getC_AcctSchema();
+		final AcctSchema acctSchema = getAcctSchema();
 		// Get AcctSchema Info
 		Env.setContext(ctx, m_WindowNo, "C_AcctSchema_ID", acctSchemaId.getRepoId());
 
@@ -354,7 +353,7 @@ public final class VAccountDialog extends CDialog
 		m_gbc.weighty = 0;
 
 		// Alias
-		if (s_AcctSchema.isHasAlias())
+		if (acctSchema.getValidCombinationOptions().isUseAccountAlias())
 		{
 			GridField alias = m_mTab.getField("Alias");
 			f_Alias = editorFactory.getEditor(m_mTab, alias, false);
@@ -379,9 +378,9 @@ public final class VAccountDialog extends CDialog
 		/**
 		 * Create Fields in Element Order
 		 */
-		for (final I_C_AcctSchema_Element ase : getAcctSchemaElements())
+		for (final AcctSchemaElement ase : getAcctSchemaElements())
 		{
-			final AcctSchemaElementType type = AcctSchemaElementType.ofCode(ase.getElementType());
+			final AcctSchemaElementType type = ase.getElementType();
 			final boolean isMandatory = ase.isMandatory();
 			//
 			if (type.equals(AcctSchemaElementType.Organization))
@@ -503,7 +502,7 @@ public final class VAccountDialog extends CDialog
 		m_gridController.getTable().addMouseListener(new VAccountDialog_mouseAdapter(this));
 		m_gridController.addDataStatusListener(this);
 
-		statusBar.setStatusLine(s_AcctSchema.toString());
+		statusBar.setStatusLine(acctSchema.toString());
 		statusBar.setStatusDB("?");
 
 		// Initial value
@@ -934,7 +933,7 @@ public final class VAccountDialog extends CDialog
 
 		//
 		// Validate it
-		final I_C_AcctSchema acctSchema = getC_AcctSchema();
+		final AcctSchema acctSchema = getAcctSchema();
 		final IAccountDimensionValidator validator = accountBL.createAccountDimensionValidator(acctSchema);
 		validator.setAcctSchemaElements(getAcctSchemaElements());
 		validator.validate(accountDimension);
@@ -1051,22 +1050,22 @@ public final class VAccountDialog extends CDialog
 		return Env.getCtx();
 	}
 
-	private final I_C_AcctSchema getC_AcctSchema()
+	private final AcctSchema getAcctSchema()
 	{
-		if (_acctSchema == null || _acctSchema.getC_AcctSchema_ID() != acctSchemaId.getRepoId())
+		if (_acctSchema == null)
 		{
 			_acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		}
-		Check.assumeNotNull(_acctSchema, "acctSchema not null");
 		return _acctSchema;
 	}
 
-	private I_C_AcctSchema _acctSchema;
+	private AcctSchema _acctSchema;
 
-	private List<I_C_AcctSchema_Element> getAcctSchemaElements()
+	private AcctSchemaElementsMap getAcctSchemaElements()
 	{
-		final I_C_AcctSchema as = getC_AcctSchema();
-		return acctSchemaDAO.retrieveSchemaElementsDisplayedInEditor(as);
+		return getAcctSchema()
+				.getSchemaElements()
+				.onlyDisplayedInEditor();
 	}
 
 }	// VAccountDialog

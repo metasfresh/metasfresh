@@ -1,9 +1,9 @@
 package org.compiere.acct;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.util.TimeUtil;
 
@@ -46,11 +46,11 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 		setQty(Quantity.of(projectIssue.getMovementQty(), getProductStockingUOM()), true);
 	}
 
-	public CostResult getCreateCosts(final I_C_AcctSchema as)
+	public CostResult getCreateCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = as.getId();
 		
 		if (isReversalLine())
 		{
@@ -72,7 +72,7 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofProjectIssueId(get_ID()))
 							.qty(getQty())
-							.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A
+							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 							.date(TimeUtil.asLocalDate(getDateDoc()))
 							.build());
 		}

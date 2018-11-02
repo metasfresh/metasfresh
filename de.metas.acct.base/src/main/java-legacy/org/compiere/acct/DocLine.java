@@ -22,13 +22,14 @@ import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IAccountDAO;
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
@@ -45,12 +46,12 @@ import com.google.common.base.MoreObjects;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.quantity.Quantity;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -70,6 +71,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private final transient Logger logger = LogManager.getLogger(getClass());
 	protected final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final transient IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	/** Persistent Object */
@@ -133,7 +135,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		// Document Consistency
 		if (p_po.getAD_Org_ID() <= 0)
 		{
-			p_po.setAD_Org_ID(m_doc.getAD_Org_ID());
+			p_po.setAD_Org_ID(m_doc.getOrgId().getRepoId());
 		}
 	}	// DocLine
 
@@ -393,7 +395,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @return Requested Product Account
 	 */
 	@OverridingMethodsMustInvokeSuper
-	public MAccount getAccount(final ProductAcctType acctType, final I_C_AcctSchema as)
+	public MAccount getAccount(final ProductAcctType acctType, final AcctSchema as)
 	{
 		//
 		// Charge account
@@ -410,7 +412,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			}
 			if (acct == null)
 			{
-				throw newPostingException().setC_AcctSchema(as).setDetailMessage("No Charge Account for account type: " + acctType);
+				throw newPostingException().setAcctSchema(as).setDetailMessage("No Charge Account for account type: " + acctType);
 			}
 			return acct;
 		}
@@ -422,7 +424,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 	}
 
-	private MAccount getProductAccount(final ProductAcctType acctType, final I_C_AcctSchema as)
+	private MAccount getProductAccount(final ProductAcctType acctType, final AcctSchema as)
 	{
 		// No Product - get Default from Product Category
 		final ProductId productId = getProductId();
@@ -435,17 +437,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		if (productAcct == null)
 		{
 			final String productName = Services.get(IProductBL.class).getProductName(productId);
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("Product " + productName + " has no accounting definition records");
+			throw newPostingException().setAcctSchema(as).setDetailMessage("Product " + productName + " has no accounting definition records");
 		}
 
 		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
 		if (validCombinationId == null || validCombinationId <= 0)
 		{
 			final String productName = Services.get(IProductBL.class).getProductName(productId);
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
+			throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
 		}
 
-		return accountDAO.retrieveAccountById(getCtx(), validCombinationId);
+		return accountDAO.getById(getCtx(), validCombinationId);
 	}
 
 	/**
@@ -455,16 +457,16 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @param as accounting schema
 	 * @return Requested Product Account
 	 */
-	private final MAccount getAccountDefault(final ProductAcctType acctType, final I_C_AcctSchema as)
+	private final MAccount getAccountDefault(final ProductAcctType acctType, final AcctSchema as)
 	{
 		final I_M_Product_Category_Acct pcAcct = productAcctDAO.retrieveDefaultProductCategoryAcct(as);
 		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(pcAcct, acctType.getColumnName());
 		if (validCombinationId == null || validCombinationId <= 0)
 		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("No Default Account for account type: " + acctType);
+			throw newPostingException().setAcctSchema(as).setDetailMessage("No Default Account for account type: " + acctType);
 		}
 
-		return accountDAO.retrieveAccountById(getCtx(), validCombinationId);
+		return accountDAO.getById(getCtx(), validCombinationId);
 	}
 
 	/**
@@ -484,14 +486,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @param amount amount for expense(+)/revenue(-)
 	 * @return Charge Account or null
 	 */
-	protected final MAccount getChargeAccount(final I_C_AcctSchema as, final BigDecimal amount)
+	protected final MAccount getChargeAccount(final AcctSchema as, final BigDecimal amount)
 	{
 		final int C_Charge_ID = getC_Charge_ID();
 		if (C_Charge_ID <= 0)
 		{
 			return null;
 		}
-		return MCharge.getAccount(C_Charge_ID, as, amount);
+		return MCharge.getAccount(C_Charge_ID, as.getId(), amount);
 	}
 
 	protected final int getC_Period_ID()
@@ -559,14 +561,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return !isItem();
 	}
 
-	public final CostingMethod getProductCostingMethod(final I_C_AcctSchema as)
+	public final CostingMethod getProductCostingMethod(final AcctSchema as)
 	{
-		return productBL.getCostingMethod(getProductId(), as);
+		return productCostingBL.getCostingMethod(getProductId(), as);
 	}
 
-	public final CostingLevel getProductCostingLevel(final I_C_AcctSchema as)
+	public final CostingLevel getProductCostingLevel(final AcctSchema as)
 	{
-		return productBL.getCostingLevel(getProductId(), as);
+		return productCostingBL.getCostingLevel(getProductId(), as);
 	}
 
 	public final AttributeSetInstanceId getAttributeSetInstanceId()

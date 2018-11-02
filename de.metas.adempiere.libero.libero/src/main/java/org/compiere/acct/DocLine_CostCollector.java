@@ -3,11 +3,11 @@
  */
 package org.compiere.acct;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -39,7 +39,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		setReversalLine_ID(cc.getReversal_ID());
 	}
 
-	public MAccount getAccountForCostElement(final I_C_AcctSchema as, final CostElement costElement)
+	public MAccount getAccountForCostElement(final AcctSchema as, final CostElement costElement)
 	{
 		final ProductAcctType acctType = getProductAcctTypeByCostElement(costElement);
 		return getAccount(acctType, as);
@@ -75,7 +75,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 	}
 
 	@Override
-	public MAccount getAccount(final ProductAcctType acctType, final I_C_AcctSchema as)
+	public MAccount getAccount(final ProductAcctType acctType, final AcctSchema as)
 	{
 		final ProductId productId = getProductId();
 		if (productId == null)
@@ -91,7 +91,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 				+ " INNER JOIN M_Product_Category_Acct pca ON (pca.M_Product_Category_ID=p.M_Product_Category_ID AND pca.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
 				+ " INNER JOIN C_AcctSchema_Default asd ON (asd.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
 				+ " WHERE pa.M_Product_ID=? AND pa.C_AcctSchema_ID=?";
-		final int validCombinationId = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, productId, as.getC_AcctSchema_ID());
+		final int validCombinationId = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, productId, as.getId());
 		if (validCombinationId <= 0)
 		{
 			return null;
@@ -100,11 +100,11 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		return MAccount.get(getCtx(), validCombinationId);
 	}
 
-	public CostResult getCreateCosts(final I_C_AcctSchema as)
+	public CostResult getCreateCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = as.getId();
 		
 		if (isReversalLine())
 		{
@@ -126,7 +126,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 							.qty(getQty())
-							.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A
+							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 							.date(TimeUtil.asLocalDate(getDateDoc()))
 							.build());
 		}

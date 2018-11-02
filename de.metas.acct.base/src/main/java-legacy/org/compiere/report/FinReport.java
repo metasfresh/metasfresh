@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.report;
 
@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.acct.api.AcctSchemaElementType;
 import org.adempiere.acct.api.IAcctSchemaBL;
@@ -44,7 +46,6 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_PA_ReportCube;
-import org.compiere.model.MAcctSchemaElement;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.MPrintFormatItem;
 import org.compiere.util.AdempiereUserError;
@@ -59,12 +60,12 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
-
 /**
  * Financial Report Engine
  *
  * @author Jorg Janke
- * @author Armen Rizal, Goodwill Consulting <li>FR [2857076] User Element 1 and 2 completion - https://sourceforge.net/tracker/?func=detail&aid=2857076&group_id=176962&atid=879335
+ * @author Armen Rizal, Goodwill Consulting
+ *         <li>FR [2857076] User Element 1 and 2 completion - https://sourceforge.net/tracker/?func=detail&aid=2857076&group_id=176962&atid=879335
  *
  * @version $Id: FinReport.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
@@ -270,9 +271,8 @@ public class FinReport extends JavaProcess
 					.create()
 					.listIds();
 
-			final String columnName = Services.get(IAcctSchemaBL.class).getColumnName(AcctSchemaElementType.Account);
 			final String sql = DB.buildSqlList(elementValueIds, whereClauseSqlParams);
-			whereClause.append(" AND ").append(columnName).append(" IN ").append(sql);
+			whereClause.append(" AND ").append(AcctSchemaElementType.Account.getColumnName()).append(" IN ").append(sql);
 		}
 		else if (p_C_ElementValue_ID <= 0 && p_C_ElementValue_ID_To <= 0)
 		{
@@ -379,15 +379,15 @@ public class FinReport extends JavaProcess
 					.setResetCube(false)
 					.update();
 		}
-		
+
 		// ** Create Temporary and empty Report Lines from PA_ReportLine
 		// - AD_PInstance_ID, PA_ReportLine_ID, 0, 0
 		int PA_ReportLineSet_ID = m_report.getLineSet().getPA_ReportLineSet_ID();
 		StringBuilder sql = new StringBuilder("INSERT INTO T_Report "
 				+ "(AD_PInstance_ID, PA_ReportLine_ID, Record_ID,Fact_Acct_ID, SeqNo,LevelNo, Name,Description) "
 				+ "SELECT ").append(getAD_PInstance_ID()).append(", PA_ReportLine_ID, 0,0, SeqNo,0, Name,Description "
-				+ "FROM PA_ReportLine "
-				+ "WHERE IsActive='Y' AND PA_ReportLineSet_ID=").append(PA_ReportLineSet_ID);
+						+ "FROM PA_ReportLine "
+						+ "WHERE IsActive='Y' AND PA_ReportLineSet_ID=").append(PA_ReportLineSet_ID);
 
 		int no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Report Lines = " + no);
@@ -710,7 +710,7 @@ public class FinReport extends JavaProcess
 	private void doCalculations()
 	{
 		final int adPInstanceRepoId = getPinstanceId().getRepoId();
-		
+
 		// for all lines ***************************************************
 		for (int line = 0; line < m_lines.length; line++)
 		{
@@ -795,7 +795,8 @@ public class FinReport extends JavaProcess
 						.append(" AND r2.PA_ReportLine_ID=").append(oper_1)
 						.append(" AND r2.Record_ID=0 AND r2.Fact_Acct_ID=0) "
 								//
-								+ "WHERE AD_PInstance_ID=").append(adPInstanceRepoId)
+								+ "WHERE AD_PInstance_ID=")
+						.append(adPInstanceRepoId)
 						.append(" AND PA_ReportLine_ID=").append(m_lines[line].getPA_ReportLine_ID())
 						.append(" AND ABS(LevelNo)<1");			// 0=Line 1=Acct
 				int no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
@@ -841,7 +842,8 @@ public class FinReport extends JavaProcess
 						.append(" AND r2.PA_ReportLine_ID=").append(oper_2)
 						.append(" AND r2.Record_ID=0 AND r2.Fact_Acct_ID=0) "
 								//
-								+ "WHERE AD_PInstance_ID=").append(adPInstanceRepoId)
+								+ "WHERE AD_PInstance_ID=")
+						.append(adPInstanceRepoId)
 						.append(" AND PA_ReportLine_ID=").append(m_lines[line].getPA_ReportLine_ID())
 						.append(" AND ABS(LevelNo)<1");			// 0=Line 1=Acct
 				no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
@@ -1125,11 +1127,13 @@ public class FinReport extends JavaProcess
 
 		final MReportSource currentLineSource = lineSources[idxLineSources];
 
-		final String variable = acctSchemaBL.getColumnName(AcctSchemaElementType.ofCode(currentLineSource.getElementType()));
-		if (variable == null)
+		final String reportElementType = currentLineSource.getElementType();
+		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCodeOrNull(reportElementType);
+		if(elementType == null)
 		{
 			return null;
 		}
+		final String variable = elementType.getColumnName();
 		log.debug("Variable=" + variable);
 
 		// INSERT INTO
@@ -1262,7 +1266,7 @@ public class FinReport extends JavaProcess
 
 			// Parameter Where
 			appendParametersWhereClause(select, selectSqlParams);
-			// System.out.println("    c=" + col + ", l=" + line + ": " + select);
+			// System.out.println(" c=" + col + ", l=" + line + ": " + select);
 
 			// Append the SELECT to main INSERT
 			insert.append("(").append(select).append(")");
@@ -1374,10 +1378,8 @@ public class FinReport extends JavaProcess
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE T_Report SET (Name,Description)=(")
 					// .append(currentReportLine.getSourceValueQuery())
-					.append(MAcctSchemaElement.getValueQuery(AcctSchemaElementType.ofCode(lineSources[idxLineSources].getElementType())))
-					.append("T_Report.Record_ID) "
-							//
-							+ "WHERE Record_ID <> 0 AND AD_PInstance_ID=").append(getAD_PInstance_ID())
+					.append(getValueQuery(elementType)).append("T_Report.Record_ID) ")
+					.append(" WHERE Record_ID <> 0 AND AD_PInstance_ID=").append(getAD_PInstance_ID())
 					.append(" AND PA_ReportLine_ID=").append(currentReportLine.getPA_ReportLine_ID())
 					.append(" AND Fact_Acct_ID=0");
 			final int no = DB.executeUpdateEx(DB.convertSqlToNative(sql.toString()), get_TrxName());
@@ -1386,6 +1388,46 @@ public class FinReport extends JavaProcess
 		}
 		return variable;
 	}
+	
+	private static String getValueQuery(@Nullable final AcctSchemaElementType elementType)
+	{
+		if (elementType.equals(AcctSchemaElementType.Organization))
+			return "SELECT Value,Name FROM AD_Org WHERE AD_Org_ID=";
+		else if (elementType.equals(AcctSchemaElementType.Account))
+			return "SELECT Value,Name FROM C_ElementValue WHERE C_ElementValue_ID=";
+		else if (elementType.equals(AcctSchemaElementType.SubAccount))
+			return "SELECT Value,Name FROM C_SubAccount WHERE C_SubAccount_ID=";
+		else if (elementType.equals(AcctSchemaElementType.BPartner))
+			return "SELECT Value,Name FROM C_BPartner WHERE C_BPartner_ID=";
+		else if (elementType.equals(AcctSchemaElementType.Product))
+			return "SELECT Value,Name FROM M_Product WHERE M_Product_ID=";
+		else if (elementType.equals(AcctSchemaElementType.Activity))
+			return "SELECT Value,Name FROM C_Activity WHERE C_Activity_ID=";
+		else if (elementType.equals(AcctSchemaElementType.LocationFrom))
+			return "SELECT City,Address1 FROM C_Location WHERE C_Location_ID=";
+		else if (elementType.equals(AcctSchemaElementType.LocationTo))
+			return "SELECT City,Address1 FROM C_Location WHERE C_Location_ID=";
+		else if (elementType.equals(AcctSchemaElementType.Campaign))
+			return "SELECT Value,Name FROM C_Campaign WHERE C_Campaign_ID=";
+		else if (elementType.equals(AcctSchemaElementType.OrgTrx))
+			return "SELECT Value,Name FROM AD_Org WHERE AD_Org_ID=";
+		else if (elementType.equals(AcctSchemaElementType.Project))
+			return "SELECT Value,Name FROM C_Project WHERE C_Project_ID=";
+		else if (elementType.equals(AcctSchemaElementType.SalesRegion))
+			return "SELECT Value,Name FROM C_SalesRegion WHERE C_SalesRegion_ID";
+		else if (elementType.equals(AcctSchemaElementType.UserList1))
+			return "SELECT Value,Name FROM C_ElementValue WHERE C_ElementValue_ID=";
+		else if (elementType.equals(AcctSchemaElementType.UserList2))
+			return "SELECT Value,Name FROM C_ElementValue WHERE C_ElementValue_ID=";
+		//
+		else if (elementType.equals(AcctSchemaElementType.UserElement1))
+			return null;
+		else if (elementType.equals(AcctSchemaElementType.UserElement2))
+			return null;
+		//
+		return "";
+	}   // getColumnName
+
 
 	/**
 	 * Create Trx Line per Source Detail. - AD_PInstance_ID, PA_ReportLine_ID, variable, Fact_Acct_ID - Level 2
@@ -1418,7 +1460,7 @@ public class FinReport extends JavaProcess
 			insert.append(", ");
 			// Only relative Period (not calculation or segment value)
 			if (!(m_columns[col].isColumnTypeRelativePeriod()
-			&& m_columns[col].getRelativePeriodAsInt() == 0))
+					&& m_columns[col].getRelativePeriodAsInt() == 0))
 			{
 				insert.append("NULL");
 				continue;
@@ -1916,12 +1958,12 @@ public class FinReport extends JavaProcess
 		}
 
 	}
-	
+
 	protected final MReport getPA_Report()
 	{
 		return m_report;
 	}
-	
+
 	private int getAD_PInstance_ID()
 	{
 		return getPinstanceId().getRepoId();

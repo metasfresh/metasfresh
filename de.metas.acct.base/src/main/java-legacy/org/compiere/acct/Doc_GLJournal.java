@@ -19,14 +19,16 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IGLJournalLineBL;
 import org.adempiere.acct.api.IGLJournalLineDAO;
 import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.X_GL_JournalLine;
 
 import de.metas.util.Services;
@@ -62,14 +64,14 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 
 	/** Posting Type */
 	private String m_PostingType = null;
-	private int m_C_AcctSchema_ID = 0;
+	private AcctSchemaId acctSchemaId;
 
 	@Override
 	protected void loadDocumentDetails()
 	{
 		final I_GL_Journal journal = getModel(I_GL_Journal.class);
 		m_PostingType = journal.getPostingType();
-		m_C_AcctSchema_ID = journal.getC_AcctSchema_ID();
+		acctSchemaId = AcctSchemaId.ofRepoId(journal.getC_AcctSchema_ID());
 
 		setDocLines(loadLines(journal));
 	}
@@ -221,7 +223,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		final DocLine_GLJournal docLine = new DocLine_GLJournal(glJournalLine, this);
 		docLine.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 		docLine.setC_Tax_ID(0); // avoid setting C_Tax_ID by default
-		docLine.setC_AcctSchema_ID(m_C_AcctSchema_ID);
+		docLine.setAcctSchemaId(acctSchemaId);
 		return docLine;
 	}
 
@@ -255,12 +257,12 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
 
 		// Other Acct Schema
-		if (as.getC_AcctSchema_ID() != m_C_AcctSchema_ID)
+		if (!AcctSchemaId.equals(as.getId(), acctSchemaId))
 		{
 			return facts;
 		}
@@ -274,7 +276,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			// account DR CR
 			for (final DocLine_GLJournal line : getDocLines())
 			{
-				if (line.getC_AcctSchema_ID() > 0 && line.getC_AcctSchema_ID() != as.getC_AcctSchema_ID())
+				if (line.getAcctSchemaId() != null && !Objects.equals(line.getAcctSchemaId(), as.getId()))
 				{
 					continue;
 				}
@@ -289,7 +291,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		else
 		{
 			throw newPostingException()
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setDetailMessage("DocumentType unknown: " + getDocumentType());
 		}
 		//

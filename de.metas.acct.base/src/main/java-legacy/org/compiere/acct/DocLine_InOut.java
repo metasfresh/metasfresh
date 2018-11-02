@@ -1,10 +1,10 @@
 package org.compiere.acct;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MAccount;
@@ -93,7 +93,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 				: getOrgId();
 	}
 
-	public MAccount getProductAssetAccount(final I_C_AcctSchema as)
+	public MAccount getProductAssetAccount(final AcctSchema as)
 	{
 		if (isItem())
 		{
@@ -110,11 +110,11 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 	}
 
-	public CostResult getCreateReceiptCosts(final I_C_AcctSchema as)
+	public CostResult getCreateReceiptCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = as.getId();
 		
 		if (isReversalLine())
 		{
@@ -136,17 +136,17 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 							.qty(getQty())
-							.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A
+							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 							.date(TimeUtil.asLocalDate(getDateDoc()))
 							.build());
 		}
 	}
 
-	public CostResult getCreateShipmentCosts(final I_C_AcctSchema as)
+	public CostResult getCreateShipmentCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = as.getId();
 		
 		if (isReversalLine())
 		{
@@ -168,7 +168,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 							.qty(getQty())
-							.amt(CostAmount.zero(as.getC_Currency_ID())) // expect to be calculated
+							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 							.date(TimeUtil.asLocalDate(getDateAcct()))
 							.build());
 		}

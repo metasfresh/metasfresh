@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_ValidCombination;
@@ -30,7 +31,7 @@ import org.compiere.model.MAccount;
 
 class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 {
-	private int acctSchemaId = 0;
+	private AcctSchemaId acctSchemaId;
 	private MAccount m_account = null;
 
 	public DocLine_GLJournal(final I_GL_JournalLine glJournalLine, final Doc_GLJournal doc)
@@ -38,12 +39,12 @@ class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 		super(InterfaceWrapperHelper.getPO(glJournalLine), doc);
 	}
 
-	public final int getC_AcctSchema_ID()
+	public final AcctSchemaId getAcctSchemaId()
 	{
 		return acctSchemaId;
 	}
 
-	public final void setC_AcctSchema_ID(final int acctSchemaId)
+	public final void setAcctSchemaId(final AcctSchemaId acctSchemaId)
 	{
 		this.acctSchemaId = acctSchemaId;
 	}

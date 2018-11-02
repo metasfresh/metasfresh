@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.acct.api.AccountDimension;
+import org.adempiere.acct.api.AccountId;
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -20,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -31,12 +33,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -68,7 +70,7 @@ public class AccountDAO implements IAccountDAO
 
 	@Override
 	@Cached(cacheName = MAccount.Table_Name)
-	public MAccount retrieveAccountById(@CacheCtx final Properties ctx, final int validCombinationId)
+	public MAccount getById(@CacheCtx final Properties ctx, final int validCombinationId)
 	{
 		Check.assume(validCombinationId > 0, "validCombinationId > 0");
 		final MAccount account = new MAccount(ctx, validCombinationId, ITrx.TRXNAME_None);
@@ -77,6 +79,12 @@ public class AccountDAO implements IAccountDAO
 			throw new AdempiereException("No account found for C_ValidCombination_ID=" + validCombinationId);
 		}
 		return account;
+	}
+
+	@Override
+	public MAccount getById(final Properties ctx, @NonNull final AccountId accountId)
+	{
+		return getById(ctx, accountId.getRepoId());
 	}
 
 	@Override

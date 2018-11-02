@@ -3,9 +3,11 @@ package de.metas.acct.callout;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_GL_Journal;
 
 import de.metas.currency.ICurrencyBL;
@@ -80,15 +82,21 @@ public class GL_Journal
 		}
 		final int adClientId = glJournal.getAD_Client_ID();
 		final int adOrgId = glJournal.getAD_Org_ID();
-		final I_C_AcctSchema acctSchema = glJournal.getC_AcctSchema();
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(glJournal.getC_AcctSchema_ID());
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 
 		//
 		// Calculate currency rate
 		BigDecimal currencyRate;
 		if (acctSchema != null)
 		{
-			currencyRate = Services.get(ICurrencyBL.class).getRate(currencyId, acctSchema.getC_Currency_ID(),
-					dateAcct, conversionTypeId, adClientId, adOrgId);
+			currencyRate = Services.get(ICurrencyBL.class).getRate(
+					currencyId,
+					acctSchema.getCurrencyId().getRepoId(),
+					dateAcct,
+					conversionTypeId,
+					adClientId,
+					adOrgId);
 		}
 		else
 		{

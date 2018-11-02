@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
@@ -52,7 +53,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
@@ -64,9 +64,9 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.IProductCostingBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 
@@ -81,6 +81,7 @@ import de.metas.util.Services;
 public class CreateCostElement extends JavaProcess
 {
 	private final ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	
 	private Integer p_AD_Org_ID = null;
 	private int p_C_AcctSchema_ID = 0;
@@ -142,7 +143,7 @@ public class CreateCostElement extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(p_C_AcctSchema_ID);
-		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
 		final CostTypeId costTypeId = CostTypeId.ofRepoId(p_M_CostType_ID);
 
@@ -152,7 +153,7 @@ public class CreateCostElement extends JavaProcess
 			for (final I_M_Product product : getProducts())
 			{
 				final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-				final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
+				final CostingLevel costingLevel = productCostingBL.getCostingLevel(product, as);
 
 				final CostSegment costSegment = CostSegment.builder()
 						.costingLevel(costingLevel)
@@ -182,10 +183,10 @@ public class CreateCostElement extends JavaProcess
 	 * @param as Account Schema
 	 * @return array of IDs
 	 */
-	private Set<OrgId> getOrgIds(final I_C_AcctSchema as)
+	private Set<OrgId> getOrgIds(final AcctSchema as)
 	{
 		// Set the Costing Level
-		final CostingLevel costingLevel = CostingLevel.forCode(as.getCostingLevel());
+		final CostingLevel costingLevel = as.getCosting().getCostingLevel();
 		if (CostingLevel.Client.equals(costingLevel))
 		{
 			p_AD_Org_ID = 0;

@@ -19,12 +19,11 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
 
 import de.metas.util.Services;
@@ -107,7 +106,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	 * @return Fact
 	 */
 	@Override
-	public ArrayList<Fact> createFacts(final MAcctSchema as)
+	public ArrayList<Fact> createFacts(final AcctSchema as)
 	{
 		// create Fact Header
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
@@ -132,7 +131,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			//
 			MAccount acct = null;
 			if (getC_Charge_ID() != 0)
-				acct = MCharge.getAccount(getC_Charge_ID(), as, getAmount());
+				acct = MCharge.getAccount(getC_Charge_ID(), as.getId(), getAmount());
 			else if (isPrepayment())
 				acct = getAccount(Doc.ACCTTYPE_C_Prepayment, as);
 			else
@@ -148,7 +147,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		{
 			MAccount acct = null;
 			if (getC_Charge_ID() != 0)
-				acct = MCharge.getAccount(getC_Charge_ID(), as, getAmount());
+				acct = MCharge.getAccount(getC_Charge_ID(), as.getId(), getAmount());
 			else if (isPrepayment())
 				acct = getAccount(Doc.ACCTTYPE_V_Prepayment, as);
 			else
@@ -168,7 +167,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		else
 		{
 			throw newPostingException()
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setFact(fact)
 					.setPostingStatus(PostingStatus.Error)
 					.setDetailMessage("DocumentType unknown: " + documentType);
@@ -218,7 +217,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	 * @param as accounting schema
 	 * @return bank in transit account ({@link Doc#ACCTTYPE_BankInTransit})
 	 */
-	private MAccount getBankAccount(final I_C_AcctSchema as)
+	private MAccount getBankAccount(final AcctSchema as)
 	{
 		return getAccount(Doc.ACCTTYPE_BankInTransit, as);
 	}

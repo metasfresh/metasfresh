@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchemaId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -51,16 +52,16 @@ public class MCharge extends X_C_Charge
 	 *  @param amount amount for expense(+)/revenue(-)
 	 *  @return Charge Account or null
 	 */
-	public static MAccount getAccount (int C_Charge_ID, I_C_AcctSchema as, BigDecimal amount)
+	public static MAccount getAccount (int C_Charge_ID, AcctSchemaId acctSchemaId, BigDecimal amount)
 	{
-		if (C_Charge_ID == 0 || as == null)
+		if (C_Charge_ID == 0 || acctSchemaId == null)
 			return null;
 
 		String acctName = X_C_Charge_Acct.COLUMNNAME_Ch_Expense_Acct;		//  Expense (positive amt)
 		if (amount != null && amount.signum() < 0)
 			acctName = X_C_Charge_Acct.COLUMNNAME_Ch_Revenue_Acct;			//  Revenue (negative amt)
 		String sql = "SELECT "+acctName+" FROM C_Charge_Acct WHERE C_Charge_ID=? AND C_AcctSchema_ID=?";
-		int Account_ID = DB.getSQLValueEx(null, sql, C_Charge_ID, as.getC_AcctSchema_ID());
+		int Account_ID = DB.getSQLValueEx(null, sql, C_Charge_ID, acctSchemaId);
 		//	No account
 		if (Account_ID <= 0)
 		{

@@ -3,6 +3,7 @@ package org.adempiere.acct.api;
 import java.util.Arrays;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.X_C_AcctSchema_Element;
 
 import com.google.common.collect.ImmutableMap;
@@ -35,36 +36,39 @@ import lombok.NonNull;
 
 public enum AcctSchemaElementType
 {
-	Organization(X_C_AcctSchema_Element.ELEMENTTYPE_Organization), //
-	Account(X_C_AcctSchema_Element.ELEMENTTYPE_Account), //
-	Product(X_C_AcctSchema_Element.ELEMENTTYPE_Product), //
-	BPartner(X_C_AcctSchema_Element.ELEMENTTYPE_BPartner), //
-	OrgTrx(X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx), //
-	LocationFrom(X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom), //
-	LocationTo(X_C_AcctSchema_Element.ELEMENTTYPE_LocationTo), //
-	SalesRegion(X_C_AcctSchema_Element.ELEMENTTYPE_SalesRegion), //
-	Project(X_C_AcctSchema_Element.ELEMENTTYPE_Project), //
-	Campaign(X_C_AcctSchema_Element.ELEMENTTYPE_Campaign), //
-	UserList1(X_C_AcctSchema_Element.ELEMENTTYPE_UserList1), //
-	UserList2(X_C_AcctSchema_Element.ELEMENTTYPE_UserList2), //
-	Activity(X_C_AcctSchema_Element.ELEMENTTYPE_Activity), //
-	SubAccount(X_C_AcctSchema_Element.ELEMENTTYPE_SubAccount), //
-	UserElement1(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement1), //
-	UserElement2(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement2) //
+	Organization(X_C_AcctSchema_Element.ELEMENTTYPE_Organization, I_C_ValidCombination.COLUMNNAME_AD_Org_ID), //
+	Account(X_C_AcctSchema_Element.ELEMENTTYPE_Account, I_C_ValidCombination.COLUMNNAME_Account_ID), //
+	Product(X_C_AcctSchema_Element.ELEMENTTYPE_Product, I_C_ValidCombination.COLUMNNAME_M_Product_ID), //
+	BPartner(X_C_AcctSchema_Element.ELEMENTTYPE_BPartner, I_C_ValidCombination.COLUMNNAME_C_BPartner_ID), //
+	OrgTrx(X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx, I_C_ValidCombination.COLUMNNAME_AD_OrgTrx_ID), //
+	LocationFrom(X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom, I_C_ValidCombination.COLUMNNAME_C_LocFrom_ID), //
+	LocationTo(X_C_AcctSchema_Element.ELEMENTTYPE_LocationTo, I_C_ValidCombination.COLUMNNAME_C_LocTo_ID), //
+	SalesRegion(X_C_AcctSchema_Element.ELEMENTTYPE_SalesRegion, I_C_ValidCombination.COLUMNNAME_C_SalesRegion_ID), //
+	Project(X_C_AcctSchema_Element.ELEMENTTYPE_Project, I_C_ValidCombination.COLUMNNAME_C_Project_ID), //
+	Campaign(X_C_AcctSchema_Element.ELEMENTTYPE_Campaign, I_C_ValidCombination.COLUMNNAME_C_Campaign_ID), //
+	UserList1(X_C_AcctSchema_Element.ELEMENTTYPE_UserList1, I_C_ValidCombination.COLUMNNAME_User1_ID), //
+	UserList2(X_C_AcctSchema_Element.ELEMENTTYPE_UserList2, I_C_ValidCombination.COLUMNNAME_User2_ID), //
+	Activity(X_C_AcctSchema_Element.ELEMENTTYPE_Activity, I_C_ValidCombination.COLUMNNAME_C_Activity_ID), //
+	SubAccount(X_C_AcctSchema_Element.ELEMENTTYPE_SubAccount, I_C_ValidCombination.COLUMNNAME_C_SubAcct_ID), //
+	UserElement1(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement1, I_C_ValidCombination.COLUMNNAME_UserElement1_ID), //
+	UserElement2(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement2, I_C_ValidCombination.COLUMNNAME_UserElement2_ID) //
 	;
 
 	/**
 	 * ElementType AD_Reference_ID=181
 	 * Reference name: C_AcctSchema ElementType
 	 */
-	public static final int AD_REFERENCE_ID = 181; // X_C_AcctSchema_Element.ELEMENTTYPE_AD_Reference_ID;
+	public static final int AD_REFERENCE_ID = X_C_AcctSchema_Element.ELEMENTTYPE_AD_Reference_ID;
 
 	@Getter
 	private final String code;
+	@Getter
+	private final String columnName;
 
-	AcctSchemaElementType(final String code)
+	AcctSchemaElementType(@NonNull final String code, @NonNull final String columnName)
 	{
 		this.code = code;
+		this.columnName = columnName;
 	}
 
 	public static AcctSchemaElementType ofCode(@NonNull final String code)
@@ -83,4 +87,19 @@ public enum AcctSchemaElementType
 	}
 
 	private static final ImmutableMap<String, AcctSchemaElementType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), AcctSchemaElementType::getCode);
+
+	public boolean isDeletable()
+	{
+		// Acct Schema Elements "Account" and "Org" should be mandatory - teo_sarca BF [ 1795817 ]
+		return this != Account && this != Organization;
+	}
+
+	public boolean isUserDefinedElements()
+	{
+		return this == AcctSchemaElementType.UserList1
+				|| this == AcctSchemaElementType.UserList2
+				|| this == AcctSchemaElementType.UserElement1
+				|| this == AcctSchemaElementType.UserElement2;
+
+	}
 }

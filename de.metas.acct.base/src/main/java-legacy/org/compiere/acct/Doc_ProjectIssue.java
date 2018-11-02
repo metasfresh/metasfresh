@@ -21,12 +21,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.exceptions.DBException;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.util.DB;
@@ -116,11 +115,11 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
 		// create Fact Header
 		Fact fact = new Fact(this, as, Fact.POST_Actual);
-		setC_Currency_ID(as.getC_Currency_ID());
+		setC_Currency_ID(as.getCurrencyId());
 
 		MProject project = new MProject(getCtx(), m_issue.getC_Project_ID(), getTrxName());
 		String ProjectCategory = project.getProjectCategory();
@@ -178,7 +177,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	 * @param as Account Schema
 	 * @return Unit PO Cost
 	 */
-	private CostAmount getPOCost(final I_C_AcctSchema as)
+	private CostAmount getPOCost(final AcctSchema as)
 	{
 		// Uses PO Date
 		String sql = "SELECT currencyConvert(ol.PriceActual, o.C_Currency_ID, ?, o.DateOrdered, o.C_ConversionType_ID, ?, ?) "
@@ -191,7 +190,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		try
 		{
 			pstmt = DB.prepareStatement(sql, getTrxName());
-			pstmt.setInt(1, as.getC_Currency_ID());
+			pstmt.setInt(1, as.getCurrencyId().getRepoId());
 			pstmt.setInt(2, getAD_Client_ID());
 			pstmt.setInt(3, getAD_Org_ID());
 			pstmt.setInt(4, m_issue.getM_InOutLine_ID());
@@ -209,7 +208,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 				costs = BigDecimal.ZERO;
 			}
 
-			return CostAmount.of(costs, as.getC_Currency_ID());
+			return CostAmount.of(costs, as.getCurrencyId());
 		}
 		catch (Exception e)
 		{
@@ -230,7 +229,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	 * @return Unit Labor Cost
 	 */
 
-	private CostAmount getLaborCost(final I_C_AcctSchema as)
+	private CostAmount getLaborCost(final AcctSchema as)
 	{
 		String sql = "SELECT ConvertedAmt, Qty" +
 				" FROM S_TimeExpenseLine " +
@@ -255,7 +254,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 				logger.warn("Not found for S_TimeExpenseLine_ID={}", m_issue.getS_TimeExpenseLine_ID());
 				costs = BigDecimal.ZERO;
 			}
-			return CostAmount.of(costs, as.getC_Currency_ID());
+			return CostAmount.of(costs, as.getCurrencyId());
 		}
 		catch (Exception e)
 		{

@@ -1,7 +1,7 @@
 package org.compiere.acct;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_Fact_Acct;
 
 import ch.qos.logback.classic.Level;
@@ -27,7 +27,7 @@ public final class PostingException extends AdempiereException
 	private Doc<?> _document;
 	private DocLine<?> _docLine;
 	private PostingStatus _postingStatus;
-	private I_C_AcctSchema _acctSchema;
+	private AcctSchema _acctSchema;
 	private Fact _fact;
 	private I_Fact_Acct _factLine;
 	private String _detailMessage;
@@ -102,7 +102,7 @@ public final class PostingException extends AdempiereException
 		}
 
 		// Account Schema
-		final I_C_AcctSchema acctSchema = getC_AcctSchema();
+		final AcctSchema acctSchema = getAcctSchema();
 		if (acctSchema != null)
 		{
 			message.append("\n @C_AcctSchema_ID@: ").append(acctSchema.toString());
@@ -148,7 +148,7 @@ public final class PostingException extends AdempiereException
 		return this;
 	}
 
-	public I_C_AcctSchema getC_AcctSchema()
+	public AcctSchema getAcctSchema()
 	{
 		if (_acctSchema != null)
 		{
@@ -163,7 +163,7 @@ public final class PostingException extends AdempiereException
 		return null;
 	}
 
-	public PostingException setC_AcctSchema(final I_C_AcctSchema acctSchema)
+	public PostingException setAcctSchema(final AcctSchema acctSchema)
 	{
 		_acctSchema = acctSchema;
 		resetMessageBuilt();

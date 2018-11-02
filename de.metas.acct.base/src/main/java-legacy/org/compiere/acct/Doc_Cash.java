@@ -20,10 +20,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCash;
 import org.compiere.model.MCashBook;
 
@@ -124,7 +124,7 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 	 * @return Fact
 	 */
 	@Override
-	public ArrayList<Fact> createFacts(MAcctSchema as)
+	public ArrayList<Fact> createFacts(final AcctSchema as)
 	{
 		// Need to have CashBook
 		if (getC_CashBook_ID() == 0)
@@ -133,7 +133,7 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 			// log.error(p_Error);
 			// return null;
 			throw newPostingException()
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setDetailMessage("C_CashBook_ID not set");
 		}
 
@@ -154,7 +154,7 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 				   // CashExpense DR
 				   // CashAsset CR
 				fact.createLine(line, getAccount(Doc.ACCTTYPE_CashExpense, as),
-						getC_Currency_ID(), line.getAmount().negate(), null);
+						getCurrencyId(), line.getAmount().negate(), null);
 				// fact.createLine(line, getAccount(Doc.ACCTTYPE_CashAsset, as),
 				// p_vo.C_Currency_ID, null, line.getAmount().negate());
 				assetAmt = assetAmt.subtract(line.getAmount().negate());

@@ -46,6 +46,16 @@ public enum CostingLevel
 		this.code = code;
 	}
 
+	public static CostingLevel forNullableCode(final String code)
+	{
+		if (code == null)
+		{
+			return null;
+		}
+
+		return forCode(code);
+	}
+
 	public static CostingLevel forCode(final String code)
 	{
 		final CostingLevel type = code2type.get(code);

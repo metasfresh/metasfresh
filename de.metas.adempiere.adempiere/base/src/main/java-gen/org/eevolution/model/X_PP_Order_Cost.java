@@ -20,7 +20,16 @@ package org.eevolution.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.model.*;
+
+import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_CostElement;
+import org.compiere.model.I_M_CostType;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_Persistent;
+import org.compiere.model.MTable;
+import org.compiere.model.PO;
+import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
 /** Generated Model for PP_Order_Cost
@@ -57,25 +66,29 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
     /** AccessLevel
       * @return 3 - Client - Org 
       */
-    protected int get_AccessLevel()
+    @Override
+	protected int get_AccessLevel()
     {
       return accessLevel.intValue();
     }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+	protected POInfo initPO (Properties ctx)
     {
       POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
       return poi;
     }
 
-    public String toString()
+    @Override
+	public String toString()
     {
       StringBuffer sb = new StringBuffer ("X_PP_Order_Cost[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
 
+	@Override
 	public I_AD_Workflow getAD_Workflow() throws RuntimeException
     {
 		return (I_AD_Workflow)MTable.get(getCtx(), I_AD_Workflow.Table_Name)
@@ -85,6 +98,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param AD_Workflow_ID 
 		Workflow or combination of tasks
 	  */
+	@Override
 	public void setAD_Workflow_ID (int AD_Workflow_ID)
 	{
 		if (AD_Workflow_ID < 1) 
@@ -96,6 +110,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Workflow.
 		@return Workflow or combination of tasks
 	  */
+	@Override
 	public int getAD_Workflow_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Workflow_ID);
@@ -104,15 +119,16 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-    {
-		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
-			.getPO(getC_AcctSchema_ID(), get_TrxName());	}
+//	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+//    {
+//		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
+//			.getPO(getC_AcctSchema_ID(), get_TrxName());	}
 
 	/** Set Accounting Schema.
 		@param C_AcctSchema_ID 
 		Rules for accounting
 	  */
+	@Override
 	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
 	{
 		if (C_AcctSchema_ID < 1) 
@@ -124,6 +140,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Accounting Schema.
 		@return Rules for accounting
 	  */
+	@Override
 	public int getC_AcctSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
@@ -156,6 +173,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param CostingMethod 
 		Indicates how Costs will be calculated
 	  */
+	@Override
 	public void setCostingMethod (String CostingMethod)
 	{
 
@@ -165,6 +183,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Costing Method.
 		@return Indicates how Costs will be calculated
 	  */
+	@Override
 	public String getCostingMethod () 
 	{
 		return (String)get_Value(COLUMNNAME_CostingMethod);
@@ -174,6 +193,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param CumulatedAmt 
 		Total Amount
 	  */
+	@Override
 	public void setCumulatedAmt (BigDecimal CumulatedAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedAmt, CumulatedAmt);
@@ -182,6 +202,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Accumulated Amt.
 		@return Total Amount
 	  */
+	@Override
 	public BigDecimal getCumulatedAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedAmt);
@@ -192,6 +213,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 
 	/** Set Cumulated Amt Post.
 		@param CumulatedAmtPost Cumulated Amt Post	  */
+	@Override
 	public void setCumulatedAmtPost (BigDecimal CumulatedAmtPost)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedAmtPost, CumulatedAmtPost);
@@ -199,6 +221,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 
 	/** Get Cumulated Amt Post.
 		@return Cumulated Amt Post	  */
+	@Override
 	public BigDecimal getCumulatedAmtPost () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedAmtPost);
@@ -211,6 +234,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param CumulatedQty 
 		Total Quantity
 	  */
+	@Override
 	public void setCumulatedQty (BigDecimal CumulatedQty)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedQty, CumulatedQty);
@@ -219,6 +243,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Accumulated Qty.
 		@return Total Quantity
 	  */
+	@Override
 	public BigDecimal getCumulatedQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedQty);
@@ -229,6 +254,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 
 	/** Set Cumulated Qty Post.
 		@param CumulatedQtyPost Cumulated Qty Post	  */
+	@Override
 	public void setCumulatedQtyPost (BigDecimal CumulatedQtyPost)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedQtyPost, CumulatedQtyPost);
@@ -236,6 +262,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 
 	/** Get Cumulated Qty Post.
 		@return Cumulated Qty Post	  */
+	@Override
 	public BigDecimal getCumulatedQtyPost () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedQtyPost);
@@ -248,6 +275,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param CurrentCostPrice 
 		The currently used cost price
 	  */
+	@Override
 	public void setCurrentCostPrice (BigDecimal CurrentCostPrice)
 	{
 		set_ValueNoCheck (COLUMNNAME_CurrentCostPrice, CurrentCostPrice);
@@ -256,6 +284,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Current Cost Price.
 		@return The currently used cost price
 	  */
+	@Override
 	public BigDecimal getCurrentCostPrice () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPrice);
@@ -268,6 +297,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param CurrentCostPriceLL 
 		Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
 	  */
+	@Override
 	public void setCurrentCostPriceLL (BigDecimal CurrentCostPriceLL)
 	{
 		set_ValueNoCheck (COLUMNNAME_CurrentCostPriceLL, CurrentCostPriceLL);
@@ -276,6 +306,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Current Cost Price Lower Level.
 		@return Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
 	  */
+	@Override
 	public BigDecimal getCurrentCostPriceLL () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPriceLL);
@@ -288,6 +319,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param CurrentQty 
 		Current Quantity
 	  */
+	@Override
 	public void setCurrentQty (BigDecimal CurrentQty)
 	{
 		set_Value (COLUMNNAME_CurrentQty, CurrentQty);
@@ -296,6 +328,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Current Quantity.
 		@return Current Quantity
 	  */
+	@Override
 	public BigDecimal getCurrentQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentQty);
@@ -304,6 +337,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return bd;
 	}
 
+	@Override
 	public I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
     {
 		return (I_M_AttributeSetInstance)MTable.get(getCtx(), I_M_AttributeSetInstance.Table_Name)
@@ -313,6 +347,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param M_AttributeSetInstance_ID 
 		Product Attribute Set Instance
 	  */
+	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
@@ -324,6 +359,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Attribute Set Instance.
 		@return Product Attribute Set Instance
 	  */
+	@Override
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
@@ -332,6 +368,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
+	@Override
 	public I_M_CostElement getM_CostElement() throws RuntimeException
     {
 		return (I_M_CostElement)MTable.get(getCtx(), I_M_CostElement.Table_Name)
@@ -341,6 +378,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param M_CostElement_ID 
 		Product Cost Element
 	  */
+	@Override
 	public void setM_CostElement_ID (int M_CostElement_ID)
 	{
 		if (M_CostElement_ID < 1) 
@@ -352,6 +390,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Cost Element.
 		@return Product Cost Element
 	  */
+	@Override
 	public int getM_CostElement_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostElement_ID);
@@ -360,6 +399,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
+	@Override
 	public I_M_CostType getM_CostType() throws RuntimeException
     {
 		return (I_M_CostType)MTable.get(getCtx(), I_M_CostType.Table_Name)
@@ -369,6 +409,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param M_CostType_ID 
 		Type of Cost (e.g. Current, Plan, Future)
 	  */
+	@Override
 	public void setM_CostType_ID (int M_CostType_ID)
 	{
 		if (M_CostType_ID < 1) 
@@ -380,6 +421,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Cost Type.
 		@return Type of Cost (e.g. Current, Plan, Future)
 	  */
+	@Override
 	public int getM_CostType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostType_ID);
@@ -388,6 +430,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
+	@Override
 	public I_M_Product getM_Product() throws RuntimeException
     {
 		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
@@ -397,6 +440,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param M_Product_ID 
 		Product, Service, Item
 	  */
+	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -408,6 +452,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Product.
 		@return Product, Service, Item
 	  */
+	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
@@ -418,6 +463,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 
 	/** Set Manufacturing Order Cost.
 		@param PP_Order_Cost_ID Manufacturing Order Cost	  */
+	@Override
 	public void setPP_Order_Cost_ID (int PP_Order_Cost_ID)
 	{
 		if (PP_Order_Cost_ID < 1) 
@@ -428,6 +474,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 
 	/** Get Manufacturing Order Cost.
 		@return Manufacturing Order Cost	  */
+	@Override
 	public int getPP_Order_Cost_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Cost_ID);
@@ -436,6 +483,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
+	@Override
 	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
     {
 		return (org.eevolution.model.I_PP_Order)MTable.get(getCtx(), org.eevolution.model.I_PP_Order.Table_Name)
@@ -443,6 +491,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 
 	/** Set Manufacturing Order.
 		@param PP_Order_ID Manufacturing Order	  */
+	@Override
 	public void setPP_Order_ID (int PP_Order_ID)
 	{
 		if (PP_Order_ID < 1) 
@@ -453,6 +502,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 
 	/** Get Manufacturing Order.
 		@return Manufacturing Order	  */
+	@Override
 	public int getPP_Order_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_ID);

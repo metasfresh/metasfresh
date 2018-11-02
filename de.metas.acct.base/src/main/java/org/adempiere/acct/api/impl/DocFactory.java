@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
 import org.adempiere.ad.dao.IQueryBL;
@@ -38,22 +39,23 @@ import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.IDocBuilder;
 import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
 public class DocFactory implements IDocFactory
 {
@@ -64,26 +66,18 @@ public class DocFactory implements IDocFactory
 	private transient Map<Integer, IDocMetaInfo> _tableId2docMetaInfo = null;
 
 	/** {@link Doc} instance builder */
+	@ToString
 	private final class DocBuilder implements IDocBuilder
 	{
 		private Object documentModel;
-		private MAcctSchema[] acctSchemas;
+		private ImmutableList<AcctSchema> acctSchemas;
 		private IDocMetaInfo docMetaInfo;
-
-		public DocBuilder()
-		{
-			super();
-		}
-
-		@Override
-		public String toString()
-		{
-			return ObjectUtils.toString(this);
-		}
 
 		@Override
 		public Doc<?> build()
 		{
+			Check.assumeNotEmpty(acctSchemas, "acctSchemas is not empty");
+
 			try
 			{
 				final IDocMetaInfo docMetaInfo = getDocMetaInfo();
@@ -101,15 +95,15 @@ public class DocFactory implements IDocFactory
 		}
 
 		@Override
-		public MAcctSchema[] getAcctSchemas()
+		public ImmutableList<AcctSchema> getAcctSchemas()
 		{
 			return acctSchemas;
 		}
 
 		@Override
-		public DocBuilder setAcctSchemas(final MAcctSchema[] acctSchemas)
+		public DocBuilder setAcctSchemas(final List<AcctSchema> acctSchemas)
 		{
-			this.acctSchemas = acctSchemas;
+			this.acctSchemas = ImmutableList.copyOf(acctSchemas);
 			return this;
 		}
 
@@ -152,7 +146,7 @@ public class DocFactory implements IDocFactory
 	}
 
 	@Override
-	public Doc<?> getOrNull(final Properties ctx, final MAcctSchema[] ass, @NonNull final TableRecordReference documentRef)
+	public Doc<?> getOrNull(final Properties ctx, final List<AcctSchema> acctSchemas, @NonNull final TableRecordReference documentRef)
 	{
 		final int adTableId = documentRef.getAD_Table_ID();
 		final int recordId = documentRef.getRecord_ID();
@@ -176,12 +170,12 @@ public class DocFactory implements IDocFactory
 		return new DocBuilder()
 				.setDocMetaInfo(docMetaInfo)
 				.setDocumentModel(documentModel)
-				.setAcctSchemas(ass)
+				.setAcctSchemas(acctSchemas)
 				.build();
 	}
 
 	@Override
-	public final Doc<?> get(final Properties ctx, final IDocMetaInfo docMetaInfo, final MAcctSchema[] ass, final ResultSet rs, final String trxName)
+	public final Doc<?> get(final Properties ctx, final IDocMetaInfo docMetaInfo, final List<AcctSchema> acctSchemas, final ResultSet rs, final String trxName)
 	{
 		Check.assumeNotNull(docMetaInfo, "docMetaInfo not null");
 
@@ -193,7 +187,7 @@ public class DocFactory implements IDocFactory
 
 			return new DocBuilder()
 					.setDocMetaInfo(docMetaInfo)
-					.setAcctSchemas(ass)
+					.setAcctSchemas(acctSchemas)
 					.setDocumentModel(documentModel)
 					.build();
 		}

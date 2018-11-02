@@ -23,20 +23,20 @@ package org.adempiere.acct.api.impl;
  */
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.acct.api.AccountDimension;
+import org.adempiere.acct.api.AcctSchema;
+import org.adempiere.acct.api.AcctSchemaElement;
 import org.adempiere.acct.api.AcctSchemaElementType;
+import org.adempiere.acct.api.AcctSchemaElementsMap;
 import org.adempiere.acct.api.AcctSchemaId;
+import org.adempiere.acct.api.AcctSchemaValidCombinationOptions;
 import org.adempiere.acct.api.IAccountDimensionValidator;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.X_C_AcctSchema_Element;
 
@@ -48,21 +48,22 @@ import lombok.NonNull;
 /* package */class AccountDimensionValidator implements IAccountDimensionValidator
 {
 	// Services
-	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final Properties _ctx;
-	private final I_C_AcctSchema _acctSchema;
-	private List<I_C_AcctSchema_Element> acctSchemaElements;
+	private final AcctSchemaId acctSchemaId;
+	private final AcctSchema _acctSchema;
+	private AcctSchemaElementsMap acctSchemaElements;
 
-	public AccountDimensionValidator(@NonNull final I_C_AcctSchema acctSchema)
+	public AccountDimensionValidator(@NonNull final AcctSchema acctSchema)
 	{
+		this.acctSchemaId = acctSchema.getId();
 		this._acctSchema = acctSchema;
 		this._ctx = InterfaceWrapperHelper.getCtx(acctSchema);
 	}
 
 	@Override
-	public void setAcctSchemaElements(final List<I_C_AcctSchema_Element> acctSchemaElements)
+	public void setAcctSchemaElements(final AcctSchemaElementsMap acctSchemaElements)
 	{
 		this.acctSchemaElements = acctSchemaElements;
 	}
@@ -73,29 +74,32 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public I_C_AcctSchema getC_AcctSchema()
+	public AcctSchema getAcctSchema()
 	{
 		return _acctSchema;
 	}
 
 	@Override
-	public List<I_C_AcctSchema_Element> getAcctSchemaElements()
+	public AcctSchemaElementsMap getAcctSchemaElements()
 	{
-		if (acctSchemaElements == null)
+		if (acctSchemaElements != null)
 		{
-			I_C_AcctSchema acctSchema = getC_AcctSchema();
-			acctSchemaElements = acctSchemaDAO.retrieveSchemaElementsDisplayedInEditor(acctSchema);
+			return acctSchemaElements;
 		}
+		else
+		{
+			return getAcctSchema().getSchemaElements();
+		}
+	}
 
-		return acctSchemaElements;
+	private AcctSchemaValidCombinationOptions getValidCombinationOptions()
+	{
+		return getAcctSchema().getValidCombinationOptions();
 	}
 
 	@Override
 	public void validate(final AccountDimension accountDimension)
 	{
-
-		final I_C_AcctSchema acctSchema = getC_AcctSchema();
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID());
 
 		final Set<String> mandatoryFieldsNotFilled = new HashSet<>();
 
@@ -104,13 +108,13 @@ import lombok.NonNull;
 		if (AcctSchemaId.equals(accountDimension.getAcctSchemaId(), acctSchemaId))
 		{
 			throw new AdempiereException("C_AcctSchema_ID not matched"
-					+ "\n Expected: " + acctSchema
+					+ "\n Expected: " + acctSchemaId
 					+ "\n Was: " + accountDimension.getAcctSchemaId());
 		}
 
 		//
 		// Validate Alias
-		if (acctSchema.isHasAlias())
+		if (getValidCombinationOptions().isUseAccountAlias())
 		{
 			final String alias = accountDimension.getAlias();
 
@@ -129,10 +133,10 @@ import lombok.NonNull;
 
 		//
 		// Validate segments
-		final List<I_C_AcctSchema_Element> elements = acctSchemaDAO.retrieveSchemaElementsDisplayedInEditor(acctSchema);
-		for (final I_C_AcctSchema_Element ase : elements)
+		final AcctSchemaElementsMap elements = getAcctSchemaElements();
+		for (final AcctSchemaElement ase : elements.onlyDisplayedInEditor())
 		{
-			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(ase.getElementType());
+			final AcctSchemaElementType elementType = ase.getElementType();
 			final int segmentId = getSegmentValueId(accountDimension, elementType);
 			if (ase.isMandatory() && segmentId <= 0)
 			{

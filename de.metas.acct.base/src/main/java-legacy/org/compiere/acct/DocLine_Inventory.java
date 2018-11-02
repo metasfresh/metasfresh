@@ -2,10 +2,10 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 
+import org.adempiere.acct.api.AcctSchema;
 import org.adempiere.acct.api.AcctSchemaId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.util.TimeUtil;
 
@@ -63,11 +63,11 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		setReversalLine_ID(inventoryLine.getReversalLine_ID());
 	}
 
-	public CostResult getCreateCosts(final I_C_AcctSchema as)
+	public CostResult getCreateCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(as.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = as.getId();
 		
 		if (isReversalLine())
 		{
@@ -89,7 +89,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 							.qty(getQty())
-							.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A
+							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 							.date(TimeUtil.asLocalDate(getDateDoc()))
 							.build());
 		}
