@@ -14,6 +14,10 @@ Here come the actual release notes:
 ## Features
 
 ## Fix
+* metasfresh-webui-frontend
+  * [#2007](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2007) Dropdown fields too small in several places
+    * Fixes the Dropdown width ang heißt in Lookup and Dropdown widgets.
+
 
 # metasfresh 5.79
 ## Features
