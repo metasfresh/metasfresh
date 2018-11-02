@@ -25,6 +25,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -132,7 +133,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final I_C_OrderLine orderLine = getOrderLine();
-		final int currencyConversionTypeId = orderLine.getC_Order().getC_ConversionType_ID();
+		final CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(orderLine.getC_Order().getC_ConversionType_ID());
 		final Timestamp receiptDateAcct = receiptLine.getM_InOut().getDateAcct();
 
 		final Quantity qty = isReturnTrx() ? getQty().negate() : getQty();

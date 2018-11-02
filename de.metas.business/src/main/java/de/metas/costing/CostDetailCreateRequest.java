@@ -10,6 +10,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -55,7 +56,7 @@ public class CostDetailCreateRequest
 	CostElement costElement;
 	CostAmount amt;
 	Quantity qty;
-	int currencyConversionTypeId;
+	CurrencyConversionTypeId currencyConversionTypeId;
 	LocalDate date;
 	String description;
 
@@ -71,7 +72,7 @@ public class CostDetailCreateRequest
 			@Nullable final CostElement costElement,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
-			final int currencyConversionTypeId,
+			final CurrencyConversionTypeId currencyConversionTypeId,
 			@NonNull final LocalDate date,
 			@Nullable final String description)
 	{
@@ -85,7 +86,7 @@ public class CostDetailCreateRequest
 		this.initialDocumentRef = initialDocumentRef;
 		this.amt = amt;
 		this.qty = qty;
-		this.currencyConversionTypeId = currencyConversionTypeId > 0 ? currencyConversionTypeId : 0;
+		this.currencyConversionTypeId = currencyConversionTypeId;
 		this.date = date;
 		this.description = description;
 	}

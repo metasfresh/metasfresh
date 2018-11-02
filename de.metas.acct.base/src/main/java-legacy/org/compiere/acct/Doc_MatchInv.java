@@ -51,6 +51,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -521,7 +522,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
 						.qty(matchQty)
 						.amt(CostAmount.of(matchAmt, currentId))
-						.currencyConversionTypeId(currencyConvCtx.getC_ConversionType_ID())
+						.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(currencyConvCtx.getC_ConversionType_ID()))
 						.date(TimeUtil.asLocalDate(currencyConvCtx.getConversionDate()))
 						.description(getDescription())
 						.build());
