@@ -6,8 +6,8 @@ import java.math.RoundingMode;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,40 +37,34 @@ import lombok.Value;
 @Value
 public class CostAmount
 {
-	public static final CostAmount of(@NonNull final BigDecimal value, final int currencyId)
+	public static final CostAmount of(@NonNull final BigDecimal value, final CurrencyId currencyId)
 	{
 		return new CostAmount(value, currencyId);
 	}
 
-	public static final CostAmount of(@NonNull final BigDecimal value, final CurrencyId currencyId)
+	public static final CostAmount ofMoney(@NonNull final Money money)
 	{
-		return new CostAmount(value, currencyId.getRepoId());
-	}
-
-	public static final CostAmount zero(final int currencyId)
-	{
-		return new CostAmount(BigDecimal.ZERO, currencyId);
+		return new CostAmount(money.getValue(), money.getCurrencyId());
 	}
 
 	public static final CostAmount zero(final CurrencyId currencyId)
 	{
-		return new CostAmount(BigDecimal.ZERO, currencyId.getRepoId());
+		return new CostAmount(BigDecimal.ZERO, currencyId);
 	}
 
 	BigDecimal value;
-	int currencyId;
+	CurrencyId currencyId;
 
 	@Builder
-	private CostAmount(@NonNull final BigDecimal value, final int currencyId)
+	private CostAmount(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
 	{
-		Check.assume(currencyId > 0, "currencyId > 0");
 		this.value = value;
 		this.currencyId = currencyId;
 	}
 
-	private final void assertCurrencyMatching(final CostAmount amt)
+	private final void assertCurrencyMatching(@NonNull final CostAmount amt)
 	{
-		if (currencyId != amt.currencyId)
+		if (!currencyId.equals(amt.currencyId))
 		{
 			throw new AdempiereException("Amount has invalid currency: " + amt + ". Expected: " + currencyId);
 		}
@@ -118,7 +112,7 @@ public class CostAmount
 
 	public CostAmount multiply(@NonNull final Quantity quantity)
 	{
-		return multiply(quantity.getQty());
+		return multiply(quantity.getAsBigDecimal());
 	}
 
 	public CostAmount add(@NonNull final CostAmount amtToAdd)
@@ -145,7 +139,7 @@ public class CostAmount
 
 	public CostAmount divide(final Quantity divisor, final int precision, final RoundingMode roundingMode)
 	{
-		return divide(divisor.getQty(), precision, roundingMode);
+		return divide(divisor.getAsBigDecimal(), precision, roundingMode);
 	}
 
 	public CostAmount roundToPrecisionIfNeeded(final int precision)

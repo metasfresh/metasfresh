@@ -37,6 +37,7 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 /**
@@ -78,7 +79,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	@Override
 	protected void loadDocumentDetails()
 	{
-		setC_Currency_ID(NO_CURRENCY);
+		setNoCurrency();
 		final I_M_InOut inout = getModel(I_M_InOut.class);
 		setDateDoc(inout.getMovementDate());
 		m_Reversal_ID = inout.getReversal_ID();// store original (voided/reversed) document
@@ -443,8 +444,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return BigDecimal.ZERO;
 		}
 
-		final int currencyId = costs.getCurrencyId();
-		final int precision = currencyDAO.getStdPrecision(getCtx(), currencyId);
+		final CurrencyId currencyId = costs.getCurrencyId();
+		final int precision = currencyDAO.getStdPrecision(getCtx(), currencyId.getRepoId());
 		final BigDecimal value = costs.getValue().setScale(precision, RoundingMode.HALF_UP);
 		return value;
 	}

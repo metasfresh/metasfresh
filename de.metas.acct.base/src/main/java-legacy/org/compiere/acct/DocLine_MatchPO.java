@@ -25,6 +25,8 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.Money;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -56,9 +58,15 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 {
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
+	private I_C_OrderLine orderLine;
+
 	public DocLine_MatchPO(final I_M_MatchPO matchPO, final Doc_MatchPO doc)
 	{
 		super(InterfaceWrapperHelper.getPO(matchPO), doc);
+
+		final int orderLineId = matchPO.getC_OrderLine_ID();
+		orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
+
 		setDateDoc(matchPO.getDateTrx());
 
 		final Quantity qty = Quantity.of(matchPO.getQty(), getProductStockingUOM());
@@ -70,17 +78,17 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	public CostAmount getPOCostAmount(final AcctSchema as)
 	{
 		I_C_OrderLine orderLine = getOrderLine();
-		final CostAmount poCostPrice = Services.get(IOrderLineBL.class).getCostPrice(orderLine);
+		final CostAmount poCostPrice = getOrderLineCostAmount();
 
 		final CostAmount poCost = poCostPrice.multiply(getQty());
-		if (poCost.getCurrencyId() == as.getCurrencyId().getRepoId())
+		if (poCost.getCurrencyId().equals(as.getCurrencyId()))
 		{
 			return poCost;
 		}
 
 		final I_C_Order order = orderLine.getC_Order();
 		final BigDecimal rate = currencyConversionBL.getRate(
-				poCost.getCurrencyId(),
+				poCost.getCurrencyId().getRepoId(),
 				as.getCurrencyId().getRepoId(),
 				order.getDateAcct(),
 				order.getC_ConversionType_ID(),
@@ -102,7 +110,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final AcctSchemaId acctSchemaId = as.getId();
-		
+
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(getProductCostingLevel(as))
 				.acctSchemaId(acctSchemaId)
@@ -129,12 +137,11 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 		final Quantity qty = isReturnTrx() ? getQty().negate() : getQty();
 
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final CostAmount costPrice = orderLineBL.getCostPrice(orderLine);
+		final CostAmount costPrice = getOrderLineCostAmount();
 		final CostAmount amt = costPrice.multiply(qty);
 
 		final AcctSchemaId acctSchemaId = as.getId();
-		
+
 		return costDetailService.createCostDetail(
 				CostDetailCreateRequest.builder()
 						.acctSchemaId(acctSchemaId)
@@ -151,9 +158,18 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 						.build());
 	}
 
-	public I_C_OrderLine getOrderLine()
+	I_C_OrderLine getOrderLine()
 	{
-		return InterfaceWrapperHelper.create(getModel(I_M_MatchPO.class).getC_OrderLine(), I_C_OrderLine.class);
+		return orderLine; 
+	}
+
+	private CostAmount getOrderLineCostAmount()
+	{
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+		final I_C_OrderLine orderLine = getOrderLine();
+		final Money costPrice = orderLineBL.getCostPrice(orderLine);
+		return CostAmount.ofMoney(costPrice);
 	}
 
 	public int getReceipt_InOutLine_ID()

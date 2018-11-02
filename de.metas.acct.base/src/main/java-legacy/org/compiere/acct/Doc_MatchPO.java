@@ -72,7 +72,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	@Override
 	protected void loadDocumentDetails()
 	{
-		setC_Currency_ID(Doc.NO_CURRENCY);
+		setNoCurrency();
 		docLine = new DocLine_MatchPO(getModel(I_M_MatchPO.class), this);
 
 		setDateDoc(docLine.getDateDoc());

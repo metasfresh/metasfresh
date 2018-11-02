@@ -428,17 +428,17 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
+//	@Override
+//	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+//	}
+//
+//	@Override
+//	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+//	}
 
 	/** Set Währung.
 		@param C_Currency_ID 

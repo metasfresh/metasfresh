@@ -65,7 +65,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	@Override
 	protected void loadDocumentDetails()
 	{
-		setC_Currency_ID(NO_CURRENCY);
+		setNoCurrency();
 		m_issue = getModel(I_C_ProjectIssue.class);
 		setDateDoc(m_issue.getMovementDate());
 		setDateAcct(m_issue.getMovementDate());

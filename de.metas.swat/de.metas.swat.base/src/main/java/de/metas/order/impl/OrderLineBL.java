@@ -53,13 +53,14 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.costing.CostAmount;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -79,7 +80,6 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 public class OrderLineBL implements IOrderLineBL
@@ -605,39 +605,39 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public CostAmount getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
+	public Money getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final int currencyId = orderLine.getC_Currency_ID();
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 		
 		final BigDecimal poCostPrice = orderLine.getPriceCost();
 		if (poCostPrice != null && poCostPrice.signum() != 0)
 		{
-			return CostAmount.of(poCostPrice, currencyId);
+			return Money.of(poCostPrice, currencyId);
 		}
 
 		BigDecimal priceActual = orderLine.getPriceActual();
 		if (!isTaxIncluded(orderLine))
 		{
-			return CostAmount.of(priceActual, currencyId);
+			return Money.of(priceActual, currencyId);
 		}
 
 		final int taxId = orderLine.getC_Tax_ID();
 		if (taxId <= 0)
 		{
 			// shall not happen
-			return CostAmount.of(priceActual, currencyId);
+			return Money.of(priceActual, currencyId);
 		}
 
 		final MTax tax = MTax.get(Env.getCtx(), taxId);
 		if (tax.isZeroTax())
 		{
-			return CostAmount.of(priceActual, currencyId);
+			return Money.of(priceActual, currencyId);
 		}
 
 		final int stdPrecision = getPrecision(orderLine);
 		final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(tax, priceActual, true/* taxIncluded */, stdPrecision);
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
-		return CostAmount.of(priceActualWithoutTax, currencyId);
+		return Money.of(priceActualWithoutTax, currencyId);
 	}
 	
 	@Override

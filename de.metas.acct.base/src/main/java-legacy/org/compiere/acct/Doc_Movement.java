@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.mmovement.api.IMovementDAO;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_Movement;
 
 import com.google.common.collect.ImmutableList;
@@ -28,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
-import de.metas.costing.ICostingService;
 import de.metas.util.Services;
 
 /**
@@ -46,18 +44,6 @@ import de.metas.util.Services;
  */
 public class Doc_Movement extends Doc<DocLine_Movement>
 {
-	private final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-
-	private int m_Reversal_ID = 0;
-	private String m_DocStatus = "";
-
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
 	public Doc_Movement(final IDocBuilder docBuilder)
 	{
 		super(docBuilder, DOCTYPE_MatMovement);
@@ -66,12 +52,12 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 	@Override
 	protected void loadDocumentDetails()
 	{
-		setC_Currency_ID(NO_CURRENCY);
+		setNoCurrency();
 		final I_M_Movement move = getModel(I_M_Movement.class);
 		setDateDoc(move.getMovementDate());
 		setDateAcct(move.getMovementDate());
-		m_Reversal_ID = move.getReversal_ID();// store original (voided/reversed) document
-		m_DocStatus = move.getDocStatus();
+		// m_Reversal_ID = move.getReversal_ID();// store original (voided/reversed) document
+		// m_DocStatus = move.getDocStatus();
 		setDocLines(loadLines(move));
 	}
 
@@ -129,7 +115,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.Asset, as))
-				.setC_Currency_ID(outboundCosts.getCurrencyId())
+				.setCurrencyId(outboundCosts.getCurrencyId())
 				.setAmtSourceDrOrCr(outboundCosts.getValue()) // from (-) CR
 				.setQty(line.getQty().negate()) // outgoing
 				.locatorId(line.getM_Locator_ID())
@@ -142,7 +128,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.Asset, as))
-				.setC_Currency_ID(inboundCosts.getCurrencyId())
+				.setCurrencyId(inboundCosts.getCurrencyId())
 				.setAmtSourceDrOrCr(inboundCosts.getValue()) // to (+) DR
 				.setQty(line.getQty()) // incoming
 				.locatorId(line.getM_LocatorTo_ID())

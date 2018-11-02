@@ -328,7 +328,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		final BigDecimal chargeAmt = getAmount(Doc.AMTTYPE_Charge);
 		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
-			fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, chargeAmt);
+			fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getCurrencyId(), null, chargeAmt);
 		}
 
 		// TaxDue CR
@@ -338,7 +338,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			if (taxAmt != null && taxAmt.signum() != 0)
 			{
 				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-						getC_Currency_ID(), null, taxAmt);
+						getCurrencyId(), null, taxAmt);
 				if (tl != null)
 				{
 					tl.setC_Tax_ID(docTax.getC_Tax_ID());
@@ -360,12 +360,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					dAmt = discount;
 					fact.createLine(line,
 							line.getAccount(ProductAcctType.TDiscountGrant, as),
-							getC_Currency_ID(), dAmt, null);
+							getCurrencyId(), dAmt, null);
 				}
 			}
 			fact.createLine(line,
 					line.getAccount(ProductAcctType.Revenue, as),
-					getC_Currency_ID(), null, lineAmt);
+					getCurrencyId(), null, lineAmt);
 			if (!line.isItem())
 			{
 				grossAmt = grossAmt.subtract(lineAmt);
@@ -405,7 +405,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine(null, MAccount.get(getCtx(), receivablesServices_ID),
-					getC_Currency_ID(), serviceAmt, null);
+					getCurrencyId(), serviceAmt, null);
 		}
 
 		return facts;
@@ -434,7 +434,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
 			fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as),
-					getC_Currency_ID(), chargeAmt, null);
+					getCurrencyId(), chargeAmt, null);
 		}
 
 		// TaxDue DR
@@ -444,7 +444,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			if (taxAmt != null && taxAmt.signum() != 0)
 			{
 				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-						getC_Currency_ID(), taxAmt, null);
+						getCurrencyId(), taxAmt, null);
 				if (tl != null)
 				{
 					tl.setC_Tax_ID(docTax.getC_Tax_ID());
@@ -465,12 +465,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					dAmt = discount;
 					fact.createLine(line,
 							line.getAccount(ProductAcctType.TDiscountGrant, as),
-							getC_Currency_ID(), null, dAmt);
+							getCurrencyId(), null, dAmt);
 				}
 			}
 			fact.createLine(line,
 					line.getAccount(ProductAcctType.Revenue, as),
-					getC_Currency_ID(), lineAmt, null);
+					getCurrencyId(), lineAmt, null);
 			if (!line.isItem())
 			{
 				grossAmt = grossAmt.subtract(lineAmt);
@@ -509,7 +509,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine(null, MAccount.get(getCtx(), receivablesServices_ID),
-					getC_Currency_ID(), null, serviceAmt);
+					getCurrencyId(), null, serviceAmt);
 		}
 
 		return facts;
@@ -535,14 +535,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// Charge DR
 		fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as),
-				getC_Currency_ID(), getAmount(Doc.AMTTYPE_Charge), null);
+				getCurrencyId(), getAmount(Doc.AMTTYPE_Charge), null);
 
 		// TaxCredit DR
 		for (final DocTax docTax : getTaxes())
 		{
 			final FactLine tl = fact.createLine(null,
 					docTax.getAccount(as),  // account
-					getC_Currency_ID(),
+					getCurrencyId(),
 					docTax.getTaxAmt(), null); // DR/CR
 			if (tl != null)
 			{
@@ -563,7 +563,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					amt = amt.add(discount);
 					dAmt = discount;
 					final MAccount tradeDiscountReceived = line.getAccount(ProductAcctType.TDiscountRec, as);
-					fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), null, dAmt);
+					fact.createLine(line, tradeDiscountReceived, getCurrencyId(), null, dAmt);
 				}
 			}
 
@@ -572,20 +572,20 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
 				fact.createLine(line,
 						line.getAccount(ProductAcctType.InventoryClearing, as),
-						getC_Currency_ID(),
+						getCurrencyId(),
 						amtReceived, null,  // DR/CR
 						line.getQtyReceivedAbs());
 
 				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
 				fact.createLine(line,
 						line.getAccount(ProductAcctType.Expense, as),
-						getC_Currency_ID(),
+						getCurrencyId(),
 						amtNotReceived, null,  // DR/CR
 						line.getQtyNotReceivedAbs());
 			}
 			else // service
 			{
-				fact.createLine(line, line.getAccount(ProductAcctType.Expense, as), getC_Currency_ID(), amt, null);
+				fact.createLine(line, line.getAccount(ProductAcctType.Expense, as), getCurrencyId(), amt, null);
 			}
 
 			if (!line.isItem())
@@ -625,7 +625,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
-			fact.createLine(null, MAccount.get(getCtx(), payablesServices_ID), getC_Currency_ID(), null, serviceAmt);
+			fact.createLine(null, MAccount.get(getCtx(), payablesServices_ID), getCurrencyId(), null, serviceAmt);
 		}
 
 		return facts;
@@ -650,12 +650,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		BigDecimal serviceAmt = BigDecimal.ZERO;
 		// Charge CR
 		fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as),
-				getC_Currency_ID(), null, getAmount(Doc.AMTTYPE_Charge));
+				getCurrencyId(), null, getAmount(Doc.AMTTYPE_Charge));
 		// TaxCredit CR
 		for (final DocTax docTax : getTaxes())
 		{
 			final FactLine tl = fact.createLine(null, docTax.getAccount(as),
-					getC_Currency_ID(), null, docTax.getTaxAmt());
+					getCurrencyId(), null, docTax.getTaxAmt());
 			if (tl != null)
 			{
 				tl.setC_Tax_ID(docTax.getC_Tax_ID());
@@ -674,7 +674,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					amt = amt.add(discount);
 					dAmt = discount;
 					final MAccount tradeDiscountReceived = line.getAccount(ProductAcctType.TDiscountRec, as);
-					fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), dAmt, null);
+					fact.createLine(line, tradeDiscountReceived, getCurrencyId(), dAmt, null);
 				}
 			}
 
@@ -683,20 +683,20 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
 				fact.createLine(line,
 						line.getAccount(ProductAcctType.InventoryClearing, as),
-						getC_Currency_ID(),
+						getCurrencyId(),
 						null, amtReceived,  // DR/CR
 						line.getQtyReceivedAbs());
 
 				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
 				fact.createLine(line,
 						line.getAccount(ProductAcctType.Expense, as),
-						getC_Currency_ID(),
+						getCurrencyId(),
 						null, amtNotReceived,  // DR/CR
 						line.getQtyNotReceivedAbs());
 			}
 			else // service
 			{
-				fact.createLine(line, line.getAccount(ProductAcctType.Expense, as), getC_Currency_ID(), null, amt);
+				fact.createLine(line, line.getAccount(ProductAcctType.Expense, as), getCurrencyId(), null, amt);
 			}
 
 			if (!line.isItem())
@@ -737,7 +737,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine(null, MAccount.get(getCtx(), payablesServices_ID),
-					getC_Currency_ID(), serviceAmt, null);
+					getCurrencyId(), serviceAmt, null);
 		}
 
 		return facts;

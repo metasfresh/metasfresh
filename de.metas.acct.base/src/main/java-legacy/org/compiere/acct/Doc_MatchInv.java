@@ -51,6 +51,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
@@ -87,7 +88,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	private DocLine_MatchInv docLine = null;
 
 	private I_C_InvoiceLine _invoiceLine = null;
-	private int invoiceCurrencyId;
+	private CurrencyId invoiceCurrencyId;
 	/** Invoice line net amount, excluding taxes, in invoice's currency */
 	private BigDecimal invoiceLineNetAmt = null;
 	private ICurrencyConversionContext invoiceCurrencyConversionCtx;
@@ -105,7 +106,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	protected void loadDocumentDetails()
 	{
 		final I_M_MatchInv matchInv = getM_MatchInv();
-		setC_Currency_ID(Doc.NO_CURRENCY);
+		setNoCurrency();
 		setDateDoc(matchInv.getDateTrx());
 
 		docLine = new DocLine_MatchInv(matchInv, this);
@@ -120,7 +121,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			final int C_BPartner_ID = invoice.getC_BPartner_ID();
 			setC_BPartner_ID(C_BPartner_ID);
 
-			invoiceCurrencyId = invoice.getC_Currency_ID();
+			invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 			invoiceLineNetAmt = _invoiceLine.getLineNetAmt();
 
 			// Correct included Tax
@@ -222,7 +223,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// From Receipt
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
 				.setAccount(getAccount(Doc.ACCTTYPE_NotInvoicedReceipts, as))
-				.setC_Currency_ID(costs.getCurrencyId())
+				.setCurrencyId(costs.getCurrencyId())
 				.setAmtSource(costs.getValue(), null)
 				.setQty(getQty())
 				.buildAndAdd();
@@ -233,7 +234,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// From Invoice
 		final FactLine cr_InventoryClearing = fact.createLine()
 				.setAccount(docLine.getInventoryClearingAccount(as))
-				.setC_Currency_ID(getInvoiceCurrencyId())
+				.setCurrencyId(getInvoiceCurrencyId())
 				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
 				.setAmtSource(null, getInvoiceLineMatchedAmt())
 				.setQty(getQty().negate())
@@ -246,7 +247,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// see also Fact.java: checking for isMultiCurrency()
 		if (dr_NotInvoicedReceipts != null
 				&& cr_InventoryClearing != null
-				&& dr_NotInvoicedReceipts.getC_Currency_ID() != cr_InventoryClearing.getC_Currency_ID())
+				&& !CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
 		{
 			setIsMultiCurrency(true);
 		}
@@ -286,25 +287,25 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// Determine the InvoicePriceVariance Amount and currency
 		final BigDecimal ipvAmount;
-		final int ipvCurrencyId;
+		final CurrencyId ipvCurrencyId;
 
 		// Case: the not invoiced receipts line is null (i.e. ZERO costs)
 		if (dr_NotInvoicedReceipts == null)
 		{
 			ipvAmount = cr_InventoryClearing.getSourceBalance();
-			ipvCurrencyId = cr_InventoryClearing.getC_Currency_ID();
+			ipvCurrencyId = cr_InventoryClearing.getCurrencyId();
 		}
 		// Case: the inventory clearing line is null (i.e. ZERO invoiced amount)
 		else if (cr_InventoryClearing == null)
 		{
 			ipvAmount = dr_NotInvoicedReceipts.getSourceBalance().negate();
-			ipvCurrencyId = dr_NotInvoicedReceipts.getC_Currency_ID();
+			ipvCurrencyId = dr_NotInvoicedReceipts.getCurrencyId();
 		}
 		// Case: both lines are not null
 		else
 		{
 			ipvAmount = cr_InventoryClearing.getAcctBalance().add(dr_NotInvoicedReceipts.getAcctBalance()).negate();
-			ipvCurrencyId = as.getCurrencyId().getRepoId();
+			ipvCurrencyId = as.getCurrencyId();
 		}
 
 		// If there is no invoice price variance => do nothing
@@ -364,7 +365,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return getInvoiceLine().getAD_Org_ID();
 	}
 
-	private final int getInvoiceCurrencyId()
+	private final CurrencyId getInvoiceCurrencyId()
 	{
 		return this.invoiceCurrencyId;
 	}
@@ -498,7 +499,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final BigDecimal matchAmt = getInvoiceLineMatchedAmt();
-		final int currentId = getInvoiceCurrencyId();
+		final CurrencyId currentId = getInvoiceCurrencyId();
 		final ICurrencyConversionContext currencyConvCtx = getInvoiceCurrencyConversionCtx();
 
 		final I_M_InOutLine receiptLine = getReceiptLine();

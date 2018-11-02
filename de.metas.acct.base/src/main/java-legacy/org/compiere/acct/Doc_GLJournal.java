@@ -283,7 +283,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 
 				fact.createLine(line,
 						line.getAccount(),
-						line.getC_Currency_ID(),
+						line.getCurrencyId(),
 						line.getAmtSourceDr(),
 						line.getAmtSourceCr());
 			}	// for all lines

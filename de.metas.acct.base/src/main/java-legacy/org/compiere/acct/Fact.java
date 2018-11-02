@@ -146,7 +146,7 @@ public final class Fact
 				.setAmtSource(currencyId, debitAmt, creditAmt)
 				.buildAndAdd();
 	}
-	
+
 	public FactLine createLine(final DocLine<?> docLine,
 			final MAccount account,
 			final int C_Currency_ID,
@@ -155,7 +155,6 @@ public final class Fact
 		final CurrencyId currencyId = CurrencyId.ofRepoId(C_Currency_ID);
 		return createLine(docLine, account, currencyId, debitAmt, creditAmt);
 	}
-
 
 	public final FactLineBuilder createLine()
 	{
@@ -221,36 +220,17 @@ public final class Fact
 	/**
 	 * Create and convert Fact Line. Used to create either a DR or CR entry
 	 *
-	 * @param docLine Document Line or null
-	 * @param accountDr Account to be used if Amt is DR balance
-	 * @param accountCr Account to be used if Amt is CR balance
-	 * @param C_Currency_ID Currency
-	 * @param Amt if negative Cr else Dr
-	 * @return FactLine
-	 */
-	public FactLine createLine(DocLine<?> docLine, MAccount accountDr, MAccount accountCr, int C_Currency_ID, BigDecimal Amt)
-	{
-		return createLine()
-				.setDocLine(docLine)
-				.setC_Currency_ID(C_Currency_ID)
-				.setAccountDrOrCrAndAmount(accountDr, accountCr, Amt)
-				.buildAndAdd();
-	}   // createLine
-
-	/**
-	 * Create and convert Fact Line. Used to create either a DR or CR entry
-	 *
 	 * @param docLine Document line or null
 	 * @param account Account to be used
-	 * @param C_Currency_ID Currency
+	 * @param currencyId Currency
 	 * @param Amt if negative Cr else Dr
 	 * @return FactLine
 	 */
-	public FactLine createLine(DocLine<?> docLine, MAccount account, int C_Currency_ID, BigDecimal Amt)
+	public FactLine createLine(DocLine<?> docLine, MAccount account, CurrencyId currencyId, BigDecimal Amt)
 	{
 		return createLine()
 				.setDocLine(docLine)
-				.setC_Currency_ID(C_Currency_ID)
+				.setCurrencyId(currencyId)
 				.setAccount(account)
 				.setAmtSourceDrOrCr(Amt)
 				.buildAndAdd();
@@ -365,10 +345,10 @@ public final class Fact
 
 		// Amount
 		if (diff.signum() < 0)   // negative balance => DR
-			line.setAmtSource(m_doc.getC_Currency_ID(), diff.abs(), BigDecimal.ZERO);
+			line.setAmtSource(m_doc.getCurrencyId(), diff.abs(), BigDecimal.ZERO);
 		else
 			// positive balance => CR
-			line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, diff);
+			line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, diff);
 
 		// Convert
 		line.convert();
@@ -518,12 +498,12 @@ public final class Fact
 						if (difference.isReversal())
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, difference.getPostBalance());
+							line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 						else
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), BigDecimal.ZERO);
+							line.setAmtSource(m_doc.getCurrencyId(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 					}
 					else
@@ -531,12 +511,12 @@ public final class Fact
 						if (difference.isReversal())
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), BigDecimal.ZERO);
+							line.setAmtSource(m_doc.getCurrencyId(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 						else
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, difference.getPostBalance());
+							line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 					}
 					line.convert();
@@ -604,11 +584,11 @@ public final class Fact
 
 		//
 		// Find line biggest BalanceSheet or P&L line
-		final int acctCurrencyId = getAcctSchema().getCurrencyId().getRepoId();
+		final CurrencyId acctCurrencyId = getAcctSchema().getCurrencyId();
 		for (final FactLine l : m_lines)
 		{
 			// Consider only the lines which are in foreign currency
-			if (l.getC_Currency_ID() == acctCurrencyId)
+			if (acctCurrencyId.equals(l.getCurrencyId()))
 			{
 				continue;
 			}
@@ -637,7 +617,7 @@ public final class Fact
 			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcctId());
 
 			// Amount
-			line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, BigDecimal.ZERO);
+			line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, BigDecimal.ZERO);
 			line.convert();
 			// Accounted
 			BigDecimal drAmt = BigDecimal.ZERO;
@@ -957,7 +937,7 @@ public final class Fact
 
 		private MAccount account = null;
 
-		private int currencyId;
+		private CurrencyId currencyId;
 		private ICurrencyConversionContext currencyConversionCtx;
 		private BigDecimal amtSourceDr;
 		private BigDecimal amtSourceCr;
@@ -1043,7 +1023,7 @@ public final class Fact
 
 			//
 			// Amounts - one needs to not zero
-			final int currencyId = getC_Currency_ID();
+			final CurrencyId currencyId = getCurrencyId();
 			final BigDecimal amtSourceDr = getAmtSourceDr();
 			final BigDecimal amtSourceCr = getAmtSourceCr();
 			line.setAmtSource(currencyId, amtSourceDr, amtSourceCr);
@@ -1213,7 +1193,7 @@ public final class Fact
 
 		public FactLineBuilder setAmtSource(final CurrencyId currencyId, final BigDecimal amtSourceDr, final BigDecimal amtSourceCr)
 		{
-			setC_Currency_ID(currencyId.getRepoId());
+			setCurrencyId(currencyId);
 			setAmtSource(amtSourceDr, amtSourceCr);
 			return this;
 		}
@@ -1236,18 +1216,14 @@ public final class Fact
 			return this;
 		}
 
-		public FactLineBuilder setC_Currency_ID(final int currencyId)
+		public FactLineBuilder setCurrencyId(final CurrencyId currencyId)
 		{
 			assertNotBuild();
 			this.currencyId = currencyId;
 			return this;
 		}
-		public FactLineBuilder setCurrencyId(final CurrencyId currencyId)
-		{
-			return setC_Currency_ID(currencyId.getRepoId());
-		}
 
-		private final int getC_Currency_ID()
+		private final CurrencyId getCurrencyId()
 		{
 			return currencyId;
 		}

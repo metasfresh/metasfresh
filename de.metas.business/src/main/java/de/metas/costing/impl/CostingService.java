@@ -161,7 +161,7 @@ public class CostingService implements ICostingService
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		final AcctSchema as = acctSchemasRepo.getById(request.getAcctSchemaId());
 		final CurrencyId acctCurrencyId = as.getCurrencyId();
-		if (request.getAmt().getCurrencyId() == acctCurrencyId.getRepoId())
+		if (request.getAmt().getCurrencyId().equals(acctCurrencyId))
 		{
 			return request;
 		}
@@ -172,7 +172,7 @@ public class CostingService implements ICostingService
 				request.getCurrencyConversionTypeId(),
 				request.getClientId().getRepoId(),
 				request.getOrgId().getRepoId());
-		final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getAmt().getCurrencyId(), acctCurrencyId.getRepoId());
+		final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getAmt().getCurrencyId().getRepoId(), acctCurrencyId.getRepoId());
 		final BigDecimal amtConv = rate.convertAmount(request.getAmt().getValue(), as.getCosting().getCostingPrecision());
 
 		return request.deriveByAmount(CostAmount.of(amtConv, acctCurrencyId));

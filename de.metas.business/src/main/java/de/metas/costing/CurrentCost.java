@@ -109,7 +109,7 @@ public final class CurrentCost
 
 	private final void assertCostCurrency(@NonNull final CostAmount amt)
 	{
-		if (amt.getCurrencyId() != getCurrencyId().getRepoId())
+		if (!amt.getCurrencyId().equals(getCurrencyId()))
 		{
 			throw new AdempiereException("Invalid amount currency for `" + amt + "`. Expected: " + getCurrencyId());
 		}
@@ -134,7 +134,7 @@ public final class CurrentCost
 		final Quantity newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
-			currentCostPrice = newAmt.divide(newQty.getQty(), precision, RoundingMode.HALF_UP);
+			currentCostPrice = newAmt.divide(newQty.getAsBigDecimal(), precision, RoundingMode.HALF_UP);
 		}
 		currentQty = newQty;
 

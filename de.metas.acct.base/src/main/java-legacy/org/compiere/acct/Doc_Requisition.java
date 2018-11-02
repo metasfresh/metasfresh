@@ -50,7 +50,7 @@ public class Doc_Requisition extends Doc<DocLine_Requisition>
 	@Override
 	protected void loadDocumentDetails()
 	{
-		setC_Currency_ID(NO_CURRENCY);
+		setNoCurrency();
 		final I_M_Requisition req = getModel(I_M_Requisition.class);
 		setDateDoc(req.getDateDoc());
 		setDateAcct(req.getDateDoc());

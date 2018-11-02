@@ -57,7 +57,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	@Override
 	protected void loadDocumentDetails()
 	{
-		setC_Currency_ID(NO_CURRENCY);
+		setNoCurrency();
 		final I_M_Inventory inventory = getModel(I_M_Inventory.class);
 		setDateDoc(inventory.getMovementDate());
 		setDateAcct(inventory.getMovementDate());
@@ -122,7 +122,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.Asset, as))
-				.setC_Currency_ID(costs.getCurrencyId())
+				.setCurrencyId(costs.getCurrencyId())
 				.setAmtSourceDrOrCr(costs.getValue())
 				.setQty(line.getQty())
 				.locatorId(line.getM_Locator_ID())
@@ -134,7 +134,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(invDiff)
-				.setC_Currency_ID(costs.getCurrencyId())
+				.setCurrencyId(costs.getCurrencyId())
 				.setAmtSourceDrOrCr(costs.getValue().negate())
 				.setQty(line.getQty().negate())
 				.locatorId(line.getM_Locator_ID())

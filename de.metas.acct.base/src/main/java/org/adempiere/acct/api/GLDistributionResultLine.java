@@ -2,12 +2,10 @@ package org.adempiere.acct.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.lang.ObjectUtils;
-
 import de.metas.acct.api.AccountDimension;
-import de.metas.util.Check;
-import lombok.Getter;
-import lombok.Setter;
+import de.metas.money.CurrencyId;
+import lombok.Data;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -22,11 +20,11 @@ import lombok.Setter;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,98 +35,26 @@ import lombok.Setter;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@Data
 public class GLDistributionResultLine
 {
 	public enum Sign
 	{
-		DEBIT, CREDIT, 
-				
+		DEBIT, CREDIT,
+
 		/** choose whatever side to make the mount positive */
 		DETECT
 	};
-	
+
+	@NonNull
 	private AccountDimension accountDimension = AccountDimension.NULL;
 	private BigDecimal percent = BigDecimal.ZERO;
 
 	private BigDecimal amount = BigDecimal.ZERO;
 
-	@Getter
-	@Setter
 	private Sign amountSign = Sign.DETECT;
 
-	private int currencyId = -1;
+	private CurrencyId currencyId;
 	private BigDecimal qty = BigDecimal.ZERO;
 	private String description = null;
-
-	GLDistributionResultLine()
-	{
-		super();
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	public String getDescription()
-	{
-		return description;
-	}
-
-	void setDescription(String description)
-	{
-		this.description = description;
-	}
-
-	public AccountDimension getAccountDimension()
-	{
-		return accountDimension;
-	}
-
-	void setAccountDimension(AccountDimension accountDimension)
-	{
-		Check.assumeNotNull(accountDimension, "accountDimension not null");
-		this.accountDimension = accountDimension;
-	}
-
-	void setPercent(BigDecimal percent)
-	{
-		this.percent = percent;
-	}
-
-	public BigDecimal getPercent()
-	{
-		return percent;
-	}
-
-	public BigDecimal getAmount()
-	{
-		return amount;
-	}
-
-	void setAmount(BigDecimal amount)
-	{
-		this.amount = amount;
-	}
-
-	void setC_Currency_ID(final int currencyId)
-	{
-		this.currencyId = currencyId;
-	}
-
-	public int getC_Currency_ID()
-	{
-		return currencyId;
-	}
-
-	public BigDecimal getQty()
-	{
-		return qty;
-	}
-
-	void setQty(BigDecimal qty)
-	{
-		this.qty = qty;
-	}
 }

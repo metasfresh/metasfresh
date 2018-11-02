@@ -29,8 +29,8 @@ import java.util.Map;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
-import de.metas.costing.CostAmount;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.Money;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
@@ -221,7 +221,7 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 	
-	CostAmount getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
+	Money getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
 
 	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
 

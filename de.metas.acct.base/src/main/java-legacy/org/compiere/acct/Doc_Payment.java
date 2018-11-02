@@ -125,7 +125,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		{
 			// Asset (DR)
 			FactLine fl = fact.createLine(null, getBankAccount(as),
-					getC_Currency_ID(), getAmount(), null);
+					getCurrencyId(), getAmount(), null);
 			if (fl != null && AD_Org_ID != 0)
 				fl.setAD_Org_ID(AD_Org_ID);
 			//
@@ -137,7 +137,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			else
 				acct = getAccount(Doc.ACCTTYPE_UnallocatedCash, as);
 			fl = fact.createLine(null, acct,
-					getC_Currency_ID(), null, getAmount());
+					getCurrencyId(), null, getAmount());
 			if (fl != null && AD_Org_ID != 0
 					&& getC_Charge_ID() == 0)		// don't overwrite charge
 				fl.setAD_Org_ID(AD_Org_ID);
@@ -153,14 +153,14 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			else
 				acct = getAccount(Doc.ACCTTYPE_PaymentSelect, as);
 			FactLine fl = fact.createLine(null, acct,
-					getC_Currency_ID(), getAmount(), null);
+					getCurrencyId(), getAmount(), null);
 			if (fl != null && AD_Org_ID != 0
 					&& getC_Charge_ID() == 0)		// don't overwrite charge
 				fl.setAD_Org_ID(AD_Org_ID);
 
 			// Asset (CR)
 			fl = fact.createLine(null, getBankAccount(as),
-					getC_Currency_ID(), null, getAmount());
+					getCurrencyId(), null, getAmount());
 			if (fl != null && AD_Org_ID != 0)
 				fl.setAD_Org_ID(AD_Org_ID);
 		}

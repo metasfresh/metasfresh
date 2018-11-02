@@ -81,7 +81,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	@Override
 	protected void loadDocumentDetails()
 	{
-		setC_Currency_ID(NO_CURRENCY);
+		setNoCurrency();
 		final I_PP_Cost_Collector cc = getModel(I_PP_Cost_Collector.class);
 		setDateDoc(cc.getMovementDate());
 		setDateAcct(cc.getMovementDate());

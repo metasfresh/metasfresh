@@ -105,7 +105,7 @@ import lombok.NonNull;
 					.setAccountDimension(lineDimension)
 					.setAmountSign(amountToDistribute.getLeft())
 					.setAmountToDistribute(amountToDistribute.getRight())
-					.setC_Currency_ID(line.getC_Currency_ID())
+					.setCurrencyId(line.getCurrencyId())
 					.setQtyToDistribute(line.getQty())
 					.distribute();
 			final List<FactLine> lines_Distributed = createFactLines(line, distributionResult);
@@ -261,21 +261,21 @@ import lombok.NonNull;
 		switch (glDistributionLine.getAmountSign())
 		{
 			case CREDIT:
-				factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), null, amount);
+				factLine.setAmtSource(glDistributionLine.getCurrencyId(), null, amount);
 				break;
 
 			case DEBIT:
-				factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), amount, null);
+				factLine.setAmtSource(glDistributionLine.getCurrencyId(), amount, null);
 				break;
 
 			case DETECT:
 				if (amount.signum() < 0)
 				{
-					factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), null, amount.negate());
+					factLine.setAmtSource(glDistributionLine.getCurrencyId(), null, amount.negate());
 				}
 				else
 				{
-					factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), amount, null);
+					factLine.setAmtSource(glDistributionLine.getCurrencyId(), amount, null);
 				}
 				break;
 		}

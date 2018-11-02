@@ -18,6 +18,7 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -48,6 +49,7 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -114,7 +116,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/** Location To */
 	private int m_C_LocTo_ID = 0;
 	/** Currency */
-	private Integer m_C_Currency_ID = null;
+	private Optional<CurrencyId> _currencyId;
 	/** Conversion Type */
 	private int m_C_ConversionType_ID = -1;
 	/** Period */
@@ -168,21 +170,22 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return InterfaceWrapperHelper.create(getPO(), modelType);
 	}
 
-	public final int getC_Currency_ID()
+	public final CurrencyId getCurrencyId()
 	{
-		if (m_C_Currency_ID == null)
+		if (_currencyId == null)
 		{
-			// Get it from underlying document line model
-			m_C_Currency_ID = getValue("C_Currency_ID");
-
-			// Get it from document header
-			if (m_C_Currency_ID == null || m_C_Currency_ID <= 0)
+			final CurrencyId lineCurrencyId = CurrencyId.ofRepoIdOrNull(getValue("C_Currency_ID"));
+			if (lineCurrencyId != null)
 			{
-				m_C_Currency_ID = m_doc.getC_Currency_ID();
+				_currencyId = Optional.of(lineCurrencyId);
+			}
+			else
+			{
+				_currencyId = Optional.ofNullable(m_doc.getCurrencyId());
 			}
 		}
 
-		return m_C_Currency_ID;
+		return _currencyId.orElse(null);
 	}
 
 	public final int getC_ConversionType_ID()

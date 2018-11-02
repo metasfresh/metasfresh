@@ -156,7 +156,8 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		return Optional.of(matchInv)
 				.map(I_M_MatchInv::getC_InvoiceLine)
 				.map(I_C_InvoiceLine::getC_OrderLine)
-				.map(Services.get(IOrderLineBL.class)::getCostPrice);
+				.map(Services.get(IOrderLineBL.class)::getCostPrice)
+				.map(CostAmount::ofMoney);
 	}
 
 	private Optional<CostAmount> getPOCostPriceForReceiptInOutLine(final int receiptInOutLineId)
@@ -164,7 +165,8 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.load(receiptInOutLineId, I_M_InOutLine.class);
 		return Optional.of(receiptLine)
 				.map(I_M_InOutLine::getC_OrderLine)
-				.map(Services.get(IOrderLineBL.class)::getCostPrice);
+				.map(Services.get(IOrderLineBL.class)::getCostPrice)
+				.map(CostAmount::ofMoney);
 	}
 
 	@Override

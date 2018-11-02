@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -56,8 +57,8 @@ import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
-import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
@@ -297,16 +298,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private I_C_BP_BankAccount bpBankAccount = null;
 	/** Cach Book */
 	private int m_C_CashBook_ID = -1;
-	/** Currency */
-	private int m_C_Currency_ID = -1;
-	/** Currency Precision */
-	private int m_precision = -1;
+	
+	private Optional<CurrencyId> _currencyId; // lazy
+	private Integer _currencyPrecision = -1; // lazy
 
 	/** Contained Doc Lines */
 	private List<DocLineType> docLines;
 
-	/** No Currency in Document Indicator (-2) */
-	protected static final int NO_CURRENCY = -2;
+//	/** No Currency in Document Indicator (-2) */
+//	protected static final int NO_CURRENCY = -2;
 
 	protected final Properties getCtx()
 	{
@@ -990,22 +990,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final void checkConvertible(final AcctSchema acctSchema)
 	{
 		// No Currency in document
-		if (getC_Currency_ID() == NO_CURRENCY)
+		final CurrencyId docCurrencyId = getCurrencyId();
+		if (docCurrencyId == null)
 		{
 			log.debug("(none) - {}", this);
 			return;
 		}
 
 		// Get All Currencies
-		final Set<Integer> currencyIds = new HashSet<>();
-		currencyIds.add(getC_Currency_ID());
+		final Set<CurrencyId> currencyIds = new HashSet<>();
+		currencyIds.add(docCurrencyId);
+
 		final List<DocLineType> docLines = getDocLines();
 		if (docLines != null)
 		{
 			for (final DocLineType docLine : docLines)
 			{
-				final int currencyId = docLine.getC_Currency_ID();
-				if (currencyId != NO_CURRENCY)
+				final CurrencyId currencyId = docLine.getCurrencyId();
+				if (currencyId != null)
 				{
 					currencyIds.add(currencyId);
 				}
@@ -1013,15 +1015,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		// Check
-		final int acctCurrencyId = acctSchema.getCurrencyId().getRepoId();
-		for (final int currencyId : currencyIds)
+		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
+		for (final CurrencyId currencyId : currencyIds)
 		{
-			if (currencyId <= 0)
-			{
-				continue;
-			}
-
-			if (currencyId == acctCurrencyId)
+			if (CurrencyId.equals(currencyId, acctCurrencyId))
 			{
 				continue;
 			}
@@ -1029,7 +1026,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 			try
 			{
-				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
+				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId.getRepoId(), acctCurrencyId.getRepoId());
 			}
 			catch (final NoCurrencyRateFoundException e)
 			{
@@ -1558,32 +1555,27 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	public final CurrencyId getCurrencyId()
 	{
-		return CurrencyId.ofRepoIdOrNull(getC_Currency_ID());
-	}
-
-	public final int getC_Currency_ID()
-	{
-		if (m_C_Currency_ID == -1)
+		if(_currencyId == null)
 		{
-			m_C_Currency_ID = getValueAsIntOrZero("C_Currency_ID");
-			if (m_C_Currency_ID <= 0)
-			{
-				m_C_Currency_ID = NO_CURRENCY;
-			}
+			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(getValueAsIntOrZero("C_Currency_ID"));
+			_currencyId = Optional.ofNullable(currencyId);
 		}
-		return m_C_Currency_ID;
+		
+		return _currencyId.orElse(null);
 	}
 
-	protected final void setC_Currency_ID(final int C_Currency_ID)
-	{
-		m_C_Currency_ID = C_Currency_ID;
-		m_precision = -1;
-	}
-	
 	protected final void setC_Currency_ID(final CurrencyId currencyId)
 	{
-		setC_Currency_ID(CurrencyId.toRepoId(currencyId));
+		_currencyId = Optional.ofNullable(currencyId);
+		_currencyPrecision = null;
 	}
+	
+	protected final void setNoCurrency()
+	{
+		final CurrencyId currencyId = null;
+		setC_Currency_ID(currencyId);
+	}
+
 
 	public final boolean isMultiCurrency()
 	{
@@ -1603,11 +1595,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final int getStdPrecision()
 	{
-		if (m_precision == -1)
+		if(_currencyPrecision != null)
 		{
-			m_precision = currencyDAO.getStdPrecision(getCtx(), getC_Currency_ID());
+			return _currencyPrecision;
 		}
-		return m_precision;
+		
+		final CurrencyId currencyId = getCurrencyId();
+		if(currencyId == null)
+		{
+			return ICurrencyDAO.DEFAULT_PRECISION;
+		}
+		
+		_currencyPrecision = currencyDAO.getStdPrecision(getCtx(), currencyId.getRepoId());
+		return _currencyPrecision;
 	}
 
 	public final int getGL_Category_ID()

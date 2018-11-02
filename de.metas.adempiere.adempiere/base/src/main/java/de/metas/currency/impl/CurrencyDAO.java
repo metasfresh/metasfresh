@@ -120,7 +120,7 @@ public class CurrencyDAO implements ICurrencyDAO
 		final I_C_Currency c = retrieveCurrency(ctx, C_Currency_ID);
 		if (c == null || c.getC_Currency_ID() <= 0)
 		{
-			return 2; // default
+			return DEFAULT_PRECISION; // default
 		}
 		return c.getStdPrecision();
 	}

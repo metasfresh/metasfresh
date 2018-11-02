@@ -31,6 +31,7 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -71,7 +72,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 
 		// Set Bank Account Info (Currency)
 		final I_C_BP_BankAccount ba = getC_BP_BankAccount(); // shall not be null
-		setC_Currency_ID(ba.getC_Currency_ID());
+		setC_Currency_ID(CurrencyId.ofRepoId(ba.getC_Currency_ID()));
 
 		setDocLines(loadLines(bs));
 	}
@@ -143,7 +144,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 					.setDocLine(line)
 					.setAccount(getAccount(Doc.ACCTTYPE_BankAsset, as))
 					.setAmtSourceDrOrCr(line.getStmtAmt())
-					.setC_Currency_ID(line.getC_Currency_ID())
+					.setCurrencyId(line.getCurrencyId())
 					.orgIdIfValid(bankOrgId)
 					.setC_BPartner_ID_IfValid(C_BPartner_ID)
 					.buildAndAdd();
@@ -171,7 +172,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				final FactLineBuilder flBuilder = fact.createLine()
 						.setDocLine(line)
 						.setAccount(acct_Charge)
-						.setC_Currency_ID(line.getC_Currency_ID())
+						.setCurrencyId(line.getCurrencyId())
 						.orgIdIfValid(bankOrgId)
 						.setC_BPartner_ID_IfValid(C_BPartner_ID);
 				if (chargeAmt.signum() > 0)
@@ -193,7 +194,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			{
 				final FactLineBuilder flBuilder = fact.createLine()
 						.setDocLine(line)
-						.setC_Currency_ID(line.getC_Currency_ID())
+						.setCurrencyId(line.getCurrencyId())
 						.orgIdIfValid(bankOrgId)
 						.setC_BPartner_ID_IfValid(C_BPartner_ID);
 
@@ -253,7 +254,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final FactLineBuilder factLine_BankTransfer_Builder = fact.createLine()
 				.setDocLine(line)
 				.setAccount(getAccount(Doc.ACCTTYPE_BankInTransit, as))
-				.setC_Currency_ID(line.getC_Currency_ID())
+				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(line.getBankTransferCurrencyConversionCtx())
 				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
 				.setC_BPartner_ID_IfValid(line.getC_BPartner_ID());
@@ -380,7 +381,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 					.setDocLine(line)
 					.setAccount(acct_BankInTransit)
 					.setAmtSourceDrOrCr(line.getTrxAmt().negate())
-					.setC_Currency_ID(line.getC_Currency_ID())
+					.setCurrencyId(line.getCurrencyId())
 					.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId()) // bank org, payment org
 					.setC_BPartner_ID_IfValid(C_BPartner_ID)
 					.buildAndAdd();
@@ -394,7 +395,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 						.setSubLine_ID(lineRef.getC_BankStatementLine_Ref_ID())
 						.setAccount(acct_BankInTransit)
 						.setAmtSourceDrOrCr(lineRef.getTrxAmt().negate())
-						.setC_Currency_ID(lineRef.getC_Currency_ID())
+						.setCurrencyId(CurrencyId.ofRepoId(lineRef.getC_Currency_ID()))
 						.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId(lineRef.getC_Payment())) // bank org, payment org
 						.setC_BPartner_ID_IfValid(
 								Util.firstGreaterThanZero(lineRef.getC_BPartner_ID(), C_BPartner_ID)) // if the lineref has a C_BPartner, then use it

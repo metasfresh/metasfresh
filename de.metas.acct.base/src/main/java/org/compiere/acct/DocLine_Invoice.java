@@ -84,7 +84,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 			}
 		}	// correct included Tax
 
-		setAmount(lineNetAmt, priceList, qtyInvoiced.getQty());	// qty for discount calc
+		setAmount(lineNetAmt, priceList, qtyInvoiced.getAsBigDecimal());	// qty for discount calc
 	}
 
 	public final I_C_InvoiceLine getC_InvoiceLine()

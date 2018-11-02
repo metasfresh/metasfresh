@@ -1,5 +1,8 @@
 package de.metas.money;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -38,6 +41,11 @@ public class CurrencyId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
+	public static Optional<CurrencyId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
 	public static int toRepoId(final CurrencyId currencyId)
 	{
 		return currencyId != null ? currencyId.getRepoId() : -1;
@@ -48,5 +56,10 @@ public class CurrencyId implements RepoIdAware
 	private CurrencyId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Currency_ID");
+	}
+
+	public static boolean equals(final CurrencyId currencyId1, final CurrencyId currencyId2)
+	{
+		return Objects.equals(currencyId1, currencyId2);
 	}
 }

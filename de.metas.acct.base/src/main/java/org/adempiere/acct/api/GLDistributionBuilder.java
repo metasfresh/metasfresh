@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import de.metas.acct.api.AccountDimension;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -65,7 +66,7 @@ public class GLDistributionBuilder
 	private BigDecimal _amountToDistribute;
 	private Sign _amountSign = Sign.DETECT;
 	private BigDecimal _qtyToDistribute;
-	private Integer _currencyId;
+	private CurrencyId _currencyId;
 	private Integer _precision;
 	private AccountDimension _accountDimension;
 
@@ -176,7 +177,7 @@ public class GLDistributionBuilder
 			final BigDecimal amt = amountToDistribute.multiply(percent).divide(Env.ONEHUNDRED, precision, BigDecimal.ROUND_HALF_UP);
 			resultLine.setAmount(amt);
 			resultLine.setAmountSign(getAmountSign());
-			resultLine.setC_Currency_ID(getC_Currency_ID());
+			resultLine.setCurrencyId(getCurrencyId());
 		}
 
 		//
@@ -296,14 +297,14 @@ public class GLDistributionBuilder
 		return glDistributionDAO.retrieveLines(glDistribution);
 	}
 
-	public GLDistributionBuilder setC_Currency_ID(final int currencyId)
+	public GLDistributionBuilder setCurrencyId(final CurrencyId currencyId)
 	{
 		_currencyId = currencyId;
 		_precision = null;
 		return this;
 	}
 
-	private final int getC_Currency_ID()
+	private final CurrencyId getCurrencyId()
 	{
 		Check.assumeNotNull(_currencyId, "currencyId not null");
 		return _currencyId;
@@ -313,7 +314,7 @@ public class GLDistributionBuilder
 	{
 		if (_precision == null)
 		{
-			_precision = currencyDAO.getStdPrecision(getCtx(), getC_Currency_ID());
+			_precision = currencyDAO.getStdPrecision(getCtx(), getCurrencyId().getRepoId());
 		}
 		return _precision;
 	}
