@@ -1,11 +1,11 @@
 package de.metas.ui.web.document.process;
 
-import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_Fact_Acct;
 
+import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
