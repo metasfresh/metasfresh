@@ -28,6 +28,8 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.util.Services;
@@ -248,9 +250,15 @@ public class M_Element extends X_AD_Element
 
 		final String baseLanguage = Services.get(ILanguageDAO.class).retrieveBaseLanguage();
 
+		final ImmutableSet<String> columnsChanged = ElementChangedEvent.ALL_COLUMN_NAMES
+				.stream()
+				.filter(columnName -> is_ValueChanged(columnName))
+				.collect(ImmutableSet.toImmutableSet());
+
 		Services.get(IElementBL.class).performUpdatesAfterSaveElement(ElementChangedEvent.builder()
 				.adElementId(AdElementId.ofRepoId(getAD_Element_ID()))
 				.adLanguage(baseLanguage)
+				.updatedColumns(columnsChanged)
 				.columnName(getColumnName())
 				.name(getName())
 				.printName(getPrintName())
