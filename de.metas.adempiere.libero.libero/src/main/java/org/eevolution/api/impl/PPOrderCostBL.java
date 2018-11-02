@@ -28,8 +28,8 @@ import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
-import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.product.ProductId;
@@ -126,7 +126,7 @@ public class PPOrderCostBL implements IPPOrderCostBL
 
 	private void createPPOrderCosts(final I_PP_Order ppOrder, final CostSegment costSegment)
 	{
-		final CurrentCostsRepository currentCostsRepository = Adempiere.getBean(CurrentCostsRepository.class);
+		final ICurrentCostsRepository currentCostsRepository = Adempiere.getBean(ICurrentCostsRepository.class);
 		final CostResult costs = currentCostsRepository.getByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting);
 		for (final CostElement costElement : costs.getCostElements())
 		{

@@ -34,6 +34,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
@@ -86,7 +87,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostAmount costPrice = getPOCostPriceForMatchInv(matchInvId)
 				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request));
 		final CostAmount amt = costPrice.multiply(request.getQty());
-		return createCostDetailRecordNoCostsChanged(request.deriveByAmount(amt));
+		return createCostDetailRecordNoCostsChanged(request.withAmount(amt));
 	}
 
 	@Override
@@ -96,7 +97,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
 				.orElseGet(() -> getCurrentCostPrice(request));
 		final CostAmount amt = costPrice.multiply(request.getQty());
-		return createCostDetailRecordNoCostsChanged(request.deriveByAmount(amt));
+		return createCostDetailRecordNoCostsChanged(request.withAmount(amt));
 	}
 
 	@Override
@@ -122,7 +123,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		{
 			final CostAmount price = currentCosts.getCurrentCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			result = createCostDetailRecordWithChangedCosts(request.deriveByAmount(amt), currentCosts);
+			result = createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
 			currentCosts.adjustCurrentQty(qty);
 		}
@@ -170,7 +171,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final int orderLineId)
+	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = Env.getCtx();

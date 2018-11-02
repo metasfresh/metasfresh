@@ -5,6 +5,8 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.order.OrderLineId;
+
 /*
  * #%L
  * de.metas.business
@@ -43,6 +45,6 @@ public interface CostingMethodHandler
 
 	void voidCosts(CostDetailVoidRequest request);
 
-	BigDecimal calculateSeedCosts(CostSegment costSegment, final int orderLineId);
+	BigDecimal calculateSeedCosts(CostSegment costSegment, final OrderLineId orderLineId);
 
 }

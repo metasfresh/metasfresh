@@ -26,6 +26,7 @@ import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
@@ -96,7 +97,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		{
 			final CostAmount price = currentCosts.getCurrentCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			result = createCostDetailRecordWithChangedCosts(request.deriveByAmount(amt), currentCosts);
+			result = createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
 			currentCosts.adjustCurrentQty(qty);
 		}
@@ -107,7 +108,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final int orderLineId)
+	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = Env.getCtx();

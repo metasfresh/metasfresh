@@ -3,16 +3,12 @@ package de.metas.costing;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_CostDetail;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostDetail.CostDetailBuilder;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
-import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -54,7 +50,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final int orderLineId)
+	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
 	{
 		return null;
 	}
@@ -64,7 +60,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	{
 		//
 		// Check if existing cost detail
-		final I_M_CostDetail costDetail = getExistingCostDetailOrNull(request);
+		final CostDetail costDetail = getExistingCostDetailOrNull(request);
 		if (costDetail != null)
 		{
 			return createCostDetailCreateResult(costDetail, request);
@@ -73,7 +69,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return createCost(request);
 	}
 
-	protected CostDetailCreateResult createCost(final CostDetailCreateRequest request)
+	protected final CostDetailCreateResult createCost(final CostDetailCreateRequest request)
 	{
 		//
 		// Create new cost detail
@@ -120,7 +116,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 	}
 
-	protected I_M_CostDetail getExistingCostDetailOrNull(final CostDetailCreateRequest request)
+	protected final CostDetail getExistingCostDetailOrNull(final CostDetailCreateRequest request)
 	{
 		final CostDetailQuery costDetailQuery = extractCostDetailQuery(request);
 		return costDetailsRepo.getCostDetailOrNull(costDetailQuery);
@@ -186,58 +182,41 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	protected final CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
 	{
-		final I_M_CostDetail costDetail = prepareCostDetail(request);
-		costDetail.setIsChangingCosts(false);
-		costDetailsRepo.save(costDetail);
+		final CostDetail costDetail = costDetailsRepo.create(prepareCostDetail(request)
+				.changingCosts(false));
 
 		return createCostDetailCreateResult(costDetail, request);
 	}
 
 	protected final CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
 	{
-		final I_M_CostDetail costDetail = prepareCostDetail(request);
-		costDetail.setIsChangingCosts(true);
-		costDetail.setPrev_CurrentCostPrice(previousCosts.getCurrentCostPrice().getValue());
-		costDetail.setPrev_CurrentCostPriceLL(previousCosts.getCurrentCostPriceLL().getValue());
-		costDetail.setPrev_CurrentQty(previousCosts.getCurrentQty().getAsBigDecimal());
-		costDetailsRepo.save(costDetail);
+		final CostDetail costDetail = costDetailsRepo.create(prepareCostDetail(request)
+				.changingCosts(true)
+				.previousAmounts(CostDetailPreviousAmounts.of(previousCosts)));
 
 		return createCostDetailCreateResult(costDetail, request);
 	}
 
-	private final I_M_CostDetail prepareCostDetail(@NonNull final CostDetailCreateRequest request)
+	private final CostDetailBuilder prepareCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
-		final I_M_CostDetail costDetail = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class);
-		final ClientId costDetailClientId = ClientId.ofRepoId(costDetail.getAD_Client_ID());
-		Check.assumeEquals(costDetailClientId, request.getClientId(), "AD_Client_ID");
-		costDetail.setAD_Org_ID(request.getOrgId().getRepoId());
-		costDetail.setC_AcctSchema_ID(request.getAcctSchemaId().getRepoId());
-		costDetail.setM_Product_ID(request.getProductId().getRepoId());
-		costDetail.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId().getRepoId());
+		final CostDetailBuilder costDetail = CostDetail.builder()
+				.clientId(request.getClientId())
+				.orgId(request.getOrgId())
+				.acctSchemaId(request.getAcctSchemaId())
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				//
+				.amt(request.getAmt())
+				.qty(request.getQty())
+				.price(null) // TODO price
+				//
+				.documentRef(request.getDocumentRef())
+				.description(request.getDescription());
 
-		if(!request.isAllCostElements())
+		if (!request.isAllCostElements())
 		{
-			costDetail.setM_CostElement_ID(request.getCostElement().getId().getRepoId());
+			costDetail.costElementId(request.getCostElement().getId());
 		}
-
-		costDetail.setAmt(request.getAmt().getValue());
-		costDetail.setQty(request.getQty().getAsBigDecimal());
-
-		costDetail.setDescription(request.getDescription());
-
-		final CostingDocumentRef documentRef = request.getDocumentRef();
-		InterfaceWrapperHelper.setValue(costDetail, documentRef.getCostDetailColumnName(), documentRef.getRecordId());
-
-		if (documentRef.getOutboundTrx() != null)
-		{
-			costDetail.setIsSOTrx(documentRef.getOutboundTrx());
-		}
-		else
-		{
-			costDetail.setIsSOTrx(false);
-		}
-
-		costDetail.setProcessed(true); // TODO: get rid of Processed flag, or always set it!
 
 		return costDetail;
 	}
@@ -258,26 +237,44 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return getCurrentCost(request).getCurrentCostPrice();
 	}
 
-	private CostDetailCreateResult createCostDetailCreateResult(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
+	private CostDetailCreateResult createCostDetailCreateResult(final CostDetail costDetail, final CostDetailCreateRequest request)
 	{
-		final AcctSchema as = acctSchemaRepo.getById(request.getAcctSchemaId());
-		final I_C_UOM uom = productBL.getStockingUOM(costDetail.getM_Product_ID());
-		
 		return CostDetailCreateResult.builder()
-				.costSegment(extractCostSegment(request))
+				.costSegment(extractCostSegment(costDetail))
 				.costElement(request.getCostElement())
-				.amt(CostAmount.of(costDetail.getAmt(), as.getCurrencyId()))
-				.qty(Quantity.of(costDetail.getQty(), uom))
-				.costingPrecision(as.getCosting().getCostingPrecision())
+				.amt(costDetail.getAmt())
+				.qty(costDetail.getQty())
+				.price(costDetail.getPrice())
 				.build();
+	}
+
+	private CostSegment extractCostSegment(final CostDetail costDetail)
+	{
+		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+
+		final AcctSchema acctSchema = acctSchemaRepo.getById(costDetail.getAcctSchemaId());
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(costDetail.getProductId(), acctSchema);
+		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
+
+		return CostSegment.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(costDetail.getAcctSchemaId())
+				.costTypeId(costTypeId)
+				.productId(costDetail.getProductId())
+				.clientId(costDetail.getClientId())
+				.orgId(costDetail.getOrgId())
+				.attributeSetInstanceId(costDetail.getAttributeSetInstanceId())
+				.build();
+
 	}
 
 	private CostSegment extractCostSegment(final CostDetailCreateRequest request)
 	{
-		final AcctSchema as = acctSchemaRepo.getById(request.getAcctSchemaId());
 		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), as);
-		final CostTypeId costTypeId = as.getCosting().getCostTypeId();
+
+		final AcctSchema acctSchema = acctSchemaRepo.getById(request.getAcctSchemaId());
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), acctSchema);
+		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
 
 		return CostSegment.builder()
 				.costingLevel(costingLevel)

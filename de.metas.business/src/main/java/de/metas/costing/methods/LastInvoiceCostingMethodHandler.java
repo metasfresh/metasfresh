@@ -21,6 +21,7 @@ import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
@@ -68,9 +69,9 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 
 		final CostAmount amt = request.getAmt();
 		final Quantity qty = request.getQty();
-		final boolean isReturnTrx = qty.signum() < 0;
+		final boolean isOutboundTrx = qty.signum() < 0;
 
-		if (!isReturnTrx)
+		if (!isOutboundTrx)
 		{
 			if (qty.signum() != 0)
 			{
@@ -106,7 +107,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final int orderLineId)
+	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
 		return getLastInvoicePrice(costSegment);
 	}

@@ -22,8 +22,11 @@ import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -107,10 +110,10 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(CostSegment costSegment, int orderLineId)
+	public BigDecimal calculateSeedCosts(CostSegment costSegment, OrderLineId orderLineId)
 	{
 		BigDecimal costs = null;
-		if (orderLineId > 0)
+		if (orderLineId != null)
 			costs = getPOPrice(costSegment, orderLineId);
 		if (costs == null || costs.signum() == 0)
 			costs = getLastPOPrice(costSegment);
@@ -122,36 +125,37 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	 * 
 	 * @return last PO price in currency or null
 	 */
-	public static BigDecimal getPOPrice(final CostSegment costSegment, final int C_OrderLine_ID)
+	public static BigDecimal getPOPrice(@NonNull final CostSegment costSegment, @NonNull final OrderLineId orderLineId)
 	{
 		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
-		final int currencyId = as.getCurrencyId().getRepoId();
+		final CurrencyId currencyId = as.getCurrencyId();
 
-		final String sql = "SELECT currencyConvert(ol.PriceCost, o.C_Currency_ID, ?, o.DateAcct, o.C_ConversionType_ID, ol.AD_Client_ID, ol.AD_Org_ID),"
-				+ " currencyConvert(ol.PriceActual, o.C_Currency_ID, ?, o.DateAcct, o.C_ConversionType_ID, ol.AD_Client_ID, ol.AD_Org_ID) "
-				// ,ol.PriceCost,ol.PriceActual, ol.QtyOrdered, o.DateOrdered, ol.Line
-				+ "FROM C_OrderLine ol"
+		final String sql = "SELECT"
+				+ " currencyConvert(ol.PriceCost, o.C_Currency_ID, ?, o.DateAcct, o.C_ConversionType_ID, ol.AD_Client_ID, ol.AD_Org_ID)"
+				+ ", currencyConvert(ol.PriceActual, o.C_Currency_ID, ?, o.DateAcct, o.C_ConversionType_ID, ol.AD_Client_ID, ol.AD_Org_ID) "
+				+ " FROM C_OrderLine ol"
 				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
-				+ "WHERE ol.C_OrderLine_ID=?"
-				+ " AND o.IsSOTrx='N'";
+				+ " WHERE ol.C_OrderLine_ID=?"
+				+ " AND o.IsSOTrx=?";
+		final Object[] sqlParams = new Object[] {currencyId, currencyId, orderLineId, false};
 		//
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setInt(1, currencyId);
-			pstmt.setInt(2, currencyId);
-			pstmt.setInt(3, C_OrderLine_ID);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				BigDecimal retValue = rs.getBigDecimal(1);
-				if (retValue == null || retValue.signum() == 0)
+				BigDecimal priceCost = rs.getBigDecimal(1);
+				if (priceCost != null && priceCost.signum() != 0)
 				{
-					retValue = rs.getBigDecimal(2);
+					return priceCost;
 				}
-				return retValue;
+				
+				final BigDecimal priceActual = rs.getBigDecimal(2);
+				return priceActual;
 			}
 			else
 			{

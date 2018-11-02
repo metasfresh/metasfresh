@@ -18,6 +18,7 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -135,7 +136,10 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 				.build();
 	}
 
-	private CostDetailCreateRequest createInboundCostDetailCreateRequest(final AcctSchemaId acctSchemaId, final CostElement costElement, final CostAmount amt)
+	private CostDetailCreateRequest createInboundCostDetailCreateRequest(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElement costElement,
+			@NonNull final CostAmount amt)
 	{
 		return CostDetailCreateRequest.builder()
 				.acctSchemaId(acctSchemaId)

@@ -1,8 +1,9 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-
-import de.metas.order.OrderLineId;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -26,16 +27,23 @@ import de.metas.order.OrderLineId;
  * #L%
  */
 
-public interface ICostingService
+@Value
+@Builder
+public class CostDetailPreviousAmounts
 {
-	CostResult createCostDetail(CostDetailCreateRequest request);
-	
-	CostResult createReversalCostDetails(CostDetailReverseRequest request);
+	public static CostDetailPreviousAmounts of(CurrentCost currentCosts)
+	{
+		return builder()
+				.costPrice(currentCosts.getCurrentCostPrice())
+				.costPriceLL(currentCosts.getCurrentCostPriceLL())
+				.qty(currentCosts.getCurrentQty())
+				.build();
+	}
 
-	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
-
-	/** @return seed cost or null */
-	BigDecimal calculateSeedCosts(CostSegment costSegment, CostingMethod costingMethod, final OrderLineId orderLineId);
-
-	CostResult getCurrentCosts(CostSegment costSegment, CostingMethod costingMethod);
+	@NonNull
+	CostAmount costPrice;
+	@NonNull
+	CostAmount costPriceLL;
+	@NonNull
+	Quantity qty;
 }

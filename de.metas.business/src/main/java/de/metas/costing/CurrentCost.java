@@ -44,7 +44,6 @@ public final class CurrentCost
 
 	private final CurrencyId currencyId;
 	private final int precision;
-	// private final I_C_UOM uom;
 
 	private CostAmount currentCostPrice;
 	private CostAmount currentCostPriceLL;
@@ -76,7 +75,6 @@ public final class CurrentCost
 
 		this.currencyId = currencyId;
 		this.precision = precision;
-		// this.uom = uom;
 
 		this.currentCostPrice = CostAmount.of(currentCostPrice, currencyId);
 		this.currentCostPriceLL = CostAmount.of(currentCostPriceLL, currencyId);
@@ -93,7 +91,6 @@ public final class CurrentCost
 
 		this.currencyId = from.currencyId;
 		this.precision = from.precision;
-		// this.uom = from.uom;
 
 		this.currentCostPrice = from.currentCostPrice;
 		this.currentCostPriceLL = from.currentCostPriceLL;

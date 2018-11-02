@@ -57,7 +57,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity qty = request.getQty();
 		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
 
-		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request.deriveByAmount(amt), currentCosts);
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
 		currentCosts.adjustCurrentQty(qty);
 		currentCosts.addCumulatedAmtAndQty(amt, qty);
@@ -73,7 +73,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final Quantity qty = request.getQty();
 		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
-		return createCostDetailRecordNoCostsChanged(request.deriveByAmount(amt));
+		return createCostDetailRecordNoCostsChanged(request.withAmount(amt));
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
 		final boolean isReturnTrx = qty.signum() > 0;
 
-		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request.deriveByAmount(amt), currentCosts);
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
 		currentCosts.adjustCurrentQty(qty);
 		if (isReturnTrx)

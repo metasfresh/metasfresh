@@ -118,7 +118,7 @@ public class CostDetailCreateRequest
 		return initialDocumentRef != null;
 	}
 
-	public CostDetailCreateRequest deriveByAcctSchemaId(final AcctSchemaId acctSchemaId)
+	public CostDetailCreateRequest withAcctSchemaId(@NonNull final AcctSchemaId acctSchemaId)
 	{
 		if (AcctSchemaId.equals(this.acctSchemaId, acctSchemaId))
 		{
@@ -128,7 +128,7 @@ public class CostDetailCreateRequest
 		return toBuilder().acctSchemaId(acctSchemaId).build();
 	}
 
-	public CostDetailCreateRequest deriveByCostElement(final CostElement costElement)
+	public CostDetailCreateRequest withCostElement(@NonNull final CostElement costElement)
 	{
 		if (Objects.equals(this.costElement, costElement))
 		{
@@ -138,7 +138,7 @@ public class CostDetailCreateRequest
 		return toBuilder().costElement(costElement).build();
 	}
 
-	public CostDetailCreateRequest deriveByAmount(final CostAmount amt)
+	public CostDetailCreateRequest withAmount(@NonNull final CostAmount amt)
 	{
 		if (Objects.equals(this.amt, amt))
 		{

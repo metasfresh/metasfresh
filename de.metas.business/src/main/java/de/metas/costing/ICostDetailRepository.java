@@ -1,9 +1,6 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
 import java.util.List;
-
-import org.compiere.model.I_M_CostDetail;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
@@ -32,19 +29,19 @@ import de.metas.product.ProductId;
 
 public interface ICostDetailRepository
 {
-	void save(I_M_CostDetail costDetail);
+	CostDetail create(CostDetail.CostDetailBuilder costDetailBuilder);
 
-	void delete(I_M_CostDetail costDetail);
+	void delete(CostDetail costDetail);
 
 	void deleteUnprocessedWithNoChanges(CostDetailQuery query);
 
-	I_M_CostDetail getCostDetailOrNull(CostDetailQuery query);
+	CostDetail getCostDetailOrNull(CostDetailQuery query);
 
-	BigDecimal getCostDetailAmtOrNull(CostDetailQuery query);
+	CostAmount getCostDetailAmtOrNull(CostDetailQuery query);
 
-	List<I_M_CostDetail> getAllForDocument(CostingDocumentRef documentRef);
+	List<CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 
-	List<I_M_CostDetail> getAllForDocumentAndAcctSchemaId(CostingDocumentRef documentRef, AcctSchemaId acctSchemaId);
+	List<CostDetail> getAllForDocumentAndAcctSchemaId(CostingDocumentRef documentRef, AcctSchemaId acctSchemaId);
 
 	boolean hasCostDetailsForProductId(ProductId productId);
 
