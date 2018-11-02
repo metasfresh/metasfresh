@@ -28,10 +28,5 @@ import de.metas.util.ISingletonService;
 
 public interface IElementBL extends ISingletonService
 {
-
 	public void updateUIElement(I_AD_Element element);
-
-	void createAndAssignElementsToApplicationDictionaryEntries();
-
-	void performUpdatesAfterSaveElement(ElementChangedEvent event); // TODO change this method name
 }

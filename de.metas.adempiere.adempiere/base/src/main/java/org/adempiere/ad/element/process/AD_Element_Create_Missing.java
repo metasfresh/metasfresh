@@ -1,10 +1,10 @@
 package org.adempiere.ad.element.process;
 
-import org.adempiere.ad.element.api.IElementBL;
 import org.adempiere.ad.service.IADElementDAO;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Services;
 
 /*
@@ -35,7 +35,7 @@ public class AD_Element_Create_Missing extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		Services.get(IElementBL.class).createAndAssignElementsToApplicationDictionaryEntries();
+		Services.get(IElementTranslationBL.class).createAndAssignElementsToApplicationDictionaryEntries();
 
 		return MSG_OK;
 	}

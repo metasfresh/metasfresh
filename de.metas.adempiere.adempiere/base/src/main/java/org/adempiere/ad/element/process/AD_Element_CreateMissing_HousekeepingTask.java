@@ -1,9 +1,9 @@
 package org.adempiere.ad.element.process;
 
-import org.adempiere.ad.element.api.IElementBL;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.service.IADElementDAO;
 
+import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Services;
 
 /*
@@ -35,7 +35,7 @@ public class AD_Element_CreateMissing_HousekeepingTask implements IStartupHouseK
 	public void executeTask()
 	{
 
-		Services.get(IElementBL.class).createAndAssignElementsToApplicationDictionaryEntries();
+		Services.get(IElementTranslationBL.class).createAndAssignElementsToApplicationDictionaryEntries();
 
 		Services.get(IADElementDAO.class).makeElementMandatoryInApplicationDictionaryTables();
 

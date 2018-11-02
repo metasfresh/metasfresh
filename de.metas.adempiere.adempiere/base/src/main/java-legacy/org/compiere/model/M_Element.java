@@ -21,7 +21,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.ElementChangedEvent;
-import org.adempiere.ad.element.api.IElementBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
@@ -32,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
+import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Services;
 
 /**
@@ -241,7 +241,6 @@ public class M_Element extends X_AD_Element
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
-
 		if (newRecord)
 		{
 			// the new element is not yet used so no updates are needed
@@ -255,7 +254,7 @@ public class M_Element extends X_AD_Element
 				.filter(columnName -> is_ValueChanged(columnName))
 				.collect(ImmutableSet.toImmutableSet());
 
-		Services.get(IElementBL.class).performUpdatesAfterSaveElement(ElementChangedEvent.builder()
+		Services.get(IElementTranslationBL.class).updateDependentADEntries(ElementChangedEvent.builder()
 				.adElementId(AdElementId.ofRepoId(getAD_Element_ID()))
 				.adLanguage(baseLanguage)
 				.updatedColumns(columnsChanged)

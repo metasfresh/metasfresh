@@ -70,4 +70,8 @@ public interface IElementTranslationBL extends ISingletonService
 
 	void updateElementFromElementTrl(AdElementId adElementId, String adLanguage);
 
+	void updateDependentADEntries(ElementChangedEvent event);
+
+	void createAndAssignElementsToApplicationDictionaryEntries();
+
 }
