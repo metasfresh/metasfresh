@@ -70,6 +70,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import net.miginfocom.swing.MigLayout;
@@ -107,7 +108,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 	/**
 	 * AD_PInstance_ID to be used in shipment schedules locking/unlocking
 	 */
-	private int _adPInstanceId = -1;
+	private PInstanceId _pinstanceId;
 
 	private boolean disposing = false;
 	private boolean disposed = false;
@@ -389,29 +390,28 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 		trxManager.run(this::updateShipmentSchedulesInTrx);
 	}
 
-	private void updateShipmentSchedulesInTrx(final String localTrxName)
+	private void updateShipmentSchedulesInTrx()
 	{
 		final Properties ctx = getCtx();
 		final int adUserId = Env.getAD_User_ID(ctx);
-		final int adPInstanceId = getADPInstanceId();
+		final PInstanceId adPInstanceId = getADPInstanceId();
 		final boolean updateOnlyLocked = true;
 
 		shipmentScheduleUpdater.updateShipmentSchedule(
 				ctx,
 				adUserId,
 				adPInstanceId,
-				updateOnlyLocked,
-				localTrxName);
+				updateOnlyLocked);
 	}
 
-	private final synchronized int getADPInstanceId()
+	private final synchronized PInstanceId getADPInstanceId()
 	{
-		int adPInstanceId = _adPInstanceId;
-		if (adPInstanceId <= 0)
+		PInstanceId pinstanceId = _pinstanceId;
+		if (pinstanceId == null)
 		{
-			_adPInstanceId = adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(getCtx());
+			_pinstanceId = pinstanceId = Services.get(IADPInstanceDAO.class).createPInstanceId();
 		}
-		return adPInstanceId;
+		return pinstanceId;
 	}
 
 	private void setEnabled(final boolean enabled)

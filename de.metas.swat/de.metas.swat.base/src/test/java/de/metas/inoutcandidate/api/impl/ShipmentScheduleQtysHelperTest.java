@@ -123,7 +123,7 @@ public class ShipmentScheduleQtysHelperTest
 				.shipperId(ShipperId.optionalOfRepoId(20))
 				.warehouseId(WarehouseId.ofRepoId(30))
 				.build();
-		final DeliveryLineCandidate deliveryLineCandidate = deliveryGroupCandidate.addLine(sched, CompleteStatus.OK);
+		final DeliveryLineCandidate deliveryLineCandidate = deliveryGroupCandidate.createAndAddLineCandidate(sched, CompleteStatus.OK);
 		deliveryLineCandidate.setQtyToDeliver(BigDecimal.TEN);
 
 		final IShipmentSchedulesDuringUpdate shipmentCandidates = new ShipmentSchedulesDuringUpdate();

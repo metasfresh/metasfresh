@@ -41,6 +41,7 @@ import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
@@ -100,7 +101,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 						.setContext(Env.getCtx(), localTrxName)
 						.setInvoicingParams(createDefaultInvoicingParams())
 						.setFailOnChanges(false) // ... because we have some invalid candidates which we know that it will be updated here
-						.enqueueSelection(adPInstance.getAD_PInstance_ID());
+						.enqueueSelection(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));
 				enqueueResultRef.setValue(result);
 			}
 		});

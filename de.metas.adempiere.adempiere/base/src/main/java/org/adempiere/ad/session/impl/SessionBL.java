@@ -35,11 +35,11 @@ import org.adempiere.util.net.NetUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Session;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 
 public class SessionBL implements ISessionBL

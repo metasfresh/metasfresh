@@ -31,10 +31,10 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 
 import de.metas.adempiere.service.ISweepTableBL;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 public class SweepTable extends JavaProcess
 {
@@ -133,7 +133,7 @@ public class SweepTable extends JavaProcess
 	{
 		final String sql = "select db_delete_logs(?, ?)";
 		final int adSessionId = Env.getAD_Session_ID(getCtx());
-		final int no = DB.getSQLValueEx(get_TrxName(), sql, adSessionId, getAD_PInstance_ID());
+		final int no = DB.getSQLValueEx(get_TrxName(), sql, adSessionId, getPinstanceId());
 		addLog("Deleted log data: " + no + " records");
 		return no;
 	}

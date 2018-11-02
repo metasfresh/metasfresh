@@ -75,7 +75,7 @@ public class ConcatenatePdfs extends JavaProcess
 		final String trxName = ITrx.TRXNAME_None;
 
 		final String outputDir = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_PdfDownloadPath);
-		final String fileName = "printjobs_" + getAD_PInstance_ID();
+		final String fileName = "printjobs_" + getPinstanceId().getRepoId();
 
 		final I_C_Print_Job job = InterfaceWrapperHelper.create(ctx, printJobID, I_C_Print_Job.class, trxName);
 

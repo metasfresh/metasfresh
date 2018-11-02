@@ -301,4 +301,9 @@ public class InventoryValue extends JavaProcess
 		return msg;
 	}   //  doIt
 
+	
+	private int getAD_PInstance_ID()
+	{
+		return getPinstanceId().getRepoId();
+	}
 }   //  InventoryValue

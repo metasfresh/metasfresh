@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,12 +12,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,7 +62,6 @@ import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class AttributesBL implements IAttributesBL
 {
@@ -93,10 +94,8 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public IAttributeValueGenerator getAttributeValueGeneratorOrNull(final org.compiere.model.I_M_Attribute attributeParam)
+	public IAttributeValueGenerator getAttributeValueGeneratorOrNull(@NonNull final org.compiere.model.I_M_Attribute attributeParam)
 	{
-		Check.assumeNotNull(attributeParam, "attributeParam not null");
-
 		final I_M_Attribute attribute = InterfaceWrapperHelper.create(attributeParam, I_M_Attribute.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
@@ -119,7 +118,7 @@ public class AttributesBL implements IAttributesBL
 		// First try: check if attributeHandler is implementing IAttributeValuesProvider and return it if that's the case
 		if (attributeHandler instanceof IAttributeValuesProviderFactory)
 		{
-			IAttributeValuesProviderFactory factory = (IAttributeValuesProviderFactory)attributeHandler;
+			final IAttributeValuesProviderFactory factory = (IAttributeValuesProviderFactory)attributeHandler;
 			return factory.createAttributeValuesProvider(attribute);
 		}
 		//

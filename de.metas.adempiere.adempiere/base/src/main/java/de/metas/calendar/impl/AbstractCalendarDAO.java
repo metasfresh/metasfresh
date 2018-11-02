@@ -31,11 +31,11 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_NonBusinessDay;
 import org.compiere.model.I_C_Period;
-import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.CalendarNonBusinessDays;
 import de.metas.calendar.FixedNonBusinessDay;

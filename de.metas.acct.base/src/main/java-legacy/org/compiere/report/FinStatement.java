@@ -30,10 +30,10 @@ import org.compiere.print.MPrintFormat;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *  Statement of Account
@@ -92,9 +92,6 @@ public class FinStatement extends JavaProcess
 	private StringBuffer		m_parameterWhere = new StringBuffer();
 	/**	Account							*/ 
 	private MElementValue 		m_acct = null;
-	
-	/**	Start Time						*/
-	private long 				m_start = System.currentTimeMillis();
 
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -290,7 +287,7 @@ public class FinStatement extends JavaProcess
 			+ "(AD_PInstance_ID, Fact_Acct_ID, LevelNo,"
 			+ "DateAcct, Name, Description,"
 			+ "AmtAcctDr, AmtAcctCr, Balance, Qty) ");
-		sb.append("SELECT ").append(getAD_PInstance_ID()).append(",0,0,")
+		sb.append("SELECT ").append(getPinstanceId().getRepoId()).append(",0,0,")
 			.append(DB.TO_DATE(p_DateAcct_From, true)).append(",")
 			.append(DB.TO_STRING(Msg.getMsg(Env.getCtx(), "BeginningBalance"))).append(",NULL,"
 			+ "COALESCE(SUM(AmtAcctDr),0), COALESCE(SUM(AmtAcctCr),0), COALESCE(SUM(AmtAcctDr-AmtAcctCr),0), COALESCE(SUM(Qty),0) "
@@ -326,7 +323,7 @@ public class FinStatement extends JavaProcess
 			+ "(AD_PInstance_ID, Fact_Acct_ID, LevelNo,"
 			+ "DateAcct, Name, Description,"
 			+ "AmtAcctDr, AmtAcctCr, Balance, Qty) ");
-		sb.append("SELECT ").append(getAD_PInstance_ID()).append(",Fact_Acct_ID,1,")
+		sb.append("SELECT ").append(getPinstanceId().getRepoId()).append(",Fact_Acct_ID,1,")
 			.append("TRUNC(DateAcct),NULL,NULL,"
 			+ "AmtAcctDr, AmtAcctCr, AmtAcctDr-AmtAcctCr, Qty "
 			+ "FROM Fact_Acct "
@@ -347,7 +344,7 @@ public class FinStatement extends JavaProcess
 		//	Translated Version ...
 		sb = new StringBuffer ("UPDATE T_ReportStatement r SET (Name,Description)=(")
 			.append(sql_select).append(") "
-			+ "WHERE Fact_Acct_ID <> 0 AND AD_PInstance_ID=").append(getAD_PInstance_ID());
+			+ "WHERE Fact_Acct_ID <> 0 AND AD_PInstance_ID=").append(getPinstanceId().getRepoId());
 		//
 	   no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
 	   log.debug("Name #" + no);

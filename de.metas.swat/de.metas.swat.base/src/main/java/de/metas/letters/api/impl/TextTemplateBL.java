@@ -40,9 +40,9 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.adempiere.util.CacheCtx;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.letters.api.ITextTemplateBL;
@@ -56,6 +56,7 @@ import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.ILetterProducer;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.report.jasper.client.JRClient;
 import de.metas.util.Services;
@@ -179,7 +180,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 				.build();
 		Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(jasperProcessInfo);
 
-		createLetterSpoolRecord(jasperProcessInfo.getAD_PInstance_ID(), request, jasperProcessInfo.getAD_Client_ID());
+		createLetterSpoolRecord(jasperProcessInfo.getPinstanceId(), request, jasperProcessInfo.getAD_Client_ID());
 
 		final JRClient jrClient = JRClient.get();
 		final byte[] pdf = jrClient.report(jasperProcessInfo);
@@ -209,7 +210,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return jasperProcessId;
 	}
 
-	private static void createLetterSpoolRecord(final int adPInstanceId, final Letter request, final int adClientId)
+	private static void createLetterSpoolRecord(final PInstanceId pinstanceId, final Letter request, final int adClientId)
 	{
 		final String sql = "INSERT INTO " + I_T_Letter_Spool.Table_Name + "("
 				+ " " + I_T_Letter_Spool.COLUMNNAME_AD_Client_ID
@@ -236,7 +237,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 				new Object[] {
 						adClientId,
 						request.getAdOrgId(), // NOTE: using the same Org as in C_Letter is very important for reports to know from where to take the Org Header
-						adPInstanceId,
+						pinstanceId,
 						10, // seqNo
 						request.getSubject(),
 						request.getBody(),

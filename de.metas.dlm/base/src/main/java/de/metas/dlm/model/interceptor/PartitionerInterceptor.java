@@ -27,6 +27,7 @@ import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionAsyncRequ
 import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 
 /*
@@ -157,7 +158,8 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 					.setConfig(config)
 					.setRecordToAttach(TableRecordReference.ofOrNull(model))
 					.build();
-			DLMPartitionerWorkpackageProcessor.schedule(request, -1);
+			final PInstanceId pinstanceId = null;
+			DLMPartitionerWorkpackageProcessor.schedule(request, pinstanceId);
 		}
 	}
 
@@ -221,7 +223,8 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 					.setConfig(config)
 					.setRecordToAttach(TableRecordReference.ofOrNull(model))
 					.build();
-			DLMPartitionerWorkpackageProcessor.schedule(request, -1);
+			final PInstanceId pinstanceId = null;
+			DLMPartitionerWorkpackageProcessor.schedule(request, pinstanceId);
 		}
 	}
 }

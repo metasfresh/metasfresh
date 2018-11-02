@@ -13,11 +13,11 @@ package de.metas.lock.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -93,8 +93,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		}
 		//
 		// Lock by selection
-
-		else if (lockCommand.getSelectionToLock_AD_PInstance_ID() > 0)
+		else if (lockCommand.getSelectionToLock_AD_PInstance_ID() != null)
 		{
 			if (lockCommand.getParentLock() != null)
 			{
@@ -190,7 +189,8 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	 *
 	 * @param lockCommand
 	 * @param record
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li><code>true</code> if record was locked
 	 *         <li><code>false</code> if records was NOT locked because it's already locked and {@link LockCommand#isFailIfAlreadyLocked()} is false
 	 *         </ul>
@@ -214,7 +214,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 		//
 		// Unlock by selection
-		if (unlockCommand.getSelectionToUnlock_AD_PInstance_ID() > 0)
+		if (unlockCommand.getSelectionToUnlock_AD_PInstance_ID() != null)
 		{
 			countUnlocked = unlockBySelection(unlockCommand);
 		}
@@ -306,8 +306,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		// DB-client before we could lock it. This means that we are either too slow to do anything meaningful at all
 		// or that there are already way too many clients attempting to find work on this table
 		logger.info("Unable to select and lock a record in {} after {} retries."
-				+ ". Giving up, because we are either too slow or there are too many concurent DB clients looking for work."
-				, new Object[] { query.getTableName(), maxLockRetries });
+				+ ". Giving up, because we are either too slow or there are too many concurent DB clients looking for work.", new Object[] { query.getTableName(), maxLockRetries });
 
 		return null;
 	}

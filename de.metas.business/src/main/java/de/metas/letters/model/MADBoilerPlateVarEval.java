@@ -32,8 +32,9 @@ import java.util.Properties;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
 import org.compiere.model.Query;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
+
+import de.metas.cache.CCache;
 
 /**
  * Boiler Plate Variable Evaluation Timing

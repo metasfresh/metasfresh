@@ -2,9 +2,9 @@ package de.metas.picking.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.compiere.util.CacheMgt;
 import org.springframework.stereotype.Component;
 
+import de.metas.cache.CacheMgt;
 import de.metas.picking.model.I_M_Picking_Config;
 
 /*

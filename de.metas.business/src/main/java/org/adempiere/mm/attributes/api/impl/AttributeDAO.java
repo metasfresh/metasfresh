@@ -3,6 +3,8 @@ package org.adempiere.mm.attributes.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import lombok.NonNull;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,12 +43,11 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class AttributeDAO implements IAttributeDAO
 {
@@ -176,7 +177,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeValue retrieveAttributeValueOrNull(final I_M_Attribute attribute, final String value)
+	public I_M_AttributeValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value)
 	{
 		//
 		// In case we are dealing with a high-volume attribute values set, we can not fetch all of them,
@@ -198,7 +199,9 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeValue retrieveAttributeValueOrNull(final I_M_Attribute attribute, @NonNull final AttributeValueId attributeValueId)
+	public I_M_AttributeValue retrieveAttributeValueOrNull(
+			@NonNull final I_M_Attribute attribute,
+			@NonNull final AttributeValueId attributeValueId)
 	{
 		//
 		// In case we are dealing with a high-volume attribute values set, we can not fetch all of them,
@@ -208,7 +211,7 @@ public class AttributeDAO implements IAttributeDAO
 			return Services.get(IQueryBL.class)
 					.createQueryBuilder(I_M_AttributeValue.class, attribute)
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attribute.getM_Attribute_ID())
-					.addEqualsFilter(I_M_AttributeValue.COLUMN_Value, attributeValueId)
+					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueId)
 					.create()
 					.firstOnly(I_M_AttributeValue.class);
 		}
@@ -391,13 +394,13 @@ public class AttributeDAO implements IAttributeDAO
 	@Cached(cacheName = I_M_AttributeValue.Table_Name
 			+ "#by#" + I_M_AttributeValue.COLUMNNAME_M_Attribute_ID
 			+ "#" + I_M_AttributeValue.COLUMNNAME_Value)
-	/* package */Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(
+	Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(
 			@CacheCtx final Properties ctx,
 			final int attributeId,
-			// NOTE: we are caching this method only if we dont have a filter.
+			// NOTE: we are caching this method only if we don't have a filter.
 			// If we have a filter:
-			// * that's mutable so it will fuck up our case
-			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karoten ID example from)
+			// * that's mutable so it will screw up up our case
+			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karotten ID example from)
 			@CacheSkipIfNotNull final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter)
 	{
 		final IQueryBuilder<I_M_AttributeValue> queryBuilder = Services.get(IQueryBL.class)

@@ -80,7 +80,7 @@ public interface I_M_ShipmentSchedule extends
 	public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
 	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
 	public int getM_HU_PI_Item_Product_ID();
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException;
+	// public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 	// @formatter:on
 	// end task 05097
 

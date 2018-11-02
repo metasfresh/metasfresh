@@ -33,21 +33,18 @@ import lombok.Getter;
  * This service will probably become obsolete when we turn {@link StatusService} into a "real" spring-managed REST endpoint, because then we can simply inject the properties into it directly.
  */
 @Service
+@Getter
 public class RabbitmqPropertiesProvider
 {
 	@Value("${spring.swingui.rabbitmq.host:" + StatusServiceResult.RABBITMQ_USE_APPSERVER_HOSTNAME + "}")
-	@Getter
 	private String rabbitmqHost;
 
 	@Value("${spring.swingui.rabbitmq.port:5672}")
-	@Getter
 	private String rabbitmqPort;
 
-	@Value("${spring.rabbitmq.username:metasfresh}")
-	@Getter
+	@Value("${spring.rabbitmq.username:guest}")
 	private String rabbitmqUsername;
 
-	@Value("${spring.rabbitmq.password:metasfresh}")
-	@Getter
+	@Value("${spring.rabbitmq.password:guest}")
 	private String rabbitmqPassword;
 }

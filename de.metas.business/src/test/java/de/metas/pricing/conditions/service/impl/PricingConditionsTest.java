@@ -10,7 +10,7 @@ import static de.metas.pricing.conditions.service.impl.PricingConditionsTestUtil
 import static de.metas.pricing.conditions.service.impl.PricingConditionsTestUtils.createQueryForQtyAndAttributeValues;
 import static de.metas.pricing.conditions.service.impl.PricingConditionsTestUtils.createSchema;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -155,7 +155,7 @@ public class PricingConditionsTest
 		final PricingConditionsTestData1 data = PricingConditionsTestData1.newInstance();
 		{
 			data.break20.setM_Product_ID(-1);
-			save(data.break20);
+			saveRecord(data.break20);
 		}
 
 		data.assertSchemaBreakIdForQty(25).isEqualTo(data.break20.getM_DiscountSchemaBreak_ID());
@@ -170,7 +170,7 @@ public class PricingConditionsTest
 		final I_M_DiscountSchemaBreak schemaBreak = createBreak(schema, 10);
 		schemaBreak.setM_Product_Category_ID(product.getM_Product_Category_ID());
 		schemaBreak.setM_Product_ID(product.getM_Product_ID());
-		save(schemaBreak);
+		saveRecord(schemaBreak);
 
 		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema));
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product, 15));
@@ -188,7 +188,7 @@ public class PricingConditionsTest
 		final I_M_DiscountSchemaBreak schemaBreak = createBreak(schema, 10);
 		schemaBreak.setM_Product_Category_ID(product.getM_Product_Category_ID());
 		schemaBreak.setM_Product_ID(-1);
-		save(schemaBreak);
+		saveRecord(schemaBreak);
 
 		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema));
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product, 15));
@@ -206,7 +206,7 @@ public class PricingConditionsTest
 		final I_M_DiscountSchemaBreak schemaBreak = createBreak(schema, 10);
 		schemaBreak.setM_Product_Category_ID(-1);
 		schemaBreak.setM_Product_ID(-1);
-		save(schemaBreak);
+		saveRecord(schemaBreak);
 
 		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema));
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product, 15));
@@ -231,7 +231,7 @@ public class PricingConditionsTest
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
 		schemaBreak1.setBreakDiscount(BigDecimal.valueOf(1));
-		save(schemaBreak1);
+		saveRecord(schemaBreak1);
 
 		final I_M_DiscountSchemaBreak schemaBreak2 = createBreak(schema1, 20);
 		POJOWrapper.setInstanceName(schemaBreak2, "schemaBreak2");
@@ -239,7 +239,7 @@ public class PricingConditionsTest
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
 		schemaBreak2.setBreakDiscount(BigDecimal.valueOf(2));
-		save(schemaBreak2);
+		saveRecord(schemaBreak2);
 
 		PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema1));
 
@@ -266,7 +266,7 @@ public class PricingConditionsTest
 		// test also if seqNo is still respected
 		{
 			schemaBreak1.setM_AttributeValue(null);
-			save(schemaBreak1);
+			saveRecord(schemaBreak1);
 			pricingConditions = repo.retrievePricingConditionsById(id(schema1));
 		}
 
@@ -292,13 +292,13 @@ public class PricingConditionsTest
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
-		save(schemaBreak1);
+		saveRecord(schemaBreak1);
 
 		final I_M_DiscountSchemaBreak schemaBreak2 = create(createBreak(schema1, 20), I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(null);
-		save(schemaBreak2);
+		saveRecord(schemaBreak2);
 
 		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema1));
 
@@ -322,13 +322,13 @@ public class PricingConditionsTest
 		schemaBreak1.setM_Product_Category_ID(product1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
-		save(schemaBreak1);
+		saveRecord(schemaBreak1);
 
 		final I_M_DiscountSchemaBreak schemaBreak2 = createBreak(schema1, 20);
 		schemaBreak2.setM_Product_Category_ID(product1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
-		save(schemaBreak2);
+		saveRecord(schemaBreak2);
 
 		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema1));
 
@@ -354,14 +354,14 @@ public class PricingConditionsTest
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
 		schemaBreak1.setBreakDiscount(new BigDecimal(50));
-		save(schemaBreak1);
+		saveRecord(schemaBreak1);
 
 		final I_M_DiscountSchemaBreak schemaBreak2 = create(createBreak(schema1, 20), I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
 		schemaBreak2.setBreakDiscount(new BigDecimal(25));
-		save(schemaBreak2);
+		saveRecord(schemaBreak2);
 
 		final BigDecimal price = BigDecimal.valueOf(1);
 
@@ -381,7 +381,7 @@ public class PricingConditionsTest
 		assertThat(priceAfterConditions1).isEqualByComparingTo(BigDecimal.ONE);
 
 		schemaBreak1.setM_AttributeValue(null);
-		save(schemaBreak1);
+		saveRecord(schemaBreak1);
 
 		final BigDecimal priceAfterConditions2 = calculatePrice(price, request);
 		assertThat(priceAfterConditions2).isEqualByComparingTo(new BigDecimal("0.500000"));
@@ -397,21 +397,21 @@ public class PricingConditionsTest
 		final I_M_AttributeValue attrValue1 = createAttrValue(createAttr("Attr1"), "AttrValue1");
 		final I_M_AttributeValue attrValue2 = createAttrValue(createAttr("Attr2"), "AttrValue2");
 
-		final I_M_DiscountSchemaBreak schemaBreak1 = createBreak(schema1, 10);
-		schemaBreak1.setBreakValue(new BigDecimal(10));
-		schemaBreak1.setM_Product_Category_ID(product1.getM_Product_Category_ID());
-		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
-		schemaBreak1.setM_AttributeValue(attrValue1);
-		schemaBreak1.setBreakDiscount(new BigDecimal(50));
-		save(schemaBreak1);
+		final I_M_DiscountSchemaBreak schemaBreak_10 = createBreak(schema1, 10);
+		schemaBreak_10.setBreakValue(new BigDecimal(10));
+		schemaBreak_10.setM_Product_Category_ID(product1.getM_Product_Category_ID());
+		schemaBreak_10.setM_Product_ID(product1.getM_Product_ID());
+		schemaBreak_10.setM_AttributeValue(attrValue1);
+		schemaBreak_10.setBreakDiscount(new BigDecimal(50));
+		saveRecord(schemaBreak_10);
 
-		final I_M_DiscountSchemaBreak schemaBreak2 = createBreak(schema1, 20);
-		schemaBreak2.setBreakValue(new BigDecimal(20));
-		schemaBreak2.setM_Product_Category_ID(product1.getM_Product_Category_ID());
-		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
-		schemaBreak2.setM_AttributeValue(attrValue2);
-		schemaBreak2.setBreakDiscount(new BigDecimal(25));
-		save(schemaBreak2);
+		final I_M_DiscountSchemaBreak schemaBreak_20 = createBreak(schema1, 20);
+		schemaBreak_20.setBreakValue(new BigDecimal(20));
+		schemaBreak_20.setM_Product_Category_ID(product1.getM_Product_Category_ID());
+		schemaBreak_20.setM_Product_ID(product1.getM_Product_ID());
+		schemaBreak_20.setM_AttributeValue(attrValue2);
+		schemaBreak_20.setBreakDiscount(new BigDecimal(25));
+		saveRecord(schemaBreak_20);
 
 		final BigDecimal price = BigDecimal.valueOf(1);
 
@@ -434,8 +434,8 @@ public class PricingConditionsTest
 		assertThat(priceAfterConditions1).isEqualByComparingTo(new BigDecimal("0.750000"));
 
 		final I_M_AttributeValue attrValue3 = createAttrValue(createAttr("Attr3"), "AttrValue3");
-		schemaBreak2.setM_AttributeValue(attrValue3);
-		save(schemaBreak2);
+		schemaBreak_20.setM_AttributeValue(attrValue3);
+		saveRecord(schemaBreak_20);
 
 		final BigDecimal priceAfterConditions2 = calculatePrice(price, request);
 		assertThat(priceAfterConditions2).isEqualByComparingTo(new BigDecimal("0.500000"));
@@ -457,14 +457,14 @@ public class PricingConditionsTest
 		schemaBreak1.setM_Product_Category_ID(product1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setBreakDiscount(new BigDecimal(50));
-		save(schemaBreak1);
+		saveRecord(schemaBreak1);
 
 		final I_M_DiscountSchemaBreak schemaBreak2 = createBreak(schema1, 20);
 		schemaBreak2.setBreakValue(new BigDecimal(20));
 		schemaBreak2.setM_Product_Category_ID(product1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setBreakDiscount(new BigDecimal(25));
-		save(schemaBreak2);
+		saveRecord(schemaBreak2);
 
 		final PricingConditions pricingConditions = repo.getPricingConditionsById(schema1.getM_DiscountSchema_ID());
 

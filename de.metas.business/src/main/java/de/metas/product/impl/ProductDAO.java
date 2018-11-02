@@ -43,7 +43,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
 import de.metas.product.ProductAndCategoryAndManufacturerId;

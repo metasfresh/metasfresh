@@ -23,7 +23,6 @@ package org.eevolution.model;
  */
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.jmx.JMXRegistry;
@@ -31,9 +30,11 @@ import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.eevolution.mrp.jmx.JMXMRPStatus;
+
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.IModelCacheService;
 
 /**
  * Libero Validator

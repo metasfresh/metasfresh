@@ -61,7 +61,7 @@ import com.github.zafarkhaja.semver.Version;
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
-import de.metas.adempiere.util.cache.CacheInterceptor;
+import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.DefaultServiceNamePolicy;

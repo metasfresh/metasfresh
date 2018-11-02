@@ -29,9 +29,6 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.adempiere.ad.dao.cache.IModelCacheService;
-import org.adempiere.ad.dao.cache.ITableCacheConfig;
-import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
@@ -69,7 +66,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
@@ -86,6 +82,10 @@ import de.metas.adempiere.modelvalidator.OrderLine;
 import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
 import de.metas.bpartner.interceptor.C_BPartner_Location;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.i18n.IADMessageDAO;

@@ -33,9 +33,9 @@ import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.ITreeListener;
 import org.adempiere.model.tree.TreeListenerSupport;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

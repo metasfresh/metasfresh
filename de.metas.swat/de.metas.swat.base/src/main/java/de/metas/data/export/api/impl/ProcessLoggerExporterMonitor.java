@@ -29,7 +29,6 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,6 +41,7 @@ import de.metas.data.export.api.IExporter;
 import de.metas.data.export.api.IExporterMonitor;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -58,7 +58,6 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 {
 	private static final Logger logger = LogManager.getLogger(ProcessLoggerExporterMonitor.class);
 
-	private final Properties ctx;
 	private final int adProcessId;
 	private final Object params;
 	private final Class<?> paramsInterfaceClass;
@@ -74,13 +73,12 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 	 * @param params object which contains the export parameters
 	 * @param paramsInterfaceClass interface class to be used when we are introspecting the export parameters
 	 */
-	public <T> ProcessLoggerExporterMonitor(final Properties ctx, final int adProcessId, T params, Class<T> paramsInterfaceClass)
+	public <T> ProcessLoggerExporterMonitor(final int adProcessId, T params, Class<T> paramsInterfaceClass)
 	{
 		Check.assume(adProcessId > 0, "adProcessId > 0");
 		Check.assumeNotNull(params, "params not null");
 		Check.assumeNotNull(paramsInterfaceClass, "paramsInterfaceClass not null");
 
-		this.ctx = ctx;
 		this.adProcessId = adProcessId;
 		this.params = params;
 		this.paramsInterfaceClass = paramsInterfaceClass;
@@ -121,8 +119,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 
 	private I_AD_PInstance createPInstance()
 	{
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, adProcessId, 0, 0);
-		
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(adProcessId, 0, 0);
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
 
@@ -158,7 +155,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 			piParams.add(ProcessInfoParameter.ofValueObject(pd.getName(), value));
 		}
 		
-		Services.get(IADPInstanceDAO.class).saveParameterToDB(pinstance.getAD_PInstance_ID(), piParams);
+		Services.get(IADPInstanceDAO.class).saveParameterToDB(PInstanceId.ofRepoId(pinstance.getAD_PInstance_ID()), piParams);
 
 		return pinstance;
 	}

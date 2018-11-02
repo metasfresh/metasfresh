@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -28,7 +30,6 @@ import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -38,12 +39,12 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * Create MLookups
@@ -79,7 +80,7 @@ public class MLookupFactory
 
 	/**
 	 * Create MLookup
-	 * 
+	 *
 	 * @throws AdempiereException if Lookup could not be created
 	 */
 	public static MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID, final String ctxTableName, final String ctxColumnName, final int AD_Reference_Value_ID,
@@ -134,9 +135,11 @@ public class MLookupFactory
 		return ofLookupInfo(ctx, lookupInfo, Column_ID);
 	}   // create
 
-	public static final MLookup ofLookupInfo(final Properties ctx, final MLookupInfo lookupInfo, final int AD_Column_ID)
+	public static final MLookup ofLookupInfo(
+			final Properties ctx,
+			@NonNull final MLookupInfo lookupInfo,
+			final int AD_Column_ID)
 	{
-		Check.assumeNotNull(lookupInfo, "Parameter lookupInfo is not null");
 		final int tabNo = 0;
 		return new MLookup(ctx, AD_Column_ID, lookupInfo, tabNo);
 	}
@@ -182,11 +185,11 @@ public class MLookupFactory
 	 * Get Information for Lookups based on Column_ID for Table Columns or Process Parameters.
 	 *
 	 * The SQL returns three columns:
-	 * 
+	 *
 	 * <pre>
 	 *		Key, Value, Name, IsActive	(where either key or value is null)
 	 * </pre>
-	 * 
+	 *
 	 * @param ctx context for access
 	 * @param WindowNo window no
 	 * @param ColumnName key column name
@@ -297,7 +300,7 @@ public class MLookupFactory
 
 	/**
 	 * Creates Direct access SQL Query. Similar with regular query but without validation rules, no security and no ORDER BY.
-	 * 
+	 *
 	 * @param info
 	 * @return SELECT Key, Value, DisplayName, IsActive FROM TableName WHERE KeyColumn=?
 	 */
@@ -323,7 +326,7 @@ public class MLookupFactory
 
 	/**************************************************************************
 	 * Get Lookup SQL for Lists
-	 * 
+	 *
 	 * @param AD_Reference_Value_ID reference value
 	 * @return SELECT NULL, Value, Name, IsActive FROM AD_Ref_List
 	 */
@@ -406,7 +409,7 @@ public class MLookupFactory
 
 	/**
 	 * Get Lookup SQL for List
-	 * 
+	 *
 	 * @param languageInfo report Language
 	 * @param AD_Reference_Value_ID reference value
 	 * @param linkColumnName link column name
@@ -454,7 +457,7 @@ public class MLookupFactory
 
 	/**
 	 * Get Embedded Lookup SQL for Table Lookup
-	 * 
+	 *
 	 * @param languageInfo report language
 	 * @param BaseColumn base column name
 	 * @param BaseTable base table name
@@ -475,7 +478,7 @@ public class MLookupFactory
 
 	/**************************************************************************
 	 * Get Lookup SQL for direct Table Lookup
-	 * 
+	 *
 	 * @param ctx context for access
 	 * @param ColumnName column name
 	 * @return SELECT Key, NULL, Name, IsActive from Table (fully qualified)

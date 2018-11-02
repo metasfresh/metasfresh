@@ -1,5 +1,7 @@
 package de.metas.material.cockpit.stock.process;
 
+import lombok.NonNull;
+
 import java.sql.SQLException;
 import java.util.List;
 
@@ -16,7 +18,7 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
-import de.metas.material.cockpit.stock.StockRepository;
+import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.process.JavaProcess;
@@ -24,7 +26,6 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -59,7 +60,7 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 {
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private final StockRepository dataUpdateRequestHandler = Adempiere.getBean(StockRepository.class);
+	private final StockDataUpdateRequestHandler dataUpdateRequestHandler = Adempiere.getBean(StockDataUpdateRequestHandler.class);
 
 	@Override
 	@RunOutOfTrx

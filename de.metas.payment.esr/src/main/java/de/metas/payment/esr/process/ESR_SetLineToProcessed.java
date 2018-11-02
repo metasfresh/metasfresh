@@ -42,7 +42,7 @@ public class ESR_SetLineToProcessed extends JavaProcess
 				get_TrxName());
 
 
-		final String description = getProcessInfo().getTitle() + " #" + getAD_PInstance_ID();
+		final String description = getProcessInfo().getTitle() + " #" + getPinstanceId().getRepoId();
 		esrImportLine.setProcessed(true);
 		esrImportLine.setDescription(description);
 		InterfaceWrapperHelper.save(esrImportLine);

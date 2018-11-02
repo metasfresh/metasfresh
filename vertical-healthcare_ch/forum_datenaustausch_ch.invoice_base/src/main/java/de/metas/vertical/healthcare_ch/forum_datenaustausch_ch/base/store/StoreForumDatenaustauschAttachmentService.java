@@ -11,7 +11,6 @@ import java.net.URI;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CCache;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +18,8 @@ import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.storeattachment.StoreAttachmentServiceImpl;
+import de.metas.cache.CCache;
+import de.metas.dunning_gateway.spi.DunningExportClientFactory;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.util.Check;
@@ -113,10 +114,13 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 			return Optional.empty();
 		}
 
-		final boolean isForumDatenaustausch = attachmentEntry.hasTagSetToString(
+		final boolean isForumDatenaustauschInvoice = attachmentEntry.hasTagSetToString(
 				InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
 				ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
-		if (!isForumDatenaustausch)
+		final boolean isForumDatenaustauschDunning = attachmentEntry.hasTagSetToString(
+				DunningExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
+				ForumDatenaustauschChConstants.DUNNING_EXPORT_PROVIDER_ID);
+		if (!isForumDatenaustauschInvoice && !isForumDatenaustauschDunning)
 		{
 			return Optional.empty();
 		}

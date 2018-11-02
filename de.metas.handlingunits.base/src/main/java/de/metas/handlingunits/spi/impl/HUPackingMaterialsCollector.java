@@ -38,7 +38,6 @@ import java.util.TreeMap;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,6 +50,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;

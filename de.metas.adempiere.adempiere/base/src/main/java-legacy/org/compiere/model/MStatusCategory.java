@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.Properties;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 

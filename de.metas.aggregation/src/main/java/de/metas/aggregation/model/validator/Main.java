@@ -24,14 +24,14 @@ package de.metas.aggregation.model.validator;
 
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.CacheMgt;
 
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.I_C_Aggregation_Attribute;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.IModelCacheService;
 
 /**
  * Module activator

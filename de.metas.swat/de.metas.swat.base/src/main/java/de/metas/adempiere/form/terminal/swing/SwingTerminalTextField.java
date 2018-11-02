@@ -39,6 +39,7 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.ParseException;
+import java.util.Objects;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -64,8 +65,8 @@ import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -100,22 +101,14 @@ import net.miginfocom.swing.MigLayout;
 	 *
 	 * @see #showKeyboardDelayed()
 	 */
-	private Timer timer = new Timer(KEYBOARD_ShowDelayMillis, new ActionListener()
-	{
-		@Override
-		public void actionPerformed(final ActionEvent e)
-		{
-			// show keyboard now!
-			showKeyboard();
-		}
-	});
+	private Timer timer = new Timer(KEYBOARD_ShowDelayMillis, event -> showKeyboard(false));
 
 	private class TextFieldMouseListener extends MouseAdapter
 	{
 		@Override
 		public void mouseClicked(final MouseEvent e)
 		{
-			showKeyboard();
+			showKeyboard(true);
 		}
 	};
 
@@ -195,7 +188,7 @@ import net.miginfocom.swing.MigLayout;
 		public void keyReleased(final KeyEvent e)
 		{
 			// Don't automatically popup keyword because we do have the keyboard button, so the user is supposed to open it when required.
-			if (isShowKeyboardButton())
+			if (getKeyboardDisplayMode() != KeyboardDisplayMode.WHEN_TYPING)
 			{
 				return;
 			}
@@ -273,8 +266,12 @@ import net.miginfocom.swing.MigLayout;
 		if (displayType == ITerminalTextField.TYPE_Password)
 		{
 			textComponent = new JPasswordField();
+
 			keyboardButton = new CButton();
 			keyboardButton.setIcon(Images.getImageIcon2("Keyboard16"));
+			keyboardButton.setVisible(isShowKeyboardButton());
+			keyboardButton.setEnabled(isShowKeyboardButton());
+
 			panel = new JPanel(new MigLayout("", "[grow]", "[grow]"));
 			panel.add(textComponent, "growx, w 150");
 			panel.add(keyboardButton);
@@ -584,6 +581,10 @@ import net.miginfocom.swing.MigLayout;
 	@Override
 	public void requestFocus(final boolean selectAllText)
 	{
+		if (textComponent == null)
+		{
+			return; // nothing to do; we are already disposed
+		}
 		textComponent.requestFocusInWindow();
 
 		// Select all text on focus gained (especially helpful for POSes) if it wasn't already selected
@@ -591,7 +592,7 @@ import net.miginfocom.swing.MigLayout;
 		{
 			final String selectedText = textComponent.getSelectedText();
 			final String text = textComponent.getText();
-			if (!Check.equals(text, selectedText))
+			if (!Objects.equals(text, selectedText))
 			{
 				textComponent.selectAll();
 			}
@@ -626,14 +627,20 @@ import net.miginfocom.swing.MigLayout;
 	}
 
 	@Override
-	public void setShowKeyboardButton(final boolean isShowKeyboardButton)
+	public void setKeyboardDisplayMode(@NonNull final KeyboardDisplayMode keyboardDisplayMode)
 	{
-		super.setShowKeyboardButton(isShowKeyboardButton);
+		super.setKeyboardDisplayMode(keyboardDisplayMode);
 		if (keyboardButton != null)
 		{
+			final boolean isShowKeyboardButton = isShowKeyboardButton();
 			keyboardButton.setVisible(isShowKeyboardButton);
 			keyboardButton.setEnabled(isShowKeyboardButton);
 		}
+	}
+
+	private boolean isShowKeyboardButton()
+	{
+		return getKeyboardDisplayMode() != KeyboardDisplayMode.NEVER;
 	}
 
 	private final void showKeyboardDelayed()

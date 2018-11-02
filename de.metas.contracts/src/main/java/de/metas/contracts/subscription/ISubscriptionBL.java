@@ -41,6 +41,7 @@ import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 
 public interface ISubscriptionBL extends ISingletonService
@@ -53,10 +54,8 @@ public interface ISubscriptionBL extends ISingletonService
 	 * <li>there already is an older delayed delivery for the sp's subscription</li>
 	 * </ul>
 	 * In these cases the current delivery is delayed.
-	 * 
-	 * @param trxName
 	 */
-	void evalDeliveries(Properties ctx, String trxName);
+	void evalDeliveries(Properties ctx);
 
 	/**
 	 * Iterate the given deliveries, sum up their price (using their orderline's product and priceActual). Then compute
@@ -130,9 +129,9 @@ public interface ISubscriptionBL extends ISingletonService
 	 * @param trxName
 	 * @return the number of <code>C_OLCand</code> records that were processed.
 	 */
-	int createMissingTermsForOLCands(Properties ctx, boolean completeIt, int AD_PInstance_ID, String trxName);
+	int createMissingTermsForOLCands(Properties ctx, boolean completeIt, PInstanceId AD_PInstance_ID, String trxName);
 
-	I_C_Flatrate_Term createTermForOLCand(Properties ctx, I_C_OLCand olCand, int AD_PInstance_ID, boolean completeIt, String trxName);
+	I_C_Flatrate_Term createTermForOLCand(Properties ctx, I_C_OLCand olCand, PInstanceId AD_PInstance_ID, boolean completeIt, String trxName);
 
 	boolean isActiveTerm(I_C_Flatrate_Term term);
 }

@@ -296,33 +296,13 @@ public final class ProcessInfoParameter implements Serializable
 	// metas
 	public Timestamp getParameterAsTimestamp()
 	{
-		return toTimestamp(m_Parameter);
+		return TimeUtil.asTimestamp(m_Parameter);
 	}
 
 	// metas
 	public Timestamp getParameter_ToAsTimestamp()
 	{
-		return toTimestamp(m_Parameter_To);
-	}
-
-	private final Timestamp toTimestamp(final Object value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		if (value instanceof Timestamp)
-		{
-			return (Timestamp)value;
-		}
-		else if (value instanceof java.util.Date)
-		{
-			return TimeUtil.asTimestamp((java.util.Date)value);
-		}
-		else
-		{
-			throw new IllegalArgumentException("Cannot convert " + value + " to Timestamp");
-		}
+		return TimeUtil.asTimestamp(m_Parameter_To);
 	}
 
 	public BigDecimal getParameterAsBigDecimal()

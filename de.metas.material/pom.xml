@@ -15,6 +15,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>commons</module>
 		<module>dispo-commons</module>
 		<module>dispo-service</module>
 		<module>cockpit</module>

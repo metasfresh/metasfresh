@@ -28,11 +28,11 @@ import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MHierarchy;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 
 /**

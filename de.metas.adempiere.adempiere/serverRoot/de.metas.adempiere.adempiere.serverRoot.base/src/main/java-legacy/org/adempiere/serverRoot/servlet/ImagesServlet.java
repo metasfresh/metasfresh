@@ -26,7 +26,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -35,6 +34,7 @@ import org.springframework.context.annotation.Profile;
 import com.google.common.base.Optional;
 
 import de.metas.Profiles;
+import de.metas.cache.CCache;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

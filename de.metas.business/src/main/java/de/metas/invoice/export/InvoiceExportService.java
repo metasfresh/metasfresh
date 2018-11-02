@@ -55,21 +55,20 @@ import de.metas.util.StringUtils;
 @Service
 public class InvoiceExportService
 {
-
 	private static final Logger logger = LogManager.getLogger(InvoiceExportService.class);
 
-	private final InvoiceToExportFactory exportInvoiceFactory;
+	private final InvoiceToExportFactory invoiceToExportFactory;
 
 	private final InvoiceExportServiceRegistry invoiceExportServiceRegistry;
 
 	private final AttachmentEntryService attachmentEntryService;
 
 	private InvoiceExportService(
-			@NonNull final InvoiceToExportFactory exportInvoiceFactory,
+			@NonNull final InvoiceToExportFactory invoiceToExportFactory,
 			@NonNull final InvoiceExportServiceRegistry invoiceExportServiceRegistry,
 			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
-		this.exportInvoiceFactory = exportInvoiceFactory;
+		this.invoiceToExportFactory = invoiceToExportFactory;
 		this.invoiceExportServiceRegistry = invoiceExportServiceRegistry;
 		this.attachmentEntryService = attachmentEntryService;
 	}
@@ -78,7 +77,7 @@ public class InvoiceExportService
 	{
 		for (final InvoiceId invoiceIdToExport : invoiceIdsToExport)
 		{
-			final InvoiceToExport invoiceToExport = exportInvoiceFactory.getById(invoiceIdToExport);
+			final InvoiceToExport invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
 			exportInvoice(invoiceToExport);
 		}
 	}

@@ -44,17 +44,17 @@ public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_At
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
-	}
-
-	@Override
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
-	}
+//	@Override
+//	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
+//	}
+//
+//	@Override
+//	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
+//	{
+//		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
+//	}
 
 	/** Set Merkmal.
 		@param M_Attribute_ID 
@@ -137,17 +137,17 @@ public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_At
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Attribute getM_HU_PI_Attribute() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Attribute_ID, de.metas.handlingunits.model.I_M_HU_PI_Attribute.class);
-	}
-
-	@Override
-	public void setM_HU_PI_Attribute(de.metas.handlingunits.model.I_M_HU_PI_Attribute M_HU_PI_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_PI_Attribute_ID, de.metas.handlingunits.model.I_M_HU_PI_Attribute.class, M_HU_PI_Attribute);
-	}
+//	@Override
+//	public de.metas.handlingunits.model.I_M_HU_PI_Attribute getM_HU_PI_Attribute() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Attribute_ID, de.metas.handlingunits.model.I_M_HU_PI_Attribute.class);
+//	}
+//
+//	@Override
+//	public void setM_HU_PI_Attribute(de.metas.handlingunits.model.I_M_HU_PI_Attribute M_HU_PI_Attribute)
+//	{
+//		set_ValueFromPO(COLUMNNAME_M_HU_PI_Attribute_ID, de.metas.handlingunits.model.I_M_HU_PI_Attribute.class, M_HU_PI_Attribute);
+//	}
 
 	/** Set Handling Units Packing Instructions Attribute.
 		@param M_HU_PI_Attribute_ID Handling Units Packing Instructions Attribute	  */

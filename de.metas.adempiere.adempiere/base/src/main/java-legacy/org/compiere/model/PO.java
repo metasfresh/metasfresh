@@ -47,10 +47,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
-import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
-import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
@@ -91,6 +87,10 @@ import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -103,6 +103,7 @@ import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -2511,7 +2512,7 @@ public abstract class PO
 		// FRESH-314: create a change log also if there is no AD_Session_ID; also store the AD_PInstance_ID
 		final MFSession session = get_Session();
 		final int adSessionId = session != null ? session.getAD_Session_ID() : 0;
-		final int adPInstanceId = Env.getContextAsInt(getCtx(), Env.CTXNAME_AD_PInstance_ID);
+		final PInstanceId adPInstanceId = PInstanceId.ofRepoIdOrNull(Env.getContextAsInt(getCtx(), Env.CTXNAME_AD_PInstance_ID));
 
 		final int adClientId = getAD_Client_ID();
 		final boolean isInsertChangeLogEvent = X_AD_ChangeLog.EVENTCHANGELOG_Insert.equals(changeLogType);

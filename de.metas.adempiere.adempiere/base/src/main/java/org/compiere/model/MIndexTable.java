@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.compiere.model;
 
@@ -13,197 +13,143 @@ package org.compiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.compiere.util.CCache;
-import org.compiere.util.CacheInterface;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+
+import de.metas.cache.CCache;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * AD Index Table
- * 
+ *
  * @author Teo Sarca, teo.sarca@gmail.com
  */
+@SuppressWarnings("serial")
 public class MIndexTable extends X_AD_Index_Table
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6008897133469502278L;
+	private static final CCache<Integer, TableIndexesMap> cache = CCache.<Integer, TableIndexesMap> builder()
+			.tableName(I_AD_Index_Table.Table_Name)
+			.initialCapacity(1)
+			.additionalTableNameToResetFor(I_AD_Index_Column.Table_Name)
+			.build();
 
-	private static Map<String, List<MIndexTable>> s_indexesByTable = null;
-	static
+	private ImmutableList<MIndexColumn> indexColumns = null; // lazy
+
+	private static TableIndexesMap getTableIndexesMap()
 	{
-		CacheMgt.get().register(new CacheInterface()
-		{
-			@Override
-			public int size()
-			{
-				return s_indexesByTable == null ? 0 : 1;
-			}
-			
-			@Override
-			public int reset()
-			{
-				if (s_indexesByTable == null)
-				{
-					return 0;
-				}
-				s_indexesByTable = null;
-				return 1;
-			}
-		});
+		return cache.getOrLoad(0, MIndexTable::retrieveTableIndexesMap);
 	}
-	
-	private static CCache<String, MIndexTable> s_cacheName = new CCache<>(Table_Name + "_Name", 100);
 
-	private MIndexColumn[] m_columns = null;
-
-	public static Map<String, List<MIndexTable>> getAllByTable(Properties ctx, boolean requery)
+	private static TableIndexesMap retrieveTableIndexesMap()
 	{
-		if (requery || s_indexesByTable == null)
-		{
-			final List<MIndexTable> listAll = new Query(ctx, Table_Name, null, null)
-				.setOnlyActiveRecords(true)
+		final List<MIndexTable> indexes = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(MIndexTable.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
 				.list(MIndexTable.class);
-			s_indexesByTable = new HashMap<>();
-			for (final MIndexTable idxTable : listAll)
-			{
-				final String tableName = idxTable.getTableName();
-				List<MIndexTable> list = s_indexesByTable.get(tableName);
-				if (list == null)
-				{
-					list = new ArrayList<>();
-				}
-				list.add(idxTable);
-				s_indexesByTable.put(tableName, list);
-				s_cacheName.put(idxTable.getName(), idxTable);
-			}
-		}
-		return s_indexesByTable;
+		return new TableIndexesMap(indexes);
 	}
 
-	public static MIndexTable[] getByTable(Properties ctx, String tableName)
+	private static ImmutableList<MIndexTable> getByTableName(final String tableName)
 	{
-		final List<MIndexTable> list = getAllByTable(ctx, false).get(tableName);
-		if (list == null)
-		{
-			return new MIndexTable[] {};
-		}
-		return list.toArray(new MIndexTable[list.size()]);
+		return getTableIndexesMap().getByTableName(tableName);
 	}
 
-	/**
-	 * Retrieve table index by name.
-	 * 
-	 * NOTE: search is done ignoring case. This is necessary because when we are searching for an index provided by an SQLException, always the name will be lower case.
-	 * 
-	 * @param ctx
-	 * @param name
-	 * @return
-	 */
-	public static MIndexTable get(Properties ctx, String name)
+	public static MIndexTable getByNameIgnoringCase(@NonNull final String name)
 	{
-		MIndexTable index = s_cacheName.get(name);
-		if (index != null)
-		{
-			return index;
-		}
-
-		final String whereClause = "UPPER(" + COLUMNNAME_Name + ")=UPPER(?)";
-		//
-		index = new Query(ctx, Table_Name, whereClause, null)
-				.setParameters(new Object[] { name })
-				.setOnlyActiveRecords(true).firstOnly();
-		if (index != null)
-		{
-			s_cacheName.put(name, index);
-		}
-		return index;
+		return getTableIndexesMap().getByNameIgnoringCase(name);
 	}
 
-	public MIndexTable(Properties ctx, int AD_Index_Table_ID, String trxName)
+	public MIndexTable(final Properties ctx, final int AD_Index_Table_ID, final String trxName)
 	{
 		super(ctx, AD_Index_Table_ID, trxName);
 	}
 
-	public MIndexTable(Properties ctx, ResultSet rs, String trxName)
+	public MIndexTable(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
 
-	public MIndexColumn[] getColumns()
+	private ImmutableList<MIndexColumn> getIndexColumns()
 	{
-		return getColumns(false);
+		ImmutableList<MIndexColumn> indexColumns = this.indexColumns;
+		if (indexColumns == null)
+		{
+			indexColumns = this.indexColumns = retrieveIndexColumns();
+		}
+		return indexColumns;
 	}
 
-	public MIndexColumn[] getColumns(boolean requery)
+	private ImmutableList<MIndexColumn> retrieveIndexColumns()
 	{
-		if (requery || m_columns == null)
-		{
-			final List<MIndexColumn> list = new Query(getCtx(),
-					I_AD_Index_Column.Table_Name,
-					I_AD_Index_Column.COLUMNNAME_AD_Index_Table_ID + "=?",
-					get_TrxName()).setOrderBy(I_AD_Index_Column.COLUMNNAME_SeqNo)
-					.setOnlyActiveRecords(true).setParameters(
-							new Object[] { getAD_Index_Table_ID() }).list(MIndexColumn.class);
-			m_columns = list.toArray(new MIndexColumn[list.size()]);
-		}
-		return m_columns;
+		final int adIndexTableId = getAD_Index_Table_ID();
+		Check.assumeGreaterThanZero(adIndexTableId, "adIndexTableId");
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Index_Column.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Index_Column.COLUMNNAME_AD_Index_Table_ID, adIndexTableId)
+				.orderBy(I_AD_Index_Column.COLUMNNAME_SeqNo)
+				.create()
+				.listImmutable(MIndexColumn.class);
 	}
 
-	public String[] getColumnNames()
+	public Set<String> getColumnNames()
 	{
-		final MIndexColumn[] indexCols = getColumns();
-		final String[] indexColNames = new String[indexCols.length];
-		for (int i = 0; i < indexCols.length; i++)
-		{
-			indexColNames[i] = indexCols[i].getColumnName();
-		}
-		return indexColNames;
+		return getIndexColumns()
+				.stream()
+				.map(MIndexColumn::getColumnName)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**
 	 * Get Table Name
-	 * 
+	 *
 	 * @return table name
 	 */
 	public String getTableName()
 	{
-		return MTable.getTableName(getCtx(), getAD_Table_ID());
+		return Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID());
 	}
 
 	public String getDDL()
 	{
-		final StringBuffer sql_columns = new StringBuffer();
-		for (final MIndexColumn ic : getColumns())
+		final StringBuilder sql_columns = new StringBuilder();
+		for (final MIndexColumn ic : getIndexColumns())
 		{
 			if (sql_columns.length() > 0)
 			{
@@ -216,7 +162,7 @@ public class MIndexTable extends X_AD_Index_Table
 			throw new AdempiereException("Index has no columns defined");
 		}
 		//
-		final StringBuffer sql = new StringBuffer("CREATE ");
+		final StringBuilder sql = new StringBuilder("CREATE ");
 		if (isUnique())
 		{
 			sql.append("UNIQUE ");
@@ -266,7 +212,7 @@ public class MIndexTable extends X_AD_Index_Table
 
 		final String codeType = getBeforeChangeCodeType();
 
-		final StringBuffer sqlFunc = new StringBuffer();
+		final StringBuilder sqlFunc = new StringBuilder();
 		if (BEFORECHANGECODETYPE_SQLSimple.equals(codeType))
 		{
 			sqlFunc.append("UPDATE " + getTableName() + " SET " + code);
@@ -299,7 +245,7 @@ public class MIndexTable extends X_AD_Index_Table
 		}
 
 		// Check modified columns only
-		final StringBuffer sqlCheckBegin = new StringBuffer();
+		final StringBuilder sqlCheckBegin = new StringBuilder();
 		for (final String columnName : getColumnNames())
 		{
 			if (sqlCheckBegin.length() > 0)
@@ -309,19 +255,24 @@ public class MIndexTable extends X_AD_Index_Table
 			sqlCheckBegin.append("OLD." + columnName + "<>NEW." + columnName);
 		}
 		sqlCheckBegin.insert(0, "IF ").append(" THEN\n");
-		final StringBuffer sqlCheckEnd = new StringBuffer(" END IF;\n");
+		final StringBuilder sqlCheckEnd = new StringBuilder(" END IF;\n");
 
 		final String triggerName = getDBTriggerName();
 		final String functionName = getDBFunctionName();
 
-		final StringBuffer sql = new StringBuffer();
+		final StringBuilder sql = new StringBuilder();
 		sql.append("CREATE OR REPLACE FUNCTION " + functionName + "()\n")
 				.append(" RETURNS TRIGGER AS $" + triggerName + "$\n").append(
-						" BEGIN\n").append(" IF TG_OP='INSERT' THEN\n").append(
-						sqlFunc).append("\n").append(" ELSE\n").append(
-						sqlCheckBegin).append(sqlFunc).append("\n").append(
-						sqlCheckEnd).append(" END IF;\n").append(
-						" RETURN NEW;\n").append(" END;\n").append(
+						" BEGIN\n")
+				.append(" IF TG_OP='INSERT' THEN\n").append(
+						sqlFunc)
+				.append("\n").append(" ELSE\n").append(
+						sqlCheckBegin)
+				.append(sqlFunc).append("\n").append(
+						sqlCheckEnd)
+				.append(" END IF;\n").append(
+						" RETURN NEW;\n")
+				.append(" END;\n").append(
 						" $" + triggerName + "$ LANGUAGE plpgsql;");
 		return sql.toString();
 	}
@@ -336,7 +287,7 @@ public class MIndexTable extends X_AD_Index_Table
 		final String triggerName = getDBTriggerName();
 		final String functionName = getDBFunctionName();
 
-		final StringBuffer sqlColumns = new StringBuffer();
+		final StringBuilder sqlColumns = new StringBuilder();
 		for (final String columnName : getColumnNames())
 		{
 			if (sqlColumns.length() > 0)
@@ -346,7 +297,7 @@ public class MIndexTable extends X_AD_Index_Table
 			sqlColumns.append(columnName);
 		}
 
-		final StringBuffer sql = new StringBuffer();
+		final StringBuilder sql = new StringBuilder();
 		sql.append("CREATE TRIGGER " + triggerName).append(
 				" BEFORE INSERT OR UPDATE ")
 				// .append(" OF ").append(sqlColumns) // PG 8.5 specific
@@ -357,11 +308,11 @@ public class MIndexTable extends X_AD_Index_Table
 
 	/**
 	 * Validate table data and throw exception if any error occur
-	 * 
+	 *
 	 * @param trxName
 	 * @throws DBUniqueConstraintException if not unique data found
 	 */
-	public void validateData(String trxName)
+	public void validateData(final String trxName)
 	{
 		if (!isActive())
 		{
@@ -372,8 +323,8 @@ public class MIndexTable extends X_AD_Index_Table
 			return;
 		}
 		//
-		final StringBuffer sqlGroupBy = new StringBuffer();
-		for (final MIndexColumn c : getColumns())
+		final StringBuilder sqlGroupBy = new StringBuilder();
+		for (final MIndexColumn c : getIndexColumns())
 		{
 			if (sqlGroupBy.length() > 0)
 			{
@@ -387,7 +338,7 @@ public class MIndexTable extends X_AD_Index_Table
 		}
 
 		//
-		final StringBuffer sql = new StringBuffer("SELECT " + sqlGroupBy + " FROM " + getTableName());
+		final StringBuilder sql = new StringBuilder("SELECT " + sqlGroupBy + " FROM " + getTableName());
 		final String whereClause = getWhereClause();
 
 		if (!Check.isEmpty(whereClause, true))
@@ -421,9 +372,9 @@ public class MIndexTable extends X_AD_Index_Table
 		}
 	}
 
-	public static boolean isAnyIndexedValueChanged(Properties ctx, GridTab tab, boolean newRecord)
+	public static boolean isAnyIndexedValueChanged(final GridTab tab, final boolean newRecord)
 	{
-		for (final MIndexTable index : MIndexTable.getByTable(ctx, tab.getTableName()))
+		for (final MIndexTable index : getByTableName(tab.getTableName()))
 		{
 			if (index.isIndexedValuesChanged(tab, newRecord))
 			{
@@ -433,7 +384,7 @@ public class MIndexTable extends X_AD_Index_Table
 		return false;
 	}
 
-	public boolean isMatched(GridTab tab, boolean newRecord)
+	public boolean isMatched(final GridTab tab, final boolean newRecord)
 	{
 		return isIndexedValuesChanged(tab, newRecord)
 				&& isWhereClauseMatched(tab);
@@ -441,12 +392,12 @@ public class MIndexTable extends X_AD_Index_Table
 
 	/**
 	 * Check if there are changed values in index columns for the grid tab
-	 * 
+	 *
 	 * @param tab
 	 * @param newRecord
 	 * @return
 	 */
-	public boolean isIndexedValuesChanged(GridTab tab, boolean newRecord)
+	public boolean isIndexedValuesChanged(final GridTab tab, final boolean newRecord)
 	{
 		if (!tab.getTableName().equalsIgnoreCase(getTableName()))
 		{
@@ -478,13 +429,13 @@ public class MIndexTable extends X_AD_Index_Table
 	 * Our index has following where clause: Column1='Y' and Column2='N'.
 	 * <p>
 	 * In this case, this method will try to check if the where clause matches our GridTab data by generating following SQL SELECT:
-	 * 
+	 *
 	 * <pre>
 	 * SELECT * FROM (SELECT ? AS Column1, ? AS Column2, ..., ? AS ColumnN) MyTable
 	 * WHERE
 	 *     Column1='Y' AND Column2='N'
 	 * </pre>
-	 * 
+	 *
 	 * @task 02627
 	 */
 	private boolean isWhereClauseMatched(final GridTab tab)
@@ -497,7 +448,7 @@ public class MIndexTable extends X_AD_Index_Table
 			return true;
 		}
 
-		final StringBuffer sql = new StringBuffer();
+		final StringBuilder sql = new StringBuilder();
 		final List<Object> params = new ArrayList<>();
 		for (int i = 0; i < tab.getFieldCount(); i++)
 		{
@@ -528,13 +479,21 @@ public class MIndexTable extends X_AD_Index_Table
 				// see http://archives.postgresql.org/pgsql-jdbc/2006-08/msg00163.php
 				// this case is for when we have those null fields in where clause
 				if (DisplayType.isText(field.getDisplayType()))
+				{
 					sql.append("NULL::text");
+				}
 				else if (DisplayType.isID(field.getDisplayType()) || DisplayType.Integer == field.getDisplayType())
+				{
 					sql.append("NULL::integer");
+				}
 				else if (DisplayType.isNumeric(field.getDisplayType()))
+				{
 					sql.append("NULL::numeric");
+				}
 				else
+				{
 					sql.append("NULL");
+				}
 			}
 			else if (value instanceof java.util.Date)
 			{
@@ -585,7 +544,7 @@ public class MIndexTable extends X_AD_Index_Table
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param whereClause
 	 * @param trxName
@@ -594,42 +553,36 @@ public class MIndexTable extends X_AD_Index_Table
 	public boolean isWhereClauseMatched(final Properties ctx, final String whereClause, final String trxName)
 	{
 		Check.assume(!Check.isEmpty(whereClause, true), "whereClause parameter not empty");
-		
+
 		// If this index does not have an where clause, it means all records are matched, so there is no need to do an actual query
 		if (Check.isEmpty(getWhereClause(), true))
 		{
 			return true;
 		}
-		
+
 		final StringBuilder whereClauseFinal = new StringBuilder()
 				.append("(").append(getWhereClause()).append(")")
 				.append(" AND ").append("(").append(whereClause).append(")");
-		
-		
+
 		final String tableName = getTableName();
 		final boolean matched = new Query(ctx, tableName, whereClauseFinal.toString(), trxName)
 				.match();
-		
+
 		return matched;
 	}
 
-	public static List<I_AD_Index_Table> getAffectedIndexes(Properties ctx, GridTab tab, boolean newRecord)
+	public static List<I_AD_Index_Table> getAffectedIndexes(final GridTab tab, final boolean newRecord)
 	{
-		final List<I_AD_Index_Table> list = new ArrayList<>();
-		for (final MIndexTable index : MIndexTable.getByTable(ctx, tab.getTableName()))
-		{
-			if (index.isMatched(tab, newRecord))
-			{
-				list.add(index);
-			}
-		}
-		return list;
+		return MIndexTable.getByTableName(tab.getTableName())
+				.stream()
+				.filter(index -> index.isMatched(tab, newRecord))
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static String getBeforeChangeWarning(final Properties ctx, final GridTab tab, final boolean newRecord)
+	public static String getBeforeChangeWarning(final GridTab tab, final boolean newRecord)
 	{
-		final List<I_AD_Index_Table> indexes = getAffectedIndexes(ctx, tab, newRecord);
-		if (indexes.size() == 0)
+		final List<I_AD_Index_Table> indexes = getAffectedIndexes(tab, newRecord);
+		if (indexes.isEmpty())
 		{
 			return null;
 		}
@@ -637,7 +590,7 @@ public class MIndexTable extends X_AD_Index_Table
 		final int rowCount = tab.getRowCount();
 		// metas end: R.Craciunescu@metas.ro : 02280
 
-		final StringBuffer msg = new StringBuffer();
+		final StringBuilder msg = new StringBuilder();
 		for (final I_AD_Index_Table index : indexes)
 		{
 			if (Check.isEmpty(index.getBeforeChangeWarning()))
@@ -660,8 +613,8 @@ public class MIndexTable extends X_AD_Index_Table
 		return msg.toString();
 	}
 
-	private static final boolean isValueChanged(GridTab tab, String columnName,
-			boolean newRecord)
+	private static final boolean isValueChanged(final GridTab tab, final String columnName,
+			final boolean newRecord)
 	{
 		final GridTable table = tab.getTableModel();
 		final int index = table.findColumn(columnName);
@@ -689,9 +642,32 @@ public class MIndexTable extends X_AD_Index_Table
 	@Override
 	public String toString()
 	{
-		final StringBuffer sb = new StringBuffer("MTableIndex[");
+		final StringBuilder sb = new StringBuilder("MTableIndex[");
 		sb.append(get_ID()).append("-").append(getName()).append(
 				",AD_Table_ID=").append(getAD_Table_ID()).append("]");
 		return sb.toString();
+	}
+
+	private static class TableIndexesMap
+	{
+		private final ImmutableListMultimap<String, MIndexTable> indexesByTableName;
+		private final ImmutableMap<String, MIndexTable> indexesByNameUC;
+
+		public TableIndexesMap(final List<MIndexTable> indexes)
+		{
+			indexesByTableName = Multimaps.index(indexes, MIndexTable::getTableName);
+			indexesByNameUC = Maps.uniqueIndex(indexes, index -> index.getName().toUpperCase());
+		}
+
+		public ImmutableList<MIndexTable> getByTableName(@NonNull final String tableName)
+		{
+			return indexesByTableName.get(tableName);
+		}
+
+		public MIndexTable getByNameIgnoringCase(@NonNull final String name)
+		{
+			String nameUC = name.toUpperCase();
+			return indexesByNameUC.get(nameUC);
+		}
 	}
 }

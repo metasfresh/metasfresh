@@ -30,7 +30,6 @@ import java.sql.SQLException;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.MIndexTable;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -103,7 +102,7 @@ public class DBUniqueConstraintException extends DBException
 		//
 		if (!Check.isEmpty(this.constraintName, true))
 		{
-			this.index = MIndexTable.get(Env.getCtx(), this.constraintName);
+			this.index = MIndexTable.getByNameIgnoringCase(this.constraintName);
 		}
 	}
 

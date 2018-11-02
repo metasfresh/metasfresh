@@ -9,8 +9,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.metas.migration.cli.PropertiesFileLoader.CantLoadPropertiesException;
-
 /*
  * #%L
  * de.metas.migration.cli
@@ -52,30 +50,37 @@ public class SettingsLoader
 
 	public Settings loadSettings(@NonNull final Config config)
 	{
-		final Settings settings;
-		if (config.getSettingsFile() != null)
+		try
 		{
-			final File settigsFileAsSpecified = new File(config.getSettingsFile());
-			if (settigsFileAsSpecified.exists())
+			final Settings settings;
+			if (config.getSettingsFile() != null)
 			{
-				logger.info("Settings file {} found", settigsFileAsSpecified);
-				settings = new Settings(setSettingsFile(null, config.getSettingsFile()));
+				final File settigsFileAsSpecified = new File(config.getSettingsFile());
+				if (settigsFileAsSpecified.exists())
+				{
+					logger.info("Settings file {} found", settigsFileAsSpecified);
+					settings = new Settings(setSettingsFile(null, config.getSettingsFile()));
+				}
+				else
+				{
+					final File settingsDir = directoryChecker.checkDirectory("roloutDir", config.getRolloutDirName());
+					logger.info("Settings file {} not found; trying with rollout dir={}", settigsFileAsSpecified, settingsDir);
+
+					settings = new Settings(setSettingsFile(settingsDir, config.getSettingsFile()));
+				}
 			}
 			else
 			{
-				final File settingsDir = directoryChecker.checkDirectory("roloutDir", config.getRolloutDirName());
-				logger.info("Settings file {} not found; trying with rollout dir={}", settigsFileAsSpecified, settingsDir);
-
-				settings = new Settings(setSettingsFile(settingsDir, config.getSettingsFile()));
+				logger.info("No settings file specified; looking for");
+				final File settingsDir = directoryChecker.checkDirectory("user.home", System.getProperty("user.home"));
+				settings = new Settings(setSettingsFile(settingsDir, Config.DEFAULT_SETTINGS_FILENAME));
 			}
+			return settings;
 		}
-		else
+		catch (Exception e)
 		{
-			logger.info("No settings file specified; looking for");
-			final File settingsDir = directoryChecker.checkDirectory("user.home", System.getProperty("user.home"));
-			settings = new Settings(setSettingsFile(settingsDir, Config.DEFAULT_SETTINGS_FILENAME));
+			throw new CantLoadSettingsException(e);
 		}
-		return settings;
 	}
 
 	private Properties setSettingsFile(final File dir, @NonNull final String settingsFilename)
@@ -92,7 +97,7 @@ public class SettingsLoader
 				fileProperties = propertiesFileLoader.loadFromFile(new File(settingsFilename));
 			}
 		}
-		catch (final CantLoadPropertiesException e)
+		catch (final Exception e)
 		{
 			throw new CantLoadSettingsException(e);
 		}

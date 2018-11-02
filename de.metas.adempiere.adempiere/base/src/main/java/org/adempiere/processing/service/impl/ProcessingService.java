@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 
 public class ProcessingService implements IProcessingService
@@ -72,9 +73,9 @@ public class ProcessingService implements IProcessingService
 			final String trxName)
 	{
 		final int processId;
-		if (e.getAdPInstanceId() != NO_AD_PINSTANCE_ID)
+		if (e.getPinstanceId() != null)
 		{
-			final I_AD_PInstance pInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, e.getAdPInstanceId());
+			final I_AD_PInstance pInstance = Services.get(IADPInstanceDAO.class).getById(e.getPinstanceId());
 			processId = pInstance.getAD_Process_ID();
 		}
 		else
@@ -152,14 +153,14 @@ public class ProcessingService implements IProcessingService
 	@Override
 	public void process(final MADProcessablePO processablePOPointer, final JavaProcess parent)
 	{
-		final int adPInstanceId;
+		final PInstanceId pinstanceId;
 		if (parent == null)
 		{
-			adPInstanceId = NO_AD_PINSTANCE_ID;
+			pinstanceId = null;
 		}
 		else
 		{
-			adPInstanceId = parent.getAD_PInstance_ID();
+			pinstanceId = parent.getPinstanceId();
 		}
 
 		try
@@ -204,7 +205,7 @@ public class ProcessingService implements IProcessingService
 						}
 						else
 						{
-							final ProcessingException pe = new ProcessingException(result, null, adPInstanceId);
+							final ProcessingException pe = new ProcessingException(result, null, pinstanceId);
 							handleError(processablePOPointer, parent, result, pe);
 						}
 					}
@@ -219,7 +220,7 @@ public class ProcessingService implements IProcessingService
 		{
 			final String summary = e.getMessage();
 
-			final ProcessingException pe = new ProcessingException(summary, e, adPInstanceId);
+			final ProcessingException pe = new ProcessingException(summary, e, pinstanceId);
 			handleError(processablePOPointer, parent, summary, pe);
 		}
 	}

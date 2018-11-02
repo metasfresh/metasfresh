@@ -35,12 +35,14 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PriceList;
@@ -95,6 +97,7 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.process.PInstanceId;
 import de.metas.product.IProductPA;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -243,7 +246,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	public int createMissingTermsForOLCands(
 			final Properties ctx,
 			final boolean completeIt,
-			final int AD_PInstance_ID,
+			final PInstanceId AD_PInstance_ID,
 			final String trxName)
 	{
 		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
@@ -667,11 +670,11 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	@Override
-	public void evalDeliveries(final Properties ctx, final String trxName)
+	public void evalDeliveries(final Properties ctx)
 	{
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
-		final List<I_C_SubscriptionProgress> deliveries = subscriptionPA.retrievePlannedAndDelayedDeliveries(ctx, SystemTime.asTimestamp(), trxName);
+		final List<I_C_SubscriptionProgress> deliveries = subscriptionPA.retrievePlannedAndDelayedDeliveries(ctx, SystemTime.asTimestamp(), ITrx.TRXNAME_ThreadInherited);
 
 		logger.debug("Going to add shipment schedule entries for {} subscription deliveries", deliveries.size());
 
@@ -692,10 +695,7 @@ public class SubscriptionBL implements ISubscriptionBL
 				continue;
 			}
 
-			final List<I_M_ShipmentSchedule> openScheds = shipmentSchedulePA.retrieveUnprocessedForRecord(ctx,
-					InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class),
-					sd.getC_SubscriptionProgress_ID(),
-					trxName);
+			final List<I_M_ShipmentSchedule> openScheds = shipmentSchedulePA.retrieveUnprocessedForRecord(TableRecordReference.of(sd));
 
 			if (openScheds.isEmpty())
 			{
@@ -900,7 +900,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	@Override
-	public I_C_Flatrate_Term createTermForOLCand(final Properties ctx, final I_C_OLCand olCand, final int AD_PInstance_ID, final boolean completeIt, String trxName)
+	public I_C_Flatrate_Term createTermForOLCand(final Properties ctx, final I_C_OLCand olCand, final PInstanceId AD_PInstance_ID, final boolean completeIt, String trxName)
 	{
 		if (olCand.getC_Flatrate_Conditions_ID() <= 0)
 		{
@@ -915,7 +915,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_Contract_Term_Alloc alloc = InterfaceWrapperHelper.create(ctx, I_C_Contract_Term_Alloc.class, trxName);
 		alloc.setC_OLCand_ID(olCand.getC_OLCand_ID());
 		alloc.setC_Flatrate_Term_ID(newTerm.getC_Flatrate_Term_ID());
-		alloc.setAD_PInstance_ID(AD_PInstance_ID);
+		alloc.setAD_PInstance_ID(PInstanceId.toRepoId(AD_PInstance_ID));
 		save(alloc);
 
 		olCand.setProcessed(true);

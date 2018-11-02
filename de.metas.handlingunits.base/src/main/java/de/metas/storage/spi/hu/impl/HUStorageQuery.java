@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.EqualsBuilder;
@@ -43,10 +44,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -82,7 +83,7 @@ import lombok.NonNull;
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final IHUQueryBuilder huQueryBuilder;
-	private Set<Integer> _availableAttributeIds;
+	private ImmutableSet<AttributeId> _availableAttributeIds;
 	private final Set<ProductId> _productIds = new HashSet<>();
 	private final transient List<I_M_Product> _products = new ArrayList<>(); // needed only for summary info
 	private final transient List<I_C_BPartner> _bpartners = new ArrayList<>(); // needed only for summary info
@@ -100,7 +101,7 @@ import lombok.NonNull;
 
 		// consider only VHUs
 		huQueryBuilder.setOnlyTopLevelHUs(false);
-		huQueryBuilder.addPIVersionToInclude(handlingUnitsDAO.getVirtual_HU_PI_Version_ID());
+		huQueryBuilder.addPIVersionToInclude(HuPackingInstructionsVersionId.VIRTUAL);
 
 		// consider only those HUs which are supposed to be considered for (e.g. not "shipped")
 		final List<String> huStatusesQtyOnHand = Services.get(IHUStatusBL.class).getQtyOnHandStatuses();
@@ -322,8 +323,8 @@ import lombok.NonNull;
 		//
 		// Make sure given attribute available to be used by our HU Storage implementations.
 		// If we would filter by other attributes we would get NO result.
-		final int attributeId = attribute.getM_Attribute_ID();
-		final Set<Integer> availableAttributeIds = getAvailableAttributeIds();
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		final Set<AttributeId> availableAttributeIds = getAvailableAttributeIds();
 		if (!availableAttributeIds.contains(attributeId))
 		{
 			return this;
@@ -360,12 +361,12 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final Set<Integer> getAvailableAttributeIds()
+	private final Set<AttributeId> getAvailableAttributeIds()
 	{
 		if (_availableAttributeIds == null)
 		{
 			final IHUStorageBL huStorageBL = Services.get(IHUStorageBL.class);
-			_availableAttributeIds = huStorageBL.getAvailableAttributeIds(Env.getCtx());
+			_availableAttributeIds = ImmutableSet.copyOf(huStorageBL.getAvailableAttributeIds());;
 		}
 		return _availableAttributeIds;
 	}

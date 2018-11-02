@@ -29,6 +29,8 @@ import java.util.concurrent.Future;
 
 import org.adempiere.util.lang.ITableRecordReference;
 
+import de.metas.process.PInstanceId;
+
 /**
  * Lock release command
  * 
@@ -65,11 +67,11 @@ public interface IUnlockCommand
 
 	Iterator<ITableRecordReference> getRecordsToUnlockIterator();
 
-	IUnlockCommand setRecordsBySelection(Class<?> modelClass, int adPIstanceId);
+	IUnlockCommand setRecordsBySelection(Class<?> modelClass, PInstanceId adPIstanceId);
 
 	int getSelectionToUnlock_AD_Table_ID();
 
-	int getSelectionToUnlock_AD_PInstance_ID();
+	PInstanceId getSelectionToUnlock_AD_PInstance_ID();
 
 
 }

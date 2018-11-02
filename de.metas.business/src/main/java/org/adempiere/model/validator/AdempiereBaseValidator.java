@@ -25,10 +25,6 @@ import java.util.List;
  */
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
-import org.adempiere.ad.dao.cache.ITableCacheConfig;
-import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
-import org.adempiere.ad.dao.cache.WindowBasedCacheInvalidateRequestInitializer;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -71,8 +67,6 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.CCache.CacheMapType;
-import org.compiere.util.CacheMgt;
 
 import com.google.common.collect.ImmutableList;
 
@@ -80,6 +74,12 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.bpartner.product.callout.C_BPartner_Product;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;

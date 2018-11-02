@@ -77,7 +77,6 @@ public class PrintBOM extends JavaProcess
 	private int LevelNo = 1;
 	private int SeqNo = 0;
 	private String levels = new String("....................");
-	private int AD_PInstance_ID = 0;
 
 	/**
 	 * Prepare - e.g., get Parameters.
@@ -115,8 +114,6 @@ public class PrintBOM extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		AD_PInstance_ID = getAD_PInstance_ID();
-
 		try 
 		{
 			loadBOM();
@@ -129,7 +126,7 @@ public class PrintBOM extends JavaProcess
 		}
 		finally
 		{
-			String sql = "DELETE FROM T_BomLine WHERE AD_PInstance_ID = " + AD_PInstance_ID;
+			String sql = "DELETE FROM T_BomLine WHERE AD_PInstance_ID = " + getPinstanceId().getRepoId();
 			DB.executeUpdate(sql, null);		
 		}
 
@@ -162,8 +159,8 @@ public class PrintBOM extends JavaProcess
 		pf.setLanguage(language);
 		pf.setTranslationLanguage(language);
 		// query
-		MQuery query = MQuery.get(getCtx(), AD_PInstance_ID, X_RV_PP_Product_BOMLine_Table_Name);
-		query.addRestriction("AD_PInstance_ID", Operator.EQUAL, AD_PInstance_ID);
+		MQuery query = MQuery.get(getCtx(), getPinstanceId(), X_RV_PP_Product_BOMLine_Table_Name);
+		query.addRestriction("AD_PInstance_ID", Operator.EQUAL, getPinstanceId().getRepoId());
 
 		PrintInfo info = new PrintInfo(X_RV_PP_Product_BOMLine_Table_Name, 
 				X_RV_PP_Product_BOMLine_Table_ID, getRecord_ID());
@@ -202,7 +199,7 @@ public class PrintBOM extends JavaProcess
 		tboml.setLevelNo(0);
 		tboml.setLevels("0");
 		tboml.setSeqNo(0);
-		tboml.setAD_PInstance_ID(AD_PInstance_ID);
+		tboml.setAD_PInstance_ID(getPinstanceId().getRepoId());
 		tboml.save();
 
 		if (p_implosion)
@@ -304,7 +301,7 @@ public class PrintBOM extends JavaProcess
 		else if (LevelNo >= 1) tboml.setLevels(levels.substring(0, LevelNo) + LevelNo);
 
 		tboml.setSeqNo(SeqNo);
-		tboml.setAD_PInstance_ID(AD_PInstance_ID);
+		tboml.setAD_PInstance_ID(getPinstanceId().getRepoId());
 		tboml.save();
 
 		PreparedStatement stmt = null;
@@ -363,7 +360,7 @@ public class PrintBOM extends JavaProcess
 				tboml.setLevelNo(LevelNo);
 				tboml.setLevels(levels.substring(0, LevelNo) + LevelNo);
 				tboml.setSeqNo(SeqNo);
-				tboml.setAD_PInstance_ID(AD_PInstance_ID);
+				tboml.setAD_PInstance_ID(getPinstanceId().getRepoId());
 				tboml.setSel_Product_ID(p_M_Product_ID);
 				tboml.setImplosion(p_implosion);
 				tboml.save();

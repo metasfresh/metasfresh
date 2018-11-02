@@ -1,7 +1,5 @@
 package de.metas.document.archive.mailrecipient.process;
 
-import lombok.NonNull;
-
 import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -24,10 +22,12 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.process.ProblemCollector;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Contains basic utility BL needed to create processes which send mails for given selection.
@@ -52,7 +52,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 	protected final void prepare()
 	{
 		final IQueryFilter<I_C_Doc_Outbound_Log> filter = getFilter();
-		final int pInstanceId = getAD_PInstance_ID();
+		final PInstanceId pinstanceId = getPinstanceId();
 
 		//
 		// Create selection for PInstance and make sure we're enqueuing something
@@ -60,7 +60,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 				.addOnlyActiveRecordsFilter()
 				.filter(filter)
 				.create()
-				.createSelection(pInstanceId);
+				.createSelection(pinstanceId);
 
 		if (selectionCount == 0)
 		{
@@ -84,10 +84,10 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 	@Override
 	protected final String doIt() throws Exception
 	{
-		final int pInstanceId = getAD_PInstance_ID();
+		final PInstanceId pinstanceId = getPinstanceId();
 
 		// Enqueue selected archives as workpackages
-		final Stream<I_C_Doc_Outbound_Log_Line> docOutboundLines = getPDFArchiveDocOutboundLinesForSelection(pInstanceId);
+		final Stream<I_C_Doc_Outbound_Log_Line> docOutboundLines = getPDFArchiveDocOutboundLinesForSelection(pinstanceId);
 
 		final Mutable<Integer> counter = new Mutable<>(0);
 
@@ -96,7 +96,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 		docOutboundLines.forEach(docOutboundLogLine -> {
 			queue
 					.newBlock()
-					.setAD_PInstance_Creator_ID(pInstanceId)
+					.setAD_PInstance_Creator_ID(pinstanceId)
 					.newWorkpackage()
 					// .bindToThreadInheritedTrx() // let's start as soon as the workpackage is created
 					.addElement(docOutboundLogLine)
@@ -108,9 +108,9 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 		return msgBL.getMsg(getCtx(), Async_Constants.MSG_WORKPACKAGES_CREATED, new Object[] { counter.getValue() });
 	}
 
-	private final Stream<I_C_Doc_Outbound_Log_Line> getPDFArchiveDocOutboundLinesForSelection(final int pInstanceId)
+	private final Stream<I_C_Doc_Outbound_Log_Line> getPDFArchiveDocOutboundLinesForSelection(final PInstanceId pinstanceId)
 	{
-		final Stream<I_C_Doc_Outbound_Log> logsIterator = retrieveSelectedDocOutboundLogs(pInstanceId);
+		final Stream<I_C_Doc_Outbound_Log> logsIterator = retrieveSelectedDocOutboundLogs(pinstanceId);
 
 		final ProblemCollector collector = new ProblemCollector();
 
@@ -120,11 +120,11 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 				.filter(docOutboundLogLine -> isEmailSendable(docOutboundLogLine, collector));
 	}
 
-	private final Stream<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final int pInstanceId)
+	private final Stream<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final PInstanceId pinstanceId)
 	{
 		final Iterator<I_C_Doc_Outbound_Log> iterator = queryBL
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
-				.setOnlySelection(pInstanceId)
+				.setOnlySelection(pinstanceId)
 				.create()
 				.iterate(I_C_Doc_Outbound_Log.class);
 

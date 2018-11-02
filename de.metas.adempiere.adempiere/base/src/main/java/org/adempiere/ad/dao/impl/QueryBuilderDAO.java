@@ -35,6 +35,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.IQuery;
 
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -89,7 +90,7 @@ public class QueryBuilderDAO extends AbstractQueryBuilderDAO
 		final String modelTableName = queryBuildCtx.getModelTableName();
 		final IQueryOrderBy queryOrderBy = queryBuildCtx.getQueryOrderBy();
 		final int queryLimit = queryBuildCtx.getQueryLimit();
-		final int queryOnlySelectionId = queryBuildCtx.getQueryOnlySelectionId();
+		final PInstanceId queryOnlySelectionId = queryBuildCtx.getQueryOnlySelectionId();
 		final Map<String, Object> queryOptions = queryBuildCtx.getQueryOptions();
 		return new TypedSqlQuery<>(ctx, modelClass, modelTableName, sqlWhereClause, trxName)
 				.setParameters(sqlParams)

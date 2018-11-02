@@ -42,7 +42,7 @@ import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;

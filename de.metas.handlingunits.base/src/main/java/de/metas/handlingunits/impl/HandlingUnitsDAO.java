@@ -2,6 +2,7 @@ package de.metas.handlingunits.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
@@ -70,11 +71,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -103,10 +105,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// NOTE: it's public only for testing purposes
-	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Version_ID = 100;
 	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Item_ID = 540004;
 
-	public static final int VIRTUAL_HU_PI_Version_ID = 101;
 	public static final int VIRTUAL_HU_PI_Item_ID = 101;
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
@@ -140,9 +140,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_PI retrievePackingItemTemplatePI(final Properties ctx)
+	public List<I_M_HU> getByIdsOutOfTrx(@NonNull final Collection<HuId> huIds)
 	{
-		return retrievePI(ctx, HuPackingInstructionsId.TEMPLATE);
+		return loadByRepoIdAwaresOutOfTrx(ImmutableSet.copyOf(huIds), I_M_HU.class);
 	}
 
 	@Override
@@ -202,12 +202,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public int getPackingItemTemplate_HU_PI_Item_ID()
 	{
 		return PACKING_ITEM_TEMPLATE_HU_PI_Item_ID;
-	}
-
-	@Override
-	public int getVirtual_HU_PI_Version_ID()
-	{
-		return VIRTUAL_HU_PI_Version_ID;
 	}
 
 	@Override
@@ -517,6 +511,20 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId)
+	{
+		final I_M_HU_PI pi = getPackingInstructionById(piId);
+		return retrievePICurrentVersionId(pi);
+	}
+
+	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(I_M_HU_PI pi)
+	{
+		final I_M_HU_PI_Version piVersion = retrievePICurrentVersion(pi);
+		return HuPackingInstructionsVersionId.ofRepoId(piVersion.getM_HU_PI_Version_ID());
+	}
+
+	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersion(final I_M_HU_PI pi)
 	{
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(pi);
@@ -526,15 +534,25 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(final I_M_HU_PI pi)
+	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)
 	{
-		Check.assumeNotNull(pi, "PI not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(pi);
 		final String trxName = InterfaceWrapperHelper.getTrxName(pi);
-		final int piId = pi.getM_HU_PI_ID();
+		final HuPackingInstructionsId piId = HuPackingInstructionsId.ofRepoId(pi.getM_HU_PI_ID());
 
 		return retrievePICurrentVersionOrNull(ctx, piId, trxName);
+	}
+
+	@Override
+	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final HuPackingInstructionsId piId)
+	{
+		return retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);
+	}
+
+	@Override
+	public I_M_HU_PI_Version retrievePIVersionById(@NonNull final HuPackingInstructionsVersionId id)
+	{
+		return loadOutOfTrx(id, I_M_HU_PI_Version.class);
 	}
 
 	@Cached(cacheName = I_M_HU_PI_Version.Table_Name
@@ -543,7 +561,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_IsCurrent)
 	/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
 			final @CacheCtx Properties ctx,
-			final int piId,
+			final HuPackingInstructionsId piId,
 			final @CacheTrx String trxName)
 	{
 		final I_M_HU_PI_Version version = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Version.class, ctx, trxName)

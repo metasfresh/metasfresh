@@ -64,7 +64,7 @@ public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		// acquire one overall lock for all the workpackages that we are going to process
-		final String lockName = "AD_PInstance_ID=" + getAD_PInstance_ID() + "_" + C_Queue_WorkPackage_ProcessSelection.class.getSimpleName();
+		final String lockName = "AD_PInstance_ID=" + getPinstanceId().getRepoId() + "_" + C_Queue_WorkPackage_ProcessSelection.class.getSimpleName();
 
 		// gh #1955: prevent an OutOfMemoryError
 		final IQueryFilter<I_C_Queue_WorkPackage> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));

@@ -199,6 +199,8 @@ public interface IAttributeValue
 	 * @return true if attribute is displayed to user
 	 */
 	boolean isDisplayedUI();
+	
+	boolean isMandatory();
 
 	/**
 	 * @return true if the attribute shall be displayed only if present in the product's attributeSet.

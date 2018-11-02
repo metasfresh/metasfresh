@@ -34,6 +34,7 @@ import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderLineId;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -148,7 +149,8 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 
 	private Timestamp getDateForOrderLine(final I_C_OrderLine orderLine)
 	{
-		final I_M_ShipmentSchedule schedForOrderLine = Services.get(IShipmentSchedulePA.class).retrieveForOrderLine(orderLine);
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		final I_M_ShipmentSchedule schedForOrderLine = Services.get(IShipmentSchedulePA.class).getByOrderLineId(orderLineId);
 		if (schedForOrderLine != null)
 		{
 			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(schedForOrderLine);

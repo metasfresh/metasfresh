@@ -52,7 +52,7 @@ public class DeliveryGroupCandidateTest
 				.bPartnerAddress("bPartnerAddress")
 				.build();
 
-		group.addLine(newInstance(I_M_ShipmentSchedule.class), CompleteStatus.OK);
+		group.createAndAddLineCandidate(newInstance(I_M_ShipmentSchedule.class), CompleteStatus.OK);
 
 		assertThat(group.toString()).isNotEmpty();
 		group.hashCode(); // throws no exception

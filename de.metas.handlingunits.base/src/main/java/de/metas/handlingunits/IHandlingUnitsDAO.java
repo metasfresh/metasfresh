@@ -83,6 +83,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> getByIds(Collection<HuId> huIds);
 
+	List<I_M_HU> getByIdsOutOfTrx(Collection<HuId> huIds);
+
 	/**
 	 * Save the given {@code hu}
 	 *
@@ -91,8 +93,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	void saveHU(I_M_HU hu);
 
 	void delete(I_M_HU hu);
-
-	I_M_HU_PI retrievePackingItemTemplatePI(Properties ctx);
 
 	I_M_HU_PI_Item retrievePackingItemTemplatePIItem(Properties ctx);
 
@@ -109,8 +109,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
 
 	int getPackingItemTemplate_HU_PI_Item_ID();
-
-	int getVirtual_HU_PI_Version_ID();
 
 	int getVirtual_HU_PI_Item_ID();
 
@@ -210,11 +208,19 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU_PI_Version retrievePICurrentVersion(final I_M_HU_PI pi);
 
+	HuPackingInstructionsVersionId retrievePICurrentVersionId(final I_M_HU_PI pi);
+
+	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
+
 	/**
 	 * @param pi
 	 * @return current PI Version or null
 	 */
 	I_M_HU_PI_Version retrievePICurrentVersionOrNull(I_M_HU_PI pi);
+
+	I_M_HU_PI_Version retrievePICurrentVersionOrNull(final HuPackingInstructionsId piId);
+
+	I_M_HU_PI_Version retrievePIVersionById(final HuPackingInstructionsVersionId id);
 
 	List<I_M_HU_PI_Item> retrievePIItemsForPackingMaterial(final I_M_HU_PackingMaterial pm);
 

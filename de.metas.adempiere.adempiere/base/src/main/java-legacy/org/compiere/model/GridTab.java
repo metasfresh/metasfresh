@@ -99,7 +99,6 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /**
@@ -1306,10 +1305,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			{
 				return false;
 			}
-			final Properties ctx = getCtx();
 			final boolean newRecord = m_mTable.isInserting(); // metas-2009_0021_AP1_CR061:
 			// start: c.ghita@metas.ro: check for warning
-			final String beforeChangeMsg = MIndexTable.getBeforeChangeWarning(ctx, this, newRecord);
+			final String beforeChangeMsg = MIndexTable.getBeforeChangeWarning(this, newRecord);
 			if (!Check.isEmpty(beforeChangeMsg))
 			{
 				if (!clientUI.ask(m_window.getWindowNo(), "Warning", beforeChangeMsg))
@@ -1337,7 +1335,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				refreshParents();
 			}
 			// metas-2009_0021_AP1_CR061: teo_sarca: begin
-			if (retValue && MIndexTable.isAnyIndexedValueChanged(ctx, this, newRecord))   // metas: cg: task 03475
+			if (retValue && MIndexTable.isAnyIndexedValueChanged(this, newRecord))   // metas: cg: task 03475
 			{
 				dataRefreshAll();
 			}
@@ -1593,8 +1591,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		fireStateChangeEvent(StateChangeEventType.DATA_DELETE);
 
 		// metas-2009_0021_AP1_CR061: teo_sarca: begin
-		final Properties ctx = getCtx();
-		if (MIndexTable.isAnyIndexedValueChanged(ctx, this, true))
+		if (MIndexTable.isAnyIndexedValueChanged(this, true))
 		{
 			dataRefreshAll();
 		}

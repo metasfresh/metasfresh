@@ -292,7 +292,6 @@ public class CompositeQueryFilterTest
 		assertPartialSql(filter, "(" + sqlFilter.getSql() + ")", sqlFilter.getSqlParams(ctx));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void compile_MixedFiltersWithJoinAND_Including_MixedFiltersWithJoinAND()
 	{
@@ -450,10 +449,33 @@ public class CompositeQueryFilterTest
 		filter.addFilter(filter);
 	}
 
+	@Test
+	public void compile_disallowSqlFilters()
+	{
+		//
+		// Included Filter
+		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<I_ModelClass>();
+		filter.addFilter(includedSqlFilter);
+
+		//
+		// Check before disabling the SQL filters
+		Assert.assertEquals("Invalid SqlFilters: " + filter, Arrays.asList(includedSqlFilter), filter.getSqlFilters());
+		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Arrays.asList(), filter.getNonSqlFilters());
+
+		filter.allowSqlFilters(false);
+
+		//
+		Assert.assertEquals("Invalid SqlFilters: " + filter, Arrays.asList(), filter.getSqlFilters());
+		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Arrays.asList(includedSqlFilter), filter.getNonSqlFilters());
+
+	}
+
 	//
 	// Helper methods ------------------------------------------------------------
 	//
 
+	@SafeVarargs
 	private final static <T> List<T> join(final List<T>... lists)
 	{
 		if (lists == null || lists.length == 0)

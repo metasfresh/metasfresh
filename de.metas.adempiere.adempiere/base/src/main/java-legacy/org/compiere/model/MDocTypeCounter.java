@@ -22,10 +22,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.document.IDocTypeDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;

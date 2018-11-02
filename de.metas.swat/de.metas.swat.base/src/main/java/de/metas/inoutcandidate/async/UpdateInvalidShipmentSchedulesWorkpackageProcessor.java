@@ -34,6 +34,7 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
@@ -55,6 +56,12 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	{
 		SCHEDULER.schedule(PlainContextAware.newWithTrxName(ctx, trxName));
 	}
+	
+	public static final void schedule()
+	{
+		SCHEDULER.schedule(PlainContextAware.newWithThreadInheritedTrx());
+	}
+
 
 	private static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> //
 	SCHEDULER = WorkpackagesOnCommitSchedulerTemplate.newContextAwareSchedulerNoCollect(UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
@@ -63,19 +70,19 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	private final transient IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
 		final int adUserId = workpackage.getCreatedBy();
-		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(ctx);
+		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createPInstanceId();
 
 		final boolean updateOnlyLocked = true; // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
-		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, adPInstanceId, updateOnlyLocked, localTrxName);
+		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, pinstanceId, updateOnlyLocked);
 
-		Loggables.get().addLog("Updated " + updatedCount + " shipment schedule entries");
+		Loggables.get().addLog("Updated {} shipment schedule entries", updatedCount);
 		
-		Loggables.get().addLog("AD_PInstance_ID  = " + adPInstanceId);
+		Loggables.get().addLog("AD_PInstance_ID  = {}", pinstanceId);
 
 		return Result.SUCCESS;
 	}

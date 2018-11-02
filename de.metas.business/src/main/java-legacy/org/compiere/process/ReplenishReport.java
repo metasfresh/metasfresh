@@ -838,4 +838,9 @@ public class ReplenishReport extends JavaProcess
 		return retValue;
 	}	// getReplenish
 
+	
+	private int getAD_PInstance_ID()
+	{
+		return getPinstanceId().getRepoId();
+	}
 }	// Replenish

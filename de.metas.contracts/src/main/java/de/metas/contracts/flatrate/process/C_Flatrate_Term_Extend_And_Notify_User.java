@@ -87,7 +87,7 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 
 			// we are called from a given term => extend the term
 			final ContractExtendingRequest context = ContractExtendingRequest.builder()
-					.AD_PInstance_ID(getAD_PInstance_ID())
+					.AD_PInstance_ID(getPinstanceId())
 					.contract(contractToExtend)
 					.forceExtend(true)
 					.forceComplete(forceComplete)
@@ -126,7 +126,7 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 			{
 				final I_C_Flatrate_Term contractToExtend = termsToExtend.next();
 				final ContractExtendingRequest context = ContractExtendingRequest.builder()
-						.AD_PInstance_ID(getAD_PInstance_ID())
+						.AD_PInstance_ID(getPinstanceId())
 						.contract(contractToExtend)
 						.forceExtend(false)
 						.forceComplete(forceComplete)
@@ -141,11 +141,11 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 				errorCounter++;
 			}
 		}
-		addLog("Processed {} terms; Processing failed for {} terms, see the log for AD_PInstance_ID={} for details", extendedCounter, errorCounter, getAD_PInstance_ID());
+		addLog("Processed {} terms; Processing failed for {} terms, see the log for AD_PInstance_ID={} for details", extendedCounter, errorCounter, getPinstanceId());
 
 		if (errorCounter > 0)
 		{
-			throw new AdempiereException("At least one C_Flatrate_Term could not be extended; Check AD_PInstance_ID=" + getAD_PInstance_ID() + " for details");
+			throw new AdempiereException("At least one C_Flatrate_Term could not be extended; Check AD_PInstance_ID=" + getPinstanceId() + " for details");
 		}
 	}
 

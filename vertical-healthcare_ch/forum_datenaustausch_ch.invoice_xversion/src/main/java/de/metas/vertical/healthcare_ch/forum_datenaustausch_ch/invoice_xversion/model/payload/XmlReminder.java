@@ -33,7 +33,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class XmlReminder
 {
 	@NonNull

@@ -86,6 +86,7 @@ public class C_Order
 			// I checked the code of OrderBL.updateAddresses() and MOrderLine.setHeaderInfo() to get this list
 			I_C_Order.COLUMNNAME_C_BPartner_ID,
 			I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
+			I_C_Order.COLUMNNAME_AD_User_ID,
 			I_C_Order.COLUMNNAME_DropShip_BPartner_ID,
 			I_C_Order.COLUMNNAME_DropShip_Location_ID,
 			I_C_Order.COLUMNNAME_DropShip_User_ID,

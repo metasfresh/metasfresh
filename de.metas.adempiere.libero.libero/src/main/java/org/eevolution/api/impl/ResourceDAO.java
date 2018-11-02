@@ -37,7 +37,7 @@ import org.compiere.model.MProduct;
 import org.compiere.model.X_S_Resource;
 import org.eevolution.api.IResourceDAO;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
 
 public class ResourceDAO implements IResourceDAO

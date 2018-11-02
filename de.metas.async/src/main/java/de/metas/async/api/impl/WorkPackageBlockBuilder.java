@@ -35,6 +35,7 @@ import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -46,7 +47,7 @@ import lombok.NonNull;
 
 	// Parameters
 	private Properties _ctx;
-	private int _adPInstanceId;
+	private PInstanceId adPInstanceId;
 	private int _queuePackageProcessorId;
 
 	// status
@@ -72,7 +73,7 @@ import lombok.NonNull;
 			_block = InterfaceWrapperHelper.create(getCtx(), I_C_Queue_Block.class, ITrx.TRXNAME_None);
 
 			_block.setC_Queue_PackageProcessor_ID(getC_Queue_PackageProcessor_ID());
-			_block.setAD_PInstance_Creator_ID(getAD_PInstance_Creator_ID());
+			_block.setAD_PInstance_Creator_ID(PInstanceId.toRepoId(adPInstanceId));
 
 			dao.save(_block);
 		}
@@ -119,17 +120,12 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IWorkPackageBlockBuilder setAD_PInstance_Creator_ID(final int adPInstanceId)
+	public IWorkPackageBlockBuilder setAD_PInstance_Creator_ID(final PInstanceId adPInstanceId)
 	{
 		assertBlockNotCreated();
 
-		_adPInstanceId = adPInstanceId;
+		this.adPInstanceId = adPInstanceId;
 		return this;
-	}
-
-	private final int getAD_PInstance_Creator_ID()
-	{
-		return _adPInstanceId;
 	}
 
 	@Override

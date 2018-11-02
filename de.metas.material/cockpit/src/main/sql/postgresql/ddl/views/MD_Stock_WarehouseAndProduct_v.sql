@@ -12,7 +12,7 @@ select
 from M_Product_Category pc
 inner join M_Product p on (p.M_Product_Category_ID=pc.M_Product_Category_ID)
 left outer join MD_Stock s on (s.M_Product_ID=p.M_Product_ID)
-where pc.IsActive='Y' and p.IsActive='Y'
+where pc.IsActive='Y' and p.IsActive='Y' and s.IsActive='Y'
 group by
 	pc.M_Product_Category_ID
 	, p.M_Product_ID

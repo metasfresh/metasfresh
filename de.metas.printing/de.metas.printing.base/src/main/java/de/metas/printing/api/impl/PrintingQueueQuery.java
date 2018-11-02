@@ -29,11 +29,12 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.process.PInstanceId;
 
 /* package */class PrintingQueueQuery implements IPrintingQueueQuery
 {
 	private Boolean isPrinted = Boolean.FALSE;
-	private int onlyAD_PInstance_ID = -1;
+	private PInstanceId onlyAD_PInstance_ID;
 	private int AD_Client_ID = -1;
 	private int AD_Org_ID = -1;
 	private int AD_User_ID = -1;
@@ -135,13 +136,13 @@ import de.metas.printing.api.IPrintingQueueQuery;
 	}
 
 	@Override
-	public int getOnlyAD_PInstance_ID()
+	public PInstanceId getOnlyAD_PInstance_ID()
 	{
 		return onlyAD_PInstance_ID;
 	}
 
 	@Override
-	public void setOnlyAD_PInstance_ID(final int onlyAD_PInstance_ID)
+	public void setOnlyAD_PInstance_ID(final PInstanceId onlyAD_PInstance_ID)
 	{
 		this.onlyAD_PInstance_ID = onlyAD_PInstance_ID;
 	}

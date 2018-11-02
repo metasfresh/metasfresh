@@ -25,7 +25,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.cache.annotation.CacheCtx;
 
 /**
  * System Element Model

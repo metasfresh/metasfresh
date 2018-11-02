@@ -28,6 +28,7 @@ import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionAsyncRequ
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
 import de.metas.dlm.partitioner.config.PartitionConfig;
+import de.metas.process.PInstanceId;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -69,7 +70,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 	 * @param adPInstanceId <code>AD_Pisntance_ID</code> from which the package was scheduled. Optional, can be less or equal 0
 	 * @return
 	 */
-	public static I_C_Queue_WorkPackage schedule(final CreatePartitionAsyncRequest request, final int adPInstanceId)
+	public static I_C_Queue_WorkPackage schedule(final CreatePartitionAsyncRequest request, final PInstanceId adPInstanceId)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -84,7 +85,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 				.newBlock()
 				.setContext(ctx);
 
-		if (adPInstanceId > 0)
+		if (adPInstanceId != null)
 		{
 			blockBuilder.setAD_PInstance_Creator_ID(adPInstanceId);
 		}
@@ -169,8 +170,8 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 					.setCount(count - 1)
 					.setDontReEnqueueAfter(dontReEnQueueAfter).build();
 
-			final I_C_Queue_WorkPackage nextWorkPackage = schedule(newRequest,
-					workPackage.getC_Queue_Block().getAD_PInstance_Creator_ID());
+			final PInstanceId pinstanceId = PInstanceId.ofRepoId(workPackage.getC_Queue_Block().getAD_PInstance_Creator_ID());
+			final I_C_Queue_WorkPackage nextWorkPackage = schedule(newRequest, pinstanceId);
 
 			loggable.addLog("Scheduled C_Queue_WorkPackage={} with CreatePartitionAsyncRequest={}", nextWorkPackage, newRequest);
 		}

@@ -27,9 +27,9 @@ import javax.print.attribute.standard.MediaSizeName;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_PrintPaper;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
