@@ -303,7 +303,7 @@ class Lookup extends Component {
 
     return (
       <div
-        className="input-icon input-icon-lg raw-lookup-wrapper"
+        className="input-icon input-icon-lg lookup-widget-wrapper"
         onClick={null /*isInputEmpty ? this.openDropdownList : null*/}
       >
         {showBarcodeScanner ? (
@@ -357,6 +357,7 @@ class Lookup extends Component {
       codeSelected,
       scannerElement,
       forceFullWidth,
+      forceHeight,
     } = this.props;
 
     const {
@@ -427,7 +428,7 @@ class Lookup extends Component {
                 <div
                   key={item.field}
                   id={idValue}
-                  className="raw-lookup-wrapper lookup-tooltip"
+                  className="lookup-widget-wrapper lookup-tooltip"
                 >
                   <WidgetTooltip
                     widget={item}
@@ -476,6 +477,7 @@ class Lookup extends Component {
                     this.dropdownListToggle(val, item.field, mouse);
                   }}
                   forcedWidth={width}
+                  forceHeight={forceHeight}
                   parentElement={forceFullWidth && this.dropdown}
                   {...{
                     placeholder,
@@ -523,7 +525,7 @@ class Lookup extends Component {
                   key={item.field}
                   id={idValue}
                   className={classnames(
-                    'raw-lookup-wrapper raw-lookup-wrapper-bcg',
+                    'lookup-widget-wrapper lookup-widget-wrapper-bcg',
                     {
                       'raw-lookup-disabled': disabled || readonly,
                       focused: this.getFocused(item.field),
@@ -582,6 +584,7 @@ Lookup.propTypes = {
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
   forceFullWidth: PropTypes.bool,
+  forceHeight: PropTypes.number,
 };
 
 export default connect()(BarcodeScanner(onClickOutside(Lookup)));

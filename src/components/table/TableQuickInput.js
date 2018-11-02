@@ -159,7 +159,7 @@ class TableQuickInput extends Component {
   handleBlurWidget = () => {};
 
   renderFields = (layout, data, dataId, attributeType, quickInputId) => {
-    const { tabId, docType } = this.props;
+    const { tabId, docType, forceHeight } = this.props;
 
     this.rawWidgets = [];
 
@@ -185,6 +185,7 @@ class TableQuickInput extends Component {
             widgetData={widgetData}
             gridAlign={item.gridAlign}
             forceFullWidth={widgetData.length > 1}
+            forceHeight={forceHeight}
             key={id}
             caption={item.caption}
             handlePatch={(prop, value, callback) =>
@@ -248,7 +249,6 @@ class TableQuickInput extends Component {
 
   render() {
     const { docId } = this.props;
-
     const { data, layout, id } = this.state;
 
     return (
@@ -267,6 +267,7 @@ class TableQuickInput extends Component {
 
 TableQuickInput.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  forceHeight: PropTypes.number,
 };
 
 export default connect()(TableQuickInput);
