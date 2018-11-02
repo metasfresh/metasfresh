@@ -268,10 +268,8 @@ public class RollupBillOfMaterial extends JavaProcess
 			//
 			// Get/Create Cost
 
-			final CostSegment costSegment = baseCost.getCostSegment()
-					.toBuilder()
-					.productId(ProductId.ofRepoId(bomline.getM_Product_ID()))
-					.build();
+			final ProductId productId = ProductId.ofRepoId(bomline.getM_Product_ID());
+			final CostSegment costSegment = baseCost.getCostSegment().withProductId(productId);
 			final CurrentCost cost = currentCostsRepo.getOrCreate(costSegment, costElement.getId());
 			cost.setCurrentCostPriceLL(costPrice);
 			currentCostsRepo.save(cost);

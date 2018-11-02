@@ -7,7 +7,9 @@ import org.adempiere.service.OrgId;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -36,10 +38,12 @@ import lombok.Value;
 @Value
 public class CostSegment
 {
+	@Getter(AccessLevel.NONE)
+	CostingLevel costingLevel;
+
 	AcctSchemaId acctSchemaId;
 	CostTypeId costTypeId;
-	CostingLevel costingLevel;
-	
+
 	ClientId clientId;
 	OrgId orgId;
 	ProductId productId;
@@ -53,7 +57,7 @@ public class CostSegment
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId,
-			final AttributeSetInstanceId attributeSetInstanceId)
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		this.costingLevel = costingLevel;
 		this.acctSchemaId = acctSchemaId;
@@ -80,5 +84,10 @@ public class CostSegment
 		{
 			throw new AdempiereException("Unknown costingLevel: " + costingLevel);
 		}
+	}
+
+	public CostSegment withProductId(final ProductId productId)
+	{
+		return toBuilder().productId(productId).build();
 	}
 }
