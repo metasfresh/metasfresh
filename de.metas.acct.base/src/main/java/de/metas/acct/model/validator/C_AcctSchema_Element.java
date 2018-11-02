@@ -1,4 +1,4 @@
-package de.metas.costing.interceptors;
+package de.metas.acct.model.validator;
 
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Activity_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_BPartner_ID;
@@ -23,7 +23,6 @@ import org.compiere.model.MAccount;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchemaElementType;
 
@@ -49,7 +48,6 @@ import de.metas.acct.api.AcctSchemaElementType;
  * #L%
  */
 
-@Component
 @Interceptor(I_C_AcctSchema_Element.class)
 public class C_AcctSchema_Element
 {

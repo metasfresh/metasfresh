@@ -1,4 +1,4 @@
-package de.metas.costing.interceptors;
+package de.metas.acct.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -11,7 +11,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -43,7 +42,6 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Component
 @Interceptor(I_C_AcctSchema.class)
 public class C_AcctSchema
 {

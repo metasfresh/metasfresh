@@ -95,6 +95,11 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(), client);
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL(), client);
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default(), client);
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element(), client);
+		
 		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount(), client); // 08354
 		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(), client);
 		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(), client);
