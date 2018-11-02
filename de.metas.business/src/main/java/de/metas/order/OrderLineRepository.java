@@ -77,7 +77,7 @@ public class OrderLineRepository
 				.orgId(OrgId.ofRepoId(orderLineRecord.getAD_Org_ID()))
 				.line(orderLineRecord.getLine())
 				.bPartnerId(BPartnerId.ofRepoId(bPartnerRepoId))
-				.datePromised(null)
+				.datePromised(datePromised)
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.priceActual(moneyOfRecordsPriceActual(orderLineRecord))
 				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
