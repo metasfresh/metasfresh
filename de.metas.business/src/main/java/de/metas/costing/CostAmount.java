@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -41,9 +42,19 @@ public class CostAmount
 		return new CostAmount(value, currencyId);
 	}
 
+	public static final CostAmount of(@NonNull final BigDecimal value, final CurrencyId currencyId)
+	{
+		return new CostAmount(value, currencyId.getRepoId());
+	}
+
 	public static final CostAmount zero(final int currencyId)
 	{
 		return new CostAmount(BigDecimal.ZERO, currencyId);
+	}
+
+	public static final CostAmount zero(final CurrencyId currencyId)
+	{
+		return new CostAmount(BigDecimal.ZERO, currencyId.getRepoId());
 	}
 
 	BigDecimal value;
@@ -131,7 +142,7 @@ public class CostAmount
 		final BigDecimal valueNew = value.divide(divisor, precision, roundingMode);
 		return new CostAmount(valueNew, currencyId);
 	}
-	
+
 	public CostAmount divide(final Quantity divisor, final int precision, final RoundingMode roundingMode)
 	{
 		return divide(divisor.getQty(), precision, roundingMode);
