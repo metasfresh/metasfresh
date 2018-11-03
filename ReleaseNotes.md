@@ -38,16 +38,24 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1933](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1933) Frontend shall ALWAYS use server's time zone
+    * Switching the frontend behavior, now always using the Server's timezone.
   * [#2013](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2013) View: don't open row details if it's not allowed
+    * Enhancement of frontend row open behavior. It's possible to define if a row shall be opened or not via doubleclick.
   * [#2020](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2020) View editing: fetch quickActions after PATCH /edit
+    * Internal, general enhancement of the fetching of Quick Actions.
 
 ## Fixes
 * metasfresh
   * [#4177](https://github.com/metasfresh/metasfresh/issues/4177) Performance bottleneck at Cache Invalidation
+    * Improvement of Chache invalidation, removing a performance bottleneck.
   * [#4652](https://github.com/metasfresh/metasfresh/issues/4652) AD Element Translations leads to wrong fieldname Translations
+    * Fixes the Translation update mechanism via Application Dictionary System Elements.
   * [#4683](https://github.com/metasfresh/metasfresh/issues/4683) Shipment Schedule does not set QtyToDeliver properly
+    * Fix for Shipment Schedule. Now updateing the Quantity to deliver properly for product entries with isStocked = N masterdata configuration.
   * [#4696](https://github.com/metasfresh/metasfresh/issues/4696) Follow up #4552 AD_User is wrong in shipment schedule when using isDropShip
+    * Further improvement of the Shipment Contact in Document Address generation in Sales Order Confirmation.
   * [#4704](https://github.com/metasfresh/metasfresh/issues/4704) Swing Picking Terminal: cannot write upper/lower case passwords when logging to Swing Picking Terminal
+     * Bugfix for the Pciking Terminal in Swing Client. Now it's possible to login with upper and lowercase password elements again.
 
 * metasfresh-webui-api
   * [#1064](https://github.com/metasfresh/metasfresh-webui-api/issues/1064) Time switches when setting Preparation Date-Time
