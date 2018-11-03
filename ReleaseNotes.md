@@ -59,9 +59,13 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1064](https://github.com/metasfresh/metasfresh-webui-api/issues/1064) Time switches when setting Preparation Date-Time
+    * Improvement in WebUI Frontend for the Date and Timezone relevant data entries.
   * [#1074](https://github.com/metasfresh/metasfresh-webui-api/issues/1074) Process picking action not working
+    * Bugfix in Picking workflow, now it's possible to Use the Process picking action again.
   * [#1075](https://github.com/metasfresh/metasfresh-webui-api/issues/1075) Unpick action not working
+    * Bugfix in Picking workflow, now it's possible to Use the Unpick action again.
   * [#1076](https://github.com/metasfresh/metasfresh-webui-api/issues/1076) Cannot create a new sales order because "DeliveryViaRule is not set"
+    * Fix for the Sales Order creation.
 
 * metasfresh-webui-frontend
   * [#2021](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2021) Modal view: fetch quickActions on open; fetch quickActions when no selection
