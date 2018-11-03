@@ -78,18 +78,27 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4621](https://github.com/metasfresh/metasfresh/issues/4621) Support forum-datenaustausch.ch XML invoice
+    * Implementation of the forum-datenaustausch.ch XML invoice for swiss helathcare document transactions.
   * [#4653](https://github.com/metasfresh/metasfresh/issues/4653) WebUI: Add missing Translations for en_US in Businesspartner Window
     * Switched Translations to ad_element for Business Partner Window.
   * [#4665](https://github.com/metasfresh/metasfresh/issues/4665) Show the Product No of Vendor in Purchase Order
+    * Adjustment of the Purchase Order Document, now showing the Vendor Product No instead of the own Product No on Purchase Order Document.
   * [#4673](https://github.com/metasfresh/metasfresh/issues/4673) Enlarge AD_Process.SQLStatement to fit large SQL queries
+    * Resizing the Process SQL Statement to allow large SQL Queries.
   * [#4677](https://github.com/metasfresh/metasfresh/issues/4677) Enable zoom to invoice candidates
-  * [#4547](https://github.com/metasfresh/metasfresh/issues/4547) sales order based process for contract extension
+    * Enables the Zoom to Reference for Invoice Candidates.
+  * [#4547](https://github.com/metasfresh/metasfresh/issues/4547) Sales order based process for contract extension
+    * New Process that allows to extend contracts and update the contract status tp show active, prolonged and cancelled contracts.
 
 * metasfresh-webui-api
   * [#1033](https://github.com/metasfresh/metasfresh-webui-api/issues/1033) API for "About" action in webui
+    * New API for the Created and Updated Infos for a selected record.
   * [#1055](https://github.com/metasfresh/metasfresh-webui-api/issues/1055) Include internalName in JSONDocumentAction
+    * Includes the Internal Name (window and tabs) to WebUI Frontend. These names can be used for automated frontend tests.
   * [#1072](https://github.com/metasfresh/metasfresh-webui-api/issues/1072) Implement REST endpoints for managing migration scripts
+    * New Functionality, that allows the creation of migration scripts via WebUI Frontend.
   * [#1069](https://github.com/metasfresh/metasfresh-webui-api/issues/1069) View: have a way to define if views support opening row details
+    * Internal improvement of the opening of rows in WebUI frontend. Now the backend tells how to behave in such cases.
 
 * metasfresh-webui-frontend
   * [#1989](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1989) Hourglass Overlay for pending Posts
@@ -99,16 +108,19 @@ Here come the actual release notes:
   * [#2009](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2009) Views: Automatically remove view rows if GET /byIds it's not returning the row(s) frontend asked for
     * Improvement in Frontend, removing rows automatically when API does not return them.
   * [#2014](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2014) Views: refresh `quickActions` after `GET /byIds`
-    * Improvement in Frontend, now refreshing quickacions after row changes.
+    * Improvement in Frontend, now refreshing quickactions after row changes.
 
 ## Fixes
 
 * metasfresh
   * [#4671](https://github.com/metasfresh/metasfresh/issues/4671) WebUI Picking does not return filtered HU for selection
+    * Bugfix in Picking Terminal, when not returning the filtered Handling Unit although selected via Parameter.
 
 * metasfresh-webui-api
   * [#1067](https://github.com/metasfresh/metasfresh-webui-api/issues/1067) Attributes Filter in Picking shall work on load as before
+    * Bugfix in Picking Terminal for Quick Actions not shown on load.
   * [#1068](https://github.com/metasfresh/metasfresh-webui-api/issues/1068) Cannot add orderline using "Add new", error when selecting product
+    * Fixes an issues in Orderline crreation using "Add new" line action.
 
 * metasfresh-webui-frontend
   * [#2016](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2016) Indicator bar not visible
