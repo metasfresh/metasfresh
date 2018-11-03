@@ -16,7 +16,7 @@ Here come the actual release notes:
 ## Fix
 * metasfresh-webui-frontend
   * [#2007](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2007) Dropdown fields too small in several places
-    * Fixes the Dropdown width ang heißt in Lookup and Dropdown widgets.
+    * Fixes the Dropdown width and length in Lookup and Dropdown widgets.
 
 
 # metasfresh 5.79
@@ -24,11 +24,17 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4577](https://github.com/metasfresh/metasfresh/issues/4577) New Picking&Packing Workflow
+    * Additional/ Alternative Picking and Packing Workflow.
   * [#4685](https://github.com/metasfresh/metasfresh/issues/4685) Order checkup with barcode report - add containers as separate fields
+    * Improved Barcode Support for order checkup report in Manufacturing.
   * [#4687](https://github.com/metasfresh/metasfresh/issues/4687) Introduce and use PInstanceId object
+    * Internal Improvement. New Process Instance Object.
   * [#4692](https://github.com/metasfresh/metasfresh/issues/4692) RabbitMQ: we shall use guest user by default
+    * Improved RabbitMQ usage. Now using a guest user instead of metasfresh user.
   * [#4693](https://github.com/metasfresh/metasfresh/issues/4693) Validate ReadonlyLogic, MandatoryLogic and DisplayLogic
+    * Application Dictionary improvement, now validating the entries in Readonly-, Mandatory and Display-Logic.
   * [#4700](https://github.com/metasfresh/metasfresh/issues/4700) Allow appending additional PDF-attachments to invoice-PDF
+    * Extension of the Invoice PDF Document creation. Now it's possible to append an already created PDF to the Invoice PDF.
 
 * metasfresh-webui-frontend
   * [#1933](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1933) Frontend shall ALWAYS use server's time zone
