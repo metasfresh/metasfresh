@@ -69,7 +69,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#2021](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2021) Modal view: fetch quickActions on open; fetch quickActions when no selection
+    * Improvement in WebuI Frontend when fetching Quickactions without selected rows.
   * [#2030](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2030) Errors when opening table views
+    * Improving the Handling of missing data in WebUI Frontend.
 
 # metasfresh 5.78
 ## Features
