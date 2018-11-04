@@ -24,11 +24,11 @@ package org.eevolution.api;
 
 import java.util.List;
 
-import org.compiere.model.I_M_CostDetail;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.costing.CostDetail;
 import de.metas.util.ISingletonService;
 
 public interface IPPCostCollectorDAO extends ISingletonService
@@ -38,7 +38,7 @@ public interface IPPCostCollectorDAO extends ISingletonService
 
 	List<I_PP_Cost_Collector> retrieveForParent(I_PP_Cost_Collector parentCostCollector);
 
-	List<I_M_CostDetail> retrieveCostDetails(I_PP_Cost_Collector cc);
+	List<CostDetail> retrieveCostDetails(I_PP_Cost_Collector cc);
 
 	/**
 	 * @deprecated please use {@link #retrieveForOrderId(int)}

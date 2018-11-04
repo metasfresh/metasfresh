@@ -26,13 +26,16 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_M_CostDetail;
+import org.compiere.Adempiere;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Cost_Collector;
 
+import de.metas.costing.CostDetail;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -86,16 +89,10 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	}
 
 	@Override
-	public List<I_M_CostDetail> retrieveCostDetails(final I_PP_Cost_Collector cc)
+	public List<CostDetail> retrieveCostDetails(final I_PP_Cost_Collector cc)
 	{
-		final IQueryBuilder<I_M_CostDetail> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_CostDetail.class, cc)
-				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_PP_Cost_Collector_ID, cc.getPP_Cost_Collector_ID());
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_CostDetail.COLUMNNAME_M_CostDetail_ID);
-
-		return queryBuilder.create().list();
+		final ICostDetailRepository costDetailsRepo = Adempiere.getBean(ICostDetailRepository.class);
+		return costDetailsRepo.getAllForDocument(CostingDocumentRef.ofCostCollectorId(cc.getPP_Cost_Collector_ID()));
 	}
 
 	@Override

@@ -75,6 +75,7 @@ import de.metas.acct.api.AcctSchemaCosting;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
@@ -762,15 +763,15 @@ public class CostEngine
 
 		//
 		// Get the original cost details
-		final List<I_M_CostDetail> costDetails = Services.get(IPPCostCollectorDAO.class).retrieveCostDetails(costCollector);
+		final List<CostDetail> costDetails = Services.get(IPPCostCollectorDAO.class).retrieveCostDetails(costCollector);
 
-		for (final I_M_CostDetail cd : costDetails)
+		for (final CostDetail cd : costDetails)
 		{
 			createReversal(cd, reversalCostCollector);
 		}
 	}
 
-	private final void createReversal(final I_M_CostDetail costDetail, final I_PP_Cost_Collector reversalCostCollector)
+	private final void createReversal(final CostDetail costDetail, final I_PP_Cost_Collector reversalCostCollector)
 	{
 		final I_M_CostDetail costDetailReversal = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class, costDetail);
 		InterfaceWrapperHelper.copyValues(costDetail, costDetailReversal, true); // honorIsCalculated=true
