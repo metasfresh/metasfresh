@@ -485,7 +485,7 @@ export default function windowHandler(state = initialState, action) {
     case SELECT_TABLE_ITEMS: {
       const { windowType, viewId, ids } = action.payload;
 
-      if (!ids.length) {
+      if (!ids || !ids.length) {
         return state;
       }
 

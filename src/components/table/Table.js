@@ -45,6 +45,8 @@ class Table extends Component {
     onSelectionChanged: PropTypes.func,
     onRowEdited: PropTypes.func,
     defaultSelected: PropTypes.array,
+    disableOnClickOutside: PropTypes.func,
+    limitOnClickOutside: PropTypes.bool,
     supportOpenRecord: PropTypes.bool,
   };
 
@@ -485,6 +487,7 @@ class Table extends Component {
       windowType,
       inBackground,
       allowOutsideClick,
+      limitOnClickOutside,
     } = this.props;
 
     if (
@@ -492,7 +495,12 @@ class Table extends Component {
       event.target.parentNode !== document &&
       event.target.parentNode &&
       !event.target.parentNode.className.includes('notification') &&
-      !inBackground
+      !inBackground &&
+      (limitOnClickOutside &&
+        event.target.parentNode.className.includes('document-list-included') &&
+        event.target.parentNode.className.includes(
+          'document-list-has-included'
+        ))
     ) {
       const item = event.path || (event.composedPath && event.composedPath());
 
@@ -1128,7 +1136,7 @@ class Table extends Component {
     }
 
     return (
-      <div className="table-flex-wrapper">
+      <div ref={ref => (this.wrapper = ref)} className="table-flex-wrapper">
         <div
           className={classnames('table-flex-wrapper', {
             'table-flex-wrapper-row': mainTable,
@@ -1181,6 +1189,7 @@ class Table extends Component {
                   tabId={tabid}
                   handleBatchEntryToggle={this.handleBatchEntryToggle}
                   allowCreateNew={tabInfo && tabInfo.allowCreateNew}
+                  wrapperHeight={this.wrapper && this.wrapper.offsetHeight}
                 />
               </div>
             </div>
