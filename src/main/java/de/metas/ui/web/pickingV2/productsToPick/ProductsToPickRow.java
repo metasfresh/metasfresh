@@ -235,17 +235,17 @@ public class ProductsToPickRow implements IViewRow
 
 	public boolean isEligibleForPacking()
 	{
-		return isEligibleForChangingPickStatus()
-				&& pickStatus.isPickedOrPacked();
+		return !isProcessed() && isApproved();
 	}
 
 	public boolean isEligibleForReview()
 	{
-		return !isProcessed() && pickStatus.isFinalState();
+		return !isProcessed()
+				&& (pickStatus.isPicked() || pickStatus.isPickRejected());
 	}
 
 	public boolean isEligibleForProcessing()
 	{
-		return !isProcessed() && isApproved();
+		return !isProcessed() && isApproved() && pickStatus.isPacked();
 	}
 }
