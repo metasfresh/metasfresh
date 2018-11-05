@@ -10,7 +10,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IADElementDAO;
-import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.ModelValidator;
@@ -56,7 +55,7 @@ public class AD_Window
 	public void onElementIDChanged(final I_AD_Window window) throws SQLException
 	{
 
-		if (!IADWindowDAO.DYNATTR_AD_Window_UpdateTranslations.getValue(window, true))
+		if (!IElementTranslationBL.DYNATTR_AD_Window_UpdateTranslations.getValue(window, true))
 		{
 			// do not copy translations from element to window
 			return;

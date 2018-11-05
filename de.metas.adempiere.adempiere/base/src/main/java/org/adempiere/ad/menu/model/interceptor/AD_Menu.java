@@ -6,7 +6,6 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.api.AdElementId;
-import org.adempiere.ad.menu.api.IADMenuDAO;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -58,7 +57,7 @@ public class AD_Menu
 	public void onElementIDChanged(final I_AD_Menu menu) throws SQLException
 	{
 
-		if (!IADMenuDAO.DYNATTR_AD_Menu_UpdateTranslations.getValue(menu, true))
+		if (!IElementTranslationBL.DYNATTR_AD_Menu_UpdateTranslations.getValue(menu, true))
 		{
 			// do not copy translations from element to menu
 			return;

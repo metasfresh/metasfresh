@@ -207,7 +207,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 			Services.get(IElementTranslationBL.class).updateElementTranslationsFromTab(elementId, tab.getAD_Tab_ID());
 
-			IADWindowDAO.DYNATTR_AD_Tab_UpdateTranslations.setValue(tab, false);
+			IElementTranslationBL.DYNATTR_AD_Tab_UpdateTranslations.setValue(tab, false);
 
 			tab.setAD_Element_ID(elementId.getRepoId());
 			save(tab);
@@ -231,7 +231,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 			Services.get(IElementTranslationBL.class).updateElementTranslationsFromWindow(elementId, window.getAD_Window_ID());
 
-			IADWindowDAO.DYNATTR_AD_Window_UpdateTranslations.setValue(window, false);
+			IElementTranslationBL.DYNATTR_AD_Window_UpdateTranslations.setValue(window, false);
 
 			window.setAD_Element_ID(elementId.getRepoId());
 			save(window);
@@ -257,7 +257,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 			Services.get(IElementTranslationBL.class).updateElementTranslationsFromMenu(elementId, menu.getAD_Menu_ID());
 
-			IADMenuDAO.DYNATTR_AD_Menu_UpdateTranslations.setValue(menu, false);
+			IElementTranslationBL.DYNATTR_AD_Menu_UpdateTranslations.setValue(menu, false);
 
 			menu.setAD_Element_ID(elementId.getRepoId());
 			save(menu);
