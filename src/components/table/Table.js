@@ -148,7 +148,10 @@ class Table extends Component {
       (refreshSelection && prevProps.refreshSelection !== refreshSelection)
     ) {
       this.setState({
-        selected: defaultSelected,
+        selected:
+          defaultSelected && defaultSelected !== null
+            ? defaultSelected
+            : [undefined],
       });
     } else if (!disconnectFromState && !selectedEqual) {
       dispatch(
@@ -401,6 +404,10 @@ class Table extends Component {
 
   selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
     const { dispatch, tabInfo, type, viewId } = this.props;
+
+    if (id === null) {
+      id = undefined;
+    }
 
     this.setState(
       {
