@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingV2.productsToPick;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
@@ -50,6 +51,9 @@ import lombok.NonNull;
 @ViewFactory(windowId = PickingConstantsV2.WINDOWID_ProductsToPickView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class ProductsToPickViewFactory implements IViewFactory
 {
+	private static final String MSG_PickCaption = "de.metas.ui.web.pickingV2.productsToPick.Pick.caption";
+	private static final String MSG_ReviewCaption = "de.metas.ui.web.pickingV2.productsToPick.Review.caption";
+
 	@Autowired
 	private ProductsToPickRowsRepository rowsRepository;
 	private IViewsRepository viewsRepository;
@@ -63,20 +67,23 @@ public class ProductsToPickViewFactory implements IViewFactory
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 		if (PickingConstantsV2.PROFILE_ID_ProductsToPickView_Review.equals(profileId))
 		{
 			return ViewLayout.builder()
 					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
-					.setCaption("Review") // TODO: trl
+					.setCaption(msgBL.translatable(MSG_ReviewCaption))
 					.addElementsFromViewRowClassAndFieldNames(
 							ProductsToPickRow.class,
 							viewDataType,
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Product),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Damaged),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductName),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyReview),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ApprovalStatus))
 					.build();
@@ -85,17 +92,18 @@ public class ProductsToPickViewFactory implements IViewFactory
 		{
 			return ViewLayout.builder()
 					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
-					.setCaption("Pick products") // TODO: trl
+					.setCaption(msgBL.translatable(MSG_PickCaption))
 					.addElementsFromViewRowClassAndFieldNames(
 							ProductsToPickRow.class,
 							viewDataType,
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Product),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Damaged),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductName),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_PickStatus))
 					.build();
 

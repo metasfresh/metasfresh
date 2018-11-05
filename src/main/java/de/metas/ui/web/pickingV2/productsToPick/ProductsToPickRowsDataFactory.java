@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingV2.productsToPick;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +17,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 
 import com.google.common.base.Predicates;
@@ -37,10 +40,12 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
@@ -87,7 +92,6 @@ class ProductsToPickRowsDataFactory
 	private final PickingCandidateRepository pickingCandidateRepo;
 	private final PickingCandidateService pickingCandidateService;
 
-	private final LookupDataSource productLookup;
 	private final LookupDataSource locatorLookup;
 	private final IAttributeStorageFactory attributesFactory;
 
@@ -97,15 +101,13 @@ class ProductsToPickRowsDataFactory
 
 	private static final PickingCandidate NULL_PickingCandidate = null;
 
-	private static final String ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
-	private static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
-	private static final String ATTR_RepackNumber = "RepackNumber"; // TODO use it as constant, see RepackNumberUtils
-	private static final String ATTR_Damaged = "HU_Damaged"; // TODO use it as constant
+	static final String ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
+	static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
+	static final String ATTR_RepackNumber = "RepackNumber"; // TODO use it as constant, see RepackNumberUtils
 	private static final ImmutableSet<String> ATTRIBUTES = ImmutableSet.of(
 			ATTR_LotNumber,
 			ATTR_BestBeforeDate,
-			ATTR_RepackNumber,
-			ATTR_Damaged);
+			ATTR_RepackNumber);
 
 	@Builder
 	private ProductsToPickRowsDataFactory(
@@ -117,7 +119,6 @@ class ProductsToPickRowsDataFactory
 		this.pickingCandidateRepo = pickingCandidateRepo;
 		this.pickingCandidateService = pickingCandidateService;
 
-		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(org.compiere.model.I_M_Product.Table_Name);
 		locatorLookup = LookupDataSourceFactory.instance.searchInTableLookup(org.compiere.model.I_M_Locator.Table_Name);
 
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
@@ -236,21 +237,23 @@ class ProductsToPickRowsDataFactory
 
 	private ProductsToPickRow createQtyNotAvailableRow(final AllocablePackageable packageable)
 	{
-		final ProductId productId = packageable.getProductId();
 		final ShipmentScheduleId shipmentScheduleId = packageable.getShipmentScheduleId();
 
-		final LookupValue product = getProductLookupValue(productId);
-		final LookupValue locator = null; // getLocatorLookupValueByHuId(pickFromHUId);
+		final ProductInfo productInfo = getProductInfo(packageable.getProductId());
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.huId(null)
-				.productId(productId)
+				.productId(productInfo.getProductId())
 				.build();
 
 		return ProductsToPickRow.builder()
 				.rowId(rowId)
-				.product(product)
-				.locator(locator)
+				//
+				.productValue(productInfo.getCode())
+				.productName(productInfo.getName())
+				.productPackageSize(productInfo.getPackageSize())
+				//
+				.locator(null) // will be updated from picking candidate
 				//
 				.qty(packageable.getQtyToAllocate())
 				//
@@ -264,28 +267,31 @@ class ProductsToPickRowsDataFactory
 			@NonNull final HuId pickFromHUId,
 			@Nullable final PickingCandidate existingPickingCandidate)
 	{
-		final ProductId productId = packageable.getProductId();
 		final ShipmentScheduleId shipmentScheduleId = packageable.getShipmentScheduleId();
 
-		final LookupValue product = getProductLookupValue(productId);
+		final ProductInfo productInfo = getProductInfo(packageable.getProductId());
+
 		final LookupValue locator = getLocatorLookupValueByHuId(pickFromHUId);
 		final ImmutableAttributeSet attributes = getHUAttributes(pickFromHUId);
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.huId(pickFromHUId)
-				.productId(productId)
+				.productId(productInfo.getProductId())
 				.build();
 
 		return ProductsToPickRow.builder()
 				.rowId(rowId)
-				.product(product)
+				//
+				.productValue(productInfo.getCode())
+				.productName(productInfo.getName())
+				.productPackageSize(productInfo.getPackageSize())
+				//
 				.locator(locator)
 				//
 				// Attributes:
 				.lotNumber(attributes.getValueAsStringIfExists(ATTR_LotNumber).orElse(null))
 				.expiringDate(attributes.getValueAsLocalDateIfExists(ATTR_BestBeforeDate).orElse(null))
 				.repackNumber(attributes.getValueAsStringIfExists(ATTR_RepackNumber).orElse(null))
-				.damaged(attributes.getValueAsBooleanIfExists(ATTR_Damaged).orElse(null))
 				//
 				.qty(qty)
 				//
@@ -294,9 +300,19 @@ class ProductsToPickRowsDataFactory
 				.withUpdatesFromPickingCandidateIfNotNull(existingPickingCandidate);
 	}
 
-	private LookupValue getProductLookupValue(final ProductId productId)
+	private ProductInfo getProductInfo(@NonNull final ProductId productId)
 	{
-		return productLookup.findById(productId);
+		final I_M_Product productRecord = Services.get(IProductDAO.class).getById(productId);
+
+		final ITranslatableString productName = InterfaceWrapperHelper.getModelTranslationMap(productRecord)
+				.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName());
+
+		return ProductInfo.builder()
+				.productId(productId)
+				.code(productRecord.getValue())
+				.name(productName)
+				.packageSize(productRecord.getPackageSize())
+				.build();
 	}
 
 	private LookupValue getLocatorLookupValueByHuId(final HuId huId)
@@ -418,6 +434,19 @@ class ProductsToPickRowsDataFactory
 		{
 			return packageable.getSalesOrderLineIdOrNull();
 		}
+	}
+
+	@Value
+	@Builder
+	private static class ProductInfo
+	{
+		@NonNull
+		ProductId productId;
+		@NonNull
+		String code;
+		@NonNull
+		ITranslatableString name;
+		String packageSize;
 	}
 
 	@Value(staticConstructor = "of")

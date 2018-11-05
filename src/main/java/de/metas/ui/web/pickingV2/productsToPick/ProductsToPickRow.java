@@ -14,10 +14,12 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidatePickStatus;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -55,30 +57,40 @@ import lombok.ToString;
 @ToString(exclude = "_fieldNameAndJsonValues")
 public class ProductsToPickRow implements IViewRow
 {
-	static final String FIELD_Product = "product";
-	@ViewColumn(fieldName = FIELD_Product, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Product_ID", widgetSize = WidgetSize.Small)
-	private final LookupValue product;
+	static final String FIELD_ProductValue = "productValue";
+	@ViewColumn(fieldName = FIELD_ProductValue, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductValue", widgetSize = WidgetSize.Small)
+	private final String productValue;
+
+	static final String FIELD_ProductName = "productName";
+	@ViewColumn(fieldName = FIELD_ProductName, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductName", widgetSize = WidgetSize.Small)
+	private final ITranslatableString productName;
+
+	static final String FIELD_ProductPackageSize = "productPackageSize";
+	@ViewColumn(fieldName = FIELD_ProductPackageSize, widgetType = DocumentFieldWidgetType.Text, captionKey = "PackageSize", widgetSize = WidgetSize.Small)
+	private final String productPackageSize;
 
 	static final String FIELD_Locator = "locator";
 	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", widgetSize = WidgetSize.Small)
 	private final LookupValue locator;
 
 	static final String FIELD_LotNumber = "lotNumber";
-	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "LotNumber", widgetSize = WidgetSize.Small)
+	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, //
+			captionKey = ProductsToPickRowsDataFactory.ATTR_LotNumber, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+			widgetSize = WidgetSize.Small)
 	private final String lotNumber;
 
 	static final String FIELD_ExpiringDate = "expiringDate";
-	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.Date, captionKey = "ExpiringDate", widgetSize = WidgetSize.Small)
+	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.Date, //
+			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+			widgetSize = WidgetSize.Small)
 	@Getter
 	private final LocalDate expiringDate;
 
 	static final String FIELD_RepackNumber = "repackNumber";
-	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber", widgetSize = WidgetSize.Small)
+	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, //
+			captionKey = ProductsToPickRowsDataFactory.ATTR_RepackNumber, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+			widgetSize = WidgetSize.Small)
 	private final String repackNumber;
-
-	static final String FIELD_Damaged = "damaged";
-	@ViewColumn(fieldName = FIELD_Damaged, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch", widgetSize = WidgetSize.Small)
-	private final Boolean damaged;
 
 	static final String FIELD_Qty = "qty";
 	@ViewColumn(fieldName = FIELD_Qty, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", widgetSize = WidgetSize.Small)
@@ -113,13 +125,16 @@ public class ProductsToPickRow implements IViewRow
 	@Builder(toBuilder = true)
 	private ProductsToPickRow(
 			@NonNull final ProductsToPickRowId rowId,
-			@NonNull final LookupValue product,
+			//
+			@NonNull final String productValue,
+			@NonNull ITranslatableString productName,
+			final String productPackageSize,
+			//
 			final LookupValue locator,
 			//
 			final String lotNumber,
 			final LocalDate expiringDate,
 			final String repackNumber,
-			final Boolean damaged,
 			//
 			@NonNull final Quantity qty,
 			@Nullable final BigDecimal qtyReview,
@@ -132,12 +147,15 @@ public class ProductsToPickRow implements IViewRow
 			final PickingCandidateId pickingCandidateId)
 	{
 		this.rowId = rowId;
-		this.product = product;
+
+		this.productValue = productValue;
+		this.productName = productName;
+		this.productPackageSize = productPackageSize;
+
 		this.locator = locator;
 		this.lotNumber = lotNumber;
 		this.expiringDate = expiringDate;
 		this.repackNumber = repackNumber;
-		this.damaged = damaged;
 
 		this.qty = qty;
 		this.qtyReview = qtyReview;
@@ -247,5 +265,10 @@ public class ProductsToPickRow implements IViewRow
 	public boolean isEligibleForProcessing()
 	{
 		return !isProcessed() && isApproved() && pickStatus.isPacked();
+	}
+
+	public String getLocatorName()
+	{
+		return locator != null ? locator.getDisplayName() : "";
 	}
 }
