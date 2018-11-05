@@ -2,16 +2,23 @@ package de.metas.product.sequence;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isInstanceOf;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import lombok.NonNull;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.springframework.stereotype.Component;
 
+import de.metas.cache.CCache;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.ValueSequenceInfoProvider;
+import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -38,6 +45,8 @@ import lombok.NonNull;
 @Component
 public class ProductValueSequenceProvider implements ValueSequenceInfoProvider
 {
+	private final CCache<ProductCategoryId, Integer> productCategoryId2AD_Sequence_ID = CCache.newCache(I_M_Product_Category.Table_Name, 10, CCache.EXPIREMINUTES_Never);
+
 	@Override
 	public ProviderResult computeValueInfo(@NonNull final Object modelRecord)
 	{
@@ -47,8 +56,9 @@ public class ProductValueSequenceProvider implements ValueSequenceInfoProvider
 		}
 		final I_M_Product product = create(modelRecord, I_M_Product.class);
 
-		final I_M_Product_Category productCategory = product.getM_Product_Category();
-		final int adSequenceId = productCategory.getAD_Sequence_ProductValue_ID();
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(product.getM_Product_Category_ID());
+
+		final int adSequenceId = getSequenceId(productCategoryId);
 		if (adSequenceId <= 0)
 		{
 			return ProviderResult.EMPTY;
@@ -59,4 +69,44 @@ public class ProductValueSequenceProvider implements ValueSequenceInfoProvider
 
 		return ProviderResult.of(documentSequenceInfo);
 	}
+
+	private int getSequenceId(@NonNull final ProductCategoryId productCategoryId)
+	{
+		return productCategoryId2AD_Sequence_ID.getOrLoad(
+				productCategoryId,
+				() -> extractSequenceId(productCategoryId, new HashSet<>()));
+	}
+
+	private int extractSequenceId(
+			@NonNull final ProductCategoryId productCategoryId,
+			@NonNull final Set<ProductCategoryId> seenIds)
+	{
+		final I_M_Product_Category productCategory = loadOutOfTrx(productCategoryId, I_M_Product_Category.class);
+
+		final int adSequenceId = productCategory.getAD_Sequence_ProductValue_ID();
+		if (adSequenceId > 0)
+		{
+			// return our result
+			return adSequenceId;
+		}
+
+		if (productCategory.getM_Product_Category_Parent_ID() > 0)
+		{
+			final ProductCategoryId productCategoryParentId = ProductCategoryId.ofRepoId(productCategory.getM_Product_Category_Parent_ID());
+
+			// first, guard against a loop
+			if (!seenIds.add(productCategoryParentId))
+			{
+				// there is no AD_Sequence_ID for us
+				return -1;
+			}
+
+			// recurse
+			return extractSequenceId(productCategoryParentId, seenIds);
+		}
+
+		// there is no AD_Sequence_ID for us
+		return -1;
+	}
+
 }

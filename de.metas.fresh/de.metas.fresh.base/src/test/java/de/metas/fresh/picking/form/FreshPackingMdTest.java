@@ -75,7 +75,7 @@ public class FreshPackingMdTest
 	{
 		AdempiereTestHelper.get().init();
 
-		this.packagingDAO = new MockedPackagingDAO();
+		packagingDAO = new MockedPackagingDAO();
 		Services.registerService(IPackagingDAO.class, packagingDAO);
 
 		uom = newInstance(I_C_UOM.class);
@@ -125,9 +125,9 @@ public class FreshPackingMdTest
 	}
 
 	private void testTableRowAggregation(final List<Packageable> packageables,
-			int expectedQtyToDeliver,
-			LocalDateTime expectedDeliveryDate,
-			LocalDateTime expectedPreparationDate)
+			final int expectedQtyToDeliver,
+			final LocalDateTime expectedDeliveryDate,
+			final LocalDateTime expectedPreparationDate)
 			throws Exception
 	{
 		final FreshPackingMd model = createPackingModel();
@@ -169,7 +169,7 @@ public class FreshPackingMdTest
 		return model;
 	}
 
-	private Packageable createPackageable(int qtyToDeliver, LocalDateTime deliveryDate, LocalDateTime preparationDate)
+	private Packageable createPackageable(final int qtyToDeliver, final LocalDateTime deliveryDate, final LocalDateTime preparationDate)
 	{
 		final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
 		save(shipmentScheduleRecord);
@@ -180,7 +180,8 @@ public class FreshPackingMdTest
 				.qtyOrdered(Quantity.zero(uom))
 				.qtyToDeliver(Quantity.of(qtyToDeliver, uom))
 				.qtyDelivered(Quantity.zero(uom))
-				.qtyPicked(Quantity.zero(uom))
+				.qtyPickedAndDelivered(Quantity.zero(uom))
+				.qtyPickedNotDelivered(Quantity.zero(uom))
 				.qtyPickedPlanned(Quantity.zero(uom))
 				//
 				.customerId(bpartnerId)

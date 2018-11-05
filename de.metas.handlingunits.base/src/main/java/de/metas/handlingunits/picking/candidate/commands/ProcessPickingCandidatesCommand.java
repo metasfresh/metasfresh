@@ -98,13 +98,23 @@ public class ProcessPickingCandidatesCommand
 	public ProcessPickingCandidatesResult perform()
 	{
 		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByIds(pickingCandidateIds);
-		pickingCandidates.forEach(PickingCandidate::assertDraft);
+		pickingCandidates.forEach(this::assertEligibleForProcessing);
 
 		trxManager.runInThreadInheritedTrx(() -> pickingCandidates.forEach(this::processInTrx));
 
 		return ProcessPickingCandidatesResult.builder()
 				.pickingCandidates(pickingCandidates)
 				.build();
+	}
+
+	private void assertEligibleForProcessing(final PickingCandidate pickingCandidate)
+	{
+		pickingCandidate.assertDraft();
+
+		if (pickingCandidate.getPackedToHuId() != null)
+		{
+			throw new AdempiereException("Picking candidate shall not be already packed: " + pickingCandidate);
+		}
 	}
 
 	private void processInTrx(final PickingCandidate pc)

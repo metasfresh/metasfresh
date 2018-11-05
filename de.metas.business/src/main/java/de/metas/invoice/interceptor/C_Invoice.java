@@ -254,7 +254,7 @@ public class C_Invoice // 03771
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
@@ -268,7 +268,7 @@ public class C_Invoice // 03771
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
@@ -279,7 +279,7 @@ public class C_Invoice // 03771
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void scheduleDataExport(final I_C_Invoice invoice)
 	{
 		C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);

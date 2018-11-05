@@ -83,5 +83,4 @@ public class XmlInvoice
 		@Nullable
 		String requestId;
 	}
-
 }

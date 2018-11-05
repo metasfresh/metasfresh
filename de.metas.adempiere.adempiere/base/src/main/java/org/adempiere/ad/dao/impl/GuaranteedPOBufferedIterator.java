@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao.impl;
 
+import lombok.NonNull;
+
 import java.io.Closeable;
 
 /*
@@ -95,11 +97,8 @@ import de.metas.util.Check;
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
-	/* package */ GuaranteedPOBufferedIterator(final TypedSqlQuery<T> query, final Class<ET> clazz)
+	/* package */ GuaranteedPOBufferedIterator(@NonNull final TypedSqlQuery<T> query, final Class<ET> clazz)
 	{
-		super();
-
-		Check.assumeNotNull(query, "query not null");
 		this.query = query;
 
 		// Check.assume(clazz != null, "clazz != null"); // class can be null
@@ -128,22 +127,26 @@ import de.metas.util.Check;
 			}
 			sqlRowNumber.append(")");
 
-			final StringBuilder sqlInsertIntoSelect = new StringBuilder();
-			sqlInsertIntoSelect.append("INSERT INTO ")
+			final StringBuilder sqlInsertIntoBuilder = new StringBuilder()
+					.append("INSERT INTO ")
 					.append(I_T_Query_Selection.Table_Name)
 					.append(" (")
 					.append(I_T_Query_Selection.COLUMNNAME_UUID)
 					.append(", ").append(I_T_Query_Selection.COLUMNNAME_Line)
 					.append(", ").append(I_T_Query_Selection.COLUMNNAME_Record_ID)
-					.append(")")
+					.append(")");
+
+			final StringBuilder sqlSelectBuilder = new StringBuilder()
 					.append(" SELECT ")
 					.append(DB.TO_STRING(querySelectionUUID))
 					.append(", ").append(sqlRowNumber)
 					.append(", ").append(keyColumnNameFQ)
 					.append(" FROM ").append(tableName);
-
-			final String sql = query.buildSQL(sqlInsertIntoSelect, true); // useOrderByClause = true
+			// be sure to only pass the "SELECT", not the "INSERT" sql to avoid invalid SQL when ORs are exploded to unions
+			final String sqlSelect = query.buildSQL(sqlSelectBuilder, true/*useOrderByClause*/);
 			final List<Object> params = query.getParametersEffective();
+
+			final String sql = sqlInsertIntoBuilder.append(sqlSelect).toString();
 
 			this.rowsCount = DB.executeUpdateEx(sql,
 					params == null ? null : params.toArray(),

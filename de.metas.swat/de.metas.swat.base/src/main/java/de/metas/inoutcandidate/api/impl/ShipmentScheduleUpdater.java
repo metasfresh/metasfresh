@@ -27,14 +27,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -53,10 +59,10 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
 
 	@Override
-	public int updateShipmentSchedule(final Properties ctx, final int adUserId, final PInstanceId adPInstanceId, final String trxName)
+	public int updateShipmentSchedule(final Properties ctx, final int adUserId, final PInstanceId adPInstanceId)
 	{
 		final boolean updateOnlyLocked = false;
-		return updateShipmentSchedule(ctx, adUserId, adPInstanceId, updateOnlyLocked, trxName);
+		return updateShipmentSchedule(ctx, adUserId, adPInstanceId, updateOnlyLocked);
 	}
 
 	@Override
@@ -64,10 +70,10 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final Properties ctx,
 			final int adUserId,
 			final PInstanceId adPInstanceId,
-			final boolean updateOnlyLocked,
-			final String trxName)
+			final boolean updateOnlyLocked)
 	{
 		// services
+		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
@@ -77,23 +83,24 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		try
 		{
-			shipmentSchedulePA.deleteSchedulesWithOutOl(trxName);
+			shipmentSchedulePA.deleteSchedulesWithoutOrderLines();
 
 			if (!updateOnlyLocked)
 			{
 				//
 				// Create and invalidate missing shipment schedules
-				final List<I_M_ShipmentSchedule> shipmentSchedulesNew = Services.get(IShipmentScheduleHandlerBL.class).createMissingCandidates(ctx, trxName);
-				shipmentSchedulePA.invalidate(shipmentSchedulesNew, trxName);
+				final List<I_M_ShipmentSchedule> shipmentSchedulesNew = Services.get(IShipmentScheduleHandlerBL.class).createMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
+				final Set<ShipmentScheduleId> shipmentSchedulesNewIds = shipmentSchedulesNew.stream().map(s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID())).collect(ImmutableSet.toImmutableSet());
+				invalidSchedulesRepo.invalidateShipmentSchedules(shipmentSchedulesNewIds);
 			}
 
-			final List<OlAndSched> collectResult = retrieveOlsAndSchedsToProcess(ctx, adPInstanceId, trxName);
+			final List<OlAndSched> collectResult = retrieveOlsAndSchedsToProcess(adPInstanceId);
 
 			logger.debug("Invoking shipmentScheduleBL to update {} shipment schedule entries.", collectResult.size());
-			shipmentScheduleBL.updateSchedules(ctx, collectResult, trxName);
+			shipmentScheduleBL.updateSchedules(ctx, collectResult, ITrx.TRXNAME_ThreadInherited);
 
 			// cleanup the marker/pointer tables
-			shipmentSchedulePA.deleteRecomputeMarkers(adPInstanceId, trxName); // if updateOnlyLocked, then there is nothing to delete..but still making this call, it should finish rather quickly
+			invalidSchedulesRepo.deleteRecomputeMarkersOutOfTrx(adPInstanceId);
 
 			logger.debug("Done");
 			return collectResult.size();
@@ -104,7 +111,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				// Make sure the recompute tag is released, just in case any error occurs.
 				// Usually zero records will be released because, if everything goes fine, the tagged recompute records were already deleted.
-				shipmentSchedulePA.releaseRecomputeMarker(adPInstanceId, trxName);
+				invalidSchedulesRepo.releaseRecomputeMarkerOutOfTrx(adPInstanceId);
 			}
 			finally
 			{
@@ -120,13 +127,10 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		return running != null && running == true;
 	}
 
-	private final List<OlAndSched> retrieveOlsAndSchedsToProcess(
-			final Properties ctx,
-			final PInstanceId adPinstanceId,
-			final String trxName)
+	private final List<OlAndSched> retrieveOlsAndSchedsToProcess(final PInstanceId adPinstanceId)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(adPinstanceId, trxName);
+		final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(adPinstanceId);
 
 		if (olsAndScheds.isEmpty())
 		{

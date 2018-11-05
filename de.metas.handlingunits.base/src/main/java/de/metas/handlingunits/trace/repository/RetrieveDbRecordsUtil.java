@@ -185,7 +185,7 @@ public class RetrieveDbRecordsUtil
 			{
 				return; // result contains nothing to add
 			}
-			
+
 			if (selectionId == null)
 			{
 				// performance: we don't really need to add anything but can just take the "pointer" from selectionResultToAdd
@@ -302,9 +302,9 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_AD_Org_ID, query.getOrgId());
 			queryIsEmpty = false;
 		}
-		if (query.getVhuId() != null)
+		if (!query.getVhuIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_ID, query.getVhuId());
+			queryBuilder.addInArrayFilter(I_M_HU_Trace.COLUMN_VHU_ID, query.getVhuIds());
 			queryIsEmpty = false;
 		}
 		if (query.getProductId() != null)
@@ -327,9 +327,9 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_Source_ID, query.getVhuSourceId());
 			queryIsEmpty = false;
 		}
-		if (query.getTopLevelHuId() != null)
+		if (!query.getTopLevelHuIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_ID, query.getTopLevelHuId());
+			queryBuilder.addInArrayFilter(I_M_HU_Trace.COLUMN_M_HU_ID, query.getTopLevelHuIds());
 			queryIsEmpty = false;
 		}
 		if (query.getInOutId() > 0)

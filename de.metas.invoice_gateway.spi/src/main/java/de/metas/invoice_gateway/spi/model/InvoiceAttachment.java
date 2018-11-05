@@ -51,7 +51,7 @@ public class InvoiceAttachment
 	 */
 	String invoiceExportProviderId;
 
-	boolean primaryAttrachment;
+	boolean primaryAttachment;
 
 	public InputStream getDataAsInputStream()
 	{
@@ -64,13 +64,13 @@ public class InvoiceAttachment
 			@NonNull String mimeType,
 			@NonNull byte[] data,
 			@Nullable String invoiceExportProviderId,
-			@NonNull Boolean primaryAttrachment)
+			@NonNull Boolean primaryAttachment)
 	{
 		this.fileName = fileName;
 		this.mimeType = mimeType;
 		this.data = data;
 		this.invoiceExportProviderId = invoiceExportProviderId;
-		this.primaryAttrachment = primaryAttrachment;
+		this.primaryAttachment = primaryAttachment;
 	}
 
 }

@@ -1,4 +1,4 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice;
 
 import lombok.NonNull;
 
