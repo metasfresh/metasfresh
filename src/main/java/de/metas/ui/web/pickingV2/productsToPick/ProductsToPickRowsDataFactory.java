@@ -153,8 +153,6 @@ class ProductsToPickRowsDataFactory
 			rows.add(createQtyNotAvailableRow(allocablePackageable));
 		}
 
-		// TODO: handle the case when the packageable is not fully allocated !!!
-
 		return rows.stream();
 	}
 
