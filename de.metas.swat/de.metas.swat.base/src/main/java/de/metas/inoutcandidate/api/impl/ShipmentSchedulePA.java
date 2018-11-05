@@ -125,7 +125,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	{
 		return getByOrderLineIdQuery(orderLineId)
 				.create()
-				.firstIdOnly(ShipmentScheduleId::ofRepoId);
+				.firstIdOnly(ShipmentScheduleId::ofRepoIdOrNull);
 	}
 
 	private IQueryBuilder<I_M_ShipmentSchedule> getByOrderLineIdQuery(@NonNull final OrderLineId orderLineId)

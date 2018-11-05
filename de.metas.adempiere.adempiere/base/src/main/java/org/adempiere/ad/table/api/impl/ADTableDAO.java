@@ -5,6 +5,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -32,8 +36,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
@@ -54,7 +56,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocumentConstants;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class ADTableDAO implements IADTableDAO
 {
@@ -271,7 +272,6 @@ public class ADTableDAO implements IADTableDAO
 
 		return queryBL.createQueryBuilder(I_AD_Column.class, table)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, table.getAD_Table_ID())
 				.orderBy()
 				.addColumnAscending(I_AD_Column.COLUMNNAME_AD_Column_ID)
