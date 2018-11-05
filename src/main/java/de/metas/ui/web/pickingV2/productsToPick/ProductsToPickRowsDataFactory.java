@@ -142,9 +142,11 @@ class ProductsToPickRowsDataFactory
 	{
 		final AllocablePackageable allocablePackageable = AllocablePackageable.of(packageable);
 
-		final List<ProductsToPickRow> rows = new ArrayList<>();
+		final ArrayList<ProductsToPickRow> rows = new ArrayList<>();
 		rows.addAll(createRowsFromPickingCandidates(allocablePackageable));
 		rows.addAll(createRowsFromHUs(allocablePackageable));
+
+		Collections.sort(rows, Comparator.comparing(ProductsToPickRow::getLocatorName));
 
 		if (!allocablePackageable.isAllocated())
 		{
