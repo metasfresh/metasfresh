@@ -85,6 +85,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.costing.impl.CostDetailRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -105,8 +106,13 @@ import de.metas.util.Services;
  */
 public class CostEngine
 {
-	/** Logger */
-	protected transient Logger log = LogManager.getLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
+	private final CostDetailRepository costDetailRepo;
+	
+	CostEngine()
+	{
+		costDetailRepo = Adempiere.getBean(CostDetailRepository.class);
+	}
 
 	public CostingMethod getCostingMethod()
 	{
@@ -248,7 +254,7 @@ public class CostEngine
 	 * @param M_AttributeSetInstance_ID
 	 * @return I_M_CostDetail
 	 */
-	private I_M_CostDetail getCostDetail(final IDocumentLine model, final MTransaction mtrx, final AcctSchemaId acctSchemaId, final CostElementId costElementId)
+	private CostDetail getCostDetail(final IDocumentLine model, final MTransaction mtrx, final AcctSchemaId acctSchemaId, final CostElementId costElementId)
 	{
 		final String whereClause = "AD_Client_ID=? AND AD_Org_ID=?"
 				+ " AND " + model.get_TableName() + "_ID=?"
@@ -309,7 +315,7 @@ public class CostEngine
 				final CostAmount amt = roundCost(price.multiply(qty), acctSchemaId);
 				//
 				// Create / Update Cost Detail
-				I_M_CostDetail cd = getCostDetail(model, mtrx, acctSchemaId, element.getId());
+				CostDetail cd = getCostDetail(model, mtrx, acctSchemaId, element.getId());
 				if (cd == null)		// createNew
 				{
 					cd = createCostDetail(
@@ -417,7 +423,7 @@ public class CostEngine
 		return no;
 	}
 
-	private void processCostDetail(final I_M_CostDetail cd)
+	private void processCostDetail(final CostDetail cd)
 	{
 		cd.setProcessed(true);
 		InterfaceWrapperHelper.save(cd);
@@ -449,7 +455,7 @@ public class CostEngine
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private I_M_CostDetail getCostDetail(final I_PP_Cost_Collector cc, final CostElementId costElementId)
+	private CostDetail getCostDetail(final I_PP_Cost_Collector cc, final CostElementId costElementId)
 	{
 		final String whereClause = I_M_CostDetail.COLUMNNAME_PP_Cost_Collector_ID + "=?"
 				+ " AND " + I_M_CostDetail.COLUMNNAME_M_CostElement_ID + "=?";
@@ -490,8 +496,14 @@ public class CostEngine
 	 * @param element
 	 * @return
 	 */
-	private I_M_CostDetail createVarianceCostDetail(final I_PP_Cost_Collector ccv, final CostAmount amt, final BigDecimal qty,
-			final I_M_CostDetail cd, final I_M_Product product, final AcctSchemaId acctSchemaId, final CostElement element)
+	private CostDetail createVarianceCostDetail(
+			final I_PP_Cost_Collector ccv, 
+			final CostAmount amt, 
+			final BigDecimal qty,
+			final CostDetail cd, 
+			final I_M_Product product, 
+			final AcctSchemaId acctSchemaId, 
+			final CostElement element)
 	{
 		final I_M_CostDetail cdv = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class, ccv);
 		if (cd != null)

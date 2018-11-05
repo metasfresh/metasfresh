@@ -24,6 +24,9 @@ package org.adempiere.model.engines;
 
 
 import java.util.HashMap;
+import java.util.Map;
+
+import org.adempiere.service.ClientId;
 
 /**
  * 
@@ -31,7 +34,7 @@ import java.util.HashMap;
  */
 public class CostEngineFactory
 {
-	private static final HashMap<Integer, CostEngine> s_engines = new HashMap<Integer, CostEngine>();
+	private static final Map<Integer, CostEngine> s_engines = new HashMap<ClientId, CostEngine>();
 	
 	public static CostEngine getCostEngine(int AD_Client_ID)
 	{
@@ -39,7 +42,7 @@ public class CostEngineFactory
 		// Fallback to global engine
 		if (engine == null && AD_Client_ID > 0)
 		{
-			engine = s_engines.get(0);
+			engine = s_engines.get(ClientId.SYSTEM.getRepoId());
 		}
 		// Create Default Engine
 		if (engine == null)
