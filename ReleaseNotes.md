@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.81
+## Features
+
+## Fixes
+
 # metasfresh 5.80
 ## Features
 * metasfresh
@@ -23,7 +28,7 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#1094](https://github.com/metasfresh/metasfresh-webui-api/issues/1094) Login: Show a user friendly error when user or password is empty
 
-## Fix
+## Fixes
 * metasfresh
   * [#4732](https://github.com/metasfresh/metasfresh/issues/4732) Can not create a new order line using 'Add new'
 
