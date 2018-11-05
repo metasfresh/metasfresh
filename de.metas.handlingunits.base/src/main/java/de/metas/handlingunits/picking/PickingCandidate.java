@@ -156,7 +156,7 @@ public class PickingCandidate
 
 	private void assertApprovable()
 	{
-		if (!pickStatus.isPacked())
+		if (!pickStatus.isPickedOrPacked())
 		{
 			throw new AdempiereException("Picking candidate is not approvable because it's not packed: " + this);
 		}
@@ -204,7 +204,6 @@ public class PickingCandidate
 	public void packTo(final HuPackingInstructionsId packToInstructionsId)
 	{
 		assertDraft();
-		assertNotApproved();
 
 		if (!pickStatus.isPickedOrPacked())
 		{

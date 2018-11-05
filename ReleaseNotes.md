@@ -10,66 +10,119 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.80
+# metasfresh 5.81
 ## Features
 
-## Fix
+## Fixes
+
+# metasfresh 5.80
+## Features
+* metasfresh
+  * [#4690](https://github.com/metasfresh/metasfresh/issues/4690) Picking Terminal v2: filtering options
+  * [#4691](https://github.com/metasfresh/metasfresh/issues/4691) Picking Terminal v2: if there is not enough Qty in storage create a new Products To Pick line
+  * [#4703](https://github.com/metasfresh/metasfresh/issues/4703) Support forum-datenaustausch.ch XML dunning
+  * [#4705](https://github.com/metasfresh/metasfresh/issues/4705) Avoid SQL N+1 in HU source queries
+  * [#4708](https://github.com/metasfresh/metasfresh/issues/4708) webui: Change my password does not work
+  * [#4719](https://github.com/metasfresh/metasfresh/issues/4719) Allow AD_Val_Rule to be auto-applied on new record
+
+* metasfresh-webui-api
+  * [#1094](https://github.com/metasfresh/metasfresh-webui-api/issues/1094) Login: Show a user friendly error when user or password is empty
+
+## Fixes
+* metasfresh
+  * [#4732](https://github.com/metasfresh/metasfresh/issues/4732) Can not create a new order line using 'Add new'
+
+* metasfresh-webui-api
+  * [#1082](https://github.com/metasfresh/metasfresh-webui-api/issues/1082) Picking from source HU not working
+  * [#1083](https://github.com/metasfresh/metasfresh-webui-api/issues/1083) QtyPicked in first window picking terminal not correct
+
 * metasfresh-webui-frontend
   * [#2007](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2007) Dropdown fields too small in several places
-    * Fixes the Dropdown width ang heißt in Lookup and Dropdown widgets.
-
+    * Fixes the Dropdown width and length in Lookup and Dropdown widgets.
+  * [#2018](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2018) Included view: clicking on it's right side space shall not close the included view
+  * [#2034](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2034) Uncaught TypeError: selected.indexOf is not a function
+  * [#2036](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2036) Uncaught TypeError: Cannot read property 'length' of null at windowHandler (windowHandler.js:395)
 
 # metasfresh 5.79
 ## Features
 
 * metasfresh
   * [#4577](https://github.com/metasfresh/metasfresh/issues/4577) New Picking&Packing Workflow
+    * Additional/ Alternative Picking and Packing Workflow.
   * [#4685](https://github.com/metasfresh/metasfresh/issues/4685) Order checkup with barcode report - add containers as separate fields
+    * Improved Barcode Support for order checkup report in Manufacturing.
   * [#4687](https://github.com/metasfresh/metasfresh/issues/4687) Introduce and use PInstanceId object
+    * Internal Improvement. New Process Instance Object.
   * [#4692](https://github.com/metasfresh/metasfresh/issues/4692) RabbitMQ: we shall use guest user by default
+    * Improved RabbitMQ usage. Now using a guest user instead of metasfresh user.
   * [#4693](https://github.com/metasfresh/metasfresh/issues/4693) Validate ReadonlyLogic, MandatoryLogic and DisplayLogic
+    * Application Dictionary improvement, now validating the entries in Readonly-, Mandatory and Display-Logic.
   * [#4700](https://github.com/metasfresh/metasfresh/issues/4700) Allow appending additional PDF-attachments to invoice-PDF
+    * Extension of the Invoice PDF Document creation. Now it's possible to append an already created PDF to the Invoice PDF.
 
 * metasfresh-webui-frontend
   * [#1933](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1933) Frontend shall ALWAYS use server's time zone
+    * Switching the frontend behavior, now always using the Server's timezone.
   * [#2013](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2013) View: don't open row details if it's not allowed
+    * Enhancement of frontend row open behavior. It's possible to define if a row shall be opened or not via doubleclick.
   * [#2020](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2020) View editing: fetch quickActions after PATCH /edit
+    * Internal, general enhancement of the fetching of Quick Actions.
 
 ## Fixes
 * metasfresh
   * [#4177](https://github.com/metasfresh/metasfresh/issues/4177) Performance bottleneck at Cache Invalidation
+    * Improvement of Chache invalidation, removing a performance bottleneck.
   * [#4652](https://github.com/metasfresh/metasfresh/issues/4652) AD Element Translations leads to wrong fieldname Translations
+    * Fixes the Translation update mechanism via Application Dictionary System Elements.
   * [#4683](https://github.com/metasfresh/metasfresh/issues/4683) Shipment Schedule does not set QtyToDeliver properly
+    * Fix for Shipment Schedule. Now updateing the Quantity to deliver properly for product entries with isStocked = N masterdata configuration.
   * [#4696](https://github.com/metasfresh/metasfresh/issues/4696) Follow up #4552 AD_User is wrong in shipment schedule when using isDropShip
+    * Further improvement of the Shipment Contact in Document Address generation in Sales Order Confirmation.
   * [#4704](https://github.com/metasfresh/metasfresh/issues/4704) Swing Picking Terminal: cannot write upper/lower case passwords when logging to Swing Picking Terminal
+     * Bugfix for the Pciking Terminal in Swing Client. Now it's possible to login with upper and lowercase password elements again.
 
 * metasfresh-webui-api
   * [#1064](https://github.com/metasfresh/metasfresh-webui-api/issues/1064) Time switches when setting Preparation Date-Time
+    * Improvement in WebUI Frontend for the Date and Timezone relevant data entries.
   * [#1074](https://github.com/metasfresh/metasfresh-webui-api/issues/1074) Process picking action not working
+    * Bugfix in Picking workflow, now it's possible to Use the Process picking action again.
   * [#1075](https://github.com/metasfresh/metasfresh-webui-api/issues/1075) Unpick action not working
+    * Bugfix in Picking workflow, now it's possible to Use the Unpick action again.
   * [#1076](https://github.com/metasfresh/metasfresh-webui-api/issues/1076) Cannot create a new sales order because "DeliveryViaRule is not set"
+    * Fix for the Sales Order creation.
 
 * metasfresh-webui-frontend
   * [#2021](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2021) Modal view: fetch quickActions on open; fetch quickActions when no selection
+    * Improvement in WebuI Frontend when fetching Quickactions without selected rows.
   * [#2030](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2030) Errors when opening table views
+    * Improving the Handling of missing data in WebUI Frontend.
 
 # metasfresh 5.78
 ## Features
 
 * metasfresh
   * [#4621](https://github.com/metasfresh/metasfresh/issues/4621) Support forum-datenaustausch.ch XML invoice
+    * Implementation of the forum-datenaustausch.ch XML invoice for swiss helathcare document transactions.
   * [#4653](https://github.com/metasfresh/metasfresh/issues/4653) WebUI: Add missing Translations for en_US in Businesspartner Window
     * Switched Translations to ad_element for Business Partner Window.
   * [#4665](https://github.com/metasfresh/metasfresh/issues/4665) Show the Product No of Vendor in Purchase Order
+    * Adjustment of the Purchase Order Document, now showing the Vendor Product No instead of the own Product No on Purchase Order Document.
   * [#4673](https://github.com/metasfresh/metasfresh/issues/4673) Enlarge AD_Process.SQLStatement to fit large SQL queries
+    * Resizing the Process SQL Statement to allow large SQL Queries.
   * [#4677](https://github.com/metasfresh/metasfresh/issues/4677) Enable zoom to invoice candidates
-  * [#4547](https://github.com/metasfresh/metasfresh/issues/4547) sales order based process for contract extension
+    * Enables the Zoom to Reference for Invoice Candidates.
+  * [#4547](https://github.com/metasfresh/metasfresh/issues/4547) Sales order based process for contract extension
+    * New Process that allows to extend contracts and update the contract status tp show active, prolonged and cancelled contracts.
 
 * metasfresh-webui-api
   * [#1033](https://github.com/metasfresh/metasfresh-webui-api/issues/1033) API for "About" action in webui
+    * New API for the Created and Updated Infos for a selected record.
   * [#1055](https://github.com/metasfresh/metasfresh-webui-api/issues/1055) Include internalName in JSONDocumentAction
+    * Includes the Internal Name (window and tabs) to WebUI Frontend. These names can be used for automated frontend tests.
   * [#1072](https://github.com/metasfresh/metasfresh-webui-api/issues/1072) Implement REST endpoints for managing migration scripts
+    * New Functionality, that allows the creation of migration scripts via WebUI Frontend.
   * [#1069](https://github.com/metasfresh/metasfresh-webui-api/issues/1069) View: have a way to define if views support opening row details
+    * Internal improvement of the opening of rows in WebUI frontend. Now the backend tells how to behave in such cases.
 
 * metasfresh-webui-frontend
   * [#1989](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1989) Hourglass Overlay for pending Posts
@@ -79,16 +132,19 @@ Here come the actual release notes:
   * [#2009](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2009) Views: Automatically remove view rows if GET /byIds it's not returning the row(s) frontend asked for
     * Improvement in Frontend, removing rows automatically when API does not return them.
   * [#2014](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2014) Views: refresh `quickActions` after `GET /byIds`
-    * Improvement in Frontend, now refreshing quickacions after row changes.
+    * Improvement in Frontend, now refreshing quickactions after row changes.
 
 ## Fixes
 
 * metasfresh
   * [#4671](https://github.com/metasfresh/metasfresh/issues/4671) WebUI Picking does not return filtered HU for selection
+    * Bugfix in Picking Terminal, when not returning the filtered Handling Unit although selected via Parameter.
 
 * metasfresh-webui-api
   * [#1067](https://github.com/metasfresh/metasfresh-webui-api/issues/1067) Attributes Filter in Picking shall work on load as before
+    * Bugfix in Picking Terminal for Quick Actions not shown on load.
   * [#1068](https://github.com/metasfresh/metasfresh-webui-api/issues/1068) Cannot add orderline using "Add new", error when selecting product
+    * Fixes an issues in Orderline crreation using "Add new" line action.
 
 * metasfresh-webui-frontend
   * [#2016](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2016) Indicator bar not visible
