@@ -158,7 +158,7 @@ public class PickingCandidate
 	{
 		if (!pickStatus.isPickedOrPacked())
 		{
-			throw new AdempiereException("Picking candidate is not approvable because it's not packed: " + this);
+			throw new AdempiereException("Picking candidate is not approvable because it's not picked or packed: " + this);
 		}
 	}
 
