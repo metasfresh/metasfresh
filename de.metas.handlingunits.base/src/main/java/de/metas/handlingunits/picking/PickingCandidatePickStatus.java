@@ -86,9 +86,4 @@ public enum PickingCandidatePickStatus implements ReferenceListAwareEnum
 	{
 		return isPicked() || isPacked();
 	}
-
-	public boolean isFinalState()
-	{
-		return isPacked() || isPickRejected();
-	}
 }
