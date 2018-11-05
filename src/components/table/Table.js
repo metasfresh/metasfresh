@@ -346,7 +346,12 @@ class Table extends Component {
   selectProduct = (id, idFocused, idFocusedDown) => {
     const { dispatch, type, disconnectFromState, tabInfo, viewId } = this.props;
     const { selected } = this.state;
-    const newSelected = selected.concat([id]);
+    let newSelected = [];
+    if (!selected[0]) {
+      newSelected = [id];
+    } else {
+      newSelected = selected.concat([id]);
+    }
 
     this.setState({ selected: newSelected }, () => {
       const { selected } = this.state;
