@@ -95,10 +95,10 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		trxManager.run(new TrxRunnable()
 		{
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				final IInvoiceCandidateEnqueueResult result = new InvoiceCandidateEnqueuer()
-						.setContext(Env.getCtx(), localTrxName)
+						.setContext(Env.getCtx())
 						.setInvoicingParams(createDefaultInvoicingParams())
 						.setFailOnChanges(false) // ... because we have some invalid candidates which we know that it will be updated here
 						.enqueueSelection(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));

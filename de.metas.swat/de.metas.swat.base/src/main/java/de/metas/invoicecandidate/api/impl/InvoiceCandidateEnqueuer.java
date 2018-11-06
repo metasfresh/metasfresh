@@ -26,7 +26,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -37,10 +36,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.Mutable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.base.Joiner;
 
@@ -48,7 +45,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
-import de.metas.i18n.IMsgBL;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
@@ -87,17 +84,15 @@ import lombok.NonNull;
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 
 	// Parameters
 	private Properties _ctx = Env.getCtx();
-	private String _trxNameInitial = ITrx.TRXNAME_ThreadInherited;
-	private String _trxName = ITrx.TRXNAME_ThreadInherited;
 	private ILoggable _loggable = NullLoggable.instance;
 	private boolean _failIfNothingEnqueued;
 	private Boolean _failOnChanges = null;
+	private boolean _failOnInvoiceCandidateError = false; // "false" for backward compatibility
 	private BigDecimal _totalNetAmtToInvoiceChecksum;
 	private IInvoicingParams _invoicingParams;
 	private I_C_Async_Batch _asyncBatch = null;
@@ -106,50 +101,38 @@ import lombok.NonNull;
 	private boolean setWorkpackageADPInstanceCreatorId = true;
 
 	@Override
-	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Collection<Integer> invoiceCandidateIds)
+	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
+		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
+
 		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, ITrx.TRXNAME_None);
 
 		setWorkpackageADPInstanceCreatorId = false;
+		_failOnInvoiceCandidateError = true;
+
 		return enqueueSelection(invoiceCandidatesSelectionId);
 	}
 
 	@Override
 	public IInvoiceCandidateEnqueueResult enqueueSelection(@NonNull final PInstanceId pinstanceId)
 	{
-		final Mutable<IInvoiceCandidateEnqueueResult> resultRef = new Mutable<>();
-		final String trxNameInitial = getTrxNameInitial();
-		trxManager.run(trxNameInitial, new TrxRunnableAdapter()
-		{
-			@Override
-			public void run(String localTrxName) throws Exception
-			{
-				setTrxName(localTrxName);
-
-				final ILock icLock = lockInvoiceCandidatesForSelection(pinstanceId);
-				try (final ILockAutoCloseable l = icLock.asAutocloseableOnTrxClose(localTrxName))
-				{
-					final IInvoiceCandidateEnqueueResult result = enqueueSelection0(icLock, pinstanceId);
-					resultRef.setValue(result);
-				}
-			}
-
-			@Override
-			public void doFinally()
-			{
-				setTrxName(null);
-			}
-		});
-
-		return resultRef.getValue();
+		return trxManager.callInThreadInheritedTrx(() -> lockAndEnqueueSelection(pinstanceId));
 	}
 
-	private final IInvoiceCandidateEnqueueResult enqueueSelection0(
+	private final IInvoiceCandidateEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
+	{
+		final ILock icLock = lockInvoiceCandidatesForSelection(pinstanceId);
+		try (final ILockAutoCloseable l = icLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
+		{
+			return enqueueSelectionInTrx(icLock, pinstanceId);
+		}
+	}
+
+	private final IInvoiceCandidateEnqueueResult enqueueSelectionInTrx(
 			@NonNull final ILock icLock,
 			@NonNull final PInstanceId pinstanceId)
 	{
-		final Properties ctx = getCtx();
-		final String trxName = getTrxNameNotNull();
+		trxManager.assertThreadInheritedTrxExists();
 
 		final Iterable<I_C_Invoice_Candidate> invoiceCandidates = retrieveSelection(pinstanceId);
 
@@ -169,7 +152,7 @@ import lombok.NonNull;
 		// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
 		// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
 		invoiceCandBL.updateInvalid()
-				.setContext(getCtx(), getTrxNameNotNull())
+				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setLockedBy(icLock)
 				.setTaggedWithAnyTag()
 				.setOnlyC_Invoice_Candidates(invoiceCandidates)
@@ -182,7 +165,7 @@ import lombok.NonNull;
 		//
 		// Create workpackages.
 		// NOTE: loading them again after we made sure that they are fairly up to date.
-		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(ctx, trxName)
+		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setInvoiceCandidatesLock(icLock)
 				.setC_Async_Batch(_asyncBatch);
 
@@ -197,6 +180,13 @@ import lombok.NonNull;
 
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
+			// Fail if the invoice candidate has issues
+			if (isFailOnInvoiceCandidateError() && ic.isError())
+			{
+				throw new AdempiereException(ic.getErrorMsg())
+						.setParameter("invoiceCandidate", ic);
+			}
+
 			// Check if invoice candidate is eligible for enqueueing
 			if (!isEligibleForEnqueueing(ic))
 			{
@@ -213,7 +203,6 @@ import lombok.NonNull;
 			final IWorkpackagePrioStrategy priorityToUse;
 			if (_priority == null)
 			{
-
 				if (!Check.isEmpty(ic.getPriority()))
 				{
 					priorityToUse = ConstantWorkpackagePrio.fromString(ic.getPriority());
@@ -250,7 +239,7 @@ import lombok.NonNull;
 		// If no workpackages were created, display error message that no selection was made (07666)
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
-			throw new AdempiereException(msgBL.getMsg(ctx, MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+			throw new AdempiereException("@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
 		}
 
 		//
@@ -391,17 +380,16 @@ import lombok.NonNull;
 			public Iterator<I_C_Invoice_Candidate> iterator()
 			{
 				final Properties ctx = getCtx();
-				final String trxName = getTrxNameNotNull();
-				return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, trxName);
+				trxManager.assertThreadInheritedTrxExists();
+				return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
 			}
 		};
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setContext(final Properties ctx, final String trxName)
+	public IInvoiceCandidateEnqueuer setContext(@NonNull final Properties ctx)
 	{
 		this._ctx = ctx;
-		this._trxNameInitial = trxName;
 		return this;
 	}
 
@@ -410,36 +398,12 @@ import lombok.NonNull;
 	 */
 	private final Properties getCtx()
 	{
-		Check.assumeNotNull(_ctx, "_ctx not null");
 		return _ctx;
 	}
 
-	/**
-	 * @return initial transaction, i.e. the transaction used when this enqueuer was called
-	 */
-	private final String getTrxNameInitial()
-	{
-		return _trxNameInitial;
-	}
-
-	/**
-	 * @return transaction name; never returns an null transaction
-	 */
-	private final String getTrxNameNotNull()
-	{
-		trxManager.assertTrxNameNotNull(_trxName);
-		return _trxName;
-	}
-
-	private final void setTrxName(final String trxName)
-	{
-		this._trxName = trxName;
-	}
-
 	@Override
-	public IInvoiceCandidateEnqueuer setLoggable(final ILoggable loggable)
+	public IInvoiceCandidateEnqueuer setLoggable(@NonNull final ILoggable loggable)
 	{
-		Check.assumeNotNull(loggable, "loggable not null");
 		this._loggable = loggable;
 		return this;
 	}
@@ -459,6 +423,11 @@ import lombok.NonNull;
 	private final boolean isFailIfNothingEnqueued()
 	{
 		return _failIfNothingEnqueued;
+	}
+
+	private final boolean isFailOnInvoiceCandidateError()
+	{
+		return _failOnInvoiceCandidateError;
 	}
 
 	@Override

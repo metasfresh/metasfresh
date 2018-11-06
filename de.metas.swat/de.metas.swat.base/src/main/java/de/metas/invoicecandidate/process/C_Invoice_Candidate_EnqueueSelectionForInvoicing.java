@@ -133,7 +133,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		final PInstanceId pinstanceId = getPinstanceId();
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
-				.setContext(getCtx(), get_TrxName())
+				.setContext(getCtx())
 				.setLoggable(this)
 				.setInvoicingParams(invoicingParams)
 				.setFailIfNothingEnqueued(true) // If no workpackages were created, display error message that no selection was made (07666)
