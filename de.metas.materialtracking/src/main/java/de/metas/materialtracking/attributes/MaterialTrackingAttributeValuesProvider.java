@@ -1,8 +1,5 @@
 package de.metas.materialtracking.attributes;
 
-import lombok.NonNull;
-import lombok.Value;
-
 import java.util.List;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -25,6 +22,8 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -53,7 +52,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 
 	private static final String CACHE_PREFIX = I_M_Material_Tracking.Table_Name;
 
-	private final CCache<ProductAndBPartner, List<KeyNamePair>> productAndBPartner2materialTrackings = CCache.<ProductAndBPartner, List<KeyNamePair>> builder()
+	private final CCache<ProductAndBPartner, ImmutableList<KeyNamePair>> productAndBPartner2materialTrackings = CCache.<ProductAndBPartner, ImmutableList<KeyNamePair>> builder()
 			.cacheName(CACHE_PREFIX + "#by#" + I_M_Material_Tracking.COLUMNNAME_M_Product_ID + "#" + I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID)
 			.initialCapacity(10)
 			.build();
@@ -91,7 +90,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	}
 
 	@Override
-	public Evaluatee prepareContext(IAttributeSet attributeSet)
+	public Evaluatee prepareContext(final IAttributeSet attributeSet)
 	{
 		return null; // nothing to prepare
 	}
@@ -104,10 +103,10 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 		{
 			return ImmutableList.of();
 		}
-		return productAndBPartner2materialTrackings.getOrLoad(productAndBPartner, p -> createNamePairs(p));
+		return productAndBPartner2materialTrackings.getOrLoad(productAndBPartner, this::createNamePairs);
 	}
 
-	private List<KeyNamePair> createNamePairs(@NonNull final ProductAndBPartner productAndBPartner)
+	private ImmutableList<KeyNamePair> createNamePairs(@NonNull final ProductAndBPartner productAndBPartner)
 	{
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final List<I_M_Material_Tracking> materialTrackingRecords = materialTrackingDAO.retrieveMaterialTrackings(Env.getCtx(), asMaterialTrackingQuery(productAndBPartner));
@@ -123,7 +122,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 			result.add(valueNamePair);
 
 			id2NamePair.put(
-					Integer.toString(materialTrackingRecord.getM_Material_Tracking_ID()),
+					normalizeValueKey(materialTrackingRecord.getM_Material_Tracking_ID()),
 					valueNamePair);
 		}
 
@@ -158,7 +157,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	}
 
 	@Override
-	public NamePair getAttributeValueOrNull(Evaluatee evalCtx, Object valueKey)
+	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx, final Object valueKey)
 	{
 		final ProductAndBPartner productAndBPartner = extractProductAndBPartnerOrNull(evalCtx);
 		productAndBPartner2materialTrackings.getOrLoad(productAndBPartner, p -> createNamePairs(p));
@@ -184,7 +183,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	}
 
 	@Override
-	public int getM_AttributeValue_ID(Object valueKey)
+	public int getM_AttributeValue_ID(final Object valueKey)
 	{
 		return -1;
 	}
