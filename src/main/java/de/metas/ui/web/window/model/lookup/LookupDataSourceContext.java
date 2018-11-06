@@ -2,6 +2,7 @@ package de.metas.ui.web.window.model.lookup;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -24,13 +25,18 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
 import org.compiere.util.NamePair;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import lombok.NonNull;
 
 /*
@@ -75,6 +81,8 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return new Builder(null);
 	}
 
+	private static final Logger logger = LogManager.getLogger(LookupDataSourceContext.class);
+
 	public static final String FILTER_Any = "%";
 	private static final String FILTER_Any_SQL = "'%'";
 
@@ -98,7 +106,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			final INamePairPredicate postQueryPredicate)
 	{
 		this.lookupTableName = lookupTableName;
-		this.parameterValues = ImmutableMap.copyOf(values);
+		parameterValues = ImmutableMap.copyOf(values);
 		this.idToFilter = idToFilter;
 		this.postQueryPredicate = postQueryPredicate;
 	}
@@ -209,6 +217,79 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	{
 		final Object value = parameterValues.get(variableName);
 		return value == null ? null : value.toString();
+	}
+
+	@Override
+	public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
+	{
+		final Object value = parameterValues.get(variableName);
+		return convertValueToInteger(value, defaultValue);
+	}
+
+	private static Integer convertValueToInteger(final Object value, final Integer defaultValue)
+	{
+		if (value == null)
+		{
+			return defaultValue;
+		}
+
+		try
+		{
+			if (value instanceof Number)
+			{
+				return ((Number)value).intValue();
+			}
+			else if (value instanceof LookupValue)
+			{
+				return ((LookupValue)value).getIdAsInt();
+			}
+			else
+			{
+				return NumberUtils.asInteger(value, defaultValue);
+			}
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed lookup's ID to integer: {}. Returning default value={}.", value, defaultValue, ex);
+			return defaultValue;
+		}
+	}
+
+	@Override
+	public Date get_ValueAsDate(final String variableName, final Date defaultValue)
+	{
+		final Object value = parameterValues.get(variableName);
+		return convertValueToDate(value, defaultValue);
+	}
+
+	private static Date convertValueToDate(final Object value, final Date defaultValue)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+
+		try
+		{
+
+			if (value instanceof Date)
+			{
+				return (Date)value;
+			}
+			else if (value instanceof String)
+			{
+				return Env.parseTimestamp(value.toString());
+			}
+			else
+			{
+				return TimeUtil.asDate(value);
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Cannot convert '{}' ({}) to to Date. Returning default value: {}.", value, value.getClass(), defaultValue, ex);
+			return defaultValue;
+		}
 	}
 
 	@Override
@@ -521,7 +602,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			// Fallback to document evaluatee
 			if (parentEvaluatee != null)
 			{
-				final Object value = parentEvaluatee.get_ValueAsObject(variableName.getName());
+				final Object value = parentEvaluatee.get_ValueIfExists(variableName.getName(), Object.class).orElse(null);
 				if (value != null)
 				{
 					return value;
