@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -202,9 +203,10 @@ public class M_Element extends X_AD_Element
 	protected boolean beforeSave(boolean newRecord)
 	{
 		// Column AD_Element.ColumnName should be unique - teo_sarca [ 1613107 ]
-		if (newRecord || is_ValueChanged(COLUMNNAME_ColumnName))
-		{
+		final boolean columnNameChange = newRecord || is_ValueChanged(COLUMNNAME_ColumnName);
 
+		if (columnNameChange && !Check.isEmpty(getColumnName(), true))
+		{
 			final String originalColumnName = getColumnName();
 
 			if (originalColumnName == null)

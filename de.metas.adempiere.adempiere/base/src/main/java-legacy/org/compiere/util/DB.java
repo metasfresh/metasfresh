@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Nullable;
@@ -69,6 +70,8 @@ import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.cache.CacheMgt;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
@@ -80,6 +83,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 
 /**
@@ -2260,6 +2264,13 @@ public final class DB
 		createT_Selection(pinstanceId, selection, trxName);
 		return pinstanceId;
 	}
+	
+	public static PInstanceId createT_Selection(final Set<? extends RepoIdAware> selection, final String trxName)
+	{
+		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
+		return createT_Selection(ids, trxName);
+	}
+
 
 	/**
 	 * Delete T_Selection
