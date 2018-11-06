@@ -435,13 +435,16 @@ class RawLookup extends Component {
           },
         ]}
       >
-        <div id={idValue || ''}>
+        <div id={idValue || ''} className="raw-lookup-wrapper">
           <div
-            className={classnames('raw-lookup-wrapper raw-lookup-wrapper-bcg', {
-              'raw-lookup-disabled': disabled,
-              'input-disabled': readonly,
-              focused: isFocused,
-            })}
+            className={classnames(
+              'lookup-widget-wrapper lookup-widget-wrapper-bcg',
+              {
+                'raw-lookup-disabled': disabled,
+                'input-disabled': readonly,
+                focused: isFocused,
+              }
+            )}
             ref={ref => (this.wrapper = ref)}
           >
             <div className={'input-dropdown input-block'}>
@@ -475,6 +478,11 @@ class RawLookup extends Component {
                     ? this.props.forcedWidth
                     : this.wrapper && this.wrapper.offsetWidth
                 }
+                height={
+                  this.props.forceHeight
+                    ? this.props.forceHeight - this.wrapper.offsetHeight
+                    : undefined
+                }
                 onChange={this.handleTemporarySelection}
                 onSelect={this.handleSelect}
                 onCancel={this.handleBlur}
@@ -493,6 +501,7 @@ const mapStateToProps = state => ({
 RawLookup.propTypes = {
   selected: PropTypes.object,
   forcedWidth: PropTypes.number,
+  forceHeight: PropTypes.number,
   dispatch: PropTypes.func.isRequired,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,

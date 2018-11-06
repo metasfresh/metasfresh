@@ -45,6 +45,8 @@ class Table extends Component {
     onSelectionChanged: PropTypes.func,
     onRowEdited: PropTypes.func,
     defaultSelected: PropTypes.array,
+    disableOnClickOutside: PropTypes.func,
+    limitOnClickOutside: PropTypes.bool,
     supportOpenRecord: PropTypes.bool,
   };
 
@@ -56,7 +58,10 @@ class Table extends Component {
     const { defaultSelected, rowEdited } = props;
 
     this.state = {
-      selected: (defaultSelected && defaultSelected !== null) || [undefined],
+      selected:
+        defaultSelected && defaultSelected !== null
+          ? defaultSelected
+          : [undefined],
       listenOnKeys: true,
       contextMenu: {
         open: false,
@@ -143,7 +148,10 @@ class Table extends Component {
       (refreshSelection && prevProps.refreshSelection !== refreshSelection)
     ) {
       this.setState({
-        selected: defaultSelected,
+        selected:
+          defaultSelected && defaultSelected !== null
+            ? defaultSelected
+            : [undefined],
       });
     } else if (!disconnectFromState && !selectedEqual) {
       dispatch(
@@ -397,6 +405,10 @@ class Table extends Component {
   selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
     const { dispatch, tabInfo, type, viewId } = this.props;
 
+    if (id === null) {
+      id = undefined;
+    }
+
     this.setState(
       {
         selected: [id],
@@ -444,7 +456,7 @@ class Table extends Component {
 
     this.setState(
       {
-        selected: [],
+        selected: [undefined],
       },
       cb && cb()
     );
@@ -482,6 +494,7 @@ class Table extends Component {
       windowType,
       inBackground,
       allowOutsideClick,
+      limitOnClickOutside,
     } = this.props;
 
     if (
@@ -489,7 +502,12 @@ class Table extends Component {
       event.target.parentNode !== document &&
       event.target.parentNode &&
       !event.target.parentNode.className.includes('notification') &&
-      !inBackground
+      !inBackground &&
+      (limitOnClickOutside &&
+        event.target.parentNode.className.includes('document-list-included') &&
+        event.target.parentNode.className.includes(
+          'document-list-has-included'
+        ))
     ) {
       const item = event.path || (event.composedPath && event.composedPath());
 
@@ -792,7 +810,7 @@ class Table extends Component {
     this.setState(
       {
         promptOpen: false,
-        selected: [],
+        selected: [undefined],
       },
       () => {
         deleteRequest(
@@ -1125,7 +1143,7 @@ class Table extends Component {
     }
 
     return (
-      <div className="table-flex-wrapper">
+      <div ref={ref => (this.wrapper = ref)} className="table-flex-wrapper">
         <div
           className={classnames('table-flex-wrapper', {
             'table-flex-wrapper-row': mainTable,
@@ -1140,7 +1158,7 @@ class Table extends Component {
                 mainTable,
                 updateDocList,
               }}
-              selected={selected || []}
+              selected={selected || [undefined]}
               blur={() => this.closeContextMenu()}
               tabId={tabid}
               deselect={() => this.deselectAllProducts()}
@@ -1178,6 +1196,7 @@ class Table extends Component {
                   tabId={tabid}
                   handleBatchEntryToggle={this.handleBatchEntryToggle}
                   allowCreateNew={tabInfo && tabInfo.allowCreateNew}
+                  wrapperHeight={this.wrapper && this.wrapper.offsetHeight}
                 />
               </div>
             </div>
@@ -1251,7 +1270,7 @@ class Table extends Component {
                 queryLimitHit,
                 disablePaginationShortcuts,
               }}
-              selected={selected || []}
+              selected={selected || [undefined]}
               pageLength={pageLength}
               rowLength={rows ? rows.length : 0}
               handleSelectAll={this.selectAll}
