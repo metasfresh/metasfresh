@@ -113,6 +113,7 @@ export class QuickActions extends Component {
 
   updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
     const { windowType, viewId, selected, childView, parentView } = this.props;
+
     this.fetchActions(
       windowType,
       viewId,
@@ -161,7 +162,6 @@ export class QuickActions extends Component {
 
   async fetchActions(windowType, viewId, selected, childView, parentView) {
     if (!this.mounted) {
-      // return;
       return Promise.resolve();
     }
 
