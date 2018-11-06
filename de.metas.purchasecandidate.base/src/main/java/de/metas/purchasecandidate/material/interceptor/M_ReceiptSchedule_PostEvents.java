@@ -123,7 +123,7 @@ public class M_ReceiptSchedule_PostEvents
 			@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = //
-				createOrdereMaterialDescriptor(receiptSchedule);
+				createOrderMaterialDescriptor(receiptSchedule);
 		final OrderLineDescriptor orderLineDescriptor = //
 				createOrderLineDescriptor(receiptSchedule);
 
@@ -155,7 +155,7 @@ public class M_ReceiptSchedule_PostEvents
 
 	private AbstractReceiptScheduleEvent createUpdatedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(receiptSchedule);
+		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 
 		final I_M_ReceiptSchedule oldReceiptSchedule = InterfaceWrapperHelper.createOld(
 				receiptSchedule,
@@ -190,7 +190,7 @@ public class M_ReceiptSchedule_PostEvents
 
 	private AbstractReceiptScheduleEvent createDeletedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(receiptSchedule);
+		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 
 		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
@@ -201,7 +201,7 @@ public class M_ReceiptSchedule_PostEvents
 		return event;
 	}
 
-	private MaterialDescriptor createOrdereMaterialDescriptor(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	private MaterialDescriptor createOrderMaterialDescriptor(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
