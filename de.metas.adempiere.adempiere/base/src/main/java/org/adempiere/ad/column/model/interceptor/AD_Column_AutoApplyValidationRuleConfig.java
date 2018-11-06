@@ -1,7 +1,5 @@
 package org.adempiere.ad.column.model.interceptor;
 
-import lombok.NonNull;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +20,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -81,10 +80,14 @@ public class AD_Column_AutoApplyValidationRuleConfig
 	public void resetModelInterceptor(@NonNull final I_AD_Column column)
 	{
 		final String tableName = column.getAD_Table().getTableName();
-		final AD_Column_AutoApplyValidationRule interceptorToRemove = tableName2validator.remove(tableName);
-		if (interceptorToRemove != null)
+
+		if (tableName2validator != null)
 		{
-			engine.removeModelChange(tableName, interceptorToRemove);
+			final AD_Column_AutoApplyValidationRule interceptorToRemove = tableName2validator.remove(tableName);
+			if (interceptorToRemove != null)
+			{
+				engine.removeModelChange(tableName, interceptorToRemove);
+			}
 		}
 
 		final IQueryBuilder<I_AD_Column> queryBuilder = createQueryBuilder().addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, column.getAD_Table_ID());
