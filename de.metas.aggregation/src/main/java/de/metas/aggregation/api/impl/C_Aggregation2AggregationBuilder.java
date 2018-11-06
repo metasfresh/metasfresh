@@ -13,15 +13,14 @@ package de.metas.aggregation.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -110,6 +109,12 @@ import de.metas.util.Services;
 		final List<I_C_AggregationItem> aggregationItemsDef = aggregationDAO.retrieveAllItems(aggregationDef);
 
 		final LinkedHashMap<String, IAggregationItem> aggregationItems = createAggregationItems(aggregationItemsDef);
+		if (aggregationItems.isEmpty())
+		{
+			throw new AdempiereException("Invalid aggregation " + aggregationDef.getName() + ". It shall have at least one item.")
+					.setParameter("aggregation", aggregationDef)
+					.setParameter("tableName", tableName);
+		}
 
 		//
 		// Create and return the aggregation
@@ -181,10 +186,7 @@ import de.metas.util.Services;
 		final ILogicExpression includeLogic = getLogicExpression(aggregationItemDef);
 		final IAggregationItem aggregationItem = new AggregationItem(
 				aggregationItemDef.getC_AggregationItem_ID() // aggregationId
-				, Type.ModelColumn
-				, columnName
-				, displayType
-				, (IAggregationAttribute)null // attribute
+				, Type.ModelColumn, columnName, displayType, (IAggregationAttribute)null // attribute
 				, includeLogic);
 		return aggregationItem;
 	}
@@ -267,8 +269,7 @@ import de.metas.util.Services;
 		final ILogicExpression includeLogic = getLogicExpression(aggregationItemDef);
 		final IAggregationItem aggregationItem = new AggregationItem(
 				aggregationItemDef.getC_AggregationItem_ID() // aggregationId
-				, Type.Attribute
-				, null // columnName
+				, Type.Attribute, null // columnName
 				, -1 // displayType
 				, aggregationAttribute // attribute
 				, includeLogic);

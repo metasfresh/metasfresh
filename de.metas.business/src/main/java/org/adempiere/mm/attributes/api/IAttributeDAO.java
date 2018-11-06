@@ -24,6 +24,7 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -38,6 +39,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 
@@ -179,4 +181,6 @@ public interface IAttributeDAO extends ISingletonService
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 
 	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds, Set<AttributeId> attributeIds);
+
+	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
 }

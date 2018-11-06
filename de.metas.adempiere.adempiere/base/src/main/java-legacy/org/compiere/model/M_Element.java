@@ -26,10 +26,11 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Check;
 
 /**
  * System Element Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: M_Element.java,v 1.3 2006/07/30 00:58:37 jjanke Exp $
  *          FR: [ 2214883 ] Remove SQL code and Replace for Query - red1, teo_sarca
@@ -37,13 +38,13 @@ import de.metas.cache.annotation.CacheCtx;
 public class M_Element extends X_AD_Element
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -7426812810619889250L;
 
 	/**
 	 * Get case sensitive Column Name
-	 * 
+	 *
 	 * @param columnName case insensitive column name
 	 * @return case sensitive column name
 	 */
@@ -54,7 +55,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get case sensitive Column Name
-	 * 
+	 *
 	 * @param columnName case insensitive column name
 	 * @param trxName optional transaction name
 	 * @return case sensitive column name
@@ -72,7 +73,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName case insensitive column name
 	 * @return case sensitive column name
@@ -85,7 +86,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName case insensitive column name
 	 * @param trxName optional transaction name
@@ -106,7 +107,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName case insensitive column name
 	 * @param trxName trx
@@ -126,7 +127,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName case insentitive column name
 	 * @return case sensitive column name
@@ -138,7 +139,7 @@ public class M_Element extends X_AD_Element
 
 	/**************************************************************************
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_Element_ID element
 	 * @param trxName transaction
@@ -157,7 +158,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set
 	 * @param trxName transaction
@@ -169,7 +170,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Minimum Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName column
 	 * @param EntityType entity type
@@ -188,16 +189,17 @@ public class M_Element extends X_AD_Element
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.compiere.model.PO#beforeSave(boolean)
 	 */
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
 		// Column AD_Element.ColumnName should be unique - teo_sarca [ 1613107 ]
-		if (newRecord || is_ValueChanged(COLUMNNAME_ColumnName))
-		{
+		final boolean columnNameChange = newRecord || is_ValueChanged(COLUMNNAME_ColumnName);
 
+		if (columnNameChange && !Check.isEmpty(getColumnName(), true))
+		{
 			final String originalColumnName = getColumnName();
 
 			if (originalColumnName == null)
@@ -226,7 +228,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * After Save
-	 * 
+	 *
 	 * @param newRecord new
 	 * @param success success
 	 * @return success
@@ -293,7 +295,7 @@ public class M_Element extends X_AD_Element
 						.append(")")
 						.append(" AND ")
 						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" IS NULL ")
-						.append( ")")
+						.append(")")
 						.append(" OR ")
 						.append("(")
 						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(get_ID())
@@ -327,7 +329,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override

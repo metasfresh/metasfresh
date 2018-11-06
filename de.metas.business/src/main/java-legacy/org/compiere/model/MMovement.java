@@ -176,7 +176,7 @@ public class MMovement extends X_M_Movement implements IDocument
 		}
 		catch (Exception e)
 		{
-			log.error("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF", e);
 		}
 		return null;
 	}	//	getPDF
@@ -230,7 +230,7 @@ public class MMovement extends X_M_Movement implements IDocument
 		final String sql = "UPDATE M_MovementLine SET Processed=? WHERE M_Movement_ID=?";
 		int noLine = DB.executeUpdateEx(sql, new Object[]{processed, get_ID()}, get_TrxName());
 		m_lines = null;
-		log.debug("Processed=" + processed + " - Lines=" + noLine);
+		log.debug("Processed={} - Lines={}", processed, noLine);
 	}	//	setProcessed
 
 
@@ -258,7 +258,6 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public boolean unlockIt()
 	{
-		log.info(toString());
 		setProcessing(false);
 		return true;
 	}	//	unlockIt
@@ -270,7 +269,7 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info(toString());
+
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	//	invalidateIt
@@ -282,7 +281,6 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
@@ -335,7 +333,6 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public boolean  approveIt()
 	{
-		log.info(toString());
 		setIsApproved(true);
 		return true;
 	}	//	approveIt
@@ -347,7 +344,6 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public boolean rejectIt()
 	{
-		log.info(toString());
 		setIsApproved(false);
 		return true;
 	}	//	rejectIt
@@ -598,7 +594,7 @@ public class MMovement extends X_M_Movement implements IDocument
 	{
 		final int no = MMovementLineMA.deleteMovementMA(getM_Movement_ID(), get_TrxName());
 		if (no > 0)
-			log.info("Deleted old #{}", no);
+			log.debug("Deleted old #{}", no);
 
 		//	Attribute Set Instance: generate a new ASI if not already set
 		if (line.getM_AttributeSetInstance_ID() == 0)
@@ -622,7 +618,6 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -677,7 +672,6 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public boolean closeIt()
 	{
-		log.info(toString());
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -700,7 +694,6 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.info(toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -782,7 +775,6 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info(toString());
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -803,7 +795,6 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
-		log.info(toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)

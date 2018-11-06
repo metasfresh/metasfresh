@@ -135,7 +135,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		invoicingParams.setOnlyApprovedForInvoicing(false);
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.setContext(ctx)
 				.setFailIfNothingEnqueued(true)
 				.setFailOnChanges(true)
 				.setLoggable(loggable)
