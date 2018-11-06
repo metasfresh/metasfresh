@@ -37,6 +37,7 @@ import de.metas.util.Services;
 
 
 // TODO: AFAIU this whole MI is obsolete as soon as https://github.com/metasfresh/metasfresh/issues/4737 is done
+@Deprecated
 @Interceptor(I_M_Material_Tracking.class)
 public class M_Material_Tracking
 {
