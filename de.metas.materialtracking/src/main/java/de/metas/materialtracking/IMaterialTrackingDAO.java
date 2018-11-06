@@ -28,13 +28,14 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.util.ISingletonService;
 
@@ -44,12 +45,14 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	IMaterialTrackingQuery createMaterialTrackingQuery();
 
 	/**
-	 *
-	 * @param ctx
-	 * @param query
 	 * @return Material tracking or null
 	 */
-	de.metas.materialtracking.model.I_M_Material_Tracking retrieveMaterialTracking(Properties ctx, IMaterialTrackingQuery query);
+	I_M_Material_Tracking retrieveMaterialTracking(Properties ctx, IMaterialTrackingQuery query);
+
+	/**
+	 * @param materialTrackingQuery note that {@link IMaterialTrackingQuery#getOnMoreThanOneFound()} is ignored.
+	 */
+	List<I_M_Material_Tracking> retrieveMaterialTrackings(Properties ctx, IMaterialTrackingQuery materialTrackingQuery);
 
 	/**
 	 * Retrieve the reference, using the threadContextAware of the given <code>model</code>. Background: new M_Material_Tracking_Refs are created in the thread's inherited transaction, so if we want
@@ -70,17 +73,17 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * @param model
 	 * @return
 	 */
-	I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, Object model);
+	I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(I_M_Material_Tracking materialTracking, Object model);
 
 	/**
 	 *
-	 * Retrieve the material tracking refs for the given {@link de.metas.materialtracking.model.I_M_Material_Tracking} and model's {@link I_AD_Table}
+	 * Retrieve the material tracking refs for the given {@link I_M_Material_Tracking} and model's {@link I_AD_Table}
 	 *
 	 * @param materialTracking
 	 * @param modelClass
 	 * @return
 	 */
-	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, Class<?> modelClass);
+	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(I_M_Material_Tracking materialTracking, Class<?> modelClass);
 
 	/**
 	 * If the given model has a <code>M_Material_Tracking_ID</code> column, then return that referenced material tracking (=> might be <code>null</code>).
@@ -90,17 +93,17 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * @param model
 	 * @return material tracking or <code>null</code>
 	 */
-	de.metas.materialtracking.model.I_M_Material_Tracking retrieveMaterialTrackingForModel(Object model);
+	I_M_Material_Tracking retrieveMaterialTrackingForModel(Object model);
 
 	/**
-	 * Retrieves {@link de.metas.materialtracking.model.I_M_Material_Tracking}s list for models specified by a query builder.
+	 * Retrieves {@link I_M_Material_Tracking}s list for models specified by a query builder.
 	 *
 	 * This method is very useful when performance is important and we don't want to fetch all the intermediary records.
 	 *
 	 * @param modelsQuery models query
-	 * @return {@link de.metas.materialtracking.model.I_M_Material_Tracking}s
+	 * @return {@link I_M_Material_Tracking}s
 	 */
-	<T> List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingForModels(IQueryBuilder<T> modelsQuery);
+	<T> List<I_M_Material_Tracking> retrieveMaterialTrackingForModels(IQueryBuilder<T> modelsQuery);
 
 	/**
 	 *
@@ -108,7 +111,7 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * @return material tracking or null if <code>attributeValue</code> is null
 	 * @throws AdempiereException if material tracking was not found
 	 */
-	de.metas.materialtracking.model.I_M_Material_Tracking retrieveMaterialTrackingByAttributeValue(I_M_AttributeValue attributeValue);
+	I_M_Material_Tracking retrieveMaterialTrackingByAttributeValue(I_M_AttributeValue attributeValue);
 
 	/**
 	 * Retrieves references of given type, order by their chronological order.
@@ -117,9 +120,9 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * @param referenceType
 	 * @return
 	 */
-	<T> List<T> retrieveReferences(de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, Class<T> referenceType);
+	<T> List<T> retrieveReferences(I_M_Material_Tracking materialTracking, Class<T> referenceType);
 
-	<T> T retrieveReference(de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, Class<T> referenceType);
+	<T> T retrieveReference(I_M_Material_Tracking materialTracking, Class<T> referenceType);
 
 	/**
 	 *
@@ -146,7 +149,7 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * @param org
 	 * @return list of the Material trackings that were found, EMpty list if none was found
 	 */
-	List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForPeriodAndOrg(I_C_Period period, I_AD_Org org);
+	List<I_M_Material_Tracking> retrieveMaterialTrackingsForPeriodAndOrg(I_C_Period period, I_AD_Org org);
 
 	/**
 	 * Delete directly all the lines of the given {@link I_M_Material_Tracking_Report}
@@ -154,5 +157,4 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * @param report
 	 */
 	void deleteMaterialTrackingReportLines(I_M_Material_Tracking_Report report);
-
 }

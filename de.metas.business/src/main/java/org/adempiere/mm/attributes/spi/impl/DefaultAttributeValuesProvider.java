@@ -1,11 +1,11 @@
 package org.adempiere.mm.attributes.spi.impl;
 
+import javax.annotation.concurrent.Immutable;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -120,7 +120,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	{
 		return getAttributeValuesMap().getValues();
 	}
-	
+
 	private static final String normalizeValueKey(final Object valueKey)
 	{
 		return valueKey == null ? null : valueKey.toString();
@@ -130,7 +130,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx_NOTUSED, final Object valueKey)
 	{
 		final String valueKeyNormalized = normalizeValueKey(valueKey);
-		
+
 		//
 		{
 			final NamePair vnp = getAttributeValuesMap().getValueByKeyOrNull(valueKeyNormalized);
@@ -222,7 +222,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 			}
 
 			this.valuesByKey = valuesByKey.build();
-			valuesList = ImmutableList.copyOf(this.valuesByKey.values());
+			this.valuesList = ImmutableList.copyOf(this.valuesByKey.values());
 
 			this.attributeValueIdByKey = attributeValueIdByKey.build();
 

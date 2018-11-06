@@ -6,7 +6,7 @@ import org.compiere.model.I_M_Attribute;
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -15,27 +15,21 @@ import org.compiere.model.I_M_Attribute;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
- * {@link IAttributeValuesProvider} factory.
+ * Implementations of this interface are used for attributes handling. They are assigned to attributes {@link I_M_Attribute#COLUMN_AD_JavaClass_ID}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-public interface IAttributeValuesProviderFactory extends IAttributeValueHandler
+public interface IAttributeValueHandler
 {
-	/**
-	 * This method is called by the framework.
-	 *
-	 * @param attributeRecord never {@code null}.
-	 */
-	IAttributeValuesProvider createAttributeValuesProvider(I_M_Attribute attributeRecord);
+
 }

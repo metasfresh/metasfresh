@@ -1,10 +1,11 @@
-package org.adempiere.mm.attributes.countryattribute.impl;
+package org.adempiere.mm.attributes;
 
 import java.util.Set;
 
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValueHandler;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
@@ -20,9 +21,9 @@ import de.metas.util.Services;
 
 /**
  * Validation rule used to filter out attribute handler {@link I_AD_JavaClass}es which are not compatible with current {@link I_M_Attribute}.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 {
@@ -40,12 +41,11 @@ public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 		}
 
 		// If AttributeValueType is List we accept this JavaClass right away
-		// because attribute's handler  supported value type can only be Number or String so we cannot validate
+		// because attribute's handler supported value type can only be Number or String so we cannot validate
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(valueType))
 		{
 			return true;
 		}
-
 
 		//
 		// Get I_AD_JavaClass
@@ -58,20 +58,26 @@ public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 
 		//
 		// Create Attribute Handler's instance
-		final IAttributeValueGenerator handler = Services.get(IJavaClassBL.class).newInstance(javaClass);
+		final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
+
+		final IAttributeValueHandler handler = javaClassBL.newInstance(javaClass);
 		if (null == handler)
 		{
 			return false;
 		}
 
-		//
-		// Handler shall have the same type as our attribute
-		String handlerAcceptsValueType = handler.getAttributeValueType();
-		if (handlerAcceptsValueType != null && !valueType.equals(handlerAcceptsValueType))
+		if (handler instanceof IAttributeValueGenerator)
 		{
-			return false;
+			//
+			// generator shall have the same type as our attribute
+			final IAttributeValueGenerator generator = (IAttributeValueGenerator)handler;
+			final String generatorAcceptsValueType = generator.getAttributeValueType();
+			if (generatorAcceptsValueType != null && !valueType.equals(generatorAcceptsValueType))
+			{
+				return false;
+			}
 		}
-		
+
 		//
 		// Default: accept
 		return true;
