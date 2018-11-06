@@ -201,20 +201,22 @@ function mapRows(rows, map, columnInfosByFieldName) {
   });
 }
 
-export function removeRows(toRows, changedRows, returnRemoved) {
+export function removeRows(rowsList, changedRows) {
   const removedRows = [];
 
   changedRows.forEach(id => {
-    const idx = toRows.findIndex(row => row.id === id);
+    const idx = rowsList.findIndex(row => row.id === id);
 
-    toRows = toRows.delete(idx);
-    removedRows.push(id);
+    if (idx === -1) {
+      rowsList = rowsList.delete(idx);
+      removedRows.push(id);
+    }
   });
 
-  if (returnRemoved) {
-    return removedRows;
-  }
-  return toRows;
+  return {
+    rows: rowsList,
+    removedRows,
+  };
 }
 
 export function mergeRows({
@@ -231,7 +233,10 @@ export function mergeRows({
 
   const fromRowsById = indexRows(fromRows, {});
 
-  return mapRows(toRows, fromRowsById, columnInfosByFieldName);
+  return {
+    rows: mapRows(toRows, fromRowsById, columnInfosByFieldName),
+    removedRows: [],
+  };
 }
 
 export function getScope(isModal) {

@@ -26,6 +26,7 @@ class Modal extends Component {
 
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
+    isNewDoc: PropTypes.bool,
   };
 
   constructor(props) {
@@ -272,10 +273,6 @@ class Modal extends Component {
     });
   };
 
-  setFetchOnTrue = () => {
-    this.setState({ waitingFetch: true });
-  };
-
   handleStart = () => {
     const { dispatch, layout, windowType, indicator } = this.props;
 
@@ -364,6 +361,13 @@ class Modal extends Component {
       layout,
     } = this.props;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
+
+    const applyHandler =
+      modalType === 'process' ? this.handleStart : this.handleClose;
+    const cancelHandler =
+      modalType === 'process'
+        ? this.handleClose
+        : isNewDoc ? this.removeModal : undefined;
 
     return (
       Object.keys(data).length > 0 && (
@@ -480,16 +484,12 @@ class Modal extends Component {
             >
               {this.renderModalBody()}
             </div>
-            <ModalContextShortcuts
-              apply={
-                modalType === 'process' ? this.handleStart : this.handleClose
-              }
-              cancel={
-                modalType === 'process'
-                  ? this.handleClose
-                  : isNewDoc ? this.removeModal : ''
-              }
-            />
+            {layout.layoutType !== 'singleOverlayField' && (
+              <ModalContextShortcuts
+                apply={applyHandler}
+                cancel={cancelHandler}
+              />
+            )}
           </div>
         </div>
       )
@@ -497,8 +497,43 @@ class Modal extends Component {
   };
 
   renderOverlay = () => {
-    const { data, layout, windowType } = this.props;
+    const { data, layout, windowType, modalType, isNewDoc } = this.props;
     const { pending } = this.state;
+
+    const applyHandler =
+      modalType === 'process' ? this.handleStart : this.handleClose;
+    const cancelHandler =
+      modalType === 'process'
+        ? this.handleClose
+        : isNewDoc ? this.removeModal : undefined;
+
+    function defer() {
+      let res, rej;
+
+      const promise = new Promise((resolve, reject) => {
+        res = resolve;
+        rej = reject;
+      });
+
+      promise.resolve = res;
+      promise.reject = rej;
+
+      return promise;
+    }
+
+    const awaitPromise = defer();
+
+    const overlayCallback = (a, b, c, ret) => {
+      ret.then(() => {
+        awaitPromise.resolve();
+      });
+    };
+
+    const applyFn = () => {
+      awaitPromise.then(() => {
+        applyHandler();
+      });
+    };
 
     return (
       <OverlayField
@@ -506,8 +541,9 @@ class Modal extends Component {
         disabled={pending}
         data={data}
         layout={layout}
-        handleSubmit={this.setFetchOnTrue}
-        closeOverlay={this.removeModal}
+        handleSubmit={applyFn}
+        onChange={overlayCallback}
+        closeOverlay={cancelHandler}
       />
     );
   };

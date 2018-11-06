@@ -44,7 +44,6 @@ import {
   filtersToMap,
   mergeColumnInfosIntoViewRows,
   mergeRows,
-  removeRows,
 } from '../../utils/documentListHelper';
 import Spinner from '../app/SpinnerOverlay';
 import BlankPage from '../BlankPage';
@@ -225,24 +224,27 @@ export class DocumentList extends Component {
           response => {
             const { data, pageColumnInfosByFieldName } = this.state;
             const toRows = data.result;
-            const removedRows = removeRows(toRows, changedIds, true);
 
-            const rows = List(
-              mergeRows({
-                toRows,
-                fromRows: [...response.data],
-                columnInfosByFieldName: pageColumnInfosByFieldName,
-                changedIds,
-              })
-            );
+            const { rows, removedRows } = mergeRows({
+              toRows,
+              fromRows: [...response.data],
+              columnInfosByFieldName: pageColumnInfosByFieldName,
+              changedIds,
+            });
+            const rowsList = List(rows);
 
-            dispatch(deselectTableItems(removedRows, windowType, viewId));
+            if (removedRows.length) {
+              dispatch(deselectTableItems(removedRows, windowType, viewId));
+            } else {
+              // force updating actions
+              this.updateQuickActions();
+            }
 
             this.setState({
               data: {
                 ...this.state.data,
-                result: rows,
-                rowIds: rows.map(row => row.id),
+                result: rowsList,
+                rowIds: rowsList.map(row => row.id),
               },
             });
           }
