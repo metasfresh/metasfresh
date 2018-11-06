@@ -261,13 +261,12 @@ export function parseDateWithCurrenTimezone(value) {
 
       value = Moment(value);
     } else {
-      luxonOffset = DateTime.fromISO(value.toISO()).offset;
+      luxonOffset = DateTime.fromISO(value.toISOString()).offset;
     }
 
-    const tempDate = Moment(value);
-    tempDate.utcOffset(luxonOffset);
+    value.utcOffset(luxonOffset);
 
-    return tempDate;
+    return value;
   }
   return '';
 }
