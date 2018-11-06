@@ -507,14 +507,32 @@ class Modal extends Component {
         ? this.handleClose
         : isNewDoc ? this.removeModal : undefined;
 
-    const overlayCallback = async (a, b, ret) => {
-      return await ret;
+    function defer() {
+      let res, rej;
+
+      const promise = new Promise((resolve, reject) => {
+        res = resolve;
+        rej = reject;
+      });
+
+      promise.resolve = res;
+      promise.reject = rej;
+
+      return promise;
+    }
+
+    const awaitPromise = defer();
+
+    const overlayCallback = (a, b, c, ret) => {
+      ret.then(() => {
+        awaitPromise.resolve();
+      });
     };
 
-    const applyFn = async () => {
-      await overlayCallback;
-
-      applyHandler();
+    const applyFn = () => {
+      awaitPromise.then(() => {
+        applyHandler();
+      });
     };
 
     return (
