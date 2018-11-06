@@ -3,13 +3,12 @@ package org.adempiere.mm.attributes.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import lombok.NonNull;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,9 +44,11 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AttributeDAO implements IAttributeDAO
 {
@@ -145,6 +146,22 @@ public class AttributeDAO implements IAttributeDAO
 		final AttributeId attributeId = retrieveAttributeIdByValue(value);
 		final I_M_Attribute attribute = getAttributeById(attributeId);
 		return InterfaceWrapperHelper.create(attribute, clazz);
+	}
+
+	@Override
+	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final String value)
+	{
+		final AttributeId attributeId = retrieveAttributeIdByValueOrNull(value);
+		if (attributeId == null)
+		{
+			return Optional.empty();
+		}
+
+		final I_M_Attribute attribute = getAttributeById(attributeId);
+
+		final ITranslatableString displayName = InterfaceWrapperHelper.getModelTranslationMap(attribute)
+				.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, attribute.getName());
+		return Optional.of(displayName);
 	}
 
 	@Override
