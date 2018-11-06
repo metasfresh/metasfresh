@@ -504,13 +504,17 @@ export default function windowHandler(state = initialState, action) {
     case DESELECT_TABLE_ITEMS: {
       const { windowType, viewId, ids } = action.payload;
 
+      const windowTypeSelections = state.selections[windowType]
+        ? state.selections[windowType]
+        : {};
+
       return {
         ...state,
         selections: {
           ...state.selections,
           [windowType]: {
-            ...state.selections[windowType],
-            [viewId]: _.difference(state.selections[windowType][viewId], ids),
+            ...windowTypeSelections,
+            [viewId]: _.difference(windowTypeSelections[viewId], ids),
           },
         },
       };
