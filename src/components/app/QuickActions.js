@@ -183,7 +183,15 @@ export class QuickActions extends Component {
     this.toggleDropdown();
   };
 
-  async fetchActions(windowType, viewId, selected, childView, parentView, resolve, reject) {
+  async fetchActions(
+    windowType,
+    viewId,
+    selected,
+    childView,
+    parentView,
+    resolve,
+    reject
+  ) {
     if (!this.mounted) {
       resolve();
     }
