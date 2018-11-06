@@ -12,6 +12,7 @@ import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_Element_Link;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_AD_Menu;
@@ -498,4 +499,26 @@ public class ElementTranslationBL implements IElementTranslationBL
 		log.debug("afterSave - Columns updated #" + no);
 	}
 
+	@Override
+	public void createADElementLinkEntries()
+	{
+		final List<I_AD_Window> windowsWithMissingADElementLink = Services.get(IADWindowDAO.class).retrieveWindowsWithMissingADElementLink();
+
+		for (final I_AD_Window window : windowsWithMissingADElementLink)
+		{
+
+			createElementLinkForWindow(window);
+
+		}
+	}
+
+	@Override
+	public void createElementLinkForWindow(I_AD_Window window)
+	{
+		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
+		elementLink.setAD_Element_ID(window.getAD_Element_ID());
+		elementLink.setAD_Window_ID(window.getAD_Window_ID());
+		save(elementLink);
+
+	}
 }

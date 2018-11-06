@@ -40,7 +40,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_AD_Element_Link;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
@@ -894,4 +896,17 @@ public class ADWindowDAO implements IADWindowDAO
 				.list(I_AD_Window.class);
 	}
 
+	@Override
+	public List<I_AD_Window> retrieveWindowsWithMissingADElementLink()
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_AD_Element_Link> existingADElementLinks = queryBL.createQueryBuilder(I_AD_Element_Link.class)
+				.create();
+
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.addNotNull(I_AD_Window.COLUMNNAME_AD_Element_ID)
+				.addNotInSubQueryFilter(I_AD_Window.COLUMN_AD_Window_ID, I_AD_Element_Link.COLUMN_AD_Window_ID, existingADElementLinks)
+				.create().list();
+	}
 }

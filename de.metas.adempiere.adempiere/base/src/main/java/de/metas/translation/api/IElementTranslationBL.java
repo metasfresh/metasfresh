@@ -82,4 +82,8 @@ public interface IElementTranslationBL extends ISingletonService
 
 	void createAndAssignElementsToApplicationDictionaryEntries();
 
+	void createADElementLinkEntries();
+
+	void createElementLinkForWindow(I_AD_Window window);
+
 }

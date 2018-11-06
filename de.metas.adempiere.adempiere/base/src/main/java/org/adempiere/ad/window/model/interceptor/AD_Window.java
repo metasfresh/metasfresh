@@ -73,6 +73,8 @@ public class AD_Window
 		window.setDescription(windowElement.getDescription());
 		window.setHelp(windowElement.getHelp());
 
+		Services.get(IElementTranslationBL.class).createElementLinkForWindow(window);
+
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)

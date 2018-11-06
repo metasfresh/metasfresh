@@ -88,4 +88,6 @@ public interface IADWindowDAO extends ISingletonService
 
 	List<I_AD_Window> retrieveWindowsWithMissingElements();
 
+	List<I_AD_Window> retrieveWindowsWithMissingADElementLink();
+
 }
