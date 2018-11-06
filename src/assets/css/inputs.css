@@ -555,6 +555,11 @@ input:checked + .input-slider:before {
             padding-top: 2px;
         }
     }
+    &.input-mandatory {
+        .input-dropdown-list {
+            left: -2px;
+        }
+    }
     .input-dropdown {
         display: flex;
         flex-direction: row;

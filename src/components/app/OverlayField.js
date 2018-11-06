@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
@@ -7,6 +8,7 @@ import BarcodeScanner from '../widget/BarcodeScanner/BarcodeScannerWidget';
 class OverlayField extends Component {
   handleKeyDown = e => {
     const { handleSubmit, closeOverlay, onSelectBarcode } = this.props;
+
     switch (e.key) {
       case 'Enter':
         document.activeElement.blur();
@@ -35,7 +37,7 @@ class OverlayField extends Component {
   };
 
   renderElements = (layout, data, type) => {
-    const { disabled, codeSelected } = this.props;
+    const { disabled, codeSelected, onChange } = this.props;
     const elements = layout.elements;
 
     return elements.map((elem, id) => {
@@ -58,6 +60,7 @@ class OverlayField extends Component {
           autoFocus={id === 0}
           captionElement={captionElement}
           data={codeSelected || undefined}
+          onChange={onChange}
           {...elem}
         />
       );
@@ -146,5 +149,9 @@ class OverlayField extends Component {
     );
   }
 }
+
+OverlayField.propTypes = {
+  onChange: PropTypes.func,
+};
 
 export default BarcodeScanner(OverlayField);

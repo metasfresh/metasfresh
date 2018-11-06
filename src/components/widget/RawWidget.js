@@ -96,20 +96,23 @@ class RawWidget extends Component {
       enableOnClickOutside,
     } = this.props;
 
-    enableOnClickOutside && enableOnClickOutside();
-    dispatch(allowShortcut());
-    handleBlur && handleBlur(this.willPatch(value));
+    this.setState(
+      {
+        isEdited: false,
+        cachedValue: undefined,
+      },
+      () => {
+        enableOnClickOutside && enableOnClickOutside();
+        dispatch(allowShortcut());
+        handleBlur && handleBlur(this.willPatch(value));
 
-    this.setState({
-      isEdited: false,
-      cachedValue: undefined,
-    });
+        listenOnKeysTrue && listenOnKeysTrue();
 
-    listenOnKeysTrue && listenOnKeysTrue();
-
-    if (widgetField) {
-      this.handlePatch(widgetField, value, id);
-    }
+        if (widgetField) {
+          this.handlePatch(widgetField, value, id);
+        }
+      }
+    );
   };
 
   handleKeyDown = (e, property, value, widgetType) => {
@@ -127,16 +130,34 @@ class RawWidget extends Component {
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if ((isForce || willPatch) && handlePatch) {
-      this.setState({
-        cachedValue: value,
-        clearedFieldWarning: false,
-      });
+    if (
+      (isForce || willPatch) &&
+      handlePatch &&
+      !this.state.requestInProgress
+    ) {
+      return this.setState(
+        {
+          cachedValue: value,
+          clearedFieldWarning: false,
+          requestInProgress: true,
+        },
+        () => {
+          const patchReturn = handlePatch(property, value, id, valueTo);
 
-      return handlePatch(property, value, id, valueTo);
+          if (patchReturn && patchReturn.then) {
+            return patchReturn.then(() => {
+              this.setState({
+                requestInProgress: false,
+              });
+            });
+          }
+
+          return patchReturn;
+        }
+      );
     }
 
-    return null;
+    return Promise.resolve(null);
   };
 
   handleProcess = () => {
