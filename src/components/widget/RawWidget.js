@@ -142,11 +142,17 @@ class RawWidget extends Component {
           requestInProgress: true,
         },
         () => {
-          return handlePatch(property, value, id, valueTo).then(() => {
-            this.setState({
-              requestInProgress: false,
+          const patchReturn = handlePatch(property, value, id, valueTo);
+
+          if (patchReturn && patchReturn.then) {
+            return patchReturn.then(() => {
+              this.setState({
+                requestInProgress: false,
+              });
             });
-          });
+          }
+
+          return patchReturn;
         }
       );
     }

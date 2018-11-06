@@ -221,7 +221,7 @@ class TableQuickInput extends Component {
       );
     }
 
-    this.patchPromise
+    return this.patchPromise
       .then(() => {
         return completeRequest(
           'window',
