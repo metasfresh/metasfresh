@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Queue from 'promise-queue';
+import Queue from 'simple-promise-queue';
 
 import { quickActionsRequest } from '../../api';
 import { openModal } from '../../actions/WindowActions';
@@ -49,7 +49,9 @@ export class QuickActions extends Component {
 
     this.fetchActions = this.fetchActions.bind(this);
 
-    this.queue = new Queue(1, 5);
+    this.queue = new Queue({
+      autoStart: true,
+    });
   }
 
   componentDidMount = () => {
@@ -65,9 +67,16 @@ export class QuickActions extends Component {
     } = this.props;
 
     if (fetchOnInit) {
-      this.queue.add(() => {
-        console.log('Queue:0 ', this.queue.pendingPromises, this.queue.queue.length);
-        return this.fetchActions(windowType, viewId, selected, childView, parentView)
+      this.queue.pushTask((res, rej) => {
+        this.fetchActions(
+          windowType,
+          viewId,
+          selected,
+          childView,
+          parentView,
+          res,
+          rej
+        );
       });
     }
   };
@@ -85,14 +94,15 @@ export class QuickActions extends Component {
       (nextProps.viewId && nextProps.viewId !== viewId) ||
       (nextProps.windowType && nextProps.windowType !== windowType)
     ) {
-      this.queue.add(() => {
-        console.log('Queue:1 ', this.queue.pendingPromises, this.queue.queue.length, nextProps.selected);
-        return this.fetchActions(
+      this.queue.pushTask((res, rej) => {
+        this.fetchActions(
           nextProps.windowType,
           nextProps.viewId,
           nextProps.selected,
           nextProps.childView,
-          nextProps.parentView
+          nextProps.parentView,
+          res,
+          rej
         );
       });
     }
@@ -123,14 +133,15 @@ export class QuickActions extends Component {
   updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
     const { windowType, viewId, selected, childView, parentView } = this.props;
 
-    this.queue.add(() => {
-      console.log('Updated queue: ', this.queue.pendingPromises, this.queue.queue.length);
-      return this.fetchActions(
+    this.queue.pushTask((res, rej) => {
+      this.fetchActions(
         windowType,
         viewId,
         selected,
         { ...childView, viewSelectedIds: childSelection },
-        parentView
+        parentView,
+        res,
+        rej
       );
     });
   };
@@ -173,14 +184,14 @@ export class QuickActions extends Component {
   };
 
   // async fetchActions(windowType, viewId, selected, childView, parentView) {
-  fetchActions(windowType, viewId, selected, childView, parentView) {
+  fetchActions(windowType, viewId, selected, childView, parentView, resolve, reject) {
     if (!this.mounted) {
-      return Promise.resolve();
+      resolve();
     }
 
     if (windowType && viewId && childView && parentView) {
       // await quickActionsRequest(
-      return quickActionsRequest(
+      quickActionsRequest(
         windowType,
         viewId,
         selected,
@@ -189,38 +200,29 @@ export class QuickActions extends Component {
       )
         .then(response => {
           if (!selected) {
-            setTimeout(() => {
-              return this.setState(
-                {
-                  actions: response.data.actions,
-                  loading: false,
-                },
-                () => Promise.resolve()
-              );
-            }, 1000);
+            return this.setState(
+              {
+                actions: response.data.actions,
+                loading: false,
+              },
+              () => resolve()
+            );
           } else {
             return this.setState(
               {
                 actions: response.data.actions,
                 loading: false,
               },
-              () => Promise.resolve()
+              () => resolve()
             );
           }
-          // return this.setState(
-          //   {
-          //     actions: response.data.actions,
-          //     loading: false,
-          //   },
-          //   () => Promise.resolve()
-          // );
         })
         .catch(() => {
           return this.setState(
             {
               loading: false,
             },
-            () => Promise.reject()
+            () => reject()
           );
         });
     } else {
@@ -228,7 +230,7 @@ export class QuickActions extends Component {
         {
           loading: false,
         },
-        () => Promise.resolve()
+        () => resolve()
       );
     }
   }
