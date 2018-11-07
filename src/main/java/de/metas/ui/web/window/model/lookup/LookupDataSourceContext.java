@@ -37,6 +37,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -216,7 +217,22 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	public String get_ValueAsString(final String variableName)
 	{
 		final Object value = parameterValues.get(variableName);
-		return value == null ? null : value.toString();
+		if (value == null)
+		{
+			return null;
+		}
+		else if (value instanceof LookupValue)
+		{
+			return ((LookupValue)value).getIdAsString();
+		}
+		else if (value instanceof Boolean)
+		{
+			return StringUtils.ofBoolean((Boolean)value);
+		}
+		else
+		{
+			return value.toString();
+		}
 	}
 
 	@Override
