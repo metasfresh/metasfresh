@@ -14,7 +14,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
-import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
@@ -28,6 +27,7 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
@@ -50,7 +50,6 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -138,13 +137,14 @@ class PPOrderLinesLoader
 		final List<PPOrderLineRow> sourceHuRowsForIssueProducts = createRowsForIssueProductSourceHUs(warehouseId, bomLineRows);
 		records.addAll(sourceHuRowsForIssueProducts);
 
-		return new PPOrderLinesViewData(extractDescription(ppOrder), ppOrder.getPlanningStatus(), records.build());
+		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
+		return new PPOrderLinesViewData(extractDescription(ppOrder), planningStatus, records.build());
 	}
 
 	private static boolean isReadOnly(@NonNull final I_PP_Order ppOrder)
 	{
-		final String ppOrder_planningStatus = ppOrder.getPlanningStatus();
-		final boolean readonly = X_PP_Order.PLANNINGSTATUS_Complete.equals(ppOrder_planningStatus);
+		final PPOrderPlanningStatus ppOrder_planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
+		final boolean readonly = PPOrderPlanningStatus.COMPLETE.equals(ppOrder_planningStatus);
 		return readonly;
 	}
 

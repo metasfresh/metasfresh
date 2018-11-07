@@ -14,12 +14,12 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderLineId;
 import de.metas.process.RelatedProcessDescriptor;
@@ -118,19 +118,19 @@ public class PPOrderLinesView implements IView
 		return getData().getDescription();
 	}
 
-	public String getPlanningStatus()
+	public PPOrderPlanningStatus getPlanningStatus()
 	{
 		return getData().getPlanningStatus();
 	}
 
 	public boolean isStatusPlanning()
 	{
-		return X_PP_Order.PLANNINGSTATUS_Planning.equals(getPlanningStatus());
+		return PPOrderPlanningStatus.PLANNING.equals(getPlanningStatus());
 	}
 
 	public boolean isStatusReview()
 	{
-		return X_PP_Order.PLANNINGSTATUS_Review.equals(getPlanningStatus());
+		return PPOrderPlanningStatus.REVIEW.equals(getPlanningStatus());
 	}
 
 	@Override
