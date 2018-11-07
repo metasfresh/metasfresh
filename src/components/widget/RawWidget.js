@@ -209,13 +209,12 @@ class RawWidget extends Component {
       fieldData = widgetData[0];
     }
 
-    let allowPatching = (
+    let allowPatching =
       (isValue &&
         (JSON.stringify(fieldData.value) !== JSON.stringify(value) ||
           JSON.stringify(fieldData.valueTo) !== JSON.stringify(valueTo))) ||
       (cachedValue !== undefined &&
-        JSON.stringify(cachedValue) !== JSON.stringify(value))
-    );
+        JSON.stringify(cachedValue) !== JSON.stringify(value));
 
     // console.log("willPatch "+property+" => "+allowPatching
     //   +"\n value="+value+ ", valueTo="+valueTo
