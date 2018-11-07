@@ -1,7 +1,9 @@
 package de.metas.order.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+
+import lombok.NonNull;
 
 import java.util.Collection;
 
@@ -53,7 +55,6 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
@@ -62,7 +63,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return InterfaceWrapperHelper.load(orderId.getRepoId(), I_C_Order.class);
 	}
-	
+
 	@Override
 	public <T extends I_C_Order> T getById(
 			@NonNull final OrderId orderId,
@@ -221,7 +222,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class);
 		return ImmutableSet.copyOf(userIds);
 	}
-	
+
 	@Override
 	public List<I_C_Order> getByIds(final Collection<OrderId> orderIds)
 	{
@@ -231,6 +232,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public <T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
 	{
-		return loadByRepoIdAwaresOutOfTrx(orderIds, clazz);
+		return loadByRepoIdAwares(ImmutableSet.copyOf(orderIds), clazz);
 	}
 }

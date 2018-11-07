@@ -1,7 +1,7 @@
 package de.metas.attachments.process;
 
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.I_AD_AttachmentEntry_ReferencedRecord_v;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
@@ -30,14 +30,14 @@ import de.metas.process.JavaProcess;
  * #L%
  */
 
-public class AD_AttachmentEntry_Download extends JavaProcess
+public class AD_AttachmentEntry_ReferencedRecord_v_Download extends JavaProcess
 {
 	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
 
 	@Override
 	protected String doIt()
 	{
-		final I_AD_AttachmentEntry record = getRecord(I_AD_AttachmentEntry.class);
+		final I_AD_AttachmentEntry_ReferencedRecord_v record = getRecord(I_AD_AttachmentEntry_ReferencedRecord_v.class);
 		final AttachmentEntryId entryId = AttachmentEntryId.ofRepoId(record.getAD_AttachmentEntry_ID());
 
 		final AttachmentEntry entry = attachmentEntryService.getById(entryId);
