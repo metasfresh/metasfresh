@@ -16,6 +16,7 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -111,11 +112,11 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 
 		final PPOrderLinesView ppOrderView = getView();
 
-		final int ppOrderId = ppOrderView.getPP_Order_ID();
+		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
 		Services.get(IHUPPOrderBL.class)
 				.createIssueProducer()
-				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
-				.createDraftIssues(extractedTUs);
+				.setOrderId(ppOrderId)
+				.createIssues(extractedTUs);
 
 		getView().invalidateAll();
 		ppOrderView.invalidateAll();

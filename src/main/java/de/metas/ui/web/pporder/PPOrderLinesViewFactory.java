@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
@@ -71,7 +72,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	public PPOrderLinesView createView(final CreateViewRequest request)
 	{
 		final ViewId viewId = request.getViewId();
-		final int ppOrderId = request.getSingleFilterOnlyId();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(request.getSingleFilterOnlyId());
 
 		final PPOrderLinesViewDataSupplier dataSupplier = PPOrderLinesViewDataSupplier
 				.builder()

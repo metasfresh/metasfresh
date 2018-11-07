@@ -13,6 +13,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -76,12 +77,12 @@ public class WEBUI_PP_Order_HUEditor_IssueTopLevelHUs
 		}
 
 		final PPOrderLinesView ppOrderView = getPPOrderView().get();
-		final int ppOrderId = ppOrderView.getPP_Order_ID();
+		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
 
 		Services.get(IHUPPOrderBL.class)
 				.createIssueProducer()
-				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
-				.createDraftIssues(hus);
+				.setOrderId(ppOrderId)
+				.createIssues(hus);
 
 		final HUEditorView huEditorView = getView();
 		huEditorView.removeHUsAndInvalidate(hus);

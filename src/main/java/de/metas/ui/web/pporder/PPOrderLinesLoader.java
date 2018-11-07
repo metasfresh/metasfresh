@@ -14,6 +14,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
@@ -36,6 +37,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -114,9 +116,9 @@ class PPOrderLinesLoader
 	 *
 	 * @param viewId viewId to be set to newly created {@link PPOrderLineRow}s.
 	 */
-	public PPOrderLinesViewData retrieveData(final int ppOrderId)
+	public PPOrderLinesViewData retrieveData(final PPOrderId ppOrderId)
 	{
-		final I_PP_Order ppOrder = loadOutOfTrx(ppOrderId, I_PP_Order.class);
+		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
 
 		final int mainProductBOMLineId = 0;
 		final ListMultimap<Integer, I_PP_Order_Qty> ppOrderQtysByBOMLineId = ppOrderQtyDAO.streamOrderQtys(ppOrderId)
