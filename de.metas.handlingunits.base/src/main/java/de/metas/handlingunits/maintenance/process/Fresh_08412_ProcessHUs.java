@@ -44,6 +44,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
@@ -300,7 +301,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, rawProduct);
 
 		huPPOrderBL.createIssueProducer()
-				.setMovementDate(ppOrder.getDatePromised())
+				.setMovementDate(TimeUtil.asLocalDate(ppOrder.getDatePromised()))
 				.setTargetOrderBOMLine(ppOrderBOMLine)
 				.createDraftIssue(hu);
 

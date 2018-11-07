@@ -1,5 +1,7 @@
 package de.metas.handlingunits.pporder.api;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -23,7 +25,6 @@ package de.metas.handlingunits.pporder.api;
  */
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -68,7 +69,7 @@ public interface IHUPPOrderIssueProducer
 	 *
 	 * @param movementDate may be {@code null} in which case, the current time is used.
 	 */
-	IHUPPOrderIssueProducer setMovementDate(final Date movementDate);
+	IHUPPOrderIssueProducer setMovementDate(final LocalDate movementDate);
 
 	/**
 	 * Sets manufacturing order BOM Lines which needs to be considered when issuing.

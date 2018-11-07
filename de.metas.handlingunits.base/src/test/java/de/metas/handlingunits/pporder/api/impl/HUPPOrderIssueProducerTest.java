@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -350,7 +350,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Issue created HU to Folie Order BOM Line
-		final Timestamp movementDate = TimeUtil.getDay(2014, 10, 01);
+		final LocalDate movementDate = LocalDate.of(2014, 10, 01);
 		final List<I_PP_Order_Qty> candidates = new HUPPOrderIssueProducer()
 				.setMovementDate(movementDate)
 				.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
@@ -390,7 +390,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			Assert.assertEquals("Invalid cost collectors count", 1, costCollectors.size());
 			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
 			Assert.assertEquals("Invalid Cost Collector Type", X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, costCollector.getCostCollectorType());
-			Assert.assertEquals("Invalid Cost Collector MovementDate", movementDate, costCollector.getMovementDate());
+			Assert.assertEquals("Invalid Cost Collector MovementDate", TimeUtil.asTimestamp(movementDate), costCollector.getMovementDate());
 			Assert.assertEquals("Invalid Cost Collector PP_Order", ppOrder, costCollector.getPP_Order());
 			Assert.assertEquals("Invalid Cost Collector PP_Order_BOMLine", ppOrderBOMLine_Folie, costCollector.getPP_Order_BOMLine());
 			Assert.assertEquals("Invalid Cost Collector UOM", uomMillimeter, costCollector.getC_UOM());

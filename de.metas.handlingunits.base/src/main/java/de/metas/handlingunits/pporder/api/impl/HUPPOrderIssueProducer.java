@@ -1,5 +1,7 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -23,7 +25,6 @@ package de.metas.handlingunits.pporder.api.impl;
  */
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,7 +68,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	private final transient IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-	private Date movementDate;
+	private LocalDate movementDate;
 	private List<I_PP_Order_BOMLine> targetOrderBOMLines;
 
 	@VisibleForTesting
@@ -86,7 +87,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	}
 
 	@Override
-	public IHUPPOrderIssueProducer setMovementDate(final Date movementDate)
+	public IHUPPOrderIssueProducer setMovementDate(final LocalDate movementDate)
 	{
 		this.movementDate = movementDate;
 		return this;
