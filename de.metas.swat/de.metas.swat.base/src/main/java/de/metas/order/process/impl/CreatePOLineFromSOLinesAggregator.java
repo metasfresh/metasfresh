@@ -2,7 +2,10 @@ package de.metas.order.process.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -16,6 +19,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Util;
 
 import de.metas.order.IOrderLineBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
@@ -23,7 +27,6 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -127,7 +130,11 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 		purchaseOrderLine.setQtyEntered(BigDecimal.ZERO);
 
 		purchaseOrderLine.setDescription(salesOrderLine.getDescription());
-		purchaseOrderLine.setDatePromised(salesOrderLine.getDatePromised());
+
+		final Timestamp datePromised = Util.coalesceSuppliers(
+				() -> salesOrderLine.getDatePromised(),
+				() -> salesOrderLine.getC_Order().getDatePromised());
+		purchaseOrderLine.setDatePromised(datePromised);
 
 		purchaseOrderLine.setC_BPartner(purchaseOrder.getC_BPartner());
 		purchaseOrderLine.setC_BPartner_Location(purchaseOrder.getC_BPartner_Location());
@@ -141,7 +148,7 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 	}
 
 	private void copyUserIdFromSalesToPurchaseOrderLine(
-			@NonNull final I_C_OrderLine salesOrderLine, 
+			@NonNull final I_C_OrderLine salesOrderLine,
 			@NonNull final I_C_OrderLine purchaseOrderLine)
 	{
 		final int userID = create(salesOrderLine, de.metas.interfaces.I_C_OrderLine.class).getAD_User_ID();
