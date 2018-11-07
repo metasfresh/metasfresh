@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/de.metas.procurement.webui/src/main/java/de/metas/procurement/webui/Application.java"/>
+<listEntry value="/metasfresh-procurement-webui/src/main/java/de/metas/procurement/webui/Application.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -15,7 +15,7 @@
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.metas.procurement.webui.Application"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.procurement.webui"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-procurement-webui"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dserver.port=8080&#13;&#10;-Dmfprocurement.activemq.runEmbeddedBroker=true &#13;&#10;-Dmfprocurement.jms.broker-url=tcp://localhost:61618&#13;&#10;-Dmfprocurement.activemq.broker.networkConnector.discoveryAddress=static:(tcp://localhost:61616)"/>
 </launchConfiguration>
