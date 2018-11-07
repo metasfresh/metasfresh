@@ -75,6 +75,7 @@ import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -537,53 +538,9 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> {
-			final IDocumentFieldView field = document.getFieldView(fieldName);
-
-			// Generic ZoomInto button
-			if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.ZoomIntoButton)
-			{
-				final ButtonFieldActionDescriptor buttonActionDescriptor = field.getDescriptor().getButtonActionDescriptor();
-				final String zoomIntoTableIdFieldName = buttonActionDescriptor.getZoomIntoTableIdFieldName();
-
-				final Integer adTableId = document.getFieldView(zoomIntoTableIdFieldName).getValueAs(Integer.class);
-				if (adTableId == null || adTableId <= 0)
-				{
-					throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value. No AD_Table_ID.")
-							.setParameter("documentPath", documentPath)
-							.setParameter("fieldName", fieldName)
-							.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
-				}
-
-				final Integer recordId = field.getValueAs(Integer.class);
-				if (recordId == null)
-				{
-					throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value. No Record_ID.")
-							.setParameter("documentPath", documentPath)
-							.setParameter("fieldName", fieldName)
-							.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
-				}
-
-				final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
-				return DocumentZoomIntoInfo.of(tableName, recordId);
-			}
-			// Key Field
-			else if (field.isKey())
-			{
-				// Allow zooming into key column. It shall open precisely this record in a new window.
-				// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
-				final String tableName = document.getEntityDescriptor().getTableName();
-				final int recordId = document.getDocumentIdAsInt();
-				return DocumentZoomIntoInfo.of(tableName, recordId);
-			}
-			// Regular lookup value
-			else
-			{
-				return field.getZoomIntoInfo();
-			}
-		});
 
 		final JSONDocumentPath jsonZoomIntoDocumentPath;
+		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> getDocumentFieldZoomInto(document, fieldName));
 		if (zoomIntoInfo == null)
 		{
 			throw new EntityNotFoundException("ZoomInto not supported")
@@ -605,6 +562,53 @@ public class WindowRestController
 				.documentPath(jsonZoomIntoDocumentPath)
 				.source(JSONDocumentPath.ofWindowDocumentPath(documentPath, fieldName))
 				.build();
+	}
+
+	private static DocumentZoomIntoInfo getDocumentFieldZoomInto(@NonNull final Document document, @NonNull final String fieldName)
+	{
+		final IDocumentFieldView field = document.getFieldView(fieldName);
+
+		// Generic ZoomInto button
+		if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.ZoomIntoButton)
+		{
+			final ButtonFieldActionDescriptor buttonActionDescriptor = field.getDescriptor().getButtonActionDescriptor();
+			final String zoomIntoTableIdFieldName = buttonActionDescriptor.getZoomIntoTableIdFieldName();
+
+			final Integer adTableId = document.getFieldView(zoomIntoTableIdFieldName).getValueAs(Integer.class);
+			if (adTableId == null || adTableId <= 0)
+			{
+				throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value. No AD_Table_ID.")
+						.setParameter("documentPath", document.getDocumentPath())
+						.setParameter("fieldName", fieldName)
+						.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
+			}
+
+			final Integer recordId = field.getValueAs(Integer.class);
+			if (recordId == null)
+			{
+				throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value. No Record_ID.")
+						.setParameter("documentPath", document.getDocumentPath())
+						.setParameter("fieldName", fieldName)
+						.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
+			}
+
+			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
+			return DocumentZoomIntoInfo.of(tableName, recordId);
+		}
+		// Key Field
+		else if (field.isKey())
+		{
+			// Allow zooming into key column. It shall open precisely this record in a new window.
+			// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
+			final String tableName = document.getEntityDescriptor().getTableName();
+			final int recordId = document.getDocumentIdAsInt();
+			return DocumentZoomIntoInfo.of(tableName, recordId);
+		}
+		// Regular lookup value
+		else
+		{
+			return field.getZoomIntoInfo();
+		}
 	}
 
 	@GetMapping("/{windowId}/{documentId}/actions")
