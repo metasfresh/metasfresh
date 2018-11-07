@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 
 /*
  * #%L
@@ -110,6 +111,28 @@ public class LookupDataSourceContextTest
 				.build();
 
 		assertThat(evalCtx.get_ValueAsInt("TestInt", null)).isEqualTo(expectedInteger);
+	}
+
+	@Test
+	public void testContextString()
+	{
+		testContextString("string", "string");
+		testContextString(IntegerLookupValue.of(1, "one"), "1");
+		testContextString(StringLookupValue.of("1", "one"), "1");
+		testContextString(Boolean.TRUE, "Y");
+		testContextString(Boolean.FALSE, "N");
+	}
+
+	private static void testContextString(final Object stringObj, final String expectedString)
+	{
+		final LookupDataSourceContext evalCtx = LookupDataSourceContext.builder("TestTableName")
+				.requiresParameter(CtxNames.parse("TestString"))
+				.setParentEvaluatee(Evaluatees.mapBuilder()
+						.put("TestString", stringObj)
+						.build())
+				.build();
+
+		assertThat(evalCtx.get_ValueAsString("TestString")).isEqualTo(expectedString);
 	}
 
 }
