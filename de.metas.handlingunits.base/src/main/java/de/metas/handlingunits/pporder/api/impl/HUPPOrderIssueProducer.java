@@ -50,7 +50,6 @@ import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateD
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -125,7 +124,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		final List<I_PP_Order_BOMLine> ppOrderBOMLines = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
 				.stream()
 				.filter(line -> PPOrderUtil.isIssue(line.getComponentType()))
-				.collect(GuavaCollectors.toImmutableList());
+				.collect(ImmutableList.toImmutableList());
 
 		return setTargetOrderBOMLines(ppOrderBOMLines);
 	}

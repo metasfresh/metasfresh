@@ -55,8 +55,8 @@ public interface IHUPPOrderBL extends ISingletonService
 	 */
 	IHUQueryBuilder createHUsAvailableToIssueQuery(I_PP_Order_BOMLine ppOrderBomLine);
 
-	void processPlanning(String targetPlanningStatus, int ppOrderId);
+	void processPlanning(PPOrderPlanningStatus targetPlanningStatus, int ppOrderId);
 
-	boolean canChangePlanningStatus(String fromPlanningStatus, String toPlanningStatus);
+	boolean canChangePlanningStatus(PPOrderPlanningStatus fromPlanningStatus, PPOrderPlanningStatus toPlanningStatus);
 
 }
