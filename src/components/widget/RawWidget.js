@@ -158,8 +158,7 @@ class RawWidget extends Component {
               });
               // console.log("set requestInProgress=false for "+property);
             });
-          }
-          else {
+          } else {
             this.setState({
               requestInProgress: false,
             });
