@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.eevolution.model.I_PP_Order;
@@ -100,7 +101,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		targetOrderBOMLines.forEach(bomLine -> {
 			if (!PPOrderUtil.isIssue(bomLine.getComponentType()))
 			{
-				throw new IllegalArgumentException("Not an issue BOM line: " + bomLine);
+				throw new AdempiereException("Not an issue BOM line: " + bomLine);
 			}
 		});
 
