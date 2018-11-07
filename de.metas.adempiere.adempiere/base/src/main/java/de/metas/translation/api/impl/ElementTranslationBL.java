@@ -111,7 +111,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	}
 
 	@Override
-	public void updateFieldTranslationsFromAD_Name(AdElementId adElementId)
+	public void updateFieldTranslationsFromAD_Name(final AdElementId adElementId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
@@ -119,7 +119,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	}
 
 	@Override
-	public void updateTabTranslationsFromElement(AdElementId adElementId)
+	public void updateTabTranslationsFromElement(final AdElementId adElementId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
@@ -127,7 +127,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	}
 
 	@Override
-	public void updateElementTranslationsFromTab(AdElementId adElementId, AdTabId adTabId)
+	public void updateElementTranslationsFromTab(final AdElementId adElementId, final AdTabId adTabId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
@@ -135,16 +135,15 @@ public class ElementTranslationBL implements IElementTranslationBL
 	}
 
 	@Override
-	public void updateWindowTranslationsFromElement(AdElementId adElementId)
+	public void updateWindowTranslationsFromElement(final AdElementId adElementId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Window_Translation_From_AD_Element, adElementId), null);
-
 	}
 
 	@Override
-	public void updateElementTranslationsFromWindow(AdElementId adElementId, AdWindowId adWindowId)
+	public void updateElementTranslationsFromWindow(final AdElementId adElementId, final AdWindowId adWindowId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
@@ -152,7 +151,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	}
 
 	@Override
-	public void updateElementTranslationsFromMenu(AdElementId adElementId, AdMenuId adMenuId)
+	public void updateElementTranslationsFromMenu(final AdElementId adElementId, final AdMenuId adMenuId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
@@ -160,19 +159,19 @@ public class ElementTranslationBL implements IElementTranslationBL
 	}
 
 	@Override
-	public void updateMenuTranslationsFromElement(AdElementId adElementId)
+	public void updateMenuTranslationsFromElement(final AdElementId adElementId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Menu_Translation_From_AD_Element, adElementId), null);
 	}
 
-	private String addUpdateFunctionCallForApplicationDictionaryEntryTRL(final String functionCall, AdElementId adElementId)
+	private String addUpdateFunctionCallForApplicationDictionaryEntryTRL(final String functionCall, final AdElementId adElementId)
 	{
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + ") ";
 	}
 
-	private String addUpdateFunctionCallForElementTRL(final String functionCall, AdElementId adElementId, RepoIdAware applicationDictionaryEntryId)
+	private String addUpdateFunctionCallForElementTRL(final String functionCall, final AdElementId adElementId, final RepoIdAware applicationDictionaryEntryId)
 	{
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + ", " + applicationDictionaryEntryId.getRepoId() + ") ";
 	}
@@ -180,7 +179,6 @@ public class ElementTranslationBL implements IElementTranslationBL
 	@Override
 	public void updateElementFromElementTrl(final AdElementId adElementId, final String adLanguage)
 	{
-
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_AD_Element_On_AD_Element_TRL_Update, adElementId, adLanguage), null);
@@ -214,7 +212,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
 
-			Services.get(IElementTranslationBL.class).updateElementTranslationsFromTab(elementId, AdTabId.ofRepoId(tab.getAD_Tab_ID()));
+			Services.get(IElementTranslationBL.class).updateElementTranslationsFromTab(elementId, AdTabId.ofRepoId(tabId));
 
 			IElementTranslationBL.DYNATTR_AD_Tab_UpdateTranslations.setValue(tab, false);
 
@@ -231,7 +229,6 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 		for (final int windowId : windowIdsWithMissingADElements)
 		{
-
 			final I_AD_Window window = adWindowDAO.getWindowById(windowId);
 
 			final I_AD_Element element = newInstance(I_AD_Element.class);
@@ -243,7 +240,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
 
-			Services.get(IElementTranslationBL.class).updateElementTranslationsFromWindow(elementId, AdWindowId.ofRepoId(window.getAD_Window_ID()));
+			Services.get(IElementTranslationBL.class).updateElementTranslationsFromWindow(elementId, AdWindowId.ofRepoId(windowId));
 
 			IElementTranslationBL.DYNATTR_AD_Window_UpdateTranslations.setValue(window, false);
 
@@ -273,7 +270,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
 
-			Services.get(IElementTranslationBL.class).updateElementTranslationsFromMenu(elementId, AdMenuId.ofRepoIdOrNull(menu.getAD_Menu_ID()));
+			Services.get(IElementTranslationBL.class).updateElementTranslationsFromMenu(elementId, AdMenuId.ofRepoIdOrNull(menuId));
 
 			IElementTranslationBL.DYNATTR_AD_Menu_UpdateTranslations.setValue(menu, false);
 
@@ -392,9 +389,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 	private void updateADMenus(final ElementChangedEvent event)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE AD_Menu SET Name=").append(DB.TO_STRING(event.getName()))
+		final StringBuilder sql = new StringBuilder("UPDATE AD_Menu SET Name=").append(DB.TO_STRING(event.getName()))
 				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
 				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse).append(" = ").append(DB.TO_STRING(event.getWebuiNameBrowse()))
 				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNew).append(" = ").append(DB.TO_STRING(event.getWebuiNameNew()))
@@ -402,59 +397,55 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		log.debug("Menus updated #{}", no);
+		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		log.debug("Menus updated #{}", updateResultsCounter);
 	}
 
 	private void updateADWindows(final ElementChangedEvent event)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE AD_WINDOW SET Name=")
+		final StringBuilder sql = new StringBuilder("UPDATE AD_WINDOW SET Name=")
 				.append(DB.TO_STRING(event.getName()))
 				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
 				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
 				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		log.debug("Windows updated #{}", no);
+		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		log.debug("Windows updated #{}", updateResultsCounter);
 	}
 
 	private void updateADTabs(final ElementChangedEvent event)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE AD_Tab SET Name=")
+		final StringBuilder sql = new StringBuilder("UPDATE AD_Tab SET Name=")
 				.append(DB.TO_STRING(event.getName()))
 				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
 				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
 				.append(", ").append(I_AD_Element.COLUMNNAME_CommitWarning).append(" = ").append(DB.TO_STRING(event.getCommitWarning()))
 				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		log.debug("Tabs updated #{}", no);
+		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		log.debug("Tabs updated #{}", updateResultsCounter);
 	}
 
 	private void updateADPrintFormatItems(final ElementChangedEvent event)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE AD_PrintFormatItem pi SET PrintName=")
+		final StringBuilder sql = new StringBuilder("UPDATE AD_PrintFormatItem pi SET PrintName=")
 				.append(DB.TO_STRING(event.getPrintName()))
 				.append(", Name=").append(DB.TO_STRING(event.getName()))
 				.append(" WHERE IsCentrallyMaintained='Y'")
 				.append(" AND EXISTS (SELECT * FROM AD_Column c ")
-				.append("WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=")
+				.append(" WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=")
 				.append(event.getAdElementId().getRepoId()).append(")");
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		log.debug("PrintFormatItem updated #" + no);
+		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		log.debug("PrintFormatItem updated #" + updateResultsCounter);
 	}
 
 	private void updateADFields(final ElementChangedEvent event)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE AD_Field SET Name=")
+		final StringBuilder sql = new StringBuilder("UPDATE AD_Field SET Name=")
 				.append(DB.TO_STRING(event.getName()))
 				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
 				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
@@ -468,18 +459,19 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append("(")
 				.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(event.getAdElementId().getRepoId())
 				.append(")");
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		log.debug("Fields updated #" + no);
+		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		log.debug("Fields updated #" + updateResultsCounter);
 	}
 
 	private void updateADProcessParas(final ElementChangedEvent event)
 	{
-		StringBuilder sql;
-		int no = 0;
+		int updateResultsCounter = 0;
+
 		// Parameter
 		if (event.getColumnName() != null)
 		{
-			sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
+			final StringBuilder sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
 					.append(DB.TO_STRING(event.getColumnName()))
 					.append(", Name=").append(DB.TO_STRING(event.getName()))
 					.append(", Description=").append(DB.TO_STRING(event.getDescription()))
@@ -488,32 +480,32 @@ public class ElementTranslationBL implements IElementTranslationBL
 					.append(" WHERE UPPER(ColumnName)=")
 					.append(DB.TO_STRING(event.getColumnName().toUpperCase()))
 					.append(" AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL");
-			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
 
-		sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
+		final StringBuilder sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
 				.append(DB.TO_STRING(event.getColumnName()))
 				.append(", Name=").append(DB.TO_STRING(event.getName()))
 				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
 				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
 				.append(" WHERE AD_Element_ID=").append(event.getAdElementId().getRepoId())
 				.append(" AND IsCentrallyMaintained='Y'");
-		no += DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		log.debug("Parameters updated #" + no);
+		updateResultsCounter += DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		log.debug("Parameters updated #" + updateResultsCounter);
 	}
 
 	private void updateADColumns(final ElementChangedEvent event)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE AD_Column SET ColumnName=")
+		final StringBuilder sql =new StringBuilder("UPDATE AD_Column SET ColumnName=")
 				.append(DB.TO_STRING(event.getColumnName()))
 				.append(", Name=").append(DB.TO_STRING(event.getName()))
 				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
 				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
 				.append(" WHERE AD_Element_ID=").append(event.getAdElementId().getRepoId());
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		log.debug("afterSave - Columns updated #" + no);
+		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		log.debug("afterSave - Columns updated #" + updateResultsCounter);
 	}
 
 	@Override
@@ -530,7 +522,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	@Override
 	public void createElementLinkForWindow(final AdWindowId adWindowId)
 	{
-		if(adWindowId == null)
+		if (adWindowId == null)
 		{
 			// not yet saved
 			return;
@@ -541,6 +533,5 @@ public class ElementTranslationBL implements IElementTranslationBL
 		elementLink.setAD_Element_ID(window.getAD_Element_ID());
 		elementLink.setAD_Window_ID(window.getAD_Window_ID());
 		save(elementLink);
-
 	}
 }

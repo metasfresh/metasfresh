@@ -76,7 +76,6 @@ public class AD_Menu
 		menu.setWEBUI_NameBrowse(menuElement.getWEBUI_NameBrowse());
 		menu.setWEBUI_NameNew(menuElement.getWEBUI_NameNew());
 		menu.setWEBUI_NameNewBreadcrumb(menuElement.getWEBUI_NameNewBreadcrumb());
-
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Menu.COLUMNNAME_AD_Element_ID)

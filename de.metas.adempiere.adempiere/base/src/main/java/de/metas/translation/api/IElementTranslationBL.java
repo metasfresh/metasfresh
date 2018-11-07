@@ -71,7 +71,7 @@ public interface IElementTranslationBL extends ISingletonService
 
 	void updateTabTranslationsFromElement(AdElementId adElementId);
 
-	void updateMenuTranslationsFromElement( AdElementId adElementId);
+	void updateMenuTranslationsFromElement(AdElementId adElementId);
 
 	void updateElementTranslationsFromMenu(AdElementId adElementId, AdMenuId adMenuId);
 

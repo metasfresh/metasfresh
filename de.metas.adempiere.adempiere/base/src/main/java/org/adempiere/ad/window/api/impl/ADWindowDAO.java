@@ -914,12 +914,14 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public I_AD_Window getWindowById(final int windowId)
 	{
+		// use the load with ITrx.TRXNAME_ThreadInherited because the window may not yet be saved in DB when it's needed
 		return load(windowId, I_AD_Window.class);
 	}
 
 	@Override
 	public I_AD_Tab getTabById(final int tabId)
 	{
+		// use the load with ITrx.TRXNAME_ThreadInherited because the tab may not yet be saved in DB when it's needed
 		return load(tabId, I_AD_Tab.class);
 	}
 }
