@@ -131,7 +131,7 @@ class RawWidget extends Component {
   handlePatch = (property, value, id, valueTo, isForce) => {
     const { handlePatch } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
-    // console.log('handlePatch for '+property+': willPatch='+willPatch);
+    // console.log('handlePatch for '+property+': value='+value+', willPatch='+willPatch);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
@@ -140,7 +140,7 @@ class RawWidget extends Component {
       handlePatch &&
       !this.state.requestInProgress
     ) {
-      // console.log("Setting cacheValue="+value+" for "+property);
+      // console.log("handlePatch for "+property+": Setting cacheValue="+value+", requestInProgress=true");
       return this.setState(
         {
           cachedValue: value,
@@ -149,13 +149,20 @@ class RawWidget extends Component {
         },
         () => {
           const patchReturn = handlePatch(property, value, id, valueTo);
+          // console.log("patchReturn="+patchReturn);
 
           if (patchReturn && patchReturn.then) {
             return patchReturn.then(() => {
               this.setState({
                 requestInProgress: false,
               });
+              // console.log("set requestInProgress=false for "+property);
             });
+          } else {
+            this.setState({
+              requestInProgress: false,
+            });
+            // console.log("DIRECT set requestInProgress=false for "+property);
           }
 
           return patchReturn;
