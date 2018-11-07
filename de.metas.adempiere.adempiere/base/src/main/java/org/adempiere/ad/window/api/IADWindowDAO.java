@@ -84,10 +84,14 @@ public interface IADWindowDAO extends ISingletonService
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 
-	List<I_AD_Tab> retrieveTabsWithMissingElements();
+	List<Integer> retrieveTabIdsWithMissingADElements();
 
-	List<I_AD_Window> retrieveWindowsWithMissingElements();
+	List<Integer> retrieveWindowIdsWithMissingADElements();
 
-	List<I_AD_Window> retrieveWindowsWithMissingADElementLink();
+	List<Integer> retrieveWindowIdsWithMissingADElementLink();
+
+	I_AD_Window getWindowById(int windowId);
+
+	I_AD_Tab getTabById(int tabId);
 
 }

@@ -6,6 +6,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -50,7 +51,7 @@ public class AD_Window
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	@CalloutMethod(columnNames = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Window window) throws SQLException
 	{
@@ -73,7 +74,7 @@ public class AD_Window
 		window.setDescription(windowElement.getDescription());
 		window.setHelp(windowElement.getHelp());
 
-		Services.get(IElementTranslationBL.class).createElementLinkForWindow(window);
+		Services.get(IElementTranslationBL.class).createElementLinkForWindow(AdWindowId.ofRepoIdOrNull(window.getAD_Window_ID()));
 
 	}
 

@@ -879,25 +879,25 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public List<I_AD_Tab> retrieveTabsWithMissingElements()
+	public List<Integer> retrieveTabIdsWithMissingADElements()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
 				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Element_ID, null)
 				.create()
-				.list(I_AD_Tab.class);
+				.listIds();
 	}
 
 	@Override
-	public List<I_AD_Window> retrieveWindowsWithMissingElements()
+	public List<Integer> retrieveWindowIdsWithMissingADElements()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Window.class)
 				.addEqualsFilter(I_AD_Window.COLUMN_AD_Element_ID, null)
 				.create()
-				.list(I_AD_Window.class);
+				.listIds();
 	}
 
 	@Override
-	public List<I_AD_Window> retrieveWindowsWithMissingADElementLink()
+	public List<Integer> retrieveWindowIdsWithMissingADElementLink()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -907,6 +907,19 @@ public class ADWindowDAO implements IADWindowDAO
 		return queryBL.createQueryBuilder(I_AD_Window.class)
 				.addNotNull(I_AD_Window.COLUMNNAME_AD_Element_ID)
 				.addNotInSubQueryFilter(I_AD_Window.COLUMN_AD_Window_ID, I_AD_Element_Link.COLUMN_AD_Window_ID, existingADElementLinks)
-				.create().list();
+				.create()
+				.listIds();
+	}
+
+	@Override
+	public I_AD_Window getWindowById(final int windowId)
+	{
+		return load(windowId, I_AD_Window.class);
+	}
+
+	@Override
+	public I_AD_Tab getTabById(final int tabId)
+	{
+		return load(tabId, I_AD_Tab.class);
 	}
 }

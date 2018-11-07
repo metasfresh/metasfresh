@@ -84,7 +84,7 @@ public class AD_Menu
 	{
 
 		final AdElementId menuElementId = AdElementId.ofRepoIdOrNull(menu.getAD_Element_ID());
-		if (menuElementId != null)
+		if (menuElementId == null)
 		{
 			// nothing to do. It was not yet set
 			return;

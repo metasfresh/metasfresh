@@ -30,5 +30,7 @@ import de.metas.util.ISingletonService;
 
 public interface IADMenuDAO extends ISingletonService
 {
-	List<I_AD_Menu> retrieveMenusWithMissingElements();
+	List<Integer> retrieveMenuIdsWithMissingADElements();
+
+	I_AD_Menu getById(int menuId);
 }
