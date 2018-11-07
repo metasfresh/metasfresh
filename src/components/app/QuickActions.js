@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Queue from 'simple-promise-queue';
 
 import { quickActionsRequest } from '../../api';
 import { openModal } from '../../actions/WindowActions';
@@ -48,10 +47,6 @@ export class QuickActions extends Component {
     this.state = initialState;
 
     this.fetchActions = this.fetchActions.bind(this);
-
-    this.queue = new Queue({
-      autoStart: true,
-    });
   }
 
   componentDidMount = () => {
@@ -67,17 +62,7 @@ export class QuickActions extends Component {
     } = this.props;
 
     if (fetchOnInit) {
-      this.queue.pushTask((res, rej) => {
-        this.fetchActions(
-          windowType,
-          viewId,
-          selected,
-          childView,
-          parentView,
-          res,
-          rej
-        );
-      });
+      this.fetchActions(windowType, viewId, selected, childView, parentView);
     }
   };
 
@@ -94,17 +79,13 @@ export class QuickActions extends Component {
       (nextProps.viewId && nextProps.viewId !== viewId) ||
       (nextProps.windowType && nextProps.windowType !== windowType)
     ) {
-      this.queue.pushTask((res, rej) => {
-        this.fetchActions(
-          nextProps.windowType,
-          nextProps.viewId,
-          nextProps.selected,
-          nextProps.childView,
-          nextProps.parentView,
-          res,
-          rej
-        );
-      });
+      this.fetchActions(
+        nextProps.windowType,
+        nextProps.viewId,
+        nextProps.selected,
+        nextProps.childView,
+        nextProps.parentView
+      );
     }
   };
 
@@ -133,17 +114,13 @@ export class QuickActions extends Component {
   updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
     const { windowType, viewId, selected, childView, parentView } = this.props;
 
-    this.queue.pushTask((res, rej) => {
-      this.fetchActions(
-        windowType,
-        viewId,
-        selected,
-        { ...childView, viewSelectedIds: childSelection },
-        parentView,
-        res,
-        rej
-      );
-    });
+    this.fetchActions(
+      windowType,
+      viewId,
+      selected,
+      { ...childView, viewSelectedIds: childSelection },
+      parentView
+    );
   };
 
   handleClickOutside = () => {
@@ -183,17 +160,9 @@ export class QuickActions extends Component {
     this.toggleDropdown();
   };
 
-  async fetchActions(
-    windowType,
-    viewId,
-    selected,
-    childView,
-    parentView,
-    resolve,
-    reject
-  ) {
+  async fetchActions(windowType, viewId, selected, childView, parentView) {
     if (!this.mounted) {
-      resolve();
+      return Promise.resolve();
     }
 
     if (windowType && viewId && childView && parentView) {
@@ -210,7 +179,7 @@ export class QuickActions extends Component {
               actions: response.data.actions,
               loading: false,
             },
-            () => resolve()
+            () => Promise.resolve()
           );
         })
         .catch(() => {
@@ -218,7 +187,7 @@ export class QuickActions extends Component {
             {
               loading: false,
             },
-            () => reject()
+            () => Promise.reject()
           );
         });
     } else {
@@ -226,7 +195,7 @@ export class QuickActions extends Component {
         {
           loading: false,
         },
-        () => resolve()
+        () => Promise.resolve()
       );
     }
   }
