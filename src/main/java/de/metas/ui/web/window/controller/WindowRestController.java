@@ -55,6 +55,8 @@ import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
@@ -566,6 +568,9 @@ public class WindowRestController
 
 	private static DocumentZoomIntoInfo getDocumentFieldZoomInto(@NonNull final Document document, @NonNull final String fieldName)
 	{
+		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+		final DocumentFieldDescriptor singleKeyFieldDescriptor = entityDescriptor.getSingleIdFieldOrNull();
+		
 		final IDocumentFieldView field = document.getFieldView(fieldName);
 
 		// Generic ZoomInto button
@@ -596,11 +601,11 @@ public class WindowRestController
 			return DocumentZoomIntoInfo.of(tableName, recordId);
 		}
 		// Key Field
-		else if (field.isKey())
+		else if (singleKeyFieldDescriptor != null && singleKeyFieldDescriptor.getFieldName().equals(fieldName))
 		{
 			// Allow zooming into key column. It shall open precisely this record in a new window.
 			// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
-			final String tableName = document.getEntityDescriptor().getTableName();
+			final String tableName = entityDescriptor.getTableName();
 			final int recordId = document.getDocumentIdAsInt();
 			return DocumentZoomIntoInfo.of(tableName, recordId);
 		}
