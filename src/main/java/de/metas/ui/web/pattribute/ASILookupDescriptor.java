@@ -8,9 +8,10 @@ import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.NamePair;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache.CCacheStats;
@@ -23,8 +24,9 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -48,6 +50,7 @@ import de.metas.util.Services;
  * #L%
  */
 
+@ToString
 public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
 	public static final ASILookupDescriptor of(final I_M_Attribute attribute)
@@ -60,21 +63,16 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	private static final String CONTEXT_LookupTableName = I_M_AttributeValue.Table_Name;
 
 	private final IAttributeValuesProvider attributeValuesProvider;
+	private final ImmutableSet<CtxName> dependsOnContextVariables;
 
-	private ASILookupDescriptor(final IAttributeValuesProvider attributeValuesProvider)
+	private ASILookupDescriptor(@NonNull final IAttributeValuesProvider attributeValuesProvider)
 	{
-		super();
-
-		Check.assumeNotNull(attributeValuesProvider, "Parameter attributeValuesProvider is not null");
 		this.attributeValuesProvider = attributeValuesProvider;
-	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(attributeValuesProvider)
-				.toString();
+		this.dependsOnContextVariables = attributeValuesProvider.getDependsOnContextVariables()
+				.stream()
+				.map(CtxNames::parse)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -130,7 +128,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	{
 		return true;
 	}
-	
+
 	@Override
 	public void cacheInvalidate()
 	{
@@ -156,7 +154,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	@Override
 	public LookupDataSourceContext.Builder newContextForFetchingById(final Object id)
 	{
-		return LookupDataSourceContext.builder(CONTEXT_LookupTableName).putFilterById(id);
+		return prepareNewContext().putFilterById(id);
 	}
 
 	@Override
@@ -170,8 +168,14 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	@Override
 	public LookupDataSourceContext.Builder newContextForFetchingList()
 	{
-		return LookupDataSourceContext.builder(CONTEXT_LookupTableName)
+		return prepareNewContext()
+				.requiresParameters(dependsOnContextVariables)
 				.requiresFilterAndLimit();
+	}
+
+	private LookupDataSourceContext.Builder prepareNewContext()
+	{
+		return LookupDataSourceContext.builder(CONTEXT_LookupTableName);
 	}
 
 	@Override

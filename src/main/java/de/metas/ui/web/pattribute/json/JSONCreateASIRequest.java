@@ -27,17 +27,17 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility=Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONCreateASIRequest implements Serializable
 {
 	@JsonProperty("templateId")
@@ -72,12 +72,12 @@ public final class JSONCreateASIRequest implements Serializable
 
 	public AttributeSetInstanceId getTemplateId()
 	{
-		return AttributeSetInstanceId.ofRepoIdOrNull(templateId);
+		return AttributeSetInstanceId.ofRepoIdOrNone(templateId);
 	}
 
-	public DocumentPath getDocumentPath()
+	public DocumentPath getContextDocumentPath()
 	{
-		if(source == null)
+		if (source == null)
 		{
 			throw new IllegalStateException("source is not set for " + this);
 		}

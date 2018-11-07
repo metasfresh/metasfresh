@@ -18,6 +18,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
@@ -25,11 +26,13 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.ui.web.window.model.IDocumentFieldView;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -64,14 +67,13 @@ public class ASIDocument
 	private final ReentrantReadWriteLock _lock;
 	private boolean completed;
 
-
 	/* package */ ASIDocument(final ASIDescriptor descriptor, final Document data)
 	{
 		Check.assumeNotNull(descriptor, "Parameter descriptor is not null");
 		Check.assumeNotNull(data, "Parameter data is not null");
 		this.descriptor = descriptor;
 		this.data = data;
-		
+
 		_lock = new ReentrantReadWriteLock();
 		completed = false;
 	}
@@ -81,7 +83,7 @@ public class ASIDocument
 	{
 		descriptor = asiDocument.descriptor;
 		data = asiDocument.data.copy(copyMode, changesCollector);
-		
+
 		_lock = asiDocument._lock; // always share
 		completed = asiDocument.completed;
 	}
@@ -94,15 +96,15 @@ public class ASIDocument
 				.add("completed", completed)
 				.toString();
 	}
-	
+
 	private final void assertNotCompleted()
 	{
-		if(completed)
+		if (completed)
 		{
 			throw new IllegalStateException("ASI document was completed");
 		}
 	}
-	
+
 	IAutoCloseable lockForReading()
 	{
 		// assume _lock is not null
@@ -131,10 +133,27 @@ public class ASIDocument
 		};
 	}
 
-
 	public ASIDocument copy(final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		return new ASIDocument(this, copyMode, changesCollector);
+	}
+
+	public ASIDocument bindContextDocumentIfPossible(@NonNull final DocumentCollection documentsCollection)
+	{
+		final DocumentPath contextDocumentPath = descriptor.getContextDocumentPath();
+		if (contextDocumentPath == null)
+		{
+			return this;
+		}
+		if (!documentsCollection.isWindowIdSupported(contextDocumentPath.getWindowIdOrNull()))
+		{
+			return this;
+		}
+
+		final Document contextDocument = documentsCollection.getDocumentReadonly(contextDocumentPath);
+		data.setShadowParentDocumentEvaluatee(contextDocument.asEvaluatee());
+
+		return this;
 	}
 
 	public ASILayout getLayout()
@@ -177,22 +196,22 @@ public class ASIDocument
 	{
 		return data.getFieldLookupValues(attributeName);
 	}
-	
+
 	public boolean isCompleted()
 	{
 		return completed;
 	}
-	
+
 	IntegerLookupValue complete()
 	{
 		assertNotCompleted();
-		
+
 		final I_M_AttributeSetInstance asiRecord = createM_AttributeSetInstance(this);
 		final IntegerLookupValue lookupValue = IntegerLookupValue.of(asiRecord.getM_AttributeSetInstance_ID(), asiRecord.getDescription());
 		completed = true;
 		return lookupValue;
 	}
-	
+
 	private static final I_M_AttributeSetInstance createM_AttributeSetInstance(final ASIDocument asiDoc)
 	{
 		//

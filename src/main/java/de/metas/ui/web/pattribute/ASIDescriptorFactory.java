@@ -10,13 +10,12 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.util.ASIEditingInfo;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.MAttribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
@@ -67,7 +66,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 public class ASIDescriptorFactory
 {
 	private final CCache<ArrayKey, ASIDescriptor> asiDescriptorById = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
-	private final CCache<Integer, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#LookupDescriptors", 200, 0);
+	private final CCache<AttributeId, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#LookupDescriptors", 200, 0);
 
 	private static final ASIDataBindingDescriptorBuilder _asiBindingsBuilder = new ASIDataBindingDescriptorBuilder();
 
@@ -81,29 +80,31 @@ public class ASIDescriptorFactory
 		return _asiBindingsBuilder;
 	}
 
-	public ASIDescriptor getASIDescriptor(final ASIEditingInfo info)
+	public ASIDescriptor getASIDescriptor(final WebuiASIEditingInfo request)
 	{
-		final ArrayKey key = createASIDescriptorCachingKey(info);
-		return asiDescriptorById.getOrLoad(key, () -> createASIDescriptor(info));
+		final ArrayKey key = createASIDescriptorCachingKey(request);
+		return asiDescriptorById.getOrLoad(key, () -> createASIDescriptor(request));
 	}
 
-	private static final ArrayKey createASIDescriptorCachingKey(final ASIEditingInfo info)
+	private static final ArrayKey createASIDescriptorCachingKey(final WebuiASIEditingInfo request)
 	{
 		return ArrayKey.builder()
-				.append(info.getWindowType())
-				.append(info.getAttributeSetId())
-				.append(info.getAvailableAttributeIds())
+				.append(request.getContextWindowType())
+				.append(request.getContextDocumentPath())
+				.append(request.getAttributeSetId())
+				.append(request.getAttributeIds())
 				.build();
 	}
 
-	private ASIDescriptor createASIDescriptor(final ASIEditingInfo info)
+	private ASIDescriptor createASIDescriptor(final WebuiASIEditingInfo info)
 	{
-		final DocumentId asiDescriptorId = DocumentId.ofString(info.getWindowType() + "_" + info.getAttributeSetId().getRepoId());
-		final DocumentEntityDescriptor entityDescriptor = createDocumentEntityDescriptor( //
-				asiDescriptorId //
-				, info.getM_AttributeSet_Name() // name
-				, info.getM_AttributeSet_Description() // description
-				, info.getAvailableAttributes() // attributes
+		final DocumentId asiDescriptorId = DocumentId.ofString(info.getContextWindowType() + "_" + info.getAttributeSetId().getRepoId());
+
+		final DocumentEntityDescriptor entityDescriptor = createDocumentEntityDescriptor(
+				asiDescriptorId,
+				info.getAttributeSetName(), // name
+				info.getAttributeSetDescription(), // description
+				info.getAttributes() // attributes
 		);
 
 		final ASILayout layout = createLayout(asiDescriptorId, entityDescriptor);
@@ -112,15 +113,15 @@ public class ASIDescriptorFactory
 				.attributeSetId(info.getAttributeSetId())
 				.entityDescriptor(entityDescriptor)
 				.layout(layout)
+				.contextDocumentPath(info.getContextDocumentPath())
 				.build();
 	}
 
-	private final DocumentEntityDescriptor createDocumentEntityDescriptor( //
-			DocumentId asiDescriptorId //
-			, final String name //
-			, final String description //
-			, final List<MAttribute> attributes //
-	)
+	private final DocumentEntityDescriptor createDocumentEntityDescriptor(
+			final DocumentId asiDescriptorId,
+			final String name,
+			final String description,
+			final List<I_M_Attribute> attributes)
 	{
 		if (attributes.isEmpty())
 		{
@@ -223,7 +224,8 @@ public class ASIDescriptorFactory
 
 	private LookupDescriptor getLookupDescriptor(final I_M_Attribute attribute)
 	{
-		return asiLookupDescriptorsByAttributeId.getOrLoad(attribute.getM_Attribute_ID(), () -> ASILookupDescriptor.of(attribute));
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		return asiLookupDescriptorsByAttributeId.getOrLoad(attributeId, () -> ASILookupDescriptor.of(attribute));
 	}
 
 	private static ASILayout createLayout(final DocumentId asiDescriptorId, final DocumentEntityDescriptor entityDescriptor)
