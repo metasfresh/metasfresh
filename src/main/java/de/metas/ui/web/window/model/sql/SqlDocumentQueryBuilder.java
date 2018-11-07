@@ -34,6 +34,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor.ParentAndChildLinkColumnNames;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.model.Document;
@@ -181,13 +182,12 @@ public class SqlDocumentQueryBuilder
 	 */
 	public String getSqlSelectParentId(final List<Object> outSqlParams, final DocumentEntityDescriptor parentEntityDescriptor)
 	{
-		final String linkColumnName = entityBinding.getLinkColumnName();
-		final String parentLinkColumnName = entityBinding.getParentLinkColumnName();
-		if (parentLinkColumnName == null || linkColumnName == null)
+		final ParentAndChildLinkColumnNames parentLink = entityBinding.getParentLink();
+		// final String linkColumnName = entityBinding.getLinkColumnName();
+		// final String parentLinkColumnName = entityBinding.getParentLinkColumnName();
+		if (parentLink == null)
 		{
 			throw new AdempiereException("Selecting parent ID is not possible because this entity does not have a parent link")
-					.setParameter("linkColumnName", linkColumnName)
-					.setParameter("parentLinkColumnName", parentLinkColumnName)
 					.setParameter("entityBinding", entityBinding);
 		}
 
@@ -201,7 +201,7 @@ public class SqlDocumentQueryBuilder
 			final List<Object> sqlWhereParams = sqlWhereAndParams.getRight();
 
 			sqlSelectLinkColumnName
-					.append("SELECT " + linkColumnName)
+					.append("SELECT " + parentLink.getChildColumnName())
 					.append(" FROM " + entityBinding.getTableName() + " " + entityBinding.getTableAlias()) // NOTE: we need table alias because the where clause is using it
 					.append("\n WHERE ").append(sqlWhere);
 			sqlSelectLinkColumnNameParams.addAll(sqlWhereParams);
@@ -210,7 +210,7 @@ public class SqlDocumentQueryBuilder
 		//
 		//
 		final String parentKeyColumnName = extractSingleKeyColumnName(parentEntityDescriptor);
-		if (Objects.equals(parentKeyColumnName, parentLinkColumnName))
+		if (Objects.equals(parentKeyColumnName, parentLink.getParentColumnName()))
 		{
 			final Evaluatee evalCtx = getEvaluationContext();
 
@@ -224,7 +224,7 @@ public class SqlDocumentQueryBuilder
 
 			final String sql = IStringExpression.composer()
 					.append("SELECT " + parentKeyColumnName + " FROM " + parentEntityDescriptor.getTableName())
-					.append("\n WHERE " + parentLinkColumnName + " IN (").append(sqlSelectLinkColumnName).append(")")
+					.append("\n WHERE " + parentLink.getParentColumnName() + " IN (").append(sqlSelectLinkColumnName).append(")")
 					.build()
 					.evaluate(evalCtx, OnVariableNotFound.Fail);
 			outSqlParams.addAll(sqlSelectLinkColumnNameParams);
@@ -420,10 +420,12 @@ public class SqlDocumentQueryBuilder
 		final Document parentDocument = getParentDocument();
 		if (parentDocument != null)
 		{
-			final String parentLinkColumnName = entityBinding.getParentLinkColumnName();
-			final String linkColumnName = entityBinding.getLinkColumnName();
-			if (parentLinkColumnName != null && linkColumnName != null)
+			final ParentAndChildLinkColumnNames parentLink = entityBinding.getParentLink();
+			if (parentLink != null)
 			{
+				final String parentLinkColumnName = parentLink.getParentColumnName();
+				final String linkColumnName = parentLink.getChildColumnName();
+
 				final IDocumentFieldView parentLinkField = parentDocument.getFieldView(parentLinkColumnName);
 				final Object parentLinkValue = parentLinkField.getValue();
 				final DocumentFieldWidgetType parentLinkWidgetType = parentLinkField.getWidgetType();

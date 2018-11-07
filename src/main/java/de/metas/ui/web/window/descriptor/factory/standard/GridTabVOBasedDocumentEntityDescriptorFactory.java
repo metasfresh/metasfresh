@@ -14,8 +14,6 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.Adempiere;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
@@ -53,6 +51,7 @@ import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor.ParentAndChildLinkColumnNames;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
@@ -193,7 +192,7 @@ import lombok.NonNull;
 				.setDocumentsRepository(documentsRepository)
 				.setTableName(tableName)
 				.setTableAliasFromDetailId(detailId)
-				.setChildToParentLinkColumnNames(extractChildParentLinkColumnNames(gridTabVO, parentTabVO))
+				.setParentLink(extractChildAndParentLinkColumnNames(gridTabVO, parentTabVO))
 				.setSqlWhereClause(gridTabVO.getWhereClause());
 
 		final ILogicExpression allowInsert = ConstantLogicExpression.of(gridTabVO.isInsertRecord());
@@ -293,7 +292,7 @@ import lombok.NonNull;
 	private final void createAndAddDocumentField(
 			final DocumentEntityDescriptor.Builder entityDescriptorBuilder,
 			final GridFieldVO gridFieldVO,
-			final boolean keyColumn)
+			final boolean keyColumnX)
 	{
 		// From entry data-binding:
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptorBuilder.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
@@ -423,6 +422,7 @@ import lombok.NonNull;
 				.setDefaultOrderBy(orderBySortNo)
 				.build();
 
+		final ParentAndChildLinkColumnNames parentLink = isParentLinkColumn ? entityBindings.getParentLink() : null;
 		final String parentLinkFieldName = isParentLinkColumn ? entityBindings.getSqlParentLinkColumnName() : null;
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(sqlColumnName)
 				.setCaption(gridFieldVO.getHeaderTrls(), gridFieldVO.getHeader())
@@ -481,10 +481,14 @@ import lombok.NonNull;
 		// }
 
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptorBuilder.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
-		final String parentLinkColumnName = entityBindings.getSqlParentLinkColumnName();
+		final ParentAndChildLinkColumnNames parentLink = entityBindings.getParentLink();
+		if(parentLink == null)
+		{
+			return false;
+		}
 
 		// if there is a parent link column, only the respective gridFieldVO is a key
-		return Objects.equals(gridFieldVO.getColumnName(), parentLinkColumnName);
+		return Objects.equals(gridFieldVO.getColumnName(), parentLink.getParentColumnName());
 	}
 
 	private LookupDescriptorProvider wrapFullTextSeachFilterDescriptorProvider(@NonNull final LookupDescriptorProvider databaseLookupDescriptorProvider)
@@ -785,9 +789,11 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * @return a pair of "child link column name" - "parent link column name"
+	 * @return a pair of "child link column name" (left) and "parent link column name" (right); might be null
 	 */
-	private static final IPair<String, String> extractChildParentLinkColumnNames(final GridTabVO childTabVO, final GridTabVO parentTabVO)
+	private static final ParentAndChildLinkColumnNames extractChildAndParentLinkColumnNames(
+			@NonNull final GridTabVO childTabVO,
+			@Nullable final GridTabVO parentTabVO)
 	{
 		// If this is the master tab then there is no parent link
 		if (parentTabVO == null)
@@ -818,13 +824,17 @@ import lombok.NonNull;
 		}
 		else if (childLinkColumnNames.size() == 1)
 		{
-			final String childLinkColumnName = childLinkColumnNames.iterator().next();
-			return ImmutablePair.of(childLinkColumnName, parentLinkColumnName);
+			return ParentAndChildLinkColumnNames.builder()
+					.parentColumnName(parentLinkColumnName)
+					.childColumnName(childLinkColumnNames.iterator().next())
+					.build();
 		}
 		else if (childLinkColumnNames.contains(parentLinkColumnName))
 		{
-			final String childLinkColumnName = parentLinkColumnName;
-			return ImmutablePair.of(childLinkColumnName, parentLinkColumnName);
+			return ParentAndChildLinkColumnNames.builder()
+					.parentColumnName(parentLinkColumnName)
+					.childColumnName(parentLinkColumnName)
+					.build();
 		}
 		else
 		{
