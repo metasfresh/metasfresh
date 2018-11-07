@@ -15,39 +15,11 @@
  *****************************************************************************/
 package org.eevolution.model;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.mm.attributes.AttributeSetId;
-import org.compiere.model.MAttribute;
-import org.compiere.model.MAttributeInstance;
-import org.compiere.model.MAttributeSet;
-import org.compiere.model.MAttributeSetInstance;
 import org.compiere.util.DB;
 
 /**
@@ -134,37 +106,37 @@ public class MQMSpecification extends  X_QM_Specification
 	
 	public boolean isValid(int M_AttributeSetInstance_ID)
 	{
-		//MAttributeSet mas = MAttributeSet.get(getCtx(), getM_AttributeSet_ID());
-		
-//		Save Instance Attributes
-		  
-		MAttributeSetInstance asi = new MAttributeSetInstance(getCtx(),M_AttributeSetInstance_ID, get_TrxName());
-		MAttributeSet 		  as = MAttributeSet.get(AttributeSetId.ofRepoId(asi.getM_AttributeSet_ID()));
-		MAttribute[] attributes = as.getMAttributes(false);
-		for (int i = 0; i < attributes.length; i++)
-		{
-		
-			//MAttribute attribute = new MAttribute(getCtx(),0,null);
-			MAttributeInstance instance = attributes[i].getMAttributeInstance (M_AttributeSetInstance_ID);			
-			MQMSpecificationLine[] lines = getLines(" M_Attribute_ID="+attributes[i].getM_Attribute_ID());
-			for (int s = 0; s < lines.length; i++)
-			{
-				MQMSpecificationLine line = lines[s];
-				if (MAttribute.ATTRIBUTEVALUETYPE_Number.equals(attributes[i].getAttributeValueType()))
-				{
-				BigDecimal objValue = instance.getValueNumber();
-				if(!line.evaluate(objValue,instance.getValue()));
-				return false;
-				}
-				else
-				{
-				String	objValue = instance.getValue();
-				if(!line.evaluate(objValue,instance.getValue()))
-					return false;	
-				}
-				//if(line.evaluate(mas.getValueNumber())
-			}			
-		}	//	for all attributes			
+		// TODO: check/implement when it will be needed
+//		//MAttributeSet mas = MAttributeSet.get(getCtx(), getM_AttributeSet_ID());
+//		
+////		Save Instance Attributes
+//		  
+//		MAttributeSetInstance asi = new MAttributeSetInstance(getCtx(),M_AttributeSetInstance_ID, get_TrxName());
+//		MAttributeSet 		  as = MAttributeSet.get(AttributeSetId.ofRepoId(asi.getM_AttributeSet_ID()));
+//		for (final I_M_Attribute attribute : as.getMAttributes(false))
+//		{
+//		
+//			//MAttribute attribute = new MAttribute(getCtx(),0,null);
+//			MAttributeInstance instance = attribute.getMAttributeInstance(M_AttributeSetInstance_ID);			
+//			MQMSpecificationLine[] lines = getLines(" M_Attribute_ID="+attribute.getM_Attribute_ID());
+//			for (int s = 0; s < lines.length; i++)
+//			{
+//				MQMSpecificationLine line = lines[s];
+//				if (MAttribute.ATTRIBUTEVALUETYPE_Number.equals(attribute.getAttributeValueType()))
+//				{
+//				BigDecimal objValue = instance.getValueNumber();
+//				if(!line.evaluate(objValue,instance.getValue()));
+//				return false;
+//				}
+//				else
+//				{
+//				String	objValue = instance.getValue();
+//				if(!line.evaluate(objValue,instance.getValue()))
+//					return false;	
+//				}
+//				//if(line.evaluate(mas.getValueNumber())
+//			}			
+//		}	//	for all attributes			
 		return true;
 	}
 	
