@@ -116,6 +116,13 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		final List<I_PP_Order_Qty> candidates = new CreateDraftIssues(targetOrderBOMLines, movementDate)
 				.createDraftIssues(hus);
 
+		if (orderPlanningStatus == PPOrderPlanningStatus.COMPLETE)
+		{
+			HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+					.setCandidatesToProcess(candidates)
+					.process();
+		}
+
 		return candidates;
 	}
 
