@@ -78,6 +78,7 @@ class RawWidget extends Component {
     dispatch(disableShortcut());
 
     setTimeout(() => {
+      // console.log("set cachedValue="+el.value+" on timeout");
       this.setState({
         isEdited: true,
         cachedValue: el.value,
@@ -96,15 +97,18 @@ class RawWidget extends Component {
       enableOnClickOutside,
     } = this.props;
 
+    // console.log('handleBlur for '+widgetField+': Reseting cached value.'
+    //   +'\n Status is: '+JSON.stringify(this.props.widgetData)
+    // );
     this.setState(
       {
         isEdited: false,
-        cachedValue: undefined,
+        cachedValue_DELETEME: undefined,
       },
       () => {
         enableOnClickOutside && enableOnClickOutside();
         dispatch(allowShortcut());
-        handleBlur && handleBlur(this.willPatch(value));
+        handleBlur && handleBlur(this.willPatch(widgetField, value));
 
         listenOnKeysTrue && listenOnKeysTrue();
 
@@ -127,6 +131,7 @@ class RawWidget extends Component {
   handlePatch = (property, value, id, valueTo, isForce) => {
     const { handlePatch } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
+    // console.log('handlePatch for '+property+': willPatch='+willPatch);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
@@ -135,6 +140,7 @@ class RawWidget extends Component {
       handlePatch &&
       !this.state.requestInProgress
     ) {
+      // console.log("Setting cacheValue="+value+" for "+property);
       return this.setState(
         {
           cachedValue: value,
@@ -195,13 +201,22 @@ class RawWidget extends Component {
       fieldData = widgetData[0];
     }
 
-    return (
+    let allowPatching = (
       (isValue &&
         (JSON.stringify(fieldData.value) !== JSON.stringify(value) ||
           JSON.stringify(fieldData.valueTo) !== JSON.stringify(valueTo))) ||
       (cachedValue !== undefined &&
         JSON.stringify(cachedValue) !== JSON.stringify(value))
     );
+
+    // console.log("willPatch "+property+" => "+allowPatching
+    //   +"\n value="+value+ ", valueTo="+valueTo
+    //   +"\n isValue="+isValue
+    //   +"\n fieldData="+JSON.stringify(fieldData)
+    //   +"\n cachedValue="+cachedValue
+    // );
+
+    return allowPatching;
   };
 
   clearFieldWarning = warning => {
