@@ -1,6 +1,7 @@
 package de.metas.materialtracking.attributes;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
@@ -13,6 +14,7 @@ import org.compiere.util.NamePair;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
@@ -49,24 +51,29 @@ import lombok.Value;
 
 public class MaterialTrackingAttributeValuesProvider implements IAttributeValuesProvider
 {
+	private static final String CACHE_MAIN_TABLE_NAME = I_M_Material_Tracking.Table_Name;
 
-	private static final String CACHE_PREFIX = I_M_Material_Tracking.Table_Name;
+	private static final String PARAM_M_Product_ID = I_M_Material_Tracking.COLUMNNAME_M_Product_ID;
+	private static final String PARAM_C_BPartner_ID = I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID;
+	private static final ImmutableSet<String> PARAMS = ImmutableSet.of(PARAM_M_Product_ID, PARAM_C_BPartner_ID);
 
 	private final CCache<ProductAndBPartner, ImmutableList<KeyNamePair>> productAndBPartner2materialTrackings = CCache.<ProductAndBPartner, ImmutableList<KeyNamePair>> builder()
-			.cacheName(CACHE_PREFIX + "#by#" + I_M_Material_Tracking.COLUMNNAME_M_Product_ID + "#" + I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID)
+			.tableName(CACHE_MAIN_TABLE_NAME)
 			.initialCapacity(10)
 			.build();
 
 	private final CCache<String, KeyNamePair> key2materialTracking = CCache.<String, KeyNamePair> builder()
-			.cacheName(CACHE_PREFIX + "#by#" + I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID)
+			.tableName(CACHE_MAIN_TABLE_NAME)
 			.initialCapacity(10)
 			.build();
 
-	@Value
+	@Value(staticConstructor = "of")
 	private static final class ProductAndBPartner
 	{
+		@NonNull
 		ProductId productId;
-		BPartnerId bPartnerId;
+		@NonNull
+		BPartnerId bpartnerId;
 	}
 
 	public MaterialTrackingAttributeValuesProvider(final I_M_Attribute attributeRecord)
@@ -80,7 +87,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	@Override
 	public String getAttributeValueType()
 	{
-		return X_M_Attribute.ATTRIBUTEVALUETYPE_List;
+		return X_M_Attribute.ATTRIBUTEVALUETYPE_Number;
 	}
 
 	@Override
@@ -92,7 +99,14 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	@Override
 	public Evaluatee prepareContext(final IAttributeSet attributeSet)
 	{
+		// TODO
 		return null; // nothing to prepare
+	}
+
+	@Override
+	public Set<String> getDependsOnContextVariables()
+	{
+		return PARAMS;
 	}
 
 	@Override
@@ -133,25 +147,24 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 
 	private ProductAndBPartner extractProductAndBPartnerOrNull(@NonNull final Evaluatee evalCtx)
 	{
-		final int productId = evalCtx.get_ValueAsInt(I_M_Material_Tracking.COLUMNNAME_M_Product_ID, -1);
-		final int bPartnerId = evalCtx.get_ValueAsInt(I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID, -1);
-
-		if (productId <= 0 || bPartnerId <= 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(evalCtx.get_ValueAsInt(PARAM_M_Product_ID, -1));
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(evalCtx.get_ValueAsInt(PARAM_C_BPartner_ID, -1));
+		if (productId == null || bpartnerId == null)
 		{
 			return null;
 		}
-		return new ProductAndBPartner(ProductId.ofRepoId(productId), BPartnerId.ofRepoId(bPartnerId));
+		return ProductAndBPartner.of(productId, bpartnerId);
 	}
 
 	private IMaterialTrackingQuery asMaterialTrackingQuery(@NonNull final ProductAndBPartner productAndBPartner)
 	{
-		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
+		final IMaterialTrackingDAO materialTrackingRepo = Services.get(IMaterialTrackingDAO.class);
 
-		final IMaterialTrackingQuery materialTrackingQuery = materialTrackingDAO
+		final IMaterialTrackingQuery materialTrackingQuery = materialTrackingRepo
 				.createMaterialTrackingQuery()
 				.setProcessed(false) // only show "open" trackings
 				.setM_Product_ID(productAndBPartner.getProductId().getRepoId())
-				.setC_BPartner_ID(productAndBPartner.getBPartnerId().getRepoId());
+				.setC_BPartner_ID(productAndBPartner.getBpartnerId().getRepoId());
 
 		return materialTrackingQuery;
 	}
@@ -204,7 +217,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	@Override
 	public String getCachePrefix()
 	{
-		return CACHE_PREFIX;
+		return CACHE_MAIN_TABLE_NAME;
 	}
 
 	@Override
