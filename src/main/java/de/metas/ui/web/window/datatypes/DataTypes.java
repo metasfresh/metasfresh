@@ -536,15 +536,25 @@ public final class DataTypes
 		{
 			return null;
 		}
+		else if (value instanceof String && ((String)value).isEmpty())
+		{
+			return null;
+		}
 		else if (value instanceof LookupValuesList)
 		{
-			return (LookupValuesList)value;
+			final LookupValuesList lookupValuesList = (LookupValuesList)value;
+			return lookupValuesList;
 		}
 		else if (value instanceof Map)
 		{
 			@SuppressWarnings("unchecked")
 			final Map<String, Object> map = (Map<String, Object>)value;
-			return JSONLookupValuesList.lookupValuesListFromJsonMap(map);
+			final LookupValuesList lookupValuesList = JSONLookupValuesList.lookupValuesListFromJsonMap(map);
+			if (lookupValuesList.isEmpty())
+			{
+				return null;
+			}
+			return lookupValuesList;
 		}
 		else
 		{
