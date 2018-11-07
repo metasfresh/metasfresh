@@ -63,17 +63,14 @@ public class WEBUI_PP_Order_HUEditor_IssueTopLevelHUs
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final Stream<HUEditorRow> selectedTopLevelHuRows = streamSelectedRows(HUEditorRowFilter.select(Select.ONLY_TOPLEVEL));
 
-		final List<I_M_HU> selectedEligibleRows = retrieveEligibleHUEditorRows(selectedTopLevelHuRows)
+		final List<I_M_HU> hus = retrieveEligibleHUEditorRows(selectedTopLevelHuRows)
 				.map(HUEditorRow::getM_HU)
 				.collect(ImmutableList.toImmutableList());
-
-		final HUEditorView huEditorView = getView();
-
-		if (selectedEligibleRows.isEmpty())
+		if (hus.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
@@ -84,9 +81,10 @@ public class WEBUI_PP_Order_HUEditor_IssueTopLevelHUs
 		Services.get(IHUPPOrderBL.class)
 				.createIssueProducer()
 				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
-				.createDraftIssues(selectedEligibleRows);
+				.createDraftIssues(hus);
 
-		huEditorView.removeHUsAndInvalidate(selectedEligibleRows);
+		final HUEditorView huEditorView = getView();
+		huEditorView.removeHUsAndInvalidate(hus);
 
 		ppOrderView.invalidateAll();
 
