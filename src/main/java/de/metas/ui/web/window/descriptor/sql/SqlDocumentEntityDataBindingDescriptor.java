@@ -15,6 +15,7 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.POInfo;
 
 import com.google.common.base.Joiner;
@@ -80,7 +81,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final DocumentsRepository documentsRepository;
 	private final String sqlTableName;
 	private final String sqlTableAlias;
-	private final ParentAndChildLinkColumnNames parentLink;
+	private final String sqlLinkColumnName;
+	private final String sqlParentLinkColumnName;
 
 	private final ICachedStringExpression sqlSelectAllFrom;
 	private final ICachedStringExpression sqlWhereClause;
@@ -101,7 +103,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		sqlTableAlias = builder.getTableAlias();
 		Check.assumeNotEmpty(sqlTableAlias, "sqlTableAlias is not empty");
 
-		parentLink = builder.getParentLink();
+		sqlLinkColumnName = builder.getSqlLinkColumnName();
+		sqlParentLinkColumnName = builder.getSqlParentLinkColumnName();
 
 		_fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
 		keyFields = ImmutableList.copyOf(builder.getKeyFields());
@@ -166,9 +169,20 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return keyFields.get(0).getColumnName();
 	}
 
-	public ParentAndChildLinkColumnNames getParentLink()
+	/**
+	 * @return the column name from this entity which will link to parent
+	 */
+	public String getLinkColumnName()
 	{
-		return parentLink;
+		return sqlLinkColumnName;
+	}
+
+	/**
+	 * @return the column name from parent entity on which {@link #getLinkColumnName()} shall join
+	 */
+	public String getParentLinkColumnName()
+	{
+		return sqlParentLinkColumnName;
 	}
 
 	public IStringExpression getSqlSelectAllFrom()
@@ -227,7 +241,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private DocumentsRepository documentsRepository;
 		private String _sqlTableName;
 		private String _tableAlias;
-		private ParentAndChildLinkColumnNames parentLink;
+		private String _sqlLinkColumnName;
+		private String _sqlParentLinkColumnName;
 		private String _sqlWhereClause = null;
 		private IStringExpression _sqlWhereClauseExpression;
 
@@ -421,16 +436,31 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return _tableAlias;
 		}
 
-		public Builder setParentLink(final ParentAndChildLinkColumnNames parentLink)
+		public Builder setChildToParentLinkColumnNames(final IPair<String, String> childToParentLinkColumnNames)
 		{
 			assertNotBuilt();
-			this.parentLink = parentLink;
+
+			if (childToParentLinkColumnNames != null)
+			{
+				_sqlLinkColumnName = childToParentLinkColumnNames.getLeft();
+				_sqlParentLinkColumnName = childToParentLinkColumnNames.getRight();
+			}
+			else
+			{
+				_sqlLinkColumnName = null;
+				_sqlParentLinkColumnName = null;
+			}
 			return this;
 		}
-		
-		public ParentAndChildLinkColumnNames getParentLink()
+
+		public String getSqlLinkColumnName()
 		{
-			return parentLink;
+			return _sqlLinkColumnName;
+		}
+
+		public String getSqlParentLinkColumnName()
+		{
+			return _sqlParentLinkColumnName;
 		}
 
 		public Builder setSqlWhereClause(final String sqlWhereClause)
@@ -492,15 +522,5 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			final String sql = "SELECT " + FIELDNAME_Version + " FROM " + getTableName() + " WHERE " + keyColumnName + "=?";
 			return Optional.of(sql);
 		}
-	}
-
-	@lombok.Value
-	@lombok.Builder
-	public static class ParentAndChildLinkColumnNames
-	{
-		@NonNull
-		String childColumnName;
-		@NonNull
-		String parentColumnName;
 	}
 }
