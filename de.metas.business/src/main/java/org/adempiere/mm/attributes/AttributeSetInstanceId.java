@@ -5,7 +5,6 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -89,8 +88,13 @@ public class AttributeSetInstanceId implements RepoIdAware
 		return repoId == NONE.repoId;
 	}
 
+	public boolean isRegular()
+	{
+		return !isNone();
+	}
+
 	public static boolean isRegular(final AttributeSetInstanceId asiId)
 	{
-		return asiId != null && !asiId.isNone();
+		return asiId != null && asiId.isRegular();
 	}
 }
