@@ -25,15 +25,16 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.I_M_AttributeSetExcludeLine;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
 
+import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 
 public interface IAttributeExcludeDAO extends ISingletonService
 {
 	List<I_M_AttributeSetExcludeLine> retrieveLines(I_M_AttributeSetExclude attributeSetExclude);
 	
-	I_M_AttributeSetExclude retrieveAttributeSetExclude(I_M_AttributeSet attributeSet, int columnId, boolean isSOTrx);
+	I_M_AttributeSetExclude retrieveAttributeSetExclude(AttributeSetId attributeSetId, int columnId, SOTrx soTrx);
 }

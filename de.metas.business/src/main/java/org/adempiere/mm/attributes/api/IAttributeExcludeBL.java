@@ -1,9 +1,10 @@
 package org.adempiere.mm.attributes.api;
 
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
 
+import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 
 public interface IAttributeExcludeBL extends ISingletonService
@@ -21,20 +22,15 @@ public interface IAttributeExcludeBL extends ISingletonService
 	 * Checks if an attribute should be excluded or not in the current table and transaction type.
 	 * 
 	 * @param attribute
-	 * @param attributeSet
+	 * @param attributeSetId
 	 * @param columnId
-	 * @param isSOTrx
+	 * @param soTrx
 	 * @return
 	 */
-	boolean isExcludedAttribute(I_M_Attribute attribute, I_M_AttributeSet attributeSet, int columnId, boolean isSOTrx);
+	boolean isExcludedAttribute(I_M_Attribute attribute, AttributeSetId attributeSetId, int columnId, SOTrx soTrx);
 	
 	/**
 	 * Gets the attribute set exclude for the current table and transaction type.
-	 * 
-	 * @param attributeSet
-	 * @param columnId
-	 * @param isSOTrx
-	 * @return
 	 */
-	I_M_AttributeSetExclude getAttributeSetExclude(I_M_AttributeSet attributeSet, int columnId, boolean isSOTrx);
+	I_M_AttributeSetExclude getAttributeSetExclude(AttributeSetId attributeSetId, int columnId, SOTrx soTrx);
 }
