@@ -79,7 +79,7 @@ public class AD_Tab
 		}
 
 		final AdElementId tabElementId = AdElementId.ofRepoIdOrNull(tab.getAD_Element_ID());
-		if (tabElementId != null)
+		if (tabElementId == null)
 		{
 			// nothing to do. It was not yet set
 			return;
