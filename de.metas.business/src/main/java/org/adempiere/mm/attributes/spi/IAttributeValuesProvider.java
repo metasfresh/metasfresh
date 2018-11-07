@@ -13,17 +13,17 @@ package org.adempiere.mm.attributes.spi;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -31,6 +31,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache.CCacheStats;
 
@@ -54,6 +56,11 @@ public interface IAttributeValuesProvider
 	 * @return true if any value is allowed
 	 */
 	boolean isAllowAnyValue();
+
+	default Set<String> getDependsOnContextVariables()
+	{
+		return ImmutableSet.of();
+	}
 
 	Evaluatee prepareContext(final IAttributeSet attributeSet);
 
@@ -96,5 +103,6 @@ public interface IAttributeValuesProvider
 	//
 	// Caching
 	String getCachePrefix();
+
 	List<CCacheStats> getCacheStats();
 }
