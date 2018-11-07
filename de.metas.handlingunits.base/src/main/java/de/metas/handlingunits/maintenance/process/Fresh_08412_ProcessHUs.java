@@ -13,15 +13,14 @@ package de.metas.handlingunits.maintenance.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -301,9 +300,9 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, rawProduct);
 
 		huPPOrderBL.createIssueProducer()
-				.setMovementDate(TimeUtil.asLocalDate(ppOrder.getDatePromised()))
 				.setTargetOrderBOMLine(ppOrderBOMLine)
-				.createDraftIssue(hu);
+				.setMovementDate(TimeUtil.asLocalDate(ppOrder.getDatePromised()))
+				.createIssue(hu);
 
 		if (!handlingUnitsBL.isDestroyedRefreshFirst(hu))
 		{

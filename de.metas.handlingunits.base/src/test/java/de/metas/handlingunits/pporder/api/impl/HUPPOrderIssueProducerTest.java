@@ -354,7 +354,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final List<I_PP_Order_Qty> candidates = new HUPPOrderIssueProducer()
 				.setMovementDate(movementDate)
 				.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
-				.createDraftIssue(hu);
+				.createIssue(hu);
 		System.out.println("Candidates:\n " + Joiner.on("\n").join(candidates));
 		//
 		final List<I_PP_Cost_Collector> costCollectors;
@@ -556,7 +556,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		final List<I_PP_Order_Qty> result = new HUPPOrderIssueProducer()
 				.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
-				.createDraftIssues(hus);
+				.createIssues(hus);
 		assertThat(result).hasSize(2);
 
 		final I_PP_Order_Qty ppOrderQty1 = result.get(0);

@@ -32,6 +32,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -76,14 +77,16 @@ public class CreateDraftIssues
 
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
-	private final List<I_PP_Order_BOMLine> targetOrderBOMLines;
+	private final ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
 	private final LocalDate movementDate;
 
 	public CreateDraftIssues(
 			final @NonNull List<I_PP_Order_BOMLine> targetOrderBOMLines,
 			final @Nullable LocalDate movementDate)
 	{
-		this.targetOrderBOMLines = targetOrderBOMLines;
+		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
+
+		this.targetOrderBOMLines = ImmutableList.copyOf(targetOrderBOMLines);
 		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDate();
 	}
 

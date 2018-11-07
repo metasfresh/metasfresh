@@ -6,6 +6,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -55,7 +56,7 @@ public interface IHUPPOrderBL extends ISingletonService
 	 */
 	IHUQueryBuilder createHUsAvailableToIssueQuery(I_PP_Order_BOMLine ppOrderBomLine);
 
-	void processPlanning(PPOrderPlanningStatus targetPlanningStatus, int ppOrderId);
+	void processPlanning(PPOrderPlanningStatus targetPlanningStatus, PPOrderId ppOrderId);
 
 	boolean canChangePlanningStatus(PPOrderPlanningStatus fromPlanningStatus, PPOrderPlanningStatus toPlanningStatus);
 

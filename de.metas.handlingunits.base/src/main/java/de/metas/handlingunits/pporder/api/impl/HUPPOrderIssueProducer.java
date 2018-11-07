@@ -28,28 +28,24 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
-import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssues;
+import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -63,14 +59,9 @@ import lombok.NonNull;
  */
 public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 {
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	private final transient IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
+	private PPOrderId _ppOrderId;
 	private LocalDate movementDate;
-	private List<I_PP_Order_BOMLine> targetOrderBOMLines;
+	private ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
 
 	@VisibleForTesting
 	HUPPOrderIssueProducer()
@@ -82,9 +73,75 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("ppOrderId", _ppOrderId)
 				.add("movementDate", movementDate)
 				.add("targetOrderBOMLines", targetOrderBOMLines)
 				.toString();
+	}
+
+	@Override
+	public List<I_PP_Order_Qty> createIssues(@NonNull final Collection<I_M_HU> hus)
+	{
+		PPOrderId ppOrderId = getPpOrderIdOrNull();
+		List<I_PP_Order_BOMLine> targetOrderBOMLines = getTargetOrderBOMLinesOrNull();
+		if (targetOrderBOMLines == null || targetOrderBOMLines.isEmpty())
+		{
+			if (ppOrderId != null)
+			{
+				targetOrderBOMLines = retrieveIssueOrderBOMLines(ppOrderId);
+				if (targetOrderBOMLines.isEmpty())
+				{
+					throw new AdempiereException("No issue BOM lines found for " + ppOrderId);
+				}
+			}
+			else
+			{
+				throw new AdempiereException("No PP_Order_ID and not BOM lines set");
+			}
+		}
+
+		final PPOrderId ppOrderIdFromBOMLines = extractSinglePPOrderId(targetOrderBOMLines);
+		if (ppOrderId == null)
+		{
+			ppOrderId = ppOrderIdFromBOMLines;
+		}
+		else if (!ppOrderIdFromBOMLines.equals(ppOrderId))
+		{
+			throw new AdempiereException("PPOrderId mismatch. Expected " + ppOrderId + " but BOM lines have " + ppOrderIdFromBOMLines);
+		}
+
+		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
+		final PPOrderPlanningStatus orderPlanningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
+
+		final List<I_PP_Order_Qty> candidates = new CreateDraftIssues(targetOrderBOMLines, movementDate)
+				.createDraftIssues(hus);
+
+		return candidates;
+	}
+
+	private static PPOrderId extractSinglePPOrderId(@NonNull final List<I_PP_Order_BOMLine> lines)
+	{
+		Check.assumeNotEmpty(lines, "lines is not empty");
+		final ImmutableSet<PPOrderId> ppOrderIds = lines.stream()
+				.map(I_PP_Order_BOMLine::getPP_Order_ID)
+				.map(PPOrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		if (ppOrderIds.size() == 1)
+		{
+			return ppOrderIds.iterator().next();
+		}
+		else
+		{
+			throw new AdempiereException("More than one ppOrderId found: " + ppOrderIds)
+					.setParameter("lines", lines)
+					.appendParametersToMessage();
+		}
+	}
+
+	@Override
+	public void reverseDraftIssue(@NonNull final I_PP_Order_Qty candidate)
+	{
+		new ReverseDraftIssues().reverseDraftIssue(candidate);
 	}
 
 	@Override
@@ -95,17 +152,45 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	}
 
 	@Override
+	public IHUPPOrderIssueProducer setOrderId(@NonNull final PPOrderId ppOrderId)
+	{
+		this._ppOrderId = ppOrderId;
+		return this;
+	}
+
+	private PPOrderId getPpOrderIdOrNull()
+	{
+		return _ppOrderId;
+	}
+
+	private List<I_PP_Order_BOMLine> getTargetOrderBOMLinesOrNull()
+	{
+		return targetOrderBOMLines;
+	}
+
+	private ImmutableList<I_PP_Order_BOMLine> retrieveIssueOrderBOMLines(final PPOrderId orderId)
+	{
+		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId, I_PP_Order_BOMLine.class)
+				.stream()
+				.filter(line -> PPOrderUtil.isIssue(line.getComponentType()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
 	public IHUPPOrderIssueProducer setTargetOrderBOMLines(@NonNull final List<I_PP_Order_BOMLine> targetOrderBOMLines)
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
-		targetOrderBOMLines.forEach(bomLine -> {
-			if (!PPOrderUtil.isIssue(bomLine.getComponentType()))
-			{
-				throw new AdempiereException("Not an issue BOM line: " + bomLine);
-			}
-		});
 
-		this.targetOrderBOMLines = targetOrderBOMLines;
+		final List<I_PP_Order_BOMLine> notIssueBOMLines = targetOrderBOMLines.stream()
+				.filter(bomLine -> !PPOrderUtil.isIssue(bomLine.getComponentType()))
+				.collect(ImmutableList.toImmutableList());
+		if (!notIssueBOMLines.isEmpty())
+		{
+			throw new AdempiereException("Only issue BOM lines are allowed but got: " + notIssueBOMLines);
+		}
+
+		this.targetOrderBOMLines = ImmutableList.copyOf(targetOrderBOMLines);
 		return this;
 	}
 
@@ -113,51 +198,5 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	public IHUPPOrderIssueProducer setTargetOrderBOMLine(@NonNull final I_PP_Order_BOMLine targetOrderBOMLine)
 	{
 		return setTargetOrderBOMLines(ImmutableList.of(targetOrderBOMLine));
-	}
-
-	@Override
-	public IHUPPOrderIssueProducer setTargetOrderBOMLinesByPPOrderId(final int ppOrderId)
-	{
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
-		Check.assumeNotNull(ppOrder, "ppOrder not null");
-
-		final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
-
-		final List<I_PP_Order_BOMLine> ppOrderBOMLines = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
-				.stream()
-				.filter(line -> PPOrderUtil.isIssue(line.getComponentType()))
-				.collect(ImmutableList.toImmutableList());
-
-		return setTargetOrderBOMLines(ppOrderBOMLines);
-	}
-
-	@Override
-	public List<I_PP_Order_Qty> createDraftIssues(@NonNull final Collection<I_M_HU> hus)
-	{
-		return new CreateDraftIssues(targetOrderBOMLines, movementDate).createDraftIssues(hus);
-	}
-
-	@Override
-	public void reverseDraftIssue(@NonNull final I_PP_Order_Qty candidate)
-	{
-		if (candidate.isProcessed())
-		{
-			throw new HUException("Cannot reverse candidate because it's already processed: " + candidate);
-		}
-
-		final I_M_HU huToIssue = candidate.getM_HU();
-
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(candidate);
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
-
-		huStatusBL.setHUStatus(huContext, huToIssue, X_M_HU.HUSTATUS_Active);
-		handlingUnitsDAO.saveHU(huToIssue);
-
-		// Delete PP_Order_ProductAttributes for issue candidate's HU
-		ppOrderProductAttributeDAO.deleteForHU(candidate.getPP_Order_ID(), huToIssue.getM_HU_ID());
-
-		//
-		// Delete the candidate
-		huPPOrderQtyDAO.delete(candidate);
 	}
 }

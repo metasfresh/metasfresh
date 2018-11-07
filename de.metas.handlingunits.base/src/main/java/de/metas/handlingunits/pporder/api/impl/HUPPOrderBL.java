@@ -3,6 +3,7 @@ package de.metas.handlingunits.pporder.api.impl;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import com.google.common.base.Objects;
@@ -20,6 +21,7 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcess
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -85,11 +87,11 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public void processPlanning(@NonNull final PPOrderPlanningStatus targetPlanningStatus, int ppOrderId)
+	public void processPlanning(@NonNull final PPOrderPlanningStatus targetPlanningStatus, @NonNull final PPOrderId ppOrderId)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
+		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
 		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
 		if (Objects.equal(planningStatus, targetPlanningStatus))
 		{
