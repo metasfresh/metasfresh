@@ -8,11 +8,11 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-
 import lombok.NonNull;
 
 /*
@@ -47,7 +47,7 @@ import lombok.NonNull;
 /* package */final class PPOrderLinesViewData
 {
 	private final ITranslatableString description;
-	private final String planningStatus;
+	private final PPOrderPlanningStatus planningStatus;
 
 	/** Top level records list */
 	private final ImmutableList<PPOrderLineRow> records;
@@ -56,7 +56,7 @@ import lombok.NonNull;
 
 	PPOrderLinesViewData(
 			@NonNull final ITranslatableString description,
-			@NonNull final String planningStatus,
+			@NonNull final PPOrderPlanningStatus planningStatus,
 			@NonNull final List<PPOrderLineRow> records)
 	{
 		this.description = description;
@@ -71,7 +71,7 @@ import lombok.NonNull;
 		return description;
 	}
 
-	public String getPlanningStatus()
+	public PPOrderPlanningStatus getPlanningStatus()
 	{
 		return planningStatus;
 	}

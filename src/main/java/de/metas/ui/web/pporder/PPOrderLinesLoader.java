@@ -14,7 +14,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
-import org.eevolution.model.X_PP_Order;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
@@ -28,6 +28,7 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
@@ -36,6 +37,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -50,7 +52,6 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -115,9 +116,9 @@ class PPOrderLinesLoader
 	 *
 	 * @param viewId viewId to be set to newly created {@link PPOrderLineRow}s.
 	 */
-	public PPOrderLinesViewData retrieveData(final int ppOrderId)
+	public PPOrderLinesViewData retrieveData(final PPOrderId ppOrderId)
 	{
-		final I_PP_Order ppOrder = loadOutOfTrx(ppOrderId, I_PP_Order.class);
+		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
 
 		final int mainProductBOMLineId = 0;
 		final ListMultimap<Integer, I_PP_Order_Qty> ppOrderQtysByBOMLineId = ppOrderQtyDAO.streamOrderQtys(ppOrderId)
@@ -138,13 +139,14 @@ class PPOrderLinesLoader
 		final List<PPOrderLineRow> sourceHuRowsForIssueProducts = createRowsForIssueProductSourceHUs(warehouseId, bomLineRows);
 		records.addAll(sourceHuRowsForIssueProducts);
 
-		return new PPOrderLinesViewData(extractDescription(ppOrder), ppOrder.getPlanningStatus(), records.build());
+		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
+		return new PPOrderLinesViewData(extractDescription(ppOrder), planningStatus, records.build());
 	}
 
 	private static boolean isReadOnly(@NonNull final I_PP_Order ppOrder)
 	{
-		final String ppOrder_planningStatus = ppOrder.getPlanningStatus();
-		final boolean readonly = X_PP_Order.PLANNINGSTATUS_Complete.equals(ppOrder_planningStatus);
+		final PPOrderPlanningStatus ppOrder_planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
+		final boolean readonly = PPOrderPlanningStatus.COMPLETE.equals(ppOrder_planningStatus);
 		return readonly;
 	}
 

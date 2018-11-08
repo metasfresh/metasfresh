@@ -1,7 +1,10 @@
 package de.metas.ui.web.document.filter;
 
+import org.slf4j.Logger;
+
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -41,6 +44,8 @@ public final class DocumentFilterParamDescriptor
 	{
 		return new Builder();
 	}
+
+	private static final Logger logger = LogManager.getLogger(DocumentFilterParamDescriptor.class);
 
 	private final boolean joinAnd;
 	private final String parameterName;
@@ -132,7 +137,22 @@ public final class DocumentFilterParamDescriptor
 
 	private Object convertValueToFieldType(final Object value)
 	{
-		return DataTypes.convertToValueClass(getFieldName(), value, getWidgetType(), getValueClass(), getLookupDataSourceOrNull());
+		Object valueConv = DataTypes.convertToValueClass(
+				getFieldName(),
+				value,
+				getWidgetType(),
+				getValueClass(),
+				getLookupDataSourceOrNull());
+
+		// Convert empty string to null
+		// This is a workaround until task https://github.com/metasfresh/metasfresh-webui-frontend/issues/2040 is done.
+		if (valueConv instanceof String && ((String)valueConv).isEmpty())
+		{
+			valueConv = null;
+			logger.warn("Converted empty string to null for value={}, descriptor={}. \n This issue shall be solved by https://github.com/metasfresh/metasfresh-webui-frontend/issues/2040.", value, this);
+		}
+
+		return valueConv;
 	}
 
 	public boolean isAutoFilter()

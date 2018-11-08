@@ -14,13 +14,13 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.i18n.ITranslatableString;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -73,7 +73,7 @@ public class PPOrderLinesView implements IView
 	private final JSONViewDataType viewType;
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
-	private final int ppOrderId;
+	private final PPOrderId ppOrderId;
 	private final OrderLineId salesOrderLineId;
 
 	private final PPOrderLinesViewDataSupplier dataSupplier;
@@ -92,7 +92,7 @@ public class PPOrderLinesView implements IView
 			@NonNull final ViewId viewId,
 			@NonNull final JSONViewDataType viewType,
 			final Set<DocumentPath> referencingDocumentPaths,
-			final int ppOrderId,
+			@NonNull final PPOrderId ppOrderId,
 			final PPOrderLinesViewDataSupplier dataSupplier,
 			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
@@ -104,7 +104,6 @@ public class PPOrderLinesView implements IView
 
 		this.additionalRelatedProcessDescriptors = ImmutableList.copyOf(additionalRelatedProcessDescriptors);
 
-		Preconditions.checkArgument(ppOrderId > 0, "PP_Order_ID not provided");
 		this.ppOrderId = ppOrderId;
 		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
 		this.salesOrderLineId = OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID());
@@ -118,19 +117,19 @@ public class PPOrderLinesView implements IView
 		return getData().getDescription();
 	}
 
-	public String getPlanningStatus()
+	public PPOrderPlanningStatus getPlanningStatus()
 	{
 		return getData().getPlanningStatus();
 	}
 
 	public boolean isStatusPlanning()
 	{
-		return X_PP_Order.PLANNINGSTATUS_Planning.equals(getPlanningStatus());
+		return PPOrderPlanningStatus.PLANNING.equals(getPlanningStatus());
 	}
 
 	public boolean isStatusReview()
 	{
-		return X_PP_Order.PLANNINGSTATUS_Review.equals(getPlanningStatus());
+		return PPOrderPlanningStatus.REVIEW.equals(getPlanningStatus());
 	}
 
 	@Override
@@ -182,7 +181,7 @@ public class PPOrderLinesView implements IView
 		return ppOrderLine.getType().getTableName();
 	}
 
-	public int getPP_Order_ID()
+	public PPOrderId getPpOrderId()
 	{
 		return ppOrderId;
 	}

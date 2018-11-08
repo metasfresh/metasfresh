@@ -249,6 +249,6 @@ public class WEBUI_PP_Order_Receipt
 		final PPOrderLinesView ppOrderLinesView = getView();
 		ppOrderLinesView.invalidateAll();
 
-		viewsRepo.notifyRecordChanged(I_PP_Order.Table_Name, ppOrderLinesView.getPP_Order_ID());
+		viewsRepo.notifyRecordChanged(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
 	}
 }
