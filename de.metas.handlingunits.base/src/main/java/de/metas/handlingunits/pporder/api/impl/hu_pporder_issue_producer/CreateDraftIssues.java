@@ -2,9 +2,8 @@ package de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -33,6 +32,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -77,15 +77,17 @@ public class CreateDraftIssues
 
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
-	private final List<I_PP_Order_BOMLine> targetOrderBOMLines;
-	private final Timestamp movementDate;
+	private final ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
+	private final LocalDate movementDate;
 
 	public CreateDraftIssues(
 			final @NonNull List<I_PP_Order_BOMLine> targetOrderBOMLines,
-			final @Nullable Date movementDate)
+			final @Nullable LocalDate movementDate)
 	{
-		this.targetOrderBOMLines = targetOrderBOMLines;
-		this.movementDate = movementDate != null ? TimeUtil.asTimestamp(movementDate) : SystemTime.asTimestamp();
+		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
+
+		this.targetOrderBOMLines = ImmutableList.copyOf(targetOrderBOMLines);
+		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDate();
 	}
 
 	public List<I_PP_Order_Qty> createDraftIssues(@Nonnull final Collection<I_M_HU> hus)
@@ -214,7 +216,7 @@ public class CreateDraftIssues
 		candidate.setQty(qtyToIssue.getAsBigDecimal());
 		candidate.setC_UOM(qtyToIssue.getUOM());
 
-		candidate.setMovementDate(movementDate);
+		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		candidate.setProcessed(false);
 		huPPOrderQtyDAO.save(candidate);
 

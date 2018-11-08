@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -81,6 +81,7 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -350,11 +351,11 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Issue created HU to Folie Order BOM Line
-		final Timestamp movementDate = TimeUtil.getDay(2014, 10, 01);
+		final LocalDate movementDate = LocalDate.of(2014, 10, 01);
 		final List<I_PP_Order_Qty> candidates = new HUPPOrderIssueProducer()
 				.setMovementDate(movementDate)
 				.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
-				.createDraftIssue(hu);
+				.createIssue(hu);
 		System.out.println("Candidates:\n " + Joiner.on("\n").join(candidates));
 		//
 		final List<I_PP_Cost_Collector> costCollectors;
@@ -390,7 +391,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			Assert.assertEquals("Invalid cost collectors count", 1, costCollectors.size());
 			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
 			Assert.assertEquals("Invalid Cost Collector Type", X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, costCollector.getCostCollectorType());
-			Assert.assertEquals("Invalid Cost Collector MovementDate", movementDate, costCollector.getMovementDate());
+			Assert.assertEquals("Invalid Cost Collector MovementDate", TimeUtil.asTimestamp(movementDate), costCollector.getMovementDate());
 			Assert.assertEquals("Invalid Cost Collector PP_Order", ppOrder, costCollector.getPP_Order());
 			Assert.assertEquals("Invalid Cost Collector PP_Order_BOMLine", ppOrderBOMLine_Folie, costCollector.getPP_Order_BOMLine());
 			Assert.assertEquals("Invalid Cost Collector UOM", uomMillimeter, costCollector.getC_UOM());
@@ -500,6 +501,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		ppOrder.setC_UOM(uom);
 		ppOrder.setDateStartSchedule(SystemTime.asTimestamp());
+		ppOrder.setPlanningStatus(PPOrderPlanningStatus.PLANNING.getCode());
 		save(ppOrder);
 		return ppOrder;
 	}
@@ -556,7 +558,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		final List<I_PP_Order_Qty> result = new HUPPOrderIssueProducer()
 				.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
-				.createDraftIssues(hus);
+				.createIssues(hus);
 		assertThat(result).hasSize(2);
 
 		final I_PP_Order_Qty ppOrderQty1 = result.get(0);
