@@ -11,6 +11,38 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 
 
 
+-- recreated this after I lost it during a series of deleting and recreating thi table
+
+INSERT INTO AD_Element 
+(AD_Element_ID,
+AD_Client_ID,
+AD_Org_ID,
+IsActive,
+Created,
+CreatedBy,
+Updated,
+UpdatedBy,
+ColumnName,
+EntityType,
+Name,
+PrintName
+)
+VALUES
+(
+575855,
+0,
+0,
+'Y',
+'2018-11-06 16:02:35+02',
+100,
+'2018-11-06 16:02:35+02',
+100,
+'AD_Element_Link_ID',
+'D',
+'AD_Element_Link',
+'AD_Element_Link'
+);
+
 
 
 
