@@ -54,7 +54,7 @@ import de.metas.util.Check;
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		this.tableName = tableName;
 
-		Check.assumeNotEmpty(items, "items not empty");
+		Check.assumeNotEmpty(items, "items not empty for aggregationId={} (tableName={})", aggregationId, tableName);
 		this.items = ImmutableList.copyOf(items);
 		
 		this.aggregationId = aggregationId <= 0 ? -1 : aggregationId;

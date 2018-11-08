@@ -325,7 +325,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		// Completing chunk failed
 		if (!completed)
 		{
-			logger.info("Processor failed to complete current chunk => cancel chunk");
+			logger.debug("Processor failed to complete current chunk => cancel chunk");
 
 			final boolean processItemFailed = false; // it's the completion that failed, not processeItem
 			cancelChunk(processItemFailed);
@@ -334,7 +334,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 
 		//
 		//
-		logger.info("Processor succeeded to complete the chunk => commit transaction");
+		logger.debug("Processor succeeded to complete the chunk => commit transaction");
 		try
 		{
 			commitChunkTrx();

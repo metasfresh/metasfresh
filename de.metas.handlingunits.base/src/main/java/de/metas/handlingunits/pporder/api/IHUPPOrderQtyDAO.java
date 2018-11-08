@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -46,11 +47,11 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 		ppOrderQtys.forEach(this::save);
 	}
 
-	List<I_PP_Order_Qty> retrieveOrderQtys(int ppOrderId);
+	List<I_PP_Order_Qty> retrieveOrderQtys(PPOrderId ppOrderId);
 	
-	I_PP_Order_Qty retrieveOrderQtyForCostCollector(int ppOrderId, final int costCollectorId);
+	I_PP_Order_Qty retrieveOrderQtyForCostCollector(PPOrderId ppOrderId, final int costCollectorId);
 
-	default Stream<I_PP_Order_Qty> streamOrderQtys(final int ppOrderId)
+	default Stream<I_PP_Order_Qty> streamOrderQtys(PPOrderId ppOrderId)
 	{
 		return retrieveOrderQtys(ppOrderId).stream();
 	}

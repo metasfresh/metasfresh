@@ -6,6 +6,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
 public interface IPPOrderProductAttributeBL extends ISingletonService
@@ -21,7 +22,7 @@ public interface IPPOrderProductAttributeBL extends ISingletonService
 	 * @param ppOrder
 	 * @param hus
 	 */
-	void updateHUAttributes(Collection<I_M_HU> hus, final int fromPPOrderId);
+	void updateHUAttributes(Collection<I_M_HU> hus, final PPOrderId fromPPOrderId);
 
 	/**
 	 * Create new PP_Order_ProductAttribute entries for the given cost collector

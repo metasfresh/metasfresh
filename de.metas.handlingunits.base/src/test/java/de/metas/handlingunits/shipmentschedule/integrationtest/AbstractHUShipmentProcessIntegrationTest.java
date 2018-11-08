@@ -71,6 +71,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -384,6 +385,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Test Generate Shipment from HUs
 		final HUShippingFacade huShippingFacade = HUShippingFacade.builder()
 				.hus(afterAggregation_HUs)
+				.invoiceMode(BillAssociatedInvoiceCandidates.NO) // NO because there were no invoice candidates and in this case will fail
 				.build();
 
 		//

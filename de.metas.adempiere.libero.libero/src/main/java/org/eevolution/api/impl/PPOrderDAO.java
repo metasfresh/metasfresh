@@ -10,12 +10,12 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,10 +38,24 @@ import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOM;
 
 import de.metas.document.engine.IDocument;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PPOrderDAO implements IPPOrderDAO
 {
+	@Override
+	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
+	{
+		return getById(ppOrderId, I_PP_Order.class);
+	}
+
+	@Override
+	public <T extends I_PP_Order> T getById(@NonNull final PPOrderId ppOrderId, @NonNull final Class<T> type)
+	{
+		return InterfaceWrapperHelper.load(ppOrderId, type);
+	}
+
 	@Override
 	public I_PP_Order retrieveMakeToOrderForOrderLine(final I_C_OrderLine line)
 	{
@@ -108,7 +122,7 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
-	public int retrievePPOrderIdByOrderLineId(int orderLineId)
+	public int retrievePPOrderIdByOrderLineId(final int orderLineId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order.class)
