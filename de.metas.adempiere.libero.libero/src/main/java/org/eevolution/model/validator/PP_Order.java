@@ -151,7 +151,10 @@ public class PP_Order
 				|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Locator_ID)
 				|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_AD_Org_ID))
 		{
-			ppOrderBL.updateBOMOrderLinesWarehouseAndLocator(ppOrder);
+			if (ppOrder.getPP_Order_ID() > 0)
+			{
+				ppOrderBL.updateBOMOrderLinesWarehouseAndLocator(ppOrder);
+			}
 		}
 
 		//
