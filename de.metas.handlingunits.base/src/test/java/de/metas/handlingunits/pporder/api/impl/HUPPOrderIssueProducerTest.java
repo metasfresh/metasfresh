@@ -81,6 +81,7 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -500,6 +501,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		ppOrder.setC_UOM(uom);
 		ppOrder.setDateStartSchedule(SystemTime.asTimestamp());
+		ppOrder.setPlanningStatus(PPOrderPlanningStatus.PLANNING.getCode());
 		save(ppOrder);
 		return ppOrder;
 	}
