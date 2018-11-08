@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -64,7 +67,6 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -315,6 +317,9 @@ public final class Env
 		final boolean matched = Character.isDigit(tag.charAt(0));
 		return matched;
 	};
+
+	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+	public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern(DATE_PATTEN);
 
 	/**
 	 * Get Context
@@ -2134,12 +2139,35 @@ public final class Env
 	 */
 	public static Timestamp parseTimestamp(final String timestampStr)
 	{
-		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (timestampStr == null || Check.isEmpty(timestampStr, true) || isPropertyValueNull(timestampStr))
 		{
 			return null;
 		}
+		
+		
+		Timestamp timestamp = parseTimestampUsingJDBCFormatOrNull(timestampStr);
+		if(timestamp != null)
+		{
+			return timestamp;
+		}
+		
+		try
+		{
+			final ZonedDateTime zdt = ZonedDateTime.parse(timestampStr.trim(), DATE_FORMAT);
+			return Timestamp.from(zdt.toInstant());
+		}
+		catch (final DateTimeParseException ex)
+		{
+			 // ignore exception
+		}
 
+		throw new AdempiereException("Failed converting '" + timestampStr + "' to " + Timestamp.class);
+	}
+
+	private static Timestamp parseTimestampUsingJDBCFormatOrNull(@NonNull final String timestampStr)
+	{
+		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
+		
 		// timestamp requires time
 		final String timestampStrToUse;
 		if (timestampStr.trim().length() == 10)
@@ -2159,12 +2187,9 @@ public final class Env
 		{
 			return Timestamp.valueOf(timestampStrToUse);
 		}
-		catch (final RuntimeException e)
+		catch (final RuntimeException ex)
 		{
-			final String message = StringUtils.formatMessage(
-					"Unable to parse timestampStrToUse={}; given param timestampStr={}",
-					timestampStrToUse, timestampStr);
-			throw new AdempiereException(message, e);
+			return null;
 		}
 	}
 
