@@ -13,15 +13,14 @@ package de.metas.material.planning.pporder;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -52,6 +51,8 @@ public interface IPPOrderBOMDAO extends ISingletonService
 	 * @return
 	 */
 	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(I_PP_Order order, Class<T> orderBOMLineClass);
+
+	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
 
 	/**
 	 * Retrive all (active or not) BOM Lines for given <code>orderBOM</code>.

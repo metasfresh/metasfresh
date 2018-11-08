@@ -1,6 +1,8 @@
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
+import static org.eevolution.model.I_PP_Order.COLUMNNAME_IsApproved;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;

@@ -3,7 +3,6 @@ package de.metas.handlingunits.pporder.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -53,12 +52,12 @@ import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.AccessLevel;
@@ -124,7 +123,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 	//
 	// Parameters
-	private static final Supplier<List<I_PP_Order_Qty>> CandidatesToProcessSupplier_NONE = () -> ImmutableList.of();
+	private static final Supplier<List<I_PP_Order_Qty>> CandidatesToProcessSupplier_NONE = ImmutableList::of;
 	private Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier = CandidatesToProcessSupplier_NONE;
 
 	private HUPPOrderIssueReceiptCandidatesProcessor()
@@ -326,7 +325,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		}
 	}
 
-	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcess(final Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier)
+	private HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcess(final Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier)
 	{
 		Preconditions.checkNotNull(candidatesToProcessSupplier, "candidatesToProcessSupplier");
 		this.candidatesToProcessSupplier = candidatesToProcessSupplier;
@@ -347,30 +346,12 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		return this;
 	}
 
-	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcessByPPOrderId(final int ppOrderId, final Collection<Integer> ppOrderQtyIds)
-	{
-		if (ppOrderQtyIds == null || ppOrderQtyIds.isEmpty())
-		{
-			setCandidatesToProcess(CandidatesToProcessSupplier_NONE);
-		}
-		else
-		{
-			setCandidatesToProcess(() -> huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
-					.stream()
-					.filter(candidate -> !candidate.isProcessed()) // not already processed
-					.filter(candidate -> ppOrderQtyIds.contains(candidate.getPP_Order_Qty_ID())) // matching the IDs list
-					.collect(GuavaCollectors.toImmutableList()));
-		}
-
-		return this;
-	}
-
-	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcessByPPOrderId(final int ppOrderId)
+	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcessByPPOrderId(final PPOrderId ppOrderId)
 	{
 		setCandidatesToProcess(() -> huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
 				.stream()
 				.filter(candidate -> !candidate.isProcessed()) // not already processed
-				.collect(GuavaCollectors.toImmutableList()));
+				.collect(ImmutableList.toImmutableList()));
 		return this;
 	}
 
