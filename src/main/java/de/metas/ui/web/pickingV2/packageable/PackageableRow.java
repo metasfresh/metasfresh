@@ -26,7 +26,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Check;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -74,7 +73,7 @@ public final class PackageableRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Integer, captionKey = "Lines", seqNo = 40)
 	private final int lines;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "AD_User_ID", seqNo = 50)
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "Picking_User_ID", seqNo = 50)
 	private final LookupValue lockedByUser;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Shipper_ID, seqNo = 60)

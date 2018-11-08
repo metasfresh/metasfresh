@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -31,7 +32,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 public class DataTypes_convertToValueClass_Test
 {
 	@Test
-	public void test_FromBigDecimalString_ToInteger()
+	public void test_From_BigDecimalString_To_Integer()
 	{
 		final String fieldName = "MyInteger";
 		final String value = "12345.00000000000";
@@ -40,6 +41,22 @@ public class DataTypes_convertToValueClass_Test
 		final LookupValueByIdSupplier lookupDataSource = null;
 
 		final Object valueConverted = DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
-		Assert.assertEquals(12345, valueConverted);
+		assertThat(valueConverted).isEqualTo(12345);
+	}
+
+	/**
+	 * @task https://github.com/metasfresh/metasfresh-webui-api/issues/1098
+	 */
+	@Test
+	public void test_From_EmptyString_To_LookupValuesList()
+	{
+		final String fieldName = "MyLabels";
+		final String value = "";
+		final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.Labels;
+		final Class<?> targetType = widgetType.getValueClass();
+		final LookupValueByIdSupplier lookupDataSource = null;
+
+		final Object valueConverted = DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
+		assertThat(valueConverted).isNull();
 	}
 }

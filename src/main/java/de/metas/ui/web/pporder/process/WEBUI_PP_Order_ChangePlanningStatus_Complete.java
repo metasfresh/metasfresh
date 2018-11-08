@@ -1,6 +1,6 @@
 package de.metas.ui.web.pporder.process;
 
-import org.eevolution.model.X_PP_Order;
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 
 /*
  * #%L
@@ -28,6 +28,6 @@ public class WEBUI_PP_Order_ChangePlanningStatus_Complete extends WEBUI_PP_Order
 {
 	public WEBUI_PP_Order_ChangePlanningStatus_Complete()
 	{
-		super(X_PP_Order.PLANNINGSTATUS_Complete);
+		super(PPOrderPlanningStatus.COMPLETE);
 	}
 }

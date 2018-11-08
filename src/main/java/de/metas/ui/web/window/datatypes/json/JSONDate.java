@@ -55,9 +55,7 @@ public final class JSONDate
 {
 	private static final transient Logger logger = LogManager.getLogger(JSONDate.class);
 
-	public static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
-
-	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern(JSONDate.DATE_PATTEN);
+	private static final DateTimeFormatter DATE_FORMAT = Env.DATE_FORMAT;
 
 	private static final SimpleDateFormatThreadLocal TIMEZONE_FORMAT = new SimpleDateFormatThreadLocal("XXX");
 
@@ -215,7 +213,7 @@ public final class JSONDate
 			catch (final Exception ex2)
 			{
 				final String errmsg = "Failed converting '" + valueStr + "' to date."
-						+ "\n Please use following format: " + DATE_PATTEN + "."
+						+ "\n Please use following format: " + DATE_FORMAT + "."
 						+ "\n e.g. " + DATE_FORMAT.format(ZonedDateTime.now());
 				final IllegalArgumentException exFinal = new IllegalArgumentException(errmsg, ex1);
 				exFinal.addSuppressed(ex2);
@@ -256,7 +254,7 @@ public final class JSONDate
 			catch (final Exception ex2)
 			{
 				final String errmsg = "Failed converting '" + valueStr + "' to date."
-						+ "\n Please use following format: " + DATE_PATTEN + "."
+						+ "\n Please use following format: " + DATE_FORMAT + "."
 						+ "\n e.g. " + DATE_FORMAT.format(ZonedDateTime.now());
 				final AdempiereException exFinal = new AdempiereException(errmsg, ex1);
 				exFinal.addSuppressed(ex2);
