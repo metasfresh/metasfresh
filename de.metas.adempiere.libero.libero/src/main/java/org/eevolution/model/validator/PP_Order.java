@@ -34,14 +34,14 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostDAO;
@@ -97,9 +97,9 @@ public class PP_Order
 		// If Warehouse changed or Locator was never set, set it now
 		if (ppOrder.getM_Locator_ID() <= 0 || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Warehouse_ID))
 		{
-			final I_M_Warehouse warehouse = ppOrder.getM_Warehouse();
-			final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-			ppOrder.setM_Locator(locator);
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
+			final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+			ppOrder.setM_Locator_ID(locatorId.getRepoId());
 		}
 
 		//
