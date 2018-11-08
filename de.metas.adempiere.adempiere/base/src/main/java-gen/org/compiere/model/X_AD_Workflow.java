@@ -15,7 +15,7 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 279547525L;
+	private static final long serialVersionUID = -83830051L;
 
     /** Standard Constructor */
     public X_AD_Workflow (Properties ctx, int AD_Workflow_ID, String trxName)
@@ -789,28 +789,6 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 		return ii.intValue();
 	}
 
-	/** Set Setup Time.
-		@param SetupTime 
-		Setup time before starting Production
-	  */
-	@Override
-	public void setSetupTime (int SetupTime)
-	{
-		set_Value (COLUMNNAME_SetupTime, Integer.valueOf(SetupTime));
-	}
-
-	/** Get Setup Time.
-		@return Setup time before starting Production
-	  */
-	@Override
-	public int getSetupTime () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SetupTime);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
 	{
@@ -843,6 +821,28 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	public int getS_Resource_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_S_Resource_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Setup Time.
+		@param SetupTime 
+		Setup time before starting Production
+	  */
+	@Override
+	public void setSetupTime (int SetupTime)
+	{
+		set_Value (COLUMNNAME_SetupTime, Integer.valueOf(SetupTime));
+	}
+
+	/** Get Setup Time.
+		@return Setup time before starting Production
+	  */
+	@Override
+	public int getSetupTime () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SetupTime);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -992,8 +992,8 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	 * Reference name: AD_Workflow Type
 	 */
 	public static final int WORKFLOWTYPE_AD_Reference_ID=328;
-	/** Allgemein = G */
-	public static final String WORKFLOWTYPE_Allgemein = "G";
+	/** General = G */
+	public static final String WORKFLOWTYPE_General = "G";
 	/** Document Process = P */
 	public static final String WORKFLOWTYPE_DocumentProcess = "P";
 	/** Document Value = V */

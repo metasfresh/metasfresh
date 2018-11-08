@@ -836,31 +836,6 @@ public interface I_AD_Workflow
     public static final String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
-	 * Set Setup Time.
-	 * Setup time before starting Production
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setSetupTime (int SetupTime);
-
-	/**
-	 * Get Setup Time.
-	 * Setup time before starting Production
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getSetupTime();
-
-    /** Column definition for SetupTime */
-    public static final org.adempiere.model.ModelColumn<I_AD_Workflow, Object> COLUMN_SetupTime = new org.adempiere.model.ModelColumn<I_AD_Workflow, Object>(I_AD_Workflow.class, "SetupTime", null);
-    /** Column name SetupTime */
-    public static final String COLUMNNAME_SetupTime = "SetupTime";
-
-	/**
 	 * Set Ressource.
 	 * Resource
 	 *
@@ -888,6 +863,31 @@ public interface I_AD_Workflow
     public static final org.adempiere.model.ModelColumn<I_AD_Workflow, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_AD_Workflow, org.compiere.model.I_S_Resource>(I_AD_Workflow.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
     /** Column name S_Resource_ID */
     public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set Setup Time.
+	 * Setup time before starting Production
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSetupTime (int SetupTime);
+
+	/**
+	 * Get Setup Time.
+	 * Setup time before starting Production
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSetupTime();
+
+    /** Column definition for SetupTime */
+    public static final org.adempiere.model.ModelColumn<I_AD_Workflow, Object> COLUMN_SetupTime = new org.adempiere.model.ModelColumn<I_AD_Workflow, Object>(I_AD_Workflow.class, "SetupTime", null);
+    /** Column name SetupTime */
+    public static final String COLUMNNAME_SetupTime = "SetupTime";
 
 	/**
 	 * Set Units by Cycles.

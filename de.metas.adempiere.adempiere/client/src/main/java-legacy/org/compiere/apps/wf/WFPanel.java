@@ -100,7 +100,7 @@ public class WFPanel extends CPanel
 
 	/** Workflow WhereClause : General, Document Process, Document Value */
 	private static final String WORKFLOW_WhereClause = "WorkflowType IN ("
-			+ DB.TO_STRING(X_AD_Workflow.WORKFLOWTYPE_Allgemein)
+			+ DB.TO_STRING(X_AD_Workflow.WORKFLOWTYPE_General)
 			+ "," + DB.TO_STRING(MWorkflow.WORKFLOWTYPE_DocumentProcess)
 			+ "," + DB.TO_STRING(MWorkflow.WORKFLOWTYPE_DocumentValue)
 			+ ")";
