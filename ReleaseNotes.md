@@ -42,14 +42,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1082](https://github.com/metasfresh/metasfresh-webui-api/issues/1082) Picking from source HU not working
+    * Fixes a Bug in Picking workflow, now able to pick from Source Handling Units again.
   * [#1083](https://github.com/metasfresh/metasfresh-webui-api/issues/1083) QtyPicked in first window picking terminal not correct
+    * Improvement of the first window shown in Picking Terminal. Now showing the correct picked quantity.
 
 * metasfresh-webui-frontend
   * [#2007](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2007) Dropdown fields too small in several places
     * Fixes the Dropdown width and length in Lookup and Dropdown widgets.
   * [#2018](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2018) Included view: clicking on it's right side space shall not close the included view
+    * Navigation improvement in WebUI modal overlay. Now not closing the modal overlay anymore when the user clicks on white space of the included view.
   * [#2034](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2034) Uncaught TypeError: selected.indexOf is not a function
+    * Internal bugfix in WebUI.
   * [#2036](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2036) Uncaught TypeError: Cannot read property 'length' of null at windowHandler (windowHandler.js:395)
+    * Internal bugfix in WebUI.
 
 # metasfresh 5.79
 ## Features
