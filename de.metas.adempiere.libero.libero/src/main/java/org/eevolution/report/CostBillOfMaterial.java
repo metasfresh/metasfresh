@@ -43,16 +43,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.engines.CostDimension;
-import org.adempiere.model.engines.CostEngine;
-import org.adempiere.model.engines.CostEngineFactory;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
-import org.compiere.model.MProduct;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_CostElement;
-import org.compiere.util.Env;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.X_T_BOMLine;
@@ -61,11 +61,15 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -81,11 +85,11 @@ public class CostBillOfMaterial extends JavaProcess
 
 	private static final String LEVELS = "....................";
 	//
-	private int p_AD_Org_ID = 0;
+	private OrgId p_AD_Org_ID = OrgId.ANY;
 	private AcctSchemaId p_C_AcctSchema_ID;
-	private int p_M_Product_ID = 0;
-	private int p_M_CostType_ID = 0;
-	private String p_ConstingMethod = CostingMethod.StandardCosting.getCode();
+	private ProductId p_M_Product_ID;
+	private CostTypeId p_M_CostType_ID;
+	private CostingMethod p_ConstingMethod = CostingMethod.StandardCosting;
 	private boolean p_implosion = false;
 	//
 	private int m_LevelNo = 0;
@@ -101,18 +105,18 @@ public class CostBillOfMaterial extends JavaProcess
 			if (para.getParameter() == null)
 				;
 			else if (name.equals(I_M_Cost.COLUMNNAME_AD_Org_ID))
-				p_AD_Org_ID = para.getParameterAsInt();
+				p_AD_Org_ID = OrgId.ofRepoIdOrAny(para.getParameterAsInt());
 			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
 			{
 				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para.getParameterAsInt());
 				m_as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
 			}
 			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
-				p_M_CostType_ID = para.getParameterAsInt();
+				p_M_CostType_ID = CostTypeId.ofRepoIdOrNull(para.getParameterAsInt());
 			else if (name.equals(X_M_CostElement.COLUMNNAME_CostingMethod))
-				p_ConstingMethod = (String)para.getParameter();
+				p_ConstingMethod = CostingMethod.ofCode(para.getParameterAsString());
 			else if (name.equals(I_M_Cost.COLUMNNAME_M_Product_ID))
-				p_M_Product_ID = para.getParameterAsInt();
+				p_M_Product_ID = ProductId.ofRepoIdOrNull(para.getParameterAsInt());
 			else
 				log.error("prepare - Unknown Parameter: " + name);
 		}
@@ -128,7 +132,7 @@ public class CostBillOfMaterial extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		if (p_M_Product_ID == 0)
+		if (p_M_Product_ID == null)
 		{
 			throw new FillMandatoryException("M_Product_ID");
 		}
@@ -144,9 +148,9 @@ public class CostBillOfMaterial extends JavaProcess
 	 * @param isComponent component / header
 	 */
 	@SuppressWarnings("deprecation") // hide those to not polute our Warnings
-	private void explodeProduct(int M_Product_ID, boolean isComponent)
+	private void explodeProduct(ProductId productId, boolean isComponent)
 	{
-		MProduct product = MProduct.get(getCtx(), M_Product_ID);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		List<MPPProductBOM> list = getBOMs(product, isComponent);
 		if (!isComponent && list.size() == 0)
 		{
@@ -169,7 +173,7 @@ public class CostBillOfMaterial extends JavaProcess
 					continue;
 				}
 				createLines(bom, bomLine);
-				explodeProduct(bomLine.getM_Product_ID(), true);
+				explodeProduct(ProductId.ofRepoId(bomLine.getM_Product_ID()), true);
 			}
 			m_LevelNo--;
 		}
@@ -182,12 +186,12 @@ public class CostBillOfMaterial extends JavaProcess
 	 * @param isComponent
 	 * @return list of MPPProductBOM
 	 */
-	private List<MPPProductBOM> getBOMs(MProduct product, boolean includeAlternativeBOMs)
+	private List<MPPProductBOM> getBOMs(I_M_Product product, boolean includeAlternativeBOMs)
 	{
 		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		whereClause.append(MPPProductBOM.COLUMNNAME_M_Product_ID).append("=?");
-		params.add(product.get_ID());
+		params.add(product.getM_Product_ID());
 		// Allow alternative BOMs
 		if (includeAlternativeBOMs)
 		{
@@ -213,17 +217,17 @@ public class CostBillOfMaterial extends JavaProcess
 	 */
 	private void createLines(MPPProductBOM bom, MPPProductBOMLine bomLine)
 	{
-		MProduct product;
+		final I_M_Product product;
 		BigDecimal qty;
 		if (bomLine != null)
 		{
-			product = MProduct.get(getCtx(), bomLine.getM_Product_ID());
+			product = Services.get(IProductDAO.class).getById(bomLine.getM_Product_ID());
 			qty = bomLine.getQty();
 		}
 		else if (bom != null)
 		{
-			product = MProduct.get(getCtx(), bom.getM_Product_ID());
-			qty = Env.ONE;
+			product = Services.get(IProductDAO.class).getById(bom.getM_Product_ID());
+			qty = BigDecimal.ONE;
 		}
 		else
 		{
@@ -232,15 +236,15 @@ public class CostBillOfMaterial extends JavaProcess
 		for (CostElement costElement : getCostElements())
 		{
 			X_T_BOMLine tboml = new X_T_BOMLine(getCtx(), 0, get_TrxName());
-			tboml.setAD_Org_ID(p_AD_Org_ID);
-			tboml.setSel_Product_ID(p_M_Product_ID);
+			tboml.setAD_Org_ID(p_AD_Org_ID.getRepoId());
+			tboml.setSel_Product_ID(ProductId.toRepoId(p_M_Product_ID));
 			tboml.setImplosion(p_implosion);
 			tboml.setC_AcctSchema_ID(p_C_AcctSchema_ID.getRepoId());
-			tboml.setM_CostType_ID(p_M_CostType_ID);
-			tboml.setCostingMethod(p_ConstingMethod);
+			tboml.setM_CostType_ID(CostTypeId.toRepoId(p_M_CostType_ID));
+			tboml.setCostingMethod(p_ConstingMethod.getCode());
 			tboml.setAD_PInstance_ID(getPinstanceId().getRepoId());
 			tboml.setM_CostElement_ID(costElement.getId().getRepoId());
-			tboml.setM_Product_ID(product.get_ID());
+			tboml.setM_Product_ID(product.getM_Product_ID());
 			tboml.setQtyBOM(qty);
 			//
 			tboml.setSeqNo(m_SeqNo);
@@ -248,14 +252,13 @@ public class CostBillOfMaterial extends JavaProcess
 			tboml.setLevels(LEVELS.substring(0, m_LevelNo) + m_LevelNo);
 			//
 			// Set Costs:
-			final CostEngine engine = CostEngineFactory.getCostEngine(getAD_Client_ID());
 			Collection<I_M_Cost> costs = getCostsByElement(
 					product,
 					m_as,
 					p_M_CostType_ID,
 					p_AD_Org_ID,
-					0, // ASI
-					costElement.getId().getRepoId());
+					AttributeSetInstanceId.NONE, // ASI
+					costElement.getId());
 			BigDecimal currentCostPrice = BigDecimal.ZERO;
 			BigDecimal currentCostPriceLL = BigDecimal.ZERO;
 			BigDecimal futureCostPrice = BigDecimal.ZERO;
@@ -295,7 +298,7 @@ public class CostBillOfMaterial extends JavaProcess
 	{
 		if (m_costElements == null)
 		{
-			m_costElements = costElementRepo.getByCostingMethod(CostingMethod.ofCode(p_ConstingMethod));
+			m_costElements = costElementRepo.getByCostingMethod(p_ConstingMethod);
 		}
 		return m_costElements;
 	}
@@ -303,17 +306,20 @@ public class CostBillOfMaterial extends JavaProcess
 	private List<CostElement> m_costElements = null;
 
 	private static Collection<I_M_Cost> getCostsByElement(
-			final MProduct product, 
+			final I_M_Product product,
 			final AcctSchema as,
-			final int M_CostType_ID, 
-			final int AD_Org_ID, 
-			final int M_AttributeSetInstance_ID,
-			final int M_CostElement_ID)
+			final CostTypeId M_CostType_ID,
+			final OrgId AD_Org_ID,
+			final AttributeSetInstanceId M_AttributeSetInstance_ID,
+			final CostElementId costElementId)
 	{
-		final CostDimension cd = new CostDimension(product, as, M_CostType_ID,
-				AD_Org_ID, M_AttributeSetInstance_ID,
-				M_CostElement_ID);
-		return cd.toQuery(I_M_Cost.class, product.get_TrxName())
+		final CostDimension cd = new CostDimension(product,
+				as,
+				M_CostType_ID,
+				AD_Org_ID,
+				M_AttributeSetInstance_ID,
+				costElementId);
+		return cd.toQuery(I_M_Cost.class, ITrx.TRXNAME_ThreadInherited)
 				.setOnlyActiveRecords(true)
 				.list();
 	}

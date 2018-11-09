@@ -4,18 +4,16 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
-import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
-import com.jgoodies.common.base.Objects;
-
-import de.metas.cache.annotation.CacheModel;
 import de.metas.material.planning.IResourceProductService;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -43,89 +41,10 @@ import lombok.NonNull;
 public class ResourceProductService implements IResourceProductService
 {
 	@Override
-	public boolean setResourceToProduct(@NonNull final I_S_Resource resource, @NonNull final I_M_Product product)
+	public I_M_Product getProductByResourceId(@NonNull final ResourceId resourceId)
 	{
-		boolean changed = false;
-		if (!X_M_Product.PRODUCTTYPE_Resource.equals(product.getProductType()))
-		{
-			product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
-			changed = true;
-		}
-		if (resource.getS_Resource_ID() != product.getS_Resource_ID())
-		{
-			product.setS_Resource_ID(resource.getS_Resource_ID());
-			changed = true;
-		}
-		if (resource.isActive() != product.isActive())
-		{
-			product.setIsActive(resource.isActive());
-			changed = true;
-		}
-
-		// the "PR" is a QnD solution to the possible problem that if the production resource's value is set to its ID (like '1000000") there is probably already a product with the same value.
-		if (!Objects.equals("PR" + resource.getValue(), product.getValue()))
-		{
-			product.setValue("PR" + resource.getValue());
-			changed = true;
-		}
-		if (!resource.getName().equals(product.getName()))
-		{
-			product.setName(resource.getName());
-			changed = true;
-		}
-		if (resource.getDescription() == null && product.getDescription() != null
-				|| resource.getDescription() != null && !resource.getDescription().equals(product.getDescription()))
-		{
-			product.setDescription(resource.getDescription());
-			changed = true;
-		}
-		//
-		return changed;
-	}	// setResource
-
-	/**
-	 * Set Resource Type
-	 *
-	 * @param parent resource type
-	 * @return true if changed
-	 */
-	@Override
-	public boolean setResourceTypeToProduct(final I_S_ResourceType parent, final I_M_Product product)
-	{
-		boolean changed = false;
-		if (X_M_Product.PRODUCTTYPE_Resource.equals(product.getProductType()))
-		{
-			product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
-			changed = true;
-		}
-		//
-		if (parent.getC_UOM_ID() != product.getC_UOM_ID())
-		{
-			product.setC_UOM_ID(parent.getC_UOM_ID());
-			changed = true;
-		}
-		if (parent.getM_Product_Category_ID() != product.getM_Product_Category_ID())
-		{
-			product.setM_Product_Category_ID(parent.getM_Product_Category_ID());
-			changed = true;
-		}
-
-		//
-		// metas 05129 end
-		return changed;
-	}	// setResource
-
-	@Override
-	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_S_Resource_ID)
-	public I_M_Product retrieveProductForResource(@CacheModel final I_S_Resource resource)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product.class, resource)
-				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resource.getS_Resource_ID())
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.create()
-				.firstOnly(I_M_Product.class);
+		final ProductId productId = Services.get(IProductDAO.class).getProductIdByResourceId(resourceId);
+		return Services.get(IProductDAO.class).getById(productId);
 	}
 
 	@Override
@@ -282,5 +201,12 @@ public class ResourceProductService implements IResourceProductService
 		}
 		return getAvailableDaysWeekForResourceType(resourceType) > 0
 				&& getTimeSlotHoursForResourceType(resourceType) > 0;
+	}
+
+	@Override
+	public I_C_UOM getResourceUOM(@NonNull final ResourceId resourceId)
+	{
+		final ProductId productId = Services.get(IProductDAO.class).getProductIdByResourceId(resourceId);
+		return Services.get(IProductBL.class).getStockingUOM(productId);
 	}
 }

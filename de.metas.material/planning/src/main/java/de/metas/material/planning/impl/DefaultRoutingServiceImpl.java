@@ -34,7 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.PO;
@@ -49,6 +48,8 @@ import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UOMUtil;
 import de.metas.util.Services;
 
@@ -209,54 +210,46 @@ public class DefaultRoutingServiceImpl implements RoutingService
 		return requiredTime.multiply(WeeklyFactor).divide(AvailableDayTime, 0, RoundingMode.UP);
 	}
 
-	protected BigDecimal convertDurationToResourceUOM(final BigDecimal duration, final int S_Resource_ID, final I_AD_WF_Node node)
+	protected Quantity convertDurationToResourceUOM(final BigDecimal duration, final ResourceId resourceId, final I_AD_WF_Node node)
 	{
 		final Properties ctx = Env.getCtx();
 
 		final I_AD_Workflow wf = MWorkflow.get(ctx, node.getAD_Workflow_ID());
-		final I_S_Resource resource = InterfaceWrapperHelper.create(ctx, S_Resource_ID, I_S_Resource.class, ITrx.TRXNAME_None);
-		final I_C_UOM resourceUOM = retrieveUOM(resource);
+		final I_C_UOM resourceUOM = getResourceUOM(resourceId);
 
 		return convertDuration(duration, wf.getDurationUnit(), resourceUOM);
 	}
 
-	private I_C_UOM retrieveUOM(final I_S_Resource resource)
+	private I_C_UOM getResourceUOM(final ResourceId resourceId)
 	{
-		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-		final I_M_Product product = resourceProductService.retrieveProductForResource(resource);
-
-		// product is not null because it was created when the resource was first saved.
-		return product.getC_UOM();
+		return Services.get(IResourceProductService.class).getResourceUOM(resourceId);
 	}
 
 	@Override
-	public BigDecimal getResourceBaseValue(final int S_Resource_ID, final I_PP_Cost_Collector cc)
+	public Quantity getResourceBaseValue(final ResourceId resourceId, final I_PP_Cost_Collector cc)
 	{
-		return getResourceBaseValue(S_Resource_ID, null, cc);
+		return getResourceBaseValue(resourceId, null, cc);
 	}
 
 	@Override
-	public BigDecimal getResourceBaseValue(final int S_Resource_ID, final I_AD_WF_Node node)
+	public Quantity getResourceBaseValue(final ResourceId resourceId, final I_AD_WF_Node node)
 	{
-		return getResourceBaseValue(S_Resource_ID, node, null);
+		return getResourceBaseValue(resourceId, node, null);
 	}
 
-	protected BigDecimal getResourceBaseValue(final int S_Resource_ID, I_AD_WF_Node node, final I_PP_Cost_Collector cc)
+	protected Quantity getResourceBaseValue(final ResourceId resourceId, I_AD_WF_Node node, final I_PP_Cost_Collector cc)
 	{
 		if (node == null)
 		{
 			node = cc.getPP_Order_Node().getAD_WF_Node();
 		}
-		final Properties ctx = node instanceof PO ? ((PO)node).getCtx() : Env.getCtx();
-		final I_S_Resource resource = InterfaceWrapperHelper.create(ctx, S_Resource_ID, I_S_Resource.class, ITrx.TRXNAME_None);
-
-		final I_C_UOM resourceUOM = retrieveUOM(resource);
+		final I_C_UOM resourceUOM = getResourceUOM(resourceId);
 
 		if (UOMUtil.isTime(resourceUOM))
 		{
 			final BigDecimal duration = calculateDuration(node, cc);
-			final I_AD_Workflow wf = MWorkflow.get(ctx, node.getAD_Workflow_ID());
-			final BigDecimal convertedDuration = convertDuration(duration, wf.getDurationUnit(), resourceUOM);
+			final I_AD_Workflow wf = MWorkflow.get(Env.getCtx(), node.getAD_Workflow_ID());
+			final Quantity convertedDuration = convertDuration(duration, wf.getDurationUnit(), resourceUOM);
 			return convertedDuration;
 		}
 		else
@@ -354,7 +347,7 @@ public class DefaultRoutingServiceImpl implements RoutingService
 	 * @param toUOM target UOM
 	 * @return duration converted to toUOM
 	 */
-	public BigDecimal convertDuration(final BigDecimal duration, final String fromDurationUnit, final I_C_UOM toUOM)
+	public Quantity convertDuration(final BigDecimal duration, final String fromDurationUnit, final I_C_UOM toUOM)
 	{
 		final double fromMult = getDurationBaseSec(fromDurationUnit);
 		final double toDiv = getDurationBaseSec(toUOM);
@@ -366,6 +359,6 @@ public class DefaultRoutingServiceImpl implements RoutingService
 			convertedDuration = convertedDuration.setScale(precision, RoundingMode.HALF_UP);
 		}
 		//
-		return convertedDuration;
+		return Quantity.of(convertedDuration, toUOM);
 	}
 }

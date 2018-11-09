@@ -33,6 +33,9 @@ import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_Node;
 
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+
 /**
  * Rounting(Workflow Service)
  *
@@ -80,18 +83,18 @@ public interface RoutingService
 	/**
 	 * Return cost collector base value in resource UOM (e.g. duration)
 	 *
-	 * @param S_Resource_ID resource
+	 * @param resourceId resource
 	 * @param cc cost collector
 	 * @return value (e.g. duration)
 	 */
-	public BigDecimal getResourceBaseValue(int S_Resource_ID, I_PP_Cost_Collector cc);
+	public Quantity getResourceBaseValue(ResourceId resourceId, I_PP_Cost_Collector cc);
 
 	/**
 	 * Return node base value in resource UOM (e.g. duration)
 	 *
-	 * @param S_Resource_ID resource
+	 * @param resourceId resource
 	 * @param node
 	 * @return value (e.g. duration)
 	 */
-	public BigDecimal getResourceBaseValue(int S_Resource_ID, I_AD_WF_Node node);
+	public Quantity getResourceBaseValue(ResourceId resourceId, I_AD_WF_Node node);
 }

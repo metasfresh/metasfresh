@@ -33,6 +33,7 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 
 public class PPOrderCostBL implements IPPOrderCostBL
@@ -102,7 +103,8 @@ public class PPOrderCostBL implements IPPOrderCostBL
 			{
 				continue;
 			}
-			final I_M_Product resourceProduct = Services.get(IResourceProductService.class).retrieveProductForResource(node.getS_Resource());
+			final ResourceId resourceId = ResourceId.ofRepoId(node.getS_Resource_ID());
+			final I_M_Product resourceProduct = Services.get(IResourceProductService.class).getProductByResourceId(resourceId);
 			if (resourceProduct == null)
 			{
 				// shall not happen, but we can skip it for now

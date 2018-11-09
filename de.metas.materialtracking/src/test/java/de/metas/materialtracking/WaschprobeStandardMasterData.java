@@ -40,8 +40,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.X_PP_Cost_Collector;
 import org.junit.Assert;
 
 import de.metas.inout.model.I_M_InOut;
@@ -302,7 +302,7 @@ public class WaschprobeStandardMasterData
 	{
 		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class, context);
 		cc.setPP_Order(ppOrder);
-		cc.setCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue);
+		cc.setCostCollectorType(CostCollectorType.ComponentIssue.getCode());
 		cc.setMovementQty(issuedQty);
 
 		InterfaceWrapperHelper.save(cc);

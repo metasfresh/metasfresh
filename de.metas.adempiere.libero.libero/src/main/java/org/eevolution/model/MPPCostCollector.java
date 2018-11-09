@@ -51,9 +51,10 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
-import org.adempiere.model.engines.IDocumentLine;
 import org.adempiere.model.engines.StorageEngine;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BPartner_Product;
@@ -89,6 +90,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.order.IOrderBL;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Services;
@@ -104,7 +106,7 @@ import de.metas.util.Services;
  * @author Teo Sarca, www.arhipac.ro
  * @version $Id: MPPCostCollector.java,v 1.1 2004/06/19 02:10:34 vpj-cd Exp $
  */
-public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, IDocumentLine
+public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 {
 	/**
 	 *
@@ -315,10 +317,11 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		//
 		// Material Issue (component issue, method change variance, mix variance)
 		// Material Receipt
+		final CostEngine costEngine = getCostEngine();
 		if (isIssue() || isReceipt())
 		{
 			// Stock Movement
-			final I_M_Product product = getM_Product();
+			final I_M_Product product = Services.get(IProductDAO.class).getById(getM_Product_ID());
 			if (product != null && Services.get(IProductBL.class).isStocked(product) && !isVariance())
 			{
 				StorageEngine.createTrasaction(
@@ -326,7 +329,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 						getMovementType(),
 						getMovementDate(),
 						getMovementQty(),
-						isReversal,											// IsReversal=false
+						isReversal,
 						getM_Warehouse_ID(),
 						getPP_Order().getM_AttributeSetInstance_ID(),	// Reservation ASI
 						getPP_Order().getM_Warehouse_ID(),				// Reservation Warehouse
@@ -424,7 +427,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			}
 			else
 			{
-				CostEngineFactory.getCostEngine(getAD_Client_ID()).createActivityControl(this);
+				costEngine.createActivityControl(this);
 				if (activity.getQtyDelivered().compareTo(activity.getQtyRequiered()) >= 0)
 				{
 					activity.closeIt();
@@ -445,7 +448,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			// obomline.setDateDelivered(getMovementDate()); // overwrite=last
 			orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
 			InterfaceWrapperHelper.save(orderBOMLine);
-			CostEngineFactory.getCostEngine(getAD_Client_ID()).createUsageVariances(this);
+			costEngine.createUsageVariances(this);
 		}
 		//
 		// Usage Variance (resource)
@@ -455,20 +458,20 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			activity.setDurationReal(activity.getDurationReal() + getDurationReal().intValueExact());
 			activity.setSetupTimeReal(activity.getSetupTimeReal() + getSetupTimeReal().intValueExact());
 			activity.saveEx();
-			CostEngineFactory.getCostEngine(getAD_Client_ID()).createUsageVariances(this);
+			costEngine.createUsageVariances(this);
 		}
 		else if (isCostCollectorType(COSTCOLLECTORTYPE_RateVariance))
 		{
 			if (isReversal)
 			{
-				CostEngineFactory.getCostEngine(getAD_Client_ID()).createReversals(this);
+				costEngine.createReversals(this);
 			}
 		}
 		else if (isCostCollectorType(COSTCOLLECTORTYPE_MethodChangeVariance))
 		{
 			if (isReversal)
 			{
-				CostEngineFactory.getCostEngine(getAD_Client_ID()).createReversals(this);
+				costEngine.createReversals(this);
 			}
 		}
 		else
@@ -481,8 +484,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		// Create Rate and Method Variances
 		if (!isReversal)
 		{
-			CostEngineFactory.getCostEngine(getAD_Client_ID()).createRateVariances(this);
-			CostEngineFactory.getCostEngine(getAD_Client_ID()).createMethodVariances(this);
+			costEngine.createRateVariances(this);
+			costEngine.createMethodVariances(this);
 		}
 		// Reverse Rate and Method Variances
 		else
@@ -507,6 +510,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		setDocStatus(DOCSTATUS_Completed);
 		return IDocument.STATUS_Completed;
 	}	// completeIt
+
+	private CostEngine getCostEngine()
+	{
+		final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
+		return CostEngineFactory.getCostEngine(clientId);
+	}
 
 	@Override
 	public boolean voidIt()
@@ -750,8 +759,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			// Find Vendor and Product PO data
 			int C_BPartner_ID = activity.getC_BPartner_ID();
 
-
-			//FRESH-334: Make sure the BP_Product if of the product's org or org *
+			// FRESH-334: Make sure the BP_Product if of the product's org or org *
 			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
@@ -902,14 +910,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	 */
 	public boolean isCostCollectorType(final String... types)
 	{
-		final String type = getCostCollectorType();
-		for (final String t : types)
-		{
-			if (type.equals(t))
-			{
-				return true;
-			}
-		}
-		return false;
+		return PPCostCollectorUtils.isCostCollectorTypeAnyOf(this, types);
 	}
 }

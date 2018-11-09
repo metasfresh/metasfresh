@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderNodeBL;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -89,7 +88,7 @@ public class PP_Cost_Collector
 			return;
 		}
 
-		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(Env.getCtx());
+		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
 		final BigDecimal durationReal = routingService.estimateWorkingTime(cc);
 		// If Activity Control Duration should be specified
 		// FIXME: this message is really anoying. We need to find a proper solution - teo_sarca

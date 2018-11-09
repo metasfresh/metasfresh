@@ -55,12 +55,12 @@ import org.eevolution.model.MPPOrderNode;
 import org.eevolution.model.MPPOrderWorkflow;
 import org.eevolution.model.reasoner.CRPReasoner;
 
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Capacity Requirement Planning
@@ -89,6 +89,7 @@ public class CRP extends JavaProcess
 	/** CRP Reasoner */
 	private CRPReasoner reasoner;
 
+	@Override
 	protected void prepare()
 	{
 		for (ProcessInfoParameter para : getParametersAsArray())
@@ -110,10 +111,11 @@ public class CRP extends JavaProcess
 		p_MaxIterationsNo = MSysConfig.getIntValue(SYSCONFIG_MaxIterationsNo, DEFAULT_MaxIterationsNo, getAD_Client_ID());
 	}
 
+	@Override
 	protected String doIt() throws Exception
 	{
 		reasoner = new CRPReasoner();
-		routingService = RoutingServiceFactory.get().getRoutingService(getAD_Client_ID());
+		routingService = RoutingServiceFactory.get().getRoutingService();
 		return runCRP();
 	} 
 
@@ -285,7 +287,7 @@ public class CRP extends JavaProcess
 		totalDuration += workingTime.doubleValue();
 		
 		// Returns the total duration of a node in milliseconds.
-		return (long)(totalDuration * commonBase * 1000);
+		return totalDuration * commonBase * 1000;
 	}
 
 	/**

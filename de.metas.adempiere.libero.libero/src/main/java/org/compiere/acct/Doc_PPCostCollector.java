@@ -43,9 +43,9 @@ import java.util.List;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.X_C_DocType;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.X_PP_Cost_Collector;
 
 import com.google.common.collect.ImmutableList;
 
@@ -100,9 +100,9 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		return getModel(I_PP_Cost_Collector.class);
 	}
 
-	private String getCostCollectorType()
+	private CostCollectorType getCostCollectorType()
 	{
-		return getPP_Cost_Collector().getCostCollectorType();
+		return CostCollectorType.ofCode(getPP_Cost_Collector().getCostCollectorType());
 	}
 
 	private boolean isFloorStock()
@@ -134,36 +134,36 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		setC_Currency_ID(as.getCurrencyId());
 
 		final Fact fact;
-		final String costCollectorType = getCostCollectorType();
-		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt.equals(costCollectorType))
+		final CostCollectorType costCollectorType = getCostCollectorType();
+		if (CostCollectorType.MaterialReceipt.equals(costCollectorType))
 		{
 			fact = createFacts_MaterialReceipt(as);
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue.equals(costCollectorType))
+		else if (CostCollectorType.ComponentIssue.equals(costCollectorType))
 		{
 			fact = createFacts_ComponentIssue(as);
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance.equals(costCollectorType))
+		else if (CostCollectorType.MethodChangeVariance.equals(costCollectorType))
 		{
 			fact = createFacts_Variance(as, ProductAcctType.MethodChangeVariance);
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(costCollectorType))
+		else if (CostCollectorType.UsageVariance.equals(costCollectorType))
 		{
 			fact = createFacts_Variance(as, ProductAcctType.UsageVariance);
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(costCollectorType))
+		else if (CostCollectorType.UsageVariance.equals(costCollectorType))
 		{
 			fact = createFacts_Variance(as, ProductAcctType.UsageVariance);
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_RateVariance.equals(costCollectorType))
+		else if (CostCollectorType.RateVariance.equals(costCollectorType))
 		{
 			fact = createFacts_Variance(as, ProductAcctType.RateVariance);
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(costCollectorType))
+		else if (CostCollectorType.MixVariance.equals(costCollectorType))
 		{
 			fact = createFacts_Variance(as, ProductAcctType.MixVariance);
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl.equals(costCollectorType))
+		else if (CostCollectorType.ActivityControl.equals(costCollectorType))
 		{
 			fact = createFacts_ActivityControl(as);
 		}

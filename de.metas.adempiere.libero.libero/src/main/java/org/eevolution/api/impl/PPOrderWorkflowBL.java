@@ -259,7 +259,7 @@ public class PPOrderWorkflowBL implements IPPOrderWorkflowBL
 	public void setQtyOrdered(final I_PP_Order_Node orderNode, BigDecimal qtyOrdered)
 	{
 		orderNode.setQtyRequiered(qtyOrdered);
-		RoutingService routingService = RoutingServiceFactory.get().getRoutingService(orderNode.getAD_Client_ID());
+		RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
 		BigDecimal workingTime = routingService.estimateWorkingTime(orderNode, qtyOrdered);
 		orderNode.setDurationRequiered(workingTime.intValueExact());
 	}

@@ -1,17 +1,17 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
  *****************************************************************************/
 
 package org.eevolution.process;
@@ -31,11 +31,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,14 +45,16 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MProduct;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -60,12 +62,14 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.ICostElementRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 
 /**
@@ -80,10 +84,10 @@ public class CopyPriceToStandard extends JavaProcess
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 	// parameters
-	private int p_AD_Org_ID = 0;
+	private OrgId p_AD_Org_ID;
 	private AcctSchemaId p_C_AcctSchema_ID;
-	private int p_M_CostType_ID = 0;
-	private int p_M_CostElement_ID = 0;
+	private CostTypeId p_M_CostType_ID;
+	private CostElementId p_M_CostElement_ID;
 	private int p_M_PriceList_Version_ID = 0;
 
 	@Override
@@ -98,11 +102,11 @@ public class CopyPriceToStandard extends JavaProcess
 				;
 			else if (name.equals("M_CostType_ID"))
 			{
-				p_M_CostType_ID = ((BigDecimal)para[i].getParameter()).intValue();
+				p_M_CostType_ID = CostTypeId.ofRepoIdOrNull(para[i].getParameterAsInt());
 			}
 			else if (name.equals("AD_Org_ID"))
 			{
-				p_AD_Org_ID = ((BigDecimal)para[i].getParameter()).intValue();
+				p_AD_Org_ID = OrgId.ofRepoIdOrAny(para[i].getParameterAsInt());
 			}
 			else if (name.equals("C_AcctSchema_ID"))
 			{
@@ -110,7 +114,7 @@ public class CopyPriceToStandard extends JavaProcess
 			}
 			else if (name.equals("M_CostElement_ID"))
 			{
-				p_M_CostElement_ID = ((BigDecimal)para[i].getParameter()).intValue();
+				p_M_CostElement_ID = CostElementId.ofRepoIdOrNull(para[i].getParameterAsInt());
 			}
 			else if (name.equals("M_PriceList_Version_ID"))
 			{
@@ -127,7 +131,7 @@ public class CopyPriceToStandard extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
-		CostElement element = Adempiere.getBean(ICostElementRepository.class).getById(CostElementId.ofRepoId(p_M_CostElement_ID));
+		CostElement element = Adempiere.getBean(ICostElementRepository.class).getById(p_M_CostElement_ID);
 		if (CostElementType.Material != element.getCostElementType())
 		{
 			throw new LiberoException("Only Material Cost Elements are allowed");
@@ -145,11 +149,12 @@ public class CopyPriceToStandard extends JavaProcess
 			{
 				price = currencyConversionBL.convert(getCtx(), pprice.getPriceStd(),
 						C_Currency_ID, as.getCurrencyId().getRepoId(),
-						getAD_Client_ID(), p_AD_Org_ID);
+						getAD_Client_ID(), p_AD_Org_ID.getRepoId());
 			}
-			MProduct product = MProduct.get(getCtx(), pprice.getM_Product_ID());
-			CostDimension d = new CostDimension(product, as, p_M_CostType_ID, p_AD_Org_ID, 0, p_M_CostElement_ID);
-			Collection<I_M_Cost> costs = d.toQuery(I_M_Cost.class, get_TrxName()).list();
+
+			final I_M_Product product = Services.get(IProductDAO.class).getById(pprice.getM_Product_ID());
+			final CostDimension d = new CostDimension(product, as, p_M_CostType_ID, p_AD_Org_ID, AttributeSetInstanceId.NONE, p_M_CostElement_ID);
+			final Collection<I_M_Cost> costs = d.toQuery(I_M_Cost.class, get_TrxName()).list();
 			for (I_M_Cost cost : costs)
 			{
 				if (cost.getM_CostElement_ID() == element.getId().getRepoId())
@@ -163,7 +168,7 @@ public class CopyPriceToStandard extends JavaProcess
 		}
 		return "@Updated@ #" + count_updated;
 	}
-	
+
 	private static List<I_M_ProductPrice> getProductPrice(int priceListVersionId)
 	{
 		return Services.get(IQueryBL.class)

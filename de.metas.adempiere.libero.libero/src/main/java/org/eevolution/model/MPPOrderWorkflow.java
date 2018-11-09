@@ -476,7 +476,7 @@ public class MPPOrderWorkflow extends X_PP_Order_Workflow
 					continue;
 				}
 				final int setupTimeReal = node.getSetupTimeRequiered() - node.getSetupTimeReal();
-				final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(node.getAD_Client_ID());
+				final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
 				final BigDecimal durationReal = routingService.estimateWorkingTime(node, qtyToDeliver);
 				// arhipac: cristi_pup: Generate even if nothing was reporting on this activity
 				// https://sourceforge.net/projects/adempiere/forums/forum/639403/topic/3407220

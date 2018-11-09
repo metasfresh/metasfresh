@@ -1,29 +1,5 @@
 package org.adempiere.model.engines;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -35,18 +11,20 @@ import org.adempiere.service.OrgId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MProduct;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -65,51 +43,49 @@ public final class CostDimension
 	private static final String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
 	private static final String COLUMNNAME_M_CostType_ID = "M_CostType_ID";
 
-	public static final int ANY = -10;
-
-	private final int AD_Client_ID;
-	private int AD_Org_ID;
-	private int M_Product_ID;
-	private int S_Resource_ID;
-	private int M_AttributeSetInstance_ID;
-	private final int M_CostType_ID;
+	private final ClientId clientId;
+	private OrgId orgId;
+	private final ProductId productId;
+	private ResourceId resourceId;
+	private AttributeSetInstanceId attributeSetInstanceId;
+	private final CostTypeId costTypeId;
 	private final AcctSchemaId acctSchemaId;
-	private final int M_CostElement_ID;
+	private final CostElementId costElementId;
 
 	public CostDimension(
-			I_M_Product product,
-			AcctSchema as,
-			int M_CostType_ID,
-			int AD_Org_ID,
-			int M_ASI_ID,
-			int M_CostElement_ID)
+			final I_M_Product product,
+			final AcctSchema as,
+			final CostTypeId costTypeId,
+			final OrgId orgId,
+			final AttributeSetInstanceId attributeSetInstanceId,
+			final CostElementId costElementId)
 	{
-		this.AD_Client_ID = as.getClientId().getRepoId();
-		this.AD_Org_ID = AD_Org_ID;
-		this.M_Product_ID = product != null ? product.getM_Product_ID() : ANY;
-		this.M_AttributeSetInstance_ID = M_ASI_ID;
-		this.M_CostType_ID = M_CostType_ID;
+		this.clientId = as.getClientId();
+		this.orgId = orgId != null ? orgId : OrgId.ANY;
+		this.productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
+		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
+		this.costTypeId = costTypeId;
 		this.acctSchemaId = as.getId();
-		this.M_CostElement_ID = M_CostElement_ID;
+		this.costElementId = costElementId;
 		updateForProduct(product, as);
 	}
 
 	public CostDimension(
-			int client_ID,
-			int org_ID,
-			int product_ID,
-			int attributeSetInstance_ID,
-			int costType_ID,
-			int acctSchema_ID,
-			int costElement_ID)
+			int clientId,
+			int orgId,
+			int productId,
+			int attributeSetInstanceId,
+			int costTypeId,
+			int acctSchemaId,
+			int costElementId)
 	{
-		this.AD_Client_ID = client_ID;
-		this.AD_Org_ID = org_ID;
-		this.M_Product_ID = product_ID;
-		this.M_AttributeSetInstance_ID = attributeSetInstance_ID;
-		this.M_CostType_ID = costType_ID;
-		this.acctSchemaId = AcctSchemaId.ofRepoId(acctSchema_ID);
-		this.M_CostElement_ID = costElement_ID;
+		this.clientId = ClientId.ofRepoId(clientId);
+		this.orgId = OrgId.ofRepoId(orgId);
+		this.productId = ProductId.ofRepoId(productId);
+		this.attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceId);
+		this.costTypeId = CostTypeId.ofRepoIdOrNull(costTypeId);
+		this.acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaId);
+		this.costElementId = CostElementId.ofRepoIdOrNull(costElementId);
 		//
 		updateForProduct(null, null);
 	}
@@ -121,25 +97,20 @@ public final class CostDimension
 	 */
 	public CostDimension(final CostDimension costDimension)
 	{
-		this.AD_Client_ID = costDimension.AD_Client_ID;
-		this.AD_Org_ID = costDimension.AD_Org_ID;
-		this.M_Product_ID = costDimension.M_Product_ID;
-		this.M_AttributeSetInstance_ID = costDimension.M_AttributeSetInstance_ID;
-		this.M_CostType_ID = costDimension.M_CostType_ID;
+		this.clientId = costDimension.clientId;
+		this.orgId = costDimension.orgId;
+		this.productId = costDimension.productId;
+		this.attributeSetInstanceId = costDimension.attributeSetInstanceId;
+		this.costTypeId = costDimension.costTypeId;
 		this.acctSchemaId = costDimension.acctSchemaId;
-		this.M_CostElement_ID = costDimension.M_CostElement_ID;
-	}
-
-	private Properties getCtx()
-	{
-		return Env.getCtx(); // TODO
+		this.costElementId = costDimension.costElementId;
 	}
 
 	private void updateForProduct(I_M_Product product, AcctSchema as)
 	{
 		if (product == null)
 		{
-			product = MProduct.get(getCtx(), this.M_Product_ID);
+			product = Services.get(IProductDAO.class).getById(productId);
 		}
 		if (product == null)
 		{
@@ -153,109 +124,62 @@ public final class CostDimension
 		final CostingLevel costingLevel = Services.get(IProductCostingBL.class).getCostingLevel(product, as);
 		if (CostingLevel.Client.equals(costingLevel))
 		{
-			AD_Org_ID = 0;
-			M_AttributeSetInstance_ID = 0;
+			orgId = OrgId.ANY;
+			attributeSetInstanceId = AttributeSetInstanceId.NONE;
 		}
 		else if (CostingLevel.Organization.equals(costingLevel))
 		{
-			M_AttributeSetInstance_ID = 0;
+			attributeSetInstanceId = AttributeSetInstanceId.NONE;
 		}
 		else if (CostingLevel.BatchLot.equals(costingLevel))
 		{
-			AD_Org_ID = 0;
+			orgId = OrgId.ANY;
 		}
-		//
-		this.S_Resource_ID = product.getS_Resource_ID();
+
+		this.resourceId = ResourceId.ofRepoIdOrNull(product.getS_Resource_ID());
 	}
 
-	/**
-	 * @return the aD_Client_ID
-	 */
-	public int getAD_Client_ID()
+	public ClientId getClientId()
 	{
-		return AD_Client_ID;
+		return clientId;
 	}
 
-	/**
-	 * @return the aD_Org_ID
-	 */
-	public int getAD_Org_ID()
+	public OrgId getOrgId()
 	{
-		return AD_Org_ID;
+		return orgId;
 	}
 
-	public CostDimension setAD_Org_ID(final int adOrgId)
+	public ProductId getProductId()
 	{
-		if (this.AD_Org_ID == adOrgId)
-		{
-			// no change
-			return this;
-		}
-		final CostDimension d = new CostDimension(this);
-		d.AD_Org_ID = adOrgId;
-		return d;
+		return productId;
 	}
 
-	/**
-	 * @return the m_Product_ID
-	 */
-	public int getM_Product_ID()
+	public ResourceId getResourceId()
 	{
-		return M_Product_ID;
+		return resourceId;
 	}
 
-	public int getS_Resource_ID()
+	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
-		return S_Resource_ID;
+		return attributeSetInstanceId;
 	}
 
-	public CostDimension setM_Product_ID(int M_Product_ID)
+	public CostTypeId getCostTypeId()
 	{
-		CostDimension d = new CostDimension(this);
-		d.M_Product_ID = M_Product_ID;
-		d.updateForProduct(null, null);
-		//
-		return d;
-	}
-
-	public CostDimension setM_Product(final I_M_Product product)
-	{
-		final CostDimension d = new CostDimension(this);
-		d.M_Product_ID = product.getM_Product_ID();
-		d.updateForProduct(product, null);
-		return d;
-	}
-
-	/**
-	 * @return the M_AttributeSetInstance_ID
-	 */
-	public int getM_AttributeSetInstance_ID()
-	{
-		return M_AttributeSetInstance_ID;
-	}
-
-	/**
-	 * @return the m_CostType_ID
-	 */
-	public int getM_CostType_ID()
-	{
-		return M_CostType_ID;
+		return costTypeId;
 	}
 
 	/**
 	 * @return the c_AcctSchema_ID
 	 */
-	public AcctSchemaId getC_AcctSchema_ID()
+	public AcctSchemaId getAcctSchemaId()
 	{
 		return acctSchemaId;
 	}
 
-	/**
-	 * @return the m_CostElement_ID
-	 */
-	public int getM_CostElement_ID()
+	public CostElementId getCostElementId()
 	{
-		return M_CostElement_ID;
+		return costElementId;
 	}
 
 	public <T> IQuery<T> toQuery(Class<T> clazz, String trxName)
@@ -279,16 +203,15 @@ public final class CostDimension
 
 	public <T> IQueryBuilder<T> toQueryBuilder(final Class<T> clazz, final String trxName)
 	{
-		final Properties ctx = getCtx();
 		final String tableName = InterfaceWrapperHelper.getTableName(clazz);
-		final POInfo poInfo = POInfo.getPOInfo(ctx, tableName);
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
 
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(clazz, ctx, trxName);
+				.createQueryBuilder(clazz, Env.getCtx(), trxName);
 
-		queryBuilder.addEqualsFilter(COLUMNNAME_AD_Client_ID, this.AD_Client_ID);
-		queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, this.M_Product_ID);
-		queryBuilder.addEqualsFilter(COLUMNNAME_M_AttributeSetInstance_ID, this.M_AttributeSetInstance_ID);
+		queryBuilder.addEqualsFilter(COLUMNNAME_AD_Client_ID, this.clientId);
+		queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, this.productId);
+		queryBuilder.addEqualsFilter(COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstanceId);
 		queryBuilder.addEqualsFilter(COLUMNNAME_C_AcctSchema_ID, this.acctSchemaId);
 
 		//
@@ -296,19 +219,19 @@ public final class CostDimension
 		// Else, you can get no results.
 		// e.g. querying PP_Order_Cost, have this.AD_Org_ID=0 but PP_Order_Costs are created using PP_Order's AD_Org_ID
 		// see http://dewiki908/mediawiki/index.php/07741_Rate_Variance_%28103334042334%29.
-		if (this.AD_Org_ID > 0 || I_M_Cost.Table_Name.equals(tableName))
+		if (!this.orgId.isAny() || I_M_Cost.Table_Name.equals(tableName))
 		{
-			queryBuilder.addEqualsFilter(COLUMNNAME_AD_Org_ID, this.AD_Org_ID);
+			queryBuilder.addEqualsFilter(COLUMNNAME_AD_Org_ID, orgId);
 		}
 
-		if (this.M_CostElement_ID != ANY)
+		if (this.costElementId != null)
 		{
-			queryBuilder.addEqualsFilter(COLUMNNAME_M_CostElement_ID, this.M_CostElement_ID);
+			queryBuilder.addEqualsFilter(COLUMNNAME_M_CostElement_ID, costElementId);
 		}
 
-		if (this.M_CostType_ID != ANY && poInfo.hasColumnName(COLUMNNAME_M_CostType_ID))
+		if (this.costTypeId != null && poInfo.hasColumnName(COLUMNNAME_M_CostType_ID))
 		{
-			queryBuilder.addEqualsFilter(COLUMNNAME_M_CostType_ID, this.M_CostType_ID);
+			queryBuilder.addEqualsFilter(COLUMNNAME_M_CostType_ID, this.costTypeId);
 		}
 
 		return queryBuilder;
@@ -318,11 +241,11 @@ public final class CostDimension
 	{
 		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		return CostSegment.builder()
-				.clientId(ClientId.ofRepoId(AD_Client_ID))
-				.orgId(OrgId.ofRepoId(AD_Org_ID))
-				.productId(ProductId.ofRepoId(M_Product_ID))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(M_AttributeSetInstance_ID))
-				.costTypeId(CostTypeId.ofRepoId(M_CostType_ID))
+				.clientId(clientId)
+				.orgId(orgId)
+				.productId(productId)
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.costTypeId(costTypeId)
 				.acctSchemaId(acctSchemaId)
 				.costingLevel(as.getCosting().getCostingLevel())
 				.build();
@@ -339,13 +262,13 @@ public final class CostDimension
 	{
 		final String TAB = ";";
 		return "CostDimension["
-				+ "AD_Client_ID = " + this.AD_Client_ID + TAB
-				+ "AD_Org_ID = " + this.AD_Org_ID + TAB
-				+ "M_Product_ID = " + this.M_Product_ID + TAB
-				+ "M_AttributeSetInstance_ID = " + this.M_AttributeSetInstance_ID + TAB
-				+ "M_CostType_ID = " + this.M_CostType_ID + TAB
+				+ "AD_Client_ID = " + this.clientId + TAB
+				+ "AD_Org_ID = " + this.orgId + TAB
+				+ "M_Product_ID = " + this.productId + TAB
+				+ "M_AttributeSetInstance_ID = " + this.attributeSetInstanceId + TAB
+				+ "M_CostType_ID = " + this.costTypeId + TAB
 				+ "C_AcctSchema_ID = " + this.acctSchemaId + TAB
-				+ "M_CostElement_ID = " + this.M_CostElement_ID + TAB
+				+ "M_CostElement_ID = " + this.costElementId + TAB
 				+ "]";
 	}
 }

@@ -197,7 +197,7 @@ public class PPOrderPojoSupplier
 
 		final I_AD_Workflow adWorkflow = productPlanningData.getAD_Workflow();
 		final I_S_Resource plant = productPlanningData.getS_Resource();
-		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(ctx);
+		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
 		final BigDecimal leadtimeCalc = routingService.calculateDurationDays(adWorkflow, plant, qty);
 		return leadtimeCalc.intValueExact();
 	}

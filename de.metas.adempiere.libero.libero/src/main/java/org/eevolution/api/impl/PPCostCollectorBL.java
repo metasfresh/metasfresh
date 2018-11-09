@@ -37,6 +37,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.ComponentIssueCreateRequest;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderNodeBL;
@@ -81,19 +82,19 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	 * 
 	 * @return Component Issue, Mix Variance or Method Change Variance
 	 */
-	private static String getCostCollectorTypeToUse(final I_PP_Order_BOMLine orderBOMLine)
+	private static CostCollectorType getCostCollectorTypeToUse(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		if (orderBOMLine.getQtyBatch().signum() == 0 && orderBOMLine.getQtyBOM().signum() == 0)
 		{
-			return X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance;
+			return CostCollectorType.MethodChangeVariance;
 		}
 		else if (PPOrderUtil.isCoOrByProduct(orderBOMLine))
 		{
-			return X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance;
+			return CostCollectorType.MixVariance;
 		}
 		else
 		{
-			return X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue;
+			return CostCollectorType.ComponentIssue;
 		}
 	}
 
@@ -186,7 +187,6 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	{
 		Check.assumeNotNull(cc, LiberoException.class, "cc not null");
 		final String costCollectorType = cc.getCostCollectorType();
-
 		return X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl.equals(costCollectorType);
 	}
 
@@ -294,7 +294,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 			return createCollector(
 					CostCollectorCreateRequest.builder()
-							.costCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt)
+							.costCollectorType(CostCollectorType.MaterialReceipt)
 							.order(order)
 							.productId(product.getM_Product_ID())
 							.locatorId(locatorId)
@@ -406,7 +406,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		return createCollector(
 				CostCollectorCreateRequest.builder()
-						.costCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl)
+						.costCollectorType(CostCollectorType.ActivityControl)
 						.order(order)
 						.productId(order.getM_Product_ID())
 						.locatorId(order.getM_Locator_ID())
@@ -456,7 +456,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		//
 		createCollector(
 				CostCollectorCreateRequest.builder()
-						.costCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance)
+						.costCollectorType(CostCollectorType.UsageVariance)
 						.order(order)
 						.productId(line.getM_Product_ID())
 						.locatorId(locatorId)
@@ -496,7 +496,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		}
 		//
 		createCollector(CostCollectorCreateRequest.builder()
-				.costCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance)
+				.costCollectorType(CostCollectorType.UsageVariance)
 				.order(order)
 				.productId(order.getM_Product_ID())
 				.locatorId(order.getM_Locator_ID())
@@ -519,7 +519,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		private final int resourceId;
 		private final int ppOrderBOMLineId;
 		private final int ppOrderNodeId;
-		private final String costCollectorType;
+		private final CostCollectorType costCollectorType;
 		private final Date movementDate;
 		private final BigDecimal qty;
 		private final BigDecimal qtyScrap;
@@ -536,7 +536,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				final int resourceId,
 				final int ppOrderBOMLineId,
 				final int ppOrderNodeId,
-				@NonNull final String costCollectorType,
+				@NonNull final CostCollectorType costCollectorType,
 				@Nullable final Date movementDate,
 				//
 				@NonNull final BigDecimal qty,
@@ -583,7 +583,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		cc.setPP_Order_Node_ID(request.getPpOrderNodeId());
 		cc.setC_DocType_ID(docTypeId.getRepoId());
 		cc.setC_DocTypeTarget_ID(docTypeId.getRepoId());
-		cc.setCostCollectorType(request.getCostCollectorType());
+		cc.setCostCollectorType(request.getCostCollectorType().getCode());
 		cc.setDocAction(X_PP_Cost_Collector.DOCACTION_Complete);
 		cc.setDocStatus(X_PP_Cost_Collector.DOCSTATUS_Drafted);
 		cc.setIsActive(true);

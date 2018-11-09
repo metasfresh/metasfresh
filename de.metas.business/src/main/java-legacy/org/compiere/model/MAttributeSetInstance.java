@@ -260,7 +260,7 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 	 * @param trxName
 	 * @return newly created ASI
 	 */
-	public static MAttributeSetInstance create(Properties ctx, MProduct product, String trxName)
+	public static MAttributeSetInstance create(Properties ctx, I_M_Product product, String trxName)
 	{
 		final AttributeSetId attributeSetId = Services.get(IProductBL.class).getAttributeSetId(product);
 

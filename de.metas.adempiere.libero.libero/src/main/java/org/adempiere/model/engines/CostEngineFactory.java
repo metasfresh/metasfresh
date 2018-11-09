@@ -1,32 +1,11 @@
 package org.adempiere.model.engines;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.service.ClientId;
+
+import lombok.NonNull;
 
 /**
  * 
@@ -34,27 +13,21 @@ import org.adempiere.service.ClientId;
  */
 public class CostEngineFactory
 {
-	private static final Map<Integer, CostEngine> s_engines = new HashMap<ClientId, CostEngine>();
-	
-	public static CostEngine getCostEngine(int AD_Client_ID)
+	private static final Map<ClientId, CostEngine> s_engines = new ConcurrentHashMap<ClientId, CostEngine>();
+
+	public static CostEngine getCostEngine(@NonNull final ClientId clientId)
 	{
-		CostEngine engine = s_engines.get(AD_Client_ID);
+		CostEngine engine = s_engines.get(clientId);
 		// Fallback to global engine
-		if (engine == null && AD_Client_ID > 0)
+		if (engine == null && !clientId.isSystem())
 		{
-			engine = s_engines.get(ClientId.SYSTEM.getRepoId());
+			engine = s_engines.get(ClientId.SYSTEM);
 		}
 		// Create Default Engine
 		if (engine == null)
 		{
-			engine = new CostEngine();
-			s_engines.put(AD_Client_ID, engine);
+			engine = s_engines.computeIfAbsent(clientId, k -> new CostEngineImpl());
 		}
 		return engine;
-	}
-	
-	public static void registerCostEngine(int AD_Client_ID, CostEngine engine)
-	{
-		s_engines.put(AD_Client_ID, engine);
 	}
 }
