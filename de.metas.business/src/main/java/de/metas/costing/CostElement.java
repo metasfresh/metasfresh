@@ -60,4 +60,12 @@ public class CostElement
 		return CostElementType.Material == getCostElementType()
 				&& getCostingMethod() != null;
 	}
+
+	public boolean isActivityControlElement()
+	{
+		return CostElementType.Resource.equals(costElementType)
+				|| CostElementType.Overhead.equals(costElementType)
+				|| CostElementType.BurdenMOverhead.equals(costElementType);
+	}
+
 }
