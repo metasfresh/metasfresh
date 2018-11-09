@@ -13,15 +13,14 @@ package org.eevolution.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -31,10 +30,15 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
 public interface IPPOrderDAO extends ISingletonService
 {
+	I_PP_Order getById(PPOrderId ppOrderId);
+
+	<T extends I_PP_Order> T getById(PPOrderId ppOrderId, Class<T> type);
+
 	/**
 	 * Retrieve all manufacturing orders which are linked to given order line AND they have the product from order line.
 	 * 
@@ -66,7 +70,7 @@ public interface IPPOrderDAO extends ISingletonService
 	 * @return manufacturing orders
 	 */
 	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(Properties ctx, int warehouseId);
-	
+
 	/**
 	 * @param orderLineId
 	 * @return PP_Order_ID or -1 if not found.

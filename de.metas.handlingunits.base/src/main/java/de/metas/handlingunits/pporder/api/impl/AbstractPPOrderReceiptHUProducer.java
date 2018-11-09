@@ -71,6 +71,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.impl.AbstractPPOrderReceiptHUProducer.CreateReceiptCandidateRequest;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -91,7 +92,7 @@ import lombok.NonNull;
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
-	private final int _ppOrderId;
+	private final PPOrderId ppOrderId;
 	private transient I_M_HU_LUTU_Configuration _lutuConfiguration;
 	private Date _movementDate;
 	@Deprecated
@@ -112,10 +113,9 @@ import lombok.NonNull;
 
 	protected abstract void setAssignedHUs(final Collection<I_M_HU> hus);
 
-	public AbstractPPOrderReceiptHUProducer(final int ppOrderId)
+	public AbstractPPOrderReceiptHUProducer(@NonNull final PPOrderId ppOrderId)
 	{
-		Preconditions.checkArgument(ppOrderId > 0, "ppOrderId not valid");
-		this._ppOrderId = ppOrderId;
+		this.ppOrderId = ppOrderId;
 	}
 
 	@Override
@@ -131,9 +131,9 @@ import lombok.NonNull;
 		return _skipCreateCandidates;
 	}
 
-	private int getPP_Order_ID()
+	private PPOrderId getPpOrderId()
 	{
-		return _ppOrderId;
+		return ppOrderId;
 	}
 
 	@Override
@@ -232,7 +232,7 @@ import lombok.NonNull;
 			//
 			// Delete previously created candidates
 			// Assume there are no processed one, and even if it would be it would fail on DAO level
-			huPPOrderQtyDAO.streamOrderQtys(getPP_Order_ID())
+			huPPOrderQtyDAO.streamOrderQtys(getPpOrderId())
 					.filter(candidate -> candidate.getM_HU_ID() == planningHU.getM_HU_ID())
 					.forEach(huPPOrderQtyDAO::delete);
 
@@ -273,7 +273,7 @@ import lombok.NonNull;
 	{
 		//
 		// Modify the HU Attributes based on the attributes already existing from issuing (task 08177)
-		ppOrderProductAttributeBL.updateHUAttributes(hus, getPP_Order_ID());
+		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId());
 
 		//
 		// Assign HUs to PP_Order/PP_Order_BOMLine

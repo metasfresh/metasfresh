@@ -1,6 +1,7 @@
 package de.metas.procurement.base.order.interceptor;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -11,6 +12,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -116,6 +118,10 @@ public class C_OrderLine
 			return;
 		}
 
+		final Timestamp date = Util.coalesceSuppliers(
+				() -> orderLine.getDatePromised(),
+				() -> orderLine.getC_Order().getDatePromised());
+
 		// Create the event to update PMM_Balance's QtyDelivered
 		final PMMBalanceChangeEvent event = PMMBalanceChangeEvent.builder()
 				.setC_BPartner_ID(orderLine.getC_BPartner_ID())
@@ -123,7 +129,7 @@ public class C_OrderLine
 				.setM_Product_ID(orderLine.getM_Product_ID())
 				.setM_AttributeSetInstance_ID(orderLine.getPMM_Contract_ASI_ID()) // important: use the contracted ASI and NOT the order line ASI which was generated
 				.setM_HU_PI_Item_Product_ID(orderLine.getM_HU_PI_Item_Product_ID())
-				.setDate(orderLine.getDatePromised())
+				.setDate(date)
 				.setQtyDelivered(qtyDeliveredDiff)
 				.build();
 

@@ -51,5 +51,5 @@ INSERT INTO C_Queue_Processor_Assign (C_Queue_Processor_ID,C_Queue_PackageProces
 ;
 
 UPDATE ad_attachmententry
-SET tags=replace(tags, 'InvoiceExportProviderId=forum-datenaustausch.ch', 'InvoiceExportProviderId=forum-datenaustausch.ch-invoice')
+SET tags=replace(tags, 'InvoiceExportProviderId=forum-datenaustausch.ch', 'InvoiceExportProviderId=forum-datenaustausch.ch-invoice') where tags IS NOT NULL
 ;

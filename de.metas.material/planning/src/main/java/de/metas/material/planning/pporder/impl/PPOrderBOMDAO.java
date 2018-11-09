@@ -13,15 +13,14 @@ package de.metas.material.planning.pporder.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -47,8 +46,10 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PPOrderBOMDAO implements IPPOrderBOMDAO
 {
@@ -69,19 +70,10 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	}
 
 	@Override
-	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(final I_PP_Order order, final Class<T> orderBOMLineClass)
+	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(@NonNull final I_PP_Order order, @NonNull final Class<T> orderBOMLineClass)
 	{
-		Check.assumeNotNull(orderBOMLineClass, "orderBOMLineClass not null");
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<T> queryBuilder = queryBL.createQueryBuilder(orderBOMLineClass, order)
-				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID())
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_PP_Order_BOMLine.COLUMNNAME_Line, Direction.Ascending, Nulls.Last);
-		final List<T> orderBOMLines = queryBuilder
-				.create()
-				.list(orderBOMLineClass);
+		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
+		final List<T> orderBOMLines = retrieveOrderBOMLines(orderId, orderBOMLineClass);
 
 		// Optimization: set parent link
 		for (final T orderBOMLine : orderBOMLines)
@@ -90,6 +82,22 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 		}
 
 		return orderBOMLines;
+	}
+
+	@Override
+	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(@NonNull final PPOrderId orderId, @NonNull final Class<T> orderBOMLineClass)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(orderBOMLineClass)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderId)
+				.addOnlyActiveRecordsFilter()
+				//
+				.orderBy()
+				.addColumn(I_PP_Order_BOMLine.COLUMNNAME_Line, Direction.Ascending, Nulls.Last)
+				.endOrderBy()
+				//
+				.create()
+				.list(orderBOMLineClass);
 	}
 
 	@Override
@@ -148,14 +156,14 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 		// Make sure we are dealing with an alternative BOM Line
 		if (!X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(orderBOMLineAlternative.getComponentType()))
 		{
-			throw new LiberoException("Order BOM Line is not an component alternative: "+orderBOMLineAlternative);
+			throw new LiberoException("Order BOM Line is not an component alternative: " + orderBOMLineAlternative);
 		}
 
 		// If our Alternative BOM Line does not have VariantGroup => error because it's not consistent
 		final String variantGroup = orderBOMLineAlternative.getVariantGroup();
 		if (Check.isEmpty(variantGroup, true))
 		{
-			throw new LiberoException("Alternative BOM Line does not have a VariantGroup set: "+orderBOMLineAlternative);
+			throw new LiberoException("Alternative BOM Line does not have a VariantGroup set: " + orderBOMLineAlternative);
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);

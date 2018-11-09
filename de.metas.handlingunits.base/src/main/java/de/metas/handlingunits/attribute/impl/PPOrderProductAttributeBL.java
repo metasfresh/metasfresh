@@ -39,6 +39,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -61,8 +62,10 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import lombok.ToString;
 
 public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
@@ -70,10 +73,9 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	private static final transient Logger logger = LogManager.getLogger(PPOrderProductAttributeBL.class);
 
 	@Override
-	public void updateHUAttributes(final Collection<I_M_HU> husToUpdate, final int fromPPOrderId)
+	public void updateHUAttributes(final Collection<I_M_HU> husToUpdate, @NonNull final PPOrderId fromPPOrderId)
 	{
-		final I_PP_Order fromPPOrder = InterfaceWrapperHelper.load(fromPPOrderId, I_PP_Order.class);
-		Preconditions.checkNotNull(fromPPOrder, "fromPPOrder not found found ID=%s", fromPPOrderId);
+		final I_PP_Order fromPPOrder = Services.get(IPPOrderDAO.class).getById(fromPPOrderId);
 
 		// Skip it if there are no HUs to update
 		if (husToUpdate.isEmpty())
