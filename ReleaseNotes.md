@@ -19,11 +19,17 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4690](https://github.com/metasfresh/metasfresh/issues/4690) Picking Terminal v2: filtering options
+    * Improved Filterting Options now available in the new Picking Terminal.
   * [#4691](https://github.com/metasfresh/metasfresh/issues/4691) Picking Terminal v2: if there is not enough Qty in storage create a new Products To Pick line
+    * New Handling Unit line shown in new Picking Terminal, in case the initial Handling Unit does not have enough quantity.
   * [#4703](https://github.com/metasfresh/metasfresh/issues/4703) Support forum-datenaustausch.ch XML dunning
+    * Support for the swiss helthcare data exchange format of forum-datenaustausch.ch for dunning documents.
   * [#4705](https://github.com/metasfresh/metasfresh/issues/4705) Avoid SQL N+1 in HU source queries
+    * Performance Improvement for generated SQL Queries in metasfresh backend. Initially popped up during Handling Unit queries performance issues.
   * [#4708](https://github.com/metasfresh/metasfresh/issues/4708) webui: Change my password does not work
+    * Fix for the "change my password" functionality.
   * [#4719](https://github.com/metasfresh/metasfresh/issues/4719) Allow AD_Val_Rule to be auto-applied on new record
+    * Application Dictionary Improvement, now allowing Validation Rules to be automatically applied for initial values of a record.
 
 * metasfresh-webui-api
   * [#1094](https://github.com/metasfresh/metasfresh-webui-api/issues/1094) Login: Show a user friendly error when user or password is empty
