@@ -48,7 +48,6 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.IResourceDAO;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.I_PP_MRP_Alternative;
@@ -62,6 +61,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.IResourceDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

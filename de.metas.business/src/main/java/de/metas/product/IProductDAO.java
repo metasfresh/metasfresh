@@ -25,6 +25,8 @@ package de.metas.product;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Product;
@@ -84,4 +86,12 @@ public interface IProductDAO extends ISingletonService
 	<T extends I_M_Product_Category> T getProductCategoryById(ProductCategoryId id, Class<T> modelClass);
 
 	String getProductCategoryNameById(ProductCategoryId id);
+
+	ProductId getProductIdByResourceId(ResourceId resourceId);
+
+	void updateProductsByResourceIds(Set<ResourceId> resourceIds, Consumer<I_M_Product> productUpdater);
+
+	void updateProductsByResourceIds(Set<ResourceId> resourceIds, BiConsumer<ResourceId, I_M_Product> productUpdater);
+
+	void deleteProductByResourceId(ResourceId resourceId);
 }
