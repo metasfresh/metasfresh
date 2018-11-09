@@ -1,5 +1,9 @@
 package de.metas.util;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -31,11 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
 import org.slf4j.Logger;
-
-import lombok.NonNull;
 
 /**
  *
@@ -77,9 +77,10 @@ public final class Check
 	}
 
 	/**
-	 * If an exception is thrown and a message was set with this method, then that message plus a line-break is prepended to the exception message.
-	 *
-	 * @param exceptionHeaderMessage
+	 * If an exception is thrown
+	 * <li>and the exception class does not implement {@link ExceptionWithOwnHeaderMessage}
+	 * <li>and a message was set with this method,
+	 * <li>then that message plus a line-break is prepended to the exception message.
 	 */
 	public static void setExceptionHeaderMessage(final String exceptionHeaderMessage)
 	{
@@ -98,8 +99,10 @@ public final class Check
 
 	private static RuntimeException mkEx(final Class<? extends RuntimeException> exClazz, final String msg)
 	{
+		final boolean exceptionHasItsOwnHeaderMessage = ExceptionWithOwnHeaderMessage.class.isAssignableFrom(exClazz);
+
 		final StringBuilder msgToUse = new StringBuilder();
-		if (!Check.isEmpty(exceptionHeaderMessage))
+		if (!exceptionHasItsOwnHeaderMessage && !Check.isEmpty(exceptionHeaderMessage))
 		{
 			msgToUse.append(exceptionHeaderMessage);
 			msgToUse.append("\n\n");
@@ -116,6 +119,10 @@ public final class Check
 		{
 			throw new RuntimeException("Failure throwing exception with class '" + exClazz + "' and message '" + msg + "'", e);
 		}
+	}
+
+	public static interface ExceptionWithOwnHeaderMessage
+	{
 	}
 
 	private static RuntimeException throwOrLogEx(final Class<? extends RuntimeException> exClazz, final String msg)
