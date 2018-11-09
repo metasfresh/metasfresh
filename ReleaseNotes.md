@@ -33,10 +33,12 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1094](https://github.com/metasfresh/metasfresh-webui-api/issues/1094) Login: Show a user friendly error when user or password is empty
+    * Improvement of the Login workflow, now showing a user friendly info when the password is left empty.
 
 ## Fixes
 * metasfresh
   * [#4732](https://github.com/metasfresh/metasfresh/issues/4732) Can not create a new order line using 'Add new'
+    * Bugfix for the Add new Line Functionality in Sales and Purchase Order window.
 
 * metasfresh-webui-api
   * [#1082](https://github.com/metasfresh/metasfresh-webui-api/issues/1082) Picking from source HU not working
