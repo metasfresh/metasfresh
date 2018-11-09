@@ -72,12 +72,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -92,6 +92,9 @@ public class CostEngineImpl implements CostEngine
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+	private final IDocumentBL documentsService = Services.get(IDocumentBL.class);
+	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
+	private final IPPCostCollectorDAO costCollectorsRepo = Services.get(IPPCostCollectorDAO.class);
 	//
 	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
 	private final CostDetailRepository costDetailRepo = Adempiere.getBean(CostDetailRepository.class);
@@ -106,76 +109,21 @@ public class CostEngineImpl implements CostEngine
 		return CostingMethod.StandardCosting;
 	}
 
+	private CostAmount getProductActualCostPriceOrZero(final CostSegment costSegment, final CostElementId costElementId)
+	{
+		return getProductActualCostPrice(costSegment, costElementId);
+	}
+
 	@Override
-	public CostAmount getResourceActualCostRate(final ResourceId resourceId, final CostDimension d)
+	public CostAmount getProductActualCostPrice(@NonNull final CostSegment costSegment, @NonNull final CostElementId costElementId)
 	{
-		final I_PP_Cost_Collector cc = null;
-		return getResourceActualCostRate(cc, resourceId, d);
-	}
-
-	private CostAmount getResourceActualCostRate(final I_PP_Cost_Collector cc, final ResourceId resourceId, final CostDimension d)
-	{
-		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(d.getAcctSchemaId());
-
-		if (resourceId == null)
-		{
-			return CostAmount.zero(as.getCurrencyId());
-		}
-
-		final I_M_Product resourceProduct = resourceProductService.getProductByResourceId(resourceId);
-		return getProductActualCostPrice(
-				cc,
-				resourceProduct,
-				as,
-				d.getCostElementId());
-	}
-
-	private CostAmount getProductActualCostPriceOrZero(
-			final I_PP_Cost_Collector cc,
-			final I_M_Product product,
-			final AcctSchema as,
-			final CostElementId costElementId)
-	{
-		final CostAmount price = getProductActualCostPrice(cc, product, as, costElementId);
-		if (price == null)
-		{
-			return CostAmount.zero(as.getCurrencyId());
-		}
-		return price;
-	}
-
-	private CostAmount getProductActualCostPrice(
-			final I_PP_Cost_Collector cc,
-			final I_M_Product product,
-			final AcctSchema as,
-			final CostElementId costElementId)
-	{
-		final CurrentCost cost = retrieveOrCreateCostRecord(cc, product, as, costElementId);
-
+		final CurrentCost cost = retrieveOrCreateCostRecord(costSegment, costElementId);
 		final CostAmount price = cost.getCurrentCostPriceTotal();
-		return roundCost(price, as.getId());
+		return roundCost(price, costSegment.getAcctSchemaId());
 	}
 
-	private CurrentCost retrieveOrCreateCostRecord(
-			final I_PP_Cost_Collector cc,
-			final I_M_Product product,
-			final AcctSchema as,
-			final CostElementId costElementId)
+	private CurrentCost retrieveOrCreateCostRecord(final CostSegment costSegment, final CostElementId costElementId)
 	{
-		final ClientId clientId = ClientId.ofRepoId(cc.getAD_Client_ID());
-		final OrgId orgId = OrgId.ofRepoId(cc.getAD_Org_ID());
-		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(cc.getM_AttributeSetInstance_ID());
-
-		final CostSegment costSegment = CostSegment.builder()
-				.costingLevel(productCostingBL.getCostingLevel(product, as))
-				.acctSchemaId(as.getId())
-				.costTypeId(as.getCosting().getCostTypeId())
-				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
-				.clientId(clientId)
-				.orgId(orgId)
-				.attributeSetInstanceId(attributeSetInstanceId)
-				.build();
-
 		return currentCostsRepo.getOrCreate(costSegment, costElementId);
 	}
 
@@ -207,7 +155,6 @@ public class CostEngineImpl implements CostEngine
 
 	private CostAmount roundCost(final CostAmount price, final AcctSchemaId acctSchemaId)
 	{
-		final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
 		final AcctSchema acctSchema = acctSchemaRepo.getById(acctSchemaId);
 		final AcctSchemaCosting acctSchemaCosting = acctSchema.getCosting();
 		final int precision = acctSchemaCosting.getCostingPrecision();
@@ -255,7 +202,7 @@ public class CostEngineImpl implements CostEngine
 	 * Create Cost Detail (Material Issue, Material Receipt)
 	 */
 	@Override
-	public void createOrUpdateCostDetail(I_PP_Cost_Collector cc, final I_M_Transaction mtrx)
+	public void createOrUpdateCostDetail(final I_PP_Cost_Collector cc, final I_M_Transaction mtrx)
 	{
 		final ProductId productId = ProductId.ofRepoId(mtrx.getM_Product_ID());
 		final I_M_Product product = productsRepo.getById(productId);
@@ -284,7 +231,8 @@ public class CostEngineImpl implements CostEngine
 				deleteCostDetail(cc, acctSchemaId, costElementId, attributeSetInstanceId);
 				//
 				// Get Costs
-				final CostAmount price = getProductActualCostPriceOrZero(cc, product, as, costElementId);
+				final CostSegment costSegment = createCostSegment(cc, as, product);
+				final CostAmount price = getProductActualCostPriceOrZero(costSegment, costElementId);
 				final CostAmount amt = roundCost(price.multiply(qty), acctSchemaId);
 				//
 				// Create / Update Cost Detail
@@ -432,7 +380,7 @@ public class CostEngineImpl implements CostEngine
 
 	private ImmutableList<AcctSchema> getAcctSchema(final ClientId clientId, final OrgId orgId)
 	{
-		return Services.get(IAcctSchemaDAO.class)
+		return acctSchemaRepo
 				.getAllByClient(clientId)
 				.stream()
 				.filter(acctSchema -> !acctSchema.isDisallowPostingForOrg(orgId))
@@ -469,7 +417,7 @@ public class CostEngineImpl implements CostEngine
 	/**
 	 * Create & Proce Cost Detail for Variances
 	 *
-	 * @param ccv
+	 * @param cc
 	 * @param amt
 	 * @param qty
 	 * @param cd (optional)
@@ -479,7 +427,7 @@ public class CostEngineImpl implements CostEngine
 	 * @return
 	 */
 	private CostDetail createVarianceCostDetail(
-			final I_PP_Cost_Collector ccv,
+			final I_PP_Cost_Collector cc,
 			final CostAmount amt,
 			final Quantity qty,
 			final CostDetail cd,
@@ -487,7 +435,7 @@ public class CostEngineImpl implements CostEngine
 			final AcctSchemaId acctSchemaId,
 			final CostElement element)
 	{
-		final I_M_CostDetail cdv = newInstance(I_M_CostDetail.class, ccv);
+		final I_M_CostDetail cdv = newInstance(I_M_CostDetail.class, cc);
 		if (cd != null)
 		{
 			copyValues(cd, cdv);
@@ -507,7 +455,7 @@ public class CostEngineImpl implements CostEngine
 			cdv.setM_CostElement_ID(element.getId().getRepoId());
 		}
 		//
-		cdv.setPP_Cost_Collector_ID(ccv.getPP_Cost_Collector_ID());
+		cdv.setPP_Cost_Collector_ID(cc.getPP_Cost_Collector_ID());
 		cdv.setAmt(amt.getValue());
 		cdv.setQty(qty);
 		cdv.setIsSOTrx(false);
@@ -524,14 +472,12 @@ public class CostEngineImpl implements CostEngine
 			return;
 		}
 
-		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-
-		final ResourceId resourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-		final I_M_Product resourceProduct = resourceProductService.getProductByResourceId(resourceId);
+		final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+		final I_M_Product actualResourceProduct = resourceProductService.getProductByResourceId(actualResourceId);
 
 		//
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
-		final Quantity qty = routingService.getResourceBaseValue(resourceId, cc);
+		final Quantity qty = routingService.getResourceBaseValue(actualResourceId, cc);
 		for (final AcctSchema as : getAcctSchema(cc))
 		{
 			for (final CostElement element : getCostElements())
@@ -542,20 +488,15 @@ public class CostEngineImpl implements CostEngine
 				}
 				final CostElementId costElementId = element.getId();
 
-				final CostDimension d = new CostDimension(resourceProduct,
-						as,
-						as.getCosting().getCostTypeId(),
-						OrgId.ANY,
-						AttributeSetInstanceId.NONE,
-						costElementId);
-				final CostAmount price = getResourceActualCostRate(cc, resourceId, d);
+				final CostSegment costSegment = createCostSegment(cc, as, actualResourceId);
+				final CostAmount price = getProductActualCostPrice(costSegment, costElementId);
 				final CostAmount costs = price.multiply(qty).roundToPrecisionIfNeeded(as.getCosting().getCostingPrecision());
 				//
 				final CostDetail cd = createCostDetail(
 						as.getId(),
 						ClientId.ofRepoId(cc.getAD_Client_ID()),
 						OrgId.ANY,
-						d.getProductId(),
+						costSegment.getProductId(),
 						AttributeSetInstanceId.NONE,
 						costElementId,
 						costs.negate(),
@@ -569,46 +510,77 @@ public class CostEngineImpl implements CostEngine
 		}
 	}
 
+	private CostSegment createCostSegment(
+			final I_PP_Cost_Collector cc,
+			final AcctSchema as,
+			final ResourceId resourceId)
+	{
+		final I_M_Product product = resourceProductService.getProductByResourceId(resourceId);
+		return createCostSegment(cc, as, product);
+	}
+
+	private CostSegment createCostSegment(
+			final I_PP_Cost_Collector cc,
+			final AcctSchema as,
+			final I_M_Product product)
+	{
+		final ClientId clientId = ClientId.ofRepoId(cc.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(cc.getAD_Org_ID());
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(cc.getM_AttributeSetInstance_ID());
+
+		return CostSegment.builder()
+				.costingLevel(productCostingBL.getCostingLevel(product, as))
+				.acctSchemaId(as.getId())
+				.costTypeId(as.getCosting().getCostTypeId())
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.clientId(clientId)
+				.orgId(orgId)
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.build();
+	}
+
 	@Override
-	public void createUsageVariances(final I_PP_Cost_Collector ccuv)
+	public void createUsageVariances(final I_PP_Cost_Collector cc)
 	{
 		// Apply only for material Usage Variance
-		if (!PPCostCollectorUtils.isCostCollectorTypeAnyOf(ccuv, X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance))
+		if (!PPCostCollectorUtils.isCostCollectorTypeAnyOf(cc, X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance))
 		{
 			throw new IllegalArgumentException("Cost Collector is not Material Usage Variance");
 		}
 		//
 		final I_M_Product product;
 		final Quantity qty;
-		if (ccuv.getPP_Order_BOMLine_ID() > 0)
+		if (cc.getPP_Order_BOMLine_ID() > 0)
 		{
-			product = productsRepo.getById(ccuv.getM_Product_ID());
+			product = productsRepo.getById(cc.getM_Product_ID());
 			final I_C_UOM productUOM = productsService.getStockingUOM(product);
-			qty = Quantity.of(ccuv.getMovementQty(), productUOM);
+			qty = Quantity.of(cc.getMovementQty(), productUOM);
 		}
 		else
 		{
-			final ResourceId resourceId = ResourceId.ofRepoId(ccuv.getS_Resource_ID());
+			final ResourceId resourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 
 			product = resourceProductService.getProductByResourceId(resourceId);
 
 			final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
-			qty = routingService.getResourceBaseValue(resourceId, ccuv);
+			qty = routingService.getResourceBaseValue(resourceId, cc);
 		}
 
 		//
-		for (final AcctSchema as : getAcctSchema(ccuv))
+		for (final AcctSchema as : getAcctSchema(cc))
 		{
+			final CostSegment costSegment = createCostSegment(cc, as, product);
+
 			for (final CostElement element : getCostElements())
 			{
 				final CostElementId costElementId = element.getId();
 
-				final CostAmount price = getProductActualCostPrice(ccuv, product, as, costElementId);
+				final CostAmount price = getProductActualCostPrice(costSegment, costElementId);
 				final CostAmount amt = roundCost(price.multiply(qty), as.getId());
 				//
 				// Create / Update Cost Detail
 				createVarianceCostDetail(
-						ccuv,
+						cc,
 						amt, qty,
 						null, // no original cost detail
 						product,
@@ -624,15 +596,13 @@ public class CostEngineImpl implements CostEngine
 		final I_M_Product product;
 		if (PPCostCollectorUtils.isCostCollectorTypeAnyOf(cc, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl))
 		{
-			final I_AD_WF_Node node = cc.getPP_Order_Node().getAD_WF_Node();
-			final ResourceId resourceId = ResourceId.ofRepoId(node.getS_Resource_ID());
-
-			product = resourceProductService.getProductByResourceId(resourceId);
+			final ResourceId stdResourceId = getStandardResourceId(cc);
+			product = resourceProductService.getProductByResourceId(stdResourceId);
 		}
 		else if (PPCostCollectorUtils.isCostCollectorTypeAnyOf(cc, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue))
 		{
 			final I_PP_Order_BOMLine bomLine = cc.getPP_Order_BOMLine();
-			product = Services.get(IProductDAO.class).getById(bomLine.getM_Product_ID());
+			product = productsRepo.getById(bomLine.getM_Product_ID());
 		}
 		else
 		{
@@ -642,6 +612,8 @@ public class CostEngineImpl implements CostEngine
 		I_PP_Cost_Collector ccrv = null; // Cost Collector - Rate Variance
 		for (final AcctSchema as : getAcctSchema(cc))
 		{
+			final CostSegment costSegment = createCostSegment(cc, as, product);
+
 			for (final CostElement element : getCostElements())
 			{
 				final CostElementId costElementId = element.getId();
@@ -655,7 +627,7 @@ public class CostEngineImpl implements CostEngine
 				//
 				final Quantity qty = cd.getQty();
 				final CostAmount priceStd = getProductStandardCostPrice(cc, product, as, costElementId);
-				final CostAmount priceActual = getProductActualCostPriceOrZero(cc, product, as, costElementId);
+				final CostAmount priceActual = getProductActualCostPriceOrZero(costSegment, costElementId);
 				final CostAmount amtStd = roundCost(priceStd.multiply(qty), as.getId());
 				final CostAmount amtActual = roundCost(priceActual.multiply(qty), as.getId());
 				if (amtStd.subtract(amtActual).signum() == 0)
@@ -694,9 +666,16 @@ public class CostEngineImpl implements CostEngine
 		}
 	}
 
-	private void completeCostCollector(I_PP_Cost_Collector cc)
+	private ResourceId getStandardResourceId(final I_PP_Cost_Collector cc)
 	{
-		Services.get(IDocumentBL.class).processEx(cc, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		final I_AD_WF_Node node = cc.getPP_Order_Node().getAD_WF_Node();
+		final ResourceId resourceId = ResourceId.ofRepoId(node.getS_Resource_ID());
+		return resourceId;
+	}
+
+	private void completeCostCollector(final I_PP_Cost_Collector cc)
+	{
+		documentsService.processEx(cc, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	@Override
@@ -708,7 +687,7 @@ public class CostEngineImpl implements CostEngine
 		}
 
 		//
-		final ResourceId stdResourceId = ResourceId.ofRepoId(cc.getPP_Order_Node().getAD_WF_Node().getS_Resource_ID());
+		final ResourceId stdResourceId = getStandardResourceId(cc);
 		final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 		if (ResourceId.equals(actualResourceId, stdResourceId))
 		{
@@ -723,12 +702,15 @@ public class CostEngineImpl implements CostEngine
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
 		for (final AcctSchema as : getAcctSchema(cc))
 		{
+			final CostSegment stdResourceCostSegment = createCostSegment(cc, as, stdResourceProduct);
+			final CostSegment actualResourceCostSegment = createCostSegment(cc, as, actualResourceProduct);
+
 			for (final CostElement element : getCostElements())
 			{
 				final CostElementId costElementId = element.getId();
 
-				final CostAmount priceStd = getProductActualCostPrice(cc, stdResourceProduct, as, costElementId);
-				final CostAmount priceActual = getProductActualCostPrice(cc, actualResourceProduct, as, costElementId);
+				final CostAmount priceStd = getProductActualCostPrice(stdResourceCostSegment, costElementId);
+				final CostAmount priceActual = getProductActualCostPrice(actualResourceCostSegment, costElementId);
 				if (priceStd.subtract(priceActual).signum() == 0)
 				{
 					continue;
@@ -782,7 +764,7 @@ public class CostEngineImpl implements CostEngine
 
 		//
 		// Get the original cost details
-		final List<CostDetail> costDetails = Services.get(IPPCostCollectorDAO.class).retrieveCostDetails(costCollector);
+		final List<CostDetail> costDetails = costCollectorsRepo.retrieveCostDetails(costCollector);
 
 		for (final CostDetail cd : costDetails)
 		{

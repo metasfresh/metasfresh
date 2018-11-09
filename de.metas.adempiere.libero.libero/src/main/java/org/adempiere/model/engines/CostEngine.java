@@ -4,13 +4,14 @@ import org.compiere.model.I_M_Transaction;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.costing.CostAmount;
-import de.metas.product.ResourceId;
+import de.metas.costing.CostElementId;
+import de.metas.costing.CostSegment;
 
 public interface CostEngine
 {
 	void createActivityControl(I_PP_Cost_Collector cc);
 
-	void createUsageVariances(I_PP_Cost_Collector ccuv);
+	void createUsageVariances(I_PP_Cost_Collector cc);
 
 	void createRateVariances(I_PP_Cost_Collector cc);
 
@@ -20,5 +21,5 @@ public interface CostEngine
 
 	void createOrUpdateCostDetail(I_PP_Cost_Collector cc, I_M_Transaction mtrx);
 
-	CostAmount getResourceActualCostRate(ResourceId resourceId, CostDimension d);
+	CostAmount getProductActualCostPrice(CostSegment costSegment, CostElementId costElementId);
 }

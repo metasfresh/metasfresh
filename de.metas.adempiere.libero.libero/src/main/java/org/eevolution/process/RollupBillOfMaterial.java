@@ -84,6 +84,7 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.money.CurrencyId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -103,9 +104,11 @@ public class RollupBillOfMaterial extends JavaProcess
 	// services
 	private final transient ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
 	private final transient ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
+	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final transient IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 	private final transient IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
+	private final transient IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 
 	/* Organization */
 	private OrgId p_AD_Org_ID;
@@ -265,11 +268,11 @@ public class RollupBillOfMaterial extends JavaProcess
 				continue;
 			}
 			final CostAmount costPrice = baseCost.getCurrentCostPriceLL().multiply(getCostAllocationPerc(bomLinePO));
+
 			//
 			// Get/Create Cost
-
 			final ProductId productId = ProductId.ofRepoId(bomline.getM_Product_ID());
-			final CostSegment costSegment = baseCost.getCostSegment().withProductId(productId);
+			final CostSegment costSegment = createCostSegment(baseCost.getCostSegment(), productId);
 			final CurrentCost cost = currentCostsRepo.getOrCreate(costSegment, costElement.getId());
 			cost.setCurrentCostPriceLL(costPrice);
 			currentCostsRepo.save(cost);
@@ -281,6 +284,16 @@ public class RollupBillOfMaterial extends JavaProcess
 		{
 			baseCost.setCurrentCostPriceLL(costPriceTotal);
 		}
+	}
+
+	private CostSegment createCostSegment(final CostSegment costSegment, final ProductId productId)
+	{
+		final AcctSchema acctSchema = acctSchemasRepo.getById(costSegment.getAcctSchemaId());
+
+		final I_M_Product product = productsRepo.getById(productId);
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(product, acctSchema);
+
+		return costSegment.withProductIdAndCostingLevel(productId, costingLevel);
 	}
 
 	/**

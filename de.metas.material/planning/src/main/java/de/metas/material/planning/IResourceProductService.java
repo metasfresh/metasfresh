@@ -63,5 +63,4 @@ public interface IResourceProductService extends ISingletonService
 	boolean isDayAvailableForResourceType(I_S_ResourceType resourceType, Timestamp dateTime);
 
 	I_C_UOM getResourceUOM(ResourceId resourceId);
-
 }

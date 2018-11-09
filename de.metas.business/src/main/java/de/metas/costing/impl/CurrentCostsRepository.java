@@ -1,10 +1,13 @@
 package de.metas.costing.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -57,12 +60,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -88,15 +91,20 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		return toCurrentCost(costRecord);
 	}
 
-	private I_M_Cost getCostRecordOrNull(final CostSegment costSegment, @NonNull final CostElementId costElementId)
+	private I_M_Cost getCostRecordOrNull(@NonNull final CostSegment costSegment, @NonNull final CostElementId costElementId)
 	{
-		return retrieveCostRecords(costSegment)
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementId)
+		return retrieveCostRecords(costSegment, costElementId)
 				.create()
 				.firstOnly(I_M_Cost.class);
 	}
 
-	private IQueryBuilder<I_M_Cost> retrieveCostRecords(final CostSegment costSegment)
+	private IQueryBuilder<I_M_Cost> retrieveCostRecords(@NonNull final CostSegment costSegment, @NonNull final CostElementId costElementId)
+	{
+		return retrieveCostRecords(costSegment)
+				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementId);
+	}
+
+	private IQueryBuilder<I_M_Cost> retrieveCostRecords(@NonNull final CostSegment costSegment)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Cost.class)
@@ -187,8 +195,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-		
-		ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
+
+		final ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
 		final I_C_UOM uom = productBL.getStockingUOM(productId);
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRecord.getC_AcctSchema_ID());
 
@@ -252,7 +260,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 	private void forEachCostSegmentAndElement(final I_M_Product product, final BiConsumer<CostSegment, CostElement> consumer)
 	{
-		ClientId clientId = ClientId.ofRepoId(product.getAD_Client_ID());
+		final ClientId clientId = ClientId.ofRepoId(product.getAD_Client_ID());
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final OrgId productOrgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
@@ -307,6 +315,22 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				logger.warn("{}'s costing Level {} not supported", product.getName(), costingLevel);
 			}
 		}	// accounting schema loop
+	}
+
+	@Override
+	public void updateCostRecord(
+			@NonNull final CostSegment costSegment,
+			@NonNull final CostElementId costElementId,
+			@NonNull final Consumer<I_M_Cost> updater)
+	{
+		final I_M_Cost costRecord = getCostRecordOrNull(costSegment, costElementId);
+		if (costRecord == null)
+		{
+			return;
+		}
+
+		updater.accept(costRecord);
+		saveRecord(costRecord);
 	}
 
 }

@@ -49,7 +49,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Product;
@@ -292,8 +291,7 @@ public class StorageEngine
 		mtrx.setPP_Cost_Collector_ID(cc.getPP_Cost_Collector_ID());
 		saveRecord(mtrx);
 
-		final ClientId clientId = ClientId.ofRepoId(cc.getAD_Client_ID());
-		CostEngineFactory.getCostEngine(clientId).createOrUpdateCostDetail(cc, mtrx);
+		CostEngineFactory.newCostEngine().createOrUpdateCostDetail(cc, mtrx);
 	}
 
 	private static void createMA(final I_PP_Cost_Collector cc, final int M_AttributeSetInstance_ID, final BigDecimal MovementQty)

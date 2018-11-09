@@ -54,7 +54,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.model.engines.StorageEngine;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BPartner_Product;
@@ -317,7 +316,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		//
 		// Material Issue (component issue, method change variance, mix variance)
 		// Material Receipt
-		final CostEngine costEngine = getCostEngine();
+		final CostEngine costEngine = CostEngineFactory.newCostEngine();
 		if (isIssue() || isReceipt())
 		{
 			// Stock Movement
@@ -428,11 +427,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			else
 			{
 				costEngine.createActivityControl(this);
-				if (activity.getQtyDelivered().compareTo(activity.getQtyRequiered()) >= 0)
-				{
-					activity.closeIt();
-					activity.saveEx();
-				}
+				activity.closeItIfDeliveredWhatWasRequired();
 			}
 		}
 		//
@@ -510,12 +505,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		setDocStatus(DOCSTATUS_Completed);
 		return IDocument.STATUS_Completed;
 	}	// completeIt
-
-	private CostEngine getCostEngine()
-	{
-		final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
-		return CostEngineFactory.getCostEngine(clientId);
-	}
 
 	@Override
 	public boolean voidIt()

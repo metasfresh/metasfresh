@@ -1059,9 +1059,9 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getS_Resource_ID();
 
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException;
-
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+//	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException;
+//
+//	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
 
     /** Column definition for S_Resource_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_S_Resource>(I_PP_Cost_Collector.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);

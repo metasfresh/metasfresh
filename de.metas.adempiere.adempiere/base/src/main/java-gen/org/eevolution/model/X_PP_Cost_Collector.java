@@ -20,6 +20,7 @@ package org.eevolution.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for PP_Cost_Collector
@@ -1155,17 +1156,17 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
-	}
+//	@Override
+//	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+//	}
+//
+//	@Override
+//	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource)
+//	{
+//		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+//	}
 
 	/** Set Ressource.
 		@param S_Resource_ID 

@@ -239,6 +239,15 @@ public class MPPOrderNode extends X_PP_Order_Node
 		}
 	}
 
+	public void closeItIfDeliveredWhatWasRequired()
+	{
+		if (getQtyDelivered().compareTo(getQtyRequiered()) >= 0)
+		{
+			closeIt();
+			saveEx();
+		}
+	}
+
 	/**
 	 * Void Activity
 	 */

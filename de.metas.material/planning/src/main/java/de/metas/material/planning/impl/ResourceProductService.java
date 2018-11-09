@@ -43,8 +43,16 @@ public class ResourceProductService implements IResourceProductService
 	@Override
 	public I_M_Product getProductByResourceId(@NonNull final ResourceId resourceId)
 	{
-		final ProductId productId = Services.get(IProductDAO.class).getProductIdByResourceId(resourceId);
-		return Services.get(IProductDAO.class).getById(productId);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
+		final ProductId productId = productsRepo.getProductIdByResourceId(resourceId);
+		return productsRepo.getById(productId);
+	}
+
+	private ProductId getProductIdByResourceId(final ResourceId resourceId)
+	{
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		return productsRepo.getProductIdByResourceId(resourceId);
 	}
 
 	@Override
@@ -206,7 +214,7 @@ public class ResourceProductService implements IResourceProductService
 	@Override
 	public I_C_UOM getResourceUOM(@NonNull final ResourceId resourceId)
 	{
-		final ProductId productId = Services.get(IProductDAO.class).getProductIdByResourceId(resourceId);
+		final ProductId productId = getProductIdByResourceId(resourceId);
 		return Services.get(IProductBL.class).getStockingUOM(productId);
 	}
 }

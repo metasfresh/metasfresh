@@ -51,6 +51,7 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UOMUtil;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -241,10 +242,11 @@ public class DefaultRoutingServiceImpl implements RoutingService
 	{
 		if (node == null)
 		{
+			Check.assumeNotNull(cc, "Parameter cc is not null");
 			node = cc.getPP_Order_Node().getAD_WF_Node();
 		}
-		final I_C_UOM resourceUOM = getResourceUOM(resourceId);
 
+		final I_C_UOM resourceUOM = getResourceUOM(resourceId);
 		if (UOMUtil.isTime(resourceUOM))
 		{
 			final BigDecimal duration = calculateDuration(node, cc);

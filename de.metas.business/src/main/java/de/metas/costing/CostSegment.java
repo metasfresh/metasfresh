@@ -86,8 +86,11 @@ public class CostSegment
 		}
 	}
 
-	public CostSegment withProductId(final ProductId productId)
+	public CostSegment withProductIdAndCostingLevel(@NonNull final ProductId productId, @NonNull final CostingLevel costingLevel)
 	{
-		return toBuilder().productId(productId).build();
+		return toBuilder()
+				.productId(productId)
+				.costingLevel(costingLevel)
+				.build();
 	}
 }
