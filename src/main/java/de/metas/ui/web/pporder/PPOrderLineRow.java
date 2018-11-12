@@ -20,7 +20,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
@@ -315,7 +314,11 @@ public class PPOrderLineRow implements IViewRow
 		}
 		else if (type.isHUOrHUStorage())
 		{
-			return DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, DocumentId.of(huId));
+			// Better return null because we don't want to have here all processes which are related to HUs.
+			// More, in case the HU is destroyed, that HU will not be found in the standard HU Editor View so no process will be executed.
+			// see https://github.com/metasfresh/metasfresh-webui-api/issues/1097#issuecomment-436944470, problem 2.
+			// return DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, DocumentId.of(huId));
+			return null;
 		}
 		else
 		{
