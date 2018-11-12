@@ -543,7 +543,7 @@ import lombok.NonNull;
 	@Override
 	public ICompositeQueryFilter<T> addNotEqualsFilter(final String columnName, final Object value)
 	{
-		final NotEqualsQueryFilter<T> filter = new NotEqualsQueryFilter<>(columnName, value);
+		final NotEqualsQueryFilter<T> filter = NotEqualsQueryFilter.of(columnName, value);
 		return addFilter(filter);
 	}
 

@@ -38,7 +38,7 @@ public class HUPricing extends AttributePricing
 	/**
 	 * Matches any product price with a not-null M_HU_PI_Item_Product_ID.
 	 */
-	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, new NotEqualsQueryFilter<>(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
+	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, NotEqualsQueryFilter.of(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
 
 	@Override
 	protected Optional<I_M_ProductPrice> findMatchingProductPrice(final IPricingContext pricingCtx)

@@ -10,6 +10,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.Adempiere;
@@ -47,6 +48,8 @@ import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.SoftwareVersion;
 
@@ -86,7 +89,20 @@ public class InvoiceToExportFactory
 		this.esrPaymentInfoProvider = esrPaymentInfoProvider.orElse(null);
 	}
 
-	public InvoiceToExport getCreateForId(@NonNull final InvoiceId id)
+	public Optional<InvoiceToExport> getCreateForId(@NonNull final InvoiceId id)
+	{
+		try
+		{
+			return Optional.of(getCreateForId0(id));
+		}
+		catch (final InvoiceNotExportableException e)
+		{
+			Loggables.get().addLog("InvoiceToExportFactory - unable to export InvoiceId={}: Message={}", id, e.getMessage());
+			return Optional.empty();
+		}
+	}
+
+	public InvoiceToExport getCreateForId0(@NonNull final InvoiceId id)
 	{
 		final I_C_Invoice invoiceRecord = load(id, I_C_Invoice.class);
 
@@ -223,7 +239,11 @@ public class InvoiceToExportFactory
 
 	private BPartner createRecipient(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final String gln = invoiceRecord.getC_BPartner_Location().getGLN();
+		final String gln = Check.assumeNotEmpty(
+				invoiceRecord.getC_BPartner_Location().getGLN(), InvoiceNotExportableException.class,
+				"The the given invoice's C_BPartner_Location of needs to have a GLN; invoiceBPartnerLocation={}; invoiceRecord={}",
+				invoiceRecord.getC_BPartner_Location(),
+				invoiceRecord);
 
 		final I_C_BPartner bPartnerRecord = invoiceRecord.getC_BPartner();
 		final String vatTaxId = bPartnerRecord.getVATaxID();
@@ -243,6 +263,9 @@ public class InvoiceToExportFactory
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(invoiceRecord.getAD_Org_ID());
 
+		Check.assumeNotNull(orgBPartner, InvoiceNotExportableException.class,
+				"The given invoice's org needs to have a linked bPartner; org={}; invoiceRecord={};", invoiceRecord.getAD_Org(), invoiceRecord);
+
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 		final BPartnerLocationQuery query = BPartnerLocationQuery
 				.builder()
@@ -250,10 +273,14 @@ public class InvoiceToExportFactory
 				.bpartnerId(de.metas.bpartner.BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()))
 				.build();
 		final I_C_BPartner_Location remittoLocation = bPartnerDAO.retrieveBPartnerLocation(query);
-		Check.assumeNotNull(remittoLocation, "The given invoice's orgBPartner needs to have a remit-to location; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
+		Check.assumeNotNull(remittoLocation, InvoiceNotExportableException.class,
+				"The given invoice's orgBPartner needs to have a remit-to location; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
 
-		final String gln = Check.assumeNotEmpty(remittoLocation.getGLN(), "The remit-to location of the given invoice's orgBPartner needs to have a GLN; remittoLocation={}; invoiceRecord={}; orgBPartner={}", remittoLocation, invoiceRecord, orgBPartner);
-		final String vatTaxId = Check.assumeNotEmpty(orgBPartner.getVATaxID(), "The given invoice's orgBPartner needs to have a VATaxID; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
+		final String gln = Check.assumeNotEmpty(remittoLocation.getGLN(), InvoiceNotExportableException.class,
+				"The remit-to location of the given invoice's orgBPartner needs to have a GLN; remittoLocation={}; invoiceRecord={}; orgBPartner={}", remittoLocation, invoiceRecord, orgBPartner);
+
+		final String vatTaxId = Check.assumeNotEmpty(orgBPartner.getVATaxID(), InvoiceNotExportableException.class,
+				"The given invoice's orgBPartner needs to have a VATaxID; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
 
 		final BPartner recipient = BPartner.builder()
 				.id(BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()))
@@ -261,5 +288,15 @@ public class InvoiceToExportFactory
 				.vatNumber(vatTaxId)
 				.build();
 		return recipient;
+	}
+
+	public static final class InvoiceNotExportableException extends AdempiereException implements ExceptionWithOwnHeaderMessage
+	{
+		private static final long serialVersionUID = 5678496542883367180L;
+
+		public InvoiceNotExportableException(@NonNull final String msg)
+		{
+			super(msg);
+		}
 	}
 }

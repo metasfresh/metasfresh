@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.compiere.util.TimeUtil;
@@ -35,6 +34,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -59,38 +59,47 @@ import lombok.NonNull;
  * #L%
  */
 
-public class CreateDraftIssues
+/**
+ * Creates Draft Issue Candidates
+ */
+public class CreateDraftIssuesCommand
 {
 	private static final String MSG_IssuingAggregatedTUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed";
 	private static final String MSG_IssuingVHUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed";
 	private static final String MSG_IssuingHUWithMultipleProductsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingHUsWithMultipleProductsNotAllowed";
 
-	private static final Logger logger = LogManager.getLogger(CreateDraftIssues.class);
-
+	//
+	// Services
+	private static final Logger logger = LogManager.getLogger(CreateDraftIssuesCommand.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
-
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
 	private final ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
 	private final LocalDate movementDate;
+	private final boolean considerIssueMethodForQtyToIssueCalculation;
+	private final ImmutableList<I_M_HU> hus;
 
-	public CreateDraftIssues(
+	@Builder
+	private CreateDraftIssuesCommand(
 			final @NonNull List<I_PP_Order_BOMLine> targetOrderBOMLines,
-			final @Nullable LocalDate movementDate)
+			final @Nullable LocalDate movementDate,
+			final boolean considerIssueMethodForQtyToIssueCalculation,
+			@NonNull final Collection<I_M_HU> hus)
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 
 		this.targetOrderBOMLines = ImmutableList.copyOf(targetOrderBOMLines);
 		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDate();
+		this.considerIssueMethodForQtyToIssueCalculation = considerIssueMethodForQtyToIssueCalculation;
+		this.hus = ImmutableList.copyOf(hus);
 	}
 
-	public List<I_PP_Order_Qty> createDraftIssues(@Nonnull final Collection<I_M_HU> hus)
+	public List<I_PP_Order_Qty> execute()
 	{
 		if (hus.isEmpty())
 		{
@@ -117,7 +126,8 @@ public class CreateDraftIssues
 	{
 		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
 		{
-			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus()).setParameter("hu", hu);
+			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus())
+					.setParameter("hu", hu);
 		}
 
 		removeHuFromParentIfAny(huContext, hu);
@@ -133,7 +143,7 @@ public class CreateDraftIssues
 
 		// update the HU's status so that it's not moved somewhere else etc
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
-		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
+		handlingUnitsDAO.saveHU(hu);
 
 		return candidate;
 	}
@@ -224,7 +234,7 @@ public class CreateDraftIssues
 		return candidate;
 	}
 
-	private I_PP_Order_BOMLine getTargetOrderBOMLine(final ProductId productId)
+	private I_PP_Order_BOMLine getTargetOrderBOMLine(@NonNull final ProductId productId)
 	{
 		final List<I_PP_Order_BOMLine> targetBOMLines = targetOrderBOMLines;
 		return targetBOMLines
@@ -237,19 +247,20 @@ public class CreateDraftIssues
 	/** @return how much quantity to take "from" and issue it to given BOM line */
 	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final IHUProductStorage from)
 	{
-		//
-		// Case: if this is an Issue BOM Line, IssueMethod is Backflush and we did not over-issue on it yet
-		// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
-		// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
-		// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
-		final String issueMethod = targetBOMLine.getIssueMethod();
-		if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+		if (considerIssueMethodForQtyToIssueCalculation)
 		{
-			return ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
+			//
+			// Case: if this is an Issue BOM Line, IssueMethod is Backflush and we did not over-issue on it yet
+			// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
+			// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
+			// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
+			final String issueMethod = targetBOMLine.getIssueMethod();
+			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+			{
+				return ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
+			}
 		}
-		else
-		{
-			return from.getQty();
-		}
+
+		return from.getQty();
 	}
 }
