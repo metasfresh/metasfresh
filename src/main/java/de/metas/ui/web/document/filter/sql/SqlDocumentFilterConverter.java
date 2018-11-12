@@ -57,7 +57,7 @@ public interface SqlDocumentFilterConverter
 			final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context);
 
-	default String getSql(
+	/* final */ default String getSql(
 			@NonNull final SqlParamsCollector sqlParamsOut,
 			@NonNull final List<DocumentFilter> filters,
 			@NonNull final SqlOptions sqlOpts,
