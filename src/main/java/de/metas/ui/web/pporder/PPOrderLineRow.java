@@ -15,6 +15,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
@@ -76,7 +77,7 @@ public class PPOrderLineRow implements IViewRow
 	private final int ppOrderBOMLineId;
 	private final int ppOrderQtyId;
 
-	private final int huId;
+	private final HuId huId;
 	private final boolean sourceHU;
 	private final boolean topLevelHU;
 
@@ -134,7 +135,7 @@ public class PPOrderLineRow implements IViewRow
 
 		this.ppOrderId = ppOrderQty.getPP_Order_ID();
 		this.ppOrderBOMLineId = ppOrderQty.getPP_Order_BOMLine_ID();
-		this.huId = ppOrderQty.getM_HU_ID();
+		this.huId = HuId.ofRepoId(ppOrderQty.getM_HU_ID());
 		this.ppOrderQtyId = ppOrderQty.getPP_Order_Qty_ID();
 
 		this.processed = processed;
@@ -175,7 +176,7 @@ public class PPOrderLineRow implements IViewRow
 
 		this.ppOrderId = ppOrder.getPP_Order_ID();
 		this.ppOrderBOMLineId = -1;
-		this.huId = -1;
+		this.huId = null;
 		this.ppOrderQtyId = -1;
 
 		this.processed = processed;
@@ -223,7 +224,7 @@ public class PPOrderLineRow implements IViewRow
 
 		this.ppOrderId = ppOrderBomLine.getPP_Order_ID();
 		this.ppOrderBOMLineId = ppOrderBomLine.getPP_Order_BOMLine_ID();
-		this.huId = -1;
+		this.huId = null;
 		this.ppOrderQtyId = -1;
 
 		this.processed = processed;
@@ -259,7 +260,7 @@ public class PPOrderLineRow implements IViewRow
 	private PPOrderLineRow(
 			@NonNull final PPOrderLineRowId rowId,
 			@NonNull final PPOrderLineType type,
-			@NonNull final Integer huId,
+			@NonNull final HuId huId,
 			@Nullable final Supplier<? extends IViewRowAttributes> attributesSupplier,
 			@NonNull final String code,
 			@NonNull final JSONLookupValue product,
@@ -404,24 +405,18 @@ public class PPOrderLineRow implements IViewRow
 
 	}
 
-	public JSONLookupValue getUOM()
-	{
-		return uom;
-	}
-
 	private int getUomId()
 	{
-		final JSONLookupValue uom = getUOM();
 		return uom == null ? -1 : uom.getKeyAsInt();
 	}
 
-	public I_C_UOM getC_UOM()
+	public I_C_UOM getUom()
 	{
 		final int uomId = getUomId();
 		return Services.get(IUOMDAO.class).getById(uomId);
 	}
 
-	public int getM_HU_ID()
+	public HuId getHuId()
 	{
 		return huId;
 	}
