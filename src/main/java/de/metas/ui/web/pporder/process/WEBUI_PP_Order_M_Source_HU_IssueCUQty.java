@@ -131,6 +131,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		Services.get(IHUPPOrderBL.class)
 				.createIssueProducer()
 				.setOrderId(ppOrderId)
+				.considerIssueMethodForQtyToIssueCalculation(false) // issue exactly the CUs we split
 				.createIssues(extractedCUs);
 
 		getView().invalidateAll();
@@ -144,47 +145,52 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	{
 		if (PARAM_QtyCU.equals(parameter.getColumnName()))
 		{
-			final PPOrderLineRow row = getSingleSelectedRow();
-
-			final I_PP_Order_BOMLine bomLine = load(row.getPP_Order_BOMLine_ID(), I_PP_Order_BOMLine.class);
-			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
-			final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
-
-			final I_M_HU hu = activeSourceHus
-					.stream()
-					.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
-					.map(I_M_Source_HU::getM_HU)
-					.findFirst()
-					.orElseThrow(() -> new AdempiereException("@NoSelection@"));
-
-			final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
-
-			final String issueMethod = row.getIssueMethod();
-
-			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
-			{
-				final BigDecimal qtyLeftToIssue = row.getQtyPlan().subtract(row.getQty());
-
-				if (qtyLeftToIssue.signum() <= 0)
-				{
-					return BigDecimal.ZERO;
-				}
-
-				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getC_UOM());
-
-				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.getAsBigDecimal());
-
-			}
-			else
-			{
-				final BigDecimal sourceHuStorageQty = productStorages.get(0).getQty().getAsBigDecimal();
-
-				return sourceHuStorageQty;
-			}
+			return computeQtyToIssue();
 		}
 		else
 		{
 			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
+	}
+
+	private BigDecimal computeQtyToIssue()
+	{
+		final PPOrderLineRow row = getSingleSelectedRow();
+
+		final I_PP_Order_BOMLine bomLine = load(row.getPP_Order_BOMLine_ID(), I_PP_Order_BOMLine.class);
+		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
+		final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
+
+		final I_M_HU hu = activeSourceHus
+				.stream()
+				.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
+				.map(I_M_Source_HU::getM_HU)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("@NoSelection@"));
+
+		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
+
+		final String issueMethod = row.getIssueMethod();
+
+		if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+		{
+			final BigDecimal qtyLeftToIssue = row.getQtyPlan().subtract(row.getQty());
+
+			if (qtyLeftToIssue.signum() <= 0)
+			{
+				return BigDecimal.ZERO;
+			}
+
+			final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getC_UOM());
+
+			return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.getAsBigDecimal());
+
+		}
+		else
+		{
+			final BigDecimal sourceHuStorageQty = productStorages.get(0).getQty().getAsBigDecimal();
+
+			return sourceHuStorageQty;
 		}
 	}
 
