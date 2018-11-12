@@ -56,6 +56,9 @@ public @interface ViewColumn
 	 */
 	String captionKey() default "";
 
+	/** From where to fetch the caption's translation */
+	TranslationSource captionTranslationSource() default TranslationSource.DEFAULT;
+
 	/** true if user is allowed to sort by this column */
 	boolean sorting() default true;
 
@@ -75,6 +78,14 @@ public @interface ViewColumn
 	MediaType[] restrictToMediaTypes() default {};
 
 	WidgetSize widgetSize() default WidgetSize.Default;
+
+	public static enum TranslationSource
+	{
+		/** Default (check AD_Message, AD_Element) */
+		DEFAULT,
+		/** M_Attribute.Name */
+		ATTRIBUTE_NAME,
+	}
 
 	@Target({ ElementType.FIELD })
 	@Retention(RetentionPolicy.RUNTIME)
