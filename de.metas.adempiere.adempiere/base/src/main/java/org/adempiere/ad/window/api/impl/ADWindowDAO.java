@@ -1,6 +1,7 @@
 package org.adempiere.ad.window.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -36,12 +37,15 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.element.api.AdFieldId;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element_Link;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -55,6 +59,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
@@ -897,16 +904,131 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public List<Integer> retrieveWindowIdsWithMissingADElementLink()
+	public void createMissingADElementLinks()
+	{
+		final ImmutableSet<Integer> fieldIdsWithMissingElementLink = retrieveAllFieldIds(Env.getCtx())
+				.stream()
+				.filter(fieldId -> retrieveFieldADElementLink(AdFieldId.ofRepoId(fieldId)) == null)
+				.collect(ImmutableSet.toImmutableSet());
+
+		createElementLinksForFieldIds(fieldIdsWithMissingElementLink);
+
+		final ImmutableSet<Integer> tabIdsWithMissingElementLink = retrieveAllTabIds(Env.getCtx())
+				.stream()
+				.filter(tabId -> retrieveTabADElementLink(AdTabId.ofRepoId(tabId)) == null)
+				.collect(ImmutableSet.toImmutableSet());
+
+		createElementLinksForTabIds(tabIdsWithMissingElementLink);
+
+		final ImmutableSet<Integer> windowIdsWithMissingElementLink = retrieveAllWindowIds(Env.getCtx())
+				.stream()
+				.filter(windowId -> retrieveWindowADElementLink(AdWindowId.ofRepoId(windowId)) == null)
+				.collect(ImmutableSet.toImmutableSet());
+
+		createElementLinksForWindowIds(windowIdsWithMissingElementLink);
+
+	}
+
+	private void createElementLinksForWindowIds(final ImmutableSet<Integer> windowIdsWithMissingElementLink)
+	{
+		for (final int windowId : windowIdsWithMissingElementLink)
+		{
+			createADElementLinKForWindowId(AdWindowId.ofRepoId(windowId));
+		}
+
+	}
+
+	@Override
+	public void createADElementLinKForWindowId(final AdWindowId adWindowId)
+	{
+		final I_AD_Window window = getWindowById(adWindowId.getRepoId());
+
+		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
+		elementLink.setAD_Window_ID(window.getAD_Window_ID());
+		elementLink.setAD_Element_ID(window.getAD_Element_ID());
+		save(elementLink);
+
+	}
+
+	private void createElementLinksForTabIds(final ImmutableSet<Integer> tabIdsWithMissingElementLink)
+	{
+		for (final int tabId : tabIdsWithMissingElementLink)
+		{
+			createADElementLinKForTabId(tabId);
+		}
+
+	}
+
+	private void createADElementLinKForTabId(int tabId)
+	{
+		final I_AD_Tab tab = getTabById(tabId);
+
+		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
+		elementLink.setAD_Window_ID(tab.getAD_Window_ID());
+		elementLink.setAD_Element_ID(tab.getAD_Element_ID());
+		save(elementLink);
+
+	}
+
+	private void createElementLinksForFieldIds(ImmutableSet<Integer> fieldIdsWithMissingElementLink)
+	{
+		for (final int fieldId : fieldIdsWithMissingElementLink)
+		{
+			createADElementLinkForFieldId(AdFieldId.ofRepoId(fieldId));
+		}
+	}
+
+	private I_AD_Element_Link retrieveWindowADElementLink(final AdWindowId adWindowId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQuery<I_AD_Element_Link> existingADElementLinks = queryBL.createQueryBuilder(I_AD_Element_Link.class)
-				.create();
+		return queryBL.createQueryBuilder(I_AD_Element_Link.class)
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Window_ID, adWindowId.getRepoId())
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Tab_ID, null)
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Field_ID, null)
+				.create()
+				.firstOnly(I_AD_Element_Link.class);
+	}
+
+	private I_AD_Element_Link retrieveFieldADElementLink(final AdFieldId adFieldId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Element_Link.class)
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Field_ID, adFieldId.getRepoId())
+				.create()
+				.firstOnly(I_AD_Element_Link.class);
+	}
+
+	@Cached(cacheName = I_AD_Field.Table_Name + "#All")
+	public List<Integer> retrieveAllFieldIds(@CacheCtx final Properties ctx)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Field.class)
+				.orderBy(I_AD_Field.COLUMN_AD_Field_ID)
+				.create()
+				.listIds();
+	}
+
+	@Cached(cacheName = I_AD_Tab.Table_Name + "#All")
+	public List<Integer> retrieveAllTabIds(@CacheCtx final Properties ctx)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Tab.class)
+				.orderBy(I_AD_Tab.COLUMN_AD_Tab_ID)
+				.create()
+				.listIds();
+	}
+
+	@Cached(cacheName = I_AD_Window.Table_Name + "#All")
+	public List<Integer> retrieveAllWindowIds(@CacheCtx final Properties ctx)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_AD_Window.class)
-				.addNotNull(I_AD_Window.COLUMNNAME_AD_Element_ID)
-				.addNotInSubQueryFilter(I_AD_Window.COLUMN_AD_Window_ID, I_AD_Element_Link.COLUMN_AD_Window_ID, existingADElementLinks)
+				.orderBy(I_AD_Window.COLUMN_AD_Window_ID)
 				.create()
 				.listIds();
 	}
@@ -924,4 +1046,94 @@ public class ADWindowDAO implements IADWindowDAO
 		// use the load with ITrx.TRXNAME_ThreadInherited because the tab may not yet be saved in DB when it's needed
 		return load(tabId, I_AD_Tab.class);
 	}
+
+	private I_AD_Field getFieldById(final int fieldId)
+	{
+		// use the load with ITrx.TRXNAME_ThreadInherited because the tab may not yet be saved in DB when it's needed
+		return load(fieldId, I_AD_Field.class);
+	}
+
+	@Override
+	public void deleteExistingADElementLinkForWindowId(final AdWindowId adWindowId)
+	{
+		final I_AD_Element_Link windowADElementLink = retrieveWindowADElementLink(adWindowId);
+
+		if (windowADElementLink != null)
+		{
+			delete(windowADElementLink);
+		}
+	}
+
+	@Override
+	public void createADElementLinkForTabId(final AdTabId adTabId)
+	{
+		final I_AD_Tab tab = getTabById(adTabId.getRepoId());
+
+		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
+		elementLink.setAD_Window_ID(tab.getAD_Window_ID());
+		elementLink.setAD_Tab_ID(tab.getAD_Tab_ID());
+		elementLink.setAD_Element_ID(tab.getAD_Element_ID());
+		save(elementLink);
+	}
+
+	@Override
+	public void deleteExistingADElementLinkForTabId(final AdTabId adTabId)
+	{
+		final I_AD_Element_Link tabADElementLink = retrieveTabADElementLink(adTabId);
+
+		if (tabADElementLink != null)
+		{
+			delete(tabADElementLink);
+		}
+	}
+
+	private I_AD_Element_Link retrieveTabADElementLink(final AdTabId adTabId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Element_Link.class)
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Tab_ID, adTabId.getRepoId())
+				.create()
+				.firstOnly(I_AD_Element_Link.class);
+	}
+
+	@Override
+	public void createADElementLinkForFieldId(final AdFieldId adFieldId)
+	{
+		final I_AD_Field field = getFieldById(adFieldId.getRepoId());
+
+		final int nameElementId = field.getAD_Name_ID();
+
+		final int fieldElementId;
+
+		if (nameElementId > 0)
+		{
+			fieldElementId = nameElementId;
+		}
+		else
+		{
+			final I_AD_Column fieldColumn = field.getAD_Column();
+
+			fieldElementId = fieldColumn.getAD_Element_ID();
+		}
+
+		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
+		elementLink.setAD_Window_ID(field.getAD_Tab().getAD_Window_ID());
+		elementLink.setAD_Field_ID(field.getAD_Field_ID());
+		elementLink.setAD_Element_ID(fieldElementId);
+		save(elementLink);
+
+	}
+
+	@Override
+	public void deleteExistingADElementLinkForFieldId(final AdFieldId adFieldId)
+	{
+		final I_AD_Element_Link fieldADElementLink = retrieveFieldADElementLink(adFieldId);
+
+		if (fieldADElementLink != null)
+		{
+			delete(fieldADElementLink);
+		}
+	}
+
 }
