@@ -78,6 +78,7 @@ class RawWidget extends Component {
     dispatch(disableShortcut());
 
     setTimeout(() => {
+      // console.log("set cachedValue="+el.value+" on timeout");
       this.setState({
         isEdited: true,
         cachedValue: el.value,
@@ -96,20 +97,26 @@ class RawWidget extends Component {
       enableOnClickOutside,
     } = this.props;
 
-    enableOnClickOutside && enableOnClickOutside();
-    dispatch(allowShortcut());
-    handleBlur && handleBlur(this.willPatch(value));
+    // console.log('handleBlur for '+widgetField+': Reseting cached value.'
+    //   +'\n Status is: '+JSON.stringify(this.props.widgetData)
+    // );
+    this.setState(
+      {
+        isEdited: false,
+        cachedValue_DELETEME: undefined,
+      },
+      () => {
+        enableOnClickOutside && enableOnClickOutside();
+        dispatch(allowShortcut());
+        handleBlur && handleBlur(this.willPatch(widgetField, value));
 
-    this.setState({
-      isEdited: false,
-      cachedValue: undefined,
-    });
+        listenOnKeysTrue && listenOnKeysTrue();
 
-    listenOnKeysTrue && listenOnKeysTrue();
-
-    if (widgetField) {
-      this.handlePatch(widgetField, value, id);
-    }
+        if (widgetField) {
+          this.handlePatch(widgetField, value, id);
+        }
+      }
+    );
   };
 
   handleKeyDown = (e, property, value, widgetType) => {
@@ -124,19 +131,46 @@ class RawWidget extends Component {
   handlePatch = (property, value, id, valueTo, isForce) => {
     const { handlePatch } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
+    // console.log('handlePatch for '+property+': value='+value+', willPatch='+willPatch);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if ((isForce || willPatch) && handlePatch) {
-      this.setState({
-        cachedValue: value,
-        clearedFieldWarning: false,
-      });
+    if (
+      (isForce || willPatch) &&
+      handlePatch &&
+      !this.state.requestInProgress
+    ) {
+      // console.log("handlePatch for "+property+": Setting cacheValue="+value+", requestInProgress=true");
+      return this.setState(
+        {
+          cachedValue: value,
+          clearedFieldWarning: false,
+          requestInProgress: true,
+        },
+        () => {
+          const patchReturn = handlePatch(property, value, id, valueTo);
+          // console.log("patchReturn="+patchReturn);
 
-      return handlePatch(property, value, id, valueTo);
+          if (patchReturn && patchReturn.then) {
+            return patchReturn.then(() => {
+              this.setState({
+                requestInProgress: false,
+              });
+              // console.log("set requestInProgress=false for "+property);
+            });
+          } else {
+            this.setState({
+              requestInProgress: false,
+            });
+            // console.log("DIRECT set requestInProgress=false for "+property);
+          }
+
+          return patchReturn;
+        }
+      );
     }
 
-    return null;
+    return Promise.resolve(null);
   };
 
   handleProcess = () => {
@@ -174,13 +208,21 @@ class RawWidget extends Component {
       fieldData = widgetData[0];
     }
 
-    return (
+    let allowPatching =
       (isValue &&
         (JSON.stringify(fieldData.value) !== JSON.stringify(value) ||
           JSON.stringify(fieldData.valueTo) !== JSON.stringify(valueTo))) ||
       (cachedValue !== undefined &&
-        JSON.stringify(cachedValue) !== JSON.stringify(value))
-    );
+        JSON.stringify(cachedValue) !== JSON.stringify(value));
+
+    // console.log("willPatch "+property+" => "+allowPatching
+    //   +"\n value="+value+ ", valueTo="+valueTo
+    //   +"\n isValue="+isValue
+    //   +"\n fieldData="+JSON.stringify(fieldData)
+    //   +"\n cachedValue="+cachedValue
+    // );
+
+    return allowPatching;
   };
 
   clearFieldWarning = warning => {

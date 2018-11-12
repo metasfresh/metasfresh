@@ -14,6 +14,7 @@ import {
   getZoomIntoWindow,
   openModal,
   selectTableItems,
+  deselectTableItems,
 } from '../../actions/WindowActions';
 import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
@@ -153,7 +154,7 @@ class Table extends Component {
             ? defaultSelected
             : [undefined],
       });
-    } else if (!disconnectFromState && !selectedEqual) {
+    } else if (!disconnectFromState && !selectedEqual && selected.length) {
       dispatch(
         selectTableItems({
           windowType: type,
@@ -346,7 +347,12 @@ class Table extends Component {
   selectProduct = (id, idFocused, idFocusedDown) => {
     const { dispatch, type, disconnectFromState, tabInfo, viewId } = this.props;
     const { selected } = this.state;
-    const newSelected = selected.concat([id]);
+    let newSelected = [];
+    if (!selected[0]) {
+      newSelected = [id];
+    } else {
+      newSelected = selected.concat([id]);
+    }
 
     this.setState({ selected: newSelected }, () => {
       const { selected } = this.state;
@@ -437,14 +443,8 @@ class Table extends Component {
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
     this.setState({ selected: newSelected }, () => {
-      if (tabInfo) {
-        dispatch(
-          selectTableItems({
-            windowType: type,
-            viewId,
-            ids: newSelected,
-          })
-        );
+      if (tabInfo || !newSelected.length) {
+        dispatch(deselectTableItems([id], type, viewId));
       }
     });
 
