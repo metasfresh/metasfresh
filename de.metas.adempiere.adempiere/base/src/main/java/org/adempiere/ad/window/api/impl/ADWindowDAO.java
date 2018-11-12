@@ -954,17 +954,19 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		for (final int tabId : tabIdsWithMissingElementLink)
 		{
-			createADElementLinKForTabId(tabId);
+			createADElementLinkForTabId(AdTabId.ofRepoId(tabId));
 		}
 
 	}
 
-	private void createADElementLinKForTabId(int tabId)
+	@Override
+	public void createADElementLinkForTabId(final AdTabId adTabId)
 	{
-		final I_AD_Tab tab = getTabById(tabId);
+		final I_AD_Tab tab = getTabById(adTabId.getRepoId());
 
 		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
 		elementLink.setAD_Window_ID(tab.getAD_Window_ID());
+		elementLink.setAD_Tab_ID(tab.getAD_Tab_ID());
 		elementLink.setAD_Element_ID(tab.getAD_Element_ID());
 		save(elementLink);
 
@@ -1064,17 +1066,6 @@ public class ADWindowDAO implements IADWindowDAO
 		}
 	}
 
-	@Override
-	public void createADElementLinkForTabId(final AdTabId adTabId)
-	{
-		final I_AD_Tab tab = getTabById(adTabId.getRepoId());
-
-		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
-		elementLink.setAD_Window_ID(tab.getAD_Window_ID());
-		elementLink.setAD_Tab_ID(tab.getAD_Tab_ID());
-		elementLink.setAD_Element_ID(tab.getAD_Element_ID());
-		save(elementLink);
-	}
 
 	@Override
 	public void deleteExistingADElementLinkForTabId(final AdTabId adTabId)
