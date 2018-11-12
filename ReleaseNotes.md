@@ -13,7 +13,37 @@ Here come the actual release notes:
 # metasfresh 5.81
 ## Features
 
+* metasfresh
+  * [#4734](https://github.com/metasfresh/metasfresh/issues/4734) Shipper transportation identifier shall contain documentNo, date and the shipper name
+
+* metasfresh-webui-frontend
+  * [#2006](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2006) View selection for touch screens
+
 ## Fixes
+* metasfresh
+  * [#4738](https://github.com/metasfresh/metasfresh/issues/4738) Error creating receipt schedule if order line was created via "add new"
+  * [#4739](https://github.com/metasfresh/metasfresh/issues/4739) Fix context parse errors while using order's product batch entry
+  * [#4741](https://github.com/metasfresh/metasfresh/issues/4741) Process C_Order_VoidWithRelatedDocsAndRecreate hangs
+  * [#4742](https://github.com/metasfresh/metasfresh/issues/4742) Attachment-Download from BPartner B2C window broken
+  * [#4743](https://github.com/metasfresh/metasfresh/issues/4743) C_Invoice_CreateExportData async WP processor runs into error with most "normal" invoices
+
+* metasfresh-webui-api
+  * [#1097](https://github.com/metasfresh/metasfresh-webui-api/issues/1097) "Issue only for what was received" method: Issued HUs remain issued and don't get destroyed
+  * [#1098](https://github.com/metasfresh/metasfresh-webui-api/issues/1098) Label Element filters not working
+  * [#1099](https://github.com/metasfresh/metasfresh-webui-api/issues/1099) Zooming into a parent column from a translation window not working
+  * [#1102](https://github.com/metasfresh/metasfresh-webui-api/issues/1102) Document filters: consider empty strings as no filters
+
+* metasfresh-webui-frontend
+  * [#2008](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2008) Business partner field in order: bpartner and location not alligned
+  * [#2012](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2012) Modal view's title is not set when opened from process
+  * [#2015](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2015) Make sure `Run QR code action` process can be executed from everywhere
+  * [#2029](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2029) View quickActions timing issue
+  * [#2039](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2039) Uncaught TypeError: e.toISO is not a function
+  * [#2049](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2049) quick actions: not refreshed on selection changed in tablet/mobile mode
+  * [#2050](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2050) Views: refresh `quickActions` after `GET /byIds` shall consider current selected rows
+  * [#2054](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2054) Error while trying to add a new sales order line using batch entry
+  * [#2060](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2060) Text widgets are not PATCHED anymore
+  * [#2061](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2061) Cannot untick filter checkbox
 
 # metasfresh 5.80
 ## Features
