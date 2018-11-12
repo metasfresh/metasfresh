@@ -56,7 +56,7 @@ public class WEBUI_PP_Order_M_Source_HU_Delete
 	protected String doIt() throws Exception
 	{
 		final PPOrderLineRow rowToProcess = getSingleSelectedRow();
-		final HuId huId = HuId.ofRepoId(rowToProcess.getM_HU_ID());
+		final HuId huId = rowToProcess.getHuId();
 
 		// unselect the row we just deleted the record of, to avoid an 'EntityNotFoundException'
 		final boolean sourceWasDeleted = SourceHUsService.get().deleteSourceHuMarker(huId);

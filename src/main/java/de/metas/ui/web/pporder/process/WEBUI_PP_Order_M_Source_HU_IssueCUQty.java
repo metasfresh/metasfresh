@@ -109,7 +109,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
 				.productId(row.getProductId())
-				.qtyCU(Quantity.of(qtyCU, row.getC_UOM()))
+				.qtyCU(Quantity.of(qtyCU, row.getUom()))
 				.build();
 
 		final EmptyHUListener emptyHUListener = EmptyHUListener
@@ -181,7 +181,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				return BigDecimal.ZERO;
 			}
 
-			final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getC_UOM());
+			final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom());
 
 			return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.getAsBigDecimal());
 

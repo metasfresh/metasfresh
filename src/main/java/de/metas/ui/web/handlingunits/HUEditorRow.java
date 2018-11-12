@@ -363,11 +363,6 @@ public final class HUEditorRow implements IViewRow
 		return huId;
 	}
 
-	public int getHuIdAsInt()
-	{
-		return HuId.toRepoId(getHuId());
-	}
-
 	/**
 	 *
 	 * @return the wrapped HU or {@code null} if there is none.

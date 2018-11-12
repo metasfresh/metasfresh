@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 
+import de.metas.handlingunits.HuId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -119,16 +120,14 @@ public class PPOrderLineRowId
 		return new PPOrderLineRowId(PPOrderLineRowType.PP_Order, null, ppOrderId);
 	}
 
-	public static PPOrderLineRowId ofIssuedOrReceivedHU(@Nullable DocumentId parentRowId, int huId)
+	public static PPOrderLineRowId ofIssuedOrReceivedHU(@Nullable DocumentId parentRowId, @NonNull final HuId huId)
 	{
-		Preconditions.checkArgument(huId > 0, "huId > 0");
-		return new PPOrderLineRowId(PPOrderLineRowType.IssuedOrReceivedHU, parentRowId, huId);
+		return new PPOrderLineRowId(PPOrderLineRowType.IssuedOrReceivedHU, parentRowId, huId.getRepoId());
 	}
 
-	public static PPOrderLineRowId ofSourceHU(@NonNull DocumentId parentRowId, int sourceHuId)
+	public static PPOrderLineRowId ofSourceHU(@NonNull DocumentId parentRowId, @NonNull final HuId sourceHuId)
 	{
-		Preconditions.checkArgument(sourceHuId > 0, "huId > 0");
-		return new PPOrderLineRowId(PPOrderLineRowType.Source_HU, parentRowId, sourceHuId);
+		return new PPOrderLineRowId(PPOrderLineRowType.Source_HU, parentRowId, sourceHuId.getRepoId());
 	}
 
 }
