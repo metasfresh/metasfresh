@@ -222,7 +222,8 @@ public class CreateDraftIssuesCommand
 		candidate.setM_HU_ID(hu.getM_HU_ID());
 		candidate.setM_Product_ID(productId.getRepoId());
 
-		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage);
+		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
+				.switchToSourceIfMorePrecise();
 		candidate.setQty(qtyToIssue.getAsBigDecimal());
 		candidate.setC_UOM(qtyToIssue.getUOM());
 

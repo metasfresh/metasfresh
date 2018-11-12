@@ -461,7 +461,26 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public Quantity switchToSource()
 	{
-		return new Quantity(getSourceQty(), getSourceUOM(), getQty(), getUOM());
+		return new Quantity(getSourceQty(), getSourceUOM(), getAsBigDecimal(), getUOM());
+	}
+
+	/**
+	 * Interchange the Qty/UOM with source Qty/UOM if the source is more precise.
+	 * Source is considered more precise if it's numeric value is bigger.
+	 * 
+	 * This method is usually used before persisting to database where we want to persist the most precise amount,
+	 * because else, when we will load it back we won't get the same figures.
+	 */
+	public Quantity switchToSourceIfMorePrecise()
+	{
+		if (getSourceQty().compareTo(getAsBigDecimal()) > 0)
+		{
+			return switchToSource();
+		}
+		else
+		{
+			return this;
+		}
 	}
 
 	/**
