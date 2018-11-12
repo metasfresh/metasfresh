@@ -1,5 +1,8 @@
 package de.metas.procurement.base.order.impl;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -10,6 +13,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Util;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
@@ -23,8 +27,6 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Getter;
-import lombok.Setter;
 
 /*
  * #%L
@@ -36,12 +38,12 @@ import lombok.Setter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,7 +55,7 @@ import lombok.Setter;
  * <p>
  * <b>IMPORTANT:</b> The setters do not alter the wrapped orderline itself, because we currently only use this implementation in an {@link IPricingRule} implementation.
  * But is should not be hard to add an option to also alter the wrapped olderLine in future, if needed.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -107,7 +109,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	{
 		return orderLine.getM_Product();
 	}
-	
+
 	@Override
 	public int getProductId()
 	{
@@ -178,7 +180,10 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	@Override
 	public Timestamp getDate()
 	{
-		return orderLine.getDatePromised();
+		final Timestamp date = Util.coalesceSuppliers(
+				() -> orderLine.getDatePromised(),
+				() -> orderLine.getC_Order().getDatePromised());
+		return date;
 	}
 
 	@Override
@@ -211,7 +216,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the value that was set via {@link #setPrice(BigDecimal)}.
 	 */
 	public BigDecimal getPrice()

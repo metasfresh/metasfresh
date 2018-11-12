@@ -5,6 +5,7 @@ import lombok.NonNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -77,8 +78,13 @@ public class InvoiceExportService
 	{
 		for (final InvoiceId invoiceIdToExport : invoiceIdsToExport)
 		{
-			final InvoiceToExport invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
-			exportInvoice(invoiceToExport);
+			final Optional<InvoiceToExport> invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
+			if(!invoiceToExport.isPresent())
+			{
+				Loggables.get().addLog("InvoiceExportService - invoiceToExportFactory was unable to create an exportable representation for the invoice with InvoiceId={}; skipping.", invoiceIdToExport);
+				continue;
+			}
+			exportInvoice(invoiceToExport.get());
 		}
 	}
 

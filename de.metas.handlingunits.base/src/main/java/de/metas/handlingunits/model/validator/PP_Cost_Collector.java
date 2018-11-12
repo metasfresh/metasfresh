@@ -56,6 +56,7 @@ import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -196,8 +197,9 @@ public class PP_Cost_Collector
 		// Delete receipt candidates
 		final Set<Integer> huIds = hus.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
 		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
 		huPPOrderQtyDAO
-				.retrieveOrderQtys(cc.getPP_Order_ID())
+				.retrieveOrderQtys(ppOrderId)
 				.stream()
 				.filter(receiptCandidate -> huIds.contains(receiptCandidate.getM_HU_ID()))
 				.forEach(receiptCandidate -> {
@@ -214,7 +216,8 @@ public class PP_Cost_Collector
 
 		// Delete issue candidate
 		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-		final I_PP_Order_Qty issueCandidate = huPPOrderQtyDAO.retrieveOrderQtyForCostCollector(cc.getPP_Order_ID(), cc.getPP_Cost_Collector_ID());
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
+		final I_PP_Order_Qty issueCandidate = huPPOrderQtyDAO.retrieveOrderQtyForCostCollector(ppOrderId, cc.getPP_Cost_Collector_ID());
 		if (issueCandidate != null)
 		{
 			final I_M_HU huToVerify = issueCandidate.getM_HU();

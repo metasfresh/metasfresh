@@ -29,6 +29,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
@@ -210,7 +211,13 @@ public class HUShippingFacade
 			return;
 		}
 
-		final List<Integer> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments).listIds();
+		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments)
+				.listIds(InvoiceCandidateId::ofRepoId);
+		if (invoiceCandidateIds.isEmpty())
+		{
+			throw new AdempiereException("@NotFound@ @C_Invoice_Candidate_ID@")
+					.setParameter("shipments", shipments);
+		}
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 

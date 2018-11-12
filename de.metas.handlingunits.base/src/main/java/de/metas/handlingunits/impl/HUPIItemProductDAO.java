@@ -50,6 +50,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -206,9 +207,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		// FRESH-386
 		queryVO.setM_Product_Packaging_ID(packagingProductId == null ? 0 : packagingProductId.getRepoId());
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(productId);
-		final String trxName = InterfaceWrapperHelper.getTrxName(productId);
-		return retrieveFirst(ctx, queryVO, trxName);
+		return retrieveFirst(Env.getCtx(), queryVO, ITrx.TRXNAME_None);
 	}
 
 	/**

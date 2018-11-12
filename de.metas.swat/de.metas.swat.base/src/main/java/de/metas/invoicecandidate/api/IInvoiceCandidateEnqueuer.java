@@ -24,11 +24,12 @@ package de.metas.invoicecandidate.api;
 
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Properties;
+import java.util.Set;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.PInstanceId;
 import de.metas.util.ILoggable;
@@ -54,7 +55,7 @@ public interface IInvoiceCandidateEnqueuer
 	 */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);
 
-	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Collection<Integer> invoiceCandidateIds);
+	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Set<InvoiceCandidateId> invoiceCandidateIds);
 
 	/**
 	 * Context/transaction name to be used when enqueueing.
@@ -62,7 +63,7 @@ public interface IInvoiceCandidateEnqueuer
 	 * @param ctx
 	 * @param trxName
 	 */
-	IInvoiceCandidateEnqueuer setContext(final Properties ctx, final String trxName);
+	IInvoiceCandidateEnqueuer setContext(final Properties ctx);
 
 	/**
 	 * Sets logger to be used to log warnings.

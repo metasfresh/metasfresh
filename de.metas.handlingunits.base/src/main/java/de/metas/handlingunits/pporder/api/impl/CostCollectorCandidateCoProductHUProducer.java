@@ -6,8 +6,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 
-import com.google.common.base.Preconditions;
-
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
@@ -16,6 +14,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -28,7 +27,7 @@ public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRe
 
 	public CostCollectorCandidateCoProductHUProducer(final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine)
 	{
-		super(Preconditions.checkNotNull(ppOrderBOMLine, "ppOrderBOMLine not null").getPP_Order_ID());
+		super(PPOrderId.ofRepoId(ppOrderBOMLine.getPP_Order_ID()));
 		
 		// TODO: validate:
 		// * if is a completed PP_Order
