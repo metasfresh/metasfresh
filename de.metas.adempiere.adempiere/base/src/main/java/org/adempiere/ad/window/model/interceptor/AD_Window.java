@@ -11,6 +11,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IADElementDAO;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.ModelValidator;
@@ -55,6 +56,7 @@ public class AD_Window
 	@CalloutMethod(columnNames = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Window window) throws SQLException
 	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 
 		if (!IElementTranslationBL.DYNATTR_AD_Window_UpdateTranslations.getValue(window, true))
 		{
@@ -74,7 +76,28 @@ public class AD_Window
 		window.setDescription(windowElement.getDescription());
 		window.setHelp(windowElement.getHelp());
 
-		Services.get(IElementTranslationBL.class).createElementLinkForWindow(AdWindowId.ofRepoIdOrNull(window.getAD_Window_ID()));
+		final AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(window.getAD_Window_ID());
+
+		if(adWindowId == null)
+		{
+			// nothing to do. Window was not yet saved
+			return;
+		}
+
+		adWindowDAO.deleteExistingADElementLinkForWindowId(adWindowId);
+		adWindowDAO.createADElementLinKForWindowId(adWindowId);
+
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+
+	public void onWindowDelete(final I_AD_Window window) throws SQLException
+	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(window.getAD_Window_ID());
+
+		adWindowDAO.deleteExistingADElementLinkForWindowId(adWindowId);
 
 	}
 

@@ -1,7 +1,8 @@
 package org.adempiere.ad.element.process;
 
+import org.adempiere.ad.window.api.IADWindowDAO;
+
 import de.metas.process.JavaProcess;
-import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Services;
 
 /*
@@ -32,7 +33,7 @@ public class AD_Element_Link_Create_Missing extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		Services.get(IElementTranslationBL.class).createADElementLinkEntries();
+		Services.get(IADWindowDAO.class).createMissingADElementLinks();
 
 		return MSG_OK;
 	}

@@ -6,10 +6,12 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IADElementDAO;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.ModelValidator;
@@ -51,10 +53,12 @@ public class AD_Tab
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	@CalloutMethod(columnNames = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Tab tab) throws SQLException
 	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+
 		final I_AD_Element tabElement = Services.get(IADElementDAO.class).getById(tab.getAD_Element_ID());
 
 		if (tabElement == null)
@@ -67,6 +71,30 @@ public class AD_Tab
 		tab.setDescription(tabElement.getDescription());
 		tab.setHelp(tabElement.getHelp());
 		tab.setCommitWarning(tabElement.getCommitWarning());
+
+		final AdTabId adTabId = AdTabId.ofRepoIdOrNull(tab.getAD_Tab_ID());
+
+		if(adTabId == null)
+		{
+			 // nothig to do The tab was not yet saved
+			return;
+		}
+
+		adWindowDAO.deleteExistingADElementLinkForTabId(adTabId);
+		adWindowDAO.createADElementLinkForTabId(adTabId);
+
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+
+	public void onTabDelete(final I_AD_Tab tab) throws SQLException
+	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+
+		final AdTabId adTabId = AdTabId.ofRepoId(tab.getAD_Tab_ID());
+
+		adWindowDAO.deleteExistingADElementLinkForTabId(adTabId);
+
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
@@ -87,4 +115,5 @@ public class AD_Tab
 
 		Services.get(IElementTranslationBL.class).updateTabTranslationsFromElement(tabElementId);
 	}
+
 }

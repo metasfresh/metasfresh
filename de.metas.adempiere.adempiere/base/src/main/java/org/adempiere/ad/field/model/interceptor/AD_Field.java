@@ -2,10 +2,16 @@ package org.adempiere.ad.field.model.interceptor;
 
 import java.sql.SQLException;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
@@ -38,35 +44,55 @@ import de.metas.util.Services;
  * #L%
  */
 @Interceptor(I_AD_Field.class)
+@Callout(I_AD_Field.class)
 @Component
 public class AD_Field
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Field.COLUMNNAME_AD_Name_ID)
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Field.COLUMNNAME_AD_Name_ID)
+	@CalloutMethod(columnNames = { I_AD_Field.COLUMNNAME_AD_Name_ID, I_AD_Field.COLUMNNAME_AD_Column_ID })
 	public void onNameIDChanged(final I_AD_Field field) throws SQLException
 	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+
 		final I_AD_Element fieldElement;
 
-		if (field.getAD_Name_ID() <= 0)
+		if (field.getAD_Name_ID() > 0)
+
+		{
+			fieldElement = field.getAD_Name();
+		}
+		else if (field.getAD_Column_ID() > 0)
 		{
 			// the AD_Name_ID was set to null. Get back to the values from the AD_Column
 			final I_AD_Column fieldColumn = field.getAD_Column();
 			fieldElement = fieldColumn.getAD_Element();
-
 		}
 		else
 		{
-			fieldElement = field.getAD_Name();
-		}
-
-		if (fieldElement == null)
-		{
-			// not yet saved; do nothing
+			// Nothing to do. the element was not yet saved.
 			return;
 		}
 
 		field.setName(fieldElement.getName());
 		field.setDescription(fieldElement.getDescription());
 		field.setHelp(fieldElement.getHelp());
+
+		final AdFieldId adFieldId = AdFieldId.ofRepoIdOrNull(field.getAD_Field_ID());
+
+		if (adFieldId == null)
+		{
+			// nothing to do. The field was not yet saved
+			return;
+		}
+
+		adWindowDAO.deleteExistingADElementLinkForFieldId(adFieldId);
+		adWindowDAO.createADElementLinkForFieldId(adFieldId);
 
 	}
 
@@ -80,7 +106,6 @@ public class AD_Field
 			// the AD_Name_ID was set to null. Get back to the values from the AD_Column
 			final I_AD_Column fieldColumn = field.getAD_Column();
 			fieldElement = fieldColumn.getAD_Element();
-
 		}
 		else
 		{
@@ -105,6 +130,16 @@ public class AD_Field
 		{
 			LogicExpressionCompiler.instance.compile(field.getDisplayLogic());
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	public void onFieldDelete(final I_AD_Field field) throws SQLException
+	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+
+		final AdFieldId adFieldId = AdFieldId.ofRepoId(field.getAD_Field_ID());
+
+		adWindowDAO.deleteExistingADElementLinkForFieldId(adFieldId);
 	}
 
 }
