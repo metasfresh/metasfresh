@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -32,6 +32,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -393,18 +394,11 @@ public class PPOrderLineRow implements IViewRow
 		return product;
 	}
 
-	@Deprecated
-	public int getM_Product_ID()
-	{
-		final JSONLookupValue product = getProduct();
-		return product == null ? -1 : product.getKeyAsInt();
-	}
-	
 	public ProductId getProductId()
 	{
 		final JSONLookupValue product = getProduct();
 		return product != null ? ProductId.ofRepoIdOrNull(product.getKeyAsInt()) : null;
-		
+
 	}
 
 	public JSONLookupValue getUOM()
@@ -412,7 +406,7 @@ public class PPOrderLineRow implements IViewRow
 		return uom;
 	}
 
-	public int getC_UOM_ID()
+	private int getUomId()
 	{
 		final JSONLookupValue uom = getUOM();
 		return uom == null ? -1 : uom.getKeyAsInt();
@@ -420,8 +414,8 @@ public class PPOrderLineRow implements IViewRow
 
 	public I_C_UOM getC_UOM()
 	{
-		final int uomId = getC_UOM_ID();
-		return InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
+		final int uomId = getUomId();
+		return Services.get(IUOMDAO.class).getById(uomId);
 	}
 
 	public int getM_HU_ID()
