@@ -229,6 +229,31 @@ Cypress.Commands.add('openAdvancedEdit', () => {
   })
 });
 
+Cypress.Commands.add('pressAddNewButton', () => {
+  describe('Press a tab\'s add-new-record-button', function() {
+    const addNewText = Cypress.messages.window.addNew.caption;
+    cy.get('.btn')
+        .contains(addNewText)
+        .should('exist')
+        .click();
+        
+    cy.get('.panel-modal').should('exist');
+  })
+});
+
+/* ts: I don't see a nicer way to address this button; */
+Cypress.Commands.add('pressDoneButton', () => {
+  describe('Press an overlay\'s done-button', function() {
+
+    //webui.modal.actions.done
+    const doneText = Cypress.messages.modal.actions.done;
+    cy.get('.btn')
+      .contains(doneText)
+      .should('exist')
+      .click();
+  })
+});
+
 Cypress.Commands.add('selectTab', (tabName) => {
   describe('Select and activate the tab with a certain name', function() {
     return cy.get(`#tab_${tabName}`).click()
