@@ -67,6 +67,7 @@ public interface IHUPPOrderIssueProducer
 
 	IHUPPOrderIssueProducer setOrderId(PPOrderId ppOrderId);
 
+	
 	/**
 	 * Sets movement date to be used in generated underlying {@link I_PP_Cost_Collector}s.
 	 *
@@ -87,4 +88,6 @@ public interface IHUPPOrderIssueProducer
 	 * @param targetOrderBOMLine
 	 */
 	IHUPPOrderIssueProducer setTargetOrderBOMLine(I_PP_Order_BOMLine targetOrderBOMLine);
+	
+	IHUPPOrderIssueProducer considerIssueMethodForQtyToIssueCalculation(boolean considerIssueMethodForQtyToIssueCalculation);
 }

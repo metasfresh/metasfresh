@@ -1,6 +1,5 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,13 +15,13 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate;
-import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -52,7 +51,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -116,11 +114,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueReceiptCandidatesProcessor.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorService = Services.get(ITrxItemProcessorExecutorService.class);
 	//
-	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-	//
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	//
 	// Parameters
@@ -242,7 +239,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		// Calculate the quantity to issue.
-		final Quantity qtyToIssue = calculateQtyToIssue(ppOrderBOMLine, candidate);
+		final I_C_UOM qtyToIssueUOM = uomsRepo.getById(candidate.getC_UOM_ID());
+		final Quantity qtyToIssue = Quantity.of(candidate.getQty(), qtyToIssueUOM);
+
 		//
 		// Update candidate's qty to issue
 		// NOTE: in case of "IssueOnlyReceived" issue method the qty to issue is calculated just in time. We assume it's saved by caller
@@ -305,24 +304,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			markProcessedAndSave(candidate, cc);
 
 			return cc;
-		}
-	}
-
-	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final I_PP_Order_Qty candidate)
-	{
-		//
-		// Case: if this is an Issue BOM Line, IssueMethod is Backflush and we did not over-issue on it yet
-		// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
-		// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
-		// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
-		final String issueMethod = targetBOMLine.getIssueMethod();
-		if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
-		{
-			return ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, candidate.getC_UOM());
-		}
-		else
-		{
-			return Quantity.of(candidate.getQty(), candidate.getC_UOM());
 		}
 	}
 
@@ -526,8 +507,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				throw new HUException("Cannot create issue cost collector for zero quantity candidate: " + candidate);
 			}
 
-			final BigDecimal qtyToIssue = candidate.getQtyToIssue();
-			final I_C_UOM qtyToIssueUOM = candidate.getUom();
+			final Quantity qtyToIssue = candidate.getQtyToIssue();
 			final Date movementDate = getMovementDate();
 			final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getOrderBOMLine();
 			final int locatorId = ppOrderBOMLine.getM_Locator_ID();
@@ -542,15 +522,14 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Create the cost collector & process it.
-
 			final I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(
 					ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
 							.orderBOMLine(ppOrderBOMLine)
 							.locatorId(locatorId)
 							.attributeSetInstanceId(0) // N/A
 							.movementDate(movementDate)
-							.qtyUOM(qtyToIssueUOM)
-							.qtyIssue(qtyToIssue)
+							.qtyUOM(qtyToIssue.getUOM())
+							.qtyIssue(qtyToIssue.getAsBigDecimal())
 							.build()),
 					I_PP_Cost_Collector.class);
 
@@ -582,23 +561,21 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		private final I_PP_Order_BOMLine orderBOMLine;
-		private final I_C_UOM uom;
 
 		//
 		@Setter(AccessLevel.NONE)
-		private BigDecimal qtyToIssue = BigDecimal.ZERO;
+		private Quantity qtyToIssue;
 		private final Set<I_M_HU> husToAssign = new TreeSet<>(HUByIdComparator.instance);
 		@Setter(AccessLevel.NONE)
 		private I_M_Material_Tracking materialTracking;
 
-		public IssueCandidate(final I_PP_Order_BOMLine ppOrderBOMLine)
+		public IssueCandidate(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 		{
-			super();
-
-			Check.assumeNotNull(ppOrderBOMLine, "ppOrderBOMLine not null");
 			this.orderBOMLine = ppOrderBOMLine;
 
-			uom = ppOrderBOMLine.getC_UOM();
+			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+			final I_C_UOM uom = uomsRepo.getById(ppOrderBOMLine.getC_UOM_ID());
+			qtyToIssue = Quantity.zero(uom);
 		}
 
 		/**
@@ -618,9 +595,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			}
 
 			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
-			final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, uom);
+			final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, qtyToIssue.getUOM());
 
-			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv.getAsBigDecimal());
+			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv);
 			husToAssign.add(huToAssign);
 		}
 
@@ -643,8 +620,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		public boolean isZeroQty()
 		{
-			final BigDecimal qtyToIssue = getQtyToIssue();
-			return qtyToIssue.signum() == 0;
+			return getQtyToIssue().isZero();
 		}
 	}
 }

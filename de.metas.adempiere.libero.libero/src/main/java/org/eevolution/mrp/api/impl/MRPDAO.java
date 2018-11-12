@@ -32,8 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
@@ -188,8 +186,8 @@ public class MRPDAO implements IMRPDAO
 	public boolean hasProductRecords(final I_M_Product product)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_MRP.class, product)
-				.filter(new EqualsQueryFilter<I_PP_MRP>(I_PP_MRP.COLUMNNAME_M_Product_ID, product.getM_Product_ID()))
-				.filter(new NotEqualsQueryFilter<I_PP_MRP>(I_PP_MRP.COLUMNNAME_Qty, BigDecimal.ZERO))
+				.addEqualsFilter(I_PP_MRP.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addNotEqualsFilter(I_PP_MRP.COLUMNNAME_Qty, BigDecimal.ZERO)
 				.create()
 				.match();
 	}
@@ -228,7 +226,7 @@ public class MRPDAO implements IMRPDAO
 		final BigDecimal qtyOnHand = DB.getSQLValueBDEx(trxName, sql, new Object[] { M_Warehouse_ID, adClientId, M_Product_ID });
 		if (qtyOnHand == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return qtyOnHand;
 	}
