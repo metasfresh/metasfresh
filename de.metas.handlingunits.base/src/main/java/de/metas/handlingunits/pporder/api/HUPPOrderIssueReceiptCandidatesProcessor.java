@@ -507,8 +507,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				throw new HUException("Cannot create issue cost collector for zero quantity candidate: " + candidate);
 			}
 
-			final BigDecimal qtyToIssue = candidate.getQtyToIssue();
-			final I_C_UOM qtyToIssueUOM = candidate.getUom();
+			final Quantity qtyToIssue = candidate.getQtyToIssue();
 			final Date movementDate = getMovementDate();
 			final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getOrderBOMLine();
 			final int locatorId = ppOrderBOMLine.getM_Locator_ID();
@@ -529,10 +528,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 					locatorId, // locator
 					0, // attributeSetInstanceId: N/A
 					movementDate,
-					qtyToIssue,
+					qtyToIssue.getAsBigDecimal(),
 					BigDecimal.ZERO, // qtyScrap,
 					BigDecimal.ZERO, // qtyReject
-					qtyToIssueUOM // UOM
+					qtyToIssue.getUOM() // UOM
 			), I_PP_Cost_Collector.class);
 
 			//
@@ -563,11 +562,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		private final I_PP_Order_BOMLine orderBOMLine;
-		private final I_C_UOM uom;
 
 		//
 		@Setter(AccessLevel.NONE)
-		private BigDecimal qtyToIssue = BigDecimal.ZERO;
+		private Quantity qtyToIssue;
 		private final Set<I_M_HU> husToAssign = new TreeSet<>(HUByIdComparator.instance);
 		@Setter(AccessLevel.NONE)
 		private I_M_Material_Tracking materialTracking;
@@ -577,7 +575,8 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			this.orderBOMLine = ppOrderBOMLine;
 
 			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-			uom = uomsRepo.getById(ppOrderBOMLine.getC_UOM_ID());
+			final I_C_UOM uom = uomsRepo.getById(ppOrderBOMLine.getC_UOM_ID());
+			qtyToIssue = Quantity.zero(uom);
 		}
 
 		/**
@@ -597,9 +596,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			}
 
 			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
-			final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, uom);
+			final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, qtyToIssue.getUOM());
 
-			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv.getAsBigDecimal());
+			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv);
 			husToAssign.add(huToAssign);
 		}
 
@@ -622,8 +621,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		public boolean isZeroQty()
 		{
-			final BigDecimal qtyToIssue = getQtyToIssue();
-			return qtyToIssue.signum() == 0;
+			return getQtyToIssue().isZero();
 		}
 	}
 }
