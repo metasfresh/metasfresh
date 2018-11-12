@@ -92,6 +92,35 @@ public interface I_AD_Element_Link
     public static final String COLUMNNAME_AD_Element_Link_ID = "AD_Element_Link_ID";
 
 	/**
+	 * Set Feld.
+	 * Ein Feld einer Datenbanktabelle
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Field_ID (int AD_Field_ID);
+
+	/**
+	 * Get Feld.
+	 * Ein Feld einer Datenbanktabelle
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Field_ID();
+
+	public org.compiere.model.I_AD_Field getAD_Field();
+
+	public void setAD_Field(org.compiere.model.I_AD_Field AD_Field);
+
+    /** Column definition for AD_Field_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element_Link, org.compiere.model.I_AD_Field> COLUMN_AD_Field_ID = new org.adempiere.model.ModelColumn<I_AD_Element_Link, org.compiere.model.I_AD_Field>(I_AD_Element_Link.class, "AD_Field_ID", org.compiere.model.I_AD_Field.class);
+    /** Column name AD_Field_ID */
+    public static final String COLUMNNAME_AD_Field_ID = "AD_Field_ID";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -119,6 +148,35 @@ public interface I_AD_Element_Link
     public static final org.adempiere.model.ModelColumn<I_AD_Element_Link, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Element_Link, org.compiere.model.I_AD_Org>(I_AD_Element_Link.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Register.
+	 * Register auf einem Fenster
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Tab_ID (int AD_Tab_ID);
+
+	/**
+	 * Get Register.
+	 * Register auf einem Fenster
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Tab_ID();
+
+	public org.compiere.model.I_AD_Tab getAD_Tab();
+
+	public void setAD_Tab(org.compiere.model.I_AD_Tab AD_Tab);
+
+    /** Column definition for AD_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element_Link, org.compiere.model.I_AD_Tab> COLUMN_AD_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_Element_Link, org.compiere.model.I_AD_Tab>(I_AD_Element_Link.class, "AD_Tab_ID", org.compiere.model.I_AD_Tab.class);
+    /** Column name AD_Tab_ID */
+    public static final String COLUMNNAME_AD_Tab_ID = "AD_Tab_ID";
 
 	/**
 	 * Set Fenster.

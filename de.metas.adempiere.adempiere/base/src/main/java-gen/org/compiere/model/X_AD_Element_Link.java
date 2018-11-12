@@ -14,7 +14,7 @@ public class X_AD_Element_Link extends org.compiere.model.PO implements I_AD_Ele
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 917098320L;
+	private static final long serialVersionUID = -1146869607L;
 
     /** Standard Constructor */
     public X_AD_Element_Link (Properties ctx, int AD_Element_Link_ID, String trxName)
@@ -95,6 +95,80 @@ public class X_AD_Element_Link extends org.compiere.model.PO implements I_AD_Ele
 	public int getAD_Element_Link_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_Link_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Field getAD_Field() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Field_ID, org.compiere.model.I_AD_Field.class);
+	}
+
+	@Override
+	public void setAD_Field(org.compiere.model.I_AD_Field AD_Field)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Field_ID, org.compiere.model.I_AD_Field.class, AD_Field);
+	}
+
+	/** Set Feld.
+		@param AD_Field_ID 
+		Ein Feld einer Datenbanktabelle
+	  */
+	@Override
+	public void setAD_Field_ID (int AD_Field_ID)
+	{
+		if (AD_Field_ID < 1) 
+			set_Value (COLUMNNAME_AD_Field_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Field_ID, Integer.valueOf(AD_Field_ID));
+	}
+
+	/** Get Feld.
+		@return Ein Feld einer Datenbanktabelle
+	  */
+	@Override
+	public int getAD_Field_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Field_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Tab getAD_Tab() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Tab_ID, org.compiere.model.I_AD_Tab.class);
+	}
+
+	@Override
+	public void setAD_Tab(org.compiere.model.I_AD_Tab AD_Tab)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Tab_ID, org.compiere.model.I_AD_Tab.class, AD_Tab);
+	}
+
+	/** Set Register.
+		@param AD_Tab_ID 
+		Register auf einem Fenster
+	  */
+	@Override
+	public void setAD_Tab_ID (int AD_Tab_ID)
+	{
+		if (AD_Tab_ID < 1) 
+			set_Value (COLUMNNAME_AD_Tab_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Tab_ID, Integer.valueOf(AD_Tab_ID));
+	}
+
+	/** Get Register.
+		@return Register auf einem Fenster
+	  */
+	@Override
+	public int getAD_Tab_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Tab_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
