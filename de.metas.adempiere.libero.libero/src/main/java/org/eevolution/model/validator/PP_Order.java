@@ -43,7 +43,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderCostDAO;
+import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderWorkflowBL;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 import org.eevolution.model.I_PP_Order;
@@ -55,6 +55,7 @@ import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -226,7 +227,7 @@ public class PP_Order
 	public void beforeDelete(@NonNull final I_PP_Order ppOrder)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		final IPPOrderCostDAO ppOrderCostDAO = Services.get(IPPOrderCostDAO.class);
+		final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
 
 		//
 		// Delete depending records
@@ -234,7 +235,8 @@ public class PP_Order
 		if (X_PP_Order.DOCSTATUS_Drafted.equals(docStatus)
 				|| X_PP_Order.DOCSTATUS_InProgress.equals(docStatus))
 		{
-			ppOrderCostDAO.deleteOrderCosts(ppOrder);
+			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+			orderCostsService.deleteByOrderId(ppOrderId);
 			deleteWorkflowAndBOM(ppOrder);
 		}
 

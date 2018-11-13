@@ -13,15 +13,14 @@ package org.eevolution.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -31,9 +30,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_S_Resource;
+import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
@@ -45,8 +46,10 @@ import org.eevolution.model.I_PP_Order_Workflow;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 {
@@ -79,21 +82,24 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 	}
 
 	@Cached(cacheName = I_PP_Order_Node.Table_Name + "#by#" + I_PP_Order_Node.COLUMNNAME_PP_Order_ID)
-	/* package */List<I_PP_Order_Node> retrieveNodesByOrderId(@CacheCtx final Properties ctx,
-			final int ppOrderId,
+	/* package */List<I_PP_Order_Node> retrieveNodesByOrderId(
+			@CacheCtx final Properties ctx,
+			@NonNull final PPOrderId ppOrderId,
 			@CacheTrx final String trxName)
 	{
-		final IQueryBuilder<I_PP_Order_Node> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Order_Node.class, ctx, trxName);
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order_Node.class, ctx, trxName)
+				.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, ppOrderId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_PP_Order_Node.COLUMNNAME_PP_Order_Node_ID)
+				.create()
+				.list();
+	}
 
-		final ICompositeQueryFilter<I_PP_Order_Node> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, ppOrderId);
-		filters.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_PP_Order_Node.COLUMNNAME_PP_Order_Node_ID);
-
-		return queryBuilder.create().list();
+	@Override
+	public List<I_PP_Order_Node> retrieveNodes(@NonNull final PPOrderId orderId)
+	{
+		return retrieveNodesByOrderId(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
@@ -101,7 +107,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final int ppOrderId = order.getPP_Order_ID();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
 		return retrieveNodesByOrderId(ctx, ppOrderId, trxName);
 	}
 

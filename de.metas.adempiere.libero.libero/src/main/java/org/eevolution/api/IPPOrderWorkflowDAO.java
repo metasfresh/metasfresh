@@ -13,15 +13,14 @@ package org.eevolution.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -33,10 +32,12 @@ import org.eevolution.model.I_PP_Order_Node_Asset;
 import org.eevolution.model.I_PP_Order_Node_Product;
 import org.eevolution.model.I_PP_Order_Workflow;
 
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
 public interface IPPOrderWorkflowDAO extends ISingletonService
 {
+	List<I_PP_Order_Node> retrieveNodes(PPOrderId orderId);
 
 	List<I_PP_Order_Node> retrieveNodes(I_PP_Order order);
 
@@ -69,5 +70,4 @@ public interface IPPOrderWorkflowDAO extends ISingletonService
 	 * @return
 	 */
 	I_S_Resource retrieveResourceForFirstNode(I_PP_Order order);
-
 }
