@@ -3,23 +3,21 @@
  */
 package de.metas.fresh.product.process;
 
-import java.io.ByteArrayOutputStream;
-import java.time.format.DateTimeFormatter;
-import java.util.Properties;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.data.export.api.IExportDataSource;
-import de.metas.data.export.api.IExporter;
-import de.metas.data.export.api.IExporterFactory;
-import de.metas.data.export.api.impl.CSVWriter;
-import de.metas.data.export.api.impl.JdbcExporterBuilder;
-import de.metas.i18n.IMsgBL;
+import de.metas.impexp.excel.ArrayExcelExporter;
+import de.metas.impexp.excel.service.ExcelExporterService;
 import de.metas.process.JavaProcess;
 
 /*
@@ -52,77 +50,69 @@ public class ExportProductSpecifications extends JavaProcess
 {
 
 	private final static String tableName = "\"de.metas.fresh\".product_specifications_v";
-	private final IMsgBL msgBL = Services.get(IMsgBL.class); 
+	final ExcelExporterService excelExporterService = Adempiere.getBean(ExcelExporterService.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IExportDataSource dataSource = createDataSource();
-		final Properties config = new Properties();
-		config.setProperty(CSVWriter.CONFIG_Encoding, "Cp1252");
-		final IExporter csvExporter = Services.get(IExporterFactory.class).createExporter(IExporterFactory.MIMETYPE_CSV, dataSource, config);
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		csvExporter.export(out);
+
+		final List<List<Object>> data = excelExporterService.getDataFromSQL(getSql());
+		final File tempFile = ArrayExcelExporter.builder()
+				.ctx(getCtx())
+				.data(data)
+				.columnHeaders(getColumnHeaders())
+				.build()
+				.setCharset(HSSFFont.ANSI_CHARSET)
+				.exportToTempFile();
 
 		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();
 
 		if (backEndOrSwing)
 		{
-			Services.get(IClientUI.class).download(out.toByteArray(), // data
-					"text/csv", // content type
-					buildFilename()); // filename
+			Env.startBrowser(tempFile.toURI().toString());
 		}
 		else
 		{
-		getResult().setReportData(
-				out.toByteArray(), // data
-					buildFilename(), // filename
-				"text/csv"); // content type
+			getResult().setReportData(tempFile);
 		}
 
 		return MSG_OK;
 	}
 
-	public IExportDataSource createDataSource()
+	private String getSql()
 	{
-		final JdbcExporterBuilder builder = new JdbcExporterBuilder(tableName);
+		final StringBuffer sb = new StringBuffer();
+		sb.append("SELECT productName, CustomerLabelName, additional_produktinfos, productValue, UPC, weight, country, piName, piQty, ")
+				.append("guaranteedaysmin, warehouse_temperature, productDecription, componentName, componentIngredients, qtybatch, ")
+				.append("allergen, nutritionName, nutritionqty FROM ")
+				.append(tableName)
+				.append(" ORDER BY productValue ");
 
-		builder.addWhereClause("1=1", new Object[] {});
-		builder.addOrderBy("productValue");
-
-		builder.addField(msgBL.translate(getCtx(), "ProductName"), "productName");
-		builder.addField(msgBL.translate(getCtx(), "CustomerLabelName"), "CustomerLabelName");
-		builder.addField(msgBL.translate(getCtx(), "Additional_produktinfos"), "additional_produktinfos");
-		builder.addField(msgBL.translate(getCtx(), "ProductValue"), "productValue");
-		builder.addField(msgBL.translate(getCtx(),"UPC"), "UPC");
-		builder.addField(msgBL.translate(getCtx(),"NetWeight"), "weight");
-		builder.addField(msgBL.translate(getCtx(),"Country"), "country");
-		builder.addField(msgBL.translate(getCtx(),"IsPackagingMaterial"), "piName");
-		builder.addField(msgBL.translate(getCtx(),"NumberOfEvents"), "piQty");
-		builder.addField(msgBL.translate(getCtx(),"ShelfLifeDays"), "guaranteedaysmin");
-		builder.addField(msgBL.translate(getCtx(),"Warehouse_temperature"), "warehouse_temperature");
-		builder.addField(msgBL.translate(getCtx(),"ProductDescription"), "productDecription");
-		builder.addField(msgBL.translate(getCtx(),"M_BOMProduct_ID"), "componentName");
-		builder.addField(msgBL.translate(getCtx(),"Ingredients"), "componentIngredients");
-		builder.addField(msgBL.translate(getCtx(),"QtyBatch"), "qtybatch");
-		builder.addField(msgBL.translate(getCtx(),"Allergen"), "allergen");
-		builder.addField(msgBL.translate(getCtx(),"M_Product_Nutrition_ID"), "nutritionName");
-		builder.addField(msgBL.translate(getCtx(),"NutritionQty"), "nutritionqty");
-
-		return builder.createDataSource();
+		return sb.toString();
 	}
 
-	private String buildFilename()
+	private List<String> getColumnHeaders()
 	{
-		final StringBuilder filename = new StringBuilder("ProductSpecificationd");
-		filename.append("_");
+		final List<String> columnHeaders = new ArrayList<>();
+		columnHeaders.add("ProductName");
+		columnHeaders.add("CustomerLabelName");
+		columnHeaders.add("Additional_produktinfos");
+		columnHeaders.add("ProductValue");
+		columnHeaders.add("UPC");
+		columnHeaders.add("NetWeight");
+		columnHeaders.add("Country");
+		columnHeaders.add("IsPackagingMaterial");
+		columnHeaders.add("NumberOfEvents");
+		columnHeaders.add("ShelfLifeDays");
+		columnHeaders.add("Warehouse_temperature");
+		columnHeaders.add("ProductDescription");
+		columnHeaders.add("M_BOMProduct_ID");
+		columnHeaders.add("Ingredients");
+		columnHeaders.add("QtyBatch");
+		columnHeaders.add("Allergen");
+		columnHeaders.add("M_Product_Nutrition_ID");
+		columnHeaders.add("NutritionQty");
 
-		final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-		filename.append(dateFormatter.format(SystemTime.asLocalDate()));
-
-		filename.append(".").append("csv");
-
-		return filename.toString();
+		return columnHeaders;
 	}
-
 }
