@@ -1,17 +1,13 @@
 package org.adempiere.ad.element.api;
 
-import java.util.List;
-
-import org.compiere.model.I_AD_Element;
-import org.compiere.model.I_AD_UI_Element;
-
-import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,7 +25,18 @@ import de.metas.util.ISingletonService;
  * #L%
  */
 
-public interface IElementDAO extends ISingletonService
+@Value
+@Builder
+public class CreateADElementRequest
 {
-	public List<I_AD_UI_Element> retrieveChildUIElements(I_AD_Element element);
+	String name;
+	String printName;
+	String description;
+	String help;
+
+	String tabCommitWarning;
+
+	String webuiNameBrowse;
+	String webuiNameNew;
+	String webuiNameNewBreadcrumb;
 }

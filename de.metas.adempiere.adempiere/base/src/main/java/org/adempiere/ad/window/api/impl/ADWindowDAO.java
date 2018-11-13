@@ -34,6 +34,7 @@ import java.util.Optional;
  */
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -67,6 +68,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ADWindowDAO implements IADWindowDAO
 {
@@ -886,43 +888,43 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public List<Integer> retrieveTabIdsWithMissingADElements()
+	public Set<AdTabId> retrieveTabIdsWithMissingADElements()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
 				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Element_ID, null)
 				.create()
-				.listIds();
+				.listIds(AdTabId::ofRepoId);
 	}
 
 	@Override
-	public List<Integer> retrieveWindowIdsWithMissingADElements()
+	public Set<AdWindowId> retrieveWindowIdsWithMissingADElements()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Window.class)
 				.addEqualsFilter(I_AD_Window.COLUMN_AD_Element_ID, null)
 				.create()
-				.listIds();
+				.listIds(AdWindowId::ofRepoId);
 	}
 
 	@Override
 	public void createMissingADElementLinks()
 	{
-		final ImmutableSet<Integer> fieldIdsWithMissingElementLink = retrieveAllFieldIds(Env.getCtx())
+		final ImmutableSet<AdFieldId> fieldIdsWithMissingElementLink = retrieveAllFieldIds(Env.getCtx())
 				.stream()
-				.filter(fieldId -> retrieveFieldADElementLink(AdFieldId.ofRepoId(fieldId)) == null)
+				.filter(fieldId -> retrieveFieldADElementLink(fieldId) == null)
 				.collect(ImmutableSet.toImmutableSet());
 
 		createElementLinksForFieldIds(fieldIdsWithMissingElementLink);
 
-		final ImmutableSet<Integer> tabIdsWithMissingElementLink = retrieveAllTabIds(Env.getCtx())
+		final ImmutableSet<AdTabId> tabIdsWithMissingElementLink = retrieveAllTabIds(Env.getCtx())
 				.stream()
-				.filter(tabId -> retrieveTabADElementLink(AdTabId.ofRepoId(tabId)) == null)
+				.filter(tabId -> retrieveTabADElementLink(tabId) == null)
 				.collect(ImmutableSet.toImmutableSet());
 
 		createElementLinksForTabIds(tabIdsWithMissingElementLink);
 
-		final ImmutableSet<Integer> windowIdsWithMissingElementLink = retrieveAllWindowIds(Env.getCtx())
+		final ImmutableSet<AdWindowId> windowIdsWithMissingElementLink = retrieveAllWindowIds(Env.getCtx())
 				.stream()
-				.filter(windowId -> retrieveWindowADElementLink(AdWindowId.ofRepoId(windowId)) == null)
+				.filter(windowId -> retrieveWindowADElementLink(windowId) == null)
 				.collect(ImmutableSet.toImmutableSet());
 
 		createElementLinksForWindowIds(windowIdsWithMissingElementLink);
@@ -930,14 +932,14 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Cached(cacheName = I_AD_Field.Table_Name + "#All")
-	public List<Integer> retrieveAllFieldIds(@CacheCtx final Properties ctx)
+	public Set<AdFieldId> retrieveAllFieldIds(@CacheCtx final Properties ctx)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_AD_Field.class)
 				.orderBy(I_AD_Field.COLUMN_AD_Field_ID)
 				.create()
-				.listIds();
+				.listIds(AdFieldId::ofRepoId);
 	}
 
 	private I_AD_Element_Link retrieveFieldADElementLink(final AdFieldId adFieldId)
@@ -950,11 +952,11 @@ public class ADWindowDAO implements IADWindowDAO
 				.firstOnly(I_AD_Element_Link.class);
 	}
 
-	private void createElementLinksForFieldIds(ImmutableSet<Integer> fieldIdsWithMissingElementLink)
+	private void createElementLinksForFieldIds(ImmutableSet<AdFieldId> fieldIdsWithMissingElementLink)
 	{
-		for (final int fieldId : fieldIdsWithMissingElementLink)
+		for (final AdFieldId fieldId : fieldIdsWithMissingElementLink)
 		{
-			createADElementLinkForFieldId(AdFieldId.ofRepoId(fieldId));
+			createADElementLinkForFieldId(fieldId);
 		}
 	}
 
@@ -987,14 +989,14 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Cached(cacheName = I_AD_Tab.Table_Name + "#All")
-	public List<Integer> retrieveAllTabIds(@CacheCtx final Properties ctx)
+	public Set<AdTabId> retrieveAllTabIds(@CacheCtx final Properties ctx)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_AD_Tab.class)
 				.orderBy(I_AD_Tab.COLUMN_AD_Tab_ID)
 				.create()
-				.listIds();
+				.listIds(AdTabId::ofRepoId);
 	}
 
 	private I_AD_Element_Link retrieveTabADElementLink(final AdTabId adTabId)
@@ -1007,18 +1009,18 @@ public class ADWindowDAO implements IADWindowDAO
 				.firstOnly(I_AD_Element_Link.class);
 	}
 
-	private void createElementLinksForTabIds(final ImmutableSet<Integer> tabIdsWithMissingElementLink)
+	private void createElementLinksForTabIds(final ImmutableSet<AdTabId> tabIdsWithMissingElementLink)
 	{
-		for (final int tabId : tabIdsWithMissingElementLink)
+		for (final AdTabId tabId : tabIdsWithMissingElementLink)
 		{
-			createADElementLinkForTabId(AdTabId.ofRepoId(tabId));
+			createADElementLinkForTabId(tabId);
 		}
 	}
 
 	@Override
 	public void createADElementLinkForTabId(final AdTabId adTabId)
 	{
-		final I_AD_Tab tab = getTabById(adTabId.getRepoId());
+		final I_AD_Tab tab = getTabByIdInTrx(adTabId);
 
 		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
 		elementLink.setAD_Window_ID(tab.getAD_Window_ID());
@@ -1028,14 +1030,14 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Cached(cacheName = I_AD_Window.Table_Name + "#All")
-	public List<Integer> retrieveAllWindowIds(@CacheCtx final Properties ctx)
+	public Set<AdWindowId> retrieveAllWindowIds(@CacheCtx final Properties ctx)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_AD_Window.class)
 				.orderBy(I_AD_Window.COLUMN_AD_Window_ID)
 				.create()
-				.listIds();
+				.listIds(AdWindowId::ofRepoId);
 	}
 
 	private I_AD_Element_Link retrieveWindowADElementLink(final AdWindowId adWindowId)
@@ -1050,18 +1052,18 @@ public class ADWindowDAO implements IADWindowDAO
 				.firstOnly(I_AD_Element_Link.class);
 	}
 
-	private void createElementLinksForWindowIds(final ImmutableSet<Integer> windowIdsWithMissingElementLink)
+	private void createElementLinksForWindowIds(final ImmutableSet<AdWindowId> windowIdsWithMissingElementLink)
 	{
-		for (final int windowId : windowIdsWithMissingElementLink)
+		for (final AdWindowId windowId : windowIdsWithMissingElementLink)
 		{
-			createADElementLinKForWindowId(AdWindowId.ofRepoId(windowId));
+			createADElementLinkForWindowId(windowId);
 		}
 	}
 
 	@Override
-	public void createADElementLinKForWindowId(final AdWindowId adWindowId)
+	public void createADElementLinkForWindowId(final AdWindowId adWindowId)
 	{
-		final I_AD_Window window = getWindowById(adWindowId.getRepoId());
+		final I_AD_Window window = getWindowByIdInTrx(adWindowId);
 
 		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
 		elementLink.setAD_Window_ID(window.getAD_Window_ID());
@@ -1070,14 +1072,14 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public I_AD_Window getWindowById(final int windowId)
+	public I_AD_Window getWindowByIdInTrx(@NonNull final AdWindowId windowId)
 	{
 		// use the load with ITrx.TRXNAME_ThreadInherited because the window may not yet be saved in DB when it's needed
 		return load(windowId, I_AD_Window.class);
 	}
 
 	@Override
-	public I_AD_Tab getTabById(final int tabId)
+	public I_AD_Tab getTabByIdInTrx(@NonNull final AdTabId tabId)
 	{
 		// use the load with ITrx.TRXNAME_ThreadInherited because the tab may not yet be saved in DB when it's needed
 		return load(tabId, I_AD_Tab.class);

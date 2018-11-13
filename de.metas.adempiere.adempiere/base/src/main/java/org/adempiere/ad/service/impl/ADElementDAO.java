@@ -4,13 +4,17 @@
 package org.adempiere.ad.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
+import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.CreateADElementRequest;
 import org.adempiere.ad.service.IADElementDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.LegacyAdapters;
@@ -29,6 +33,7 @@ import lombok.NonNull;
  * @author cg
  *
  */
+// TODO: merge into ElementDAO
 public class ADElementDAO implements IADElementDAO
 {
 
@@ -119,7 +124,19 @@ public class ADElementDAO implements IADElementDAO
 	public I_AD_Element getById(final int elementId)
 	{
 		return loadOutOfTrx(elementId, I_AD_Element.class);
-
 	}
 
+	@Override
+	public AdElementId createNewElement(@NonNull final CreateADElementRequest request)
+	{
+		final I_AD_Element record = newInstance(I_AD_Element.class);
+		record.setName(request.getName());
+		record.setPrintName(request.getPrintName());
+		record.setDescription(request.getDescription());
+		record.setHelp(request.getHelp());
+		record.setCommitWarning(request.getTabCommitWarning());
+		saveRecord(record);
+
+		return AdElementId.ofRepoId(record.getAD_Element_ID());
+	}
 }

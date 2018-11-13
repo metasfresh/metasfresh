@@ -25,6 +25,7 @@ import java.util.List;
  */
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
@@ -87,26 +88,26 @@ public interface IADWindowDAO extends ISingletonService
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 
-	List<Integer> retrieveTabIdsWithMissingADElements();
+	Set<AdTabId> retrieveTabIdsWithMissingADElements();
 
-	List<Integer> retrieveWindowIdsWithMissingADElements();
+	Set<AdWindowId> retrieveWindowIdsWithMissingADElements();
 
-	I_AD_Window getWindowById(int windowId);
+	I_AD_Window getWindowByIdInTrx(AdWindowId windowId);
 
-	I_AD_Tab getTabById(int tabId);
+	I_AD_Tab getTabByIdInTrx(AdTabId tabId);
 
 	void createMissingADElementLinks();
 
-	void createADElementLinKForWindowId(AdWindowId adWindowId);
+	void createADElementLinkForWindowId(AdWindowId adWindowId);
+
 	void deleteExistingADElementLinkForWindowId(AdWindowId adWindowId);
 
-
 	void createADElementLinkForTabId(AdTabId adTabId);
+
 	void deleteExistingADElementLinkForTabId(AdTabId adTabId);
 
 	void createADElementLinkForFieldId(AdFieldId adFieldId);
+
 	void deleteExistingADElementLinkForFieldId(AdFieldId adFieldId);
-
-
 
 }

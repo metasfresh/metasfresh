@@ -1,17 +1,19 @@
 package de.metas.translation.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdMenuId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.element.api.CreateADElementRequest;
 import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.menu.api.IADMenuDAO;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import org.adempiere.ad.service.IADElementDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Element;
@@ -194,24 +196,22 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private void createAndLinkElementsForTabs()
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+		final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
+		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
 
-		final List<Integer> tabIdsWithMissingADElements = adWindowDAO.retrieveTabIdsWithMissingADElements();
-
-		for (final int tabId : tabIdsWithMissingADElements)
+		for (final AdTabId tabId : adWindowDAO.retrieveTabIdsWithMissingADElements())
 		{
-			final I_AD_Tab tab = adWindowDAO.getTabById(tabId);
+			final I_AD_Tab tab = adWindowDAO.getTabByIdInTrx(tabId);
 
-			final I_AD_Element element = newInstance(I_AD_Element.class);
-			element.setName(tab.getName());
-			element.setPrintName(tab.getName());
-			element.setDescription(tab.getDescription());
-			element.setHelp(tab.getHelp());
-			element.setCommitWarning(tab.getCommitWarning());
-			save(element);
+			final AdElementId elementId = adElementsRepo.createNewElement(CreateADElementRequest.builder()
+					.name(tab.getName())
+					.printName(tab.getName())
+					.description(tab.getDescription())
+					.help(tab.getHelp())
+					.tabCommitWarning(tab.getCommitWarning())
+					.build());
 
-			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
-
-			Services.get(IElementTranslationBL.class).updateElementTranslationsFromTab(elementId, AdTabId.ofRepoId(tabId));
+			elementTranslationBL.updateElementTranslationsFromTab(elementId, tabId);
 
 			IElementTranslationBL.DYNATTR_AD_Tab_UpdateTranslations.setValue(tab, false);
 
@@ -223,23 +223,23 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private void createAndLinkElementsForWindows()
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+		final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
+		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
 
-		final List<Integer> windowIdsWithMissingADElements = adWindowDAO.retrieveWindowIdsWithMissingADElements();
+		final Set<AdWindowId> windowIdsWithMissingADElements = adWindowDAO.retrieveWindowIdsWithMissingADElements();
 
-		for (final int windowId : windowIdsWithMissingADElements)
+		for (final AdWindowId windowId : windowIdsWithMissingADElements)
 		{
-			final I_AD_Window window = adWindowDAO.getWindowById(windowId);
+			final I_AD_Window window = adWindowDAO.getWindowByIdInTrx(windowId);
 
-			final I_AD_Element element = newInstance(I_AD_Element.class);
-			element.setName(window.getName());
-			element.setPrintName(window.getName());
-			element.setDescription(window.getDescription());
-			element.setHelp(window.getHelp());
-			save(element);
+			final AdElementId elementId = adElementsRepo.createNewElement(CreateADElementRequest.builder()
+					.name(window.getName())
+					.printName(window.getName())
+					.description(window.getDescription())
+					.help(window.getHelp())
+					.build());
 
-			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
-
-			Services.get(IElementTranslationBL.class).updateElementTranslationsFromWindow(elementId, AdWindowId.ofRepoId(windowId));
+			elementTranslationBL.updateElementTranslationsFromWindow(elementId, windowId);
 
 			IElementTranslationBL.DYNATTR_AD_Window_UpdateTranslations.setValue(window, false);
 
@@ -251,6 +251,8 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private void createAndLinkElementsForMenus()
 	{
 		final IADMenuDAO adMenuDAO = Services.get(IADMenuDAO.class);
+		final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
+		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
 
 		final List<Integer> menuIdsWithMissingADElements = adMenuDAO.retrieveMenuIdsWithMissingADElements();
 
@@ -258,18 +260,15 @@ public class ElementTranslationBL implements IElementTranslationBL
 		{
 			final I_AD_Menu menu = adMenuDAO.getById(menuId);
 
-			final I_AD_Element element = newInstance(I_AD_Element.class);
-			element.setName(menu.getName());
-			element.setPrintName(menu.getName());
-			element.setDescription(menu.getDescription());
-			element.setWEBUI_NameBrowse(menu.getWEBUI_NameBrowse());
-			element.setWEBUI_NameNew(menu.getWEBUI_NameNew());
-			element.setWEBUI_NameNewBreadcrumb(menu.getWEBUI_NameNewBreadcrumb());
-			save(element);
+			final AdElementId elementId = adElementsRepo.createNewElement(CreateADElementRequest.builder()
+					.name(menu.getName())
+					.printName(menu.getName())
+					.description(menu.getDescription())
+					.webuiNameBrowse(menu.getWEBUI_NameBrowse())
+					.webuiNameNew(menu.getWEBUI_NameNew())
+					.webuiNameNewBreadcrumb(menu.getWEBUI_NameNewBreadcrumb()).build());
 
-			final AdElementId elementId = AdElementId.ofRepoId(element.getAD_Element_ID());
-
-			Services.get(IElementTranslationBL.class).updateElementTranslationsFromMenu(elementId, AdMenuId.ofRepoIdOrNull(menuId));
+			elementTranslationBL.updateElementTranslationsFromMenu(elementId, AdMenuId.ofRepoIdOrNull(menuId));
 
 			IElementTranslationBL.DYNATTR_AD_Menu_UpdateTranslations.setValue(menu, false);
 
@@ -496,7 +495,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 	private void updateADColumns(final ElementChangedEvent event)
 	{
-		final StringBuilder sql =new StringBuilder("UPDATE AD_Column SET ColumnName=")
+		final StringBuilder sql = new StringBuilder("UPDATE AD_Column SET ColumnName=")
 				.append(DB.TO_STRING(event.getColumnName()))
 				.append(", Name=").append(DB.TO_STRING(event.getName()))
 				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
