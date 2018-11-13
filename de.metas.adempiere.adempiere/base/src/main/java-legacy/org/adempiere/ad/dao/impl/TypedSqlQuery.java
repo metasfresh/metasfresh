@@ -309,7 +309,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			pstmt = DB.prepareStatement(sql, trxName);
 			rs = createResultSet(pstmt);
 
-			final boolean readOnly = Boolean.TRUE.equals(getOption(OPTION_ReturnReadOnlyRecords));
+			final boolean readOnly = isReadOnlyRecords();
 
 			ET model = null;
 			while ((model = retrieveNextModel(rs, clazz)) != null)

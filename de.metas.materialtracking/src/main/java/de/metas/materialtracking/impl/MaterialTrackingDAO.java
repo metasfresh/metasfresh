@@ -107,12 +107,9 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 			final Properties ctx,
 			@NonNull final IMaterialTrackingQuery queryVO)
 	{
-		final IQueryBuilder<I_M_Material_Tracking> queryBuilder = new MaterialTrackingQueryCompiler()
+		final IQuery<I_M_Material_Tracking> query = new MaterialTrackingQueryCompiler()
 				.setCtx(ctx)
-				.createQueryBuilder(queryVO);
-		final IQuery<I_M_Material_Tracking> query = queryBuilder.create();
-
-		query.setOption(IQuery.OPTION_ReturnReadOnlyRecords, queryVO.isReturnReadOnlyRecords());
+				.createQuery(queryVO);
 
 		return query;
 	}
