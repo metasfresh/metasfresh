@@ -42,7 +42,7 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
-import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssues;
+import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -62,6 +62,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	private PPOrderId _ppOrderId;
 	private LocalDate movementDate;
 	private ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
+	private boolean considerIssueMethodForQtyToIssueCalculation = true;
 
 	@VisibleForTesting
 	HUPPOrderIssueProducer()
@@ -113,8 +114,13 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
 		final PPOrderPlanningStatus orderPlanningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
 
-		final List<I_PP_Order_Qty> candidates = new CreateDraftIssues(targetOrderBOMLines, movementDate)
-				.createDraftIssues(hus);
+		final List<I_PP_Order_Qty> candidates = CreateDraftIssuesCommand.builder()
+				.targetOrderBOMLines(targetOrderBOMLines)
+				.movementDate(movementDate)
+				.considerIssueMethodForQtyToIssueCalculation(considerIssueMethodForQtyToIssueCalculation)
+				.hus(hus)
+				.build()
+				.execute();
 
 		if (orderPlanningStatus == PPOrderPlanningStatus.COMPLETE)
 		{
@@ -205,5 +211,12 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	public IHUPPOrderIssueProducer setTargetOrderBOMLine(@NonNull final I_PP_Order_BOMLine targetOrderBOMLine)
 	{
 		return setTargetOrderBOMLines(ImmutableList.of(targetOrderBOMLine));
+	}
+
+	@Override
+	public IHUPPOrderIssueProducer considerIssueMethodForQtyToIssueCalculation(boolean considerIssueMethodForQtyToIssueCalculation)
+	{
+		this.considerIssueMethodForQtyToIssueCalculation = considerIssueMethodForQtyToIssueCalculation;
+		return this;
 	}
 }
