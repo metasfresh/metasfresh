@@ -963,7 +963,7 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public void createADElementLinkForFieldId(final AdFieldId adFieldId)
 	{
-		final I_AD_Field field = getFieldById(adFieldId.getRepoId());
+		final I_AD_Field field = getFieldByIdInTrx(adFieldId.getRepoId());
 
 		final int nameElementId = field.getAD_Name_ID();
 
@@ -1085,7 +1085,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return load(tabId, I_AD_Tab.class);
 	}
 
-	private I_AD_Field getFieldById(final int fieldId)
+	private I_AD_Field getFieldByIdInTrx(final int fieldId)
 	{
 		// use the load with ITrx.TRXNAME_ThreadInherited because the tab may not yet be saved in DB when it's needed
 		return load(fieldId, I_AD_Field.class);
