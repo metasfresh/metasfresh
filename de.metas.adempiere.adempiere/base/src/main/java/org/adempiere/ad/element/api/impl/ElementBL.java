@@ -2,8 +2,8 @@ package org.adempiere.ad.element.api.impl;
 
 import java.util.List;
 
+import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.element.api.IElementBL;
-import org.adempiere.ad.element.api.IElementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_UI_Element;
@@ -38,7 +38,9 @@ public class ElementBL implements IElementBL
 	@Override
 	public void updateUIElement(final I_AD_Element element)
 	{
-		final List<I_AD_UI_Element> uiElements = Services.get(IElementDAO.class).retrieveChildUIElements(element);
+		final IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
+
+		final List<I_AD_UI_Element> uiElements = adElementDAO.retrieveChildUIElements(element);
 
 		String widgetSize = element.getWidgetSize();
 

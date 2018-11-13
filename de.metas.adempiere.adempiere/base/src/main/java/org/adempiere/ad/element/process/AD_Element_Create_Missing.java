@@ -1,6 +1,6 @@
 package org.adempiere.ad.element.process;
 
-import org.adempiere.ad.service.IADElementDAO;
+import org.adempiere.ad.element.api.IADElementDAO;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;

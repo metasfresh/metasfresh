@@ -7,10 +7,10 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IADElementDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Tab;
@@ -58,8 +58,9 @@ public class AD_Tab
 	public void onElementIDChanged(final I_AD_Tab tab) throws SQLException
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+		IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
 
-		final I_AD_Element tabElement = Services.get(IADElementDAO.class).getById(tab.getAD_Element_ID());
+		final I_AD_Element tabElement = adElementDAO.getById(tab.getAD_Element_ID());
 
 		if (tabElement == null)
 		{
@@ -76,7 +77,7 @@ public class AD_Tab
 
 		if(adTabId == null)
 		{
-			 // nothig to do The tab was not yet saved
+			 // nothing to do. The tab was not yet saved
 			return;
 		}
 

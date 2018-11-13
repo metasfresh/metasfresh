@@ -1,15 +1,13 @@
-package org.adempiere.ad.element.api.impl;
+package org.adempiere.ad.element.api;
 
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.element.api.IElementDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_UI_Element;
 
-import de.metas.util.Services;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L
@@ -21,32 +19,31 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class ElementDAO implements IElementDAO
+public interface IADElementDAO extends ISingletonService
 {
+	public List<I_AD_UI_Element> retrieveChildUIElements(I_AD_Element element);
 
-	@Override
-	public List<I_AD_UI_Element> retrieveChildUIElements(final I_AD_Element element)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Element.class)
-				.addEqualsFilter(I_AD_Element.COLUMN_AD_Element_ID, element.getAD_Element_ID())
-				.andCollectChildren(I_AD_Column.COLUMN_AD_Element_ID)
-				.andCollectChildren(I_AD_Field.COLUMN_AD_Column_ID)
-				.andCollectChildren(I_AD_UI_Element.COLUMN_AD_Field_ID)
-				.create()
-				.list();
+	List<I_AD_Column> retrieveColumns(int elementId);
 
-	}
+	List<I_AD_Field> retrieveFields(String columnName);
 
+	I_AD_Element getADElement(String columnName);
+
+	void makeElementMandatoryInApplicationDictionaryTables();
+
+	I_AD_Element getById(int elementId);
+
+	AdElementId createNewElement(CreateADElementRequest request);
 }
