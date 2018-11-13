@@ -339,7 +339,7 @@ class PPOrderLinesLoader
 						readonly))
 				.collect(ImmutableList.toImmutableList());
 
-		final PPOrderLineRowId rowId = PPOrderLineRowId.ofIssuedOrReceivedHU(parentHUEditorRow != null ? parentHUEditorRow.getId() : null, huEditorRow.getHuIdAsInt());
+		final PPOrderLineRowId rowId = PPOrderLineRowId.ofIssuedOrReceivedHU(parentHUEditorRow != null ? parentHUEditorRow.getId() : null, huEditorRow.getHuId());
 
 		return PPOrderLineRow.builderForIssuedOrReceivedHU()
 				.rowId(rowId)
@@ -397,12 +397,12 @@ class PPOrderLinesLoader
 
 	private PPOrderLineRow createRowForSourceHU(@NonNull final HUEditorRow huEditorRow)
 	{
-		final PPOrderLineRowId rowId = PPOrderLineRowId.ofSourceHU(huEditorRow.getId(), huEditorRow.getHuIdAsInt());
+		final PPOrderLineRowId rowId = PPOrderLineRowId.ofSourceHU(huEditorRow.getId(), huEditorRow.getHuId());
 
 		return PPOrderLineRow.builderForSourceHU()
 				.rowId(rowId)
 				.type(PPOrderLineType.ofHUEditorRowType(huEditorRow.getType()))
-				.huId(huEditorRow.getHuIdAsInt())
+				.huId(huEditorRow.getHuId())
 				.attributesSupplier(huEditorRow.getAttributesSupplier()
 						.map(supplier -> supplier.changeRowId(rowId.toDocumentId()))
 						.orElse(null))

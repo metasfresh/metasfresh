@@ -299,7 +299,7 @@ public class WebuiHUTransformParametersFiller
 							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one TU that 'cu' is already attached to
 							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())
-					.sorted(Comparator.comparing(HUEditorRow::getHuIdAsInt))
+					.sorted(Comparator.comparing(row -> row.getHuId().getRepoId()))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
@@ -355,7 +355,7 @@ public class WebuiHUTransformParametersFiller
 							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one LU that 'tu' is already attached to
 							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())
-					.sorted(Comparator.comparing(HUEditorRow::getHuIdAsInt))
+					.sorted(Comparator.comparing(row -> row.getHuId().getRepoId()))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}

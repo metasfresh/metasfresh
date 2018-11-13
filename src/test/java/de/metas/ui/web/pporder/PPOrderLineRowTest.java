@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.quantity.Quantity;
@@ -107,11 +108,11 @@ public class PPOrderLineRowTest
 	{
 		final PPOrderLineRow result = PPOrderLineRow.builderForSourceHU()
 				.code("code")
-				.huId(30)
+				.huId(HuId.ofRepoId(30))
 				.packingInfo("packingInfo")
 				.product(JSONLookupValue.of(35, "product"))
 				.qty(BigDecimal.TEN)
-				.rowId(PPOrderLineRowId.ofSourceHU(DocumentId.of(40), 30))
+				.rowId(PPOrderLineRowId.ofSourceHU(DocumentId.of(40), HuId.ofRepoId(30)))
 				.type(PPOrderLineType.HU_TU)
 				.uom(JSONLookupValue.of(50, "uom"))
 				.attributesSupplier(() -> null)
@@ -140,7 +141,7 @@ public class PPOrderLineRowTest
 				.processed(true)
 				.product(JSONLookupValue.of(35, "product"))
 				.quantity(new Quantity(BigDecimal.TEN, uom))
-				.rowId(PPOrderLineRowId.ofIssuedOrReceivedHU(DocumentId.of(40), 10))
+				.rowId(PPOrderLineRowId.ofIssuedOrReceivedHU(DocumentId.of(40), HuId.ofRepoId(10)))
 				.type(PPOrderLineType.HU_TU)
 				.topLevelHU(true)
 				.huStatus(JSONLookupValue.of(X_M_HU.HUSTATUS_Active, "Active"))

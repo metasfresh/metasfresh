@@ -139,8 +139,12 @@ public class ViewsRepository implements IViewsRepository
 			final ViewFactory annotation = factory.getClass().getAnnotation(ViewFactory.class);
 			if (annotation == null)
 			{
-				// this might be a development bug
-				logger.warn("Skip {} because it's not annotated with {}", factory, ViewFactory.class);
+				// Don't need to warn about this one. It's a known case.
+				if (!SqlViewFactory.class.equals(factory.getClass()))
+				{
+					// this might be a development bug
+					logger.warn("Skip {} because it's not annotated with {}", factory, ViewFactory.class);
+				}
 				continue;
 			}
 

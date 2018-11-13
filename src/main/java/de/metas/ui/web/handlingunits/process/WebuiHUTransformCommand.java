@@ -292,7 +292,7 @@ public class WebuiHUTransformCommand
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewCU(cuRow.getM_HU(), qtyCU);
 
 		final Predicate<? super I_M_HU> //
-		newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuIdAsInt();
+		newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuId().getRepoId();
 
 		final ImmutableSet<HuId> createdHUIds = createdHUs
 				.stream()

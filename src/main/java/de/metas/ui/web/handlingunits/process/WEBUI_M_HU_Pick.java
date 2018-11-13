@@ -227,7 +227,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				return null;
 			}
 			return HURow.builder()
-					.huId(HuId.ofRepoIdOrNull(ppOrderLineRow.getM_HU_ID()))
+					.huId(ppOrderLineRow.getHuId())
 					.topLevelHU(ppOrderLineRow.isTopLevelHU())
 					.huStatusActive(ppOrderLineRow.isHUStatusActive())
 					.build();

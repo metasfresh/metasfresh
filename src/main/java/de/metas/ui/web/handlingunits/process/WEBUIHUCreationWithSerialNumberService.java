@@ -160,7 +160,7 @@ public class WEBUIHUCreationWithSerialNumberService
 				final List<I_M_HU> createdCUs = newHUTransformation().cuToNewCU(huToSplit, Quantity.of(BigDecimal.ONE, cuRow.getC_UOM()));
 
 				final Predicate<? super I_M_HU> //
-				newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuIdAsInt();
+				newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuId().getRepoId();
 
 				splitCUIDs.addAll(createdCUs
 						.stream()
