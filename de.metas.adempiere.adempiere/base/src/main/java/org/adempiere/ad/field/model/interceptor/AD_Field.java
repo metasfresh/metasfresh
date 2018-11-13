@@ -12,6 +12,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
@@ -83,13 +84,13 @@ public class AD_Field
 		field.setDescription(fieldElement.getDescription());
 		field.setHelp(fieldElement.getHelp());
 
-		final AdFieldId adFieldId = AdFieldId.ofRepoIdOrNull(field.getAD_Field_ID());
-
-		if (adFieldId == null)
+		if (InterfaceWrapperHelper.isNew(field))
 		{
-			// nothing to do. The field was not yet saved
+			// nothing to do. Window was not yet saved
 			return;
 		}
+
+		final AdFieldId adFieldId = AdFieldId.ofRepoIdOrNull(field.getAD_Field_ID());
 
 		adWindowDAO.deleteExistingADElementLinkForFieldId(adFieldId);
 		adWindowDAO.createADElementLinkForFieldId(adFieldId);

@@ -12,6 +12,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.ModelValidator;
@@ -73,13 +74,13 @@ public class AD_Tab
 		tab.setHelp(tabElement.getHelp());
 		tab.setCommitWarning(tabElement.getCommitWarning());
 
-		final AdTabId adTabId = AdTabId.ofRepoIdOrNull(tab.getAD_Tab_ID());
-
-		if(adTabId == null)
+		if (InterfaceWrapperHelper.isNew(tab))
 		{
-			 // nothing to do. The tab was not yet saved
+			// nothing to do. Window was not yet saved
 			return;
 		}
+
+		final AdTabId adTabId = AdTabId.ofRepoIdOrNull(tab.getAD_Tab_ID());
 
 		adWindowDAO.deleteExistingADElementLinkForTabId(adTabId);
 		adWindowDAO.createADElementLinkForTabId(adTabId);
