@@ -43,7 +43,10 @@ import de.metas.cache.CCache.CCacheStats;
 public interface IAttributeValuesProvider
 {
 	/**
-	 * @return {@link X_M_Attribute#ATTRIBUTEVALUETYPE_Number}, {@link X_M_Attribute#ATTRIBUTEVALUETYPE_StringMax40} or {@link X_M_Attribute#ATTRIBUTEVALUETYPE_Date} (i.e. {@link X_M_Attribute#ATTRIBUTEVALUETYPE_List} is <b>NOT</b> allowed)
+	 * Returns the attribute's value type. I don'T see the full picture, but it's needed to e.g. know if the value is inside an {@code M_AttributeInstance} record's, {@code Value} or {@code ValueNumber} column.
+	 *
+	 * @return {@link X_M_Attribute#ATTRIBUTEVALUETYPE_Number}, {@link X_M_Attribute#ATTRIBUTEVALUETYPE_StringMax40} or {@link X_M_Attribute#ATTRIBUTEVALUETYPE_Date}
+	 *         (i.e. {@link X_M_Attribute#ATTRIBUTEVALUETYPE_List} is <b>NOT</b> allowed)
 	 */
 	String getAttributeValueType();
 

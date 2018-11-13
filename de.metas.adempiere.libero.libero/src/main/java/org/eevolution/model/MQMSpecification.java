@@ -24,14 +24,14 @@ import org.compiere.util.DB;
 
 /**
  *	Forcast Line Model
- *	
- *  @author Victor Perez www.e-evolution.com      
+ *
+ *  @author Victor Perez www.e-evolution.com
  *  @version $Id: MQMSpecification.java,v 1.11 2005/05/17 05:29:52 vpj-cd vpj-cd $
  */
 public class MQMSpecification extends  X_QM_Specification
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 3672559433094289125L;
 
@@ -44,9 +44,9 @@ public class MQMSpecification extends  X_QM_Specification
 	{
 		super (ctx, QM_Specification_ID, trxName);
 		if (QM_Specification_ID == 0)
-		{		
+		{
 		}
-		
+
 	}	//	MQMSpecification
 
 	/**
@@ -57,11 +57,11 @@ public class MQMSpecification extends  X_QM_Specification
 	public MQMSpecification (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MQMSpecification	
-		
+	}	//	MQMSpecification
+
 	/** Lines						*/
 	private MQMSpecificationLine[]		m_lines = null;
-	
+
 	/**
 	 * 	Get Lines
 	 *	@return array of lines
@@ -70,7 +70,7 @@ public class MQMSpecification extends  X_QM_Specification
 	{
 		if (m_lines != null)
 			return m_lines;
-		
+
 		ArrayList<MQMSpecificationLine> list = new ArrayList<>();
 		String sql = "SELECT * FROM QM_SpecificationLine WHERE QM_SpecificationLine_ID=? AND "+ where +" ORDER BY Line";
 		PreparedStatement pstmt = null;
@@ -103,21 +103,21 @@ public class MQMSpecification extends  X_QM_Specification
 		list.toArray (m_lines);
 		return m_lines;
 	}	//	getLines
-	
+
 	public boolean isValid(int M_AttributeSetInstance_ID)
 	{
-		// TODO: check/implement when it will be needed
+		// TODO: check/uncomment/reimplement when it will be needed
 //		//MAttributeSet mas = MAttributeSet.get(getCtx(), getM_AttributeSet_ID());
-//		
+//
 ////		Save Instance Attributes
-//		  
+//
 //		MAttributeSetInstance asi = new MAttributeSetInstance(getCtx(),M_AttributeSetInstance_ID, get_TrxName());
 //		MAttributeSet 		  as = MAttributeSet.get(AttributeSetId.ofRepoId(asi.getM_AttributeSet_ID()));
 //		for (final I_M_Attribute attribute : as.getMAttributes(false))
 //		{
-//		
+//
 //			//MAttribute attribute = new MAttribute(getCtx(),0,null);
-//			MAttributeInstance instance = attribute.getMAttributeInstance(M_AttributeSetInstance_ID);			
+//			MAttributeInstance instance = attribute.getMAttributeInstance(M_AttributeSetInstance_ID);
 //			MQMSpecificationLine[] lines = getLines(" M_Attribute_ID="+attribute.getM_Attribute_ID());
 //			for (int s = 0; s < lines.length; i++)
 //			{
@@ -132,12 +132,12 @@ public class MQMSpecification extends  X_QM_Specification
 //				{
 //				String	objValue = instance.getValue();
 //				if(!line.evaluate(objValue,instance.getValue()))
-//					return false;	
+//					return false;
 //				}
 //				//if(line.evaluate(mas.getValueNumber())
-//			}			
-//		}	//	for all attributes			
+//			}
+//		}	//	for all attributes
 		return true;
 	}
-	
+
 }	//	MQMSpecification

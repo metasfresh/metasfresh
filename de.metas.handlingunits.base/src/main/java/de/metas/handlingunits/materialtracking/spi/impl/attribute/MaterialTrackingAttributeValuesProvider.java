@@ -121,11 +121,13 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 		this.attributeRecord = attributeRecord;
 	}
 
+	/**
+	 * @return {@link X_M_Attribute#ATTRIBUTEVALUETYPE_StringMax40} because in our {@code M_AttributeInstance} record, the MatrialTrackingID is store in the {@code Value} column (as opposed to {@code ValueNumber})
+	 *         also note that {@link de.metas.handlingunits.attribute.impl.AbstractAttributeValue} insists we don't return "List".
+	 */
 	@Override
 	public String getAttributeValueType()
 	{
-		// not sure why, but de.metas.handlingunits.attribute.impl.AbstractAttributeValue.AbstractAttributeValue(IAttributeStorage, I_M_Attribute) insists we don't return "List"
-		// also, in our M_AttributeInstance record, the MatrialTrackingID is store in the Value column (as opposed to ValueNumber).
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 	}
 
@@ -279,29 +281,6 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 		return ProductAndBPartner.of(productId, bpartnerId);
 	}
 
-	// private ImmutableList<KeyNamePair> createNamePairs(@NonNull final ProductAndBPartner productAndBPartner)
-	// {
-	// final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-	// final List<I_M_Material_Tracking> materialTrackingRecords = materialTrackingDAO.retrieveMaterialTrackings(
-	// Env.getCtx(),
-	// asMaterialTrackingQuery(productAndBPartner));
-	//
-	// final ImmutableList.Builder<KeyNamePair> result = ImmutableList.builder();
-	//
-	// for (final I_M_Material_Tracking materialTrackingRecord : materialTrackingRecords)
-	// {
-	// final KeyNamePair valueNamePair = createNamePair(materialTrackingRecord);
-	// result.add(valueNamePair);
-	//
-	// // this method is called to fill productAndBPartner2materialTrackings; but also also add our results to
-	// id2materialTracking.put(
-	// MaterialTrackingId.ofRepoId(materialTrackingRecord.getM_Material_Tracking_ID()),
-	// valueNamePair);
-	// }
-	//
-	// return result.build();
-	// }
-
 	private IMaterialTrackingQuery asMaterialTrackingQuery(@NonNull final ProductAndBPartner productAndBPartner)
 	{
 		final IMaterialTrackingDAO materialTrackingRepo = Services.get(IMaterialTrackingDAO.class);
@@ -355,6 +334,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 		return null;
 	}
 
+	/** @return {@code false}. */
 	@Override
 	public boolean isHighVolume()
 	{
@@ -372,12 +352,4 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	{
 		return ImmutableList.of(materialTrackingId2KeyNamePair.stats());
 	}
-
-	@VisibleForTesting
-	boolean isCached(@NonNull final MaterialTrackingId materialTrackingId)
-	{
-		final boolean cachedInId2materialTracking = materialTrackingId2KeyNamePair.containsKey(materialTrackingId);
-		return cachedInId2materialTracking;
-	}
-
 }
