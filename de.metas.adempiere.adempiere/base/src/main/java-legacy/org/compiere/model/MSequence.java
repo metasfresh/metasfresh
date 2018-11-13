@@ -647,6 +647,7 @@ public class MSequence extends X_AD_Sequence
 				"AD_MIGRATION",
 				"AD_MIGRATIONSTEP",
 				"AD_MIGRATIONDATA",
+				I_AD_Note.Table_Name.toUpperCase(),
 				"AD_PACKAGE_IMP",
 				"AD_PACKAGE_IMP_BACKUP",
 				"AD_PACKAGE_IMP_DETAIL",
