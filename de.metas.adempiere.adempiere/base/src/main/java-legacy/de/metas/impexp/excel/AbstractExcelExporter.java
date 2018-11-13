@@ -133,6 +133,7 @@ public abstract class AbstractExcelExporter
 	private HSSFFont m_fontDefault = null;
 	private Language m_lang = null;
 	private int m_sheetCount = 0;
+	private byte m_charset = HSSFFont.DEFAULT_CHARSET;
 	//
 	private int m_colSplit = 1;
 	private int m_rowSplit = 1;
@@ -148,6 +149,17 @@ public abstract class AbstractExcelExporter
 	protected Properties getCtx()
 	{
 		return Env.getCtx();
+	}
+
+	public byte getCharset()
+	{
+		return m_charset;
+	}
+
+	public AbstractExcelExporter setCharset(byte m_charset)
+	{
+		this.m_charset = m_charset;
+		return this;
 	}
 
 	protected void setFreezePane(final int colSplit, final int rowSplit)
@@ -209,6 +221,8 @@ public abstract class AbstractExcelExporter
 			}
 			font = m_fontDefault;
 		}
+		
+		font.setCharSet(m_charset);
 		return font;
 	}
 
