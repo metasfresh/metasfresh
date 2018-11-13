@@ -22,9 +22,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.I_PP_Order_Cost;
 import org.eevolution.model.PPCostCollectorUtils;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.slf4j.Logger;
@@ -53,6 +54,7 @@ import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -125,32 +127,6 @@ public class CostEngineImpl implements CostEngine
 	private CurrentCost retrieveOrCreateCostRecord(final CostSegment costSegment, final CostElementId costElementId)
 	{
 		return currentCostsRepo.getOrCreate(costSegment, costElementId);
-	}
-
-	private CostAmount getProductStandardCostPrice(
-			final I_PP_Cost_Collector cc,
-			final I_M_Product product,
-			final AcctSchema acctSchema,
-			final CostElementId costElementId)
-	{
-		final CostDimension d = new CostDimension(product,
-				acctSchema,
-				acctSchema.getCosting().getCostTypeId(),
-				OrgId.ANY,
-				AttributeSetInstanceId.NONE,
-				costElementId);
-
-		final I_PP_Order_Cost orderCostRecord = d.toQueryBuilder(I_PP_Order_Cost.class, ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_PP_Order_Cost.COLUMNNAME_PP_Order_ID, cc.getPP_Order_ID())
-				.create()
-				.firstOnly(I_PP_Order_Cost.class);
-		if (orderCostRecord == null)
-		{
-			return CostAmount.zero(acctSchema.getCurrencyId());
-		}
-
-		final CostAmount costs = CostAmount.of(orderCostRecord.getCurrentCostPrice().add(orderCostRecord.getCurrentCostPriceLL()), acctSchema.getCurrencyId());
-		return roundCost(costs, acctSchema.getId());
 	}
 
 	private CostAmount roundCost(final CostAmount price, final AcctSchemaId acctSchemaId)
@@ -609,6 +585,9 @@ public class CostEngineImpl implements CostEngine
 			return;
 		}
 
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
+		final PPOrderCosts ppOrderCosts = Services.get(IPPOrderCostBL.class).getByOrderId(ppOrderId);
+
 		I_PP_Cost_Collector ccrv = null; // Cost Collector - Rate Variance
 		for (final AcctSchema as : getAcctSchema(cc))
 		{
@@ -626,10 +605,15 @@ public class CostEngineImpl implements CostEngine
 
 				//
 				final Quantity qty = cd.getQty();
-				final CostAmount priceStd = getProductStandardCostPrice(cc, product, as, costElementId);
-				final CostAmount priceActual = getProductActualCostPriceOrZero(costSegment, costElementId);
+
+				final CostAmount priceStd = ppOrderCosts
+						.getByCostSegmentAndElement(costSegment, costElementId)
+						.orElseGet(() -> CostAmount.zero(as.getCurrencyId()));
 				final CostAmount amtStd = roundCost(priceStd.multiply(qty), as.getId());
+
+				final CostAmount priceActual = getProductActualCostPriceOrZero(costSegment, costElementId);
 				final CostAmount amtActual = roundCost(priceActual.multiply(qty), as.getId());
+
 				if (amtStd.subtract(amtActual).signum() == 0)
 				{
 					continue;
