@@ -2,6 +2,8 @@ package de.metas.materialtracking.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -67,7 +69,9 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public I_M_Material_Tracking retrieveMaterialTracking(final Properties ctx, final IMaterialTrackingQuery materialTrackingQuery)
+	public I_M_Material_Tracking retrieveMaterialTracking(
+			final Properties ctx,
+			final IMaterialTrackingQuery materialTrackingQuery)
 	{
 		final IQuery<I_M_Material_Tracking> query = createQuery(ctx, materialTrackingQuery);
 
@@ -99,21 +103,25 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 		return query.list();
 	}
 
-	private IQuery<I_M_Material_Tracking> createQuery(final Properties ctx, final IMaterialTrackingQuery queryVO)
+	private IQuery<I_M_Material_Tracking> createQuery(
+			final Properties ctx,
+			@NonNull final IMaterialTrackingQuery queryVO)
 	{
 		final IQueryBuilder<I_M_Material_Tracking> queryBuilder = new MaterialTrackingQueryCompiler()
 				.setCtx(ctx)
 				.createQueryBuilder(queryVO);
 		final IQuery<I_M_Material_Tracking> query = queryBuilder.create();
+
+		query.setOption(IQuery.OPTION_ReturnReadOnlyRecords, queryVO.isReturnReadOnlyRecords());
+
 		return query;
 	}
 
 	@Override
-	public I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(final I_M_Material_Tracking materialTracking, final Object model)
+	public I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(
+			@NonNull final I_M_Material_Tracking materialTracking,
+			@NonNull final Object model)
 	{
-		Check.assumeNotNull(materialTracking, "materialTracking not null");
-		Check.assumeNotNull(model, "model not null");
-
 		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(model);
 
 		final I_M_Material_Tracking_Ref ref = InterfaceWrapperHelper.newInstance(I_M_Material_Tracking_Ref.class, threadContextAware);
@@ -125,10 +133,8 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public I_M_Material_Tracking_Ref retrieveMaterialTrackingRefForModel(final Object model)
+	public I_M_Material_Tracking_Ref retrieveMaterialTrackingRefForModel(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		// 07669: Use the transaction of the thread and do not rely on the model's transaction
 		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(model);
 

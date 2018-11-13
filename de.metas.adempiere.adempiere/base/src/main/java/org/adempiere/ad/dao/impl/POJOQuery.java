@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -57,7 +59,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class POJOQuery<T> extends AbstractTypedQuery<T>
 {
@@ -81,11 +82,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		this(Env.getCtx(), modelClass, null, ITrx.TRXNAME_None);
 	}
 
-	public POJOQuery(final Properties ctx, final Class<T> modelClass, final String tablename, final String trxName)
+	public POJOQuery(
+			final Properties ctx,
+			@NonNull final Class<T> modelClass,
+			final String tablename,
+			final String trxName)
 	{
-		super();
-
-		Check.assumeNotNull(modelClass, "modelClass not null");
 		this.modelClass = modelClass;
 		this.ctx = ctx;
 		this.trxName = trxName;
@@ -241,6 +243,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		final List<T> result = db.getRecords(tableName, modelClass, filters, getOrderByComparator(modelClass), trxName);
 		Check.assumeNotNull(result, "Return value of POJOLookupMap.getRecords is *never* null");
 
+		final boolean readOnly = isReadOnlyRecords();
 		final List<ET> resultCasted = new ArrayList<>(result.size());
 		for (final T model : result)
 		{
@@ -250,6 +253,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			}
 
 			final ET modelCasted = InterfaceWrapperHelper.create(model, clazz);
+			InterfaceWrapperHelper.setSaveDeleteDisabled(modelCasted, readOnly);
+
 			resultCasted.add(modelCasted);
 		}
 

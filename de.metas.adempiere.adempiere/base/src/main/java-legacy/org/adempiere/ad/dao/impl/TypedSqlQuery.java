@@ -309,9 +309,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			pstmt = DB.prepareStatement(sql, trxName);
 			rs = createResultSet(pstmt);
 
+			final boolean readOnly = Boolean.TRUE.equals(getOption(OPTION_ReturnReadOnlyRecords));
+
 			ET model = null;
 			while ((model = retrieveNextModel(rs, clazz)) != null)
 			{
+				InterfaceWrapperHelper.setSaveDeleteDisabled(model, readOnly);
 				list.add(model);
 
 				if (limit > 0 && list.size() >= limit)

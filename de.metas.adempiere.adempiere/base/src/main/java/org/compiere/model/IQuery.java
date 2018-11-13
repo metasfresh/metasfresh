@@ -1,5 +1,10 @@
 package org.compiere.model;
 
+import lombok.Getter;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -34,8 +39,6 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
@@ -54,12 +57,9 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.process.PInstanceId;
 import de.metas.util.lang.RepoIdAware;
-import lombok.Getter;
-import lombok.NonNull;
 
 public interface IQuery<T>
 {
-
 	/**
 	 * If this instance is used to get an iterator, then this option tells how many rows the iterator shall load at a time.
 	 *
@@ -71,6 +71,11 @@ public interface IQuery<T>
 	 * Boolean value to specify what type of iteration shall be used, when no one is specified explicitly
 	 */
 	String OPTION_GuaranteedIteratorRequired = "GuaranteedIteratorRequired";
+
+	/**
+	 * If set to {@code true}, then returned records can't be saved or deleted.
+	 */
+	String OPTION_ReturnReadOnlyRecords = "ReturnReadOnlyRecords";
 
 	/**
 	 * Default value for {@link #OPTION_GuaranteedIteratorRequired}.

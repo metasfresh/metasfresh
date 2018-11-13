@@ -39,7 +39,6 @@ import de.metas.cache.CCache.CCacheStats;
 /**
  * Implementations of this interface are providing a fixed set of values for a given attribute.
  * Get an instance via {@link IAttributesBL#createAttributeValuesProvider(I_M_Attribute)}.
- *
  */
 public interface IAttributeValuesProvider
 {

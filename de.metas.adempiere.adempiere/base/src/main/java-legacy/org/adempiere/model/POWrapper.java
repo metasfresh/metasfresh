@@ -13,6 +13,8 @@
  *****************************************************************************/
 package org.adempiere.model;
 
+import lombok.NonNull;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -45,7 +47,6 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * Wrap a PO object to a given bean interface. Example
@@ -180,9 +181,13 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param trxName db transaction name
 	 * @return new instance or <code>null</code> if not found.
 	 */
-	public static <T> T create(final Properties ctx, final String tableName, final int id, final Class<T> modelClass, final String trxName)
+	public static <T> T create(final Properties ctx,
+			@NonNull final String tableName,
+			final int id,
+			final Class<T> modelClass,
+			final String trxName)
 	{
-		Check.assumeNotNull(tableName, "tableName not null");
+		Check.assumeNotEmpty(tableName, "tableName not null");
 
 		if (id < getFirstValidIdByColumnName(tableName + "_ID"))
 		{

@@ -1,4 +1,6 @@
-package de.metas.materialtracking.attributes;
+package de.metas.handlingunits.materialtracking.spi.impl.attribute;
+
+import lombok.NonNull;
 
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
@@ -8,7 +10,7 @@ public class MaterialTrackingAttributeValuesProviderFactory
 		implements IAttributeValuesProviderFactory
 {
 	@Override
-	public IAttributeValuesProvider createAttributeValuesProvider(final I_M_Attribute attribute)
+	public IAttributeValuesProvider createAttributeValuesProvider(@NonNull final I_M_Attribute attribute)
 	{
 		return new MaterialTrackingAttributeValuesProvider(attribute);
 	}

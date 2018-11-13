@@ -38,7 +38,7 @@ public interface IHUAttributesBL extends ISingletonService
 	 *
 	 * If there is no underlying HU, this method will throw an exception
 	 *
-	 * @param attributeSet
+	 * @param attributeSet not null
 	 * @return underlying HU; never return <code>null</code>
 	 * @throws IllegalArgumentException if there is no underlying HU
 	 */

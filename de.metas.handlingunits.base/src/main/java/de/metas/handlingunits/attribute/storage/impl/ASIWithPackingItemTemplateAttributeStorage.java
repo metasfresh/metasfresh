@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute.storage.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -46,8 +48,8 @@ import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * Wraps an {@link I_M_AttributeSetInstance}; returns values of the packing item template's {@link I_M_HU_PI_Attribute}s.
@@ -63,7 +65,7 @@ import lombok.NonNull;
 			@NonNull final IAttributeStorageFactory storageFactory,
 			@NonNull final I_M_AttributeSetInstance asi)
 	{
-		super(storageFactory);
+		super(Check.assumeNotNull(storageFactory,"storageFactory"));
 
 		this.asi = asi;
 		this.id = I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + asi.getM_AttributeSetInstance_ID();
