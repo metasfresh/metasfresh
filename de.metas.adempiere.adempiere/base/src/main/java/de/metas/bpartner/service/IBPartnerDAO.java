@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.service.OrgId;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -40,7 +41,6 @@ import org.compiere.model.I_C_Location;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -275,7 +275,9 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(String externalId, OrgId orgId);
 
-	public I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+
+	Optional<BPartnerId> getBPartnerIdByLocatorGln(String gln);
 
 	@Value
 	@Builder
@@ -294,4 +296,5 @@ public interface IBPartnerDAO extends ISingletonService
 
 		boolean alsoTryRelation;
 	}
+
 }

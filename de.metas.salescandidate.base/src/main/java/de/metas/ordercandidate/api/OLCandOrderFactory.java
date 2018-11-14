@@ -5,6 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.Builder;
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -31,6 +34,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -48,9 +52,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
-
-import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -147,13 +148,13 @@ class OLCandOrderFactory
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
 
 		final OLCandBPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
-		order.setC_BPartner_ID(bpartner.getBpartnerId());
+		order.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 		order.setC_BPartner_Location_ID(bpartner.getBpartnerLocationId());
 		order.setAD_User_ID(bpartner.getContactId());
 
 		// if the olc has no value set, we are not falling back here!
 		final OLCandBPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
-		order.setBill_BPartner_ID(billBPartner.getBpartnerId());
+		order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
 		order.setBill_Location_ID(billBPartner.getBpartnerLocationId());
 		order.setBill_User_ID(billBPartner.getContactId());
 
@@ -165,13 +166,13 @@ class OLCandOrderFactory
 		// if the olc has no value set, we are not falling back here!
 		// 05617
 		final OLCandBPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo();
-		order.setDropShip_BPartner_ID(dropShipBPartner.getBpartnerId());
+		order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
 		order.setDropShip_Location_ID(dropShipBPartner.getBpartnerLocationId());
-		final boolean isDropShip = dropShipBPartner.getBpartnerId() > 0 || dropShipBPartner.getBpartnerLocationId() > 0;
+		final boolean isDropShip = dropShipBPartner != null || dropShipBPartner.getBpartnerLocationId() > 0;
 		order.setIsDropShip(isDropShip);
 
 		final OLCandBPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo();
-		order.setHandOver_Partner_ID(handOverBPartner.getBpartnerId());
+		order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
 		order.setHandOver_Location_ID(handOverBPartner.getBpartnerLocationId());
 		order.setIsUseHandOver_Location(handOverBPartner.getBpartnerLocationId() > 0);
 

@@ -43,6 +43,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -181,7 +182,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_Currency_ID(olc.getC_Currency_ID());
 		// ic.setC_ConversionType_ID(C_ConversionType_ID); // N/A
 
-		ic.setBill_BPartner_ID(olCandEffectiveValuesBL.getBill_BPartner_Effective_ID(olc));
+		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBill_BPartner_Effective_ID(olc)));
 
 		// bill location
 		final int billLocationId = olCandEffectiveValuesBL.getBill_Location_Effective_ID(olc);
@@ -316,7 +317,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_C_OLCand olc = getOLCand(ic);
 
-		ic.setBill_BPartner_ID(olCandEffectiveValuesBL.getBill_BPartner_Effective_ID(olc));
+		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBill_BPartner_Effective_ID(olc)));
 		ic.setBill_Location_ID(olCandEffectiveValuesBL.getBill_Location_Effective_ID(olc));
 		ic.setBill_User_ID(olCandEffectiveValuesBL.getBill_User_Effective_ID(olc));
 	}

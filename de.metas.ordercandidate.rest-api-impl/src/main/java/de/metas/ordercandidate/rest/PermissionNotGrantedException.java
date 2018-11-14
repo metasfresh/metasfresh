@@ -1,17 +1,14 @@
-package de.metas.ordercandidate.api;
+package de.metas.ordercandidate.rest;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
-import de.metas.bpartner.BPartnerId;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.ordercandidate.rest-api-impl
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,21 +26,12 @@ import de.metas.bpartner.BPartnerId;
  * #L%
  */
 
-@Value
-public final class OLCandBPartnerInfo
+public class PermissionNotGrantedException extends AdempiereException
 {
-	private final BPartnerId bpartnerId;
-	private final int bpartnerLocationId;
-	private final int contactId;
+private static final long serialVersionUID = 8485777988689504117L;
 
-	@Builder
-	private OLCandBPartnerInfo(
-			@Nullable final BPartnerId bpartnerId,
-			final int bpartnerLocationId,
-			final int contactId)
+	public PermissionNotGrantedException(@NonNull final String message)
 	{
-		this.bpartnerId = bpartnerId;
-		this.bpartnerLocationId = bpartnerLocationId > 0 ? bpartnerLocationId : -1;
-		this.contactId = contactId > 0 ? contactId : -1;
+		super(message);
 	}
 }

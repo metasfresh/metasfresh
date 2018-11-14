@@ -1,5 +1,12 @@
 package de.metas.bpartner.service;
 
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 import java.util.Comparator;
 
 /*
@@ -27,25 +34,19 @@ import java.util.Comparator;
 import java.util.Properties;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.user.User;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 
 import com.google.common.base.Predicates;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
 
 public interface IBPartnerBL extends ISingletonService
 {

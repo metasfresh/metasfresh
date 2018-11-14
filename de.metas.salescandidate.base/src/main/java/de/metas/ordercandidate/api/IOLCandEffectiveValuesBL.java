@@ -29,6 +29,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.ISingletonService;
 
@@ -49,10 +50,9 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>C_BPartner_ID</code></li>
 	 * </ul>
 	 *
-	 * @param olCand
-	 * @return
+	 * @return id or {@code null}.
 	 */
-	int getC_BPartner_Effective_ID(I_C_OLCand olCand);
+	BPartnerId getC_BPartner_Effective_ID(I_C_OLCand olCand);
 
 	/**
 	 * Like {@link #getC_BPartner_Effective_ID(I_C_OLCand)}, but returns the actual partner.
@@ -117,9 +117,9 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * </ul>
 	 *
 	 * @param olCand
-	 * @return
+	 * @return id or {@code null}.
 	 */
-	int getBill_BPartner_Effective_ID(I_C_OLCand olCand);
+	BPartnerId getBill_BPartner_Effective_ID(I_C_OLCand olCand);
 
 	/**
 	 *
@@ -174,10 +174,9 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 *
 	 * #100 FRESH-435: even if the (effective) DropShip_BPartner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0
 	 *
-	 * @param olCand
-	 * @return
+	 * @return id of {@code null}.
 	 */
-	int getDropShip_BPartner_Effective_ID(I_C_OLCand olCand);
+	BPartnerId getDropShip_BPartner_Effective_ID(I_C_OLCand olCand);
 
 	/**
 	 * Returns, falling back to the next if not set:
@@ -263,9 +262,9 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * #100 FRESH-435: even if the (effective) HandOver_Partner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0.
 	 *
 	 * @param olCand
-	 * @return
+	 * @return id or {@code null}.
 	 */
-	int getHandOver_Partner_Effective_ID(I_C_OLCand olCand);
+	BPartnerId getHandOver_Partner_Effective_ID(I_C_OLCand olCand);
 
 	/**
 	 * Like {@link #getHandOver_Partner_Effective_ID(I_C_OLCand)}, but returns the actual partner.

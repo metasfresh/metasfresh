@@ -24,7 +24,6 @@ import java.util.Properties;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.exceptions.BPartnerNoAddressException;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -34,18 +33,18 @@ import de.metas.util.Services;
 
 /**
  * Dunning Run Entry Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MDunningRunEntry.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
- * 
+ *
  * @author Teo Sarca - BF [ 1739022 ], BF [ 1739096 ]
- * 
+ *
  *         FR 2872010 - Dunning Run for a complete Dunning (not just level) - Developer: Carlos Ruiz - globalqss - Sponsor: Metas
  */
 public class MDunningRunEntry extends X_C_DunningRunEntry
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3838792682143065656L;
 
@@ -54,7 +53,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 
 	/**
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_DunningRunEntry_ID id
 	 * @param trxName transaction
@@ -78,7 +77,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set
 	 * @param trxName transaction
@@ -90,7 +89,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 
 	/**
 	 * Parent Constructor
-	 * 
+	 *
 	 * @param parent parent
 	 */
 	public MDunningRunEntry(MDunningRun parent)
@@ -106,7 +105,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 
 	/**
 	 * Set BPartner
-	 * 
+	 *
 	 * @param bp partner
 	 * @param isSOTrx SO
 	 */
@@ -192,7 +191,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 
 	/**
 	 * Get Lines
-	 * 
+	 *
 	 * @return Array of all lines for this Run
 	 */
 	public MDunningRunLine[] getLines()
@@ -202,7 +201,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 
 	/**
 	 * Get Lines
-	 * 
+	 *
 	 * @param onlyInvoices only with invoices
 	 * @return Array of all lines for this Run
 	 */
@@ -229,7 +228,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 
 	/**
 	 * Check whether has Invoices
-	 * 
+	 *
 	 * @return true if it has Invoices
 	 */
 	public boolean hasInvoices()
@@ -242,7 +241,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 
 	/**
 	 * Get Parent
-	 * 
+	 *
 	 * @return Dunning Run
 	 */
 	private MDunningRun getParent()
@@ -272,7 +271,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 				MBPartner thisBPartner = MBPartner.get(getCtx(), getC_BPartner_ID());
 
 				final BPartnerStats stats =bpartnerStatsDAO.getCreateBPartnerStats(thisBPartner);
-				
+
 				if (level.isSetCreditStop())
 				{
 					// set this particular credit status in the bp stats

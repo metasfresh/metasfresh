@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.api.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -31,33 +33,34 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 {
 	@Override
-	public int getC_BPartner_Effective_ID(final I_C_OLCand olCand)
+	public BPartnerId getC_BPartner_Effective_ID(final I_C_OLCand olCand)
 	{
 		final Integer bPartnerOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_C_BPartner_ID);
 		final int bPartnerID = bPartnerOverride == null ? 0 : bPartnerOverride;
 
 		if (bPartnerID <= 0)
 		{
-			return olCand.getC_BPartner_ID();
+			return BPartnerId.ofRepoIdOrNull(olCand.getC_BPartner_ID());
 		}
-		return bPartnerID;
+		return BPartnerId.ofRepoIdOrNull(bPartnerID);
 	}
 
 	@Override
 	public I_C_BPartner getC_BPartner_Effective(final I_C_OLCand olCand)
 	{
+		final BPartnerId c_BPartner_Effective_ID = getC_BPartner_Effective_ID(olCand);
 		return InterfaceWrapperHelper.create(
 				InterfaceWrapperHelper.getCtx(olCand),
-				getC_BPartner_Effective_ID(olCand),
+				BPartnerId.toRepoId(c_BPartner_Effective_ID),
 				I_C_BPartner.class,
 				InterfaceWrapperHelper.getTrxName(olCand));
 	}
@@ -101,19 +104,20 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
-	public int getBill_BPartner_Effective_ID(final I_C_OLCand olCand)
+	public BPartnerId getBill_BPartner_Effective_ID(final I_C_OLCand olCand)
 	{
 		return olCand.getBill_BPartner_ID() > 0
-				? olCand.getBill_BPartner_ID()
+				? BPartnerId.ofRepoIdOrNull(olCand.getBill_BPartner_ID())
 				: getC_BPartner_Effective_ID(olCand);
 	}
 
 	@Override
 	public <T extends I_C_BPartner> T getBill_BPartner_Effective(final I_C_OLCand olCand, final Class<T> clazz)
 	{
+		final BPartnerId bill_BPartner_Effective_ID = getBill_BPartner_Effective_ID(olCand);
 		return InterfaceWrapperHelper.create(
 				InterfaceWrapperHelper.getCtx(olCand),
-				getBill_BPartner_Effective_ID(olCand),
+				BPartnerId.toRepoId(bill_BPartner_Effective_ID),
 				clazz,
 				InterfaceWrapperHelper.getTrxName(olCand));
 	}
@@ -145,17 +149,17 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
-	public int getDropShip_BPartner_Effective_ID(final I_C_OLCand olCand)
+	public BPartnerId getDropShip_BPartner_Effective_ID(final I_C_OLCand olCand)
 	{
 		final Integer dropShipBPartnerOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID);
 		final int dropShipBPartnerID = dropShipBPartnerOverride == null ? 0 : dropShipBPartnerOverride;
 
-		final int bpartnerID = getC_BPartner_Effective_ID(olCand);
+		final BPartnerId bpartnerID = getC_BPartner_Effective_ID(olCand);
 
 		if (dropShipBPartnerID > 0)
 		{
 			// the dropship partner was set
-			return dropShipBPartnerID;
+			return BPartnerId.ofRepoId(dropShipBPartnerID);
 		}
 
 		// fall-back to bpartner
@@ -237,18 +241,18 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
-	public int getHandOver_Partner_Effective_ID(final I_C_OLCand olCand)
+	public BPartnerId getHandOver_Partner_Effective_ID(final I_C_OLCand olCand)
 	{
 		final Integer handOverPartnerOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_HandOver_Partner_ID);
 		final int handOverPartnerID = handOverPartnerOverride == null ? 0 : handOverPartnerOverride;
 
-		final int bpartnerId = getC_BPartner_Effective_ID(olCand);
+		final BPartnerId bpartnerId = getC_BPartner_Effective_ID(olCand);
 
 		if (handOverPartnerID > 0)
 		{
 			// the handover partner was set
 
-			return handOverPartnerID;
+			return BPartnerId.ofRepoId(handOverPartnerID);
 		}
 
 		// fall-back to C_BPartner
@@ -259,9 +263,11 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public I_C_BPartner getHandOver_Partner_Effective(final I_C_OLCand olCand)
 	{
+		final BPartnerId handOver_Partner_Effective_ID = getHandOver_Partner_Effective_ID(olCand);
+
 		return InterfaceWrapperHelper.create(
 				InterfaceWrapperHelper.getCtx(olCand),
-				getHandOver_Partner_Effective_ID(olCand),
+				BPartnerId.toRepoId(handOver_Partner_Effective_ID),
 				I_C_BPartner.class,
 				InterfaceWrapperHelper.getTrxName(olCand));
 	}

@@ -161,7 +161,7 @@ public class OrderCreateRequestRabbitMQListener
 		}
 
 		return OLCandBPartnerInfo.builder()
-				.bpartnerId(bpartnerId.getBpartnerId())
+				.bpartnerId(de.metas.bpartner.BPartnerId.ofRepoIdOrNull(bpartnerId.getBpartnerId()))
 				.bpartnerLocationId(bpartnerId.getBpartnerLocationId())
 				.build();
 	}

@@ -47,7 +47,6 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.exceptions.BPartnerNoAddressException;

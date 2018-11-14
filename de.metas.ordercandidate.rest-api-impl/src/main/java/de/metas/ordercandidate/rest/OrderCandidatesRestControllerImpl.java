@@ -114,10 +114,12 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
-		masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
+		final BPartnerMasterDataProvider bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
+
+		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
+		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
+		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
+		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrdersInTrx(
