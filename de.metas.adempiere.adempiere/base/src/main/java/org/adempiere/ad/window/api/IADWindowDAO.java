@@ -25,8 +25,12 @@ import java.util.List;
  */
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.element.api.AdFieldId;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
@@ -84,8 +88,26 @@ public interface IADWindowDAO extends ISingletonService
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 
-	List<I_AD_Tab> retrieveTabsWithMissingElements();
+	Set<AdTabId> retrieveTabIdsWithMissingADElements();
 
-	List<I_AD_Window> retrieveWindowsWithMissingElements();
+	Set<AdWindowId> retrieveWindowIdsWithMissingADElements();
+
+	I_AD_Window getWindowByIdInTrx(AdWindowId windowId);
+
+	I_AD_Tab getTabByIdInTrx(AdTabId tabId);
+
+	void createMissingADElementLinks();
+
+	void createADElementLinkForWindowId(AdWindowId adWindowId);
+
+	void deleteExistingADElementLinkForWindowId(AdWindowId adWindowId);
+
+	void createADElementLinkForTabId(AdTabId adTabId);
+
+	void deleteExistingADElementLinkForTabId(AdTabId adTabId);
+
+	void createADElementLinkForFieldId(AdFieldId adFieldId);
+
+	void deleteExistingADElementLinkForFieldId(AdFieldId adFieldId);
 
 }

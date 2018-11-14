@@ -286,8 +286,11 @@ public class M_Element extends X_AD_Element
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("M_Element[");
-		sb.append(get_ID()).append("-").append(getColumnName()).append("]");
+		final StringBuilder sb = new StringBuilder("M_Element[")
+				.append(get_ID())
+				.append("-")
+				.append(getColumnName())
+				.append("]");
 		return sb.toString();
 	}	// toString
 

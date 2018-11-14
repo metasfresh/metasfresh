@@ -3,6 +3,9 @@ package de.metas.translation.api;
 import java.sql.SQLException;
 
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.AdMenuId;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_AD_Menu;
@@ -68,13 +71,13 @@ public interface IElementTranslationBL extends ISingletonService
 
 	void updateTabTranslationsFromElement(AdElementId adElementId);
 
-	void updateMenuTranslationsFromElement( AdElementId adElementId);
+	void updateMenuTranslationsFromElement(AdElementId adElementId);
 
-	void updateElementTranslationsFromMenu(AdElementId adElementId, int menuId);
+	void updateElementTranslationsFromMenu(AdElementId adElementId, AdMenuId adMenuId);
 
-	void updateElementTranslationsFromWindow(AdElementId adElementId, int windowId);
+	void updateElementTranslationsFromWindow(AdElementId adElementId, AdWindowId adWindowId);
 
-	void updateElementTranslationsFromTab(AdElementId adElementId, int tabId);
+	void updateElementTranslationsFromTab(AdElementId adElementId, AdTabId adTabId);
 
 	void updateElementFromElementTrl(AdElementId adElementId, String adLanguage);
 

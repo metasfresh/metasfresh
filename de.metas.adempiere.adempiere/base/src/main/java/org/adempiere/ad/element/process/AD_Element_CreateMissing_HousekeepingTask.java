@@ -1,7 +1,7 @@
 package org.adempiere.ad.element.process;
 
+import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.ad.service.IADElementDAO;
 
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Services;

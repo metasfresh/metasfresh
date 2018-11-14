@@ -6,10 +6,13 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IADElementDAO;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.ModelValidator;
@@ -50,10 +53,12 @@ public class AD_Window
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	@CalloutMethod(columnNames = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Window window) throws SQLException
 	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+		final IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
 
 		if (!IElementTranslationBL.DYNATTR_AD_Window_UpdateTranslations.getValue(window, true))
 		{
@@ -61,7 +66,7 @@ public class AD_Window
 			return;
 		}
 
-		final I_AD_Element windowElement = Services.get(IADElementDAO.class).getById(window.getAD_Element_ID());
+		final I_AD_Element windowElement = adElementDAO.getById(window.getAD_Element_ID());
 
 		if (windowElement == null)
 		{
@@ -72,6 +77,28 @@ public class AD_Window
 		window.setName(windowElement.getName());
 		window.setDescription(windowElement.getDescription());
 		window.setHelp(windowElement.getHelp());
+
+
+		if(InterfaceWrapperHelper.isNew(window))
+		{
+			// nothing to do. Window was not yet saved
+			return;
+		}
+
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(window.getAD_Window_ID());
+		adWindowDAO.deleteExistingADElementLinkForWindowId(adWindowId);
+		adWindowDAO.createADElementLinkForWindowId(adWindowId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+
+	public void onWindowDelete(final I_AD_Window window) throws SQLException
+	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(window.getAD_Window_ID());
+
+		adWindowDAO.deleteExistingADElementLinkForWindowId(adWindowId);
 
 	}
 

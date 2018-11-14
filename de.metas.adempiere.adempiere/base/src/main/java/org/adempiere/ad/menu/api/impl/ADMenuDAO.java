@@ -1,5 +1,7 @@
 package org.adempiere.ad.menu.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,12 +36,19 @@ public class ADMenuDAO implements IADMenuDAO
 {
 
 	@Override
-	public List<I_AD_Menu> retrieveMenusWithMissingElements()
+	public List<Integer> retrieveMenuIdsWithMissingADElements()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Menu.class)
 				.addEqualsFilter(I_AD_Menu.COLUMN_AD_Element_ID, null)
 				.create()
-				.list(I_AD_Menu.class);
+				.listIds();
+	}
+
+
+	@Override
+	public I_AD_Menu getById(final int menuId)
+	{
+		return load(menuId, I_AD_Menu.class);
 	}
 
 }

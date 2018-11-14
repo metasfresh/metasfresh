@@ -6,10 +6,10 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IADElementDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Tab;
@@ -52,10 +52,11 @@ public class AD_Menu
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	@CalloutMethod(columnNames = I_AD_Menu.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Menu menu) throws SQLException
 	{
+		final IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
 
 		if (!IElementTranslationBL.DYNATTR_AD_Menu_UpdateTranslations.getValue(menu, true))
 		{
@@ -63,7 +64,7 @@ public class AD_Menu
 			return;
 		}
 
-		final I_AD_Element menuElement = Services.get(IADElementDAO.class).getById(menu.getAD_Element_ID());
+		final I_AD_Element menuElement = adElementDAO.getById(menu.getAD_Element_ID());
 
 		if (menuElement == null)
 		{
@@ -76,13 +77,11 @@ public class AD_Menu
 		menu.setWEBUI_NameBrowse(menuElement.getWEBUI_NameBrowse());
 		menu.setWEBUI_NameNew(menuElement.getWEBUI_NameNew());
 		menu.setWEBUI_NameNewBreadcrumb(menuElement.getWEBUI_NameNewBreadcrumb());
-
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Menu.COLUMNNAME_AD_Element_ID)
 	public void updateTranslationsForElement(final I_AD_Menu menu)
 	{
-
 		final AdElementId menuElementId = AdElementId.ofRepoIdOrNull(menu.getAD_Element_ID());
 		if (menuElementId == null)
 		{
