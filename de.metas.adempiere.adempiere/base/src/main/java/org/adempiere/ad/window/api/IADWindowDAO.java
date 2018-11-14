@@ -83,4 +83,9 @@ public interface IADWindowDAO extends ISingletonService
 	void copyWindow(int targetWindowId, int sourceWindowId);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
+
+	List<I_AD_Tab> retrieveTabsWithMissingElements();
+
+	List<I_AD_Window> retrieveWindowsWithMissingElements();
+
 }

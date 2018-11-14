@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.adempiere.ad.service;
 
@@ -22,4 +22,9 @@ public interface IADElementDAO extends ISingletonService
 	List<I_AD_Field> retrieveFields(String columnName);
 
 	I_AD_Element getADElement(String columnName);
+
+
+	void makeElementMandatoryInApplicationDictionaryTables();
+
+	I_AD_Element getById(int elementId);
 }

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.impl.QuerySelectionToDeleteHelper;
 import org.adempiere.ad.dao.model.I_T_Query_Selection;
+import org.adempiere.ad.element.process.AD_Element_CreateMissing_HousekeepingTask;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -98,7 +99,7 @@ public class ServerBoot implements InitializingBean
 	{
 		// Make sure slf4j is used (by default, log4j is used)
 		ESLoggingInit.init();
-		
+
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
 			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
@@ -127,6 +128,7 @@ public class ServerBoot implements InitializingBean
 		houseKeepingRegistry.registerStartupHouseKeepingTask(new SequenceCheckHouseKeepingTask());
 		houseKeepingRegistry.registerStartupHouseKeepingTask(new RoleAccessUpdateHouseKeepingTask());
 		houseKeepingRegistry.registerStartupHouseKeepingTask(new MissingTranslationHouseKeepingTask());
+		houseKeepingRegistry.registerStartupHouseKeepingTask(new AD_Element_CreateMissing_HousekeepingTask());
 
 		// now init the model validation engine
 		ModelValidationEngine.get();

@@ -19,14 +19,21 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * System Element Model
@@ -236,94 +243,38 @@ public class M_Element extends X_AD_Element
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
-		// Update Columns, Fields, Parameters, Print Info
-		if (!newRecord)
+		if (newRecord)
 		{
-			StringBuffer sql = new StringBuffer();
-			int no = 0;
-
-			if ((is_ValueChanged(M_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Help)
-					|| is_ValueChanged(M_Element.COLUMNNAME_ColumnName))
-					&& getColumnName() != null)
-			{
-				// Column
-				sql = new StringBuffer("UPDATE AD_Column SET ColumnName=")
-						.append(DB.TO_STRING(getColumnName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Element_ID=").append(get_ID());
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("afterSave - Columns updated #" + no);
-
-				// Parameter
-				sql = new StringBuffer("UPDATE AD_Process_Para SET ColumnName=")
-						.append(DB.TO_STRING(getColumnName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(", AD_Element_ID=").append(get_ID())
-						.append(" WHERE UPPER(ColumnName)=")
-						.append(DB.TO_STRING(getColumnName().toUpperCase()))
-						.append(" AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL");
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-
-				sql = new StringBuffer("UPDATE AD_Process_Para SET ColumnName=")
-						.append(DB.TO_STRING(getColumnName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Element_ID=").append(get_ID())
-						.append(" AND IsCentrallyMaintained='Y'");
-				no += DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Parameters updated #" + no);
-			}
-
-			if (is_ValueChanged(M_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Help))
-			{
-				// Field
-				sql = new StringBuffer("UPDATE AD_Field SET Name=")
-						.append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=")
-						.append(get_ID())
-						.append(")")
-						.append(" AND ")
-						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" IS NULL ")
-						.append(")")
-						.append(" OR ")
-						.append("(")
-						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(get_ID())
-						.append(")");
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Fields updated #" + no);
-
-				// Info Column - update Name, Description, Help - doesn't have IsCentrallyMaintained currently
-				// no = DB.executeUpdate(sql.toString(), get_TrxName());
-				// log.debug("InfoColumn updated #" + no);
-			}
-
-			if (is_ValueChanged(M_Element.COLUMNNAME_PrintName)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Name))
-			{
-				// Print Info
-				sql = new StringBuffer("UPDATE AD_PrintFormatItem pi SET PrintName=")
-						.append(DB.TO_STRING(getPrintName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(" WHERE IsCentrallyMaintained='Y'")
-						.append(" AND EXISTS (SELECT * FROM AD_Column c ")
-						.append("WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=")
-						.append(get_ID()).append(")");
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("PrintFormatItem updated #" + no);
-			}
-
+			// the new element is not yet used so no updates are needed
+			return success;
 		}
+
+		final String baseLanguage = Services.get(ILanguageDAO.class).retrieveBaseLanguage();
+
+		final ImmutableSet<String> columnsChanged = ElementChangedEvent.ALL_COLUMN_NAMES
+				.stream()
+				.filter(columnName -> is_ValueChanged(columnName))
+				.collect(ImmutableSet.toImmutableSet());
+
+		Services.get(IElementTranslationBL.class).updateDependentADEntries(ElementChangedEvent.builder()
+				.adElementId(AdElementId.ofRepoId(getAD_Element_ID()))
+				.adLanguage(baseLanguage)
+				.updatedColumns(columnsChanged)
+				.columnName(getColumnName())
+				.name(getName())
+				.printName(getPrintName())
+				.description(getDescription())
+				.help(getHelp())
+				.commitWarning(getCommitWarning())
+				.poDescription(getPO_Description())
+				.poHelp(getPO_Help())
+				.poName(getPO_Name())
+				.poPrintName(getPO_PrintName())
+				.webuiNameBrowse(getWEBUI_NameBrowse())
+				.webuiNameNew(getWEBUI_NameNew())
+				.webuiNameNewBreadcrumb(getWEBUI_NameNewBreadcrumb())
+				.build());
+
 		return success;
 	}	// afterSave
 
@@ -335,7 +286,7 @@ public class M_Element extends X_AD_Element
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("M_Element[");
+		StringBuilder sb = new StringBuilder("M_Element[");
 		sb.append(get_ID()).append("-").append(getColumnName()).append("]");
 		return sb.toString();
 	}	// toString

@@ -876,4 +876,22 @@ public class ADWindowDAO implements IADWindowDAO
 				.endOrderBy();
 	}
 
+	@Override
+	public List<I_AD_Tab> retrieveTabsWithMissingElements()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
+				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Element_ID, null)
+				.create()
+				.list(I_AD_Tab.class);
+	}
+
+	@Override
+	public List<I_AD_Window> retrieveWindowsWithMissingElements()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Window.class)
+				.addEqualsFilter(I_AD_Window.COLUMN_AD_Element_ID, null)
+				.create()
+				.list(I_AD_Window.class);
+	}
+
 }

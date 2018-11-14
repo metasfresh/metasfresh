@@ -7,6 +7,7 @@ import org.adempiere.ad.element.api.IElementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_UI_Element;
+
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -20,12 +21,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,15 +35,14 @@ import de.metas.util.Services;
 
 public class ElementBL implements IElementBL
 {
-
 	@Override
 	public void updateUIElement(final I_AD_Element element)
 	{
 		final List<I_AD_UI_Element> uiElements = Services.get(IElementDAO.class).retrieveChildUIElements(element);
 
 		String widgetSize = element.getWidgetSize();
-	
-		if(Check.isEmpty(widgetSize))
+
+		if (Check.isEmpty(widgetSize))
 		{
 			widgetSize = null;
 		}
@@ -53,5 +53,4 @@ public class ElementBL implements IElementBL
 			InterfaceWrapperHelper.save(uiElement);
 		}
 	}
-
 }

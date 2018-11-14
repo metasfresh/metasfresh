@@ -3,15 +3,24 @@
  */
 package org.adempiere.ad.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
 import org.adempiere.ad.service.IADElementDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Menu;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Window;
+import org.compiere.model.MColumn;
 
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -66,6 +75,51 @@ public class ADElementDAO implements IADElementDAO
 			}
 		}
 		return fields;
+	}
+
+	@Override
+	public void makeElementMandatoryInApplicationDictionaryTables()
+	{
+		make_AD_Element_Mandatory_In_AD_Tab();
+		make_AD_Element_Mandatory_In_AD_Window();
+		make_AD_Element_Mandatory_In_AD_Menu();
+	}
+
+	private void make_AD_Element_Mandatory_In_AD_Menu()
+	{
+		final I_AD_Column elementIdColumn = Services.get(IADTableDAO.class).retrieveColumn(I_AD_Menu.Table_Name, I_AD_Menu.COLUMNNAME_AD_Element_ID);
+
+		makeElementColumnMandatory(elementIdColumn);
+	}
+
+	private void make_AD_Element_Mandatory_In_AD_Window()
+	{
+		final I_AD_Column elementIdColumn = Services.get(IADTableDAO.class).retrieveColumn(I_AD_Window.Table_Name, I_AD_Window.COLUMNNAME_AD_Element_ID);
+
+		makeElementColumnMandatory(elementIdColumn);
+	}
+
+	private void make_AD_Element_Mandatory_In_AD_Tab()
+	{
+		final I_AD_Column elementIdColumn = Services.get(IADTableDAO.class).retrieveColumn(I_AD_Tab.Table_Name, I_AD_Tab.COLUMNNAME_AD_Element_ID);
+
+		makeElementColumnMandatory(elementIdColumn);
+	}
+
+	private void makeElementColumnMandatory(final I_AD_Column elementIdColumn)
+	{
+		elementIdColumn.setIsMandatory(true);
+		save(elementIdColumn);
+
+		final MColumn columnPO = LegacyAdapters.convertToPO(elementIdColumn);
+		columnPO.syncDatabase();
+	}
+
+	@Override
+	public I_AD_Element getById(final int elementId)
+	{
+		return loadOutOfTrx(elementId, I_AD_Element.class);
+
 	}
 
 }
