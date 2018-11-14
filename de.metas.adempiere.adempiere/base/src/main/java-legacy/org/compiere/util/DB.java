@@ -18,6 +18,10 @@ package org.compiere.util;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -38,7 +42,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.annotation.Nullable;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -84,7 +87,6 @@ import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
 
 /**
  * General Database Interface
@@ -703,7 +705,9 @@ public final class DB
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public static CPreparedStatement prepareStatement(String sql,
-			int resultSetType, int resultSetConcurrency, String trxName)
+			int resultSetType,
+			int resultSetConcurrency,
+			String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 			throw new IllegalArgumentException("No SQL");
@@ -2224,7 +2228,7 @@ public final class DB
 	public static void createT_Selection(@NonNull final PInstanceId pinstanceId, Iterable<Integer> selection, String trxName)
 	{
 		final int pinstanceRepoId = pinstanceId.getRepoId();
-		
+
 		StringBuilder insert = new StringBuilder();
 		insert.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ");
 		int counter = 0;
@@ -2264,7 +2268,7 @@ public final class DB
 		createT_Selection(pinstanceId, selection, trxName);
 		return pinstanceId;
 	}
-	
+
 	public static PInstanceId createT_Selection(final Set<? extends RepoIdAware> selection, final String trxName)
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
@@ -2763,14 +2767,14 @@ public final class DB
 			pstmt = prepareStatement(sql, ITrx.TRXNAME_None);
 			setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
-			
+
 			final ArrayList<T> rows = new ArrayList<>();
 			while(rs.next())
 			{
 				T row = loader.retrieveRow(rs);
 				rows.add(row);
 			}
-			
+
 			return rows;
 		}
 		catch(SQLException ex)

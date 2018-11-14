@@ -559,10 +559,8 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	 * @return value as NamePair; never returns null
 	 * @throws InvalidAttributeValueException
 	 */
-	private final NamePair valueToAttributeValue(final Object value)
+	private final NamePair valueToAttributeValue(@NonNull final Object value)
 	{
-		Check.assumeNotNull(value, "value not null");
-
 		final Object valueNormalized;
 		if (value instanceof NamePair)
 		{

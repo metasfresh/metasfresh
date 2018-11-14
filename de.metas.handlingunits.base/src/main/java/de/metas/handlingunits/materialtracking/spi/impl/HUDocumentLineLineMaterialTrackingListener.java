@@ -1,5 +1,7 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -63,7 +65,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 	}
 
 	@Override
-	public void afterModelLinked(final MTLinkRequest request)
+	public void afterModelLinked(@NonNull final MTLinkRequest request)
 	{
 		if (!request.getParams().getParameterAsBool(HUConstants.PARAM_CHANGE_HU_MAterial_Tracking_ID))
 		{
