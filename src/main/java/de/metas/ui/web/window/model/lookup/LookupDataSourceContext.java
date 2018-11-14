@@ -464,6 +464,12 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return this;
 		}
 
+		public Builder requiresParameters(@NonNull final Collection<CtxName> requiredParameters)
+		{
+			requiredParameters.forEach(this::requiresParameter);
+			return this;
+		}
+
 		/**
 		 * Advises the builder that {@link LookupDataSourceContext#PARAM_AD_Language} shall be present the context that will be build
 		 */

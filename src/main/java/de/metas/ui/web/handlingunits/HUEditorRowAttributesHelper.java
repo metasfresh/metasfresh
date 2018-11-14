@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import lombok.NonNull;
+
 import java.util.List;
 
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
@@ -121,7 +123,9 @@ import de.metas.util.Services;
 		return attribute.getValue();
 	}
 
-	public static Object extractJSONValue(final IAttributeStorage attributesStorage, final IAttributeValue attributeValue)
+	public static Object extractJSONValue(
+			@NonNull final IAttributeStorage attributesStorage,
+			@NonNull final IAttributeValue attributeValue)
 	{
 		final Object value = extractValueAndResolve(attributesStorage, attributeValue);
 
@@ -129,7 +133,9 @@ import de.metas.util.Services;
 		return jsonValue;
 	}
 
-	private static final Object extractValueAndResolve(final IAttributeStorage attributesStorage, final IAttributeValue attributeValue)
+	private static final Object extractValueAndResolve(
+			@NonNull final IAttributeStorage attributesStorage,
+			@NonNull final IAttributeValue attributeValue)
 	{
 		final Object value = attributeValue.getValue();
 		if (!attributeValue.isList())
