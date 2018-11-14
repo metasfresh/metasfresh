@@ -35,6 +35,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#2008](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2008) Business partner field in order: bpartner and location not alligned
+    * Minor frontend Fix for Businesspartner Lookup widget dropdown alignment.
   * [#2012](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2012) Modal view's title is not set when opened from process
   * [#2015](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2015) Make sure `Run QR code action` process can be executed from everywhere
   * [#2029](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2029) View quickActions timing issue
