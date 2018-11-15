@@ -28,14 +28,21 @@ Here come the actual release notes:
   * [#4739](https://github.com/metasfresh/metasfresh/issues/4739) Fix context parse errors while using order's product batch entry
     * Fixes product search and add new on orderline for Batch entry.
   * [#4741](https://github.com/metasfresh/metasfresh/issues/4741) Process C_Order_VoidWithRelatedDocsAndRecreate hangs
+    * Improvement of Orde voiding, now reverting the document and related documents too.
   * [#4742](https://github.com/metasfresh/metasfresh/issues/4742) Attachment-Download from BPartner B2C window broken
+    * Fixes the download of Attachments from the B2C Business Partner window.
   * [#4743](https://github.com/metasfresh/metasfresh/issues/4743) C_Invoice_CreateExportData async WP processor runs into error with most "normal" invoices
+    * Fixes a Bug that occurred when an Organisation Business Partner does not have a remit-to address nor an ESR account.
 
 * metasfresh-webui-api
   * [#1097](https://github.com/metasfresh/metasfresh-webui-api/issues/1097) "Issue only for what was received" method: Issued HUs remain issued and don't get destroyed
+    * Fixes the "Issue only for what was received" Method in manufacturing receipt.
   * [#1098](https://github.com/metasfresh/metasfresh-webui-api/issues/1098) Label Element filters not working
+    * Fixes the Filtering of Label Elements/ Attributes.
   * [#1099](https://github.com/metasfresh/metasfresh-webui-api/issues/1099) Zooming into a parent column from a translation window not working
+    * Improves the zoom To into the parent column from translation windows.
   * [#1102](https://github.com/metasfresh/metasfresh-webui-api/issues/1102) Document filters: consider empty strings as no filters
+    * Empty Strings are now considered as a non set filter criteria.
 
 * metasfresh-webui-frontend
   * [#2008](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2008) Business partner field in order: bpartner and location not alligned
