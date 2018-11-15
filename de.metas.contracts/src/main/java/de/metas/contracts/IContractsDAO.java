@@ -26,6 +26,8 @@ package de.metas.contracts;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBuilder;
+
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.order.OrderId;
@@ -60,7 +62,9 @@ public interface IContractsDAO extends ISingletonService
 
 
 	List<I_C_SubscriptionProgress> getSubscriptionProgress(I_C_Flatrate_Term currentTerm);
-	
+
 	List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId);
+
+	IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(String typeConditions);
 
 }

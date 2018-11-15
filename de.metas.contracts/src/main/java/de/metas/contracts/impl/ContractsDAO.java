@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -57,6 +58,16 @@ public class ContractsDAO implements IContractsDAO
 			@NonNull String typeConditions,
 			final int limit)
 	{
+		return createTermWithMissingCandidateQueryBuilder(typeConditions)
+				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
+				.setLimit(limit)
+				.create()
+				.list(I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(@NonNull String typeConditions)
+	{
 		final Timestamp now = SystemTime.asTimestamp();
 
 		return Services.get(IQueryBL.class)
@@ -69,12 +80,7 @@ public class ContractsDAO implements IContractsDAO
 
 				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, invoiceCandidatesThatReferenceTerms())
 
-				.filter(relevantTermDateAfterTimestamp(now))
-
-				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
-				.setLimit(limit)
-				.create()
-				.list();
+				.filter(relevantTermDateAfterTimestamp(now));
 	}
 
 	private ICompositeQueryFilter<I_C_Flatrate_Term> relevantTermDateAfterTimestamp(final Timestamp timestamp)
@@ -153,7 +159,7 @@ public class ContractsDAO implements IContractsDAO
 		final SubscriptionProgressQuery currentTermQuery = SubscriptionProgressQuery.term(currentTerm).build();
 		return subscriptionDAO.retrieveSubscriptionProgresses(currentTermQuery);
 	}
-	
+
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
 	@Override
 	public List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId)
@@ -166,5 +172,5 @@ public class ContractsDAO implements IContractsDAO
 				.create()
 				.list();
 	}
-	
+
 }

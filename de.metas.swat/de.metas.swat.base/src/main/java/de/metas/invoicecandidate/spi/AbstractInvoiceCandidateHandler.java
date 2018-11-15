@@ -146,4 +146,10 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID());
 		}
 	}
+
+	@Override
+	public boolean isMissingInvoiceCandidate(Object model)
+	{
+		return true;
+	}
 }

@@ -68,6 +68,23 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
+	public boolean isMissingInvoiceCandidate(final Object flatrateTermObject)
+	{
+		final I_C_Flatrate_Term flatrateTerm = (I_C_Flatrate_Term)flatrateTermObject;
+
+		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> specificHandlers = conditionTypeSpecificInvoiceCandidateHandlers.values();
+
+		for (final ConditionTypeSpecificInvoiceCandidateHandler specificHandler : specificHandlers)
+		{
+			if (!specificHandler.isMissingInvoiceCandidate(flatrateTerm))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
 	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
 		final I_C_Flatrate_Term term = request.getModel(I_C_Flatrate_Term.class);
@@ -197,4 +214,5 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 				"The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
 				term.getType_Conditions(), term);
 	}
+
 }
