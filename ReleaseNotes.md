@@ -48,7 +48,9 @@ Here come the actual release notes:
   * [#2008](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2008) Business partner field in order: bpartner and location not alligned
     * Minor frontend Fix for Businesspartner Lookup widget dropdown alignment.
   * [#2012](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2012) Modal view's title is not set when opened from process
+    * Improvement of modal overlays, now setting the overlay Title correctly when opened via process.
   * [#2015](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2015) Make sure `Run QR code action` process can be executed from everywhere
+    * Fixes the QR Code action, so that it can be run from any window.
   * [#2029](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2029) View quickActions timing issue
   * [#2039](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2039) Uncaught TypeError: e.toISO is not a function
   * [#2049](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2049) quick actions: not refreshed on selection changed in tablet/mobile mode
