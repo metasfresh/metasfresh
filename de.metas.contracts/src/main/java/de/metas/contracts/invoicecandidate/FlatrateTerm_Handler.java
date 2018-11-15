@@ -76,12 +76,12 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 
 		for (final ConditionTypeSpecificInvoiceCandidateHandler specificHandler : specificHandlers)
 		{
-			if (!specificHandler.isMissingInvoiceCandidate(flatrateTerm))
+			if (specificHandler.isMissingInvoiceCandidate(flatrateTerm))
 			{
-				return false;
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	@Override

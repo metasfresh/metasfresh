@@ -193,6 +193,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
 				.extensionType(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne)
+				.isCreateNoInvoice(false)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
