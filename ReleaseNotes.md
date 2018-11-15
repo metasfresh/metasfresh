@@ -15,14 +15,18 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4734](https://github.com/metasfresh/metasfresh/issues/4734) Shipper transportation identifier shall contain documentNo, date and the shipper name
+    * Improvement of the shipper transportation identifiere, now including the documentNo, date and shipper name.
 
 * metasfresh-webui-frontend
   * [#2006](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2006) View selection for touch screens
+    * Enhancement of selection behavior, now possible for touch screens to select and unselect rows with finger tap.
 
 ## Fixes
 * metasfresh
   * [#4738](https://github.com/metasfresh/metasfresh/issues/4738) Error creating receipt schedule if order line was created via "add new"
+    * Bugfix for the receiept schedule in case the orderline was created via add new button.
   * [#4739](https://github.com/metasfresh/metasfresh/issues/4739) Fix context parse errors while using order's product batch entry
+    * Fixes product search and add new on orderline for Batch entry.
   * [#4741](https://github.com/metasfresh/metasfresh/issues/4741) Process C_Order_VoidWithRelatedDocsAndRecreate hangs
   * [#4742](https://github.com/metasfresh/metasfresh/issues/4742) Attachment-Download from BPartner B2C window broken
   * [#4743](https://github.com/metasfresh/metasfresh/issues/4743) C_Invoice_CreateExportData async WP processor runs into error with most "normal" invoices
