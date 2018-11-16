@@ -62,7 +62,9 @@ import com.google.common.base.Preconditions;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
@@ -385,16 +387,16 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDeliveryViaRule(olCand.getDeliveryViaRule());
 
 		final I_C_BPartner bill_BPartner = olCandEffectiveValuesBL.getBill_BPartner_Effective(olCand, I_C_BPartner.class);
-		final int bill_Location_ID = olCandEffectiveValuesBL.getBill_Location_Effective_ID(olCand);
-		final int bill_User_ID = olCandEffectiveValuesBL.getBill_User_Effective_ID(olCand);
+		final int bill_Location_ID = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olCand));
+		final int bill_User_ID = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olCand));
 
 		newTerm.setBill_BPartner_ID(bill_BPartner.getC_BPartner_ID());
 		newTerm.setBill_Location_ID(bill_Location_ID);
 		newTerm.setBill_User_ID(bill_User_ID);
 
-		newTerm.setDropShip_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getDropShip_BPartner_Effective_ID(olCand)));
-		newTerm.setDropShip_Location_ID(olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olCand));
-		newTerm.setDropShip_User_ID(olCandEffectiveValuesBL.getDropShip_User_Effective_ID(olCand));
+		newTerm.setDropShip_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getDropShipBPartnerEffectiveId(olCand)));
+		newTerm.setDropShip_Location_ID(BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olCand)));
+		newTerm.setDropShip_User_ID(BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getDropShipContactEffectiveId(olCand)));
 
 		final I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retriveOrCreateFlatrateData(bill_BPartner);
 

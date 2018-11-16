@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.service.OrgId;
 
 import de.metas.bpartner.BPartnerContactId;
@@ -23,11 +25,11 @@ import de.metas.bpartner.BPartnerLocationId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,18 +51,30 @@ public class Context
 
 	boolean bPartnerIsOrgBP;
 
-	public Context with(final BPartnerId bpartnerId)
+	public Context setIfNotNull(@Nullable final BPartnerId bpartnerId)
 	{
+		if (bpartnerId == null)
+		{
+			return this;
+		}
 		return toBuilder().bpartnerId(bpartnerId).build();
 	}
 
-	public Context with(final BPartnerLocationId locationId)
+	public Context setIfNotNull(@Nullable final BPartnerLocationId locationId)
 	{
+		if (locationId == null)
+		{
+			return this;
+		}
 		return toBuilder().locationId(locationId).build();
 	}
 
-	public Context with(final BPartnerContactId contactId)
+	public Context setIfNotNull(final BPartnerContactId contactId)
 	{
+		if (contactId == null)
+		{
+			return this;
+		}
 		return toBuilder().contactId(contactId).build();
 	}
 }

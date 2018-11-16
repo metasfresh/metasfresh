@@ -34,7 +34,9 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -149,14 +151,14 @@ class OLCandOrderFactory
 
 		final OLCandBPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
 		order.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
-		order.setC_BPartner_Location_ID(bpartner.getBpartnerLocationId());
-		order.setAD_User_ID(bpartner.getContactId());
+		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+		order.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 
 		// if the olc has no value set, we are not falling back here!
 		final OLCandBPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
-		order.setBill_Location_ID(billBPartner.getBpartnerLocationId());
-		order.setBill_User_ID(billBPartner.getContactId());
+		order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
+		order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
 
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
@@ -167,14 +169,14 @@ class OLCandOrderFactory
 		// 05617
 		final OLCandBPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo();
 		order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
-		order.setDropShip_Location_ID(dropShipBPartner.getBpartnerLocationId());
-		final boolean isDropShip = dropShipBPartner != null || dropShipBPartner.getBpartnerLocationId() > 0;
+		order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
+		final boolean isDropShip = dropShipBPartner != null || dropShipBPartner.getBpartnerLocationId() != null;
 		order.setIsDropShip(isDropShip);
 
 		final OLCandBPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo();
 		order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
-		order.setHandOver_Location_ID(handOverBPartner.getBpartnerLocationId());
-		order.setIsUseHandOver_Location(handOverBPartner.getBpartnerLocationId() > 0);
+		order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
+		order.setIsUseHandOver_Location(handOverBPartner.getBpartnerLocationId() != null);
 
 		if (candidateOfGroup.getC_Currency_ID() > 0)
 		{

@@ -43,7 +43,9 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -182,13 +184,14 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_Currency_ID(olc.getC_Currency_ID());
 		// ic.setC_ConversionType_ID(C_ConversionType_ID); // N/A
 
-		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBill_BPartner_Effective_ID(olc)));
+		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olc)));
 
 		// bill location
-		final int billLocationId = olCandEffectiveValuesBL.getBill_Location_Effective_ID(olc);
+		final int billLocationId = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olc));
 		ic.setBill_Location_ID(billLocationId);
 
-		ic.setBill_User_ID(olCandEffectiveValuesBL.getBill_User_Effective_ID(olc));
+		final int billUserId = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olc));
+		ic.setBill_User_ID(billUserId);
 
 		ic.setDescription(olc.getDescription());
 
@@ -221,8 +224,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				Util.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getDateInvoiced()),
 				orgId,
 				(WarehouseId)null,
-				olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olc),
-				true /*isSOTrx*/);
+				BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olc)),
+				true /* isSOTrx */);
 		ic.setC_Tax_ID(taxId);
 
 		ic.setExternalId(olc.getExternalId());
@@ -317,9 +320,9 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_C_OLCand olc = getOLCand(ic);
 
-		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBill_BPartner_Effective_ID(olc)));
-		ic.setBill_Location_ID(olCandEffectiveValuesBL.getBill_Location_Effective_ID(olc));
-		ic.setBill_User_ID(olCandEffectiveValuesBL.getBill_User_Effective_ID(olc));
+		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olc)));
+		ic.setBill_Location_ID(BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olc)));
+		ic.setBill_User_ID(BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olc)));
 	}
 
 	@Override

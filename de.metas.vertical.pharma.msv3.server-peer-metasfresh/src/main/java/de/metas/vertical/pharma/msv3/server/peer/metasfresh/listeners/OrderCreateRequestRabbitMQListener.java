@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
@@ -121,7 +122,7 @@ public class OrderCreateRequestRabbitMQListener
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-//		final OrderResponse order = request.getOrder();
+		// final OrderResponse order = request.getOrder();
 		final String poReference = request.getOrderId().getValueAsString();
 		final LocalDate dateRequired = LocalDate.now().plusDays(1); // TODO
 
@@ -160,9 +161,12 @@ public class OrderCreateRequestRabbitMQListener
 			return null;
 		}
 
+		final de.metas.bpartner.BPartnerId bPartnerId = de.metas.bpartner.BPartnerId.ofRepoIdOrNull(bpartnerId.getBpartnerId());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, bpartnerId.getBpartnerLocationId());
+
 		return OLCandBPartnerInfo.builder()
-				.bpartnerId(de.metas.bpartner.BPartnerId.ofRepoIdOrNull(bpartnerId.getBpartnerId()))
-				.bpartnerLocationId(bpartnerId.getBpartnerLocationId())
+				.bpartnerId(bPartnerId)
+				.bpartnerLocationId(bPartnerLocationId)
 				.build();
 	}
 }

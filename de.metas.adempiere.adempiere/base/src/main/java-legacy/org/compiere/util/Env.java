@@ -16,6 +16,10 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
@@ -31,7 +35,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
 import javax.swing.JFrame;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -67,7 +70,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 /**
  * System Environment and static variables.
@@ -861,10 +863,14 @@ public final class Env
 	 * @param context context key
 	 * @return value
 	 */
-	public static int getContextAsInt(Properties ctx, String context)
+	public static int getContextAsInt(
+			@NonNull final Properties ctx,
+			@NonNull final String context)
 	{
 		if (ctx == null || context == null)
-			throw new IllegalArgumentException("Require Context");
+		{
+			throw new IllegalArgumentException("The given ctx does not contain Require Context");
+		}
 		String s = getContext(ctx, context);
 		if (isPropertyValueNull(s) || s.length() == 0)
 			s = getContext(ctx, 0, context, false);		// search 0 and defaults
@@ -1170,7 +1176,7 @@ public final class Env
 	{
 		return Env.getAD_User_ID(getCtx());
 	}
-	
+
 	public static UserId getLoggedUserId()
 	{
 		return UserId.ofRepoId(Env.getAD_User_ID(getCtx()));
@@ -1180,17 +1186,12 @@ public final class Env
 	 * Get Login AD_Role_ID
 	 *
 	 * @param ctx context
-	 * @return login AD_Role_ID
+	 * @return {@code #AD_Role_ID}
 	 */
 	public static int getAD_Role_ID(Properties ctx)
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
-	}	// getAD_Role_ID
-
-	// public static void setAD_Role_ID(Properties ctx, final int adRoleId)
-	// {
-	// Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
-	// } // getAD_Role_ID
+	}
 
 	public static IUserRolePermissions getUserRolePermissions()
 	{
@@ -1647,7 +1648,7 @@ public final class Env
 	{
 		return windows.addWindow(window);
 	}
-	
+
 	public static void addWindow(final int windowNo, final Container window)
 	{
 		windows.addWindow(windowNo, window);
@@ -1717,7 +1718,7 @@ public final class Env
 		s_log.info("Starting browser using url={}", url);
 		Services.get(IClientUI.class).showURL(url);
 	}   // startBrowser
-	
+
 	public static void startBrowser(@NonNull final File file)
 	{
 		startBrowser(file.toURI().toString());
@@ -2137,14 +2138,14 @@ public final class Env
 		{
 			return null;
 		}
-		
-		
+
+
 		Timestamp timestamp = parseTimestampUsingJDBCFormatOrNull(timestampStr);
 		if(timestamp != null)
 		{
 			return timestamp;
 		}
-		
+
 		try
 		{
 			final ZonedDateTime zdt = ZonedDateTime.parse(timestampStr.trim(), DATE_FORMAT);
@@ -2161,7 +2162,7 @@ public final class Env
 	private static Timestamp parseTimestampUsingJDBCFormatOrNull(@NonNull final String timestampStr)
 	{
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
-		
+
 		// timestamp requires time
 		final String timestampStrToUse;
 		if (timestampStr.trim().length() == 10)

@@ -119,8 +119,8 @@ public class JsonConverters
 		}
 
 		final BPartnerId bpartnerId = bpartnerInfo.getBpartnerId();
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerInfo.getBpartnerLocationId());
-		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, bpartnerInfo.getContactId());
+		final BPartnerLocationId bpartnerLocationId = bpartnerInfo.getBpartnerLocationId();
+		final BPartnerContactId contactId = bpartnerInfo.getContactId();
 
 		final BPartnerMasterDataProvider //
 		bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();

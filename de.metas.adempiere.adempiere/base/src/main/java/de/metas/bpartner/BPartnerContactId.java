@@ -1,10 +1,12 @@
 package de.metas.bpartner;
 
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
 /*
  * #%L
@@ -16,12 +18,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,9 +48,20 @@ public class BPartnerContactId implements RepoIdAware
 		return new BPartnerContactId(BPartnerId.ofRepoId(bpartnerId), contactId);
 	}
 
-	public static BPartnerContactId ofRepoIdOrNull(@NonNull final BPartnerId bpartnerId, final int contactId)
+	public static BPartnerContactId ofRepoIdOrNull(
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final Integer contactId)
 	{
-		return contactId > 0 ? ofRepoId(bpartnerId, contactId) : null;
+		return contactId != null && contactId > 0 ? ofRepoId(bpartnerId, contactId) : null;
+	}
+
+	public static BPartnerContactId ofRepoIdOrNull(
+			@Nullable final Integer bpartnerId,
+			@Nullable final Integer contactId)
+	{
+		return bpartnerId != null && bpartnerId > 0 && contactId != null && contactId > 0
+				? ofRepoId(bpartnerId, contactId)
+				: null;
 	}
 
 	private BPartnerContactId(@NonNull final BPartnerId bpartnerId, final int contactId)

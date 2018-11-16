@@ -8,6 +8,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -16,7 +18,10 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.service.OrgId;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
 
+import de.metas.ordercandidate.rest.exceptions.PermissionNotGrantedException;
 import de.metas.util.Services;
 
 /*
@@ -32,11 +37,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,9 +58,10 @@ public class PermissionService
 	private final UserRolePermissionsKey userRolePermissionsKey;
 	private final Set<PermissionRequest> permissionsGranted = new HashSet<>();
 
-	private PermissionService(final Properties ctx)
+	private PermissionService(@Nullable final Properties ctx)
 	{
-		this.userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
+		final Properties ctxToUse = Util.coalesceSuppliers(() -> ctx, () -> Env.getCtx());
+		this.userRolePermissionsKey = UserRolePermissionsKey.of(ctxToUse);
 	}
 
 	public void assertCanCreateOrUpdate(final Object record)
@@ -81,13 +87,11 @@ public class PermissionService
 
 	public void assertCanCreateOrUpdateRecord(final OrgId orgId, final Class<?> modelClass)
 	{
-				assertPermission(PermissionRequest.builder()
+		assertPermission(PermissionRequest.builder()
 				.orgId(orgId)
 				.adTableId(getTableId(modelClass))
 				.build());
 	}
-
-
 
 	private void assertPermission(@NonNull final PermissionRequest request)
 	{
@@ -119,10 +123,8 @@ public class PermissionService
 		{
 			throw new PermissionNotGrantedException(errmsg);
 		}
-
 		permissionsGranted.add(request);
 	}
-
 
 	@lombok.Value
 	@lombok.Builder
@@ -134,4 +136,5 @@ public class PermissionService
 		@lombok.Builder.Default
 		int recordId = -1;
 	}
+
 }

@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.OrgId;
-import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -83,7 +82,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	{
 		bulkRequest.validate();
 
-		final MasterdataProvider masterdataProvider = MasterdataProvider.createInstance(Env.getCtx());
+		final MasterdataProvider masterdataProvider = MasterdataProvider.createInstance();
 
 		createOrUpdateMasterdata(bulkRequest, masterdataProvider);
 

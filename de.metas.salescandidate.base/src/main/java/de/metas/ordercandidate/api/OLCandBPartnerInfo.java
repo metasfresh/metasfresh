@@ -5,7 +5,9 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 
 /*
  * #%L
@@ -33,17 +35,17 @@ import de.metas.bpartner.BPartnerId;
 public final class OLCandBPartnerInfo
 {
 	private final BPartnerId bpartnerId;
-	private final int bpartnerLocationId;
-	private final int contactId;
+	private final BPartnerLocationId bpartnerLocationId;
+	private final BPartnerContactId contactId;
 
 	@Builder
 	private OLCandBPartnerInfo(
 			@Nullable final BPartnerId bpartnerId,
-			final int bpartnerLocationId,
-			final int contactId)
+			@Nullable final BPartnerLocationId bpartnerLocationId,
+			@Nullable final BPartnerContactId contactId)
 	{
 		this.bpartnerId = bpartnerId;
-		this.bpartnerLocationId = bpartnerLocationId > 0 ? bpartnerLocationId : -1;
-		this.contactId = contactId > 0 ? contactId : -1;
+		this.bpartnerLocationId = bpartnerLocationId;
+		this.contactId = contactId;
 	}
 }

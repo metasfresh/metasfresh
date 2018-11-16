@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -13,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
@@ -31,6 +31,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.rest.exceptions.MissingPropertyException;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
@@ -62,11 +63,11 @@ import de.metas.util.Services;
  * #L%
  */
 
-final class MasterdataProvider
+public final class MasterdataProvider
 {
-	public static final MasterdataProvider createInstance(final Properties ctx)
+	public static final MasterdataProvider createInstance()
 	{
-		return new MasterdataProvider(ctx);
+		return MasterdataProvider.builder().build();
 	}
 
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
@@ -89,11 +90,17 @@ final class MasterdataProvider
 	@Getter
 	private final BPartnerMasterDataProvider bPartnerMasterDataProvider;
 
-	private MasterdataProvider(final Properties ctx)
+	@Builder
+	private MasterdataProvider(
+			@Nullable final Properties ctx,
+			@Nullable final PermissionService permissionService,
+			@Nullable final BPartnerMasterDataProvider bpartnerMasterDataProvider)
 	{
-		this.defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctx)).orElse(OrgId.ANY);
-		this.permissionService = PermissionService.of(ctx);
-		this.bPartnerMasterDataProvider = BPartnerMasterDataProvider.of(ctx, permissionService);
+		final Properties ctxToUse = Util.coalesceSuppliers(() -> ctx, () -> Env.getCtx());
+
+		this.defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctxToUse)).orElse(OrgId.ANY);
+		this.permissionService = Util.coalesce(permissionService, PermissionService.of(ctxToUse));
+		this.bPartnerMasterDataProvider = Util.coalesce(bpartnerMasterDataProvider, BPartnerMasterDataProvider.of(ctxToUse, permissionService));
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
@@ -127,41 +134,41 @@ final class MasterdataProvider
 			productRecord.setValue(json.getCode());
 		}
 
-		try
+		// try
+		// {
+		productRecord.setName(json.getName());
+		final String productType;
+		switch (json.getType())
 		{
-			productRecord.setName(json.getName());
-			final String productType;
-			switch (json.getType())
-			{
-				case SERVICE:
-					productType = X_M_Product.PRODUCTTYPE_Service;
-					break;
-				case ITEM:
-					productType = X_M_Product.PRODUCTTYPE_Item;
-					break;
-				default:
-					Check.fail("Unexpected type={}; jsonProductInfo={}", json.getType(), json);
-					productType = null;
-					break;
-			}
-
-			productRecord.setM_Product_Category_ID(defaultProductCategoryId.getRepoId());
-
-			productRecord.setProductType(productType);
-
-			final UomId uomId = uomsRepo.getUomIdByX12DE355(json.getUomCode());
-			productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
-
-			save(productRecord);
+			case SERVICE:
+				productType = X_M_Product.PRODUCTTYPE_Service;
+				break;
+			case ITEM:
+				productType = X_M_Product.PRODUCTTYPE_Item;
+				break;
+			default:
+				Check.fail("Unexpected type={}; jsonProductInfo={}", json.getType(), json);
+				productType = null;
+				break;
 		}
-		catch (final PermissionNotGrantedException ex)
-		{
-			throw ex;
-		}
-		catch (final Exception ex)
-		{
-			throw new AdempiereException("Failed creating/updating record for " + json, ex);
-		}
+
+		productRecord.setM_Product_Category_ID(defaultProductCategoryId.getRepoId());
+
+		productRecord.setProductType(productType);
+
+		final UomId uomId = uomsRepo.getUomIdByX12DE355(json.getUomCode());
+		productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
+
+		save(productRecord);
+		// }
+		// catch (final PermissionNotGrantedException ex)
+		// {
+		// throw ex;
+		// }
+		// catch (final Exception ex)
+		// {
+		// throw new AdempiereException("Failed creating/updating record for " + json, ex);
+		// }
 
 		return ProductId.ofRepoId(productRecord.getM_Product_ID());
 	}
@@ -209,7 +216,7 @@ final class MasterdataProvider
 			final String code = json.getCode();
 			if (Check.isEmpty(code, true))
 			{
-				throw new AdempiereException("Organization code shall be set: " + json);
+				throw new MissingPropertyException("Missing property Code; JsonOrganization={}", json);
 			}
 
 			existingOrgId = orgsRepo.getOrgIdByValue(code).orElse(null);
@@ -225,20 +232,20 @@ final class MasterdataProvider
 			orgRecord = newInstance(I_AD_Org.class);
 		}
 
-		try
-		{
-			updateOrgRecord(orgRecord, json);
-			permissionService.assertCanCreateOrUpdate(orgRecord);
-			orgsRepo.save(orgRecord);
-		}
-		catch (final PermissionNotGrantedException ex)
-		{
-			throw ex;
-		}
-		catch (final Exception ex)
-		{
-			throw new AdempiereException("Failed creating/updating record for " + json, ex);
-		}
+		// try
+		// {
+		updateOrgRecord(orgRecord, json);
+		permissionService.assertCanCreateOrUpdate(orgRecord);
+		orgsRepo.save(orgRecord);
+		// }
+		// catch (final PermissionNotGrantedException ex)
+		// {
+		// throw ex;
+		// }
+		// catch (final Exception ex)
+		// {
+		// throw new AdempiereException("Failed creating/updating record for " + json, ex);
+		// }
 
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 		if (json.getBpartner() != null)

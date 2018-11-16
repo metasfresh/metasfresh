@@ -1,8 +1,8 @@
-package de.metas.ordercandidate.rest;
-
-import lombok.NonNull;
+package de.metas.ordercandidate.rest.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.util.StringUtils;
 
 /*
  * #%L
@@ -17,21 +17,22 @@ import org.adempiere.exceptions.AdempiereException;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class PermissionNotGrantedException extends AdempiereException
-{
-private static final long serialVersionUID = 8485777988689504117L;
 
-	public PermissionNotGrantedException(@NonNull final String message)
+public class MissingPropertyException extends AdempiereException
+{
+	private static final long serialVersionUID = -3485523266695546853L;
+
+	public MissingPropertyException(final String msg, final Object... params)
 	{
-		super(message);
+		super(StringUtils.formatMessage(msg, params));
 	}
 }
