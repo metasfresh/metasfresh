@@ -40,7 +40,6 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /**
@@ -122,6 +121,8 @@ public interface IInvoiceCandidateHandler
 	 * @param limit advises how many models shall be retrieved. Note that this is an advise which could be respected or not by current implementations.
 	 */
 	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit);
+
+	boolean isMissingInvoiceCandidate(Object model);
 
 	/**
 	 * Called by API to expand an initial invoice candidate generate request.
@@ -291,4 +292,5 @@ public interface IInvoiceCandidateHandler
 
 		BigDecimal compensationGroupBaseAmt;
 	}
+
 }
