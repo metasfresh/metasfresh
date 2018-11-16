@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1349877204L;
+	private static final long serialVersionUID = -423169739L;
 
     /** Standard Constructor */
     public X_AD_Window (Properties ctx, int AD_Window_ID, String trxName)
@@ -38,16 +22,15 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
       super (ctx, AD_Window_ID, trxName);
       /** if (AD_Window_ID == 0)
         {
+			setAD_Element_ID (0);
 			setAD_Window_ID (0);
-			setEntityType (null);
-// U
+			setEntityType (null); // U
 			setIsBetaFunctionality (false);
 			setIsDefault (false);
-			setIsSOTrx (true);
-// Y
+			setIsEnableRemoteCacheInvalidation (false); // N
+			setIsSOTrx (true); // Y
 			setName (null);
-			setWindowType (null);
-// M
+			setWindowType (null); // M
         } */
     }
 
@@ -64,14 +47,6 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_AD_Window[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -106,6 +81,43 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	public int getAD_Color_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Color_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Element getAD_Element() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class);
+	}
+
+	@Override
+	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class, AD_Element);
+	}
+
+	/** Set System-Element.
+		@param AD_Element_ID 
+		Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	  */
+	@Override
+	public void setAD_Element_ID (int AD_Element_ID)
+	{
+		if (AD_Element_ID < 1) 
+			set_Value (COLUMNNAME_AD_Element_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Element_ID, Integer.valueOf(AD_Element_ID));
+	}
+
+	/** Get System-Element.
+		@return Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	  */
+	@Override
+	public int getAD_Element_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -234,7 +246,9 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	}
 
 	/** Set Interner Name.
-		@param InternalName Interner Name	  */
+		@param InternalName 
+		Generally used to give records a name that can be safely referenced from code.
+	  */
 	@Override
 	public void setInternalName (java.lang.String InternalName)
 	{
@@ -242,7 +256,8 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	}
 
 	/** Get Interner Name.
-		@return Interner Name	  */
+		@return Generally used to give records a name that can be safely referenced from code.
+	  */
 	@Override
 	public java.lang.String getInternalName () 
 	{
@@ -292,6 +307,29 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	public boolean isDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefault);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Enable remote cache invalidation.
+		@param IsEnableRemoteCacheInvalidation Enable remote cache invalidation	  */
+	@Override
+	public void setIsEnableRemoteCacheInvalidation (boolean IsEnableRemoteCacheInvalidation)
+	{
+		set_Value (COLUMNNAME_IsEnableRemoteCacheInvalidation, Boolean.valueOf(IsEnableRemoteCacheInvalidation));
+	}
+
+	/** Get Enable remote cache invalidation.
+		@return Enable remote cache invalidation	  */
+	@Override
+	public boolean isEnableRemoteCacheInvalidation () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsEnableRemoteCacheInvalidation);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -378,8 +416,8 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	public static final String WINDOWTYPE_SingleRecord = "S";
 	/** Maintain = M */
 	public static final String WINDOWTYPE_Maintain = "M";
-	/** Transaction = T */
-	public static final String WINDOWTYPE_Transaction = "T";
+	/** Transaktion = T */
+	public static final String WINDOWTYPE_Transaktion = "T";
 	/** Query Only = Q */
 	public static final String WINDOWTYPE_QueryOnly = "Q";
 	/** Set WindowType.

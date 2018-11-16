@@ -15,6 +15,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_Language;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -125,11 +127,28 @@ public class POTrlRepository
 		final String keyColumn = trlInfo.getKeyColumnName();
 		final StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append("_Trl (AD_Language,").append(keyColumn).append(", ").append(iColumns)
 				.append(" IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) ")
-				.append("SELECT l.AD_Language,t.").append(keyColumn).append(", ").append(sColumns)
+				.append("SELECT l.").append(I_AD_Language.COLUMNNAME_AD_Language).append(", t.").append(keyColumn).append(", ").append(sColumns)
 				.append(" 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy ")
 				.append("FROM AD_Language l, ").append(tableName).append(" t ")
-				.append("WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.").append(keyColumn).append("=").append(recordId)
-				.append(" AND NOT EXISTS (SELECT 1 FROM ").append(tableName).append("_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.").append(keyColumn).append("=t.").append(keyColumn).append(")");
+				.append("WHERE l."
+						+ I_AD_Language.COLUMNNAME_IsActive
+						+ "='Y'");
+
+		// This will change in #4672
+		if (I_AD_Element.Table_Name.equals(tableName))
+		{
+			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y')");
+		}
+		else
+		{
+			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' AND l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='N')");
+		}
+
+		sql.append(" AND t.")
+				.append(keyColumn).append("=").append(recordId)
+				.append(" AND NOT EXISTS (SELECT 1 FROM ").append(tableName).append("_Trl tt WHERE tt.AD_Language=l."
+						+ I_AD_Language.COLUMNNAME_AD_Language
+						+ " AND tt.").append(keyColumn).append("=t.").append(keyColumn).append(")");
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Inserted {} translation records for {}", no, this);
 		return no > 0;

@@ -14,7 +14,7 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1985262352L;
+	private static final long serialVersionUID = -736337435L;
 
     /** Standard Constructor */
     public X_AD_Menu (Properties ctx, int AD_Menu_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
       super (ctx, AD_Menu_ID, trxName);
       /** if (AD_Menu_ID == 0)
         {
+			setAD_Element_ID (0);
 			setAD_Menu_ID (0);
 			setEntityType (null); // U
 			setInternalName (null);
@@ -87,6 +88,43 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	public java.lang.String getAction () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Action);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Element getAD_Element() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class);
+	}
+
+	@Override
+	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class, AD_Element);
+	}
+
+	/** Set System-Element.
+		@param AD_Element_ID 
+		Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	  */
+	@Override
+	public void setAD_Element_ID (int AD_Element_ID)
+	{
+		if (AD_Element_ID < 1) 
+			set_Value (COLUMNNAME_AD_Element_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Element_ID, Integer.valueOf(AD_Element_ID));
+	}
+
+	/** Get System-Element.
+		@return Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	  */
+	@Override
+	public int getAD_Element_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -515,18 +553,6 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
-
-//	@Override
-//	public de.metas.ui.web.base.model.I_WEBUI_Board getWEBUI_Board() throws RuntimeException
-//	{
-//		return get_ValueAsPO(COLUMNNAME_WEBUI_Board_ID, de.metas.ui.web.base.model.I_WEBUI_Board.class);
-//	}
-//
-//	@Override
-//	public void setWEBUI_Board(de.metas.ui.web.base.model.I_WEBUI_Board WEBUI_Board)
-//	{
-//		set_ValueFromPO(COLUMNNAME_WEBUI_Board_ID, de.metas.ui.web.base.model.I_WEBUI_Board.class, WEBUI_Board);
-//	}
 
 	/** Set Board.
 		@param WEBUI_Board_ID Board	  */

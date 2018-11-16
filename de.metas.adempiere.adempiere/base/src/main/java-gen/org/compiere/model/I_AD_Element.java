@@ -119,6 +119,31 @@ public interface I_AD_Element
     public static final String COLUMNNAME_ColumnName = "ColumnName";
 
 	/**
+	 * Set Speicherwarnung.
+	 * Warnung, die beim Speichern angezeigt wird
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCommitWarning (java.lang.String CommitWarning);
+
+	/**
+	 * Get Speicherwarnung.
+	 * Warnung, die beim Speichern angezeigt wird
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCommitWarning();
+
+    /** Column definition for CommitWarning */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_CommitWarning = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "CommitWarning", null);
+    /** Column name CommitWarning */
+    public static final String COLUMNNAME_CommitWarning = "CommitWarning";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -427,6 +452,75 @@ public interface I_AD_Element
     public static final org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_User>(I_AD_Element.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Browse name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_NameBrowse (java.lang.String WEBUI_NameBrowse);
+
+	/**
+	 * Get Browse name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWEBUI_NameBrowse();
+
+    /** Column definition for WEBUI_NameBrowse */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_WEBUI_NameBrowse = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "WEBUI_NameBrowse", null);
+    /** Column name WEBUI_NameBrowse */
+    public static final String COLUMNNAME_WEBUI_NameBrowse = "WEBUI_NameBrowse";
+
+	/**
+	 * Set New record name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_NameNew (java.lang.String WEBUI_NameNew);
+
+	/**
+	 * Get New record name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWEBUI_NameNew();
+
+    /** Column definition for WEBUI_NameNew */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_WEBUI_NameNew = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "WEBUI_NameNew", null);
+    /** Column name WEBUI_NameNew */
+    public static final String COLUMNNAME_WEBUI_NameNew = "WEBUI_NameNew";
+
+	/**
+	 * Set New record name (breadcrumb).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_NameNewBreadcrumb (java.lang.String WEBUI_NameNewBreadcrumb);
+
+	/**
+	 * Get New record name (breadcrumb).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWEBUI_NameNewBreadcrumb();
+
+    /** Column definition for WEBUI_NameNewBreadcrumb */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_WEBUI_NameNewBreadcrumb = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "WEBUI_NameNewBreadcrumb", null);
+    /** Column name WEBUI_NameNewBreadcrumb */
+    public static final String COLUMNNAME_WEBUI_NameNewBreadcrumb = "WEBUI_NameNewBreadcrumb";
 
 	/**
 	 * Set Widget size.
