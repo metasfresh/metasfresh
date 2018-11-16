@@ -6,12 +6,12 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.MAttributeSetInstance;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -34,9 +34,9 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.util.Services;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -79,7 +79,7 @@ public class ASIRepository
 
 	public ASIDocument createNewFrom(final JSONCreateASIRequest request)
 	{
-		final ASIEditingInfo info = createASIEditingInfo(request);
+		final WebuiASIEditingInfo info = createWebuiASIEditingInfo(request);
 
 		//
 		// Get the ASI descriptor
@@ -93,10 +93,10 @@ public class ASIRepository
 
 		//
 		// If we have a template ASI, populate the ASI document from it
-		final MAttributeSetInstance templateASI = info.getM_AttributeSetInstance();
-		if (templateASI != null)
+		final AttributeSetInstanceId templateAsiId = info.getAttributeSetInstanceId();
+		if (templateAsiId.isRegular())
 		{
-			for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(templateASI))
+			for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(templateAsiId))
 			{
 				loadASIDocumentField(asiDocData, fromAI);
 			}
@@ -105,7 +105,7 @@ public class ASIRepository
 		//
 		// Validate, log and add the new ASI document to our index
 		asiDocData.checkAndGetValidStatus();
-		logger.trace("Created from ASI={}: {}", templateASI, asiDocData);
+		logger.trace("Created from ASI={}: {}", templateAsiId, asiDocData);
 
 		final ASIDocument asiDoc = new ASIDocument(asiDescriptor, asiDocData);
 		commit(asiDoc);
@@ -128,7 +128,7 @@ public class ASIRepository
 			throw new EntityNotFoundException("ASI " + attributeSetInstanceId);
 		}
 
-		final ASIEditingInfo info = ASIEditingInfo.readonlyASI(attributeSetInstanceId);
+		final WebuiASIEditingInfo info = WebuiASIEditingInfo.readonlyASI(attributeSetInstanceId);
 
 		//
 		// Get the ASI descriptor
@@ -142,8 +142,8 @@ public class ASIRepository
 
 		//
 		// If we have a template ASI, populate the ASI document from it
-		final MAttributeSetInstance templateASI = info.getM_AttributeSetInstance();
-		for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(templateASI))
+		final AttributeSetInstanceId templateAsiId = info.getAttributeSetInstanceId();
+		for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(templateAsiId))
 		{
 			loadASIDocumentField(asiDocData, fromAI);
 		}
@@ -151,49 +151,52 @@ public class ASIRepository
 		//
 		// Validate, log and add the new ASI document to our index
 		asiDocData.checkAndGetValidStatus();
-		logger.trace("Created from ASI={}: {}", templateASI, asiDocData);
+		logger.trace("Created from ASI={}: {}", templateAsiId, asiDocData);
 
 		final ASIDocument asiDoc = new ASIDocument(asiDescriptor, asiDocData);
 		return asiDoc.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 	}
 
-	private ASIEditingInfo createASIEditingInfo(final JSONCreateASIRequest request)
+	private WebuiASIEditingInfo createWebuiASIEditingInfo(final JSONCreateASIRequest request)
 	{
-		final DocumentPath documentPath = request.getDocumentPath();
+		final DocumentPath contextDocumentPath = request.getContextDocumentPath();
 		final AttributeSetInstanceId attributeSetInstanceId = request.getTemplateId();
 
-		if (documentPath.getDocumentType() == DocumentType.Window)
+		if (contextDocumentPath.getDocumentType() == DocumentType.Window)
 		{
 			return documentsCollection.forDocumentReadonly(
-					documentPath,
-					document -> createASIEditingInfoFromDocument(document, attributeSetInstanceId));
+					contextDocumentPath,
+					contextDocument -> createWebuiASIEditingInfo(contextDocument, attributeSetInstanceId));
 		}
-		else if (documentPath.getDocumentType() == DocumentType.Process)
+		else if (contextDocumentPath.getDocumentType() == DocumentType.Process)
 		{
-			return ASIEditingInfo.processParameterASI(attributeSetInstanceId);
+			return WebuiASIEditingInfo.processParameterASI(attributeSetInstanceId, contextDocumentPath);
 		}
 		else
 		{
-			throw new IllegalStateException("Cannot create ASI editing info from " + documentPath);
+			throw new AdempiereException("Cannot create ASI editing info from " + contextDocumentPath);
 		}
 	}
 
-	private static ASIEditingInfo createASIEditingInfoFromDocument(
-			final Document document,
+	private static WebuiASIEditingInfo createWebuiASIEditingInfo(
+			final Document contextDocument,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1));
-		final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
-		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
+		final ProductId productId = ProductId.ofRepoIdOrNull(contextDocument.asEvaluatee().get_ValueAsInt("M_Product_ID", -1));
+		final SOTrx soTrx = SOTrx.ofBoolean(contextDocument.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true));
 
-		final String callerTableName = document.getEntityDescriptor().getTableNameOrNull();
+		final String callerTableName = contextDocument.getEntityDescriptor().getTableNameOrNull();
 		final int callerColumnId = -1; // FIXME implement
-		return ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, soTrx);
+		final ASIEditingInfo info = ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, soTrx);
+
+		return WebuiASIEditingInfo.builder(info)
+				.contextDocumentPath(contextDocument.getDocumentPath())
+				.build();
 	}
 
 	public ASILayout getLayout(final DocumentId asiDocId)
 	{
-		return forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getLayout());
+		return forASIDocumentReadonly(asiDocId, ASIDocument::getLayout);
 	}
 
 	private ASIDocument getASIDocumentNoLock(final DocumentId asiDocId)
@@ -226,7 +229,9 @@ public class ASIRepository
 	{
 		try (final IAutoCloseable readLock = getASIDocumentNoLock(asiDocId).lockForReading())
 		{
-			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
+			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId)
+					.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
+					.bindContextDocumentIfPossible(documentsCollection);
 			return processor.apply(asiDoc);
 		}
 	}
@@ -235,7 +240,10 @@ public class ASIRepository
 	{
 		try (final IAutoCloseable readLock = getASIDocumentNoLock(asiDocId).lockForWriting())
 		{
-			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId).copy(CopyMode.CheckOutWritable, changesCollector);
+			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId)
+					.copy(CopyMode.CheckOutWritable, changesCollector)
+					.bindContextDocumentIfPossible(documentsCollection);
+
 			final R result = processor.apply(asiDoc);
 
 			Services.get(ITrxManager.class)
