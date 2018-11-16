@@ -1,16 +1,15 @@
-package de.metas.ordercandidate.rest;
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions;
 
-import java.io.IOException;
-import java.util.List;
+import lombok.NonNull;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.multipart.MultipartFile;
-
-import de.metas.util.web.MetasfreshRestAPIConstants;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * de.metas.ordercandidate.rest-api-impl
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -30,19 +29,12 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
  * #L%
  */
 
-public interface OrderCandidatesRestEndpoint
+@ControllerAdvice("de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions.RestResponseEntityExceptionHandler")
+public class XMLInvoiceResponseEntityExceptionHandler
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/order/candidates";
-
-	String PATH_BULK = "/bulk";
-
-	ResponseEntity<JsonOLCand> createOrderLineCandidate(JsonOLCandCreateRequest request);
-
-	ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidates(JsonOLCandCreateBulkRequest bulkRequest);
-
-	ResponseEntity<JsonAttachment> attachFile(
-			String dataSourceName,
-			String externalReference,
-			List<String> tagKeyValuePairs,
-			MultipartFile file) throws IOException;
+	@ExceptionHandler(InvalidXMLException.class)
+	public ResponseEntity<String> handleBPartnerInfoNotFoundException(@NonNull final InvalidXMLException e)
+	{
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+	}
 }

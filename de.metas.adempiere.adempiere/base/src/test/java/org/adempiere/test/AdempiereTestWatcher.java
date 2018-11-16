@@ -41,7 +41,7 @@ import de.metas.util.Check;
  *
  * <pre>
  * &#64;Rule
- * public final {@link TestWatcher} testWatcher = new {@link AdempiereTestWatcher}()
+ * public final {@link TestWatcher} testWatcher = new {@link AdempiereTestWatcher}();
  * </pre>
  */
 public class AdempiereTestWatcher extends TestWatcher
@@ -98,9 +98,9 @@ public class AdempiereTestWatcher extends TestWatcher
 
 	/**
 	 * Put given variable to context.
-	 * 
+	 *
 	 * In case the test will fail, all context variables will be printed to console.
-	 * 
+	 *
 	 * @param name
 	 * @param value
 	 */
@@ -112,7 +112,7 @@ public class AdempiereTestWatcher extends TestWatcher
 
 	/**
 	 * Convenient variant for {@link #putContext(String, Object)} which considers value's class name as the context variable <code>name</code>.
-	 * 
+	 *
 	 * @param value value, not null.
 	 */
 	public void putContext(final Object value)

@@ -9,9 +9,10 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.OrgId;
-import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,24 +72,30 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 	@PostMapping
 	@Override
-	public JsonOLCand createOrderLineCandidate(@RequestBody final JsonOLCandCreateRequest request)
+	public ResponseEntity<JsonOLCand> createOrderLineCandidate(@RequestBody final JsonOLCandCreateRequest request)
 	{
-		return createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request)).getSingleResult();
+		final ResponseEntity<JsonOLCandCreateBulkResponse> //
+		bulkResponse = createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request));
+
+		final JsonOLCand result = bulkResponse.getBody().getSingleResult();
+		return new ResponseEntity<>(result, HttpStatus.CREATED);
 	}
 
 	@PostMapping(PATH_BULK)
 	@Override
-
-	public JsonOLCandCreateBulkResponse createOrderLineCandidates(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
+	public ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidates(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
 		bulkRequest.validate();
 
-		final MasterdataProvider masterdataProvider = MasterdataProvider.createInstance(Env.getCtx());
+		final MasterdataProvider masterdataProvider = MasterdataProvider.createInstance();
 
 		createOrUpdateMasterdata(bulkRequest, masterdataProvider);
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(() -> creatOrdersInTrx(bulkRequest, masterdataProvider));
+		final JsonOLCandCreateBulkResponse //
+		jsonOLCandCreateBulkResponse = trxManager.call(() -> creatOrdersInTrx(bulkRequest, masterdataProvider));
+
+		return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
 	}
 
 	private void assertCanCreate(
@@ -114,10 +121,12 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
-		masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
+		final BPartnerMasterDataProvider bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
+
+		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
+		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
+		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
+		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrdersInTrx(
@@ -151,7 +160,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 	@PostMapping("/{dataSourceName}/{externalReference}/attachments")
 	@Override
-	public JsonAttachment attachFile(
+	public ResponseEntity<JsonAttachment> attachFile(
 			@PathVariable("dataSourceName") final String dataSourceName,
 
 			@ApiParam(value = "External reference of the order line candidates to which the given file shall be attached", allowEmptyValue = false) //
@@ -184,10 +193,11 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 		final AttachmentEntry attachmentEntry = olCandsService.addAttachment(query, request);
 
-		return toJsonAttachment(
+		final JsonAttachment jsonAttachment = toJsonAttachment(
 				externalReference,
 				dataSourceName,
 				attachmentEntry);
+		return new ResponseEntity<>(jsonAttachment, HttpStatus.CREATED);
 	}
 
 	@VisibleForTesting

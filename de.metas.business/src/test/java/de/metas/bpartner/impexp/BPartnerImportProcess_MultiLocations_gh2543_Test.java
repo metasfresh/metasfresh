@@ -10,6 +10,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.UserRepository;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_I_BPartner;
@@ -115,7 +116,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		final I_C_BPartner firstBPartner = ibpartners.get(0).getC_BPartner();
 		//
 		// check user
-		final List<de.metas.adempiere.model.I_AD_User> fusers = Services.get(IBPartnerDAO.class).retrieveContacts(firstBPartner);
+		final List<I_AD_User> fusers = Services.get(IBPartnerDAO.class).retrieveContacts(firstBPartner);
 		assertThat(fusers).isNotEmpty();
 		assertThat(fusers).hasSize(2);
 		fusers.forEach(user -> {
@@ -141,7 +142,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
 		//
 		// check user
-		final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(secondBPartner);
+		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(secondBPartner);
 		assertThat(users).isNotEmpty();
 		assertThat(users).hasSize(1);
 		users.forEach(user -> {
@@ -167,7 +168,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		final I_C_BPartner thirdBPartner = ibpartners.get(3).getC_BPartner();
 		//
 		// check user
-		final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(thirdBPartner);
+		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(thirdBPartner);
 		assertThat(users).isNotEmpty();
 		assertThat(users).hasSize(1);
 		users.forEach(user -> {

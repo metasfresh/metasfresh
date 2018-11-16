@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,7 +69,7 @@ public class HealthcareChPdfAttachmentController
 			+ TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF + "=true, so the PDF will eventually be appended to the invoice's PDF\n"
 			+ ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE + "=externalReference, so the base64-encoded PDF will eventually included in the invoice's forum-datenaustausch.ch-XML")
 	// TODO only allow PDF
-	public JsonAttachment attachPdfFile(
+	public ResponseEntity<JsonAttachment> attachPdfFile(
 
 			@ApiParam(value = "Reference string that was returned by the invoice-rest-controller", allowEmptyValue = false) //
 			@PathVariable("externalReference") final String externalReference,

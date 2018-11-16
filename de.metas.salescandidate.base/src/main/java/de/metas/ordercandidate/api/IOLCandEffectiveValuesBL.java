@@ -29,6 +29,9 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.ISingletonService;
 
@@ -49,13 +52,12 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>C_BPartner_ID</code></li>
 	 * </ul>
 	 *
-	 * @param olCand
-	 * @return
+	 * @return id or {@code null}.
 	 */
-	int getC_BPartner_Effective_ID(I_C_OLCand olCand);
+	BPartnerId getBPartnerEffectiveId(I_C_OLCand olCand);
 
 	/**
-	 * Like {@link #getC_BPartner_Effective_ID(I_C_OLCand)}, but returns the actual partner.
+	 * Like {@link #getBPartnerEffectiveId(I_C_OLCand)}, but returns the actual partner.
 	 *
 	 * @param olCand
 	 * @return
@@ -68,14 +70,11 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>C_BP_Location_Override_ID</code></li>
 	 * <li><code>C_BP_Location_ID</code></li>
 	 * </ul>
-	 *
-	 * @param olCand
-	 * @return
 	 */
-	int getC_BP_Location_Effective_ID(I_C_OLCand olCand);
+	BPartnerLocationId getLocationEffectiveId(I_C_OLCand olCand);
 
 	/**
-	 * The effective location set in the olcand. See {@link #getC_BP_Location_Effective_ID(I_C_OLCand)}.
+	 * The effective location set in the olcand. See {@link #getLocationEffectiveId(I_C_OLCand)}.
 	 * <p>
 	 * Note: Do not use the getter from the generated interface because the C_BPartner_Location_Effective column is an sql one
 	 *
@@ -89,11 +88,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <ul>
 	 * <li><code>AD_User_ID</code></li>
 	 * </ul>
-	 *
-	 * @param olCand
-	 * @return
 	 */
-	int getAD_User_Effective_ID(I_C_OLCand olCand);
+	BPartnerContactId getContactEffectiveId(I_C_OLCand olCand);
 
 	/**
 	 * Returns, falling back to the next if not set:
@@ -117,16 +113,16 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * </ul>
 	 *
 	 * @param olCand
-	 * @return
+	 * @return id or {@code null}.
 	 */
-	int getBill_BPartner_Effective_ID(I_C_OLCand olCand);
+	BPartnerId getBillBPartnerEffectiveId(I_C_OLCand olCand);
 
 	/**
 	 *
 	 * @param olCand
 	 * @param clazz
 	 * @return
-	 * @see #getBill_BPartner_Effective_ID(I_C_OLCand)
+	 * @see #getBillBPartnerEffectiveId(I_C_OLCand)
 	 */
 	<T extends I_C_BPartner> T getBill_BPartner_Effective(I_C_OLCand olCand, Class<T> clazz);
 
@@ -137,11 +133,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>C_BP_Location_Override_ID</code></li>
 	 * <li><code>C_BPartner_Location_ID</code></li>
 	 * </ul>
-	 *
-	 * @param olCand
-	 * @return
 	 */
-	int getBill_Location_Effective_ID(I_C_OLCand olCand);
+	BPartnerLocationId getBillLocationEffectiveId(I_C_OLCand olCand);
 
 	/**
 	 * See #getBill_Location_Effective_ID
@@ -157,11 +150,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>Bill_User_ID</code></li>
 	 * <li><code>AD_User_ID</code></li>
 	 * </ul>
-	 *
-	 * @param olCand
-	 * @return
 	 */
-	int getBill_User_Effective_ID(I_C_OLCand olCand);
+	BPartnerContactId getBillContactEffectiveId(I_C_OLCand olCand);
 
 	/**
 	 * Returns, falling back to the next if not set:
@@ -174,10 +164,9 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 *
 	 * #100 FRESH-435: even if the (effective) DropShip_BPartner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0
 	 *
-	 * @param olCand
-	 * @return
+	 * @return id of {@code null}.
 	 */
-	int getDropShip_BPartner_Effective_ID(I_C_OLCand olCand);
+	BPartnerId getDropShipBPartnerEffectiveId(I_C_OLCand olCand);
 
 	/**
 	 * Returns, falling back to the next if not set:
@@ -189,14 +178,11 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * </ul>
 	 *
 	 * #100 FRESH-435: even if the (effective) DropShip_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
-	 *
-	 * @param olCand
-	 * @return
 	 */
-	int getDropShip_Location_Effective_ID(I_C_OLCand olCand);
+	BPartnerLocationId getDropShipLocationEffectiveId(I_C_OLCand olCand);
 
 	/**
-	 * See {@link #getDropShip_Location_Effective_ID(I_C_OLCand)}.
+	 * See {@link #getDropShipLocationEffectiveId(I_C_OLCand)}.
 	 *
 	 * @param olCand
 	 * @return
@@ -208,11 +194,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <ul>
 	 * <li><code>AD_User_ID</code></li>
 	 * </ul>
-	 *
-	 * @param olCand
-	 * @return
 	 */
-	int getDropShip_User_Effective_ID(I_C_OLCand olCand);
+	BPartnerContactId getDropShipContactEffectiveId(I_C_OLCand olCand);
 
 	/**
 	 * Returns, falling back to the next if not set:
@@ -263,12 +246,12 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * #100 FRESH-435: even if the (effective) HandOver_Partner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0.
 	 *
 	 * @param olCand
-	 * @return
+	 * @return id or {@code null}.
 	 */
-	int getHandOver_Partner_Effective_ID(I_C_OLCand olCand);
+	BPartnerId getHandOverPartnerEffectiveId(I_C_OLCand olCand);
 
 	/**
-	 * Like {@link #getHandOver_Partner_Effective_ID(I_C_OLCand)}, but returns the actual partner.
+	 * Like {@link #getHandOverPartnerEffectiveId(I_C_OLCand)}, but returns the actual partner.
 	 *
 	 * @param olCand
 	 * @return
@@ -291,10 +274,10 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * @return
 	 */
 
-	int getHandOver_Location_Effective_ID(I_C_OLCand olCand);
+	BPartnerLocationId getHandOverLocationEffectiveId(I_C_OLCand olCand);
 
 	/**
-	 * Like {@link #getHandOver_Location_Effective_ID(I_C_OLCand)}, but returns the actual location.
+	 * Like {@link #getHandOverLocationEffectiveId(I_C_OLCand)}, but returns the actual location.
 	 *
 	 * @param olCand
 	 * @return

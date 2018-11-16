@@ -6,7 +6,9 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.compiere.util.Util.coalesce;
 
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
@@ -15,7 +17,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.StringJoiner;
 
 import javax.xml.bind.JAXBElement;
 
@@ -23,6 +24,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +37,7 @@ import de.metas.ordercandidate.rest.JsonBPartner;
 import de.metas.ordercandidate.rest.JsonBPartner.JsonBPartnerBuilder;
 import de.metas.ordercandidate.rest.JsonBPartnerContact;
 import de.metas.ordercandidate.rest.JsonBPartnerInfo;
+import de.metas.ordercandidate.rest.JsonBPartnerInfo.JsonBPartnerInfoBuilder;
 import de.metas.ordercandidate.rest.JsonBPartnerLocation;
 import de.metas.ordercandidate.rest.JsonBPartnerLocation.JsonBPartnerLocationBuilder;
 import de.metas.ordercandidate.rest.JsonDocTypeInfo;
@@ -47,9 +50,11 @@ import de.metas.ordercandidate.rest.JsonOrganization;
 import de.metas.ordercandidate.rest.JsonProductInfo;
 import de.metas.ordercandidate.rest.JsonProductInfo.Type;
 import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
+import de.metas.ordercandidate.rest.SyncAdvise;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions.InvalidXMLException;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
@@ -60,7 +65,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.OnlineAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayantType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayloadType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PersonType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PostalAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDRGType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDrugType;
@@ -107,18 +111,32 @@ public class XmlToOLCandsService
 		this.orderCandidatesRestEndpoint = orderCandidatesRestEndpoint;
 	}
 
-	public JsonAttachment createOLCands(@NonNull final MultipartFile xmlInvoiceFile)
+	public JsonAttachment createOLCands(@NonNull final CreateOLCandsRequest createOLCandsRequest)
 	{
+		final MultipartFile xmlInvoiceFile = createOLCandsRequest.getXmlInvoiceFile();
+
 		final RequestType xmlInvoice = unmarshal(xmlInvoiceFile);
 
-		final JsonOLCandCreateBulkRequest jsonOLCandCreateBulkRequest = createJsonOLCandCreateBulkRequest(xmlInvoice);
+		final JsonOLCandCreateBulkRequest jsonOLCandCreateBulkRequest = createJsonOLCandCreateBulkRequest(
+				xmlInvoice,
+				createOLCandsRequest.getSyncAdvise());
 
-		final JsonOLCandCreateBulkResponse orderCandidates = orderCandidatesRestEndpoint.createOrderLineCandidates(jsonOLCandCreateBulkRequest);
+		final ResponseEntity<JsonOLCandCreateBulkResponse> orderCandidates = orderCandidatesRestEndpoint.createOrderLineCandidates(jsonOLCandCreateBulkRequest);
 
-		final String poReference = CollectionUtils.extractSingleElement(orderCandidates.getResult(), JsonOLCand::getPoReference);
-		final JsonAttachment result = attachXmlToOLCandidates(xmlInvoiceFile, poReference);
+		final String poReference = CollectionUtils.extractSingleElement(
+				orderCandidates.getBody().getResult(),
+				JsonOLCand::getPoReference);
 
-		return result;
+		final ResponseEntity<JsonAttachment> result = attachXmlToOLCandidates(xmlInvoiceFile, poReference);
+		return result.getBody();
+	}
+
+	@Value
+	@Builder
+	public static class CreateOLCandsRequest
+	{
+		MultipartFile xmlInvoiceFile;
+		SyncAdvise syncAdvise;
 	}
 
 	private static RequestType unmarshal(@NonNull final MultipartFile file)
@@ -144,7 +162,7 @@ public class XmlToOLCandsService
 		}
 	}
 
-	private JsonAttachment attachXmlToOLCandidates(
+	private ResponseEntity<JsonAttachment> attachXmlToOLCandidates(
 			@NonNull final MultipartFile xmlInvoiceFile,
 			@NonNull final String externalReference)
 	{
@@ -184,18 +202,23 @@ public class XmlToOLCandsService
 		private static final long serialVersionUID = 2013021164753485741L;
 	}
 
-	private JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(@NonNull final RequestType xmlInvoice)
+	private JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
+			@NonNull final RequestType xmlInvoice,
+			@NonNull final SyncAdvise syncAdvise)
 	{
 		final JsonOLCandCreateRequestBuilder requestBuilder = JsonOLCandCreateRequest
 				.builder()
 				.dataSourceInternalName(RestApiConstants.INPUT_SOURCE_INTERAL_NAME)
 				.dataDestInternalName(InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
-		final List<JsonOLCandCreateRequestBuilder> requestBuilders = insertPayloadIntoBuilders(requestBuilder, xmlInvoice.getPayload());
+		final List<JsonOLCandCreateRequestBuilder> requestBuilders = insertPayloadIntoBuilders(
+				requestBuilder,
+				xmlInvoice.getPayload());
 
 		final ImmutableList<JsonOLCandCreateRequest> requests = requestBuilders
 				.stream()
 				.map(JsonOLCandCreateRequestBuilder::build)
+				.map(r -> r.withBPartnerSyncAdvise(syncAdvise))
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonOLCandCreateBulkRequest
@@ -208,26 +231,49 @@ public class XmlToOLCandsService
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final PayloadType payload)
 	{
+		requestBuilder.poReference(createPOReference(payload));
+
 		insertInoviceIntoBuilder(requestBuilder, payload.getInvoice());
 
 		final ImmutableList<JsonOLCandCreateRequestBuilder> builders = insertBodyIntoBuilders(requestBuilder, payload.getBody());
 		return builders;
 	}
 
+	private String createPOReference(@NonNull final PayloadType payload)
+	{
+
+		final InvoiceType invoice = payload.getInvoice();
+
+		String requestIdToUse = Check.assumeNotEmpty(
+				invoice.getRequestId(),
+				InvalidXMLException.class, "payload/invoice/requestId may not be empty");
+		if (requestIdToUse.startsWith("KV_"))
+		{
+			requestIdToUse = requestIdToUse.substring(3);
+		}
+
+		final BillerAddressType biller;
+
+		final BodyType body = payload.getBody();
+		if (body.getTiersGarant() != null)
+		{
+			biller = body.getTiersGarant().getBiller();
+		}
+		else
+		{
+			biller = body.getTiersPayant().getBiller();
+		}
+
+		final String billerEAN = Check.assumeNotEmpty(
+				biller.getEanParty(),
+				InvalidXMLException.class, "payload/invoice/requestId may not be empty");
+		return billerEAN + "_" + requestIdToUse;
+	}
+
 	private void insertInoviceIntoBuilder(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final InvoiceType invoice)
 	{
-		final String poReference = invoice.getRequestId();
-		if (poReference.startsWith("KV_"))
-		{
-			requestBuilder.poReference(poReference.substring(3));
-		}
-		else
-		{
-			requestBuilder.poReference(poReference);
-		}
-
 		final LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getRequestDate());
 		requestBuilder.dateRequired(dateInvoiced); // this will be dateOrdered and dateDelivered
 		requestBuilder.dateInvoiced(dateInvoiced);
@@ -239,6 +285,7 @@ public class XmlToOLCandsService
 	{
 		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
 		final boolean tiersPayantIsSet = body.getTiersPayant() != null;
+
 		Check.errorUnless(tiersGarantIsSet ^ tiersPayantIsSet,
 				"One of TiersGarant or TiersPayant needs to be provided but not both; tiersGarantIsSet={}; tiersPayantIsSet={} ",
 				tiersGarantIsSet, tiersPayantIsSet);
@@ -343,8 +390,7 @@ public class XmlToOLCandsService
 
 		// final JsonBPartnerContact contact = createJsonBPartnerContact(insurance.getPerson());
 
-		final JsonBPartnerInfo bPartnerInfo = JsonBPartnerInfo
-				.builder()
+		final JsonBPartnerInfo bPartnerInfo = createJsonBPartnerInfoBuilder()
 				// .contact(contact)
 				.bpartner(bPartner)
 				.location(location)
@@ -395,8 +441,7 @@ public class XmlToOLCandsService
 				.email(email)
 				.build();
 
-		final JsonBPartnerInfo bPartnerInfo = JsonBPartnerInfo
-				.builder()
+		final JsonBPartnerInfo bPartnerInfo = createJsonBPartnerInfoBuilder()
 				.bpartner(bPartnerBuilder.build())
 				.contact(contact)
 				.location(location)
@@ -465,13 +510,9 @@ public class XmlToOLCandsService
 		return location;
 	}
 
-	private String createNameString(final PersonType person)
+	private JsonBPartnerInfoBuilder createJsonBPartnerInfoBuilder()
 	{
-		final String name = new StringJoiner(" ")
-				.add(person.getGivenname())
-				.add(person.getFamilyname())
-				.toString();
-		return name;
+		return JsonBPartnerInfo.builder();
 	}
 
 	JsonOLCandCreateRequestBuilder copyBuilder(@NonNull final JsonOLCandCreateRequestBuilder builder)
@@ -592,9 +633,12 @@ public class XmlToOLCandsService
 	{
 		final JsonOLCandCreateRequest request = requestBuilder.build();
 
-		return request.getBpartner().getBpartner().getExternalId()
+		return ""
+				+ request.getPoReference() // probably the "diversest" property
 				+ "_"
-				+ request.getPoReference()
+				+ request.getOrg().getBpartner().getBpartner().getExternalId() // biller
+				+ "_"
+				+ request.getBpartner().getBpartner().getExternalId() // might be that same for different billers
 				+ "_"
 				+ recordId;
 	}

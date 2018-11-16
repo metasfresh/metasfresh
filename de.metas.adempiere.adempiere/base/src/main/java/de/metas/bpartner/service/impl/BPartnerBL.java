@@ -1,5 +1,9 @@
 package de.metas.bpartner.service.impl;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,14 +32,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -47,7 +50,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.bpartner.BPartnerId;
@@ -59,7 +61,6 @@ import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 @Service
 public class BPartnerBL implements IBPartnerBL
