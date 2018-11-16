@@ -28,7 +28,7 @@ Here come the actual release notes:
   * [#4739](https://github.com/metasfresh/metasfresh/issues/4739) Fix context parse errors while using order's product batch entry
     * Fixes product search and add new on orderline for Batch entry.
   * [#4741](https://github.com/metasfresh/metasfresh/issues/4741) Process C_Order_VoidWithRelatedDocsAndRecreate hangs
-    * Improvement of Orde voiding, now reverting the document and related documents too.
+    * Improvement of Order voiding, now reverting the document and related documents too.
   * [#4742](https://github.com/metasfresh/metasfresh/issues/4742) Attachment-Download from BPartner B2C window broken
     * Fixes the download of Attachments from the B2C Business Partner window.
   * [#4743](https://github.com/metasfresh/metasfresh/issues/4743) C_Invoice_CreateExportData async WP processor runs into error with most "normal" invoices
