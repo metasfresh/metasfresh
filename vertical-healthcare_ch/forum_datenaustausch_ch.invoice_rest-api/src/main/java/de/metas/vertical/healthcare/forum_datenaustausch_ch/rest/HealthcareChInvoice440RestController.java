@@ -3,6 +3,8 @@ package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 import lombok.NonNull;
 
 import org.springframework.context.annotation.Conditional;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,7 +55,7 @@ public class HealthcareChInvoice440RestController
 
 	@PostMapping(path = "importInvoiceXML/v440")
 	@ApiOperation(value = "Upload forum-datenaustausch.ch invoice-XML into metasfresh")
-	public JsonAttachment importInvoiceXML(
+	public ResponseEntity<JsonAttachment> importInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
@@ -71,6 +73,7 @@ public class HealthcareChInvoice440RestController
 				.syncAdvise(syncAdvise)
 				.build();
 
-		return xmlToOLCandsService.createOLCands(createOLCandsRequest);
+		final JsonAttachment result = xmlToOLCandsService.createOLCands(createOLCandsRequest);
+		return new ResponseEntity<>(result, HttpStatus.CREATED);
 	}
 }

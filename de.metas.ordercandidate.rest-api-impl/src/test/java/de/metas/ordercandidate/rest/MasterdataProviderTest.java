@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.ordercandidate.rest.SyncAdvise.IfNotExists;
 import de.metas.util.Services;
 import mockit.Mocked;
 
@@ -86,6 +87,7 @@ public class MasterdataProviderTest
 		jsonBPartnerInfo = JsonBPartnerInfo.builder()
 				.bpartner(jsonBPartner)
 				.location(jsonBPartnerLocation)
+				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).build())
 				.build();
 
 		jsonOrganization = JsonOrganization.builder()

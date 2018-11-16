@@ -24,6 +24,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
@@ -120,12 +121,14 @@ public class XmlToOLCandsService
 				xmlInvoice,
 				createOLCandsRequest.getSyncAdvise());
 
-		final JsonOLCandCreateBulkResponse orderCandidates = orderCandidatesRestEndpoint.createOrderLineCandidates(jsonOLCandCreateBulkRequest);
+		final ResponseEntity<JsonOLCandCreateBulkResponse> orderCandidates = orderCandidatesRestEndpoint.createOrderLineCandidates(jsonOLCandCreateBulkRequest);
 
-		final String poReference = CollectionUtils.extractSingleElement(orderCandidates.getResult(), JsonOLCand::getPoReference);
-		final JsonAttachment result = attachXmlToOLCandidates(xmlInvoiceFile, poReference);
+		final String poReference = CollectionUtils.extractSingleElement(
+				orderCandidates.getBody().getResult(),
+				JsonOLCand::getPoReference);
 
-		return result;
+		final ResponseEntity<JsonAttachment> result = attachXmlToOLCandidates(xmlInvoiceFile, poReference);
+		return result.getBody();
 	}
 
 	@Value
@@ -159,7 +162,7 @@ public class XmlToOLCandsService
 		}
 	}
 
-	private JsonAttachment attachXmlToOLCandidates(
+	private ResponseEntity<JsonAttachment> attachXmlToOLCandidates(
 			@NonNull final MultipartFile xmlInvoiceFile,
 			@NonNull final String externalReference)
 	{
