@@ -4,8 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.math.BigDecimal;
-
 /*
  * #%L
  * de.metas.contracts
@@ -197,7 +195,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.update();
 
 		assertVoidedFlatrateTerm(extendedContract);
-		assertInvoiceCandidate(extendedContract);
+		assertNoInvoiceCandidate(extendedContract);
 		assertSubscriptionProgress(extendedContract, 0);
 
 		InterfaceWrapperHelper.refresh(order);
@@ -274,13 +272,10 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}
 
-	private void assertInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
+	private void assertNoInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
 		final List<I_C_Invoice_Candidate> candsForTerm = invoiceCandDAO.retrieveReferencing(flatrateTerm);
-		assertThat(candsForTerm).hasSize(1);
-		final I_C_Invoice_Candidate invoiceCandidate = candsForTerm.get(0);
-		assertThat(invoiceCandidate.getQtyInvoiced()).isEqualByComparingTo(BigDecimal.ZERO);
-		assertThat(invoiceCandidate.getProcessed_Override()).isEqualToIgnoringCase("Y");
+		assertThat(candsForTerm).isEmpty();
 	}
 
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm, final int expected)

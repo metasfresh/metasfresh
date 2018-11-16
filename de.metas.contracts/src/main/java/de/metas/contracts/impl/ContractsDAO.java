@@ -58,7 +58,7 @@ public class ContractsDAO implements IContractsDAO
 			@NonNull String typeConditions,
 			final int limit)
 	{
-		return createTermWithMissingCandidateQueryBuilder(typeConditions)
+		return createTermWithMissingCandidateQueryBuilder(typeConditions, false /* ignoreDateFilters*/ )
 				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
 				.setLimit(limit)
 				.create()
@@ -66,7 +66,7 @@ public class ContractsDAO implements IContractsDAO
 	}
 
 	@Override
-	public IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(@NonNull String typeConditions)
+	public IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(@NonNull String typeConditions, final boolean ignoreDateFilter)
 	{
 		final Timestamp now = SystemTime.asTimestamp();
 
@@ -80,30 +80,30 @@ public class ContractsDAO implements IContractsDAO
 
 				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, invoiceCandidatesThatReferenceTerms())
 
-				.filter(relevantTermDateAfterTimestamp(now));
+		.filter(relevantTermDateBeforeTimestamp(now));
 	}
 
-	private ICompositeQueryFilter<I_C_Flatrate_Term> relevantTermDateAfterTimestamp(final Timestamp timestamp)
+	private ICompositeQueryFilter<I_C_Flatrate_Term> relevantTermDateBeforeTimestamp(final Timestamp timestamp)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final ICompositeQueryFilter<I_C_Flatrate_Term> termHasStartDateAfterTimestamp = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+		final ICompositeQueryFilter<I_C_Flatrate_Term> termHasStartDateBeforeTimestamp = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_C_Flatrate_Term.COLUMN_StartDate, Operator.LESS_OR_EQUAL, timestamp);
 
-		final IQuery<I_C_Flatrate_Term> noticeDateAfterTimestamp = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+		final IQuery<I_C_Flatrate_Term> noticeDateBeforeTimestamp = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, Operator.LESS_OR_EQUAL, timestamp)
 				.create();
 
-		final ICompositeQueryFilter<I_C_Flatrate_Term> preceedingTermHasNoticeDateAfterTimestamp = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+		final ICompositeQueryFilter<I_C_Flatrate_Term> preceedingTermHasNoticeDateBeforeTimestamp = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Flatrate_Term.COLUMN_C_FlatrateTerm_Next_ID, noticeDateAfterTimestamp);
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Flatrate_Term.COLUMN_C_FlatrateTerm_Next_ID, noticeDateBeforeTimestamp);
 
 		return queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
 				.setJoinOr()
-				.addFilter(termHasStartDateAfterTimestamp)
-				.addFilter(preceedingTermHasNoticeDateAfterTimestamp);
+				.addFilter(termHasStartDateBeforeTimestamp)
+				.addFilter(preceedingTermHasNoticeDateBeforeTimestamp);
 	}
 
 	private IQuery<I_C_Flatrate_Conditions> flatrateConditionsThatRequireInvoicing()

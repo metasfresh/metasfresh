@@ -44,6 +44,12 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 						ConditionTypeSpecificInvoiceCandidateHandler::getConditionsType);
 	}
 
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(final Object flatrateTermObject)
+	{
+		return isMissingInvoiceCandidate(flatrateTermObject);
+	}
+
 	/**
 	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have an invoice candidate referencing them.
 	 */

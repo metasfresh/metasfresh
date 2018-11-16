@@ -63,7 +63,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 	public boolean isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
 		return Services.get(IContractsDAO.class)
-				.createTermWithMissingCandidateQueryBuilder(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription)
+				.createTermWithMissingCandidateQueryBuilder(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, true /* ignoreDateFilters*/)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTerm.getC_Flatrate_Term_ID())
 				.create()
 				.match();

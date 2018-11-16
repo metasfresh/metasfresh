@@ -65,6 +65,6 @@ public interface IContractsDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId);
 
-	IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(String typeConditions);
+	IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(String typeConditions, boolean ignoreDateFilters);
 
 }
