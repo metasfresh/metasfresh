@@ -25,18 +25,23 @@ import lombok.NonNull;
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  *
  */
+
 public class ArrayExcelExporter extends AbstractExcelExporter
 {
 	private Properties m_ctx = null;
 	private List<List<Object>> m_data = null;
+	private List<String> m_columnHeaders = null;
 
 	@Builder
 	private ArrayExcelExporter(
 			@NonNull final Properties ctx,
-			@NonNull final List<List<Object>> data)
+			@NonNull final List<List<Object>> data,
+			final List<String> columnHeaders
+			)
 	{
 		m_ctx = ctx;
 		m_data = data;
+		m_columnHeaders = columnHeaders;
 	}
 
 	@Override
@@ -62,8 +67,16 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	@Override
 	public String getHeaderName(final int col)
 	{
-		final Object headerNameObj = m_data.get(0).get(col);
-		final String headerName = headerNameObj != null ? headerNameObj.toString() : null;
+		String headerName;
+		if (m_columnHeaders == null || m_columnHeaders.isEmpty())
+		{
+			final Object headerNameObj = m_data.get(0).get(col);
+			headerName = headerNameObj != null ? headerNameObj.toString() : null;
+		}
+		else
+		{
+			headerName = m_columnHeaders.get(col);
+		}
 
 		final String adLanguage = getLanguage().getAD_Language();
 		return msgBL.translatable(headerName).translate(adLanguage);
