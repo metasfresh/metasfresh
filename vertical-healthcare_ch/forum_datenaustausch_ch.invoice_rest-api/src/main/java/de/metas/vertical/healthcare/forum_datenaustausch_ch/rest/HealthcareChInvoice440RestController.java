@@ -3,6 +3,8 @@ package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 import lombok.NonNull;
 
 import org.springframework.context.annotation.Conditional;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,8 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.metas.ordercandidate.rest.JsonAttachment;
+import de.metas.ordercandidate.rest.SyncAdvise;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.CreateOLCandsRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -50,8 +55,25 @@ public class HealthcareChInvoice440RestController
 
 	@PostMapping(path = "importInvoiceXML/v440")
 	@ApiOperation(value = "Upload forum-datenaustausch.ch invoice-XML into metasfresh")
-	public JsonAttachment importInvoiceXML(@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile)
+	public ResponseEntity<JsonAttachment> importInvoiceXML(
+
+			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
+
+			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifBPartnersExist,
+
+			@ApiParam(allowEmptyValue = true, defaultValue = "FAIL") @RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist)
 	{
-		return xmlToOLCandsService.createOLCands(xmlInvoiceFile);
+		final SyncAdvise syncAdvise = SyncAdvise.builder()
+				.ifExists(ifBPartnersExist)
+				.ifNotExists(ifBPartnersNotExist)
+				.build();
+
+		final CreateOLCandsRequest createOLCandsRequest = CreateOLCandsRequest.builder()
+				.xmlInvoiceFile(xmlInvoiceFile)
+				.syncAdvise(syncAdvise)
+				.build();
+
+		final JsonAttachment result = xmlToOLCandsService.createOLCands(createOLCandsRequest);
+		return new ResponseEntity<>(result, HttpStatus.CREATED);
 	}
 }

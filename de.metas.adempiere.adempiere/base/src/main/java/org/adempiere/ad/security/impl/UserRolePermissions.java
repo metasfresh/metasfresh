@@ -1,5 +1,7 @@
 package org.adempiere.ad.security.impl;
 
+import javax.annotation.concurrent.Immutable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -34,8 +36,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.security.ISecurityRuleEngine;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -141,7 +141,6 @@ class UserRolePermissions implements IUserRolePermissions
 
 	UserRolePermissions(final UserRolePermissionsBuilder builder)
 	{
-		super();
 		name = builder.getName();
 		AD_Role_ID = builder.getAD_Role_ID();
 		includes = builder.getUserRolePermissionsIncluded();
@@ -1191,7 +1190,7 @@ class UserRolePermissions implements IUserRolePermissions
 			{
 				access = null; // legacy
 			}
-			
+
 			if(optionsCtx.getDocTypeId() != null)
 			{
 				Services.get(IRolePermLoggingBL.class).logDocActionAccess(getAD_Role_ID(), optionsCtx.getDocTypeId(), targetDocAction, access);

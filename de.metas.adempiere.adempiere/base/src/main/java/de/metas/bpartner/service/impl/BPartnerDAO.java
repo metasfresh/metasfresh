@@ -49,6 +49,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -63,7 +64,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -71,6 +71,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.lang.SOTrx;
@@ -920,5 +921,33 @@ public class BPartnerDAO implements IBPartnerDAO
 				// not every type has one
 				return null;
 		}
+	}
+
+	private final CCache<String, Optional<BPartnerId>> gln2BPartnerID = CCache.<String, Optional<BPartnerId>> newCache(
+			I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_GLN,
+			10,
+			CCache.EXPIREMINUTES_Never);
+
+	@Override
+	public Optional<BPartnerId> getBPartnerIdByLocatorGln(@NonNull final String gln)
+	{
+		return gln2BPartnerID.getOrLoad(gln, g -> getBPartnerIdByLocatorGln0(g));
+	}
+
+	private Optional<BPartnerId> getBPartnerIdByLocatorGln0(@NonNull final String gln)
+	{
+		final I_C_BPartner_Location bPartnerLocationRecord = Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
+				.create()
+				.firstOnly(I_C_BPartner_Location.class);
+
+		if (bPartnerLocationRecord == null)
+		{
+			return Optional.empty();
+		}
+
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(bPartnerLocationRecord.getC_BPartner_ID());
+		return Optional.ofNullable(bPartnerId);
 	}
 }

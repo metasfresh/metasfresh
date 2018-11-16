@@ -1,10 +1,14 @@
-package org.adempiere.ad.dao;
+package de.metas.ordercandidate.rest.exceptions;
+
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.util.StringUtils;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.ordercandidate.rest-api-impl
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,8 +27,12 @@ package org.adempiere.ad.dao;
  */
 
 
-@FunctionalInterface
-public interface IQueryFilter<T>
+public class MissingPropertyException extends AdempiereException
 {
-	boolean accept(T model);
+	private static final long serialVersionUID = -3485523266695546853L;
+
+	public MissingPropertyException(final String msg, final Object... params)
+	{
+		super(StringUtils.formatMessage(msg, params));
+	}
 }

@@ -1,15 +1,12 @@
-package de.metas.ordercandidate.rest;
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions;
 
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Data;
+import org.adempiere.exceptions.AdempiereException;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -29,15 +26,12 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder(toBuilder = true)
-public final class JsonBPartnerInfo
+public class InvalidXMLException extends AdempiereException implements ExceptionWithOwnHeaderMessage
 {
-	private JsonBPartner bpartner;
-	private JsonBPartnerLocation location;
-	private JsonBPartnerContact contact;
+	private static final long serialVersionUID = 6370799498905180084L;
 
-	@Default
-	private SyncAdvise syncAdvise = SyncAdvise.createDefaultAdvise();
+	public InvalidXMLException(String msg)
+	{
+		super(msg);
+	}
 }

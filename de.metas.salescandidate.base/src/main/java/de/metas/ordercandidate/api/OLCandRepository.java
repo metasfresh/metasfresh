@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.api;
 
+import lombok.NonNull;
+
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -13,13 +15,15 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -75,32 +79,32 @@ public class OLCandRepository
 
 		{
 			final OLCandBPartnerInfo bpartner = request.getBpartner();
-			olCandPO.setC_BPartner_ID(bpartner.getBpartnerId());
-			olCandPO.setC_BPartner_Location_ID(bpartner.getBpartnerLocationId());
-			olCandPO.setAD_User_ID(bpartner.getContactId());
+			olCandPO.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
+			olCandPO.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+			olCandPO.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
 		if (request.getBillBPartner() != null)
 		{
 			OLCandBPartnerInfo bpartner = request.getBillBPartner();
-			olCandPO.setBill_BPartner_ID(bpartner.getBpartnerId());
-			olCandPO.setBill_Location_ID(bpartner.getBpartnerLocationId());
-			olCandPO.setBill_User_ID(bpartner.getContactId());
+			olCandPO.setBill_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
+			olCandPO.setBill_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+			olCandPO.setBill_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
 		if (request.getDropShipBPartner() != null)
 		{
 			final OLCandBPartnerInfo bpartner = request.getDropShipBPartner();
-			olCandPO.setDropShip_BPartner_ID(bpartner.getBpartnerId());
-			olCandPO.setDropShip_Location_ID(bpartner.getBpartnerLocationId());
+			olCandPO.setDropShip_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
+			olCandPO.setDropShip_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
 			// olCandPO.setDropShip_User_ID(bpartner.getContactId());
 		}
 
 		if (request.getHandOverBPartner() != null)
 		{
 			final OLCandBPartnerInfo bpartner = request.getHandOverBPartner();
-			olCandPO.setHandOver_Partner_ID(bpartner.getBpartnerId());
-			olCandPO.setHandOver_Location_ID(bpartner.getBpartnerLocationId());
+			olCandPO.setHandOver_Partner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
+			olCandPO.setHandOver_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
 			// olCandPO.setHandOver_User_ID(bpartner.getContactId());
 		}
 

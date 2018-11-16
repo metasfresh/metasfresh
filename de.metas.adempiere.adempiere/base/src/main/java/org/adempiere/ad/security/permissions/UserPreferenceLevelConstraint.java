@@ -1,5 +1,9 @@
 package org.adempiere.ad.security.permissions;
 
+import lombok.NonNull;
+
+import javax.annotation.concurrent.Immutable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,12 +14,12 @@ package org.adempiere.ad.security.permissions;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,8 +29,6 @@ package org.adempiere.ad.security.permissions;
 
 import java.util.Map;
 
-import javax.annotation.concurrent.Immutable;
-
 import org.compiere.model.X_AD_Role;
 
 import com.google.common.collect.ImmutableMap;
@@ -35,7 +37,7 @@ import de.metas.util.Check;
 
 /**
  * User's preference level.
- * 
+ *
  * @author tsa
  * @see X_AD_Role.PREFERENCETYPE_*
  */
@@ -44,12 +46,12 @@ public final class UserPreferenceLevelConstraint extends Constraint
 {
 	/**
 	 * Gets the preference level constraints for given preference type.
-	 * 
+	 *
 	 * @param preferenceType preference type (see X_AD_Role.PREFERENCETYPE_*)
 	 * @return user preference type constraint; never returns null
 	 * @throws IllegalArgumentException if preference type is not valid
 	 */
-	public static final UserPreferenceLevelConstraint forPreferenceType(final String preferenceType)
+	public static final UserPreferenceLevelConstraint forPreferenceType(@NonNull final String preferenceType)
 	{
 		final UserPreferenceLevelConstraint constraint = preferenceType2constraint.get(preferenceType);
 		if (constraint == null)
@@ -155,7 +157,7 @@ public final class UserPreferenceLevelConstraint extends Constraint
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if this level allows user to view table record change log (i.e. this level is {@link #CLIENT})
 	 */
 	public boolean canViewRecordChangeLog()

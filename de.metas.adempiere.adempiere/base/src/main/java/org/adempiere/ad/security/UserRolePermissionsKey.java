@@ -1,5 +1,8 @@
 package org.adempiere.ad.security;
 
+import lombok.Builder;
+import lombok.NonNull;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
@@ -14,7 +17,6 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.util.time.SystemTime;
-import lombok.Builder;
 
 /*
  * #%L
@@ -47,7 +49,7 @@ public final class UserRolePermissionsKey implements Serializable
 		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, dateMillis);
 	}
 
-	public static final UserRolePermissionsKey of(final Properties ctx)
+	public static final UserRolePermissionsKey of(@NonNull final Properties ctx)
 	{
 		final int adRoleId = Env.getAD_Role_ID(ctx);
 		final int adUserId = Env.getAD_User_ID(ctx);
