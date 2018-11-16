@@ -124,7 +124,7 @@ apply_migration_scripts_from_artifact()
 	echo ""
 
 	local OUTPUT_FILE="metasfresh-dist-dist-sql-only.tar.gz"
-	curl -o $OUTPUT_FILE $url_migration_scripts_package
+	curl -o $OUTPUT_FILE "${url_migration_scripts_package}"
 	
 	tar -xf $OUTPUT_FILE
 	
