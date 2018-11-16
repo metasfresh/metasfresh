@@ -52,12 +52,19 @@ Here come the actual release notes:
   * [#2015](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2015) Make sure `Run QR code action` process can be executed from everywhere
     * Fixes the QR Code action, so that it can be run from any window.
   * [#2029](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2029) View quickActions timing issue
+    * Fixes a timing issue with Quick Actions in WebUI.
   * [#2039](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2039) Uncaught TypeError: e.toISO is not a function
+    * Bugfix for an error in action "create purchase orders".
   * [#2049](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2049) quick actions: not refreshed on selection changed in tablet/mobile mode
+    * Improvement of the Quickaction refreshing in case of changes selections.
   * [#2050](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2050) Views: refresh `quickActions` after `GET /byIds` shall consider current selected rows
+    * Bugfix for the Quickactions in WebUI now considering the selected rows again.
   * [#2054](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2054) Error while trying to add a new sales order line using batch entry
+    * Fixes the Batch entry in Sales Order.
   * [#2060](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2060) Text widgets are not PATCHED anymore
+    * Fixes tha patching of Text widgets. Now these are patched again after change.
   * [#2061](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2061) Cannot untick filter checkbox
+    * Fixes the Filter checkboxes, now it's possible to untick them again.
 
 # metasfresh 5.80
 ## Features
