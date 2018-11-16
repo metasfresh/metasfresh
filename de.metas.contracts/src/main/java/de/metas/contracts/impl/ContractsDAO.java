@@ -58,7 +58,7 @@ public class ContractsDAO implements IContractsDAO
 			@NonNull String typeConditions,
 			final int limit)
 	{
-		return createTermWithMissingCandidateQueryBuilder(typeConditions, false /* ignoreDateFilters*/ )
+		return createTermWithMissingCandidateQueryBuilder(typeConditions, false /* ignoreDateFilters */ )
 				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
 				.setLimit(limit)
 				.create()
@@ -70,7 +70,7 @@ public class ContractsDAO implements IContractsDAO
 	{
 		final Timestamp now = SystemTime.asTimestamp();
 
-		return Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_Flatrate_Term> termWithMissingCandidateQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
@@ -78,9 +78,14 @@ public class ContractsDAO implements IContractsDAO
 
 				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, flatrateConditionsThatRequireInvoicing())
 
-				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, invoiceCandidatesThatReferenceTerms())
+				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, invoiceCandidatesThatReferenceTerms());
 
-		.filter(relevantTermDateBeforeTimestamp(now));
+		if (!ignoreDateFilter)
+		{
+			termWithMissingCandidateQueryBuilder.filter(relevantTermDateBeforeTimestamp(now));
+		}
+
+		return termWithMissingCandidateQueryBuilder;
 	}
 
 	private ICompositeQueryFilter<I_C_Flatrate_Term> relevantTermDateBeforeTimestamp(final Timestamp timestamp)
