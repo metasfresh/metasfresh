@@ -65,7 +65,7 @@ public class ExecuteReportStrategyUtil
 		return processPdfData;
 	}
 
-	public byte[] concatenate(
+	public byte[] concatenatePDF(
 			@NonNull final byte[] documentPdfData,
 			@NonNull final List<PdfDataProvider> additionalDataItemsToAttach)
 	{
