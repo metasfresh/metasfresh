@@ -10,35 +10,32 @@ package de.metas.fresh.ordercheckup.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderDAO;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.model.I_M_Warehouse;
+import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
@@ -47,6 +44,8 @@ import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.fresh.ordercheckup.model.I_C_BPartner;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
 
@@ -85,7 +84,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		//
-		// Iterate all order lines and those lines to corresponding "per Warehouse" reports.
+		// Iterate all order lines and add those lines to corresponding "per workflow" reports.
 		final Map<ArrayKey, OrderCheckupBuilder> reportBuilders = new HashMap<>();
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLine : orderLines)
@@ -100,30 +99,30 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			}
 
 			//
-			// Retrieve the manufacturing warehouse
-			final I_M_Warehouse mfgWarehouse = InterfaceWrapperHelper.create(mfgProductPlanning.getM_Warehouse(), I_M_Warehouse.class);
-			if (mfgWarehouse == null || mfgWarehouse.getM_Warehouse_ID() <= 0)
+			// Retrieve the manufacturing workflow
+			if (mfgProductPlanning.getAD_Workflow_ID() <= 0)
 			{
-				logger.info("Skip order line because no manufacturing warehouse was found for it: {}", orderLine);
+				logger.info("Skip order line because no manufacturing workflow was found for it: {}", orderLine);
 				continue;
 			}
 
 			final I_S_Resource plant = mfgProductPlanning.getS_Resource();
+			final I_AD_Workflow workflow = mfgProductPlanning.getAD_Workflow();
 
 			//
 			// Add order line to per Manufacturing warehouse report
 			{
 				final String documentType = X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse;
-				final ArrayKey reportBuilderKey = Util.mkKey(order.getC_Order_ID(), documentType, mfgWarehouse.getM_Warehouse_ID());
+				final ArrayKey reportBuilderKey = Util.mkKey(order.getC_Order_ID(), documentType, workflow.getAD_User_InCharge_ID());
 				OrderCheckupBuilder reportBuilder = reportBuilders.get(reportBuilderKey);
 				if (reportBuilder == null)
 				{
 					reportBuilder = OrderCheckupBuilder.newBuilder()
 							.setC_Order(order)
 							.setDocumentType(documentType)
-							.setM_Warehouse(mfgWarehouse)
+							.setM_Warehouse(mfgProductPlanning.getM_Warehouse())
 							.setPP_Plant(plant)
-							.setReponsibleUser(mfgWarehouse.getAD_User());
+							.setReponsibleUser(workflow.getAD_User_InCharge());
 					reportBuilders.put(reportBuilderKey, reportBuilder);
 				}
 				reportBuilder.addOrderLine(orderLine);
@@ -158,7 +157,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 								new Object[] {
 										warehouse.getValue() + " - " + warehouse.getName(),
 										SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT }))
-						.throwOrLogWarning(throwIt, logger);
+												.throwOrLogWarning(throwIt, logger);
 			}
 			else
 			{
