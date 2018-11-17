@@ -44,6 +44,12 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 						ConditionTypeSpecificInvoiceCandidateHandler::getConditionsType);
 	}
 
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(final Object flatrateTermObject)
+	{
+		return isMissingInvoiceCandidate(flatrateTermObject);
+	}
+
 	/**
 	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have an invoice candidate referencing them.
 	 */
@@ -65,6 +71,23 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public boolean isMissingInvoiceCandidate(final Object flatrateTermObject)
+	{
+		final I_C_Flatrate_Term flatrateTerm = (I_C_Flatrate_Term)flatrateTermObject;
+
+		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> specificHandlers = conditionTypeSpecificInvoiceCandidateHandlers.values();
+
+		for (final ConditionTypeSpecificInvoiceCandidateHandler specificHandler : specificHandlers)
+		{
+			if (specificHandler.isMissingInvoiceCandidate(flatrateTerm))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -197,4 +220,5 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 				"The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
 				term.getType_Conditions(), term);
 	}
+
 }
