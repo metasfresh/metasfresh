@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
@@ -18,7 +20,6 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -72,7 +73,10 @@ public class DemandCandiateHandler implements CandidateHandler
 	@Override
 	public Collection<CandidateType> getHandeledTypes()
 	{
-		return ImmutableList.of(CandidateType.DEMAND, CandidateType.UNRELATED_DECREASE);
+		return ImmutableList.of(
+				CandidateType.DEMAND,
+				CandidateType.UNRELATED_DECREASE,
+				CandidateType.INVENTORY_DOWN);
 	}
 
 	/**

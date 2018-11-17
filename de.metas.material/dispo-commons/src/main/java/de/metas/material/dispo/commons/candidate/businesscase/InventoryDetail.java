@@ -1,12 +1,17 @@
-package de.metas.material.dispo.commons.candidate;
+package de.metas.material.dispo.commons.candidate.businesscase;
 
-import de.metas.material.dispo.model.X_MD_Candidate;
+import lombok.Builder;
+import lombok.Value;
+
+import java.math.BigDecimal;
+
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 
 /*
  * #%L
  * metasfresh-material-dispo-commons
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,20 +29,24 @@ import de.metas.material.dispo.model.X_MD_Candidate;
  * #L%
  */
 
-
-/**
- * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_TYPE_AD_Reference_ID}
- */
-public enum CandidateType
+@Value
+@Builder
+public class InventoryDetail implements BusinessCaseDetail
 {
-	DEMAND, SUPPLY, STOCK_UP, UNRELATED_INCREASE, UNRELATED_DECREASE,
+	BigDecimal plannedQty;
 
-	/** TODO add Inventar-Verminderung to MD_CANDIDATE_TYPE */
-	INVENTORY_DOWN,
+	int inventoryLineId;
 
-	/** TODO add Inventar-Erhoehung to MD_CANDIDATE_TYPE */
-	INVENTORY_UP,
+	/** {@code MD_Stock_ID} */
+	int stockId;
 
-	/** TODO: remove this type; instead, "just" add an ATP column to candidate. */
-	STOCK
+	/** if there was no inventory, but MD_Stock had to be reset from M_HU_Storage */
+	int resetStockAdPinstanceId;
+
+	@Override
+	public CandidateBusinessCase getCandidateBusinessCase()
+	{
+		return CandidateBusinessCase.INVENTORY;
+	}
+
 }
