@@ -49,8 +49,6 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MStorage;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.eevolution.model.MPPOrder;
-import org.eevolution.model.MPPOrderWorkflow;
 import org.eevolution.model.wrapper.BOMLineWrapper;
 
 /**
@@ -62,17 +60,6 @@ public class StorageReasoner {
 	public StorageReasoner() {
 	}
 
-	public MPPOrderWorkflow getPPOrderWorkflow(MPPOrder order) {
-		
-		int[] ids = PO.getAllIDs("PP_Order_Workflow", "PP_Order_ID = "+order.get_ID(), null);
-		if(ids.length != 1) {
-			
-			return null;
-		}
-		
-		return new MPPOrderWorkflow(Env.getCtx(), ids[0], null);
-	}
-	
 	public boolean equalAttributeInstanceValue(MAttributeInstance ai1, MAttributeInstance ai2) {
 		
 		if(ai1.getM_Attribute_ID() != ai2.getM_Attribute_ID()) {

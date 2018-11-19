@@ -86,7 +86,7 @@ import org.eevolution.form.action.PopupAction;
 import org.eevolution.form.action.ZoomMenuAction;
 import org.eevolution.form.crp.CRPDatasetFactory;
 import org.eevolution.form.crp.CRPModel;
-import org.eevolution.model.MPPOrderNode;
+import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.tools.swing.SwingTool;
 import org.eevolution.tools.worker.SingleWorker;
 import org.jfree.chart.ChartFactory;
@@ -333,7 +333,7 @@ public class CCRP extends CAbstractForm
 
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode)model.getTree().getSelectionPath().getLastPathComponent();
 
-			if (!(node.getUserObject() instanceof Date) && !(node.getUserObject() instanceof MPPOrderNode))
+			if (!(node.getUserObject() instanceof Date) && !(node.getUserObject() instanceof I_PP_Order_Node))
 			{
 
 				popup.show(e.getComponent(), e.getX(), e.getY());

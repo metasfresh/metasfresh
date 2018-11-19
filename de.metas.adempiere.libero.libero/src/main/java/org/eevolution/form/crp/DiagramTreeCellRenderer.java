@@ -51,8 +51,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.adempiere.images.Images;
 import org.compiere.model.MResource;
 import org.eevolution.form.tree.MapTreeCellRenderer;
+import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.MPPOrder;
-import org.eevolution.model.MPPOrderNode;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
@@ -112,7 +112,7 @@ public class DiagramTreeCellRenderer extends MapTreeCellRenderer
         else if(node.getUserObject() instanceof MPPOrder)
         {
         }
-        else if(node.getUserObject() instanceof MPPOrderNode)
+        else if(node.getUserObject() instanceof I_PP_Order_Node)
         {
         }
 

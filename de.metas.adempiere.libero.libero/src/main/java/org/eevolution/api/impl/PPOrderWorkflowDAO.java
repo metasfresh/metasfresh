@@ -604,7 +604,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 		orderNode.setValue("-");
 		orderNode.setName("-");
 		orderNode.setPriority(5);
-		orderNode.setJoinElement(X_PP_Order_Node.JOINELEMENT_AND); // X
+		orderNode.setJoinElement(X_PP_Order_Node.JOINELEMENT_XOR); // X
 		orderNode.setSplitElement(X_PP_Order_Node.SPLITELEMENT_XOR); // X
 		orderNode.setEntityType(PO.ENTITYTYPE_UserMaintained);
 		orderNode.setIsCentrallyMaintained(true);
