@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -75,9 +74,9 @@ public class HUIssueFiltering implements IHUIssueFiltering
 	}
 
 	@Override
-	public List<I_PP_Order> getManufacturingOrders(final Properties ctx, final int warehouseId)
+	public List<I_PP_Order> getManufacturingOrders(final WarehouseId warehouseId)
 	{
-		final List<I_PP_Order> ppOrders = Services.get(IPPOrderDAO.class).retrieveReleasedManufacturingOrdersForWarehouse(ctx, warehouseId);
+		final List<I_PP_Order> ppOrders = Services.get(IPPOrderDAO.class).retrieveReleasedManufacturingOrdersForWarehouse(warehouseId);
 		//
 		// 08181: ORDER BY promisedDateTime ASC, preparationDateTime ASC, productName ASC, partner ASC
 		Collections.sort(ppOrders, new Comparator<I_PP_Order>()
@@ -119,7 +118,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 	public IHUQueryBuilder getHUsForIssueQuery(
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final List<I_PP_Order_BOMLine> orderBOMLines,
-			final int warehouseId)
+			final WarehouseId warehouseId)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -143,7 +142,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 				.setContext(ppOrder)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithProductIds(productIds)
-				.addOnlyInWarehouseId(WarehouseId.ofRepoId(warehouseId))
+				.addOnlyInWarehouseId(warehouseId)
 				.onlyNotLocked() // skip those locked because usually those were planned for something...
 		;
 

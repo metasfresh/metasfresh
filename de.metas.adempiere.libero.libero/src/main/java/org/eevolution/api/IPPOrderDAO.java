@@ -25,16 +25,17 @@ import java.time.LocalDateTime;
  */
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 
@@ -76,13 +77,13 @@ public interface IPPOrderDAO extends ISingletonService
 	 * @param warehouseId
 	 * @return manufacturing orders
 	 */
-	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(Properties ctx, int warehouseId);
+	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(WarehouseId warehouseId);
 
 	/**
 	 * @param orderLineId
 	 * @return PP_Order_ID or -1 if not found.
 	 */
-	int retrievePPOrderIdByOrderLineId(final int orderLineId);
+	PPOrderId retrievePPOrderIdByOrderLineId(final OrderLineId orderLineId);
 
 	void changeOrderScheduling(PPOrderId orderId, LocalDateTime scheduledStartDate, LocalDateTime scheduledFinishDate);
 

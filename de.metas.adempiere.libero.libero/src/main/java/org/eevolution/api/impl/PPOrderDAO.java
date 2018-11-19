@@ -36,8 +36,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
@@ -49,6 +49,7 @@ import org.eevolution.model.X_PP_Order_BOM;
 
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -118,9 +119,9 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
-	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final Properties ctx, final int warehouseId)
+	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final WarehouseId warehouseId)
 	{
-		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class, ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_PP_Order.class)
 				// For Warehouse
 				.addEqualsFilter(I_PP_Order.COLUMN_M_Warehouse_ID, warehouseId)
 				// Only Releases Manufacturing orders
@@ -139,14 +140,14 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
-	public int retrievePPOrderIdByOrderLineId(final int orderLineId)
+	public PPOrderId retrievePPOrderIdByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order.class)
 				.addEqualsFilter(I_PP_Order.COLUMN_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstIdOnly();
+				.firstIdOnly(PPOrderId::ofRepoIdOrNull);
 	}
 
 	@Override

@@ -311,20 +311,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		return IDocument.STATUS_Completed;
 	} // completeIt
 
-	/**
-	 * Check if the Quantity from all BOM Lines is available (QtyOnHand >= QtyRequired)
-	 *
-	 * @return true if entire Qty is available for this Order
-	 */
-	public boolean isAvailable()
-	{
-		final String whereClause = "QtyOnHand >= QtyRequiered AND PP_Order_ID=?";
-		final boolean available = new Query(getCtx(), "RV_PP_Order_Storage", whereClause, get_TrxName())
-				.setParameters(new Object[] { get_ID() })
-				.match();
-		return available;
-	}
-
 	@Override
 	public boolean voidIt()
 	{
