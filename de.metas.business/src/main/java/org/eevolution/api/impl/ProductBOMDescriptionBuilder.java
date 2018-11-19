@@ -82,8 +82,6 @@ final class ProductBOMDescriptionBuilder
 		final String qtyStr = toBOMLineQtyAndUOMString(bomLine);
 
 		return new StringBuilder()
-				.append(product.getValue())
-				.append(" ")
 				.append(product.getName())
 				.append(" ")
 				.append(qtyStr)
