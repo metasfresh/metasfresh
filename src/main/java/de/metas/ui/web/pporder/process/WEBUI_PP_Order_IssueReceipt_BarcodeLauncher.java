@@ -1,13 +1,15 @@
 package de.metas.ui.web.pporder.process;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.IPPOrderDAO;
 
 import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.OrderLineId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.pporder.PPOrderConstants;
 import de.metas.ui.web.process.adprocess.WebuiProcess;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
@@ -48,13 +50,13 @@ public class WEBUI_PP_Order_IssueReceipt_BarcodeLauncher extends JavaProcess
 	private String p_Barcode;
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final int orderLineId = OrderCheckupBarcode.fromBarcodeString(p_Barcode).getC_OrderLine_ID();
-		final int ppOrderId = Services.get(IPPOrderDAO.class).retrievePPOrderIdByOrderLineId(orderLineId);
-		if (ppOrderId <= 0)
+		final OrderLineId orderLineId = OrderCheckupBarcode.fromBarcodeString(p_Barcode).getOrderLineId();
+		final PPOrderId ppOrderId = Services.get(IPPOrderDAO.class).retrievePPOrderIdByOrderLineId(orderLineId);
+		if (ppOrderId == null)
 		{
-			throw new EntityNotFoundException("@NotFound@ @PP_Order_ID@");
+			throw new AdempiereException("@NotFound@ @PP_Order_ID@");
 		}
 
 		final TableRecordReference ppOrderRef = TableRecordReference.of(org.eevolution.model.I_PP_Order.Table_Name, ppOrderId);
