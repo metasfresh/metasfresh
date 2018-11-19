@@ -1,5 +1,6 @@
 package org.eevolution.api.impl;
 
+import java.math.BigDecimal;
 import java.util.stream.Collectors;
 
 import org.adempiere.uom.api.IUOMDAO;
@@ -81,8 +82,6 @@ final class ProductBOMDescriptionBuilder
 		final String qtyStr = toBOMLineQtyAndUOMString(bomLine);
 
 		return new StringBuilder()
-				.append(product.getValue())
-				.append(" ")
 				.append(product.getName())
 				.append(" ")
 				.append(qtyStr)
@@ -94,6 +93,10 @@ final class ProductBOMDescriptionBuilder
 		if (bomLine.isQtyPercentage())
 		{
 			return NumberUtils.stripTrailingDecimalZeros(bomLine.getQtyBatch()) + "%";
+		}
+		else if (BigDecimal.ONE.equals(bomLine.getQtyBOM()))
+		{
+			return "";
 		}
 		else
 		{
