@@ -71,6 +71,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	List<I_M_AttributeValue> retrieveAttributeValues(I_M_Attribute attribute);
 
+	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId attributeSetInstanceId);
+
 	/**
 	 * Retrieves all attribute instances associated with an attribute instance set.
 	 *

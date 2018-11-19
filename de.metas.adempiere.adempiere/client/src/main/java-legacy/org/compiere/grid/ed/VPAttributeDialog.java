@@ -65,6 +65,7 @@ import org.compiere.apps.AWindow;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.PAttributeInstance;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -134,7 +135,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private final IVPAttributeContext attributeContext;
 	private final MAttributeSet _attributeSet;
 	private final MAttributeSetInstance _asiTemplate;
-	private final List<MAttribute> _availableAttributes;
+	private final List<I_M_Attribute> _availableAttributes;
 	private final boolean _allowSelectExistingASI;
 
 	private I_M_AttributeSetInstance asiEdited = null;
@@ -147,7 +148,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	/** List of Editors */
 	private Map<Integer, CEditor> attributeId2editor = new HashMap<>();
 	/** Editing attributes */
-	private List<MAttribute> editorAttributes = new ArrayList<>();
+	private List<I_M_Attribute> editorAttributes = new ArrayList<>();
 	/** Length of Instance value (40) */
 	private static final int INSTANCE_VALUE_LENGTH = 40;
 
@@ -252,14 +253,16 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		return _asiTemplate;
 	}
 
-	private MAttributeInstance getAITemplate(final MAttribute attribute)
+	private MAttributeInstance getAITemplate(final I_M_Attribute attribute)
 	{
 		final MAttributeSetInstance asiTemplate = getASITemplate();
 		if (asiTemplate == null)
 		{
 			return null;
 		}
-		return attribute.getMAttributeInstance(asiTemplate.getM_AttributeSetInstance_ID());
+		
+		final MAttribute attributePO = LegacyAdapters.convertToPO(attribute);
+		return attributePO.getMAttributeInstance(asiTemplate.getM_AttributeSetInstance_ID());
 	}
 
 	private ProductId getProductId()
@@ -299,7 +302,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 
 		//
 		// Create attributes UI editors
-		for (final MAttribute attribute : getAvailableAttributes())
+		for (final I_M_Attribute attribute : getAvailableAttributes())
 		{
 			addAttributeLine(attribute);
 		}
@@ -456,7 +459,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		}
 	}	// initAttribute
 
-	private List<MAttribute> getAvailableAttributes()
+	private List<I_M_Attribute> getAvailableAttributes()
 	{
 		return _availableAttributes;
 	}
@@ -468,7 +471,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	 * @param product product level attribute
 	 * @param readOnly value is read only
 	 */
-	private void addAttributeLine(final MAttribute attribute)
+	private void addAttributeLine(final I_M_Attribute attribute)
 	{
 		final boolean readOnly = false;
 
@@ -487,14 +490,16 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			InterfaceWrapperHelper.setDynAttribute(attribute, Env.DYNATTR_WindowNo, attributeContext.getWindowNo());
 			InterfaceWrapperHelper.setDynAttribute(attribute, Env.DYNATTR_TabNo, attributeContext.getTabNo()); // tabNo
 
-			final I_M_AttributeValue[] values = attribute.getMAttributeValues(getSOTrx());	// optional = null
+			final MAttribute attributePO = LegacyAdapters.convertToPO(attribute); 
+			final I_M_AttributeValue[] values = attributePO.getMAttributeValues(getSOTrx());	// optional = null
 			final CComboBox<I_M_AttributeValue> editor = new CComboBox<>(values);
 			boolean found = false;
 			if (instance != null && instance.getM_AttributeValue_ID() > 0)
 			{
 				for (int i = 0; i < values.length; i++)
 				{
-					if (values[i] != null && values[i].getM_AttributeValue_ID() == instance.getM_AttributeValue_ID())
+					final I_M_AttributeValue value = values[i];
+					if (value != null && value.getM_AttributeValue_ID() == instance.getM_AttributeValue_ID())
 					{
 						editor.setSelectedIndex(i);
 						found = true;
@@ -974,8 +979,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 
 		//
 		// Save Instance Attributes
-		for (final MAttribute attribute : editorAttributes)
+		for (final I_M_Attribute attribute : editorAttributes)
 		{
+			final MAttribute attributePO = LegacyAdapters.convertToPO(attribute);
 			final CEditor editor = attributeId2editor.get(attribute.getM_Attribute_ID());
 
 			if (MAttribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType()))
@@ -987,7 +993,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				{
 					mandatory.add(attribute.getName());
 				}
-				attribute.setMAttributeInstance(attributeSetInstanceId, attributeValue);
+				attributePO.setMAttributeInstance(attributeSetInstanceId, attributeValue);
 			}
 			else if (MAttribute.ATTRIBUTEVALUETYPE_Number.equals(attribute.getAttributeValueType()))
 			{
@@ -997,7 +1003,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				{
 					mandatory.add(attribute.getName());
 				}
-				attribute.setMAttributeInstance(attributeSetInstanceId, value);
+				attributePO.setMAttributeInstance(attributeSetInstanceId, value);
 			}
 			else if (MAttribute.ATTRIBUTEVALUETYPE_Date.equals(attribute.getAttributeValueType()))
 			{
@@ -1007,7 +1013,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				{
 					mandatory.add(attribute.getName());
 				}
-				attribute.setMAttributeInstance(attributeSetInstanceId, value);
+				attributePO.setMAttributeInstance(attributeSetInstanceId, value);
 			}
 			else
 			{
@@ -1017,7 +1023,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				{
 					mandatory.add(attribute.getName());
 				}
-				attribute.setMAttributeInstance(attributeSetInstanceId, value);
+				attributePO.setMAttributeInstance(attributeSetInstanceId, value);
 			}
 			changed = true;
 		}	// for all attributes

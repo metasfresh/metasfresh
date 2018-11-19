@@ -36,6 +36,7 @@ import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValueHandler;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValuesProvider;
@@ -94,25 +95,9 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public IAttributeValueGenerator getAttributeValueGeneratorOrNull(@NonNull final org.compiere.model.I_M_Attribute attributeParam)
-	{
-		final I_M_Attribute attribute = InterfaceWrapperHelper.create(attributeParam, I_M_Attribute.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
-		final I_AD_JavaClass javaClassDef = Services.get(IJavaClassDAO.class).retriveJavaClassOrNull(ctx, attribute.getAD_JavaClass_ID());
-		if (javaClassDef == null)
-		{
-			return null;
-		}
-
-		final IAttributeValueGenerator generator = Services.get(IJavaClassBL.class).newInstance(javaClassDef);
-		return generator;
-	}
-
-	@Override
 	public IAttributeValuesProvider createAttributeValuesProvider(final org.compiere.model.I_M_Attribute attribute)
 	{
-		final IAttributeValueGenerator attributeHandler = getAttributeValueGeneratorOrNull(attribute);
+		final IAttributeValueHandler attributeHandler = getAttributeValueHandlerOrNull(attribute);
 
 		//
 		// First try: check if attributeHandler is implementing IAttributeValuesProvider and return it if that's the case
@@ -133,6 +118,32 @@ public class AttributesBL implements IAttributesBL
 		{
 			return null;
 		}
+	}
+
+	@Override
+	public IAttributeValueGenerator getAttributeValueGeneratorOrNull(@NonNull final org.compiere.model.I_M_Attribute attributeParam)
+	{
+		final IAttributeValueHandler handler = getAttributeValueHandlerOrNull(attributeParam);
+		if (handler instanceof IAttributeValueGenerator)
+		{
+			return (IAttributeValueGenerator)handler;
+		}
+		return null;
+	}
+
+	private IAttributeValueHandler getAttributeValueHandlerOrNull(final org.compiere.model.I_M_Attribute attributeRecord)
+	{
+		final I_M_Attribute attribute = InterfaceWrapperHelper.create(attributeRecord, I_M_Attribute.class);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
+		final I_AD_JavaClass javaClassDef = Services.get(IJavaClassDAO.class).retriveJavaClassOrNull(ctx, attribute.getAD_JavaClass_ID());
+		if (javaClassDef == null)
+		{
+			return null;
+		}
+
+		final IAttributeValueHandler handler = Services.get(IJavaClassBL.class).newInstance(javaClassDef);
+		return handler;
 	}
 
 	@Override

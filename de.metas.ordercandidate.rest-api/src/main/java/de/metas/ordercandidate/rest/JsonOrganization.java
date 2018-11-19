@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class JsonOrganization
 {
 	String code;

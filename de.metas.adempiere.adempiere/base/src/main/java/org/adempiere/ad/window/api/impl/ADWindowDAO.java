@@ -1,6 +1,7 @@
 package org.adempiere.ad.window.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -33,14 +34,20 @@ import java.util.Optional;
  */
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.element.api.AdFieldId;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Element_Link;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
@@ -53,11 +60,15 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ADWindowDAO implements IADWindowDAO
 {
@@ -876,4 +887,240 @@ public class ADWindowDAO implements IADWindowDAO
 				.endOrderBy();
 	}
 
+	@Override
+	public Set<AdTabId> retrieveTabIdsWithMissingADElements()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
+				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Element_ID, null)
+				.create()
+				.listIds(AdTabId::ofRepoId);
+	}
+
+	@Override
+	public Set<AdWindowId> retrieveWindowIdsWithMissingADElements()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Window.class)
+				.addEqualsFilter(I_AD_Window.COLUMN_AD_Element_ID, null)
+				.create()
+				.listIds(AdWindowId::ofRepoId);
+	}
+
+	@Override
+	public void createMissingADElementLinks()
+	{
+		final ImmutableSet<AdFieldId> fieldIdsWithMissingElementLink = retrieveAllFieldIds(Env.getCtx())
+				.stream()
+				.filter(fieldId -> retrieveFieldADElementLink(fieldId) == null)
+				.collect(ImmutableSet.toImmutableSet());
+
+		createElementLinksForFieldIds(fieldIdsWithMissingElementLink);
+
+		final ImmutableSet<AdTabId> tabIdsWithMissingElementLink = retrieveAllTabIds(Env.getCtx())
+				.stream()
+				.filter(tabId -> retrieveTabADElementLink(tabId) == null)
+				.collect(ImmutableSet.toImmutableSet());
+
+		createElementLinksForTabIds(tabIdsWithMissingElementLink);
+
+		final ImmutableSet<AdWindowId> windowIdsWithMissingElementLink = retrieveAllWindowIds(Env.getCtx())
+				.stream()
+				.filter(windowId -> retrieveWindowADElementLink(windowId) == null)
+				.collect(ImmutableSet.toImmutableSet());
+
+		createElementLinksForWindowIds(windowIdsWithMissingElementLink);
+
+	}
+
+	@Cached(cacheName = I_AD_Field.Table_Name + "#All")
+	public Set<AdFieldId> retrieveAllFieldIds(@CacheCtx final Properties ctx)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Field.class)
+				.orderBy(I_AD_Field.COLUMN_AD_Field_ID)
+				.create()
+				.listIds(AdFieldId::ofRepoId);
+	}
+
+	private I_AD_Element_Link retrieveFieldADElementLink(final AdFieldId adFieldId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Element_Link.class)
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Field_ID, adFieldId.getRepoId())
+				.create()
+				.firstOnly(I_AD_Element_Link.class);
+	}
+
+	private void createElementLinksForFieldIds(ImmutableSet<AdFieldId> fieldIdsWithMissingElementLink)
+	{
+		for (final AdFieldId fieldId : fieldIdsWithMissingElementLink)
+		{
+			createADElementLinkForFieldId(fieldId);
+		}
+	}
+
+	@Override
+	public void createADElementLinkForFieldId(final AdFieldId adFieldId)
+	{
+		final I_AD_Field field = getFieldByIdInTrx(adFieldId.getRepoId());
+
+		final int nameElementId = field.getAD_Name_ID();
+
+		final int fieldElementId;
+
+		if (nameElementId > 0)
+		{
+			fieldElementId = nameElementId;
+		}
+		else
+		{
+			final I_AD_Column fieldColumn = field.getAD_Column();
+
+			fieldElementId = fieldColumn.getAD_Element_ID();
+		}
+
+		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
+		elementLink.setAD_Window_ID(field.getAD_Tab().getAD_Window_ID());
+		elementLink.setAD_Field_ID(field.getAD_Field_ID());
+		elementLink.setAD_Element_ID(fieldElementId);
+		save(elementLink);
+
+	}
+
+	@Cached(cacheName = I_AD_Tab.Table_Name + "#All")
+	public Set<AdTabId> retrieveAllTabIds(@CacheCtx final Properties ctx)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Tab.class)
+				.orderBy(I_AD_Tab.COLUMN_AD_Tab_ID)
+				.create()
+				.listIds(AdTabId::ofRepoId);
+	}
+
+	private I_AD_Element_Link retrieveTabADElementLink(final AdTabId adTabId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Element_Link.class)
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Tab_ID, adTabId.getRepoId())
+				.create()
+				.firstOnly(I_AD_Element_Link.class);
+	}
+
+	private void createElementLinksForTabIds(final ImmutableSet<AdTabId> tabIdsWithMissingElementLink)
+	{
+		for (final AdTabId tabId : tabIdsWithMissingElementLink)
+		{
+			createADElementLinkForTabId(tabId);
+		}
+	}
+
+	@Override
+	public void createADElementLinkForTabId(final AdTabId adTabId)
+	{
+		final I_AD_Tab tab = getTabByIdInTrx(adTabId);
+
+		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
+		elementLink.setAD_Window_ID(tab.getAD_Window_ID());
+		elementLink.setAD_Tab_ID(tab.getAD_Tab_ID());
+		elementLink.setAD_Element_ID(tab.getAD_Element_ID());
+		save(elementLink);
+	}
+
+	@Cached(cacheName = I_AD_Window.Table_Name + "#All")
+	public Set<AdWindowId> retrieveAllWindowIds(@CacheCtx final Properties ctx)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.orderBy(I_AD_Window.COLUMN_AD_Window_ID)
+				.create()
+				.listIds(AdWindowId::ofRepoId);
+	}
+
+	private I_AD_Element_Link retrieveWindowADElementLink(final AdWindowId adWindowId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Element_Link.class)
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Window_ID, adWindowId.getRepoId())
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Tab_ID, null)
+				.addEqualsFilter(I_AD_Element_Link.COLUMN_AD_Field_ID, null)
+				.create()
+				.firstOnly(I_AD_Element_Link.class);
+	}
+
+	private void createElementLinksForWindowIds(final ImmutableSet<AdWindowId> windowIdsWithMissingElementLink)
+	{
+		for (final AdWindowId windowId : windowIdsWithMissingElementLink)
+		{
+			createADElementLinkForWindowId(windowId);
+		}
+	}
+
+	@Override
+	public void createADElementLinkForWindowId(final AdWindowId adWindowId)
+	{
+		final I_AD_Window window = getWindowByIdInTrx(adWindowId);
+
+		final I_AD_Element_Link elementLink = newInstance(I_AD_Element_Link.class);
+		elementLink.setAD_Window_ID(window.getAD_Window_ID());
+		elementLink.setAD_Element_ID(window.getAD_Element_ID());
+		save(elementLink);
+	}
+
+	@Override
+	public I_AD_Window getWindowByIdInTrx(@NonNull final AdWindowId windowId)
+	{
+		// use the load with ITrx.TRXNAME_ThreadInherited because the window may not yet be saved in DB when it's needed
+		return load(windowId, I_AD_Window.class);
+	}
+
+	@Override
+	public I_AD_Tab getTabByIdInTrx(@NonNull final AdTabId tabId)
+	{
+		// use the load with ITrx.TRXNAME_ThreadInherited because the tab may not yet be saved in DB when it's needed
+		return load(tabId, I_AD_Tab.class);
+	}
+
+	private I_AD_Field getFieldByIdInTrx(final int fieldId)
+	{
+		// use the load with ITrx.TRXNAME_ThreadInherited because the tab may not yet be saved in DB when it's needed
+		return load(fieldId, I_AD_Field.class);
+	}
+
+	@Override
+	public void deleteExistingADElementLinkForWindowId(final AdWindowId adWindowId)
+	{
+		final I_AD_Element_Link windowADElementLink = retrieveWindowADElementLink(adWindowId);
+
+		if (windowADElementLink != null)
+		{
+			delete(windowADElementLink);
+		}
+	}
+
+	@Override
+	public void deleteExistingADElementLinkForTabId(final AdTabId adTabId)
+	{
+		final I_AD_Element_Link tabADElementLink = retrieveTabADElementLink(adTabId);
+
+		if (tabADElementLink != null)
+		{
+			delete(tabADElementLink);
+		}
+	}
+
+	@Override
+	public void deleteExistingADElementLinkForFieldId(final AdFieldId adFieldId)
+	{
+		final I_AD_Element_Link fieldADElementLink = retrieveFieldADElementLink(adFieldId);
+
+		if (fieldADElementLink != null)
+		{
+			delete(fieldADElementLink);
+		}
+	}
 }

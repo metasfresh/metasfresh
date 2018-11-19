@@ -144,7 +144,6 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 		// NOTE: we use KeyNamePair's Key=0 because "-1" is specially handled by KeyNamePair (see KeyNamePair.getID() which returns null)
 		// and we run in some weird problems
 		return adLanguage2keyNamePairNone.computeIfAbsent(adLanguage, key -> nullValue);
-
 	}
 
 	@Override

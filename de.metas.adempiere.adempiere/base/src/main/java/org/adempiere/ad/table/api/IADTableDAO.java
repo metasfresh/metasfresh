@@ -142,7 +142,6 @@ public interface IADTableDAO extends ISingletonService
 	 * Return the table with the given name. Use {@link org.compiere.model.MTable} under the hood,
 	 * because tables are a bit sensitive and using the {@link org.adempiere.ad.dao.impl.QueryBL} and {@link org.adempiere.util.proxy.Cached} does not work under all circumstances.
 	 *
-	 *
 	 * @param tableName can be case-insensitive
 	 */
 	I_AD_Table retrieveTable(String tableName);
@@ -168,6 +167,6 @@ public interface IADTableDAO extends ISingletonService
 	I_AD_Table retrieveDocumentTableTemplate(I_AD_Table targetTable);
 
 	boolean isStandardColumn(String columnName);
-	
+
 	Set<String> getTableNamesWithRemoteCacheInvalidation();
 }

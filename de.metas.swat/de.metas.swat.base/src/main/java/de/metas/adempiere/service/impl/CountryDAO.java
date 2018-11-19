@@ -165,7 +165,7 @@ public class CountryDAO implements ICountryDAO
 	{
 		final Properties ctx = Env.getCtx();
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, adClientId);
-		final I_AD_Language lang = Services.get(ILanguageDAO.class).retrieveByAD_Language(ctx, client.getAD_Language());
+		final I_AD_Language lang = Services.get(ILanguageDAO.class).retrieveByAD_Language(client.getAD_Language());
 		return lang.getCountryCode();
 	}
 

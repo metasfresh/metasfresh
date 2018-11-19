@@ -18,22 +18,22 @@ package org.compiere.model;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.cache.CCache;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -104,11 +104,6 @@ public class MAttributeSet extends X_M_AttributeSet
 		super(ctx, rs, trxName);
 	}	// MAttributeSet
 
-	/** Instance Attributes */
-	private MAttribute[] m_instanceAttributes = null;
-	/** Instance Attributes */
-	private MAttribute[] m_productAttributes = null;
-
 	/** Entry Exclude */
 	private X_M_AttributeSetExclude[] m_excludes = null;
 	/** Lot create Exclude */
@@ -117,72 +112,19 @@ public class MAttributeSet extends X_M_AttributeSet
 	private X_M_SerNoCtlExclude[] m_excludeSerNos = null;
 
 	/**
-	 * Get Attribute Array
-	 * 
 	 * @param instanceAttributes true if for instance
-	 * @return instance or product attribute array
+	 * @return instance or product(static) attribute
 	 */
-	public MAttribute[] getMAttributes(boolean instanceAttributes)
+	public List<I_M_Attribute> getMAttributes(final boolean instanceAttributes)
 	{
-		if ((m_instanceAttributes == null && instanceAttributes)
-				|| m_productAttributes == null && !instanceAttributes)
-		{
-			String sql = "SELECT mau.M_Attribute_ID "
-					+ "FROM M_AttributeUse mau"
-					+ " INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) "
-					+ "WHERE mau.IsActive='Y' AND ma.IsActive='Y'"
-					+ " AND mau.M_AttributeSet_ID=? AND ma.IsInstanceAttribute=? "	// #1,2
-					+ "ORDER BY mau.SeqNo";
-			final List<MAttribute> list = new ArrayList<>();
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try
-			{
-				pstmt = DB.prepareStatement(sql, get_TrxName());
-				pstmt.setInt(1, getM_AttributeSet_ID());
-				pstmt.setString(2, instanceAttributes ? "Y" : "N");
-				rs = pstmt.executeQuery();
-				while (rs.next())
-				{
-					MAttribute ma = new MAttribute(getCtx(), rs.getInt(1), get_TrxName());
-					list.add(ma);
-				}
-			}
-			catch (SQLException ex)
-			{
-				throw new DBException(ex, sql);
-			}
-			finally
-			{
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
-			// Differentiate attributes
-			if (instanceAttributes)
-			{
-				m_instanceAttributes = new MAttribute[list.size()];
-				list.toArray(m_instanceAttributes);
-			}
-			else
-			{
-				m_productAttributes = new MAttribute[list.size()];
-				list.toArray(m_productAttributes);
-			}
-		}
-		//
-		if (instanceAttributes)
-		{
-			if (isInstanceAttribute() != m_instanceAttributes.length > 0)
-				setIsInstanceAttribute(m_instanceAttributes.length > 0);
-		}
-
-		// Return
-		if (instanceAttributes)
-			return m_instanceAttributes;
-		return m_productAttributes;
-	}	// getMAttributes
+		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(getM_AttributeSet_ID());
+		return attributesRepo.getAttributesByAttributeSetId(attributeSetId)
+				.stream()
+				.filter(attribute -> attribute.isInstanceAttribute() == instanceAttributes)
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	/**
 	 * Something is Mandatory

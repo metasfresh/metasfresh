@@ -63,7 +63,7 @@ public class ParserException extends DeviceException
 	{
 		final String exceptionClass = cause == null ? "<throwable class NULL>" : cause.getClass().getName();
 
-		return StringUtils.formatMessage("Caught {} while parsing elementName {} from stringToParse {}; (cmd = {})",
+		return StringUtils.formatMessage("Caught {} while parsing elementName={} from stringToParse={}; (cmd={})",
 				exceptionClass,	elementName, stringToParse, cmd);
 	}
 

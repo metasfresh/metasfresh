@@ -319,12 +319,11 @@ public final class Check
 	}
 
 	/**
-	 * Like {@link #assumeNotEmpty(String, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param str
-	 * @param exceptionClass
-	 * @param assumptionMessage
-	 * @param params
+	 * Like {@link #assumeNotEmpty(String, String, Object...)},
+	 * but throws an instance of the given <code>exceptionClass</code>
+	 * instead of the one which was set in {@link #setDefaultExClass(Class)}.
+	 * <p>
+	 * Also see {@link ExceptionWithOwnHeaderMessage}
 	 */
 	public static String assumeNotEmpty(final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{

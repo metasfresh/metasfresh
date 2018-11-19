@@ -3,6 +3,7 @@ package de.metas.ordercandidate.rest;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -35,11 +36,11 @@ public interface OrderCandidatesRestEndpoint
 
 	String PATH_BULK = "/bulk";
 
-	JsonOLCand createOrderLineCandidate(JsonOLCandCreateRequest request);
+	ResponseEntity<JsonOLCand> createOrderLineCandidate(JsonOLCandCreateRequest request);
 
-	JsonOLCandCreateBulkResponse createOrderLineCandidates(JsonOLCandCreateBulkRequest bulkRequest);
+	ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidates(JsonOLCandCreateBulkRequest bulkRequest);
 
-	JsonAttachment attachFile(
+	ResponseEntity<JsonAttachment> attachFile(
 			String dataSourceName,
 			String externalReference,
 			List<String> tagKeyValuePairs,

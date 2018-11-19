@@ -1,6 +1,10 @@
 package de.metas.bpartner;
 
+import lombok.Value;
+
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -9,8 +13,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
-import lombok.Value;
 
 /*
  * #%L
@@ -46,9 +48,9 @@ public class BPartnerId implements RepoIdAware
 		return new BPartnerId(repoId);
 	}
 
-	public static BPartnerId ofRepoIdOrNull(final int repoId)
+	public static BPartnerId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId > 0 ? new BPartnerId(repoId) : null;
+		return repoId != null && repoId > 0 ? new BPartnerId(repoId) : null;
 	}
 
 	public static Optional<BPartnerId> optionalOfRepoId(final int repoId)

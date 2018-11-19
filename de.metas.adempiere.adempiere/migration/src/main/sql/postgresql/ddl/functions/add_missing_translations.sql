@@ -48,8 +48,9 @@ BEGIN
 		ins := TRIM (ins) || ')';
 		sel := TRIM (sel)
 			|| ' from ' || t.tablename || ' t, ad_language l '
-			|| ' WHERE l.issystemlanguage=''Y'''
+			|| ' WHERE (l.issystemlanguage=''Y'' OR (''AD_Element''=''' ||t.tablename ||''' AND l.isbaselanguage = ''Y''))' -- this will change in task #4672
 			|| ' AND NOT EXISTS (SELECT 1 FROM ' || t.tablename || '_TRL b WHERE b.' || t.tablename || '_id=t.' || t.tablename || '_id AND b.AD_LANGUAGE=l.AD_LANGUAGE)';
+			
 		inssel := TRIM (ins) || ' ' || TRIM (sel);
 
 		EXECUTE inssel;
