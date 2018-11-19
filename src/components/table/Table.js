@@ -498,8 +498,7 @@ class Table extends Component {
     } = this.props;
 
     const closeIncluded = limitOnClickOutside
-      ? event.target.parentNode.className.includes('document-list-included') &&
-        event.target.parentNode.className.includes('document-list-has-included')
+      ? event.target.parentNode.className.includes('document-list-has-included')
       : true;
 
     if (
