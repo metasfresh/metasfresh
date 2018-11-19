@@ -68,7 +68,8 @@ final class ProductBOMDescriptionBuilder
 				.stream()
 				.map(this::toBOMLineString)
 				.filter(Predicates.notNull())
-				.collect(Collectors.joining("\r\n"));
+				.collect(Collectors.joining("\r\n"))
+				.trim();
 	}
 
 	private String toBOMLineString(final I_PP_Product_BOMLine bomLine)
@@ -85,7 +86,8 @@ final class ProductBOMDescriptionBuilder
 				.append(product.getName())
 				.append(" ")
 				.append(qtyStr)
-				.toString();
+				.toString()
+				.trim();
 	}
 
 	private String toBOMLineQtyAndUOMString(final I_PP_Product_BOMLine bomLine)
