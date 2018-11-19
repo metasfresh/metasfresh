@@ -7,7 +7,7 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 
-public interface IPPOrderWorkflowDAO extends ISingletonService
+public interface IPPOrderRoutingRepository extends ISingletonService
 {
 	PPOrderRouting getByOrderId(PPOrderId orderId);
 

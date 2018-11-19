@@ -62,8 +62,7 @@ import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.IPPOrderWorkflowBL;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.validator.PPOrderChangedEventFactory;
@@ -357,7 +356,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Void all activities
 		final PPOrderRouting orderRouting = getOrderRouting();
 		orderRouting.voidIt();
-		Services.get(IPPOrderWorkflowDAO.class).save(orderRouting);
+		Services.get(IPPOrderRoutingRepository.class).save(orderRouting);
 
 		//
 		// Set QtyOrdered/QtyEntered=0 to ZERO
@@ -429,7 +428,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Close all the activity do not reported
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
-		Services.get(IPPOrderWorkflowBL.class).closeAllActivities(orderId);
+		Services.get(IPPOrderBL.class).closeAllActivities(orderId);
 
 		//
 		// Set QtyOrdered=QtyDelivered
@@ -575,7 +574,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	private PPOrderRouting getOrderRouting()
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
-		return Services.get(IPPOrderWorkflowDAO.class).getByOrderId(orderId);
+		return Services.get(IPPOrderRoutingRepository.class).getByOrderId(orderId);
 	}
 
 	@Override

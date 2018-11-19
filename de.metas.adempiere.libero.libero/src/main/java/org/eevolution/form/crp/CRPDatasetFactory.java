@@ -58,7 +58,7 @@ import org.compiere.model.MProduct;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderRoutingActivitySchedule;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.reasoner.CRPReasoner;
@@ -88,7 +88,7 @@ public class CRPDatasetFactory extends CRPReasoner implements CRPModel
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	// private final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
 	// private final IPPOrderDAO ordersRepo = Services.get(IPPOrderDAO.class);
-	private final IPPOrderWorkflowDAO orderRoutingsRepo = Services.get(IPPOrderWorkflowDAO.class);
+	private final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 
 	private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 

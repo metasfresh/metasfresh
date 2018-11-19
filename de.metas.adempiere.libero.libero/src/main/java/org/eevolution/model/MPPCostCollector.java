@@ -65,7 +65,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityProcessReport;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
@@ -355,7 +355,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 	private void completeIt_ActivityControl()
 	{
-		final IPPOrderWorkflowDAO orderRoutingsRepo = Services.get(IPPOrderWorkflowDAO.class);
+		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 
 		if (isReversal())
 		{
@@ -409,7 +409,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 	private void completeIt_ResourceUsageVariance()
 	{
-		final IPPOrderWorkflowDAO orderRoutingsRepo = Services.get(IPPOrderWorkflowDAO.class);
+		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 
 		final PPOrderRouting orderRouting = getOrderRouting();
 		final PPOrderRoutingActivityId activityId = getActivityId();
@@ -587,7 +587,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 	private PPOrderRouting getOrderRouting()
 	{
-		final IPPOrderWorkflowDAO orderRoutingsRepo = Services.get(IPPOrderWorkflowDAO.class);
+		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		return orderRoutingsRepo.getByOrderId(orderId);

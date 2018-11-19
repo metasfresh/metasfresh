@@ -46,7 +46,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityScheduleChangeRequest;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
@@ -81,7 +81,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
+public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 {
 	@Override
 	public PPOrderRouting getByOrderId(@NonNull final PPOrderId orderId)

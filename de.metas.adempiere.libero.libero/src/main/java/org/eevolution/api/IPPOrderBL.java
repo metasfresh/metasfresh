@@ -118,5 +118,9 @@ public interface IPPOrderBL extends ISingletonService
 
 	void changeScheduling(PPOrderScheduleChangeRequest request);
 
+	void createOrderWorkflow(I_PP_Order ppOrder);
+
+	void closeAllActivities(PPOrderId orderId);
+
 	void voidOrderRouting(PPOrderId orderId);
 }

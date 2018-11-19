@@ -11,7 +11,7 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -78,7 +78,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 {
 	// services
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-	private final IPPOrderWorkflowDAO orderRoutingsRepo = Services.get(IPPOrderWorkflowDAO.class);
+	private final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 	private final IPPCostCollectorDAO costCollectorsRepo = Services.get(IPPCostCollectorDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);

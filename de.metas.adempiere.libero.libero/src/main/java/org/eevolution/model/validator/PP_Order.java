@@ -44,8 +44,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.IPPOrderWorkflowBL;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order;
@@ -209,7 +208,7 @@ public class PP_Order
 	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
-		Services.get(IPPOrderWorkflowDAO.class).deleteByOrderId(orderId);
+		Services.get(IPPOrderRoutingRepository.class).deleteByOrderId(orderId);
 
 		final I_PP_Order_BOM orderBOM = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(ppOrder);
 		if (orderBOM != null)
@@ -220,7 +219,7 @@ public class PP_Order
 
 	private void createWorkflowAndBOM(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderWorkflowBL.class).createOrderWorkflow(ppOrder);
+		Services.get(IPPOrderBL.class).createOrderWorkflow(ppOrder);
 		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
 	}
 

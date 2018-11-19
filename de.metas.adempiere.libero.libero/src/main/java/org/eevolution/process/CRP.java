@@ -27,7 +27,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityScheduleChangeRequest;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
@@ -65,7 +65,7 @@ public class CRP extends JavaProcess
 	private final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final IPPOrderBL ordersService = Services.get(IPPOrderBL.class);
-	private final IPPOrderWorkflowDAO orderRoutingsRepo = Services.get(IPPOrderWorkflowDAO.class);
+	private final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 
 	public static final String FORWARD_SCHEDULING = "F";
 	public static final String BACKWARD_SCHEDULING = "B";

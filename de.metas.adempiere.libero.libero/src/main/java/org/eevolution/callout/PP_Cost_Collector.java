@@ -3,7 +3,7 @@ package org.eevolution.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -71,7 +71,7 @@ public class PP_Cost_Collector
 			return;
 		}
 
-		final PPOrderRoutingActivity orderActivity = Services.get(IPPOrderWorkflowDAO.class).getOrderRoutingActivity(orderRoutingActivityId);
+		final PPOrderRoutingActivity orderActivity = Services.get(IPPOrderRoutingRepository.class).getOrderRoutingActivity(orderRoutingActivityId);
 
 		cc.setS_Resource_ID(orderActivity.getResourceId().getRepoId());
 		cc.setIsSubcontracting(orderActivity.isSubcontracting());
@@ -102,7 +102,7 @@ public class PP_Cost_Collector
 			return;
 		}
 
-		final PPOrderRoutingActivity activity = Services.get(IPPOrderWorkflowDAO.class).getOrderRoutingActivity(activityId);
+		final PPOrderRoutingActivity activity = Services.get(IPPOrderRoutingRepository.class).getOrderRoutingActivity(activityId);
 
 		final WorkingTime durationReal = WorkingTime.builder()
 				.durationPerOneUnit(activity.getDurationPerOneUnit())

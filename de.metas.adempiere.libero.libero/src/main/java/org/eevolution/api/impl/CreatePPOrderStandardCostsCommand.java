@@ -10,7 +10,7 @@ import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderCostDAO;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.api.PPOrderRoutingActivity;
@@ -65,7 +65,7 @@ final class CreatePPOrderStandardCostsCommand
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-	private final IPPOrderWorkflowDAO orderWorkflowsRepo = Services.get(IPPOrderWorkflowDAO.class);
+	private final IPPOrderRoutingRepository orderWorkflowsRepo = Services.get(IPPOrderRoutingRepository.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final ICurrentCostsRepository currentCostsRepository = Adempiere.getBean(ICurrentCostsRepository.class);
 

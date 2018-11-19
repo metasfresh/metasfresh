@@ -34,7 +34,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
@@ -179,7 +179,7 @@ public class ManufacturingOrderKey extends TerminalKey
 		//
 		// Workcenter/Workstation resource
 		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
-		final String resourceName = Services.get(IPPOrderWorkflowDAO.class).retrieveResourceNameForFirstNode(orderId);
+		final String resourceName = Services.get(IPPOrderRoutingRepository.class).retrieveResourceNameForFirstNode(orderId);
 		if (!Check.isEmpty(resourceName, true))
 		{
 			sb.append("<br>");
