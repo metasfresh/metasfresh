@@ -43,55 +43,45 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.exceptions.NoVendorForProductException;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.engines.CostEngine;
-import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.model.engines.StorageEngine;
-import org.adempiere.service.OrgId;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_C_BPartner_Product;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.MPeriod;
-import org.compiere.model.MProduct;
 import org.compiere.model.MTransaction;
-import org.compiere.model.MUOM;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.Query;
-import org.compiere.model.X_C_Order;
-import org.compiere.model.X_M_Product;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.exceptions.ActivityProcessedException;
+import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.PPOrderActivityProcessReport;
+import org.eevolution.api.PPOrderRouting;
+import org.eevolution.api.PPOrderRoutingActivity;
+import org.eevolution.api.PPOrderRoutingActivityId;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
+import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.order.IOrderBL;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
 /**
@@ -113,7 +103,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	private static final long serialVersionUID = 5529730708956719853L;
 
 	// Services
-	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
@@ -134,36 +123,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			setProcessing(false);
 			setProcessed(false);
 		}
-	}	// MPPCostCollector
+	}
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 */
 	public MPPCostCollector(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}	// MPPCostCollector
-
-	/**
-	 * Add to Description
-	 *
-	 * @param description text
-	 */
-	private void addDescription(final String description)
-	{
-		final String desc = getDescription();
-		if (desc == null)
-		{
-			setDescription(description);
-		}
-		else
-		{
-			setDescription(desc + " | " + description);
-		}
-	}	// addDescription
 
 	@Override
 	public void setProcessed(final boolean processed)
@@ -203,74 +168,18 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocTypeTarget_ID(), getAD_Org_ID());
-		// Convert/Check DocType
 		setC_DocType_ID(getC_DocTypeTarget_ID());
 
-		//
-		// Operation Activity
-		if (isActivityControl())
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
+
+		if (costCollectorType.isMaterial(orderBOMLineId))
 		{
-			final MPPOrderNode activity = getPP_Order_Node();
-			if (X_PP_Order_Node.DOCACTION_Complete.equals(activity.getDocStatus()))
+			final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+			final boolean isSOTrx = costCollectorType.isMaterialReceipt();
+			if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(productId, isSOTrx))
 			{
-				throw new ActivityProcessedException(activity);
-			}
-
-			if (activity.isSubcontracting())
-			{
-				if (getReversal_ID() > 0)
-				{
-					throw new LiberoException("Reversing a subcontracting activity control is not supported");
-				}
-
-				if (X_PP_Order_Node.DOCSTATUS_InProgress.equals(activity.getDocStatus())
-						&& X_PP_Cost_Collector.DOCSTATUS_InProgress.equals(getDocStatus()))
-				{
-					return X_PP_Order_Node.DOCSTATUS_InProgress;
-				}
-				else if (X_PP_Order_Node.DOCSTATUS_InProgress.equals(activity.getDocStatus())
-						&& X_PP_Cost_Collector.DOCSTATUS_Drafted.equals(getDocStatus()))
-				{
-					throw new ActivityProcessedException(activity);
-				}
-				createPO(activity);
-				m_justPrepared = false;
-				activity.setInProgress(this);
-				activity.saveEx();
-				return DOCSTATUS_InProgress;
-			}
-
-			activity.setInProgress(this);
-			activity.setQtyDelivered(activity.getQtyDelivered().add(getMovementQty()));
-			activity.setQtyScrap(activity.getQtyScrap().add(getScrappedQty()));
-			activity.setQtyReject(activity.getQtyReject().add(getQtyReject()));
-			activity.setDurationReal(activity.getDurationReal() + getDurationReal().intValueExact());
-			activity.setSetupTimeReal(activity.getSetupTimeReal() + getSetupTimeReal().intValueExact());
-			activity.saveEx();
-
-			// report all activity previews to milestone activity
-			if (activity.isMilestone())
-			{
-				final MPPOrderWorkflow order_workflow = activity.getMPPOrderWorkflow();
-				order_workflow.closeActivities(activity, getMovementDate(), true);
-			}
-		}
-		// Issue
-		else if (isIssue())
-		{
-			final I_M_Product product = getM_Product();
-			if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(product, false))
-			{
-				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + product.getValue());
-			}
-		}
-		// Receipt
-		else if (isReceipt())
-		{
-			final I_M_Product product = getM_Product();
-			if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(product, true))
-			{
-				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + product.getValue());
+				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + Services.get(IProductBL.class).getProductValueAndName(productId));
 			}
 		}
 
@@ -311,163 +220,35 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 
-		final boolean isReversal = getReversal_ID() > 0;
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
+		final boolean isReversal = isReversal();
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
+		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoIdOrNull(orderId, getPP_Order_Node_ID());
 
-		//
-		// Material Issue (component issue, method change variance, mix variance)
-		// Material Receipt
-		final CostEngine costEngine = CostEngineFactory.newCostEngine();
-		if (isIssue() || isReceipt())
+		if (costCollectorType.isMaterial(orderBOMLineId))
 		{
-			// Stock Movement
-			final I_M_Product product = Services.get(IProductDAO.class).getById(getM_Product_ID());
-			if (product != null && Services.get(IProductBL.class).isStocked(product) && !isVariance())
-			{
-				StorageEngine.createTrasaction(
-						this,
-						getMovementType(),
-						getMovementDate(),
-						getMovementQty(),
-						isReversal,
-						getM_Warehouse_ID(),
-						getPP_Order().getM_AttributeSetInstance_ID(),	// Reservation ASI
-						getPP_Order().getM_Warehouse_ID(),				// Reservation Warehouse
-						false											// IsSOTrx=false
-				);
-			}	// stock movement
-
-			if (isIssue())
-			{
-				// Update PP Order Line
-				final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
-				ppOrderBOMBL.addQtyDelivered(orderBOMLine,
-						false, // isVariance
-						getMovementQty());
-				orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(getScrappedQty()));
-				orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
-				orderBOMLine.setDateDelivered(getMovementDate());	// overwrite=last
-				orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-				InterfaceWrapperHelper.save(orderBOMLine);
-			}
-			if (isReceipt())
-			{
-				// Update PP Order Qtys
-				final I_PP_Order order = getPP_Order();
-				order.setQtyDelivered(order.getQtyDelivered().add(getMovementQty()));
-				order.setQtyScrap(order.getQtyScrap().add(getScrappedQty()));
-				order.setQtyReject(order.getQtyReject().add(getQtyReject()));
-				order.setQtyReserved(order.getQtyReserved().subtract(getMovementQty()));
-
-				//
-				// Update PP Order Dates
-				order.setDateDelivered(getMovementDate()); // overwrite=last
-				if (order.getDateStart() == null)
-				{
-					order.setDateStart(getDateStart());
-				}
-
-				final BigDecimal qtyOpen = Services.get(IPPOrderBL.class).getQtyOpen(order);
-				if (qtyOpen.signum() <= 0)
-				{
-					order.setDateFinish(getDateFinish());
-				}
-				InterfaceWrapperHelper.save(order);
-			}
+			completeIt_MaterialIssueOrReceipt();
 		}
-		//
-		// Activity Control
-		else if (isActivityControl())
+		else if (costCollectorType.isActivityControl())
 		{
-			if (isReversal)
-			{
-				// NOTE: not allowing to reverse an activity control, mainly because it's not tested.
-				// Also, when implementing this, please take care of:
-				// * subcontracting orders
-				// * reversing to a milestone activity
-				throw new LiberoException("Reversing an Activity Control is not supported");
-			}
-			final MPPOrderNode activity = getPP_Order_Node();
-			if (activity.isProcessed())
-			{
-				throw new ActivityProcessedException(activity);
-			}
-
-			if (isSubcontracting())
-			{
-				// String whereClause = MOrderLine.COLUMNNAME_PP_Cost_Collector_ID+"=?";
-				// Collection<MOrderLine> olines = new Query(getCtx(), MOrderLine.Table_Name, whereClause, get_TrxName())
-				// .setParameters(new Object[]{get_ID()})
-				// .list();
-				final String docStatus = X_PP_Order_Node.DOCSTATUS_Completed;
-				// final StringBuffer msg = new StringBuffer("The quantity do not is complete for next Purchase Order : ");
-				// for (MOrderLine oline : olines)
-				// {
-				// if(oline.getQtyDelivered().compareTo(oline.getQtyOrdered()) < 0)
-				// {
-				// DocStatus = MPPOrderNode.DOCSTATUS_InProgress;
-				// }
-				// msg.append(oline.getParent().getDocumentNo()).append(",");
-				// }
-
-				if (X_PP_Order_Node.DOCSTATUS_InProgress.equals(docStatus))
-				{
-					return docStatus;
-				}
-				setProcessed(true);
-				setDocAction(X_PP_Order_Node.DOCACTION_Close);
-				setDocStatus(X_PP_Order_Node.DOCSTATUS_Completed);
-				activity.completeIt();
-				activity.saveEx();
-				// m_processMsg = Services.get(IMsgBL.class).translate(getCtx(), "PP_Order_ID")
-				// + ": " + getPP_Order().getDocumentNo()
-				// + " " + Services.get(IMsgBL.class).translate(getCtx(), "PP_Order_Node_ID")
-				// + ": " + getPP_Order_Node().getValue();
-				return docStatus;
-			}
-			else
-			{
-				costEngine.createActivityControl(this);
-				activity.closeItIfDeliveredWhatWasRequired();
-			}
+			completeIt_ActivityControl();
 		}
-		//
-		// Usage Variance (material)
-		else if (isCostCollectorType(COSTCOLLECTORTYPE_UsegeVariance) && getPP_Order_BOMLine_ID() > 0)
+		else if (costCollectorType.isMaterialUsageVariance(orderBOMLineId))
 		{
-			final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
-			ppOrderBOMBL.addQtyDelivered(orderBOMLine,
-					true, // isVariance
-					getMovementQty());
-			orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(getScrappedQty()));
-			orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
-			// obomline.setDateDelivered(getMovementDate()); // overwrite=last
-			orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-			InterfaceWrapperHelper.save(orderBOMLine);
-			costEngine.createUsageVariances(this);
+			completeIt_MaterialUsageVariance();
 		}
-		//
-		// Usage Variance (resource)
-		else if (isCostCollectorType(COSTCOLLECTORTYPE_UsegeVariance) && getPP_Order_Node_ID() > 0)
+		else if (costCollectorType.isResourceUsageVariance(activityId))
 		{
-			final MPPOrderNode activity = getPP_Order_Node();
-			activity.setDurationReal(activity.getDurationReal() + getDurationReal().intValueExact());
-			activity.setSetupTimeReal(activity.getSetupTimeReal() + getSetupTimeReal().intValueExact());
-			activity.saveEx();
-			costEngine.createUsageVariances(this);
+			completeIt_ResourceUsageVariance();
 		}
-		else if (isCostCollectorType(COSTCOLLECTORTYPE_RateVariance))
+		else if (costCollectorType.isRateVariance())
 		{
-			if (isReversal)
-			{
-				costEngine.createReversals(this);
-			}
+			completeIt_RateVariance();
 		}
-		else if (isCostCollectorType(COSTCOLLECTORTYPE_MethodChangeVariance))
+		else if (costCollectorType.isMethodChangeVariance())
 		{
-			if (isReversal)
-			{
-				costEngine.createReversals(this);
-			}
+			completeIt_MethodChangedVariance();
 		}
 		else
 		{
@@ -479,8 +260,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		// Create Rate and Method Variances
 		if (!isReversal)
 		{
-			costEngine.createRateVariances(this);
-			costEngine.createMethodVariances(this);
+			// costEngine.createRateVariances(this);
+			// costEngine.createMethodVariances(this);
 		}
 		// Reverse Rate and Method Variances
 		else
@@ -505,6 +286,161 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		setDocStatus(DOCSTATUS_Completed);
 		return IDocument.STATUS_Completed;
 	}	// completeIt
+
+	private void completeIt_MaterialIssueOrReceipt()
+	{
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
+		final boolean isReversal = isReversal();
+
+		// Stock Movement
+		final I_M_Product product = Services.get(IProductDAO.class).getById(getM_Product_ID());
+		if (product != null && Services.get(IProductBL.class).isStocked(product) && !costCollectorType.isVariance())
+		{
+			StorageEngine.createTrasaction(
+					this,
+					getMovementType(),
+					getMovementDate(),
+					getMovementQty(),
+					isReversal,
+					getM_Warehouse_ID(),
+					getPP_Order().getM_AttributeSetInstance_ID(),	// Reservation ASI
+					getPP_Order().getM_Warehouse_ID(),				// Reservation Warehouse
+					false											// IsSOTrx=false
+			);
+		}	// stock movement
+
+		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
+		{
+			// Update PP Order Line
+			final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
+			ppOrderBOMBL.addQtyDelivered(orderBOMLine,
+					false, // isVariance
+					getMovementQty());
+			orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(getScrappedQty()));
+			orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
+			orderBOMLine.setDateDelivered(getMovementDate());	// overwrite=last
+			orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
+			InterfaceWrapperHelper.save(orderBOMLine);
+		}
+		else if (costCollectorType.isMaterialReceipt())
+		{
+			// Update PP Order Qtys
+			final I_PP_Order order = getPP_Order();
+			order.setQtyDelivered(order.getQtyDelivered().add(getMovementQty()));
+			order.setQtyScrap(order.getQtyScrap().add(getScrappedQty()));
+			order.setQtyReject(order.getQtyReject().add(getQtyReject()));
+			order.setQtyReserved(order.getQtyReserved().subtract(getMovementQty()));
+
+			//
+			// Update PP Order Dates
+			order.setDateDelivered(getMovementDate()); // overwrite=last
+			if (order.getDateStart() == null)
+			{
+				order.setDateStart(getMovementDate());
+			}
+
+			final BigDecimal qtyOpen = Services.get(IPPOrderBL.class).getQtyOpen(order);
+			if (qtyOpen.signum() <= 0)
+			{
+				order.setDateFinish(getDateFinish());
+			}
+			InterfaceWrapperHelper.save(order);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown issue/receipt cost collector type: " + costCollectorType);
+		}
+	}
+
+	private void completeIt_ActivityControl()
+	{
+		final IPPOrderWorkflowDAO orderRoutingsRepo = Services.get(IPPOrderWorkflowDAO.class);
+
+		if (isReversal())
+		{
+			// NOTE: not allowing to reverse an activity control, mainly because it's not tested.
+			// Also, when implementing this, please take care of:
+			// * subcontracting orders
+			// * reversing to a milestone activity
+			throw new LiberoException("Reversing an Activity Control is not supported");
+		}
+
+		final PPOrderRouting orderRouting = getOrderRouting();
+		final PPOrderRoutingActivity activity = orderRouting.getActivityById(getActivityId());
+		if (activity.isSubcontracting())
+		{
+			throw new AdempiereException("Sub-contracting not supported");
+		}
+
+		final I_C_UOM uom = getProductStockingUOM();
+		final TemporalUnit durationUnit = activity.getDurationUnit();
+
+		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
+				.activityId(activity.getId())
+				.finishDate(TimeUtil.asLocalDateTime(getMovementDate()))
+				.qtyProcessed(Quantity.of(getMovementQty(), uom))
+				.qtyScrapped(Quantity.of(getScrappedQty(), uom))
+				.qtyRejected(Quantity.of(getQtyReject(), uom))
+				.duration(DurationUtils.toDuration(getDurationReal(), durationUnit))
+				.setupTime(DurationUtils.toDuration(getSetupTimeReal(), durationUnit))
+				.build());
+
+		orderRoutingsRepo.save(orderRouting);
+
+		// costEngine.createActivityControl(this);
+
+		orderRoutingsRepo.save(orderRouting);
+	}
+
+	private void completeIt_MaterialUsageVariance()
+	{
+		final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
+		ppOrderBOMBL.addQtyDelivered(orderBOMLine,
+				true, // isVariance
+				getMovementQty());
+		orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(getScrappedQty()));
+		orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
+		// obomline.setDateDelivered(getMovementDate()); // overwrite=last
+		orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
+		InterfaceWrapperHelper.save(orderBOMLine);
+		// costEngine.createUsageVariances(this);
+	}
+
+	private void completeIt_ResourceUsageVariance()
+	{
+		final IPPOrderWorkflowDAO orderRoutingsRepo = Services.get(IPPOrderWorkflowDAO.class);
+
+		final PPOrderRouting orderRouting = getOrderRouting();
+		final PPOrderRoutingActivityId activityId = getActivityId();
+		final TemporalUnit durationUnit = orderRouting.getActivityById(activityId).getDurationUnit();
+
+		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
+				.activityId(activityId)
+				.setupTime(DurationUtils.toDuration(getSetupTimeReal(), durationUnit))
+				.duration(DurationUtils.toDuration(getDurationReal(), durationUnit))
+				.build());
+
+		orderRoutingsRepo.save(orderRouting);
+
+		// costEngine.createUsageVariances(this);
+	}
+
+	private void completeIt_RateVariance()
+	{
+		// if (isReversal)
+		// {
+		// costEngine.createReversals(this);
+		// }
+	}
+
+	private void completeIt_MethodChangedVariance()
+	{
+		// if (isReversal)
+		// {
+		// costEngine.createReversals(this);
+		// }
+	}
 
 	@Override
 	public boolean voidIt()
@@ -592,6 +528,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		throw new UnsupportedOperationException();
 	}
 
+	private boolean isReversal()
+	{
+		final int reversalId = getReversal_ID();
+		return reversalId > 0 && reversalId > getPP_Cost_Collector_ID();
+	}
+
 	@Override
 	public String getSummary()
 	{
@@ -633,31 +575,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (final Exception ex)
-		{
-			log.error("Could not create PDF", ex);
-		}
-		return null;
-	}
-
-	/**
-	 * Create PDF file
-	 *
-	 * @param file output file
-	 * @return file if success
-	 */
-	private File createPDF(final File file)
-	{
 		throw new UnsupportedOperationException(); // N/A
-		// final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.ORDER, getPP_Order_ID());
-		// if (re == null)
-		// return null;
-		// return re.getPDF(file);
 	}
 
 	@Override
@@ -667,46 +585,18 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		return dt.getName() + " " + getDocumentNo();
 	}
 
-	@Override
-	public MPPOrderNode getPP_Order_Node()
+	private PPOrderRouting getOrderRouting()
 	{
-		final I_PP_Order_Node node = super.getPP_Order_Node();
-		return LegacyAdapters.convertToPO(node);
+		final IPPOrderWorkflowDAO orderRoutingsRepo = Services.get(IPPOrderWorkflowDAO.class);
+
+		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
+		return orderRoutingsRepo.getByOrderId(orderId);
 	}
 
-	@Override
-	public MPPOrder getPP_Order()
+	private PPOrderRoutingActivityId getActivityId()
 	{
-		final I_PP_Order ppOrder = super.getPP_Order();
-		return LegacyAdapters.convertToPO(ppOrder);
-	}
-
-	/**
-	 * Get Duration Base in Seconds
-	 *
-	 * @return duration unit in seconds
-	 * @see MPPOrderWorkflow#getDurationBaseSec()
-	 */
-	private long getDurationBaseSec()
-	{
-		return getPP_Order().getMPPOrderWorkflow().getDurationBaseSec();
-	}
-
-	/**
-	 * @return Activity Control Report Start Date
-	 */
-	Timestamp getDateStart()
-	{
-		final double duration = getDurationReal().doubleValue();
-		if (duration != 0)
-		{
-			final long durationMillis = (long)(getDurationReal().doubleValue() * getDurationBaseSec() * 1000.0);
-			return new Timestamp(getMovementDate().getTime() - durationMillis);
-		}
-		else
-		{
-			return getMovementDate();
-		}
+		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
+		return PPOrderRoutingActivityId.ofRepoId(orderId, getPP_Order_Node_ID());
 	}
 
 	/**
@@ -717,171 +607,26 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		return getMovementDate();
 	}
 
-	/**
-	 * Create Purchase Order (in case of Subcontracting)
-	 *
-	 * @param activity
-	 */
-	private void createPO(final MPPOrderNode activity)
-	{
-		// String msg = "";
-		final Map<Integer, MOrder> orders = new HashMap<>();
-		//
-		final String whereClause = I_PP_Order_Node_Product.COLUMNNAME_PP_Order_Node_ID + "=?"
-				+ " AND " + I_PP_Order_Node_Product.COLUMNNAME_IsSubcontracting + "=?";
-		final Collection<I_PP_Order_Node_Product> subcontracts = new Query(getCtx(), I_PP_Order_Node_Product.Table_Name, whereClause, get_TrxName())
-				.setParameters(new Object[] { activity.get_ID(), true })
-				.setOnlyActiveRecords(true)
-				.list(I_PP_Order_Node_Product.class);
-
-		for (final I_PP_Order_Node_Product subcontract : subcontracts)
-		{
-			//
-			// If Product is not Purchased or is not Service, then it is not a subcontracting candidate [SKIP]
-			final I_M_Product product = MProduct.get(getCtx(), subcontract.getM_Product_ID());
-			if (!product.isPurchased() || !X_M_Product.PRODUCTTYPE_Service.equals(product.getProductType()))
-			{
-				throw new LiberoException("The Product: " + product.getName() + " Do not is Purchase or Service Type");
-			}
-
-			//
-			// Find Vendor and Product PO data
-			int C_BPartner_ID = activity.getC_BPartner_ID();
-
-			// FRESH-334: Make sure the BP_Product if of the product's org or org *
-			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
-			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-
-			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(
-					getCtx(),
-					(BPartnerId)null,
-					productId,
-					orgId);
-
-			I_C_BPartner_Product partnerProduct = null;
-			for (final I_C_BPartner_Product bpp : partnerProducts)
-			{
-				if (C_BPartner_ID == bpp.getC_BPartner_ID())
-				{
-					C_BPartner_ID = bpp.getC_BPartner_ID();
-					partnerProduct = bpp;
-					break;
-				}
-				if (bpp.isCurrentVendor() && bpp.getC_BPartner_ID() != 0)
-				{
-					C_BPartner_ID = bpp.getC_BPartner_ID();
-					partnerProduct = bpp;
-					break;
-				}
-			}
-			// task cg : 05952 : end
-			if (C_BPartner_ID <= 0 || partnerProduct == null)
-			{
-				throw new NoVendorForProductException(product.getName());
-			}
-			//
-			// Calculate Lead Time
-			final Timestamp today = new Timestamp(System.currentTimeMillis());
-			final Timestamp datePromised = TimeUtil.addDays(today, partnerProduct.getDeliveryTime_Promised());
-			//
-			// Get/Create Purchase Order Header
-			MOrder order = orders.get(C_BPartner_ID);
-			if (order == null)
-			{
-				order = new MOrder(getCtx(), 0, get_TrxName());
-				final MBPartner vendor = MBPartner.get(getCtx(), C_BPartner_ID);
-				order.setAD_Org_ID(getAD_Org_ID());
-				order.setBPartner(vendor);
-				order.setIsSOTrx(false);
-				Services.get(IOrderBL.class).setDocTypeTargetId(order);
-				order.setDatePromised(datePromised);
-				order.setDescription(Services.get(IMsgBL.class).translate(getCtx(), I_PP_Order.COLUMNNAME_PP_Order_ID) + ":" + getPP_Order().getDocumentNo());
-				order.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
-				order.setDocAction(X_C_Order.DOCACTION_Complete);
-				order.setAD_User_ID(getAD_User_ID());
-				order.setM_Warehouse_ID(getM_Warehouse_ID());
-				// order.setSalesRep_ID(getAD_User_ID());
-				order.saveEx();
-				addDescription(Services.get(IMsgBL.class).translate(getCtx(), "C_Order_ID") + ": " + order.getDocumentNo());
-				orders.put(C_BPartner_ID, order);
-				// msg = msg + Services.get(IMsgBL.class).translate(getCtx(), "C_Order_ID")
-				// + " : " + order.getDocumentNo()
-				// + " - "
-				// + Services.get(IMsgBL.class).translate(getCtx(), "C_BPartner_ID")
-				// + " : " + vendor.getName() + " , ";
-			}
-			//
-			// Create Order Line:
-			BigDecimal QtyOrdered = getMovementQty().multiply(subcontract.getQty());
-			// Check Order Min
-			if (partnerProduct.getOrder_Min().signum() > 0)
-			{
-				QtyOrdered = QtyOrdered.max(partnerProduct.getOrder_Min());
-			}
-			// Check Order Pack
-			if (partnerProduct.getOrder_Pack().signum() > 0 && QtyOrdered.signum() > 0)
-			{
-				QtyOrdered = partnerProduct.getOrder_Pack().multiply(QtyOrdered.divide(partnerProduct.getOrder_Pack(), 0, BigDecimal.ROUND_UP));
-			}
-			final MOrderLine orderLine = new MOrderLine(order);
-			orderLine.setM_Product_ID(product.getM_Product_ID());
-			orderLine.setDescription(activity.getDescription());
-			orderLine.setM_Warehouse_ID(getM_Warehouse_ID());
-			orderLine.setQty(QtyOrdered);
-			// line.setPrice(m_product_po.getPricePO());
-			// oline.setPriceList(m_product_po.getPriceList());
-			// oline.setPP_Cost_Collector_ID(get_ID());
-			orderLine.setDatePromised(datePromised);
-			orderLine.saveEx();
-			//
-			// TODO: Mark this as processed?
-			setProcessed(true);
-		} // each subcontracting line
-
-		// return msg;
-	}
-
-	@Override
-	public I_M_Product getM_Product()
-	{
-		return MProduct.get(getCtx(), getM_Product_ID());
-	}
-
 	@Override
 	public I_C_UOM getC_UOM()
 	{
-		return MUOM.get(getCtx(), getC_UOM_ID());
+		return Services.get(IUOMDAO.class).getById(getC_UOM_ID());
 	}
 
-	private boolean isIssue()
+	private I_C_UOM getProductStockingUOM()
 	{
-		final boolean considerCoProductsAsIssue = true;  // backward compatibility: we consider by/co-products as issues (and not receipts)
-		return ppCostCollectorBL.isMaterialIssue(this, considerCoProductsAsIssue);
-	}
-
-	private boolean isReceipt()
-	{
-		final boolean considerCoProductsAsReceipt = false; // backward compatibility: we consider only finished goods receipts (no by/co products)
-		return ppCostCollectorBL.isMaterialReceipt(this, considerCoProductsAsReceipt);
-	}
-
-	private boolean isActivityControl()
-	{
-		return ppCostCollectorBL.isActivityControl(this);
-	}
-
-	private boolean isVariance()
-	{
-		return isCostCollectorType(COSTCOLLECTORTYPE_MethodChangeVariance, COSTCOLLECTORTYPE_UsegeVariance, COSTCOLLECTORTYPE_RateVariance, COSTCOLLECTORTYPE_MixVariance);
+		return Services.get(IProductBL.class).getStockingUOM(getM_Product_ID());
 	}
 
 	private String getMovementType()
 	{
-		if (isReceipt())
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
+		if (costCollectorType.isMaterialReceipt())
 		{
 			return X_M_Transaction.MOVEMENTTYPE_WorkOrderPlus;
 		}
-		else if (isIssue())
+		else if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
 			return MTransaction.MOVEMENTTYPE_WorkOrderMinus;
 		}
@@ -889,16 +634,5 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		{
 			return null;
 		}
-	}
-
-	/**
-	 * Check if CostCollectorType is equal with any of provided types
-	 *
-	 * @param types
-	 * @return
-	 */
-	public boolean isCostCollectorType(final String... types)
-	{
-		return PPCostCollectorUtils.isCostCollectorTypeAnyOf(this, types);
 	}
 }

@@ -2,6 +2,8 @@ package org.adempiere.uom.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.time.temporal.TemporalUnit;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -38,6 +40,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.uom.UOMUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -117,5 +120,12 @@ public class UOMDAO implements IUOMDAO
 	public I_C_UOM retrieveEachUOM(final Properties ctx)
 	{
 		return retrieveByX12DE355(ctx, X12DE355_Each);
+	}
+
+	@Override
+	public TemporalUnit getTemporalUnitByUomId(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uom = getById(uomId);
+		return UOMUtil.toTemporalUnit(uom);
 	}
 }

@@ -31,10 +31,11 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -117,13 +118,12 @@ public class PP_Order_BOMLine
 		if (InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_M_Warehouse_ID)
 				|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_M_Locator_ID))
 		{
-			final int warehouseId = orderBOMLine.getM_Warehouse_ID();
-			final I_M_Locator locator = orderBOMLine.getM_Locator();
-			if (locator == null || locator.getM_Locator_ID() <= 0 || locator.getM_Warehouse_ID() != warehouseId)
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(orderBOMLine.getM_Warehouse_ID());
+			final LocatorId locatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(orderBOMLine.getM_Locator_ID());
+			if (locatorId == null || !locatorId.getWarehouseId().equals(warehouseId))
 			{
-				final I_M_Warehouse warehouse = orderBOMLine.getM_Warehouse();
-				final I_M_Locator locatorNew = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-				orderBOMLine.setM_Locator(locatorNew);
+				final LocatorId locatorIdToUse = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+				orderBOMLine.setM_Locator_ID(locatorIdToUse.getRepoId());
 			}
 		}
 

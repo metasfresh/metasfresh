@@ -26,7 +26,7 @@ package de.metas.handlingunits.client.terminal.pporder.receipt.model;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.IReceiptCostCollectorCandidate;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
@@ -38,15 +38,15 @@ import de.metas.util.Check;
 public class HUPPOrderReceiptCUKey extends CUKey
 {
 	private final ILUTUConfigurationEditor lutuConfigurationEditor;
-	private final IReceiptCostCollectorCandidate receiptCostCollectorCandidate;
+	private final ReceiptCostCollectorCandidate receiptCostCollectorCandidate;
 
 	public HUPPOrderReceiptCUKey(
 			final ITerminalContext terminalContext,
 			final ILUTUConfigurationEditor lutuConfigurationEditor,
-			final IReceiptCostCollectorCandidate receiptCostCollectorCandidate,
+			final ReceiptCostCollectorCandidate receiptCostCollectorCandidate,
 			final BigDecimal qtyToReceiveTarget)
 	{
-		super(terminalContext, receiptCostCollectorCandidate.getM_Product());
+		super(terminalContext, receiptCostCollectorCandidate.getProductId());
 
 		Check.assumeNotNull(lutuConfigurationEditor, "lutuConfigurationEditor not null");
 		this.lutuConfigurationEditor = lutuConfigurationEditor;
@@ -79,14 +79,14 @@ public class HUPPOrderReceiptCUKey extends CUKey
 		return lutuConfigurationEditor.getEditingLUTUConfiguration();
 	}
 
-	public final IReceiptCostCollectorCandidate getReceiptCostCollectorCandidate()
+	public final ReceiptCostCollectorCandidate getReceiptCostCollectorCandidate()
 	{
 		return receiptCostCollectorCandidate;
 	}
 	
 	public final IPPOrderReceiptHUProducer createReceiptCandidatesProducer()
 	{
-		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = getReceiptCostCollectorCandidate();
+		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = getReceiptCostCollectorCandidate();
 		
 		final IPPOrderReceiptHUProducer producer;
 		if (receiptCostCollectorCandidate.getPP_Order_BOMLine() != null)

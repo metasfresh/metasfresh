@@ -33,16 +33,6 @@ import de.metas.util.ISingletonService;
 
 public interface IADWorkflowBL extends ISingletonService
 {
-
-	/**
-	 * Check if the workflow is valid for given date
-	 * 
-	 * @param workflow
-	 * @param date
-	 * @return true if valid
-	 */
-	boolean isValidFromTo(I_AD_Workflow workflow, Date date);
-
 	/**
 	 * Check if the workflow node is valid for given date
 	 * 

@@ -187,7 +187,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			final I_M_AttributeSetInstance asiCopy = Services.get(IAttributeDAO.class).copy(asi);
 			orderBOMLine.setM_AttributeSetInstance(asiCopy);
 		}
-		
+
 		orderBOMLine.setCULabelQuanitity(bomLine.getCULabelQuanitity());
 		orderBOMLine.setShowSubBOMIngredients(bomLine.isShowSubBOMIngredients());
 	}
@@ -578,6 +578,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		// Save and return
 		InterfaceWrapperHelper.save(orderBOMLine);
 		return orderBOMLine;
+	}
+
+	@Override
+	public I_C_UOM getStockingUOM(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		return Services.get(IProductBL.class).getStockingUOM(productId);
 	}
 
 	@Override

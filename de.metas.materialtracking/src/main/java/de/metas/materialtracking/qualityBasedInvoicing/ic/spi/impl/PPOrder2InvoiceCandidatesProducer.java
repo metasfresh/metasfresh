@@ -263,7 +263,7 @@ import lombok.NonNull;
 
 		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.retrieveNotReversedForOrder(ppOrder))
 		{
-			if (ppCostCollectorBL.isMaterialIssue(cc, true) && cc.getMovementQty().signum() > 0)
+			if (ppCostCollectorBL.isAnyComponentIssueOrCoProduct(cc) && cc.getMovementQty().signum() > 0)
 			{
 				return true;
 			}

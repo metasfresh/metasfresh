@@ -3,12 +3,14 @@ package org.eevolution.model;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -17,15 +19,19 @@ import org.compiere.model.MClient;
 import org.compiere.model.MStorage;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.ComponentIssueCreateRequest;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IReceiptCostCollectorCandidate;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -61,7 +67,7 @@ public class PPOrderMakeToKitHelper
 	 */
 	public static void complete(final MPPOrder ppOrder)
 	{
-		final Timestamp today = SystemTime.asTimestamp();
+		final LocalDateTime today = SystemTime.asLocalDateTime();
 
 		// metas : cg task: 06004 - refactored a bit : start
 		final Map<Integer, PPOrderBOMLineModel> issue = new HashMap<>();
@@ -146,25 +152,27 @@ public class PPOrderMakeToKitHelper
 			createIssue(
 					ppOrder,
 					key.getKey(),
-					today, qtyToDeliver,
+					today,
+					qtyToDeliver,
 					qtyScrapComponent,
 					BigDecimal.ZERO,
-					storages, forceIssue);
+					storages,
+					forceIssue);
 		}
 
 		final BigDecimal qtyToReceive = Services.get(IPPOrderBL.class).getQtyOpen(ppOrder);
 
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		final IReceiptCostCollectorCandidate candidate = ppCostCollectorBL.createReceiptCostCollectorCandidate()
+		final ReceiptCostCollectorCandidate candidate = ReceiptCostCollectorCandidate.builder()
 				.PP_Order(ppOrder)
 				.movementDate(today)
 				.qtyToReceive(qtyToReceive)
 				.qtyScrap(ppOrder.getQtyScrap())
 				.qtyReject(ppOrder.getQtyReject())
-				.M_Locator_ID(ppOrder.getM_Locator_ID())
-				.M_Product(ppOrder.getM_Product())
+				.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrder.getM_Locator_ID()))
+				.productId(ProductId.ofRepoId(ppOrder.getM_Product_ID()))
 				.C_UOM(ppOrder.getC_UOM())
-				.M_AttributeSetInstance_ID(ppOrder.getM_AttributeSetInstance_ID())
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID()))
 				.build();
 
 		ppCostCollectorBL.createReceipt(candidate);
@@ -180,7 +188,7 @@ public class PPOrderMakeToKitHelper
 	 * @param minGuaranteeDate Guarantee Date
 	 * @return true when the qty available is enough
 	 */
-	private static boolean isQtyAvailable(MPPOrder order, final Map<Integer, PPOrderBOMLineModel> issue, Timestamp minGuaranteeDate)
+	private static boolean isQtyAvailable(MPPOrder order, final Map<Integer, PPOrderBOMLineModel> issue, LocalDateTime minGuaranteeDate)
 	{
 		boolean isCompleteQtyDeliver = false;
 		for (int i = 0; i < issue.size(); i++)
@@ -220,7 +228,8 @@ public class PPOrderMakeToKitHelper
 						M_Product_ID,
 						order.getM_Warehouse_ID(),
 						M_AttributeSetInstance_ID,
-						minGuaranteeDate, order.get_TrxName());
+						minGuaranteeDate,
+						order.get_TrxName());
 
 				if (M_AttributeSetInstance_ID == 0)
 				{
@@ -264,7 +273,8 @@ public class PPOrderMakeToKitHelper
 			int M_Product_ID,
 			int M_Warehouse_ID,
 			int M_ASI_ID,
-			Timestamp minGuaranteeDate, String trxName)
+			LocalDateTime minGuaranteeDate,
+			String trxName)
 	{
 		final I_M_Product product = loadOutOfTrx(M_Product_ID, I_M_Product.class);
 		if (product != null && Services.get(IProductBL.class).isStocked(product))
@@ -278,7 +288,7 @@ public class PPOrderMakeToKitHelper
 						M_Warehouse_ID,
 						M_Product_ID,
 						M_ASI_ID,
-						minGuaranteeDate,
+						TimeUtil.asTimestamp(minGuaranteeDate),
 						MClient.MMPOLICY_FiFo.equals(MMPolicy), // FiFo
 						true, // positiveOnly
 						0, // M_Locator_ID
@@ -291,7 +301,7 @@ public class PPOrderMakeToKitHelper
 						M_Warehouse_ID,
 						M_Product_ID,
 						0,
-						minGuaranteeDate,
+						TimeUtil.asTimestamp(minGuaranteeDate),
 						MClient.MMPOLICY_FiFo.equals(MMPolicy), // FiFo
 						true, // positiveOnly
 						0, // M_Locator_ID
@@ -322,7 +332,7 @@ public class PPOrderMakeToKitHelper
 	private static String createIssue(
 			final I_PP_Order order,
 			final int PP_Order_BOMLine_ID,
-			final Timestamp movementdate,
+			final LocalDateTime movementdate,
 			final BigDecimal qty,
 			final BigDecimal qtyScrap,
 			final BigDecimal qtyReject,
@@ -361,27 +371,26 @@ public class PPOrderMakeToKitHelper
 			// create record for negative and positive transaction
 			if (qtyIssue.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
 			{
-				String costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue;
+				CostCollectorType costCollectorType = CostCollectorType.ComponentIssue;
 				// Method Variance
 				if (orderBOMLine.getQtyBatch().signum() == 0
 						&& orderBOMLine.getQtyBOM().signum() == 0)
 				{
-					costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance;
+					costCollectorType = CostCollectorType.MethodChangeVariance;
 				}
 				else if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product))
 				{
-					costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance;
+					costCollectorType = CostCollectorType.MixVariance;
 				}
 				//
 				final I_PP_Cost_Collector cc = ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
 						.orderBOMLine(orderBOMLine)
-						.locatorId(storage.getM_Locator_ID())
-						.attributeSetInstanceId(0)
-						.movementDate(movementdate)
-						.qtyUOM(uom)
-						.qtyIssue(qtyIssue)
-						.qtyScrap(qtyScrap)
-						.qtyReject(qtyReject)
+						.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(storage.getM_Locator_ID()))
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.movementDate(TimeUtil.asLocalDateTime(movementdate))
+						.qtyIssue(Quantity.of(qtyIssue, uom))
+						.qtyScrap(Quantity.of(qtyScrap, uom))
+						.qtyReject(Quantity.of(qtyReject, uom))
 						.build());
 
 				sb.append(cc.getDocumentNo());
@@ -399,11 +408,10 @@ public class PPOrderMakeToKitHelper
 		{
 			final I_PP_Cost_Collector cc = ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
 					.orderBOMLine(orderBOMLine)
-					.locatorId(orderBOMLine.getM_Locator_ID())
-					.attributeSetInstanceId(orderBOMLine.getM_AttributeSetInstance_ID())
-					.movementDate(movementdate)
-					.qtyUOM(uom)
-					.qtyIssue(toIssue)
+					.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(orderBOMLine.getM_Locator_ID()))
+					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(orderBOMLine.getM_AttributeSetInstance_ID()))
+					.movementDate(TimeUtil.asLocalDateTime(movementdate))
+					.qtyIssue(Quantity.of(toIssue, uom))
 					.build());
 
 			sb.append(cc.getDocumentNo());

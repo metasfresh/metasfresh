@@ -1,10 +1,16 @@
 package org.eevolution.api;
 
+import java.time.LocalDateTime;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +28,14 @@ package org.eevolution.api;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_AD_WF_Node;
-import org.eevolution.model.I_PP_WF_Node_Asset;
-
-import de.metas.util.ISingletonService;
-
-public interface IPPWFNodeAssetDAO extends ISingletonService
+@Builder
+@Value
+public class PPOrderActivityScheduleChangeRequest
 {
-
-	List<I_PP_WF_Node_Asset> retrieveForWFNode(Properties ctx, int adWFNodeId);
-
-	List<I_PP_WF_Node_Asset> retrieveForWFNode(I_AD_WF_Node wfNode);
-
+	@NonNull
+	PPOrderRoutingActivityId orderRoutingActivityId;
+	@NonNull
+	LocalDateTime scheduledStartDate;
+	@NonNull
+	LocalDateTime scheduledEndDate;
 }

@@ -5,15 +5,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMBL;
@@ -38,6 +35,7 @@ import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -145,7 +143,7 @@ public class PPOrderPojoSupplier
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
 
-				.qtyRequired(ppOrderQuantity.getQty())
+				.qtyRequired(ppOrderQuantity.getAsBigDecimal())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId());
@@ -185,7 +183,6 @@ public class PPOrderPojoSupplier
 			@NonNull final IMaterialPlanningContext mrpContext,
 			@NonNull final BigDecimal qty)
 	{
-		final Properties ctx = mrpContext.getCtx();
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 
 		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
@@ -195,11 +192,11 @@ public class PPOrderPojoSupplier
 			return leadtimeDays;
 		}
 
-		final I_AD_Workflow adWorkflow = productPlanningData.getAD_Workflow();
-		final I_S_Resource plant = productPlanningData.getS_Resource();
+		final PPRoutingId routingId = PPRoutingId.ofRepoId(productPlanningData.getAD_Workflow_ID());
+		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanningData.getS_Resource_ID());
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
-		final BigDecimal leadtimeCalc = routingService.calculateDurationDays(adWorkflow, plant, qty);
-		return leadtimeCalc.intValueExact();
+		final int leadtimeCalc = routingService.calculateDurationDays(routingId, plantId, qty);
+		return leadtimeCalc;
 	}
 
 	private List<PPOrderLine> supplyPPOrderLinePojos(@NonNull final PPOrder ppOrder)

@@ -1,14 +1,14 @@
 package org.eevolution.api;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
-import org.compiere.model.I_C_UOM;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.LocatorId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import de.metas.util.Check;
+import de.metas.quantity.Quantity;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,34 +40,29 @@ import lombok.Value;
 public class ComponentIssueCreateRequest
 {
 	I_PP_Order_BOMLine orderBOMLine;
-	int locatorId;
-	int attributeSetInstanceId;
-	Date movementDate;
-	I_C_UOM qtyUOM;
-	BigDecimal qtyIssue;
-	BigDecimal qtyScrap;
-	BigDecimal qtyReject;
+	LocatorId locatorId;
+	AttributeSetInstanceId attributeSetInstanceId;
+	LocalDateTime movementDate;
+	Quantity qtyIssue;
+	Quantity qtyScrap;
+	Quantity qtyReject;
 
 	@Builder
 	private ComponentIssueCreateRequest(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
-			final int locatorId,
-			final int attributeSetInstanceId,
-			@Nullable final Date movementDate,
-			@NonNull final I_C_UOM qtyUOM,
-			@NonNull final BigDecimal qtyIssue,
-			@Nullable final BigDecimal qtyScrap,
-			@Nullable final BigDecimal qtyReject)
+			@NonNull final LocatorId locatorId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
+			@Nullable final LocalDateTime movementDate,
+			@NonNull final Quantity qtyIssue,
+			@Nullable final Quantity qtyScrap,
+			@Nullable final Quantity qtyReject)
 	{
-		Check.assume(locatorId > 0, "locatorId > 0");
-
 		this.orderBOMLine = orderBOMLine;
 		this.locatorId = locatorId;
-		this.attributeSetInstanceId = attributeSetInstanceId > 0 ? attributeSetInstanceId : 0;
-		this.movementDate = movementDate != null ? movementDate : SystemTime.asTimestamp();
-		this.qtyUOM = qtyUOM;
+		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
+		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDateTime();
 		this.qtyIssue = qtyIssue;
-		this.qtyScrap = qtyScrap != null ? qtyScrap : BigDecimal.ZERO;
-		this.qtyReject = qtyReject != null ? qtyReject : BigDecimal.ZERO;
+		this.qtyScrap = qtyScrap != null ? qtyScrap : qtyIssue.toZero();
+		this.qtyReject = qtyReject != null ? qtyReject : qtyIssue.toZero();
 	}
 }

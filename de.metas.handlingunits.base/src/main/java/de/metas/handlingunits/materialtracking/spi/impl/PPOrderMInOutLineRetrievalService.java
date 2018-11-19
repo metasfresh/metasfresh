@@ -104,7 +104,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 
 		for (final I_PP_Cost_Collector costCollector : costCollectors)
 		{
-			if (!ppCostCollectorBL.isMaterialIssue(costCollector, true))
+			if (!ppCostCollectorBL.isAnyComponentIssueOrCoProduct(costCollector))
 			{
 				continue;
 			}

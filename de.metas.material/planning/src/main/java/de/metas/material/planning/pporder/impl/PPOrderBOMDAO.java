@@ -1,31 +1,7 @@
 package de.metas.material.planning.pporder.impl;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,15 +9,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.Query;
-import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -232,28 +204,4 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 		final int nextLine = maxLine + 10;
 		return nextLine;
 	}
-
-	@Override
-	public BigDecimal retrieveQtyUsageVariance(final I_PP_Order_BOMLine orderBOMLine)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderBOMLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(orderBOMLine);
-
-		final String whereClause = I_PP_Cost_Collector.COLUMNNAME_PP_Order_BOMLine_ID + "=?"
-				+ " AND " + I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID + "=?"
-				+ " AND " + I_PP_Cost_Collector.COLUMNNAME_DocStatus + " IN (?,?)"
-				+ " AND " + I_PP_Cost_Collector.COLUMNNAME_CostCollectorType + "=?";
-		BigDecimal qtyUsageVariance = new Query(ctx, I_PP_Cost_Collector.Table_Name, whereClause, trxName)
-				.setParameters(new Object[] {
-						orderBOMLine.getPP_Order_BOMLine_ID(),
-						orderBOMLine.getPP_Order_ID(),
-						X_PP_Cost_Collector.DOCSTATUS_Completed,
-						X_PP_Cost_Collector.DOCSTATUS_Closed,
-						X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance
-				})
-				.sum(I_PP_Cost_Collector.COLUMNNAME_MovementQty);
-		//
-		return qtyUsageVariance;
-	}
-
 }

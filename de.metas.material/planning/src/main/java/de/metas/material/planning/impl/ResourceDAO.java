@@ -2,6 +2,9 @@ package de.metas.material.planning.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalUnit;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -33,28 +36,107 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.UomId;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_M_Product;
 import org.compiere.model.X_S_Resource;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.ResourceTypeId;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ResourceDAO implements IResourceDAO
 {
-	public I_S_ResourceType getResourceTypeById(@NonNull final ResourceTypeId resourceTypeId)
+	@Override
+	public ResourceType getResourceTypeById(@NonNull final ResourceTypeId resourceTypeId)
 	{
-		return loadOutOfTrx(resourceTypeId, I_S_ResourceType.class);
+		final I_S_ResourceType record = loadOutOfTrx(resourceTypeId, I_S_ResourceType.class);
+		return toResourceType(record);
+	}
+
+	@Override
+	public ResourceType getResourceTypeByResourceId(final ResourceId resourceId)
+	{
+		final I_S_Resource resource = getResourceById(resourceId);
+		final ResourceTypeId resourceTypeId = ResourceTypeId.ofRepoId(resource.getS_ResourceType_ID());
+		return getResourceTypeById(resourceTypeId);
+	}
+
+	public I_S_Resource getResourceById(@NonNull final ResourceId resourceId)
+	{
+		return loadOutOfTrx(resourceId, I_S_Resource.class);
+	}
+
+	private ResourceType toResourceType(I_S_ResourceType record)
+	{
+		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_ID());
+		final TemporalUnit durationUnit = Services.get(IUOMDAO.class).getTemporalUnitByUomId(durationUomId);
+
+		return ResourceType.builder()
+				.active(record.isActive())
+				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
+				.durationUomId(durationUomId)
+				.durationUnit(durationUnit)
+				.availableDaysOfWeek(extractAvailableDaysOfWeek(record))
+				.timeSlot(record.isTimeSlot())
+				.timeSlotStart(TimeUtil.asLocalTime(record.getTimeSlotStart()))
+				.timeSlotEnd(TimeUtil.asLocalTime(record.getTimeSlotEnd()))
+				.build();
+	}
+
+	private static ImmutableSet<DayOfWeek> extractAvailableDaysOfWeek(@NonNull final I_S_ResourceType resourceType)
+	{
+		if (resourceType.isDateSlot())
+		{
+			final ImmutableSet.Builder<DayOfWeek> days = ImmutableSet.builder();
+			if (resourceType.isOnMonday())
+			{
+				days.add(DayOfWeek.MONDAY);
+			}
+			if (resourceType.isOnTuesday())
+			{
+				days.add(DayOfWeek.TUESDAY);
+			}
+			if (resourceType.isOnWednesday())
+			{
+				days.add(DayOfWeek.WEDNESDAY);
+			}
+			if (resourceType.isOnThursday())
+			{
+				days.add(DayOfWeek.THURSDAY);
+			}
+			if (resourceType.isOnFriday())
+			{
+				days.add(DayOfWeek.FRIDAY);
+			}
+			if (resourceType.isOnSaturday())
+			{
+				days.add(DayOfWeek.SATURDAY);
+			}
+			if (resourceType.isOnSunday())
+			{
+				days.add(DayOfWeek.SUNDAY);
+			}
+
+			return days.build();
+		}
+		else
+		{
+			return ImmutableSet.copyOf(DayOfWeek.values());
+		}
 	}
 
 	@Override
@@ -124,7 +206,7 @@ public class ResourceDAO implements IResourceDAO
 			final I_M_Product productToUpdate;
 			if (existingProduct == null)
 			{
-				final I_S_ResourceType fromResourceType = getResourceTypeById(resourceTypeId);
+				final ResourceType fromResourceType = getResourceTypeById(resourceTypeId);
 				productToUpdate = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 
 				updateProductFromResourceType(productToUpdate, fromResourceType);
@@ -150,12 +232,12 @@ public class ResourceDAO implements IResourceDAO
 	}
 
 	@Override
-	public void onResourceTypeChanged(final I_S_ResourceType resourceType)
+	public void onResourceTypeChanged(final I_S_ResourceType resourceTypeRecord)
 	{
 		final Set<ResourceId> resourceIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_S_Resource.class) // in trx!
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceType.getS_ResourceType_ID())
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeRecord.getS_ResourceType_ID())
 				.create()
 				.listIds(ResourceId::ofRepoId);
 		if (resourceIds.isEmpty())
@@ -163,14 +245,15 @@ public class ResourceDAO implements IResourceDAO
 			return;
 		}
 
+		final ResourceType resourceType = toResourceType(resourceTypeRecord);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		productsRepo.updateProductsByResourceIds(resourceIds, product -> updateProductFromResourceType(product, resourceType));
 	}
 
-	private void updateProductFromResourceType(final I_M_Product product, final I_S_ResourceType from)
+	private void updateProductFromResourceType(final I_M_Product product, final ResourceType from)
 	{
 		product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
-		product.setC_UOM_ID(from.getC_UOM_ID());
-		product.setM_Product_Category_ID(from.getM_Product_Category_ID());
+		product.setC_UOM_ID(from.getDurationUomId().getRepoId());
+		product.setM_Product_Category_ID(ProductCategoryId.toRepoId(from.getProductCategoryId()));
 	}
 }

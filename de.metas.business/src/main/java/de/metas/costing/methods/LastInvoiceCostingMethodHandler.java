@@ -18,12 +18,14 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
+import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -50,9 +52,12 @@ import de.metas.util.Services;
 @Component
 public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	public LastInvoiceCostingMethodHandler(final ICurrentCostsRepository currentCostsRepo, final ICostDetailRepository costDetailsRepo)
+	public LastInvoiceCostingMethodHandler(
+			@NonNull final ICurrentCostsRepository currentCostsRepo, 
+			@NonNull final ICostDetailRepository costDetailsRepo,
+			@NonNull final CostingMethodHandlerUtils utils)
 	{
-		super(currentCostsRepo, costDetailsRepo);
+		super(currentCostsRepo, costDetailsRepo, utils);
 	}
 
 	@Override

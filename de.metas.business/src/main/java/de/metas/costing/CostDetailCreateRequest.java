@@ -10,6 +10,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -146,5 +147,50 @@ public class CostDetailCreateRequest
 		}
 
 		return toBuilder().amt(amt).build();
+	}
+
+	public CostDetailCreateRequest withProductId(@NonNull final ProductId productId)
+	{
+		if (ProductId.equals(this.productId, productId))
+		{
+			return this;
+		}
+
+		return toBuilder().productId(productId).build();
+	}
+
+	public CostDetailCreateRequest withProductIdAndQty(@NonNull final ProductId productId, @NonNull final Quantity qty)
+	{
+		if (ProductId.equals(this.productId, productId)
+				&& Objects.equals(this.qty, qty))
+		{
+			return this;
+		}
+
+		return toBuilder().productId(productId).qty(qty).build();
+	}
+
+	public CostDetailBuilder toCostDetailBuilder()
+	{
+		final CostDetailBuilder costDetail = CostDetail.builder()
+				.clientId(getClientId())
+				.orgId(getOrgId())
+				.acctSchemaId(getAcctSchemaId())
+				.productId(getProductId())
+				.attributeSetInstanceId(getAttributeSetInstanceId())
+				//
+				.amt(getAmt())
+				.qty(getQty())
+				.price(null) // TODO price
+				//
+				.documentRef(getDocumentRef())
+				.description(getDescription());
+
+		if (!isAllCostElements())
+		{
+			costDetail.costElementId(getCostElement().getId());
+		}
+
+		return costDetail;
 	}
 }

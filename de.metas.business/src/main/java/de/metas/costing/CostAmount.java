@@ -2,9 +2,13 @@ package de.metas.costing;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaCosting;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -115,6 +119,12 @@ public class CostAmount
 		return multiply(quantity.getAsBigDecimal());
 	}
 
+	public CostAmount multiply(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
+	{
+		final BigDecimal durationBD = BigDecimal.valueOf(duration.get(unit));
+		return multiply(durationBD);
+	}
+
 	public CostAmount add(@NonNull final CostAmount amtToAdd)
 	{
 		assertCurrencyMatching(amtToAdd);
@@ -151,6 +161,13 @@ public class CostAmount
 
 		final BigDecimal valueNew = value.setScale(precision, RoundingMode.HALF_UP);
 		return new CostAmount(valueNew, currencyId);
+	}
+
+	public CostAmount roundToCostingPrecisionIfNeeded(final AcctSchema acctSchema)
+	{
+		final AcctSchemaCosting acctSchemaCosting = acctSchema.getCosting();
+		final int precision = acctSchemaCosting.getCostingPrecision();
+		return roundToPrecisionIfNeeded(precision);
 	}
 
 	public CostAmount subtract(@NonNull final CostAmount amtToSubtract)

@@ -48,24 +48,6 @@ import lombok.NonNull;
 public class ADWorkflowBL implements IADWorkflowBL
 {
 	@Override
-	public boolean isValidFromTo(final I_AD_Workflow workflow, final Date date)
-	{
-		final Date validFrom = workflow.getValidFrom();
-
-		if (validFrom != null && date.before(validFrom))
-		{
-			return false;
-		}
-
-		final Date validTo = workflow.getValidTo();
-		if (validTo != null && date.after(validTo))
-		{
-			return false;
-		}
-		return true;
-	}
-
-	@Override
 	public boolean isValidFromTo(final I_AD_WF_Node node, final Date date)
 	{
 		final Date validFrom = node.getValidFrom();

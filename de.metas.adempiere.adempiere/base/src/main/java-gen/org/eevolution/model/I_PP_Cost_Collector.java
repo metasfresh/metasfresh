@@ -666,9 +666,9 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+//	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
+//
+//	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_M_Product>(I_PP_Cost_Collector.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
@@ -921,18 +921,18 @@ public interface I_PP_Cost_Collector
 	 */
 	public void setPP_Order_Workflow_ID (int PP_Order_Workflow_ID);
 
-	/**
-	 * Get Manufacturing Order Workflow.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPP_Order_Workflow_ID();
-
-	public org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow() throws RuntimeException;
-
-	public void setPP_Order_Workflow(org.eevolution.model.I_PP_Order_Workflow PP_Order_Workflow);
+//	/**
+//	 * Get Manufacturing Order Workflow.
+//	 *
+//	 * <br>Type: TableDir
+//	 * <br>Mandatory: false
+//	 * <br>Virtual Column: false
+//	 */
+//	public int getPP_Order_Workflow_ID();
+//
+//	public org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow() throws RuntimeException;
+//
+//	public void setPP_Order_Workflow(org.eevolution.model.I_PP_Order_Workflow PP_Order_Workflow);
 
     /** Column definition for PP_Order_Workflow_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.eevolution.model.I_PP_Order_Workflow> COLUMN_PP_Order_Workflow_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.eevolution.model.I_PP_Order_Workflow>(I_PP_Cost_Collector.class, "PP_Order_Workflow_ID", org.eevolution.model.I_PP_Order_Workflow.class);

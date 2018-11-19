@@ -43,6 +43,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	void explodePhantom(I_PP_Order_BOMLine orderBOMLine, BigDecimal qtyOrdered);
 
+	I_C_UOM getStockingUOM(I_PP_Order_BOMLine orderBOMLine);
+
 	/**
 	 * Gets Qty Open (i.e. Qty To Issue).
 	 *

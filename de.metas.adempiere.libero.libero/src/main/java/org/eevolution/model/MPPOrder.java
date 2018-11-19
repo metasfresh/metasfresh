@@ -41,13 +41,13 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
@@ -62,7 +62,10 @@ import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.IPPOrderNodeBL;
+import org.eevolution.api.IPPOrderWorkflowBL;
+import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.PPOrderRouting;
+import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.validator.PPOrderChangedEventFactory;
 
 import de.metas.document.IDocTypeDAO;
@@ -74,6 +77,7 @@ import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -350,8 +354,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 
 		//
-		// Void all activitions
-		getMPPOrderWorkflow().voidActivities();
+		// Void all activities
+		final PPOrderRouting orderRouting = getOrderRouting();
+		orderRouting.voidIt();
+		Services.get(IPPOrderWorkflowDAO.class).save(orderRouting);
 
 		//
 		// Set QtyOrdered/QtyEntered=0 to ZERO
@@ -387,7 +393,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public boolean closeIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
-		
+
 		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(this);
 
 		//
@@ -422,12 +428,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Close all the activity do not reported
-		final MPPOrderWorkflow ppOrderWorkflow = getMPPOrderWorkflow();
-		ppOrderWorkflow.closeActivities(
-				ppOrderWorkflow.getLastNode(getAD_Client_ID()), // Current Activity to start from => last activity
-				getUpdated(), // MovementDate
-				false // stop on first milestone => no
-		);
+		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
+		Services.get(IPPOrderWorkflowBL.class).closeAllActivities(orderId);
 
 		//
 		// Set QtyOrdered=QtyDelivered
@@ -570,15 +572,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		return dt.getName() + " " + getDocumentNo();
 	}
 
-	public MPPOrderWorkflow getMPPOrderWorkflow()
+	private PPOrderRouting getOrderRouting()
 	{
-		final I_PP_Order_Workflow ppOrderWorkflow = Services.get(IPPOrderBL.class).getPP_Order_Workflow(this);
-
-		//
-		// 07619: Preserve the transaction of this PPOrder on the workflow
-		InterfaceWrapperHelper.setTrxName(ppOrderWorkflow, get_TrxName());
-
-		return LegacyAdapters.convertToPO(ppOrderWorkflow);
+		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
+		return Services.get(IPPOrderWorkflowDAO.class).getByOrderId(orderId);
 	}
 
 	@Override
@@ -598,21 +595,20 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	private final void autoReportActivities()
 	{
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		final IPPOrderNodeBL ppOrderNodeBL = Services.get(IPPOrderNodeBL.class);
 
-		final MPPOrderWorkflow ppOrderWorkflow = getMPPOrderWorkflow();
-
-		for (final MPPOrderNode activity : ppOrderWorkflow.getNodes())
+		final PPOrderRouting orderRouting = getOrderRouting();
+		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{
 			if (activity.isMilestone())
 			{
-				if (activity.isSubcontracting() || activity.getPP_Order_Node_ID() == ppOrderWorkflow.getPP_Order_Node_ID())
+				if (activity.isSubcontracting() || orderRouting.isFirstActivity(activity))
 				{
 					ppCostCollectorBL.createActivityControl(ActivityControlCreateRequest.builder()
-							.node(activity)
-							.qtyMoved(ppOrderNodeBL.getQtyToDeliver(activity))
-							.durationSetup(0)
-							.duration(BigDecimal.ZERO)
+							.order(this)
+							.orderActivity(activity)
+							.qtyMoved(activity.getQtyToDeliver())
+							.durationSetup(Duration.ZERO)
+							.duration(Duration.ZERO)
 							.build());
 				}
 			}
@@ -622,21 +618,19 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	private void createVariances()
 	{
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		for (final I_PP_Order_BOMLine line : getLines())
+
+		//
+		for (final I_PP_Order_BOMLine bomLine : getLines())
 		{
-			ppCostCollectorBL.createUsageVariance(line);
+			ppCostCollectorBL.createUsageVariance(this, bomLine);
 		}
 
 		//
-		final MPPOrderWorkflow orderWorkflow = getMPPOrderWorkflow();
-		if (orderWorkflow != null)
+		final PPOrderRouting orderRouting = getOrderRouting();
+		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{
-			for (final MPPOrderNode node : orderWorkflow.getNodes(true))
-			{
-				ppCostCollectorBL.createUsageVariance(node);
-			}
+			ppCostCollectorBL.createResourceUsageVariance(this, activity);
 		}
-		// orderWorkflow.m_nodes = null; // TODO: reset nodes cache
 	}
 
 } // MPPOrder

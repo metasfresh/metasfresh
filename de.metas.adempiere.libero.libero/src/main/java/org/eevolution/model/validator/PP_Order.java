@@ -208,7 +208,8 @@ public class PP_Order
 
 	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderWorkflowDAO.class).deleteOrderWorkflow(ppOrder);
+		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		Services.get(IPPOrderWorkflowDAO.class).deleteByOrderId(orderId);
 
 		final I_PP_Order_BOM orderBOM = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(ppOrder);
 		if (orderBOM != null)

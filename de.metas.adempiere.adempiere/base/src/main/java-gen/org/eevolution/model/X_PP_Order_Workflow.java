@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PP_Order_Workflow
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 78776406L;
+	private static final long serialVersionUID = -1407803369L;
 
     /** Standard Constructor */
     public X_PP_Order_Workflow (Properties ctx, int PP_Order_Workflow_ID, String trxName)
@@ -43,20 +26,16 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 			setAccessLevel (null);
 			setAD_Workflow_ID (0);
 			setAuthor (null);
-			setCost (Env.ZERO);
-			setDuration (0);
-// 0
+			setCost (BigDecimal.ZERO);
+			setDuration (0); // 0
 			setDurationLimit (0);
-			setDurationUnit (null);
-// h
-			setEntityType (null);
-// U
+			setDurationUnit (null); // h
+			setEntityType (null); // U
 			setName (null);
 			setPP_Order_ID (0);
 			setPP_Order_Workflow_ID (0);
 			setPriority (0);
-			setPublishStatus (null);
-// U
+			setPublishStatus (null); // U
 			setVersion (0);
 			setWaitingTime (0);
         } */
@@ -68,29 +47,13 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_PP_Order_Workflow[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** 
@@ -167,42 +130,42 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_WF_Node getAD_WF_Node() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class);
-	}
-
-	@Override
-	public void setAD_WF_Node(org.compiere.model.I_AD_WF_Node AD_WF_Node)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class, AD_WF_Node);
-	}
-
-	/** Set Knoten.
-		@param AD_WF_Node_ID 
-		Workflow Node (activity), step or process
-	  */
-	@Override
-	public void setAD_WF_Node_ID (int AD_WF_Node_ID)
-	{
-		if (AD_WF_Node_ID < 1) 
-			set_Value (COLUMNNAME_AD_WF_Node_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_WF_Node_ID, Integer.valueOf(AD_WF_Node_ID));
-	}
-
-	/** Get Knoten.
-		@return Workflow Node (activity), step or process
-	  */
-	@Override
-	public int getAD_WF_Node_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Node_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
+//	@Override
+//	public org.compiere.model.I_AD_WF_Node getAD_WF_Node() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class);
+//	}
+//
+//	@Override
+//	public void setAD_WF_Node(org.compiere.model.I_AD_WF_Node AD_WF_Node)
+//	{
+//		set_ValueFromPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class, AD_WF_Node);
+//	}
+//
+//	/** Set Knoten.
+//		@param AD_WF_Node_ID 
+//		Workflow Node (activity), step or process
+//	  */
+//	@Override
+//	public void setAD_WF_Node_ID (int AD_WF_Node_ID)
+//	{
+//		if (AD_WF_Node_ID < 1) 
+//			set_Value (COLUMNNAME_AD_WF_Node_ID, null);
+//		else 
+//			set_Value (COLUMNNAME_AD_WF_Node_ID, Integer.valueOf(AD_WF_Node_ID));
+//	}
+//
+//	/** Get Knoten.
+//		@return Workflow Node (activity), step or process
+//	  */
+//	@Override
+//	public int getAD_WF_Node_ID () 
+//	{
+//		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Node_ID);
+//		if (ii == null)
+//			 return 0;
+//		return ii.intValue();
+//	}
 
 	@Override
 	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible() throws RuntimeException
@@ -352,7 +315,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Cost);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -372,7 +335,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -382,7 +345,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -580,14 +543,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getName());
-    }
-
 	/** Set Overlap Units.
 		@param OverlapUnits 
 		Overlap Units are number of units that must be completed before they are moved the next activity
@@ -606,7 +561,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverlapUnits);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -807,7 +762,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBatchSize);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -907,7 +862,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_UnitsCycles);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

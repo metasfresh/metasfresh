@@ -1,17 +1,17 @@
 package org.eevolution.callout;
 
-import java.math.BigDecimal;
-
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderNodeBL;
+import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.PPOrderRoutingActivity;
+import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_Node;
 
-import de.metas.material.planning.RoutingService;
-import de.metas.material.planning.RoutingServiceFactory;
+import de.metas.material.planning.WorkingTime;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
 /*
@@ -38,7 +38,7 @@ import de.metas.util.Services;
 
 /**
  * Manufacturing cost collector callout
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @author based on initial version developed by Victor Perez, Teo Sarca under ADempiere project
  */
@@ -54,23 +54,30 @@ public class PP_Cost_Collector
 			return;
 		}
 
-		Services.get(IPPCostCollectorBL.class).setPP_Order(cc, ppOrder);
+		Services.get(IPPCostCollectorBL.class).updateCostCollectorFromOrder(cc, ppOrder);
 	}
 
 	@CalloutMethod(columnNames = I_PP_Cost_Collector.COLUMNNAME_PP_Order_Node_ID)
 	public void onPP_Order_Node_ID(final I_PP_Cost_Collector cc)
 	{
-		final I_PP_Order_Node node = cc.getPP_Order_Node();
-		if (node == null)
+		final PPOrderId orderId = PPOrderId.ofRepoIdOrNull(cc.getPP_Order_ID());
+		if (orderId == null)
 		{
 			return;
 		}
-		//
-		cc.setS_Resource_ID(node.getS_Resource_ID());
-		cc.setIsSubcontracting(node.isSubcontracting());
+		final PPOrderRoutingActivityId orderRoutingActivityId = PPOrderRoutingActivityId.ofRepoIdOrNull(orderId, cc.getPP_Order_Node_ID());
+		if (orderRoutingActivityId == null)
+		{
+			return;
+		}
 
-		final BigDecimal qtyToDeliver = Services.get(IPPOrderNodeBL.class).getQtyToDeliver(node);
-		cc.setMovementQty(qtyToDeliver);
+		final PPOrderRoutingActivity orderActivity = Services.get(IPPOrderWorkflowDAO.class).getOrderRoutingActivity(orderRoutingActivityId);
+
+		cc.setS_Resource_ID(orderActivity.getResourceId().getRepoId());
+		cc.setIsSubcontracting(orderActivity.isSubcontracting());
+
+		final Quantity qtyToDeliver = orderActivity.getQtyToDeliver();
+		cc.setMovementQty(qtyToDeliver.getAsBigDecimal());
 		// updateDurationReal(cc); // shall be automatically triggered
 	}
 
@@ -83,20 +90,27 @@ public class PP_Cost_Collector
 	/** Calculates and sets DurationReal based on selected PP_Order_Node */
 	private void updateDurationReal(final I_PP_Cost_Collector cc)
 	{
-		if (cc.getPP_Order_Node_ID() <= 0)
+		final PPOrderId orderId = PPOrderId.ofRepoIdOrNull(cc.getPP_Order_ID());
+		if (orderId == null)
 		{
 			return;
 		}
 
-		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
-		final BigDecimal durationReal = routingService.estimateWorkingTime(cc);
-		// If Activity Control Duration should be specified
-		// FIXME: this message is really anoying. We need to find a proper solution - teo_sarca
-		// if(durationReal.signum() == 0)
-		// {
-		// throw new FillMandatoryException(MPPOrderNode.COLUMNNAME_SetupTimeReal, MPPOrderNode.COLUMNNAME_DurationReal);
-		// }
-		//
-		cc.setDurationReal(durationReal);
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, cc.getPP_Order_Node_ID());
+		if (activityId == null)
+		{
+			return;
+		}
+
+		final PPOrderRoutingActivity activity = Services.get(IPPOrderWorkflowDAO.class).getOrderRoutingActivity(activityId);
+
+		final WorkingTime durationReal = WorkingTime.builder()
+				.durationPerOneUnit(activity.getDurationPerOneUnit())
+				.unitsPerCycle(activity.getUnitsPerCycle())
+				.qty(cc.getMovementQty())
+				.activityTimeUnit(activity.getDurationUnit())
+				.build();
+
+		cc.setDurationReal(durationReal.toBigDecimalUsingActivityTimeUnit());
 	}
 }

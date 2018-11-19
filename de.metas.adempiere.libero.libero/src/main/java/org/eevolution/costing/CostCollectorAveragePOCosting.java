@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Services;
 
 /*
@@ -57,7 +58,7 @@ public class CostCollectorAveragePOCosting
 		return ImmutableSet.of(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector);
 	}
 
-	public void createForOrder(final int ppOrderId)
+	private void createForOrder(final PPOrderId ppOrderId)
 	{
 		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveForOrderId(ppOrderId);
 
@@ -68,7 +69,7 @@ public class CostCollectorAveragePOCosting
 		//
 		// First process the issues
 		final CostResult costs = costCollectors.stream()
-				.filter(cc -> ppCostCollectorBL.isMaterialIssue(cc))
+				.filter(cc -> ppCostCollectorBL.isAnyComponentIssue(cc))
 				.map(cc -> createMaterialIssueCosts(cc))
 				.reduce(CostResult::add)
 				.orElse(null);
@@ -80,7 +81,7 @@ public class CostCollectorAveragePOCosting
 		//
 		// Then process the receipts
 		costCollectors.stream()
-				.filter(cc -> ppCostCollectorBL.isMaterialReceipt(cc))
+				.filter(cc -> ppCostCollectorBL.isMaterialReceiptOrCoProduct(cc))
 				.forEach(cc -> createMaterialReceiptCosts(cc, costPrice, qtyReceivedUOM));
 	}
 

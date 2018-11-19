@@ -1,5 +1,10 @@
 package org.eevolution.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.time.LocalDateTime;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -24,6 +29,10 @@ package org.eevolution.api.impl;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -32,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
@@ -39,6 +49,7 @@ import org.eevolution.model.X_PP_Order_BOM;
 
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -54,6 +65,12 @@ public class PPOrderDAO implements IPPOrderDAO
 	public <T extends I_PP_Order> T getById(@NonNull final PPOrderId ppOrderId, @NonNull final Class<T> type)
 	{
 		return InterfaceWrapperHelper.load(ppOrderId, type);
+	}
+
+	@Override
+	public List<I_PP_Order> getByIds(final Set<PPOrderId> orderIds)
+	{
+		return loadByRepoIdAwares(orderIds, I_PP_Order.class);
 	}
 
 	@Override
@@ -130,5 +147,34 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly();
+	}
+
+	@Override
+	public Stream<I_PP_Order> streamOpenPPOrderIdsOrderedByDatePromised(@Nullable final ResourceId plantId)
+	{
+		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_PP_Order.COLUMN_DocStatus, X_PP_Order.DOCSTATUS_InProgress, X_PP_Order.DOCSTATUS_Completed)
+				.orderBy(I_PP_Order.COLUMNNAME_DatePromised);
+
+		if (plantId != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_S_Resource_ID, plantId);
+		}
+
+		return queryBuilder.create().iterateAndStream();
+	}
+
+	@Override
+	public void changeOrderScheduling(
+			@NonNull final PPOrderId orderId,
+			@NonNull final LocalDateTime scheduledStartDate,
+			@NonNull final LocalDateTime scheduledFinishDate)
+	{
+		final I_PP_Order order = getById(orderId);
+		order.setDateStartSchedule(TimeUtil.asTimestamp(scheduledStartDate));
+		order.setDateFinishSchedule(TimeUtil.asTimestamp(scheduledFinishDate));
+		saveRecord(order);
 	}
 }

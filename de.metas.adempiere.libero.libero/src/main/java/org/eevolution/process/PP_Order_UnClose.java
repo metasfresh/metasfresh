@@ -31,7 +31,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -62,7 +62,6 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
-	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -149,7 +148,8 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 			}
 
 			// Reversing activity controls is not supported atm, so we are skipping them.
-			if (ppCostCollectorBL.isActivityControl(cc))
+			final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
+			if (costCollectorType.isActivityControl())
 			{
 				continue;
 			}

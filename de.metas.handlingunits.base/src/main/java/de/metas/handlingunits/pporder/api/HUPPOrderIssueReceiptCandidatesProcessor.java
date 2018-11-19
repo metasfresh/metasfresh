@@ -1,6 +1,7 @@
 package de.metas.handlingunits.pporder.api;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,16 +13,19 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.uom.api.UOMConversionContext;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IReceiptCostCollectorCandidate;
-import org.eevolution.api.impl.ReceiptCostCollectorCandidate;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -198,14 +202,14 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		// Create material receipt and activate the HU
-		final IReceiptCostCollectorCandidate costCollectorCandidate = ReceiptCostCollectorCandidate.builder()
+		final ReceiptCostCollectorCandidate costCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.PP_Order(candidate.getPP_Order())
 				.PP_Order_BOMLine(candidate.getPP_Order_BOMLine())
-				.movementDate(candidate.getMovementDate())
+				.movementDate(TimeUtil.asLocalDateTime(candidate.getMovementDate()))
 				.qtyToReceive(candidate.getQty())
-				.M_Product(candidate.getM_Product())
+				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))
 				.C_UOM(candidate.getC_UOM())
-				.M_Locator_ID(candidate.getM_Locator_ID())
+				.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID()))
 				.build();
 		final I_PP_Cost_Collector cc = huPPCostCollectorBL.createReceipt(costCollectorCandidate, hu);
 
@@ -360,18 +364,18 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		// Parameters
-		private Date movementDate = null;
+		private LocalDateTime movementDate = null;
 
 		// Status
 		private final Map<Integer, IssueCandidate> candidatesByOrderBOMLineId = new HashMap<>();
 
 		public IssueCandidatesBuilder setMovementDate(Date movementDate)
 		{
-			this.movementDate = movementDate;
+			this.movementDate = TimeUtil.asLocalDateTime(movementDate);
 			return this;
 		}
 
-		private Date getMovementDate()
+		private LocalDateTime getMovementDate()
 		{
 			Preconditions.checkNotNull(movementDate, "movementDate");
 			return movementDate;
@@ -508,9 +512,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			}
 
 			final Quantity qtyToIssue = candidate.getQtyToIssue();
-			final Date movementDate = getMovementDate();
+			final LocalDateTime movementDate = getMovementDate();
 			final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getOrderBOMLine();
-			final int locatorId = ppOrderBOMLine.getM_Locator_ID();
+			final LocatorId locatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrderBOMLine.getM_Locator_ID());
 
 			//
 			// Link this manufacturing order to material tracking, if any
@@ -526,10 +530,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 					ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
 							.orderBOMLine(ppOrderBOMLine)
 							.locatorId(locatorId)
-							.attributeSetInstanceId(0) // N/A
+							.attributeSetInstanceId(AttributeSetInstanceId.NONE) // N/A
 							.movementDate(movementDate)
-							.qtyUOM(qtyToIssue.getUOM())
-							.qtyIssue(qtyToIssue.getAsBigDecimal())
+							.qtyIssue(qtyToIssue)
 							.build()),
 					I_PP_Cost_Collector.class);
 

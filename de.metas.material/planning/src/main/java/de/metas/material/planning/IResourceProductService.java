@@ -1,11 +1,11 @@
 package de.metas.material.planning;
 
-import java.sql.Timestamp;
+import java.time.temporal.TemporalUnit;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_ResourceType;
 
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 
@@ -33,34 +33,15 @@ import de.metas.util.ISingletonService;
 
 public interface IResourceProductService extends ISingletonService
 {
+	ResourceType getResourceTypeById(final ResourceTypeId resourceTypeId);
+
+	ResourceType getResourceTypeByResourceId(ResourceId resourceId);
+
 	I_M_Product getProductByResourceId(ResourceId resourceId);
 
-	/**
-	 * Get how many hours/day a is available.
-	 * Minutes, secords and millis are discarded.
-	 *
-	 * @return available hours
-	 */
-	int getTimeSlotHoursForResourceType(I_S_ResourceType resourceType);
+	ProductId getProductIdByResourceId(ResourceId resourceId);
 
-	/**
-	 * Get available days / week.
-	 *
-	 * @return available days / week
-	 */
-	int getAvailableDaysWeekForResourceType(I_S_ResourceType resourceType);
+	TemporalUnit getResourceTemporalUnit(ResourceId resourceId);
 
-	Timestamp getDayStartForResourceType(I_S_ResourceType resourceType, Timestamp date);
-
-	Timestamp getDayEndForResourceType(I_S_ResourceType resourceType, Timestamp date);
-
-	/**
-	 * @return true if a resource of this type is generally available
-	 *         (i.e. active, at least 1 day available, at least 1 hour available)
-	 */
-	boolean isAvailableForResourceType(I_S_ResourceType resourceType);
-
-	boolean isDayAvailableForResourceType(I_S_ResourceType resourceType, Timestamp dateTime);
-
-	I_C_UOM getResourceUOM(ResourceId resourceId);
+	I_C_UOM getResoureUOM(ResourceId resourceId);
 }

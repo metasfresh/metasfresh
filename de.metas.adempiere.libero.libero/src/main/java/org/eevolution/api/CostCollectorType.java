@@ -8,6 +8,7 @@ import org.eevolution.model.X_PP_Cost_Collector;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -68,4 +69,85 @@ public enum CostCollectorType
 	}
 
 	private static final ImmutableMap<String, CostCollectorType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), CostCollectorType::getCode);
+
+	public boolean isMaterial(final PPOrderBOMLineId orderBOMLineId)
+	{
+		return isMaterialReceipt()
+				|| isAnyComponentIssueOrCoProduct(orderBOMLineId);
+	}
+
+	public boolean isMaterialReceipt()
+	{
+		return this == MaterialReceipt;
+	}
+
+	public boolean isMaterialReceiptOrCoProduct()
+	{
+		return isMaterialReceipt() || isCoOrByProductReceipt();
+	}
+
+	public boolean isComponentIssue()
+	{
+		return this == ComponentIssue;
+	}
+
+	public boolean isAnyComponentIssueOrCoProduct(final PPOrderBOMLineId orderBOMLineId)
+	{
+		return isAnyComponentIssue(orderBOMLineId)
+				|| isCoOrByProductReceipt();
+	}
+
+	public boolean isAnyComponentIssue(final PPOrderBOMLineId orderBOMLineId)
+	{
+		return isComponentIssue()
+				|| isMaterialMethodChangeVariance(orderBOMLineId);
+	}
+
+	public boolean isActivityControl()
+	{
+		return this == ActivityControl;
+	}
+
+	public boolean isVariance()
+	{
+		return this == MethodChangeVariance
+				|| this == UsageVariance
+				|| this == RateVariance
+				|| this == MixVariance;
+	}
+
+	public boolean isCoOrByProductReceipt()
+	{
+		return this == MixVariance;
+	}
+
+	public boolean isUsageVariance()
+	{
+		return this == UsageVariance;
+	}
+
+	public boolean isMaterialUsageVariance(final PPOrderBOMLineId orderBOMLineId)
+	{
+		return this == UsageVariance && orderBOMLineId != null;
+	}
+
+	public boolean isResourceUsageVariance(final PPOrderRoutingActivityId activityId)
+	{
+		return this == UsageVariance && activityId != null;
+	}
+
+	public boolean isRateVariance()
+	{
+		return this == RateVariance;
+	}
+
+	public boolean isMethodChangeVariance()
+	{
+		return this == MethodChangeVariance;
+	}
+
+	public boolean isMaterialMethodChangeVariance(final PPOrderBOMLineId orderBOMLineId)
+	{
+		return this == MethodChangeVariance && orderBOMLineId != null;
+	}
 }

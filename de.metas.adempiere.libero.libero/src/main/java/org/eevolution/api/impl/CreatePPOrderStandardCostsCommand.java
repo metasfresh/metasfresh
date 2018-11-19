@@ -13,9 +13,9 @@ import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.I_PP_Order_Node;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -152,16 +152,17 @@ final class CreatePPOrderStandardCostsCommand
 
 	private ImmutableSet<CostSegment> createCostSegmentsForWorkflowNodes()
 	{
-		return orderWorkflowsRepo.retrieveNodes(ppOrderId)
+		return orderWorkflowsRepo.getByOrderId(ppOrderId)
+				.getActivities()
 				.stream()
-				.map(this::createCostSegmentForWorkflowNodeOrNull)
+				.map(this::createCostSegmentForOrderActivityOrNull)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private CostSegment createCostSegmentForWorkflowNodeOrNull(final I_PP_Order_Node node)
+	private CostSegment createCostSegmentForOrderActivityOrNull(final PPOrderRoutingActivity activity)
 	{
-		final ResourceId resourceId = ResourceId.ofRepoIdOrNull(node.getS_Resource_ID());
+		final ResourceId resourceId = activity.getResourceId();
 		if (resourceId == null)
 		{
 			return null;
@@ -180,8 +181,8 @@ final class CreatePPOrderStandardCostsCommand
 				.acctSchemaId(acctSchema.getId())
 				.costTypeId(acctSchema.getCosting().getCostTypeId())
 				.productId(resourceProductId)
-				.clientId(ClientId.ofRepoId(node.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(node.getAD_Org_ID()))
+				.clientId(clientId)
+				.orgId(orgId)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.build();
 

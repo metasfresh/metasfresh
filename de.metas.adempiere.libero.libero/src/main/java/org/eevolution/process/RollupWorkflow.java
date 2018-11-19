@@ -19,50 +19,28 @@ package org.eevolution.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.engines.CostEngine;
-import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_WF_Node;
-import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
-import org.compiere.wf.MWFNode;
-import org.compiere.wf.MWorkflow;
-import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.model.I_PP_Product_Planning;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -82,15 +60,20 @@ import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
+import de.metas.material.planning.pporder.IPPRoutingRepository;
+import de.metas.material.planning.pporder.PPRouting;
+import de.metas.material.planning.pporder.PPRoutingActivity;
+import de.metas.material.planning.pporder.PPRoutingActivityId;
+import de.metas.material.planning.pporder.PPRoutingChangeRequest;
+import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import lombok.Value;
 
 /**
  * RollUp of Cost Manufacturing Workflow
@@ -104,29 +87,25 @@ import lombok.Value;
  */
 public class RollupWorkflow extends JavaProcess
 {
+	// services
 	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-	private final IPPWorkflowDAO workflowsRepo = Services.get(IPPWorkflowDAO.class);
-
+	private final IPPRoutingRepository routingsRepo = Services.get(IPPRoutingRepository.class);
 	private final ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
 
-	/* Organization */
+	// parameters
 	private OrgId p_AD_Org_ID = OrgId.ANY;
-	/* Cost Type */
 	private CostTypeId p_M_CostType_ID;
-	/* Product */
 	private ProductId p_M_Product_ID;
-	/* Product Category */
 	private ProductCategoryId p_M_Product_Category_ID;
-	/* Costing Method */
 	private CostingMethod p_ConstingMethod = CostingMethod.StandardCosting;
-
 	private AcctSchema acctSchema = null;
 
-	private CostEngine costEngine;
+	//
 	private RoutingService routingService = null;
+	private List<CostElement> costElements;
 
 	@Override
 	protected void prepare()
@@ -174,8 +153,8 @@ public class RollupWorkflow extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		costEngine = CostEngineFactory.newCostEngine();
 		routingService = RoutingServiceFactory.get().getRoutingService();
+		costElements = costElementsRepo.getByCostingMethod(p_ConstingMethod);
 
 		for (final I_M_Product product : getProducts())
 		{
@@ -188,44 +167,36 @@ public class RollupWorkflow extends JavaProcess
 	{
 		log.info("Product: {}", product);
 
-		int workflowId = 0;
-		I_PP_Product_Planning pp = null;
-		if (workflowId <= 0)
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		PPRoutingId routingId = null;
+		I_PP_Product_Planning productPlanning = null;
+		if (routingId == null)
 		{
-			workflowId = workflowsRepo.retrieveWorkflowIdForProduct(product);
+			routingId = routingsRepo.getRoutingIdByProductId(productId);
 		}
-		if (workflowId <= 0)
+		if (routingId == null)
 		{
-			pp = Services.get(IProductPlanningDAO.class).find(ProductPlanningQuery.builder()
+			productPlanning = Services.get(IProductPlanningDAO.class).find(ProductPlanningQuery.builder()
 					.orgId(p_AD_Org_ID.getRepoId())
-					.productId(p_M_Product_ID)
+					.productId(productId)
 					.build());
-			if (pp != null)
+			if (productPlanning != null)
 			{
-				workflowId = pp.getAD_Workflow_ID();
+				routingId = PPRoutingId.ofRepoIdOrNull(productPlanning.getAD_Workflow_ID());
 			}
 			else
 			{
 				createNotice(product, "@NotFound@ @PP_Product_Planning_ID@");
 			}
 		}
-		if (workflowId <= 0)
+		if (routingId == null)
 		{
 			createNotice(product, "@NotFound@ @AD_Workflow_ID@");
 			return;
 		}
 
-		final MWorkflow workflowRecord = new MWorkflow(getCtx(), workflowId, get_TrxName());
-		final List<MWFNode> nodes = Arrays.asList(workflowRecord.getNodes(false, getAD_Client_ID()));
-		final WorkflowAndNodes workflow = WorkflowAndNodes.of(product, workflowRecord, nodes);
-		rollup(workflow);
-
-		// Update Product Data Planning
-		if (pp != null)
-		{
-			pp.setYield(workflowRecord.getYield());
-			saveRecord(pp);
-		}
+		final PPRouting routing = routingsRepo.getById(routingId);
+		rollup(Context.of(product, productPlanning, routing));
 	}
 
 	private List<I_M_Product> getProducts()
@@ -251,114 +222,97 @@ public class RollupWorkflow extends JavaProcess
 				.list();
 	}
 
-	public void rollup(final WorkflowAndNodes workflow)
+	public void rollup(final Context context)
 	{
-		log.info("Workflow: {}", workflow);
+		log.info("{}", context);
 
-		resetWorkflowAndNodeCosts(workflow);
-		rollupDurations(workflow);
+		final RoutingDurationsAndYield routingDurationsAndYield = computeRoutingDurationsAndYield(context.getRouting());
 
-		final CostSegment costSegment = createCostSegment(workflow.getProduct());
-		for (final CostElement element : costElementsRepo.getByCostingMethod(p_ConstingMethod))
-		{
-			if (!element.isActivityControlElement())
-			{
-				continue;
-			}
+		final CostSegment costSegment = createCostSegment(context.getProduct());
 
-			final CostElementId costElementId = element.getId();
-
-			currentCostsRepo.updateCostRecord(costSegment, costElementId, costRecord -> {
-				updateCostRecord(costRecord, costSegment, costElementId, workflow);
-			});
-		}
+		final List<RoutingActivitySegmentCost> costs = costElements.stream()
+				.filter(costElement -> !costElement.isActivityControlElement())
+				.flatMap(costElement -> computeRoutingSegmentCostsAndStream(context.getRouting(), costSegment, costElement.getId()))
+				.collect(ImmutableList.toImmutableList());
 
 		//
-		// Save Workflow & Nodes
-		saveWorkflowAndNodes(workflow);
-	}
-
-	private void resetWorkflowAndNodeCosts(final WorkflowAndNodes workflow)
-	{
-		final I_AD_Workflow workflowRecord = workflow.getWorkflowRecord();
-
-		workflowRecord.setCost(BigDecimal.ZERO);
-
-		for (final I_AD_WF_Node node : workflow.getNodes())
+		// Save to database
+		updateCostRecords(costSegment, costs);
+		updateRoutingRecord(context.getRouting().getId(), routingDurationsAndYield, costs);
+		// Update Product Data Planning
+		final I_PP_Product_Planning productPlanning = context.getProductPlanning();
+		if (productPlanning != null)
 		{
-			node.setCost(BigDecimal.ZERO);
+			productPlanning.setYield(routingDurationsAndYield.getYield().toInt());
+			saveRecord(productPlanning);
 		}
-
-		workflowRecord.setCost(BigDecimal.ZERO);
 	}
 
-	private void rollupDurations(final WorkflowAndNodes workflow)
+	private void updateRoutingRecord(final PPRoutingId routingId, final RoutingDurationsAndYield routingDurationsAndYield, final List<RoutingActivitySegmentCost> costs)
 	{
-		final RoutingDuration routingDuration = new RoutingDuration();
-		for (final I_AD_WF_Node node : workflow.getNodes())
-		{
-			routingDuration.addNode(node);
-		}
-		routingDuration.applyToWorkflow(workflow.getWorkflowRecord());
+		final PPRoutingChangeRequest changeRequest = PPRoutingChangeRequest.newInstance(routingId);
+
+		changeRequest.setYield(routingDurationsAndYield.getYield());
+		changeRequest.setQueuingTime(routingDurationsAndYield.getQueuingTime());
+		changeRequest.setSetupTime(routingDurationsAndYield.getSetupTime());
+		changeRequest.setDurationPerOneUnit(routingDurationsAndYield.getDurationPerOneUnit());
+		changeRequest.setWaitingTime(routingDurationsAndYield.getWaitingTime());
+		changeRequest.setMovingTime(routingDurationsAndYield.getMovingTime());
+
+		costs.forEach(cost -> changeRequest.addActivityCost(cost.getRoutingActivityId(), cost.getCostAsBigDecimal()));
 	}
 
-	private void saveWorkflowAndNodes(final WorkflowAndNodes workflow)
+	private void updateCostRecords(final CostSegment costSegment, final List<RoutingActivitySegmentCost> costs)
 	{
-		for (final I_AD_WF_Node node : workflow.getNodes())
-		{
-			saveRecord(node);
-		}
-		saveRecord(workflow.getWorkflowRecord());
+
+		final Map<CostElementId, BigDecimal> costsByCostElementId = costs.stream().collect(RoutingActivitySegmentCost.groupByCostElementId());
+		costsByCostElementId.forEach(updateCostRecord(costSegment));
 	}
 
-	private CostAmount updateCostRecord(final I_M_Cost costRecord, final CostSegment costSegment, final CostElementId costElementId, final WorkflowAndNodes workflow)
+	private BiConsumer<CostElementId, BigDecimal> updateCostRecord(final CostSegment costSegment)
 	{
-		final CostAmount segmentCost = computeAndUpdateWorkflowCost(costSegment, costElementId, workflow);
-		costRecord.setCurrentCostPrice(segmentCost.getValue());
-		// NOTE: don't save, will be saved by caller
-		return segmentCost;
+		return (costElementId, costValue) -> currentCostsRepo.updateCostRecord(costSegment, costElementId, costRecord -> costRecord.setCurrentCostPrice(costValue));
 	}
 
-	private CostAmount computeAndUpdateWorkflowCost(final CostSegment costSegment, final CostElementId costElementId, final WorkflowAndNodes workflow)
+	private RoutingDurationsAndYield computeRoutingDurationsAndYield(final PPRouting routing)
+	{
+		final RoutingDurationsAndYield result = new RoutingDurationsAndYield();
+		routing.getActivities().forEach(result::addActivity);
+		return result;
+	}
+
+	private Stream<RoutingActivitySegmentCost> computeRoutingSegmentCostsAndStream(final PPRouting routing, final CostSegment costSegment, final CostElementId costElementId)
+	{
+		final int precision = getCostingPrecision(costSegment);
+
+		return routing.getActivities()
+				.stream()
+				.map(activity -> computeRoutingActivitySegmentCost(activity, costSegment, costElementId, precision));
+	}
+
+	private int getCostingPrecision(final CostSegment costSegment)
 	{
 		final AcctSchemaId acctSchemaId = costSegment.getAcctSchemaId();
 		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
 		final int precision = acctSchema.getCosting().getCostingPrecision();
-
-		CostAmount segmentCost = CostAmount.zero(acctSchema.getCurrencyId());
-		for (final MWFNode node : workflow.getNodes())
-		{
-			final CostAmount nodeCost = computeAndUpdateNodeCost(costSegment, costElementId, node, precision);
-			segmentCost = segmentCost.add(nodeCost);
-		}
-
-		// Update Workflow cost
-		final I_AD_Workflow workflowRecord = workflow.getWorkflowRecord();
-		workflowRecord.setCost(workflowRecord.getCost().add(segmentCost.getValue()));
-
-		return segmentCost;
+		return precision;
 	}
 
-	private CostAmount computeAndUpdateNodeCost(final CostSegment costSegment, final CostElementId costElementId, final MWFNode node, final int precision)
+	private RoutingActivitySegmentCost computeRoutingActivitySegmentCost(final PPRoutingActivity activity, final CostSegment costSegment, final CostElementId costElementId, final int precision)
 	{
-		final CostAmount nodeCost = computeNodeCost(costSegment, costElementId, node, precision);
-
-		// Update AD_WF_Node.Cost:
-		node.setCost(node.getCost().add(nodeCost.getValue()));
-
-		return nodeCost;
-	}
-
-	private CostAmount computeNodeCost(final CostSegment costSegment, final CostElementId costElementId, final MWFNode node, final int precision)
-	{
-		final ResourceId stdResourceId = ResourceId.ofRepoId(node.getS_Resource_ID());
+		final ResourceId stdResourceId = activity.getResourceId();
 		final CostSegment resourceCostSegment = createCostSegment(costSegment, stdResourceId);
 
-		final CostAmount rate = costEngine.getProductActualCostPrice(resourceCostSegment, costElementId);
-		final Quantity baseValue = routingService.getResourceBaseValue(stdResourceId, node);
-		final CostAmount nodeCost = rate.multiply(baseValue)
+		final CostAmount rate = currentCostsRepo.getOrCreate(resourceCostSegment, costElementId)
+				.getCurrentCostPriceTotal()
 				.roundToPrecisionIfNeeded(precision);
-		return nodeCost;
+
+		final Duration duration = routingService.getResourceBaseValue(activity);
+
+		final CostAmount cost = rate.multiply(duration, activity.getDurationUnit())
+				.roundToPrecisionIfNeeded(precision);
+
+		return RoutingActivitySegmentCost.of(cost, activity.getId(), costElementId);
 	}
 
 	private CostSegment createCostSegment(final I_M_Product product)
@@ -400,55 +354,72 @@ public class RollupWorkflow extends JavaProcess
 		addLog("WARNING: Product " + productValue + ": " + msg);
 	}
 
-	@Value(staticConstructor = "of")
-	private static class WorkflowAndNodes
+	@lombok.Value(staticConstructor = "of")
+	private static class Context
 	{
 		@NonNull
 		I_M_Product product;
+
 		@NonNull
-		I_AD_Workflow workflowRecord;
+		I_PP_Product_Planning productPlanning;
+
 		@NonNull
-		List<MWFNode> nodes;
+		PPRouting routing;
 	}
 
-	private static class RoutingDuration
+	@lombok.Getter
+	@lombok.ToString
+	private static class RoutingDurationsAndYield
 	{
-		private double Yield = 1;
-		private int QueuingTime = 0;
-		private int SetupTime = 0;
-		private int Duration = 0;
-		private int WaitingTime = 0;
-		private int MovingTime = 0;
-		private int WorkingTime = 0;
+		private Percent yield = Percent.ONE_HUNDRED;
+		private Duration queuingTime = Duration.ZERO;
+		private Duration setupTime = Duration.ZERO;
+		private Duration durationPerOneUnit = Duration.ZERO;
+		private Duration waitingTime = Duration.ZERO;
+		private Duration movingTime = Duration.ZERO;
 
-		public void addNode(final I_AD_WF_Node node)
+		public void addActivity(final PPRoutingActivity activity)
 		{
-			if (node.getYield() != 0)
+			if (!activity.getYield().isZero())
 			{
-				Yield = Yield * ((double)node.getYield() / 100);
+				yield = yield.multiply(activity.getYield(), 0);
 			}
+
+			queuingTime = queuingTime.plus(activity.getQueuingTime());
+			setupTime = setupTime.plus(activity.getSetupTime());
+			waitingTime = waitingTime.plus(activity.getWaitingTime());
+			movingTime = movingTime.plus(activity.getMovingTime());
+
 			// We use node.getDuration() instead of m_routingService.estimateWorkingTime(node) because
 			// this will be the minimum duration of this node. So even if the node have defined units/cycle
 			// we consider entire duration of the node.
-			final long nodeDuration = node.getDuration();
+			durationPerOneUnit = durationPerOneUnit.plus(activity.getDurationPerOneUnit());
+		}
+	}
 
-			QueuingTime += node.getQueuingTime();
-			SetupTime += node.getSetupTime();
-			Duration += nodeDuration;
-			WaitingTime += node.getWaitingTime();
-			MovingTime += node.getMovingTime();
-			WorkingTime += node.getWorkingTime();
+	@lombok.Value(staticConstructor = "of")
+	private static class RoutingActivitySegmentCost
+	{
+		public static Collector<RoutingActivitySegmentCost, ?, Map<CostElementId, BigDecimal>> groupByCostElementId()
+		{
+			return Collectors.groupingBy(RoutingActivitySegmentCost::getCostElementId, sumCostsAsBigDecimal());
 		}
 
-		public void applyToWorkflow(final I_AD_Workflow workflow)
+		private static Collector<RoutingActivitySegmentCost, ?, BigDecimal> sumCostsAsBigDecimal()
 		{
-			workflow.setYield((int)(Yield * 100));
-			workflow.setQueuingTime(QueuingTime);
-			workflow.setSetupTime(SetupTime);
-			workflow.setDuration(Duration);
-			workflow.setWaitingTime(WaitingTime);
-			workflow.setMovingTime(MovingTime);
-			workflow.setWorkingTime(WorkingTime);
+			return Collectors.reducing(BigDecimal.ZERO, RoutingActivitySegmentCost::getCostAsBigDecimal, BigDecimal::add);
+		}
+
+		@NonNull
+		CostAmount cost;
+		@NonNull
+		PPRoutingActivityId routingActivityId;
+		@NonNull
+		CostElementId costElementId;
+
+		public BigDecimal getCostAsBigDecimal()
+		{
+			return cost.getValue();
 		}
 	}
 }

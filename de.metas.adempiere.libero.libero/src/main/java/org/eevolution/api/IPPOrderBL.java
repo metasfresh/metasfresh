@@ -13,24 +13,23 @@ package org.eevolution.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_Workflow;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
 public interface IPPOrderBL extends ISingletonService
@@ -98,8 +97,6 @@ public interface IPPOrderBL extends ISingletonService
 	 */
 	void setForceQtyReservation(I_PP_Order ppOrder, boolean forceQtyReservation);
 
-	I_PP_Order_Workflow getPP_Order_Workflow(I_PP_Order ppOrder);
-
 	/**
 	 * Sets manufacturing order's document type(s).
 	 *
@@ -118,4 +115,8 @@ public interface IPPOrderBL extends ISingletonService
 	void closeQtyOrdered(I_PP_Order ppOrder);
 
 	void uncloseQtyOrdered(I_PP_Order ppOrder);
+
+	void changeScheduling(PPOrderScheduleChangeRequest request);
+
+	void voidOrderRouting(PPOrderId orderId);
 }

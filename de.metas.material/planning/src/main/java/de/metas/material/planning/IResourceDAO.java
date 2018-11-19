@@ -33,6 +33,10 @@ import de.metas.util.ISingletonService;
 
 public interface IResourceDAO extends ISingletonService
 {
+	ResourceType getResourceTypeById(ResourceTypeId resourceTypeId);
+
+	ResourceType getResourceTypeByResourceId(ResourceId resourceId);
+
 	I_S_Resource getById(ResourceId resourceId);
 
 	List<I_S_Resource> retrievePlants(Properties ctx);

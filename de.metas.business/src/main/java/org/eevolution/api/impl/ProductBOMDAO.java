@@ -49,8 +49,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ProductBOMDAO implements IProductBOMDAO
 {
@@ -109,6 +112,13 @@ public class ProductBOMDAO implements IProductBOMDAO
 			return -1;
 		}
 		return bom.getPP_Product_BOM_ID();
+	}
+
+	@Override
+	public int getDefaultProductBOMIdByProductId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return retrieveDefaultBOMId(product);
 	}
 
 	@Override

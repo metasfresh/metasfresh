@@ -27,9 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.compiere.model.I_C_UOM;
-import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IReceiptCostCollectorCandidate;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -43,6 +42,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -52,7 +52,6 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 	// Services
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 	private List<I_M_HU> createdPlanningHUs = new ArrayList<I_M_HU>();
@@ -115,9 +114,9 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 				.updateFromModel();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationEditor.getEditingLUTUConfiguration();
 
-		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = ppCostCollectorBL.createReceiptCostCollectorCandidate()
+		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.PP_Order(ppOrder)
-				.M_Product(lutuConfiguration.getM_Product())
+				.productId(ProductId.ofRepoId(lutuConfiguration.getM_Product_ID()))
 				.C_UOM(lutuConfiguration.getC_UOM())
 				.build();
 
@@ -150,10 +149,10 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 				.updateFromModel();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationEditor.getEditingLUTUConfiguration();
 
-		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = ppCostCollectorBL.createReceiptCostCollectorCandidate()
+		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.PP_Order(ppOrder)
 				.PP_Order_BOMLine(ppOrderBOMLine)
-				.M_Product(lutuConfiguration.getM_Product())
+				.productId(ProductId.ofRepoId(lutuConfiguration.getM_Product_ID()))
 				.C_UOM(lutuConfiguration.getC_UOM())
 				.build();
 

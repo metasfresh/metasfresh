@@ -290,8 +290,6 @@ public class StorageEngine
 				ITrx.TRXNAME_ThreadInherited);
 		mtrx.setPP_Cost_Collector_ID(cc.getPP_Cost_Collector_ID());
 		saveRecord(mtrx);
-
-		CostEngineFactory.newCostEngine().createOrUpdateCostDetail(cc, mtrx);
 	}
 
 	private static void createMA(final I_PP_Cost_Collector cc, final int M_AttributeSetInstance_ID, final BigDecimal MovementQty)

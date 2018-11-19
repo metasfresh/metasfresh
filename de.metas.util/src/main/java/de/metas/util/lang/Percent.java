@@ -145,6 +145,11 @@ public class Percent
 	{
 		return value;
 	}
+	
+	public int toInt()
+	{
+		return value.intValue();
+	}
 
 	public boolean isZero()
 	{
@@ -184,6 +189,22 @@ public class Percent
 			return this;
 		}
 		return of(this.value.subtract(percent.value));
+	}
+
+	public Percent multiply(@NonNull final Percent percent, int precision)
+	{
+		if (isOneHundred())
+		{
+			return percent;
+		}
+		else if (percent.isOneHundred())
+		{
+			return this;
+		}
+		else
+		{
+			return of(this.value.multiply(percent.value).divide(ONE_HUNDRED_VALUE, precision, RoundingMode.UP));
+		}
 	}
 
 	/**

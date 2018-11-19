@@ -22,32 +22,34 @@ package org.eevolution.api.impl;
  * #L%
  */
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalUnit;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.uom.api.UOMConversionContext;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderNodeBL;
-import org.eevolution.api.IReceiptCostCollectorCandidate;
-import org.eevolution.api.impl.ReceiptCostCollectorCandidate.ReceiptCostCollectorCandidateBuilder;
+import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.PPOrderRoutingActivity;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.I_PP_Order_Node;
-import org.eevolution.model.I_PP_Order_Workflow;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
@@ -56,10 +58,13 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -69,17 +74,22 @@ import lombok.Value;
 
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
-	// private final transient Logger log = CLogMgt.getLogger(getClass());
+	@Override
+	public Quantity getMovementQty(final I_PP_Cost_Collector cc)
+	{
+		return Quantity.of(cc.getMovementQty(), getStockingUOM(cc));
+	}
 
 	@Override
-	public ReceiptCostCollectorCandidateBuilder createReceiptCostCollectorCandidate()
+	public I_C_UOM getStockingUOM(final I_PP_Cost_Collector cc)
 	{
-		return ReceiptCostCollectorCandidate.builder();
+		ProductId productId = ProductId.ofRepoId(cc.getM_Product_ID());
+		return Services.get(IProductBL.class).getStockingUOM(productId);
 	}
 
 	/**
 	 * Suggests which Cost Collector Type to use for given Order BOM Line.
-	 * 
+	 *
 	 * @return Component Issue, Mix Variance or Method Change Variance
 	 */
 	private static CostCollectorType getCostCollectorTypeToUse(final I_PP_Order_BOMLine orderBOMLine)
@@ -99,98 +109,6 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public boolean isMaterialReceipt(
-			@NonNull final I_PP_Cost_Collector cc,
-			final boolean considerCoProductsAsReceipt)
-	{
-		final String costCollectorType = cc.getCostCollectorType();
-
-		//
-		// Case: regular receipts
-		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt.equals(costCollectorType))
-		{
-			return true;
-		}
-
-		//
-		// Case: by/co-product receipts
-		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(costCollectorType))
-		{
-			if (considerCoProductsAsReceipt)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		return false;
-	}
-
-	@Override
-	public boolean isMaterialIssue(
-			@NonNull final I_PP_Cost_Collector cc,
-			final boolean considerCoProductsAsIssue)
-	{
-		final String costCollectorType = cc.getCostCollectorType();
-
-		//
-		// Case: and actual Material Issue
-		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue.equals(costCollectorType))
-		{
-			return true;
-		}
-
-		// If this cost collector is not linked to a Order BOM Line
-		// => it's not an material issue for sure
-		if (cc.getPP_Order_BOMLine_ID() < 0)
-		{
-			return false;
-		}
-
-		//
-		// Case Method Change Variance: we issue product, but not the one from BOM Line
-		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance.equals(costCollectorType))
-		{
-			return true;
-		}
-
-		//
-		// Case Mix Variance: we received (i.e. negative issue) a by/co-product
-		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(costCollectorType))
-		{
-			if (considerCoProductsAsIssue)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		return false;
-	}
-
-	@Override
-	public boolean isCoOrByProductReceipt(final I_PP_Cost_Collector cc)
-	{
-		Check.assumeNotNull(cc, LiberoException.class, "cc not null");
-		final String costCollectorType = cc.getCostCollectorType();
-		return X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(costCollectorType);
-	}
-
-	@Override
-	public boolean isActivityControl(final I_PP_Cost_Collector cc)
-	{
-		Check.assumeNotNull(cc, LiberoException.class, "cc not null");
-		final String costCollectorType = cc.getCostCollectorType();
-		return X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl.equals(costCollectorType);
-	}
-
-	@Override
 	public I_PP_Cost_Collector createIssue(final ComponentIssueCreateRequest request)
 	{
 		final I_PP_Order_BOMLine orderBOMLine = request.getOrderBOMLine();
@@ -198,24 +116,24 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		//
 		// Convert our Qtys from their qtyUOM to BOM's UOM
-		final I_C_UOM qtyUOM = request.getQtyUOM();
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final I_C_UOM bomUOM = orderBOMLine.getC_UOM();
-		final BigDecimal qtyIssueConv = uomConversionBL.convertQty(productId, request.getQtyIssue(), qtyUOM, bomUOM);
-		final BigDecimal qtyScrapConv = uomConversionBL.convertQty(productId, request.getQtyScrap(), qtyUOM, bomUOM);
-		final BigDecimal qtyRejectConv = uomConversionBL.convertQty(productId, request.getQtyReject(), qtyUOM, bomUOM);
+		final I_C_UOM bomUOM = Services.get(IUOMDAO.class).getById(orderBOMLine.getC_UOM_ID());
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderBOMLine.getM_Product_ID());
+		final Quantity qtyIssueConv = uomConversionBL.convertQuantityTo(request.getQtyIssue(), conversionCtx, bomUOM);
+		final Quantity qtyScrapConv = uomConversionBL.convertQuantityTo(request.getQtyScrap(), conversionCtx, bomUOM);
+		final Quantity qtyRejectConv = uomConversionBL.convertQuantityTo(request.getQtyReject(), conversionCtx, bomUOM);
 
 		final I_PP_Cost_Collector cc = createCollector(
 				CostCollectorCreateRequest.builder()
 						.costCollectorType(getCostCollectorTypeToUse(orderBOMLine))
 						.order(order)
-						.productId(productId.getRepoId())
+						.productId(productId)
 						.locatorId(request.getLocatorId())
 						.attributeSetInstanceId(request.getAttributeSetInstanceId())
-						.resourceId(order.getS_Resource_ID())
-						.ppOrderBOMLineId(orderBOMLine.getPP_Order_BOMLine_ID())
-						.movementDate(TimeUtil.asTimestamp(request.getMovementDate()))
+						.resourceId(ResourceId.ofRepoId(order.getS_Resource_ID()))
+						.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))
+						.movementDate(request.getMovementDate())
 						.qty(qtyIssueConv)
 						.qtyScrap(qtyScrapConv)
 						.qtyReject(qtyRejectConv)
@@ -225,7 +143,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public I_PP_Cost_Collector createReceipt(final IReceiptCostCollectorCandidate candidate)
+	public I_PP_Cost_Collector createReceipt(final ReceiptCostCollectorCandidate candidate)
 	{
 		final I_PP_Order_BOMLine orderBOMLine = candidate.getPP_Order_BOMLine();
 		if (orderBOMLine == null)
@@ -238,7 +156,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		}
 	}
 
-	private I_PP_Cost_Collector createCoProductReceipt(final IReceiptCostCollectorCandidate candidate)
+	private I_PP_Cost_Collector createCoProductReceipt(final ReceiptCostCollectorCandidate candidate)
 	{
 		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
@@ -250,56 +168,61 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		//
 		// Validate Product
-		final I_M_Product product = candidate.getM_Product();
-		if (product == null || product.getM_Product_ID() != orderBOMLine.getM_Product_ID())
+		final ProductId productId = candidate.getProductId();
+		if (productId == null || productId.getRepoId() != orderBOMLine.getM_Product_ID())
 		{
 			throw new LiberoException("@Invalid@ @M_Product_ID@: " + candidate + "\n Expected: " + orderBOMLine.getM_Product());
 		}
 
+		final I_C_UOM uom = candidate.getC_UOM();
+		final Quantity qtyToIssue = Quantity.of(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyToReceive()), uom);
+		final Quantity qtyScrap = Quantity.of(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyScrap()), uom);
+		final Quantity qtyReject = Quantity.of(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyReject()), uom);
 		return createIssue(ComponentIssueCreateRequest.builder()
 				.orderBOMLine(orderBOMLine)
-				.locatorId(getM_Locator_ID_ToUse(candidate))
-				.attributeSetInstanceId(candidate.getM_AttributeSetInstance_ID())
-				.movementDate(candidate.getMovementDate())
-				.qtyUOM(candidate.getC_UOM())
-				.qtyIssue(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyToReceive()))
-				.qtyScrap(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyScrap()))
-				.qtyReject(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyReject()))
+				.locatorId(getLocatorIdToUse(candidate))
+				.attributeSetInstanceId(candidate.getAttributeSetInstanceId())
+				.movementDate(TimeUtil.asLocalDateTime(candidate.getMovementDate()))
+				.qtyIssue(qtyToIssue)
+				.qtyScrap(qtyScrap)
+				.qtyReject(qtyReject)
 				.build());
 	}
 
-	private I_PP_Cost_Collector createFinishedGoodsReceipt(final IReceiptCostCollectorCandidate candidate)
+	private I_PP_Cost_Collector createFinishedGoodsReceipt(final ReceiptCostCollectorCandidate candidate)
 	{
 		final I_PP_Order order = candidate.getPP_Order();
 		Check.assumeNotNull(order, LiberoException.class, "order not null");
 
-		final BigDecimal qtyDelivered = order.getQtyDelivered();
-		final BigDecimal qtyToDeliver = candidate.getQtyToReceive();
-		final BigDecimal qtyScrap = candidate.getQtyScrap();
-		final BigDecimal qtyReject = candidate.getQtyReject();
-		final Timestamp movementDate = candidate.getMovementDate();
+		final Quantity qtyReceived = getQtyReceived(order);
+
+		final I_C_UOM uom = candidate.getC_UOM();
+		final Quantity qtyToDeliver = Quantity.of(candidate.getQtyToReceive(), uom);
+		final Quantity qtyScrap = Quantity.of(candidate.getQtyScrap(), uom);
+		final Quantity qtyReject = Quantity.of(candidate.getQtyReject(), uom);
+		final LocalDateTime movementDate = candidate.getMovementDate() != null ? TimeUtil.asLocalDateTime(candidate.getMovementDate()) : SystemTime.asLocalDateTime();
 
 		if (qtyToDeliver.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
 		{
 			// Validate Product
-			final I_M_Product product = candidate.getM_Product();
-			if (product == null || product.getM_Product_ID() != order.getM_Product_ID())
+			final ProductId productId = candidate.getProductId();
+			if (productId == null || productId.getRepoId() != order.getM_Product_ID())
 			{
 				throw new LiberoException("@Invalid@ @M_Product_ID@: " + candidate
 						+ "\n Expected: " + order.getM_Product());
 			}
 
-			final int locatorId = getM_Locator_ID_ToUse(candidate);
-			final int asiId = candidate.getM_AttributeSetInstance_ID();
+			final LocatorId locatorId = getLocatorIdToUse(candidate);
+			final AttributeSetInstanceId asiId = candidate.getAttributeSetInstanceId();
 
 			return createCollector(
 					CostCollectorCreateRequest.builder()
 							.costCollectorType(CostCollectorType.MaterialReceipt)
 							.order(order)
-							.productId(product.getM_Product_ID())
+							.productId(productId)
 							.locatorId(locatorId)
 							.attributeSetInstanceId(asiId)
-							.resourceId(order.getS_Resource_ID())
+							.resourceId(ResourceId.ofRepoId(order.getS_Resource_ID()))
 							.movementDate(movementDate)
 							.qty(qtyToDeliver)
 							.qtyScrap(qtyScrap)
@@ -309,18 +232,15 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		// TODO: review this part. Drop qtyDelivered parameter because we can fetch it from PP_Order.QtyDelivered...
 		// ... also consider moving this in PP_Order model validator
-		order.setDateDelivered(movementDate);
+		order.setDateDelivered(TimeUtil.asTimestamp(movementDate));
 		if (order.getDateStart() == null)
 		{
-			order.setDateStart(movementDate);
+			order.setDateStart(TimeUtil.asTimestamp(movementDate));
 		}
 
-		BigDecimal DQ = qtyDelivered;
-		BigDecimal SQ = qtyScrap;
-		BigDecimal OQ = qtyToDeliver;
-		if (DQ.add(SQ).compareTo(OQ) >= 0)
+		if (qtyReceived.add(qtyScrap).compareTo(qtyToDeliver) >= 0)
 		{
-			order.setDateFinish(movementDate);
+			order.setDateFinish(TimeUtil.asTimestamp(movementDate));
 		}
 
 		InterfaceWrapperHelper.save(order);
@@ -328,17 +248,24 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		return null;
 	}
 
-	private static final int getM_Locator_ID_ToUse(final IReceiptCostCollectorCandidate candidate)
+	private Quantity getQtyReceived(final I_PP_Order ppOrder)
 	{
-		int locatorId = candidate.getM_Locator_ID();
-		if (locatorId > 0)
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(productId);
+		return Quantity.of(ppOrder.getQtyDelivered(), uom);
+	}
+
+	private static final LocatorId getLocatorIdToUse(final ReceiptCostCollectorCandidate candidate)
+	{
+		final LocatorId locatorId = candidate.getLocatorId();
+		if (locatorId != null)
 		{
 			return locatorId;
 		}
 
 		final I_PP_Order ppOrder = candidate.getPP_Order();
 		Check.assumeNotNull(ppOrder, LiberoException.class, "ppOrder not null");
-		return ppOrder.getM_Locator_ID();
+		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrder.getM_Locator_ID());
 	}
 
 	@Override
@@ -378,42 +305,48 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public void setPP_Order(final I_PP_Cost_Collector cc, final I_PP_Order order)
+	public void updateCostCollectorFromOrder(final I_PP_Cost_Collector cc, final I_PP_Order from)
 	{
-		final I_PP_Order_Workflow ppOrderWorkflow = Services.get(IPPOrderBL.class).getPP_Order_Workflow(order);
+		// final int ppOrderWorkflowId = Services.get(IPPOrderBL.class).getPP_Order_Workflow(order).getPP_Order_Workflow_ID();
 
-		cc.setPP_Order(order);
-		cc.setPP_Order_Workflow(ppOrderWorkflow);
-		cc.setAD_Org_ID(order.getAD_Org_ID());
-		cc.setM_Warehouse_ID(order.getM_Warehouse_ID());
-		cc.setAD_OrgTrx_ID(order.getAD_OrgTrx_ID());
-		cc.setC_Activity_ID(order.getC_Activity_ID());
-		cc.setC_Campaign_ID(order.getC_Campaign_ID());
-		cc.setC_Project_ID(order.getC_Project_ID());
-		cc.setDescription(order.getDescription());
-		cc.setS_Resource_ID(order.getS_Resource_ID());
-		cc.setM_Product_ID(order.getM_Product_ID());
-		cc.setC_UOM_ID(order.getC_UOM_ID());
-		cc.setM_AttributeSetInstance_ID(order.getM_AttributeSetInstance_ID());
-		cc.setMovementQty(order.getQtyOrdered());
+		cc.setPP_Order_ID(from.getPP_Order_ID());
+		// cc.setPP_Order_Workflow_ID(ppOrderWorkflowId);
+		cc.setAD_Org_ID(from.getAD_Org_ID());
+		cc.setM_Warehouse_ID(from.getM_Warehouse_ID());
+		cc.setAD_OrgTrx_ID(from.getAD_OrgTrx_ID());
+		cc.setC_Activity_ID(from.getC_Activity_ID());
+		cc.setC_Campaign_ID(from.getC_Campaign_ID());
+		cc.setC_Project_ID(from.getC_Project_ID());
+		cc.setUser1_ID(from.getUser1_ID());
+		cc.setUser2_ID(from.getUser2_ID());
+		cc.setDescription(from.getDescription());
+		cc.setS_Resource_ID(from.getS_Resource_ID());
+		cc.setM_Product_ID(from.getM_Product_ID());
+		cc.setC_UOM_ID(from.getC_UOM_ID());
+		cc.setM_AttributeSetInstance_ID(from.getM_AttributeSetInstance_ID());
+		cc.setMovementQty(from.getQtyOrdered());
 	}
 
 	@Override
-	public I_PP_Cost_Collector createActivityControl(ActivityControlCreateRequest request)
+	public I_PP_Cost_Collector createActivityControl(final ActivityControlCreateRequest request)
 	{
-		final I_PP_Order_Node node = request.getNode();
-		final I_PP_Order order = node.getPP_Order();
+		final I_PP_Order order = request.getOrder();
+		final ProductId mainProductId = ProductId.ofRepoId(order.getM_Product_ID());
+		final AttributeSetInstanceId mainProductAsiId = AttributeSetInstanceId.ofRepoIdOrNone(order.getM_AttributeSetInstance_ID());
+		final LocatorId receiptLocatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(order.getM_Locator_ID());
+
+		final PPOrderRoutingActivity orderActivity = request.getOrderActivity();
 
 		return createCollector(
 				CostCollectorCreateRequest.builder()
 						.costCollectorType(CostCollectorType.ActivityControl)
 						.order(order)
-						.productId(order.getM_Product_ID())
-						.locatorId(order.getM_Locator_ID())
-						.attributeSetInstanceId(order.getM_AttributeSetInstance_ID())
-						.resourceId(node.getS_Resource_ID())
-						.ppOrderNodeId(node.getPP_Order_Node_ID())
-						.movementDate(request.getMovementDate())
+						.productId(mainProductId)
+						.locatorId(receiptLocatorId)
+						.attributeSetInstanceId(mainProductAsiId)
+						.resourceId(orderActivity.getResourceId())
+						.orderActivity(orderActivity)
+						.movementDate(TimeUtil.asLocalDateTime(request.getMovementDate()))
 						.qty(request.getQtyMoved())
 						.durationSetup(request.getDurationSetup())
 						.duration(request.getDuration())
@@ -421,7 +354,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public void createUsageVariance(final I_PP_Order_BOMLine line)
+	public void createUsageVariance(final I_PP_Order ppOrder, final I_PP_Order_BOMLine line)
 	{
 		if (PPOrderUtil.isMethodChangeVariance(line))
 		{
@@ -432,14 +365,18 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			return;
 		}
 
-		final I_PP_Order order = line.getPP_Order();
+		final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(line.getPP_Order_BOMLine_ID());
 
-		final BigDecimal qtyUsageVariance;
+		final Quantity qtyUsageVariance;
 		{
-			final BigDecimal qtyUsageVariancePrev = Services.get(IPPOrderBOMDAO.class).retrieveQtyUsageVariance(line); // Previous booked usage variance
-			final BigDecimal qtyOpen = Services.get(IPPOrderBOMBL.class).getQtyToIssue(line);
+			final IPPOrderBOMBL orderBOMsService = Services.get(IPPOrderBOMBL.class);
+			final IPPCostCollectorDAO costCollectorsRepo = Services.get(IPPCostCollectorDAO.class);
+
+			final BigDecimal qtyUsageVariancePrev = costCollectorsRepo.getQtyUsageVariance(ppOrderBOMLineId); // Previous booked usage variance
+			final BigDecimal qtyOpen = orderBOMsService.getQtyToIssue(line);
+			final I_C_UOM uom = orderBOMsService.getStockingUOM(line);
 			// Current usage variance = QtyOpen - Previous Usage Variance
-			qtyUsageVariance = qtyOpen.subtract(qtyUsageVariancePrev);
+			qtyUsageVariance = Quantity.of(qtyOpen.subtract(qtyUsageVariancePrev), uom);
 		}
 		if (qtyUsageVariance.signum() == 0)
 		{
@@ -447,65 +384,69 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		}
 
 		// Get Locator
-		int locatorId = line.getM_Locator_ID();
-		if (locatorId <= 0)
+		int locatorRepoId = line.getM_Locator_ID();
+		if (locatorRepoId <= 0)
 		{
-			locatorId = order.getM_Locator_ID();
+			locatorRepoId = ppOrder.getM_Locator_ID();
 		}
+		final LocatorId locatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
 
 		//
 		createCollector(
 				CostCollectorCreateRequest.builder()
 						.costCollectorType(CostCollectorType.UsageVariance)
-						.order(order)
-						.productId(line.getM_Product_ID())
+						.order(ppOrder)
+						.productId(ProductId.ofRepoId(line.getM_Product_ID()))
 						.locatorId(locatorId)
-						.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-						.resourceId(order.getS_Resource_ID())
-						.ppOrderBOMLineId(line.getPP_Order_BOMLine_ID())
+						.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID()))
+						.resourceId(ResourceId.ofRepoId(ppOrder.getS_Resource_ID()))
+						.ppOrderBOMLineId(ppOrderBOMLineId)
 						.qty(qtyUsageVariance)
 						.build());
 	}
 
 	@Override
-	public void createUsageVariance(final I_PP_Order_Node activity)
+	public void createResourceUsageVariance(@NonNull final I_PP_Order ppOrder, @NonNull final PPOrderRoutingActivity activity)
 	{
-		final I_PP_Order order = activity.getPP_Order();
+		final ProductId mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		final AttributeSetInstanceId mainProductAsiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
+		final LocatorId receiptLocatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrder.getM_Locator_ID());
+
 		//
-		final BigDecimal setupTimeReal = BigDecimal.valueOf(activity.getSetupTimeReal());
-		final BigDecimal durationReal = BigDecimal.valueOf(activity.getDurationReal());
-		if (setupTimeReal.signum() == 0 && durationReal.signum() == 0)
+		final Duration setupTimeReported = activity.getSetupTimeReal();
+		final Duration durationReported = activity.getDurationReal();
+		if (setupTimeReported.isZero() && durationReported.isZero())
 		{
 			// nothing reported on this activity => it's not a variance, this will be auto-reported on close
 			return;
 		}
 		//
-		IPPOrderNodeBL ppOrderNodeBL = Services.get(IPPOrderNodeBL.class);
-		final BigDecimal setupTimeVariancePrev = ppOrderNodeBL.getSetupTimeUsageVariance(activity);
-		final BigDecimal durationVariancePrev = ppOrderNodeBL.getDurationUsageVariance(activity);
-		final BigDecimal setupTimeRequired = BigDecimal.valueOf(activity.getSetupTimeRequiered());
-		final BigDecimal durationRequired = BigDecimal.valueOf(activity.getDurationRequiered());
-		final BigDecimal qtyOpen = ppOrderNodeBL.getQtyToDeliver(activity);
+		final IPPCostCollectorDAO costCollectorsRepo = Services.get(IPPCostCollectorDAO.class);
+		final Duration setupTimeVariancePrev = costCollectorsRepo.getTotalSetupTimeReal(activity, CostCollectorType.UsageVariance);
+		final Duration durationVariancePrev = costCollectorsRepo.getDurationReal(activity, CostCollectorType.UsageVariance);
+		final Duration setupTimePlanned = activity.getSetupTimeRequired();
+		final Duration durationPlanned = activity.getDurationRequired();
+		final Quantity qtyToProcess = activity.getQtyToDeliver();
 		//
-		final BigDecimal setupTimeVariance = setupTimeRequired.subtract(setupTimeReal).subtract(setupTimeVariancePrev);
-		final BigDecimal durationVariance = durationRequired.subtract(durationReal).subtract(durationVariancePrev);
+		final Duration setupTimeVariance = setupTimePlanned.minus(setupTimeReported).minus(setupTimeVariancePrev);
+		final Duration durationVariance = durationPlanned.minus(durationReported).minus(durationVariancePrev);
 		//
-		if (qtyOpen.signum() == 0 && setupTimeVariance.signum() == 0 && durationVariance.signum() == 0)
+		if (qtyToProcess.isZero() && setupTimeVariance.isZero() && durationVariance.isZero())
 		{
 			return;
 		}
 		//
 		createCollector(CostCollectorCreateRequest.builder()
 				.costCollectorType(CostCollectorType.UsageVariance)
-				.order(order)
-				.productId(order.getM_Product_ID())
-				.locatorId(order.getM_Locator_ID())
-				.attributeSetInstanceId(order.getM_AttributeSetInstance_ID())
-				.resourceId(activity.getS_Resource_ID())
-				.ppOrderNodeId(activity.getPP_Order_Node_ID())
-				.qty(qtyOpen)
-				.durationSetup(setupTimeVariance.intValueExact())
-				.duration(durationVariance) // duration
+				.order(ppOrder)
+				.productId(mainProductId)
+				.locatorId(receiptLocatorId)
+				.attributeSetInstanceId(mainProductAsiId)
+				.resourceId(activity.getResourceId())
+				.orderActivity(activity)
+				.qty(qtyToProcess)
+				.durationSetup(setupTimeVariance)
+				.duration(durationVariance)
 				.build());
 	}
 
@@ -513,60 +454,62 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	private static class CostCollectorCreateRequest
 	{
 		private final I_PP_Order order;
-		private final int productId;
-		private final int locatorId;
-		private final int attributeSetInstanceId;
-		private final int resourceId;
-		private final int ppOrderBOMLineId;
-		private final int ppOrderNodeId;
+		private final ProductId productId;
+		private final LocatorId locatorId;
+		private final AttributeSetInstanceId attributeSetInstanceId;
+		private final ResourceId resourceId;
+		private final PPOrderBOMLineId ppOrderBOMLineId;
+		private final PPOrderRoutingActivity orderActivity;
 		private final CostCollectorType costCollectorType;
-		private final Date movementDate;
-		private final BigDecimal qty;
-		private final BigDecimal qtyScrap;
-		private final BigDecimal qtyReject;
-		private final int durationSetup;
-		private final BigDecimal duration;
+		private final LocalDateTime movementDate;
+		private final Quantity qty;
+		private final Quantity qtyScrap;
+		private final Quantity qtyReject;
+		private final Duration durationSetup;
+		private final Duration duration;
 
 		@Builder
 		private CostCollectorCreateRequest(
 				@NonNull final I_PP_Order order,
-				final int productId,
-				final int locatorId,
-				final int attributeSetInstanceId,
-				final int resourceId,
-				final int ppOrderBOMLineId,
-				final int ppOrderNodeId,
+				final ProductId productId,
+				final LocatorId locatorId,
+				final AttributeSetInstanceId attributeSetInstanceId,
+				final ResourceId resourceId,
+				final PPOrderBOMLineId ppOrderBOMLineId,
+				@Nullable final PPOrderRoutingActivity orderActivity,
 				@NonNull final CostCollectorType costCollectorType,
-				@Nullable final Date movementDate,
+				@Nullable final LocalDateTime movementDate,
 				//
-				@NonNull final BigDecimal qty,
-				@Nullable final BigDecimal qtyScrap,
-				@Nullable final BigDecimal qtyReject,
+				@NonNull final Quantity qty,
+				@Nullable final Quantity qtyScrap,
+				@Nullable final Quantity qtyReject,
 				//
-				final int durationSetup,
-				@Nullable final BigDecimal duration)
+				@Nullable final Duration durationSetup,
+				@Nullable final Duration duration)
 		{
 			this.order = order;
 			this.productId = productId;
 			this.locatorId = locatorId;
-			this.attributeSetInstanceId = attributeSetInstanceId > 0 ? attributeSetInstanceId : 0;
+			this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 			this.resourceId = resourceId;
 			this.ppOrderBOMLineId = ppOrderBOMLineId;
-			this.ppOrderNodeId = ppOrderNodeId;
+			this.orderActivity = orderActivity;
 			this.costCollectorType = costCollectorType;
-			this.movementDate = movementDate != null ? movementDate : SystemTime.asDayTimestamp();
+			this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDateTime();
+
 			this.qty = qty;
-			this.qtyScrap = qtyScrap != null ? qtyScrap : BigDecimal.ZERO;
-			this.qtyReject = qtyReject != null ? qtyReject : BigDecimal.ZERO;
-			this.durationSetup = durationSetup;
-			this.duration = duration != null ? duration : BigDecimal.ZERO;
+			this.qtyScrap = qtyScrap != null ? qtyScrap : qty.toZero();
+			this.qtyReject = qtyReject != null ? qtyReject : qty.toZero();
+
+			this.durationSetup = durationSetup != null ? durationSetup : Duration.ZERO;
+			this.duration = duration != null ? duration : Duration.ZERO;
 		}
 	}
 
 	/**
 	 * Create & Complete Cost Collector
 	 */
-	private static I_PP_Cost_Collector createCollector(@NonNull final CostCollectorCreateRequest request)
+	private I_PP_Cost_Collector createCollector(@NonNull final CostCollectorCreateRequest request)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
@@ -578,43 +521,48 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				.build());
 
 		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class);
-		Services.get(IPPCostCollectorBL.class).setPP_Order(cc, ppOrder);
-		cc.setPP_Order_BOMLine_ID(request.getPpOrderBOMLineId());
-		cc.setPP_Order_Node_ID(request.getPpOrderNodeId());
-		cc.setC_DocType_ID(docTypeId.getRepoId());
-		cc.setC_DocTypeTarget_ID(docTypeId.getRepoId());
-		cc.setCostCollectorType(request.getCostCollectorType().getCode());
 		cc.setDocAction(X_PP_Cost_Collector.DOCACTION_Complete);
 		cc.setDocStatus(X_PP_Cost_Collector.DOCSTATUS_Drafted);
-		cc.setIsActive(true);
-		cc.setM_Locator_ID(request.getLocatorId());
-		cc.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId());
-		cc.setS_Resource_ID(request.getResourceId());
-		cc.setMovementDate(TimeUtil.asTimestamp(request.getMovementDate()));
-		cc.setDateAcct(TimeUtil.asTimestamp(request.getMovementDate()));
-		cc.setMovementQty(request.getQty());
-		cc.setScrappedQty(request.getQtyScrap());
-		cc.setQtyReject(request.getQtyReject());
-		cc.setSetupTimeReal(new BigDecimal(request.getDurationSetup()));
-		cc.setDurationReal(request.getDuration());
 		cc.setPosted(false);
 		cc.setProcessed(false);
 		cc.setProcessing(false);
-		cc.setUser1_ID(ppOrder.getUser1_ID());
-		cc.setUser2_ID(ppOrder.getUser2_ID());
-		cc.setM_Product_ID(request.getProductId());
-		if (request.getPpOrderNodeId() > 0)
+		cc.setIsActive(true);
+
+		updateCostCollectorFromOrder(cc, ppOrder);
+
+		cc.setC_DocType_ID(docTypeId.getRepoId());
+		cc.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+		cc.setCostCollectorType(request.getCostCollectorType().getCode());
+
+		cc.setM_Locator_ID(LocatorId.toRepoId(request.getLocatorId()));
+		cc.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId().getRepoId());
+		cc.setS_Resource_ID(ResourceId.toRepoId(request.getResourceId()));
+		cc.setMovementDate(TimeUtil.asTimestamp(request.getMovementDate()));
+		cc.setDateAcct(TimeUtil.asTimestamp(request.getMovementDate()));
+		cc.setMovementQty(request.getQty().getAsBigDecimal());
+		cc.setScrappedQty(request.getQtyScrap().getAsBigDecimal());
+		cc.setQtyReject(request.getQtyReject().getAsBigDecimal());
+		cc.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
+
+		final PPOrderRoutingActivity orderActivity = request.getOrderActivity();
+		if (orderActivity != null)
 		{
-			final I_PP_Order_Node ppOrderNode = InterfaceWrapperHelper.load(request.getPpOrderNodeId(), I_PP_Order_Node.class);
-			cc.setIsSubcontracting(ppOrderNode.isSubcontracting());
+			cc.setPP_Order_Node_ID(orderActivity.getId().getRepoId());
+			cc.setIsSubcontracting(orderActivity.isSubcontracting());
+
+			final TemporalUnit durationUnit = orderActivity.getDurationUnit();
+			cc.setSetupTimeReal(BigDecimal.valueOf(request.getDurationSetup().get(durationUnit)));
+			cc.setDurationReal(BigDecimal.valueOf(request.getDuration().get(durationUnit)));
 		}
+
 		// If this is an material issue, we should use BOM Line's UOM
-		if (request.getPpOrderBOMLineId() > 0)
+		if (request.getPpOrderBOMLineId() != null)
 		{
+			cc.setPP_Order_BOMLine_ID(request.getPpOrderBOMLineId().getRepoId());
 			cc.setC_UOM(null); // we set the BOM Line UOM on beforeSave
 		}
 
-		InterfaceWrapperHelper.save(cc);
+		InterfaceWrapperHelper.saveRecord(cc);
 
 		//
 		// Process the Cost Collector

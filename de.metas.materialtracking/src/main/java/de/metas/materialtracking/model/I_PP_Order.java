@@ -2,6 +2,7 @@ package de.metas.materialtracking.model;
 
 import java.math.BigDecimal;
 
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
@@ -40,28 +41,28 @@ public interface I_PP_Order extends
 		/**
 		 * A raw material issue. Related to {@link X_PP_Cost_Collector#COSTCOLLECTORTYPE_ComponentIssue}
 		 */
-		RawMaterial(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Order_BOMLine.COMPONENTTYPE_Component, 1),
+		RawMaterial(CostCollectorType.ComponentIssue, X_PP_Order_BOMLine.COMPONENTTYPE_Component, 1),
 
 		/**
 		 * Related to {@link X_PP_Cost_Collector#COSTCOLLECTORTYPE_MaterialReceipt}
 		 */
-		MainProduct(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt, null, 1),
+		MainProduct(CostCollectorType.MaterialReceipt, null, 1),
 
 		/**
 		 * Related to {@link X_PP_Cost_Collector#COSTCOLLECTORTYPE_MixVariance} with a <b>negative</b> quantity
 		 */
-		CoProduct(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product,-1),
+		CoProduct(CostCollectorType.MixVariance, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product,-1),
 
 		/**
 		 * Related to {@link X_PP_Cost_Collector#COSTCOLLECTORTYPE_MixVariance} with a <b>negative</b> quantity
 		 */
-		ByProduct(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, -1);
+		ByProduct(CostCollectorType.MixVariance, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, -1);
 
-		private final String costCollectorType;
+		private final CostCollectorType costCollectorType;
 		private final String bomLineComponentType;
 		private final int factor;
 
-		Type(final String costCollectorType,
+		Type(final CostCollectorType costCollectorType,
 				final String bomLineComponentType,
 				final int factor)
 		{
@@ -70,7 +71,7 @@ public interface I_PP_Order extends
 			this.factor = factor;
 		}
 
-		public String getCostCollectorType()
+		public CostCollectorType getCostCollectorType()
 		{
 			return costCollectorType;
 		}

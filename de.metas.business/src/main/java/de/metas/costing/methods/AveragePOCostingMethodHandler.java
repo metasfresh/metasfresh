@@ -28,6 +28,7 @@ import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
+import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
@@ -37,6 +38,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -63,9 +65,12 @@ import de.metas.util.Services;
 @Component
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	public AveragePOCostingMethodHandler(final ICurrentCostsRepository currentCostsRepo, final ICostDetailRepository costDetailsRepo)
+	public AveragePOCostingMethodHandler(
+			@NonNull final ICurrentCostsRepository currentCostsRepo, 
+			@NonNull final ICostDetailRepository costDetailsRepo,
+			@NonNull final CostingMethodHandlerUtils utils)
 	{
-		super(currentCostsRepo, costDetailsRepo);
+		super(currentCostsRepo, costDetailsRepo, utils);
 	}
 
 	@Override

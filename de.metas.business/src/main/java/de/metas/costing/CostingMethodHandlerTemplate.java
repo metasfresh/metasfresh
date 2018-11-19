@@ -1,15 +1,14 @@
 package de.metas.costing;
 
 import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.CostDetail.CostDetailBuilder;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.order.OrderLineId;
-import de.metas.product.IProductBL;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -36,17 +35,33 @@ import lombok.NonNull;
 
 public abstract class CostingMethodHandlerTemplate implements CostingMethodHandler
 {
-	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final ICostDetailRepository costDetailsRepo;
+	private final CostingMethodHandlerUtils utils;
+
+	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
+			.add(CostingDocumentRef.TABLE_NAME_M_MatchInv)
+			.add(CostingDocumentRef.TABLE_NAME_M_MatchPO)
+			.add(CostingDocumentRef.TABLE_NAME_M_InOutLine)
+			.add(CostingDocumentRef.TABLE_NAME_M_InventoryLine)
+			.add(CostingDocumentRef.TABLE_NAME_M_MovementLine)
+			.add(CostingDocumentRef.TABLE_NAME_C_ProjectIssue)
+			.build();
+
+	@Override
+	public final Set<String> getHandledTableNames()
+	{
+		return HANDLED_TABLE_NAMES;
+	}
 
 	protected CostingMethodHandlerTemplate(
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailRepository costDetailsRepo)
+			@NonNull final ICostDetailRepository costDetailsRepo,
+			@NonNull final CostingMethodHandlerUtils utils)
 	{
 		this.currentCostsRepo = currentCostsRepo;
 		this.costDetailsRepo = costDetailsRepo;
+		this.utils = utils;
 	}
 
 	@Override
@@ -56,20 +71,22 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	@Override
-	public final CostDetailCreateResult createOrUpdateCost(final CostDetailCreateRequest request)
+	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		//
 		// Check if existing cost detail
 		final CostDetail costDetail = getExistingCostDetailOrNull(request);
 		if (costDetail != null)
 		{
-			return createCostDetailCreateResult(costDetail, request);
+			return Optional.of(utils.createCostDetailCreateResult(costDetail, request));
 		}
-
-		return createCost(request);
+		else
+		{
+			return Optional.ofNullable(createCostOrNull(request));
+		}
 	}
 
-	protected final CostDetailCreateResult createCost(final CostDetailCreateRequest request)
+	protected final CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
 	{
 		//
 		// Create new cost detail
@@ -105,10 +122,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_C_ProjectIssue))
 		{
 			return createCostForProjectIssue(request);
-		}
-		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector))
-		{
-			return createCostForCostCollector(request);
 		}
 		else
 		{
@@ -172,58 +185,28 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		throw new UnsupportedOperationException();
 	}
 
-	protected CostDetailCreateResult createCostForCostCollector(final CostDetailCreateRequest request)
-	{
-		// nothing on this level
-		return null;
-	}
-
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
 
 	protected final CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
 	{
-		final CostDetail costDetail = costDetailsRepo.create(prepareCostDetail(request)
+		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
 				.changingCosts(false));
 
-		return createCostDetailCreateResult(costDetail, request);
+		return utils.createCostDetailCreateResult(costDetail, request);
 	}
 
 	protected final CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
 	{
-		final CostDetail costDetail = costDetailsRepo.create(prepareCostDetail(request)
+		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(previousCosts)));
 
-		return createCostDetailCreateResult(costDetail, request);
-	}
-
-	private final CostDetailBuilder prepareCostDetail(@NonNull final CostDetailCreateRequest request)
-	{
-		final CostDetailBuilder costDetail = CostDetail.builder()
-				.clientId(request.getClientId())
-				.orgId(request.getOrgId())
-				.acctSchemaId(request.getAcctSchemaId())
-				.productId(request.getProductId())
-				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				//
-				.amt(request.getAmt())
-				.qty(request.getQty())
-				.price(null) // TODO price
-				//
-				.documentRef(request.getDocumentRef())
-				.description(request.getDescription());
-
-		if (!request.isAllCostElements())
-		{
-			costDetail.costElementId(request.getCostElement().getId());
-		}
-
-		return costDetail;
+		return utils.createCostDetailCreateResult(costDetail, request);
 	}
 
 	protected final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
-		final CostSegment costSegment = extractCostSegment(request);
+		final CostSegment costSegment = utils.extractCostSegment(request);
 		return getCurrentCost(costSegment, request.getCostElement());
 	}
 
@@ -235,56 +218,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	protected final CostAmount getCurrentCostPrice(final CostDetailCreateRequest request)
 	{
 		return getCurrentCost(request).getCurrentCostPrice();
-	}
-
-	private CostDetailCreateResult createCostDetailCreateResult(final CostDetail costDetail, final CostDetailCreateRequest request)
-	{
-		return CostDetailCreateResult.builder()
-				.costSegment(extractCostSegment(costDetail))
-				.costElement(request.getCostElement())
-				.amt(costDetail.getAmt())
-				.qty(costDetail.getQty())
-				.price(costDetail.getPrice())
-				.build();
-	}
-
-	private CostSegment extractCostSegment(final CostDetail costDetail)
-	{
-		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-
-		final AcctSchema acctSchema = acctSchemaRepo.getById(costDetail.getAcctSchemaId());
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(costDetail.getProductId(), acctSchema);
-		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
-
-		return CostSegment.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(costDetail.getAcctSchemaId())
-				.costTypeId(costTypeId)
-				.productId(costDetail.getProductId())
-				.clientId(costDetail.getClientId())
-				.orgId(costDetail.getOrgId())
-				.attributeSetInstanceId(costDetail.getAttributeSetInstanceId())
-				.build();
-
-	}
-
-	private CostSegment extractCostSegment(final CostDetailCreateRequest request)
-	{
-		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-
-		final AcctSchema acctSchema = acctSchemaRepo.getById(request.getAcctSchemaId());
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), acctSchema);
-		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
-
-		return CostSegment.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(request.getAcctSchemaId())
-				.costTypeId(costTypeId)
-				.productId(request.getProductId())
-				.clientId(request.getClientId())
-				.orgId(request.getOrgId())
-				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.build();
 	}
 
 	protected final void saveCurrentCosts(final CurrentCost currentCost)

@@ -40,18 +40,7 @@ package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.List;
 import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.util.DB;
-import org.eevolution.api.IPPOrderNodeBL;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.util.Services;
 
 /**
  * PP Order Workflow Node Model
@@ -68,12 +57,11 @@ public class MPPOrderNode extends X_PP_Order_Node
 {
 	private static final long serialVersionUID = 1L;
 
-	/** MPPOrderWorkflow */
-	private MPPOrderWorkflow m_order_wf = null;
-	/** Next Nodes */
-	private List<I_PP_Order_NodeNext> _nextNodes = null; // lazy
-	/** Duration Base MS */
-	private long m_durationBaseMS = -1;
+	// /** MPPOrderWorkflow */
+	// private MPPOrderWorkflow m_order_wf = null;
+
+	// /** Next Nodes */
+	// private List<I_PP_Order_NodeNext> _nextNodes = null; // lazy
 
 	public MPPOrderNode(Properties ctx, int PP_Order_Node_ID, String trxName)
 	{
@@ -89,230 +77,140 @@ public class MPPOrderNode extends X_PP_Order_Node
 		super(ctx, rs, trxName);
 	}
 
-	/**
-	 * Load Next
-	 */
-	private List<I_PP_Order_NodeNext> getNodeNexts()
-	{
-		if (_nextNodes == null)
-		{
-			_nextNodes = retrieveNodeNexts();
-		}
-		return _nextNodes;
-	}
+	// /**
+	// * Load Next
+	// */
+	// private List<I_PP_Order_NodeNext> getNodeNexts()
+	// {
+	// if (_nextNodes == null)
+	// {
+	// _nextNodes = retrieveNodeNexts();
+	// }
+	// return _nextNodes;
+	// }
+	//
+	// private List<I_PP_Order_NodeNext> retrieveNodeNexts()
+	// {
+	// return Services.get(IQueryBL.class)
+	// .createQueryBuilder(I_PP_Order_NodeNext.class)
+	// .addOnlyActiveRecordsFilter()
+	// .addEqualsFilter(I_PP_Order_NodeNext.COLUMNNAME_PP_Order_Node_ID, getPP_Order_Node_ID())
+	// .orderBy(I_PP_Order_NodeNext.COLUMNNAME_SeqNo)
+	// .orderBy(I_PP_Order_NodeNext.COLUMNNAME_PP_Order_NodeNext_ID)
+	// .create()
+	// .listImmutable(I_PP_Order_NodeNext.class);
+	// }
+	//
+	// /**
+	// * Get the transitions
+	// *
+	// * @param adClientId for client
+	// * @return next nodes
+	// */
+	// List<I_PP_Order_NodeNext> getTransitions(final int adClientId)
+	// {
+	// return getNodeNexts()
+	// .stream()
+	// .filter(next -> next.getAD_Client_ID() == 0 || next.getAD_Client_ID() == adClientId)
+	// .collect(ImmutableList.toImmutableList());
+	// }
 
-	private List<I_PP_Order_NodeNext> retrieveNodeNexts()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Order_NodeNext.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_Order_NodeNext.COLUMNNAME_PP_Order_Node_ID, getPP_Order_Node_ID())
-				.orderBy(I_PP_Order_NodeNext.COLUMNNAME_SeqNo)
-				.orderBy(I_PP_Order_NodeNext.COLUMNNAME_PP_Order_NodeNext_ID)
-				.create()
-				.listImmutable(I_PP_Order_NodeNext.class);
-	}
+	// /**
+	// * Get Parent
+	// *
+	// * @return MPPOrderWorkflow
+	// */
+	// public MPPOrderWorkflow getMPPOrderWorkflow()
+	// {
+	// if (m_order_wf == null)
+	// m_order_wf = new MPPOrderWorkflow(getCtx(), getPP_Order_Workflow_ID(), get_TrxName());
+	// return m_order_wf;
+	// } // getParent
 
-	/**
-	 * Get Qty To Deliver (Open Qty)
-	 * 
-	 * @return open qty
-	 * @deprecated please use {@link IPPOrderNodeBL#getQtyToDeliver(I_PP_Order_Node)}
-	 */
-	@Deprecated
-	public BigDecimal getQtyToDeliver()
-	{
-		return Services.get(IPPOrderNodeBL.class).getQtyToDeliver(this);
-	}
+	// @Override
+	// public I_PP_Order_Workflow getPP_Order_Workflow()
+	// {
+	// return getMPPOrderWorkflow();
+	// }
 
-	/**
-	 * Get the transitions
-	 * 
-	 * @param adClientId for client
-	 * @return next nodes
-	 */
-	public List<I_PP_Order_NodeNext> getTransitions(final int adClientId)
-	{
-		return getNodeNexts()
-				.stream()
-				.filter(next -> next.getAD_Client_ID() == 0 || next.getAD_Client_ID() == adClientId)
-				.collect(ImmutableList.toImmutableList());
-	}
+	// /**
+	// * Complete Activity (i.e. mark the activity as completed)
+	// */
+	// public void completeIt()
+	// {
+	// setDocStatus(MPPOrderNode.DOCSTATUS_Completed);
+	// // setDocAction(MPPOrderNode.DOCACTION_None);
+	// setDateFinish(true);
+	// }
 
-	/**
-	 * Get Duration in ms
-	 * 
-	 * @return duration in ms
-	 */
-	public long getDurationMS()
-	{
-		long duration = super.getDuration();
-		if (duration == 0)
-			return 0;
-		if (m_durationBaseMS == -1)
-			m_durationBaseMS = getMPPOrderWorkflow().getDurationBaseSec() * 1000;
-		return duration * m_durationBaseMS;
-	}	// getDurationMS
+	// /**
+	// * Close the Activity
+	// */
+	// public void closeIt()
+	// {
+	// setDocStatus(MPPOrderNode.DOCSTATUS_Closed);
+	// // setDocAction(MPPOrderNode.DOCACTION_None);
+	// setDateFinish(false);
+	// int old = getDurationRequiered();
+	// if (old != getDurationReal())
+	// {
+	// addDescription(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@closed@ ( @Duration@ :" + old + ") ( @QtyRequiered@ :" + getQtyRequiered() + ")"));
+	// setDurationRequiered(getDurationReal());
+	// setQtyRequiered(getQtyDelivered());
+	// }
+	// }
 
-	/**
-	 * Get Duration Limit in ms
-	 * 
-	 * @return duration limit in ms
-	 */
-	public long getLimitMS()
-	{
-		long limit = super.getDurationLimit();
-		if (limit == 0)
-			return 0;
-		if (m_durationBaseMS == -1)
-			m_durationBaseMS = getMPPOrderWorkflow().getDurationBaseSec() * 1000;
-		return limit * m_durationBaseMS;
-	}	// getLimitMS
+	// public void closeItIfDeliveredWhatWasRequired()
+	// {
+	// if (getQtyDelivered().compareTo(getQtyRequiered()) >= 0)
+	// {
+	// closeIt();
+	// saveEx();
+	// }
+	// }
 
-	/**
-	 * Get Duration CalendarField
-	 * 
-	 * @return Calendar.MINUTE, etc.
-	 */
-	public int getDurationCalendarField()
-	{
-		return getMPPOrderWorkflow().getDurationCalendarField();
-	}	// getDurationCalendarField
+	// /**
+	// * Mark activity as InProgress (Started but not finished)
+	// */
+	// public void setInProgress(MPPCostCollector currentActivity)
+	// {
+	// if (isProcessed())
+	// {
+	// throw new IllegalStateException("Cannot change status from " + getDocStatus() + " to " + DOCSTATUS_InProgress);
+	// }
+	//
+	// setDocStatus(DOCSTATUS_InProgress);
+	// // setDocAction(DOCACTION_Complete);
+	//
+	// // Mark activity as started
+	// if (currentActivity != null && getDateStart() == null)
+	// {
+	// setDateStart(TimeUtil.asTimestamp(currentActivity.computeActivityControlStartDate()));
+	// }
+	// }
 
-	/**
-	 * String Representation
-	 * 
-	 * @return info
-	 */
-	@Override
-	public String toString()
-	{
-		StringBuffer sb = new StringBuffer("MPPOrderNode[");
-		sb.append(get_ID())
-				.append("-").append(getName())
-				.append("]");
-		return sb.toString();
-	}	// toString
+	// /**
+	// * @return true if this activity was already processed (i.e. DocStatus=COmpleted/CLosed)
+	// */
+	// public boolean isProcessed()
+	// {
+	// final String status = getDocStatus();
+	// return DOCSTATUS_Completed.equals(status) || DOCSTATUS_Closed.equals(status);
+	// }
 
-	/**
-	 * Get Parent
-	 * 
-	 * @return MPPOrderWorkflow
-	 */
-	public MPPOrderWorkflow getMPPOrderWorkflow()
-	{
-		if (m_order_wf == null)
-			m_order_wf = new MPPOrderWorkflow(getCtx(), getPP_Order_Workflow_ID(), get_TrxName());
-		return m_order_wf;
-	}	// getParent
-
-	@Override
-	public I_PP_Order_Workflow getPP_Order_Workflow()
-	{
-		return getMPPOrderWorkflow();
-	}
-
-	/**
-	 * Complete Activity (i.e. mark the activity as completed)
-	 */
-	public void completeIt()
-	{
-		setDocStatus(MPPOrderNode.DOCSTATUS_Completed);
-		setDocAction(MPPOrderNode.DOCACTION_None);
-		setDateFinish(true);
-	}
-
-	/**
-	 * Close the Activity
-	 */
-	public void closeIt()
-	{
-		setDocStatus(MPPOrderNode.DOCSTATUS_Closed);
-		setDocAction(MPPOrderNode.DOCACTION_None);
-		setDateFinish(false);
-		int old = getDurationRequiered();
-		if (old != getDurationReal())
-		{
-			addDescription(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@closed@ ( @Duration@ :" + old + ") ( @QtyRequiered@ :" + getQtyRequiered() + ")"));
-			setDurationRequiered(getDurationReal());
-			setQtyRequiered(getQtyDelivered());
-		}
-	}
-
-	public void closeItIfDeliveredWhatWasRequired()
-	{
-		if (getQtyDelivered().compareTo(getQtyRequiered()) >= 0)
-		{
-			closeIt();
-			saveEx();
-		}
-	}
-
-	/**
-	 * Void Activity
-	 */
-	public void voidIt()
-	{
-		String docStatus = getDocStatus();
-		if (DOCSTATUS_Voided.equals(docStatus))
-		{
-			log.warn("Activity already voided - {}", this);
-			return;
-		}
-		BigDecimal qtyRequired = getQtyRequiered();
-		if (qtyRequired.signum() != 0)
-		{
-			addDescription(Services.get(IMsgBL.class).getMsg(getCtx(), "Voided") + " (" + qtyRequired + ")");
-		}
-		setDocStatus(DOCSTATUS_Voided);
-		setDocAction(DOCACTION_None);
-		setQtyRequiered(BigDecimal.ZERO);
-		setSetupTimeRequiered(0);
-		setDurationRequiered(0);
-	}
-
-	/**
-	 * Mark activity as InProgress (Started but not finished)
-	 */
-	public void setInProgress(MPPCostCollector currentActivity)
-	{
-		if (isProcessed())
-		{
-			throw new IllegalStateException("Cannot change status from " + getDocStatus() + " to " + DOCSTATUS_InProgress);
-		}
-
-		setDocStatus(DOCSTATUS_InProgress);
-		setDocAction(DOCACTION_Complete);
-
-		// Mark activity as started
-		if (currentActivity != null && getDateStart() == null)
-		{
-			setDateStart(currentActivity.getDateStart());
-		}
-	}
-
-	/**
-	 * @return true if this activity was already processed (i.e. DocStatus=COmpleted/CLosed)
-	 */
-	public boolean isProcessed()
-	{
-		final String status = getDocStatus();
-		return DOCSTATUS_Completed.equals(status) || DOCSTATUS_Closed.equals(status);
-	}
-
-	/**
-	 * Add to Description
-	 * 
-	 * @param description text
-	 */
-	public void addDescription(String description)
-	{
-		String desc = getDescription();
-		if (desc == null)
-			setDescription(description);
-		else
-			setDescription(desc + " | " + description);
-	}	// addDescription
+	// /**
+	// * Add to Description
+	// *
+	// * @param description text
+	// */
+	// public void addDescription(String description)
+	// {
+	// String desc = getDescription();
+	// if (desc == null)
+	// setDescription(description);
+	// else
+	// setDescription(desc + " | " + description);
+	// } // addDescription
 
 	private void setDefault()
 	{
@@ -330,38 +228,31 @@ public class MPPOrderNode extends X_PP_Order_Node
 		setDocStatus(MPPOrderNode.DOCSTATUS_Drafted);
 	}
 
-	/**
-	 * Set DateFinish as last MovementDate from PP_CostCollector
-	 * 
-	 * @param override Update DateFinish even if is already set
-	 */
-	private void setDateFinish(boolean override)
-	{
-		if (!DOCSTATUS_Completed.equals(getDocStatus()) && !DOCSTATUS_Closed.equals(getDocStatus()))
-		{
-			throw new IllegalStateException("Calling setDateFinish when the activity is not completed/closed is not allowed");
-		}
-		if (!override && getDateFinish() != null)
-		{
-			log.debug("DateFinish already set : Date=" + getDateFinish() + ", Override=" + override);
-			return;
-		}
-		//
-		final String sql = "SELECT MAX(" + MPPCostCollector.COLUMNNAME_MovementDate + ")"
-				+ " FROM " + MPPCostCollector.Table_Name
-				+ " WHERE " + MPPCostCollector.COLUMNNAME_PP_Order_Node_ID + "=?"
-				+ " AND " + MPPCostCollector.COLUMNNAME_DocStatus + " IN (?,?,?)"
-				+ " AND " + MPPCostCollector.COLUMNNAME_CostCollectorType + "=?";
-		Timestamp dateFinish = DB.getSQLValueTSEx(get_TrxName(), sql, get_ID(),
-				MPPCostCollector.DOCSTATUS_InProgress,
-				MPPCostCollector.DOCSTATUS_Completed,
-				MPPCostCollector.DOCSTATUS_Closed,
-				MPPCostCollector.COSTCOLLECTORTYPE_ActivityControl);
-		if (dateFinish == null)
-		{
-			log.warn("Activity Completed/Closed but no cost collectors found!");
-			return;
-		}
-		setDateFinish(dateFinish);
-	}
+	// /**
+	// * Set DateFinish as last MovementDate from PP_CostCollector
+	// *
+	// * @param override Update DateFinish even if is already set
+	// */
+	// private void setDateFinish(boolean override)
+	// {
+	// if (!DOCSTATUS_Completed.equals(getDocStatus()) && !DOCSTATUS_Closed.equals(getDocStatus()))
+	// {
+	// throw new IllegalStateException("Calling setDateFinish when the activity is not completed/closed is not allowed");
+	// }
+	// if (!override && getDateFinish() != null)
+	// {
+	// log.debug("DateFinish already set : Date=" + getDateFinish() + ", Override=" + override);
+	// return;
+	// }
+	// //
+	// final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
+	// final PPOrderRoutingActivityId orderActivityId = PPOrderRoutingActivityId.ofRepoId(orderId, getPP_Order_Node_ID());
+	// final LocalDateTime dateFinish = Services.get(IPPCostCollectorDAO.class).getActivityLastProcessDate(orderActivityId);
+	// if (dateFinish == null)
+	// {
+	// log.warn("Activity Completed/Closed but no cost collectors found!");
+	// return;
+	// }
+	// setDateFinish(TimeUtil.asTimestamp(dateFinish));
+	// }
 }

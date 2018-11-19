@@ -19,6 +19,7 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
+import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
@@ -53,9 +54,12 @@ import lombok.NonNull;
 @Component
 public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	public LastPOCostingMethodHandler(final ICurrentCostsRepository currentCostsRepo, final ICostDetailRepository costDetailsRepo)
+	public LastPOCostingMethodHandler(
+			@NonNull final ICurrentCostsRepository currentCostsRepo, 
+			@NonNull final ICostDetailRepository costDetailsRepo,
+			@NonNull final CostingMethodHandlerUtils utils)
 	{
-		super(currentCostsRepo, costDetailsRepo);
+		super(currentCostsRepo, costDetailsRepo, utils);
 	}
 
 	@Override

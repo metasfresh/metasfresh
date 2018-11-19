@@ -715,17 +715,17 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
+//	@Override
+//	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+//	}
+//
+//	@Override
+//	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+//	{
+//		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+//	}
 
 	/** Set Produkt.
 		@param M_Product_ID 
@@ -1017,17 +1017,17 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return ii.intValue();
 	}
 
-	@Override
-	public org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_Workflow_ID, org.eevolution.model.I_PP_Order_Workflow.class);
-	}
-
-	@Override
-	public void setPP_Order_Workflow(org.eevolution.model.I_PP_Order_Workflow PP_Order_Workflow)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_Workflow_ID, org.eevolution.model.I_PP_Order_Workflow.class, PP_Order_Workflow);
-	}
+//	@Override
+//	public org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_PP_Order_Workflow_ID, org.eevolution.model.I_PP_Order_Workflow.class);
+//	}
+//
+//	@Override
+//	public void setPP_Order_Workflow(org.eevolution.model.I_PP_Order_Workflow PP_Order_Workflow)
+//	{
+//		set_ValueFromPO(COLUMNNAME_PP_Order_Workflow_ID, org.eevolution.model.I_PP_Order_Workflow.class, PP_Order_Workflow);
+//	}
 
 	/** Set Manufacturing Order Workflow.
 		@param PP_Order_Workflow_ID Manufacturing Order Workflow	  */
@@ -1040,16 +1040,16 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 			set_Value (COLUMNNAME_PP_Order_Workflow_ID, Integer.valueOf(PP_Order_Workflow_ID));
 	}
 
-	/** Get Manufacturing Order Workflow.
-		@return Manufacturing Order Workflow	  */
-	@Override
-	public int getPP_Order_Workflow_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Workflow_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
+//	/** Get Manufacturing Order Workflow.
+//		@return Manufacturing Order Workflow	  */
+//	@Override
+//	public int getPP_Order_Workflow_ID () 
+//	{
+//		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Workflow_ID);
+//		if (ii == null)
+//			 return 0;
+//		return ii.intValue();
+//	}
 
 	/** Set Verarbeitet.
 		@param Processed 

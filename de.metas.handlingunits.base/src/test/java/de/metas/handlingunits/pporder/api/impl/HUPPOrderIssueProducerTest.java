@@ -44,10 +44,10 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Product_BOMLine;
 import org.eevolution.mrp.api.impl.MRPTestDataSimple;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
@@ -390,7 +390,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		{
 			Assert.assertEquals("Invalid cost collectors count", 1, costCollectors.size());
 			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
-			Assert.assertEquals("Invalid Cost Collector Type", X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, costCollector.getCostCollectorType());
+			Assert.assertEquals("Invalid Cost Collector Type", CostCollectorType.ComponentIssue.getCode(), costCollector.getCostCollectorType());
 			Assert.assertEquals("Invalid Cost Collector MovementDate", TimeUtil.asTimestamp(movementDate), costCollector.getMovementDate());
 			Assert.assertEquals("Invalid Cost Collector PP_Order", ppOrder, costCollector.getPP_Order());
 			Assert.assertEquals("Invalid Cost Collector PP_Order_BOMLine", ppOrderBOMLine_Folie, costCollector.getPP_Order_BOMLine());

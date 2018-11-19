@@ -62,7 +62,7 @@ public class PP_Cost_Collector
 		}
 
 		// Applies only on issue collectors
-		if (!ppCostCollectorBL.isMaterialIssue(ppCostCollector, false))
+		if (!ppCostCollectorBL.isAnyComponentIssue(ppCostCollector))
 		{
 			return;
 		}
@@ -88,7 +88,7 @@ public class PP_Cost_Collector
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 		// Applies only on issue collectors
-		if (!ppCostCollectorBL.isMaterialIssue(ppCostCollector, false))
+		if (!ppCostCollectorBL.isAnyComponentIssue(ppCostCollector))
 		{
 			return;
 		}
@@ -114,7 +114,7 @@ public class PP_Cost_Collector
 			{
 				continue;
 			}
-			if (ppCostCollectorBL.isMaterialIssue(cc, false))
+			if (ppCostCollectorBL.isAnyComponentIssue(cc))
 			{
 				anyCCLeft = true;
 				break;

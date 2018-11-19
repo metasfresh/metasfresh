@@ -31,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_S_Resource;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -40,6 +39,7 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -178,11 +178,10 @@ public class ManufacturingOrderKey extends TerminalKey
 
 		//
 		// Workcenter/Workstation resource
-		final I_S_Resource resource = Services.get(IPPOrderWorkflowDAO.class).retrieveResourceForFirstNode(order);
-		if (resource != null)
+		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
+		final String resourceName = Services.get(IPPOrderWorkflowDAO.class).retrieveResourceNameForFirstNode(orderId);
+		if (!Check.isEmpty(resourceName, true))
 		{
-			final String resourceName = resource.getName();
-
 			sb.append("<br>");
 			sb.append(Util.maskHTML(resourceName));
 		}

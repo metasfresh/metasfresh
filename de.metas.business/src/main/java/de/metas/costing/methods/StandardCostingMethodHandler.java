@@ -1,6 +1,5 @@
 package de.metas.costing.methods;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostAmount;
@@ -9,6 +8,7 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
+import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
@@ -39,9 +39,12 @@ import de.metas.quantity.Quantity;
 @Component
 public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	public StandardCostingMethodHandler(final ICurrentCostsRepository currentCostsRepo, final ICostDetailRepository costDetailsRepo)
+	public StandardCostingMethodHandler(
+			final ICurrentCostsRepository currentCostsRepo,
+			final ICostDetailRepository costDetailsRepo,
+			final CostingMethodHandlerUtils utils)
 	{
-		super(currentCostsRepo, costDetailsRepo);
+		super(currentCostsRepo, costDetailsRepo, utils);
 	}
 
 	@Override
@@ -61,7 +64,6 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		currentCosts.adjustCurrentQty(qty);
 		currentCosts.addCumulatedAmtAndQty(amt, qty);
-
 		saveCurrentCosts(currentCosts);
 
 		return result;
@@ -74,13 +76,6 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity qty = request.getQty();
 		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
 		return createCostDetailRecordNoCostsChanged(request.withAmount(amt));
-	}
-
-	@Override
-	protected CostDetailCreateResult createCostForCostCollector(final CostDetailCreateRequest request)
-	{
-		// TODO Auto-generated method stub
-		throw new AdempiereException("Standard costs should be already created");
 	}
 
 	@Override

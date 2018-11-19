@@ -31,7 +31,10 @@ import org.compiere.util.KeyNamePair;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.util.Check;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class CUKey extends AbstractLUTUCUKey
 {
@@ -42,12 +45,11 @@ public class CUKey extends AbstractLUTUCUKey
 
 	private I_M_HU_LUTU_Configuration lutuConfiguration = null;
 
-	public CUKey(final ITerminalContext terminalContext, final I_M_Product product)
+	public CUKey(final ITerminalContext terminalContext, @NonNull final ProductId productId)
 	{
 		super(terminalContext);
 
-		Check.assumeNotNull(product, "product not null");
-		this.product = product;
+		this.product = Services.get(IProductDAO.class).getById(productId);
 	}
 
 	@Override

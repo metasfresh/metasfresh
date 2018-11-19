@@ -1,4 +1,4 @@
-package org.eevolution.api.impl;
+package org.eevolution.api;
 
 /*
  * #%L
@@ -23,57 +23,65 @@ package org.eevolution.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.product.ProductId;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-@Data
+/**
+ * Instances of this class can be passed to {@link IPPCostCollectorBL#createReceipt(IReceiptCostCollectorCandidate)} to have it generate and process a receipt. <br>
+ * <p>
+ * Note that in the context of a "co-product", a receipt is a negative issue (but that should not bother the user).
+ *
+ */
+@Value
 @Builder(toBuilder = true)
-public class ReceiptCostCollectorCandidate implements IReceiptCostCollectorCandidate
+public class ReceiptCostCollectorCandidate
 {
-	private final I_PP_Order PP_Order;
-	private final I_PP_Order_BOMLine PP_Order_BOMLine;
+	I_PP_Order PP_Order;
+
+	/** manufacturing order's BOM Line if this is a co/by-product receipt; <code>null</code> otherwise */
+	I_PP_Order_BOMLine PP_Order_BOMLine;
 
 	@NonNull
 	@Default
-	private Timestamp movementDate = SystemTime.asTimestamp();
+	LocalDateTime movementDate = SystemTime.asLocalDateTime();
 
-	private I_M_Product M_Product;
+	ProductId productId;
 	@NonNull
-	private I_C_UOM C_UOM;
+	I_C_UOM C_UOM;
 
 	@NonNull
 	@Default
-	private BigDecimal qtyToReceive = BigDecimal.ZERO;
+	BigDecimal qtyToReceive = BigDecimal.ZERO;
 
 	@NonNull
-	private final BigDecimal qtyScrap;
+	BigDecimal qtyScrap;
 	@NonNull
-	private final BigDecimal qtyReject;
-	private final int M_Locator_ID;
-	private final int M_AttributeSetInstance_ID;
+	BigDecimal qtyReject;
+	LocatorId locatorId;
+	AttributeSetInstanceId attributeSetInstanceId;
 
 	public static class ReceiptCostCollectorCandidateBuilder
 	{
 		private ReceiptCostCollectorCandidateBuilder()
 		{
-			movementDate(SystemTime.asTimestamp());
+			movementDate(SystemTime.asLocalDateTime());
 			qtyToReceive(BigDecimal.ZERO);
 			qtyScrap(BigDecimal.ZERO);
 			qtyReject(BigDecimal.ZERO);
-			M_Locator_ID(-1);
-			M_AttributeSetInstance_ID(AttributeConstants.M_AttributeSetInstance_ID_None);
+			locatorId(null);
+			attributeSetInstanceId(AttributeSetInstanceId.NONE);
 		}
 	}
 }

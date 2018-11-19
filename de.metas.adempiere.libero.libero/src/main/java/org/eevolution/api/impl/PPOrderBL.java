@@ -13,15 +13,14 @@ package org.eevolution.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -37,21 +36,24 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MDocType;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.PPOrderRouting;
+import org.eevolution.api.PPOrderScheduleChangeRequest;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.I_PP_Order_Node;
-import org.eevolution.model.I_PP_Order_Workflow;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PPOrderBL implements IPPOrderBL
 {
@@ -80,7 +82,6 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
-
 
 	/**
 	 * Set Qty Entered - enforce entered UOM
@@ -269,6 +270,7 @@ public class PPOrderBL implements IPPOrderBL
 			return true;
 		}
 
+		//
 		for (final I_PP_Order_BOMLine line : Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder))
 		{
 			if (line.getQtyDelivered().signum() > 0)
@@ -277,17 +279,17 @@ public class PPOrderBL implements IPPOrderBL
 			}
 		}
 
-		for (final I_PP_Order_Node node : Services.get(IPPOrderWorkflowDAO.class).retrieveNodes(ppOrder))
+		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+
+		//
+		final IPPOrderWorkflowDAO orderRoutingRepo = Services.get(IPPOrderWorkflowDAO.class);
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
+		if (orderRouting.isSomethingProcessed())
 		{
-			if (node.getQtyDelivered().signum() > 0)
-			{
-				return true;
-			}
-			if (node.getDurationReal() > 0)
-			{
-				return true;
-			}
+			return true;
 		}
+
+		//
 		return false;
 	}
 
@@ -371,27 +373,6 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public I_PP_Order_Workflow getPP_Order_Workflow(final I_PP_Order ppOrder)
-	{
-		Check.assumeNotNull(ppOrder, "ppOrder not null");
-
-		//
-		// Check if we have it "cached" as a dynamic attribute
-		final String key = I_PP_Order_Workflow.class.getName();
-		I_PP_Order_Workflow ppOrderWorkflow = InterfaceWrapperHelper.getDynAttribute(ppOrder, key);
-		if (ppOrderWorkflow != null)
-		{
-			return ppOrderWorkflow;
-		}
-
-		//
-		// Retrieve from database
-		ppOrderWorkflow = Services.get(IPPOrderWorkflowDAO.class).retrieveOrderWorkflow(ppOrder);
-		InterfaceWrapperHelper.setDynAttribute(ppOrder, key, ppOrderWorkflow);
-		return ppOrderWorkflow;
-	}
-
-	@Override
 	public void setDocType(final I_PP_Order ppOrder, final String docBaseType, final String docSubType)
 	{
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
@@ -437,4 +418,21 @@ public class PPOrderBL implements IPPOrderBL
 		// Update Ordered Quantities
 		orderStock(ppOrder);
 	}
+
+	@Override
+	public void changeScheduling(@NonNull final PPOrderScheduleChangeRequest request)
+	{
+		Services.get(IPPOrderWorkflowDAO.class).changeActivitiesScheduling(request.getOrderId(), request.getActivityChangeRequests());
+		Services.get(IPPOrderDAO.class).changeOrderScheduling(request.getOrderId(), request.getScheduledStartDate(), request.getScheduledEndDate());
+	}
+
+	@Override
+	public void voidOrderRouting(final PPOrderId orderId)
+	{
+		final IPPOrderWorkflowDAO orderRoutingRepo = Services.get(IPPOrderWorkflowDAO.class);
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
+		orderRouting.voidIt();
+		orderRoutingRepo.save(orderRouting);
+	}
+
 }

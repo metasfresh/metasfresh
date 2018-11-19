@@ -104,7 +104,7 @@ public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 
 		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.retrieveForOrder(ppOrder))
 		{
-			if (!ppCostCollectorBL.isMaterialIssue(cc, true))
+			if (!ppCostCollectorBL.isAnyComponentIssueOrCoProduct(cc))
 			{
 				continue;
 			}

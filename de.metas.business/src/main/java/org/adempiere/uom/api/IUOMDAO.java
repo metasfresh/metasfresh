@@ -1,5 +1,7 @@
 package org.adempiere.uom.api;
 
+import java.time.temporal.TemporalUnit;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -59,4 +61,6 @@ public interface IUOMDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_UOM retrieveEachUOM(Properties ctx);
+
+	TemporalUnit getTemporalUnitByUomId(final UomId uomId);
 }

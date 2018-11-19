@@ -34,6 +34,7 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
 public interface IProductBOMDAO extends ISingletonService
@@ -46,6 +47,8 @@ public interface IProductBOMDAO extends ISingletonService
 	int retrieveDefaultBOMId(I_M_Product product);
 
 	I_PP_Product_BOM retrieveDefaultBOM(I_M_Product product);
+	
+	int getDefaultProductBOMIdByProductId(ProductId productId);
 
 	I_PP_Product_BOM retrieveBOMById(Properties ctx, int productBomId);
 

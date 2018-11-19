@@ -16,35 +16,14 @@
 
 package org.eevolution.form.crp;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import javax.swing.JTree;
 
-import org.compiere.model.MResource;
 import org.jfree.data.category.CategoryDataset;
+
+import de.metas.product.ResourceId;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
@@ -54,6 +33,6 @@ public interface CRPModel
 {
 	public JTree getTree();	
 	public CategoryDataset getDataset();
-	public BigDecimal calculateLoad(Timestamp dateTime, MResource r, String docStatus);
+	public Duration calculateLoad(LocalDateTime dateTime, ResourceId resourceId);
 	
 }

@@ -69,7 +69,7 @@ public class ReceiptScheduleCUKey extends CUKey
 
 	public ReceiptScheduleCUKey(final ITerminalContext terminalContext, final ReceiptScheduleTableRow row)
 	{
-		super(terminalContext, row.getM_Product());
+		super(terminalContext, row.getProductId());
 		receiptScheduleRow = row;
 		receiptSchedule = row.getM_ReceiptSchedule();
 

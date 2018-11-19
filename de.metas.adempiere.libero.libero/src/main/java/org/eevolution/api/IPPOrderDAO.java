@@ -1,5 +1,7 @@
 package org.eevolution.api;
 
+import java.time.LocalDateTime;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -24,6 +26,8 @@ package org.eevolution.api;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -31,6 +35,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 
 public interface IPPOrderDAO extends ISingletonService
@@ -38,6 +43,8 @@ public interface IPPOrderDAO extends ISingletonService
 	I_PP_Order getById(PPOrderId ppOrderId);
 
 	<T extends I_PP_Order> T getById(PPOrderId ppOrderId, Class<T> type);
+
+	List<I_PP_Order> getByIds(Set<PPOrderId> orderIds);
 
 	/**
 	 * Retrieve all manufacturing orders which are linked to given order line AND they have the product from order line.
@@ -76,4 +83,8 @@ public interface IPPOrderDAO extends ISingletonService
 	 * @return PP_Order_ID or -1 if not found.
 	 */
 	int retrievePPOrderIdByOrderLineId(final int orderLineId);
+
+	void changeOrderScheduling(PPOrderId orderId, LocalDateTime scheduledStartDate, LocalDateTime scheduledFinishDate);
+
+	Stream<I_PP_Order> streamOpenPPOrderIdsOrderedByDatePromised(ResourceId plantId);
 }

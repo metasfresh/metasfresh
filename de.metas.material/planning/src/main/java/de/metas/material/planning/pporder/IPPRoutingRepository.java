@@ -1,10 +1,13 @@
-package org.eevolution.api;
+package de.metas.material.planning.pporder;
+
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L
- * de.metas.adempiere.libero.libero
+ * metasfresh-material-planning
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +25,11 @@ package org.eevolution.api;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_AD_WF_Node;
-import org.eevolution.model.I_PP_WF_Node_Product;
-
-import de.metas.util.ISingletonService;
-
-public interface IPPWFNodeProductDAO extends ISingletonService
+public interface IPPRoutingRepository extends ISingletonService
 {
+	PPRouting getById(PPRoutingId routingId);
 
-	List<I_PP_WF_Node_Product> retrieveForWFNode(Properties ctx, int AD_WF_Node_ID);
+	PPRoutingId getRoutingIdByProductId(ProductId productId);
 
-	List<I_PP_WF_Node_Product> retrieveForWFNode(I_AD_WF_Node wfNode);
-
+	void changeRouting(PPRoutingChangeRequest changeRequest);
 }

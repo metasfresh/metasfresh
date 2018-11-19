@@ -165,7 +165,7 @@ public abstract class PO
 	private static DocWorkflowMgr s_docWFMgr = null;
 
 	/** User Maintained Entity Type */
-	static protected final String ENTITYTYPE_UserMaintained = "U";
+	static public final String ENTITYTYPE_UserMaintained = "U";
 	/** Dictionary Maintained Entity Type */
 	static public final String ENTITYTYPE_Dictionary = "D";
 
