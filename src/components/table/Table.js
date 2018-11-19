@@ -497,17 +497,18 @@ class Table extends Component {
       limitOnClickOutside,
     } = this.props;
 
+    const closeIncluded = limitOnClickOutside
+      ? event.target.parentNode.className.includes('document-list-included') &&
+        event.target.parentNode.className.includes('document-list-has-included')
+      : true;
+
     if (
       allowOutsideClick &&
       event.target.parentNode !== document &&
       event.target.parentNode &&
       !event.target.parentNode.className.includes('notification') &&
       !inBackground &&
-      (limitOnClickOutside &&
-        event.target.parentNode.className.includes('document-list-included') &&
-        event.target.parentNode.className.includes(
-          'document-list-has-included'
-        ))
+      closeIncluded
     ) {
       const item = event.path || (event.composedPath && event.composedPath());
 
