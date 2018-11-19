@@ -28,7 +28,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_AD_Workflow;
@@ -36,8 +35,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MDocType;
-import org.compiere.util.Env;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -52,6 +50,8 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -70,13 +70,9 @@ import lombok.NonNull;
 
 public class PPOrderBL implements IPPOrderBL
 {
-	// private final transient Logger log = CLogMgt.getLogger(getClass());
-
 	@Override
 	public void setDefaults(final I_PP_Order ppOrder)
 	{
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(Env.getCtx(), MDocType.DOCBASETYPE_ManufacturingOrder, ppOrder.getAD_Client_ID(), ppOrder.getAD_Org_ID(), ITrx.TRXNAME_None);
-
 		ppOrder.setLine(10);
 		ppOrder.setPriorityRule(X_PP_Order.PRIORITYRULE_Medium);
 		ppOrder.setDescription("");
@@ -90,8 +86,7 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setProcessed(false);
 		ppOrder.setProcessing(false);
 		ppOrder.setPosted(false);
-		ppOrder.setC_DocTypeTarget_ID(docTypeId);
-		ppOrder.setC_DocType_ID(docTypeId);
+		setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, /* docSubType */null);
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
@@ -386,20 +381,19 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public void setDocType(final I_PP_Order ppOrder, final String docBaseType, final String docSubType)
+	public void setDocType(@NonNull final I_PP_Order ppOrder, @NonNull final String docBaseType, final String docSubType)
 	{
-		Check.assumeNotNull(ppOrder, "ppOrder not null");
-		Check.assumeNotEmpty(docBaseType, "docBaseType not empty");
+		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(docSubType)
+				.adClientId(ppOrder.getAD_Client_ID())
+				.adOrgId(ppOrder.getAD_Org_ID())
+				.build());
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ppOrder);
-		final int adClientId = ppOrder.getAD_Client_ID();
-		final int adOrgId = ppOrder.getAD_Org_ID();
-		final int docTypeId = docTypeDAO.getDocTypeId(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName);
-		ppOrder.setC_DocTypeTarget_ID(docTypeId);
-		ppOrder.setC_DocType_ID(docTypeId);
+		ppOrder.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+		ppOrder.setC_DocType_ID(docTypeId.getRepoId());
 	}
 
 	@Override
