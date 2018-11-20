@@ -21,14 +21,12 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ComponentIssueCreateRequest;
-import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -373,18 +371,6 @@ public class PPOrderMakeToKitHelper
 			// create record for negative and positive transaction
 			if (qtyIssue.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
 			{
-				CostCollectorType costCollectorType = CostCollectorType.ComponentIssue;
-				// Method Variance
-				if (orderBOMLine.getQtyBatch().signum() == 0
-						&& orderBOMLine.getQtyBOM().signum() == 0)
-				{
-					costCollectorType = CostCollectorType.MethodChangeVariance;
-				}
-				else if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product))
-				{
-					costCollectorType = CostCollectorType.MixVariance;
-				}
-				//
 				final I_PP_Cost_Collector cc = ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
 						.orderBOMLine(orderBOMLine)
 						.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(storage.getM_Locator_ID()))
