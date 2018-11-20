@@ -1,4 +1,4 @@
-package org.adempiere.acct.api.impl;
+package de.metas.acct.api.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
