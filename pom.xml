@@ -45,7 +45,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		
 		<!-- https://github.com/codecentric/spring-boot-admin -->
 		<spring-boot-admin.version>1.5.0</spring-boot-admin.version>
-		
+
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
 	</properties>
 
@@ -668,7 +668,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 					<name>env.BUILD_NUMBER</name>
 				</property>
 			</activation>
-			
+
 			<repositories>
 				<!-- this additional repo's parameters can be set from outside. It usually corresponds to a (task-)branch -->
 				<repository>
@@ -677,7 +677,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 					<url>${deploy-repo-url}</url>
 				</repository>
 			</repositories>
-			
+
 			<build>
 				<plugins>
 					<plugin>
@@ -776,6 +776,14 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 								<groupId>net.sf.jasperreports</groupId>
 								<artifactId>jasperreports</artifactId>
 								<version>${jasperreports.version}</version>
+							</dependency>
+							<dependency>
+								<!-- avoid compile error 
+								Error while compiling Jasper reports: java.lang.NoClassDefFoundError: org/springframework/beans/factory/support/BeanDefinitionRegistry: org.springframework.beans.factory.support.BeanDefinitionRegistry
+								-->
+								<groupId>org.springframework</groupId>
+								<artifactId>spring-beans</artifactId>
+  								<!-- version>4.3.8.RELEASE</version-->
 							</dependency>
 							<dependency>
 								<groupId>net.sf.barcode4j</groupId>
