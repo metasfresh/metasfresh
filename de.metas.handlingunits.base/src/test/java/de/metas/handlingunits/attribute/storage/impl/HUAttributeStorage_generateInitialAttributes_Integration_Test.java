@@ -76,6 +76,11 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 				.setScanners(new SubTypesScanner()));
 
 		final Set<Class<? extends IAttributeValueGenerator>> attributeValueGeneratorClassnames = reflections.getSubTypesOf(IAttributeValueGenerator.class);
+		if (attributeValueGeneratorClassnames.isEmpty())
+		{
+			throw new RuntimeException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
+					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+		}
 
 		System.out.println("Found " + attributeValueGeneratorClassnames.size() + " classes in " + stopwatch.toString());
 
