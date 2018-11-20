@@ -71,16 +71,6 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
-	public I_PP_Order retrieveMakeToOrderForOrderLine(final I_C_OrderLine line)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class, line)
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_OrderLine_MTO_ID, line.getC_OrderLine_ID())
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, line.getM_Product_ID())
-				.create()
-				.firstOnly(I_PP_Order.class);
-	}
-
-	@Override
 	public List<I_PP_Order> retrieveAllForOrderLine(final I_C_OrderLine line)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class, line)

@@ -55,14 +55,6 @@ public interface IPPOrderDAO extends ISingletonService
 	List<I_PP_Order> retrieveAllForOrderLine(I_C_OrderLine line);
 
 	/**
-	 * Retrieve Make-to-Order generated manufacturing order which is linked to given order line AND have the product from order line.
-	 * 
-	 * @param line
-	 * @return make to order MO or null
-	 */
-	I_PP_Order retrieveMakeToOrderForOrderLine(I_C_OrderLine line);
-
-	/**
 	 * Gets released manufacturing orders based on {@link I_M_Warehouse}s.
 	 * 
 	 * @param warehouseId
