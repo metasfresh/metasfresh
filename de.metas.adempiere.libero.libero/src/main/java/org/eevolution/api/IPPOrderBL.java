@@ -30,6 +30,7 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
 public interface IPPOrderBL extends ISingletonService
@@ -56,7 +57,11 @@ public interface IPPOrderBL extends ISingletonService
 	 */
 	void updateQtyBatchs(I_PP_Order order, boolean override);
 
-	void orderStock(I_PP_Order ppOrder);
+	@Deprecated
+	default void orderStock(I_PP_Order ppOrder)
+	{
+		// nothing
+	}
 
 	/**
 	 * @return true if ANY work was delivered for this MO (i.e. Stock Issue, Stock Receipt, Activity Control Report)
@@ -68,7 +73,11 @@ public interface IPPOrderBL extends ISingletonService
 	 *
 	 * @return Open Qty (Ordered - Delivered - Scrap)
 	 */
-	BigDecimal getQtyOpen(I_PP_Order ppOrder);
+	Quantity getQtyOpen(I_PP_Order ppOrder);
+
+	Quantity getQtyScrapped(I_PP_Order ppOrder);
+
+	Quantity getQtyRejected(I_PP_Order ppOrder);
 
 	/**
 	 * Gets the "direct" order line.
@@ -95,6 +104,7 @@ public interface IPPOrderBL extends ISingletonService
 	 * @see org.adempiere.model.InterfaceWrapperHelper#setDynAttribute(Object, String, Object)
 	 * @see #orderStock(I_PP_Order)
 	 */
+	@Deprecated
 	void setForceQtyReservation(I_PP_Order ppOrder, boolean forceQtyReservation);
 
 	/**

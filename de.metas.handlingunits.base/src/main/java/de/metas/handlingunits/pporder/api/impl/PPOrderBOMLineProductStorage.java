@@ -34,6 +34,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -76,8 +77,8 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 	{
 		checkStaled();
 
-		final BigDecimal qtyCapacity;
-		final BigDecimal qtyToIssueOrReceive;
+		final Quantity qtyCapacity;
+		final Quantity qtyToIssueOrReceive;
 		if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
 		{
 			qtyCapacity = ppOrderBOMBL.getQtyRequiredToReceive(orderBOMLine);
@@ -89,8 +90,8 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 			qtyToIssueOrReceive = ppOrderBOMBL.getQtyToIssue(orderBOMLine);
 		}
 
-		final BigDecimal qtyIssued = qtyCapacity.subtract(qtyToIssueOrReceive);
-		return qtyIssued;
+		final Quantity qtyIssued = qtyCapacity.subtract(qtyToIssueOrReceive);
+		return qtyIssued.getAsBigDecimal();
 	}
 
 	@Override

@@ -202,13 +202,13 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		// Create material receipt and activate the HU
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(candidate.getC_UOM_ID());
 		final ReceiptCostCollectorCandidate costCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.PP_Order(candidate.getPP_Order())
 				.PP_Order_BOMLine(candidate.getPP_Order_BOMLine())
 				.movementDate(TimeUtil.asLocalDateTime(candidate.getMovementDate()))
-				.qtyToReceive(candidate.getQty())
+				.qtyToReceive(Quantity.of(candidate.getQty(), uom))
 				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))
-				.C_UOM(candidate.getC_UOM())
 				.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID()))
 				.build();
 		final I_PP_Cost_Collector cc = huPPCostCollectorBL.createReceipt(costCollectorCandidate, hu);

@@ -48,11 +48,11 @@ public interface IPPOrderBOMBL extends ISingletonService
 	/**
 	 * Gets Qty Open (i.e. Qty To Issue).
 	 *
-	 * Same as {@link #getQtyToIssue(I_PP_Order_BOMLine, BigDecimal)} but it will use the standard required quantity (i.e. {@link I_PP_Order_BOMLine#getQtyRequiered()}).
+	 * Same as {@link #getQtyToIssue(I_PP_Order_BOMLine, Quantity)} but it will use the standard required quantity (i.e. {@link I_PP_Order_BOMLine#getQtyRequiered()}).
 	 *
 	 * @return Qty Open (Requiered - Delivered)
 	 */
-	BigDecimal getQtyToIssue(I_PP_Order_BOMLine orderBOMLine);
+	Quantity getQtyToIssue(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
 	 * Gets Qty Open (i.e. Qty To Issue).
@@ -61,7 +61,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @param qtyToIssueRequiered quantity required to be considered (instead of standard qty required to issue from BOM Line)
 	 * @return Qty Open (Requiered - Delivered)
 	 */
-	BigDecimal getQtyToIssue(I_PP_Order_BOMLine orderBOMLine, BigDecimal qtyToIssueRequiered);
+	Quantity getQtyToIssue(I_PP_Order_BOMLine orderBOMLine, Quantity qtyToIssueRequiered);
 
 	/**
 	 * Gets qty which is required to issue (i.e. target quantity), without considering how much was issued until now.
@@ -69,7 +69,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @param orderBOMLine
 	 * @return qty required to issue (positive value)
 	 */
-	BigDecimal getQtyRequiredToIssue(I_PP_Order_BOMLine orderBOMLine);
+	Quantity getQtyRequiredToIssue(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
 	 * Gets Qty To Receive
@@ -78,7 +78,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @return Qty To Receive (positive)
 	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 */
-	BigDecimal getQtyToReceive(I_PP_Order_BOMLine orderBOMLine);
+	Quantity getQtyToReceive(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
 	 * Gets qty which is required to receive (i.e. target quantity).
@@ -87,9 +87,19 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @return Qty required to receive (positive)
 	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 */
-	BigDecimal getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
+	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
 
-	void reserveStock(I_PP_Order_BOMLine orderBOMLine);
+	@Deprecated
+	default void reserveStock(I_PP_Order_BOMLine orderBOMLine)
+	{
+		// nothing
+	}
+
+	@Deprecated
+	default void reserveStock(List<I_PP_Order_BOMLine> lines)
+	{
+		// nothing
+	}
 
 	/**
 	 * Add to Description
@@ -118,6 +128,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @return
 	 */
 	BigDecimal adjustCoProductQty(BigDecimal qty);
+
+	Quantity adjustCoProductQty(Quantity qty);
 
 	/**
 	 * Adds given Qtys to {@link I_PP_Order_BOMLine}.
@@ -162,8 +174,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	void close(I_PP_Order_BOMLine line);
 
 	void unclose(I_PP_Order_BOMLine line);
-
-	void reserveStock(List<I_PP_Order_BOMLine> lines);
 
 	/**
 	 * Computes the quantity for the given {@code ppOrderLinePojo} based on infos from all three paramaters.

@@ -160,24 +160,26 @@ public class PPOrderMakeToKitHelper
 					forceIssue);
 		}
 
-		final BigDecimal qtyToReceive = Services.get(IPPOrderBL.class).getQtyOpen(ppOrder);
+		IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
+		final Quantity qtyToReceive = ppOrderService.getQtyOpen(ppOrder);
+		final Quantity qtyScrapped = ppOrderService.getQtyScrapped(ppOrder);
+		final Quantity qtyRejected = ppOrderService.getQtyRejected(ppOrder);
 
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 		final ReceiptCostCollectorCandidate candidate = ReceiptCostCollectorCandidate.builder()
 				.PP_Order(ppOrder)
 				.movementDate(today)
 				.qtyToReceive(qtyToReceive)
-				.qtyScrap(ppOrder.getQtyScrap())
-				.qtyReject(ppOrder.getQtyReject())
+				.qtyScrap(qtyScrapped)
+				.qtyReject(qtyRejected)
 				.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrder.getM_Locator_ID()))
 				.productId(ProductId.ofRepoId(ppOrder.getM_Product_ID()))
-				.C_UOM(ppOrder.getC_UOM())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID()))
 				.build();
 
 		ppCostCollectorBL.createReceipt(candidate);
 
-		ppOrder.setQtyDelivered(qtyToReceive);
+		ppOrder.setQtyDelivered(qtyToReceive.getAsBigDecimal());
 	}
 
 	/**

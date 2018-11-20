@@ -174,10 +174,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			throw new LiberoException("@Invalid@ @M_Product_ID@: " + candidate + "\n Expected: " + orderBOMLine.getM_Product());
 		}
 
-		final I_C_UOM uom = candidate.getC_UOM();
-		final Quantity qtyToIssue = Quantity.of(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyToReceive()), uom);
-		final Quantity qtyScrap = Quantity.of(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyScrap()), uom);
-		final Quantity qtyReject = Quantity.of(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyReject()), uom);
+		final Quantity qtyToIssue = ppOrderBOMBL.adjustCoProductQty(candidate.getQtyToReceive());
+		final Quantity qtyScrap = ppOrderBOMBL.adjustCoProductQty(candidate.getQtyScrap());
+		final Quantity qtyReject = ppOrderBOMBL.adjustCoProductQty(candidate.getQtyReject());
 		return createIssue(ComponentIssueCreateRequest.builder()
 				.orderBOMLine(orderBOMLine)
 				.locatorId(getLocatorIdToUse(candidate))
@@ -196,10 +195,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		final Quantity qtyReceived = getQtyReceived(order);
 
-		final I_C_UOM uom = candidate.getC_UOM();
-		final Quantity qtyToDeliver = Quantity.of(candidate.getQtyToReceive(), uom);
-		final Quantity qtyScrap = Quantity.of(candidate.getQtyScrap(), uom);
-		final Quantity qtyReject = Quantity.of(candidate.getQtyReject(), uom);
+		final Quantity qtyToDeliver = candidate.getQtyToReceive();
+		final Quantity qtyScrap = candidate.getQtyScrap();
+		final Quantity qtyReject = candidate.getQtyReject();
 		final LocalDateTime movementDate = candidate.getMovementDate() != null ? TimeUtil.asLocalDateTime(candidate.getMovementDate()) : SystemTime.asLocalDateTime();
 
 		if (qtyToDeliver.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
@@ -372,11 +370,13 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			final IPPOrderBOMBL orderBOMsService = Services.get(IPPOrderBOMBL.class);
 			final IPPCostCollectorDAO costCollectorsRepo = Services.get(IPPCostCollectorDAO.class);
 
-			final BigDecimal qtyUsageVariancePrev = costCollectorsRepo.getQtyUsageVariance(ppOrderBOMLineId); // Previous booked usage variance
-			final BigDecimal qtyOpen = orderBOMsService.getQtyToIssue(line);
-			final I_C_UOM uom = orderBOMsService.getStockingUOM(line);
+			final Quantity qtyOpen = orderBOMsService.getQtyToIssue(line);
+
+			final BigDecimal qtyUsageVariancePrevBD = costCollectorsRepo.getQtyUsageVariance(ppOrderBOMLineId); // Previous booked usage variance
+			final Quantity qtyUsageVariancePrev = Quantity.of(qtyUsageVariancePrevBD, qtyOpen.getUOM());
+
 			// Current usage variance = QtyOpen - Previous Usage Variance
-			qtyUsageVariance = Quantity.of(qtyOpen.subtract(qtyUsageVariancePrev), uom);
+			qtyUsageVariance = qtyOpen.subtract(qtyUsageVariancePrev);
 		}
 		if (qtyUsageVariance.signum() == 0)
 		{

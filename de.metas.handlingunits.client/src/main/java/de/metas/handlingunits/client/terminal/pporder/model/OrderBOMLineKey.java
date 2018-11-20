@@ -38,6 +38,7 @@ import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -90,7 +91,7 @@ import de.metas.util.Services;
 		qtyRequired = orderBOMLine.getQtyRequiered();
 		qtyDelivered = orderBOMLine.getQtyDelivered();
 
-		final BigDecimal qtyOpen;
+		final Quantity qtyOpen;
 		if (coProduct)
 		{
 			qtyOpen = ppOrderBOMLineBL.getQtyToReceive(orderBOMLine);

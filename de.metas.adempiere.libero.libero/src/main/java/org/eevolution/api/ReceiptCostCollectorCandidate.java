@@ -1,40 +1,16 @@
 package org.eevolution.api;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -45,43 +21,43 @@ import lombok.Value;
  *
  */
 @Value
-@Builder(toBuilder = true)
 public class ReceiptCostCollectorCandidate
 {
 	I_PP_Order PP_Order;
-
 	/** manufacturing order's BOM Line if this is a co/by-product receipt; <code>null</code> otherwise */
 	I_PP_Order_BOMLine PP_Order_BOMLine;
 
-	@NonNull
-	@Default
-	LocalDateTime movementDate = SystemTime.asLocalDateTime();
+	LocalDateTime movementDate;
 
 	ProductId productId;
-	@NonNull
-	I_C_UOM C_UOM;
 
-	@NonNull
-	@Default
-	BigDecimal qtyToReceive = BigDecimal.ZERO;
+	Quantity qtyToReceive;
+	Quantity qtyScrap;
+	Quantity qtyReject;
 
-	@NonNull
-	BigDecimal qtyScrap;
-	@NonNull
-	BigDecimal qtyReject;
 	LocatorId locatorId;
 	AttributeSetInstanceId attributeSetInstanceId;
 
-	public static class ReceiptCostCollectorCandidateBuilder
+	@Builder(toBuilder = true)
+	private ReceiptCostCollectorCandidate(
+			final I_PP_Order PP_Order,
+			final I_PP_Order_BOMLine PP_Order_BOMLine,
+			final LocalDateTime movementDate,
+			final ProductId productId,
+			@NonNull final Quantity qtyToReceive,
+			final Quantity qtyScrap,
+			final Quantity qtyReject,
+			final LocatorId locatorId,
+			final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		private ReceiptCostCollectorCandidateBuilder()
-		{
-			movementDate(SystemTime.asLocalDateTime());
-			qtyToReceive(BigDecimal.ZERO);
-			qtyScrap(BigDecimal.ZERO);
-			qtyReject(BigDecimal.ZERO);
-			locatorId(null);
-			attributeSetInstanceId(AttributeSetInstanceId.NONE);
-		}
+		this.PP_Order = PP_Order;
+		this.PP_Order_BOMLine = PP_Order_BOMLine;
+		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDateTime();
+		this.productId = productId;
+		this.qtyToReceive = qtyToReceive;
+		this.qtyScrap = qtyScrap != null ? qtyScrap : qtyToReceive.toZero();
+		this.qtyReject = qtyReject != null ? qtyReject : qtyToReceive.toZero();
+		this.locatorId = locatorId;
+		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 	}
 }

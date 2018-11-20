@@ -26,14 +26,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -60,7 +58,6 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductBL;
-import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -180,97 +177,6 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public void orderStock(final I_PP_Order ppOrder)
-	{
-		//
-		// Check if locator was changed. If yes, we need to unreserve first what was reserved before
-		final I_PP_Order ppOrderOld = InterfaceWrapperHelper.createOld(ppOrder, I_PP_Order.class);
-		if (ppOrderOld.getM_Locator_ID() != ppOrder.getM_Locator_ID())
-		{
-			final BigDecimal qtyReservedNew = orderStock(ppOrderOld, BigDecimal.ZERO);
-			if (qtyReservedNew.signum() != 0)
-			{
-				throw new LiberoException("Cannot unreserve all stock for " + ppOrderOld);
-			}
-			ppOrder.setQtyReserved(BigDecimal.ZERO);
-		}
-
-		//
-		// Adjust stock reservation to "how much we still need to receive"
-		final BigDecimal qtyReservedTarget;
-		if (isQtyReservationEnabled(ppOrder))
-		{
-			qtyReservedTarget = getQtyOpen(ppOrder);
-		}
-		else
-		{
-			qtyReservedTarget = BigDecimal.ZERO;
-		}
-		final BigDecimal qtyReservedNew = orderStock(ppOrder, qtyReservedTarget);
-		ppOrder.setQtyReserved(qtyReservedNew);
-
-	} // reserveStock
-
-	/**
-	 * Reserve/Unreserve stock.
-	 *
-	 * NOTE: this method is not changing the given <code>ppOrder</code>.
-	 *
-	 * @param ppOrder
-	 * @param qtyReservedRequested how much we want to have reserved at the end.
-	 * @return how much was actual reserved at the end; you can use this value to set {@link I_PP_Order#setQtyReserved(BigDecimal)}.
-	 */
-	private BigDecimal orderStock(final I_PP_Order ppOrder, final BigDecimal qtyReservedRequested)
-	{
-		//
-		// Calculate how much we really need to reserve more/less:
-		final BigDecimal qtyReservedActual = ppOrder.getQtyReserved();
-		BigDecimal qtyReservedTarget = qtyReservedRequested;
-		final BigDecimal qtyReservedDiff;
-		final int productId = ppOrder.getM_Product_ID();
-		if (!Services.get(IProductBL.class).isStocked(productId))
-		{
-			//
-			// Case: we are dealing with a product which is not stocked
-			// => we need to make sure we have zero reservations
-			qtyReservedDiff = qtyReservedActual.negate();
-			qtyReservedTarget = BigDecimal.ZERO;
-		}
-		else if (qtyReservedTarget.signum() < 0)
-		{
-			//
-			// Case: We issued more then it was needed
-			// We just need to unreserve what was reserved until now
-			qtyReservedDiff = qtyReservedActual.negate();
-			qtyReservedTarget = BigDecimal.ZERO;
-		}
-		else
-		{
-			qtyReservedDiff = qtyReservedTarget.subtract(qtyReservedActual);
-		}
-
-		//
-		// Update Storage (if we have something to reserve/unreserve)
-		if (qtyReservedDiff.signum() != 0)
-		{
-			final I_M_Locator locator = ppOrder.getM_Locator();
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
-			final String trxName = InterfaceWrapperHelper.getTrxName(ppOrder);
-			Services.get(IStorageBL.class).addQtyOrdered(ctx,
-					locator,
-					productId,
-					ppOrder.getM_AttributeSetInstance_ID(),
-					qtyReservedDiff,
-					trxName);
-		}
-
-		// update line
-		// orderBOMLine.setQtyReserved(qtyReservedTarget);
-
-		return qtyReservedTarget;
-	}
-
-	@Override
 	public boolean isDelivered(final I_PP_Order ppOrder)
 	{
 		if (ppOrder.getQtyDelivered().signum() > 0 || ppOrder.getQtyScrap().signum() > 0 || ppOrder.getQtyReject().signum() > 0)
@@ -301,14 +207,37 @@ public class PPOrderBL implements IPPOrderBL
 		return false;
 	}
 
-	@Override
-	public BigDecimal getQtyOpen(final I_PP_Order ppOrder)
+	private I_C_UOM getMainProductStockingUOM(final I_PP_Order ppOrder)
 	{
+		final ProductId mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		return Services.get(IProductBL.class).getStockingUOM(mainProductId);
+	}
+
+	@Override
+	public Quantity getQtyOpen(final I_PP_Order ppOrder)
+	{
+		final I_C_UOM uom = getMainProductStockingUOM(ppOrder);
 		final BigDecimal qtyOrdered = ppOrder.getQtyOrdered();
 		final BigDecimal qtyDelivered = ppOrder.getQtyDelivered();
 		final BigDecimal qtyScrap = ppOrder.getQtyScrap();
 		final BigDecimal qtyToDeliver = qtyOrdered.subtract(qtyDelivered).subtract(qtyScrap);
-		return qtyToDeliver;
+		return Quantity.of(qtyToDeliver, uom);
+	}
+
+	@Override
+	public Quantity getQtyScrapped(final I_PP_Order ppOrder)
+	{
+		final I_C_UOM uom = getMainProductStockingUOM(ppOrder);
+		final BigDecimal qtyScrap = ppOrder.getQtyScrap();
+		return Quantity.of(qtyScrap, uom);
+	}
+
+	@Override
+	public Quantity getQtyRejected(final I_PP_Order ppOrder)
+	{
+		final I_C_UOM uom = getMainProductStockingUOM(ppOrder);
+		final BigDecimal qtyReject = ppOrder.getQtyReject();
+		return Quantity.of(qtyReject, uom);
 	}
 
 	@Override
@@ -450,10 +379,8 @@ public class PPOrderBL implements IPPOrderBL
 
 	private Quantity getQtyOrdered(final I_PP_Order ppOrderRecord)
 	{
-		final ProductId mainProductId = ProductId.ofRepoId(ppOrderRecord.getM_Product_ID());
-		final I_C_UOM mainProductUOM = Services.get(IProductBL.class).getStockingUOM(mainProductId);
-		final Quantity qtyOrdered = Quantity.of(ppOrderRecord.getQtyOrdered(), mainProductUOM);
-		return qtyOrdered;
+		final I_C_UOM mainProductUOM = getMainProductStockingUOM(ppOrderRecord);
+		return Quantity.of(ppOrderRecord.getQtyOrdered(), mainProductUOM);
 	}
 
 	@Override

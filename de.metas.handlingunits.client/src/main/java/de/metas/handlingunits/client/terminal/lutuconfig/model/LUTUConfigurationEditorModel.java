@@ -726,7 +726,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	 * @param qty
 	 * @return true if quantity could be distributed
 	 */
-	public boolean distributeTotalQtyCU(final BigDecimal qty)
+	public boolean distributeTotalQtyCU(final Quantity qty)
 	{
 		if (qty == null)
 		{
@@ -785,11 +785,11 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		if (qtyCUsPerTUInfinite)
 		{
 			qtyTU = BigDecimal.ONE;
-			qtyCU = qty;
+			qtyCU = qty.getAsBigDecimal();
 		}
 		else
 		{
-			qtyTU = qty.divide(qtyCUsPerTU, 0, RoundingMode.UP);
+			qtyTU = qty.getAsBigDecimal().divide(qtyCUsPerTU, 0, RoundingMode.UP);
 			if (qtyTU.signum() <= 0)
 			{
 				// shall not be possible
@@ -797,7 +797,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 			}
 			else if (qtyTU.compareTo(BigDecimal.ONE) == 0)
 			{
-				qtyCU = qty.min(qtyCUsPerTU);
+				qtyCU = qty.getAsBigDecimal().min(qtyCUsPerTU);
 			}
 			else
 			{

@@ -340,7 +340,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 				order.setDateStart(getMovementDate());
 			}
 
-			final BigDecimal qtyOpen = Services.get(IPPOrderBL.class).getQtyOpen(order);
+			final Quantity qtyOpen = Services.get(IPPOrderBL.class).getQtyOpen(order);
 			if (qtyOpen.signum() <= 0)
 			{
 				order.setDateFinish(getDateFinish());

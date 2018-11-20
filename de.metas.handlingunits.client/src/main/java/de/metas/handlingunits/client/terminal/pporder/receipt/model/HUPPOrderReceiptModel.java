@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
@@ -43,6 +44,7 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -114,13 +116,14 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 				.updateFromModel();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationEditor.getEditingLUTUConfiguration();
 
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(lutuConfiguration.getC_UOM_ID());
 		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.PP_Order(ppOrder)
 				.productId(ProductId.ofRepoId(lutuConfiguration.getM_Product_ID()))
-				.C_UOM(lutuConfiguration.getC_UOM())
+				.qtyToReceive(Quantity.zero(uom))
 				.build();
 
-		final BigDecimal qtyToReceiveTarget = ppOrderBL.getQtyOpen(ppOrder);
+		final Quantity qtyToReceiveTarget = ppOrderBL.getQtyOpen(ppOrder);
 
 		final HUPPOrderReceiptCUKey cuKey = new HUPPOrderReceiptCUKey(getTerminalContext(), lutuConfigurationEditor, receiptCostCollectorCandidate, qtyToReceiveTarget);
 		loadCUKeyRecursively(cuKey, lutuConfiguration);
@@ -149,14 +152,15 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 				.updateFromModel();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationEditor.getEditingLUTUConfiguration();
 
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(lutuConfiguration.getC_UOM_ID());
 		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.PP_Order(ppOrder)
 				.PP_Order_BOMLine(ppOrderBOMLine)
 				.productId(ProductId.ofRepoId(lutuConfiguration.getM_Product_ID()))
-				.C_UOM(lutuConfiguration.getC_UOM())
+				.qtyToReceive(Quantity.zero(uom))
 				.build();
 
-		final BigDecimal qtyToReceiveTarget = ppOrderBOMBL.getQtyToReceive(ppOrderBOMLine);
+		final Quantity qtyToReceiveTarget = ppOrderBOMBL.getQtyToReceive(ppOrderBOMLine);
 
 		final HUPPOrderReceiptCUKey cuKey = new HUPPOrderReceiptCUKey(getTerminalContext(), lutuConfigurationEditor, receiptCostCollectorCandidate, qtyToReceiveTarget);
 		loadCUKeyRecursively(cuKey, lutuConfiguration);

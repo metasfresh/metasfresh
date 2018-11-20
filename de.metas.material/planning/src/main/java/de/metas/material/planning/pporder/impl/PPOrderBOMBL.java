@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -58,7 +57,6 @@ import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
-import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -588,43 +586,45 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public BigDecimal getQtyToIssue(final I_PP_Order_BOMLine orderBOMLine)
+	public Quantity getQtyToIssue(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final BigDecimal qtyToIssueRequiered = getQtyRequiredToIssue(orderBOMLine);
+		final Quantity qtyToIssueRequiered = getQtyRequiredToIssue(orderBOMLine);
 		return getQtyToIssue(orderBOMLine, qtyToIssueRequiered);
 	}
 
 	@Override
-	public BigDecimal getQtyToIssue(final I_PP_Order_BOMLine orderBOMLine, final BigDecimal qtyToIssueRequiered)
+	public Quantity getQtyToIssue(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyToIssueRequiered)
 	{
-		final BigDecimal qtyIssued = orderBOMLine.getQtyDelivered();
-		final BigDecimal qtyToIssue = qtyToIssueRequiered.subtract(qtyIssued);
+		final I_C_UOM uom = getStockingUOM(orderBOMLine);
+		final Quantity qtyIssued = Quantity.of(orderBOMLine.getQtyDelivered(), uom);
+		final Quantity qtyToIssue = qtyToIssueRequiered.subtract(qtyIssued);
 		return qtyToIssue;
 	}
 
 	@Override
-	public BigDecimal getQtyRequiredToIssue(final I_PP_Order_BOMLine orderBOMLine)
+	public Quantity getQtyRequiredToIssue(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		// assertIssue(orderBOMLine); // not checking atm because there are some BLs which relly on that
-		final BigDecimal qtyToIssueRequiered = orderBOMLine.getQtyRequiered();
-		return qtyToIssueRequiered;
+		final I_C_UOM uom = getStockingUOM(orderBOMLine);
+		return Quantity.of(orderBOMLine.getQtyRequiered(), uom);
 	}
 
 	@Override
-	public BigDecimal getQtyRequiredToReceive(final I_PP_Order_BOMLine orderBOMLine)
+	public Quantity getQtyRequiredToReceive(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		PPOrderUtil.assertReceipt(orderBOMLine);
 
-		final BigDecimal qtyRequired = orderBOMLine.getQtyRequiered();
+		final I_C_UOM uom = getStockingUOM(orderBOMLine);
+		final Quantity qtyRequired = Quantity.of(orderBOMLine.getQtyRequiered(), uom);
 		return adjustCoProductQty(qtyRequired);
 	}
 
 	@Override
-	public BigDecimal getQtyToReceive(final I_PP_Order_BOMLine orderBOMLine)
+	public Quantity getQtyToReceive(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		PPOrderUtil.assertReceipt(orderBOMLine);
 
-		final BigDecimal qtyToIssue = getQtyToIssue(orderBOMLine);
+		final Quantity qtyToIssue = getQtyToIssue(orderBOMLine);
 		return adjustCoProductQty(qtyToIssue);
 	}
 
@@ -635,94 +635,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public void reserveStock(final I_PP_Order_BOMLine orderBOMLine)
+	public final Quantity adjustCoProductQty(final Quantity qty)
 	{
-		//
-		// Check if locator was changed. If yes, we need to unreserve first what was reserved before
-		final I_PP_Order_BOMLine orderBOMLineOld = InterfaceWrapperHelper.createOld(orderBOMLine, I_PP_Order_BOMLine.class);
-		if (orderBOMLineOld.getM_Locator_ID() != orderBOMLine.getM_Locator_ID())
-		{
-			final BigDecimal qtyReservedNew = reserveStock(orderBOMLineOld, BigDecimal.ZERO);
-			if (qtyReservedNew.signum() != 0)
-			{
-				throw new MrpException("Cannot unreserve all stock for " + orderBOMLineOld);
-			}
-			orderBOMLine.setQtyReserved(BigDecimal.ZERO);
-		}
-
-		//
-		// Adjust stock reservation to "how much we still need to issue"
-		final BigDecimal qtyReservedTarget;
-		if (isQtyReservationEnabled(orderBOMLine))
-		{
-			qtyReservedTarget = getQtyToIssue(orderBOMLine);
-		}
-		else
-		{
-			qtyReservedTarget = BigDecimal.ZERO;
-		}
-		final BigDecimal qtyReservedNew = reserveStock(orderBOMLine, qtyReservedTarget);
-		orderBOMLine.setQtyReserved(qtyReservedNew);
-
-	} // reserveStock
-
-	/**
-	 * Reserve/Unreserve stock.
-	 *
-	 * NOTE: this method is not changing the given <code>orderBOMLine</code>.
-	 *
-	 * @param orderBOMLine
-	 * @param qtyReservedRequested how much we want to have reserved at the end.
-	 * @return how much was actual reserved at the end; you can use this value to set {@link I_PP_Order_BOMLine#setQtyReserved(BigDecimal)}.
-	 */
-	private BigDecimal reserveStock(final I_PP_Order_BOMLine orderBOMLine, final BigDecimal qtyReservedRequested)
-	{
-		//
-		// Calculate how much we really need to reserve more/less:
-		final BigDecimal qtyReservedActual = orderBOMLine.getQtyReserved();
-		BigDecimal qtyReservedTarget = qtyReservedRequested;
-		final BigDecimal qtyReservedDiff;
-		final int productId = orderBOMLine.getM_Product_ID();
-		if (!Services.get(IProductBL.class).isStocked(productId))
-		{
-			//
-			// Case: we are dealing with a product which is not stocked
-			// => we need to make sure we have zero reservations
-			qtyReservedDiff = qtyReservedActual.negate();
-			qtyReservedTarget = BigDecimal.ZERO;
-		}
-		else if (qtyReservedTarget.signum() < 0)
-		{
-			//
-			// Case: We issued more then it was needed
-			// We just need to unreserve what was reserved until now
-			qtyReservedDiff = qtyReservedActual.negate();
-			qtyReservedTarget = BigDecimal.ZERO;
-		}
-		else
-		{
-			qtyReservedDiff = qtyReservedTarget.subtract(qtyReservedActual);
-		}
-
-		//
-		// Update Storage (if we have something to reserve/unreserve)
-		if (qtyReservedDiff.signum() != 0)
-		{
-			final I_M_Locator locator = orderBOMLine.getM_Locator();
-			final Properties ctx = InterfaceWrapperHelper.getCtx(orderBOMLine);
-			final String trxName = InterfaceWrapperHelper.getTrxName(orderBOMLine);
-			Services.get(IStorageBL.class).addQtyReserved(ctx,
-					locator,
-					productId,
-					orderBOMLine.getM_AttributeSetInstance_ID(),
-					qtyReservedDiff,
-					trxName);
-		}
-
-		// update line
-		// orderBOMLine.setQtyReserved(qtyReservedTarget);
-
-		return qtyReservedTarget;
+		return qty.negate();
 	}
 
 	@Override
@@ -828,18 +743,4 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		InterfaceWrapperHelper.save(line);
 	}
-
-	@Override
-	public void reserveStock(final List<I_PP_Order_BOMLine> lines)
-	{
-		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-
-		// Always check and (un) Reserve Inventory
-		for (final I_PP_Order_BOMLine line : lines)
-		{
-			ppOrderBOMBL.setForceQtyReservation(line, true);
-			ppOrderBOMBL.reserveStock(line);
-			InterfaceWrapperHelper.save(line);
-		}
-	} // reserveStock
 }
