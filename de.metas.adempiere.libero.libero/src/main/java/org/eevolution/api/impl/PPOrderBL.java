@@ -112,21 +112,21 @@ public class PPOrderBL implements IPPOrderBL
 	/**
 	 * Set Qty Ordered - enforce Product UOM
 	 *
-	 * @param QtyOrdered
+	 * @param qtyOrdered
 	 */
 	@Override
-	public void setQtyOrdered(final I_PP_Order order, final BigDecimal QtyOrdered)
+	public void setQtyOrdered(final I_PP_Order order, final BigDecimal qtyOrdered)
 	{
 		final BigDecimal qtyOrderedToUse;
-		if (QtyOrdered != null)
+		if (qtyOrdered != null)
 		{
-			final I_M_Product product = order.getM_Product();
-			final int precision = Services.get(IProductBL.class).getUOMPrecision(product);
-			qtyOrderedToUse = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
+			final int precision = Services.get(IProductBL.class).getUOMPrecision(productId);
+			qtyOrderedToUse = qtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
 		else
 		{
-			qtyOrderedToUse = QtyOrdered;
+			qtyOrderedToUse = qtyOrdered;
 		}
 		order.setQtyOrdered(qtyOrderedToUse);
 	}	// setQtyOrdered
