@@ -27,7 +27,6 @@ import java.util.Date;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
-import org.compiere.wf.exceptions.WorkflowNotValidException;
 
 import de.metas.util.ISingletonService;
 
@@ -44,11 +43,8 @@ public interface IADWorkflowBL extends ISingletonService
 
 	/**
 	 * Validates given workflow, sets {@link I_AD_Workflow#COLUMNNAME_IsDefault} (but it does not save).
-	 * 
-	 * @param workflow
-	 * @throws WorkflowNotValidException if workflow is not valid
 	 */
-	public void validate(final I_AD_Workflow workflow);
+	public String validateAndGetErrorMsg(final I_AD_Workflow workflow);
 
 	public String getWorkflowName(int AD_Workflow_ID);
 
