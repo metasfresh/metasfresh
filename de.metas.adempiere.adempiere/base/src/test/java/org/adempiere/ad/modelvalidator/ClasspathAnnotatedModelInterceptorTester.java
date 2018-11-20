@@ -1,29 +1,5 @@
 package org.adempiere.ad.modelvalidator;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,7 +7,6 @@ import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.exceptions.AdempiereException;
 import org.junit.Assert;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -70,8 +45,7 @@ public class ClasspathAnnotatedModelInterceptorTester
 	{
 		final Reflections reflections = new Reflections(new ConfigurationBuilder()
 				.addUrls(ClasspathHelper.forClassLoader())
-				.setScanners(new TypeAnnotationsScanner(), new SubTypesScanner())
-				);
+				.setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
 
 		final Set<Class<?>> classes_withValidator = reflections.getTypesAnnotatedWith(Validator.class);
 		System.out.println("Found " + classes_withValidator.size() + " classes annotated with " + Validator.class);
@@ -121,62 +95,14 @@ public class ClasspathAnnotatedModelInterceptorTester
 			return;
 		}
 
-		// System.out.println("Testing: " + clazz);
 		try
 		{
-			final Object annotatedObject = createAnnotatedObjectInstance(clazz);
-
-			// shall fail if something is not OK:
-			new AnnotatedModelInterceptor(annotatedObject);
+			new AnnotatedModelInterceptorDescriptorBuilder(clazz)
+					.build();
 		}
 		catch (Exception ex)
 		{
 			logException(ex);
-		}
-		finally
-		{
-			//
-		}
-
-	}
-
-	private Object createAnnotatedObjectInstance(Class<?> clazz)
-	{
-		try
-		{
-			//
-			// Check for instance provider if any
-			Supplier<?> instanceProvider = instanceProviders.get(clazz);
-			if (instanceProvider != null)
-			{
-				final Object instance = instanceProvider.get();
-				Check.assumeNotNull(instance, "instance not null");
-				return instance;
-			}
-
-			//
-			// Check for "instance" static field,
-			// because we have some model validators which are singletons
-			try
-			{
-				return clazz.getField("instance").get(null);
-			}
-			catch (NoSuchFieldException e)
-			{
-				// ignore it
-			}
-
-			// Instantiate it using the default constructor
-			final Constructor<?> ctor = clazz.getDeclaredConstructor();
-			if (!ctor.isAccessible())
-			{
-				ctor.setAccessible(true);
-			}
-			return ctor.newInstance();
-		}
-		catch (Exception e)
-		{
-			throw new AdempiereException("Failed to create instance for " + clazz, e);
 		}
 	}
 

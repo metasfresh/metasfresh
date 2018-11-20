@@ -1,10 +1,19 @@
 package org.adempiere.ad.modelvalidator;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,26 +31,33 @@ package org.adempiere.ad.modelvalidator;
  * #L%
  */
 
-import java.lang.reflect.Method;
-
-import org.compiere.model.ModelValidationEngine;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-/**
- * Model Interceptor initializer definition
- * 
- * @author tsa
- * 
- */
 @Value
 @Builder
-/* package */class InterceptorInit
+public final class AnnotatedModelInterceptorDescriptor
 {
 	@NonNull
-	Method method;
-	/** true if method call requires {@link ModelValidationEngine} as first parameter */
-	boolean methodRequiresEngine;
+	Class<?> annotatedClass;
+
+	@NonNull
+	ImmutableSet<InterceptorInit> initializers;
+
+	@NonNull
+	@Getter(AccessLevel.PRIVATE)
+	ImmutableSetMultimap<PointcutKey, Pointcut> pointcuts;
+
+	public boolean isEmpty()
+	{
+		return initializers.isEmpty()
+				&& pointcuts.isEmpty();
+	}
+
+	public ImmutableSet<PointcutKey> getPointcutKeys()
+	{
+		return pointcuts.keySet();
+	}
+
+	public ImmutableSet<Pointcut> getPointcuts(@NonNull final PointcutKey key)
+	{
+		return pointcuts.get(key);
+	}
 }

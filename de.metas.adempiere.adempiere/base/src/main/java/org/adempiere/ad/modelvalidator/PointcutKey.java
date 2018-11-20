@@ -1,10 +1,13 @@
 package org.adempiere.ad.modelvalidator;
 
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,26 +25,12 @@ package org.adempiere.ad.modelvalidator;
  * #L%
  */
 
-import java.lang.reflect.Method;
-
-import org.compiere.model.ModelValidationEngine;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-/**
- * Model Interceptor initializer definition
- * 
- * @author tsa
- * 
- */
-@Value
-@Builder
-/* package */class InterceptorInit
+@Value(staticConstructor = "of")
+class PointcutKey
 {
 	@NonNull
-	Method method;
-	/** true if method call requires {@link ModelValidationEngine} as first parameter */
-	boolean methodRequiresEngine;
+	String tableName;
+
+	@NonNull
+	PointcutType type;
 }
