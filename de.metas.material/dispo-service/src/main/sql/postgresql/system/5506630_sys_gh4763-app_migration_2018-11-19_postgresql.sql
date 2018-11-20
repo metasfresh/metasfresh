@@ -261,19 +261,10 @@ UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2018-11-20 10:33:
 UPDATE AD_Table SET Name='MD_Candidate_Transaction_Detail',Updated=TO_TIMESTAMP('2018-11-20 12:34:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540850
 ;
 
--- 2018-11-20T12:35:00.114
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Tab_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,572449,625022,0,540885,540334,TO_TIMESTAMP('2018-11-20 12:34:59','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2018-11-20 12:34:59','YYYY-MM-DD HH24:MI:SS'),100)
-;
 
 -- 2018-11-20T12:35:03.684
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Tab SET AD_Element_ID=543680, Name='Bestandsänderung',Updated=TO_TIMESTAMP('2018-11-20 12:35:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540885
-;
-
--- 2018-11-20T12:35:03.698
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=625022
 ;
 
 -- 2018-11-20T12:35:03.767
