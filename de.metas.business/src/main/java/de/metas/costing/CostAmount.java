@@ -2,8 +2,6 @@ package de.metas.costing;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.temporal.TemporalUnit;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -117,12 +115,6 @@ public class CostAmount
 	public CostAmount multiply(@NonNull final Quantity quantity)
 	{
 		return multiply(quantity.getAsBigDecimal());
-	}
-
-	public CostAmount multiply(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
-	{
-		final BigDecimal durationBD = BigDecimal.valueOf(duration.get(unit));
-		return multiply(durationBD);
 	}
 
 	public CostAmount add(@NonNull final CostAmount amtToAdd)

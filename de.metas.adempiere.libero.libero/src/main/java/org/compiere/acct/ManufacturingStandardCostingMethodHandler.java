@@ -473,7 +473,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final I_C_UOM durationUOM = productsService.getStockingUOM(resourceProductId);
 		final TemporalUnit durationUnit = UOMUtil.toTemporalUnit(durationUOM);
 
-		final BigDecimal durationBD = BigDecimal.valueOf(duration.get(durationUnit));
+		final BigDecimal durationBD = DurationUtils.toBigDecimal(duration, durationUnit);
 		return Quantity.of(durationBD, durationUOM);
 	}
 

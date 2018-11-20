@@ -65,6 +65,40 @@ public class DurationUtils
 		return Duration.of(durationLong, unit);
 	}
 
+	public static BigDecimal toBigDecimal(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
+	{
+		return BigDecimal.valueOf(toLong(duration, unit));
+	}
+
+	public static int toInt(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
+	{
+		return (int)toLong(duration, unit);
+	}
+
+	public static long toLong(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
+	{
+		if (unit == ChronoUnit.SECONDS)
+		{
+			return duration.getSeconds();
+		}
+		else if (unit == ChronoUnit.MINUTES)
+		{
+			return duration.toMinutes();
+		}
+		else if (unit == ChronoUnit.HOURS)
+		{
+			return duration.toHours();
+		}
+		else if (unit == ChronoUnit.DAYS)
+		{
+			return duration.toDays();
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert " + duration + " to " + unit);
+		}
+	}
+
 	private static final ImmutableBiMap<String, TemporalUnit> temporalUnitsByCode = ImmutableBiMap.<String, TemporalUnit> builder()
 			.put(X_AD_Workflow.DURATIONUNIT_Second, ChronoUnit.SECONDS)
 			.put(X_AD_Workflow.DURATIONUNIT_Minute, ChronoUnit.MINUTES)

@@ -247,8 +247,6 @@ public class PPRoutingRepository implements IPPRoutingRepository
 		return DurationUtils.toTemporalUnit(durationUnitCode);
 	}
 
-
-
 	@Override
 	public PPRoutingId getRoutingIdByProductId(@NonNull final ProductId productId)
 	{
@@ -295,23 +293,23 @@ public class PPRoutingRepository implements IPPRoutingRepository
 			final TemporalUnit durationUnit = extractDurationUnit(routingRecord);
 			if (changeRequest.getQueuingTime() != null)
 			{
-				routingRecord.setQueuingTime((int)changeRequest.getQueuingTime().get(durationUnit));
+				routingRecord.setQueuingTime(DurationUtils.toInt(changeRequest.getQueuingTime(), durationUnit));
 			}
 			if (changeRequest.getSetupTime() != null)
 			{
-				routingRecord.setSetupTime((int)changeRequest.getSetupTime().get(durationUnit));
+				routingRecord.setSetupTime(DurationUtils.toInt(changeRequest.getSetupTime(), durationUnit));
 			}
 			if (changeRequest.getDurationPerOneUnit() != null)
 			{
-				routingRecord.setDuration((int)changeRequest.getDurationPerOneUnit().get(durationUnit));
+				routingRecord.setDuration(DurationUtils.toInt(changeRequest.getDurationPerOneUnit(), durationUnit));
 			}
 			if (changeRequest.getWaitingTime() != null)
 			{
-				routingRecord.setWaitingTime((int)changeRequest.getWaitingTime().get(durationUnit));
+				routingRecord.setWaitingTime(DurationUtils.toInt(changeRequest.getWaitingTime(), durationUnit));
 			}
 			if (changeRequest.getMovingTime() != null)
 			{
-				routingRecord.setMovingTime((int)changeRequest.getMovingTime().get(durationUnit));
+				routingRecord.setMovingTime(DurationUtils.toInt(changeRequest.getMovingTime(), durationUnit));
 			}
 
 			//

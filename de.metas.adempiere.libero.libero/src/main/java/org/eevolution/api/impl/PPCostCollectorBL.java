@@ -57,6 +57,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
@@ -551,8 +552,8 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			cc.setIsSubcontracting(orderActivity.isSubcontracting());
 
 			final TemporalUnit durationUnit = orderActivity.getDurationUnit();
-			cc.setSetupTimeReal(BigDecimal.valueOf(request.getDurationSetup().get(durationUnit)));
-			cc.setDurationReal(BigDecimal.valueOf(request.getDuration().get(durationUnit)));
+			cc.setSetupTimeReal(DurationUtils.toBigDecimal(request.getDurationSetup(), durationUnit));
+			cc.setDurationReal(DurationUtils.toBigDecimal(request.getDuration(), durationUnit));
 		}
 
 		// If this is an material issue, we should use BOM Line's UOM

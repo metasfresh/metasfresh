@@ -55,6 +55,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.IResourceProductService;
@@ -308,8 +309,9 @@ public class RollupWorkflow extends JavaProcess
 				.roundToPrecisionIfNeeded(precision);
 
 		final Duration duration = routingService.getResourceBaseValue(activity);
+		final BigDecimal durationBD = DurationUtils.toBigDecimal(duration, activity.getDurationUnit());
 
-		final CostAmount cost = rate.multiply(duration, activity.getDurationUnit())
+		final CostAmount cost = rate.multiply(durationBD)
 				.roundToPrecisionIfNeeded(precision);
 
 		return RoutingActivitySegmentCost.of(cost, activity.getId(), costElementId);

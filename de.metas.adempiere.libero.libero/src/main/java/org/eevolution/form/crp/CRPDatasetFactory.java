@@ -69,6 +69,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
 import de.metas.i18n.Msg;
+import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
@@ -119,7 +120,7 @@ public class CRPDatasetFactory extends CRPReasoner implements CRPModel
 
 		final I_S_Resource resource = resourcesRepo.getById(resourceId);
 		final Duration dailyCapacity = getDailyCapacity(resource);
-		final BigDecimal dailyCapacityBD = BigDecimal.valueOf(dailyCapacity.get(durationUnit));
+		final BigDecimal dailyCapacityBD = DurationUtils.toBigDecimal(dailyCapacity, durationUnit);
 
 		dataset = new DefaultCategoryDataset();
 		final HashMap<DefaultMutableTreeNode, String> names = new HashMap<>();

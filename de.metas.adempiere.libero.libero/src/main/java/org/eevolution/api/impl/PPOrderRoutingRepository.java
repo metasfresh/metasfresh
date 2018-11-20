@@ -577,24 +577,24 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 		//
 		// Standard values
-		record.setSetupTime((int)from.getSetupTime().get(durationUnit));
-		record.setSetupTimeRequiered((int)from.getSetupTime().get(durationUnit));
-		record.setMovingTime((int)from.getMovingTime().get(durationUnit));
-		record.setWaitingTime((int)from.getWaitingTime().get(durationUnit));
-		record.setQueuingTime((int)from.getQueuingTime().get(durationUnit));
-		record.setDuration((int)from.getDurationPerOneUnit().get(durationUnit));
-		record.setDurationRequiered((int)from.getDurationRequired().get(durationUnit));
+		record.setSetupTime(DurationUtils.toInt(from.getSetupTime(), durationUnit));
+		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTime(), durationUnit));
+		record.setMovingTime(DurationUtils.toInt(from.getMovingTime(), durationUnit));
+		record.setWaitingTime(DurationUtils.toInt(from.getWaitingTime(), durationUnit));
+		record.setQueuingTime(DurationUtils.toInt(from.getQueuingTime(), durationUnit));
+		record.setDuration(DurationUtils.toInt(from.getDurationPerOneUnit(), durationUnit));
+		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
 
 		//
 		// Planned values
-		record.setSetupTimeRequiered((int)from.getSetupTimeRequired().get(durationUnit));
-		record.setDurationRequiered((int)from.getDurationRequired().get(durationUnit));
+		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTimeRequired(), durationUnit));
+		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
 		record.setQtyRequiered(from.getQtyRequired().getAsBigDecimal());
 
 		//
 		// Reported values
-		record.setSetupTimeReal((int)from.getSetupTimeReal().get(durationUnit));
-		record.setDurationReal((int)from.getDurationReal().get(durationUnit));
+		record.setSetupTimeReal(DurationUtils.toInt(from.getSetupTimeReal(), durationUnit));
+		record.setDurationReal(DurationUtils.toInt(from.getDurationReal(), durationUnit));
 		record.setQtyDelivered(from.getQtyDelivered().getAsBigDecimal());
 		record.setQtyScrap(from.getQtyScrapped().getAsBigDecimal());
 		record.setQtyReject(from.getQtyRejected().getAsBigDecimal());

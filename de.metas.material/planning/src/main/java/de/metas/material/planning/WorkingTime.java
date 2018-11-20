@@ -78,12 +78,12 @@ public final class WorkingTime
 
 	public long toLongUsingActivityTimeUnit()
 	{
-		return getDuration().get(activityTimeUnit);
+		return DurationUtils.toLong(getDuration(), activityTimeUnit);
 	}
 
 	public BigDecimal toBigDecimalUsingActivityTimeUnit()
 	{
-		return BigDecimal.valueOf(toLongUsingActivityTimeUnit());
+		return DurationUtils.toBigDecimal(getDuration(), activityTimeUnit);
 	}
 
 }
