@@ -104,7 +104,7 @@ public class DurationUtils
 			.put(X_AD_Workflow.DURATIONUNIT_Minute, ChronoUnit.MINUTES)
 			.put(X_AD_Workflow.DURATIONUNIT_Hour, ChronoUnit.HOURS)
 			.put(X_AD_Workflow.DURATIONUNIT_Day, ChronoUnit.DAYS)
-			.put(X_AD_Workflow.DURATIONUNIT_Month, ChronoUnit.MONTHS)
-			.put(X_AD_Workflow.DURATIONUNIT_Year, ChronoUnit.YEARS)
+			// .put(X_AD_Workflow.DURATIONUNIT_Month, ChronoUnit.MONTHS)
+			// .put(X_AD_Workflow.DURATIONUNIT_Year, ChronoUnit.YEARS)
 			.build();
 }
