@@ -76,6 +76,12 @@ public final class ProductBL implements IProductBL
 	@Override
 	public int getUOMPrecision(final int productId)
 	{
+		return getUOMPrecision(ProductId.ofRepoId(productId));
+	}
+
+	@Override
+	public int getUOMPrecision(@NonNull final ProductId productId)
+	{
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getUOMPrecision(product);
 	}

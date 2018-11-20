@@ -41,6 +41,8 @@ public interface IProductBL extends ISingletonService
 
 	int getUOMPrecision(int productId);
 
+	int getUOMPrecision(ProductId productId);
+
 	String getMMPolicy(I_M_Product product);
 
 	String getMMPolicy(int productId);
@@ -103,7 +105,6 @@ public interface IProductBL extends ISingletonService
 	I_M_AttributeSet getM_AttributeSet(I_M_Product product);
 
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
-
 
 	/** @return UOM used in material storage; never return null; */
 	I_C_UOM getStockingUOM(I_M_Product product);
