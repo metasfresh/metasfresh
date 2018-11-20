@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -181,8 +182,10 @@ public class PPOrderLineRow implements IViewRow
 
 		this.processed = processed;
 
-		this.product = JSONLookupValueTool.createProductLookupValue(ppOrder.getM_Product());
-		this.uom = JSONLookupValueTool.createUOMLookupValue(ppOrder.getC_UOM());
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		this.product = JSONLookupValueTool.createProductLookupValue(Services.get(IProductDAO.class).getById(productId));
+		final int uomId = ppOrder.getC_UOM_ID();
+		this.uom = JSONLookupValueTool.createUOMLookupValue(Services.get(IUOMDAO.class).getById(uomId));
 		this.packingInfo = packingInfoOrNull;
 		this.code = null;
 
