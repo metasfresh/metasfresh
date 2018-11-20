@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute.storage.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -32,6 +31,7 @@ import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
 import org.junit.Test;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -40,6 +40,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -120,20 +121,38 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 			throw new AssertionError("Cannot instantiate " + attributeValueGeneratorClass, e);
 		}
 
-		final boolean isInstanceAttribute = true;
-		final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute(
-				"ATTR_" + attributeValueGeneratorClass.getSimpleName(), // Attribute Name
-				attributeValueGenerator.getAttributeValueType(), // Attribute Type
-				attributeValueGeneratorClass,
-				uomKg,
-				isInstanceAttribute);
+		final Set<String> attributeValueTypes;
+		if (attributeValueGenerator.getAttributeValueType() != null)
+		{
+			attributeValueTypes = ImmutableSet.of(attributeValueGenerator.getAttributeValueType());
+		}
+		else
+		{
+			attributeValueTypes = ImmutableSet.of(
+					X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
+					X_M_Attribute.ATTRIBUTEVALUETYPE_Number,
+					X_M_Attribute.ATTRIBUTEVALUETYPE_Date,
+					X_M_Attribute.ATTRIBUTEVALUETYPE_List);
+		}
 
-		final I_M_HU_PI_Attribute piAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
-				.setM_HU_PI(huPI)
-				.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
-		piAttribute.setIsReadOnly(false);
-		piAttribute.setSeqNo(10);
-		InterfaceWrapperHelper.save(piAttribute);
+		for (final String attributeValueType : attributeValueTypes)
+		{
+			final String attributeName = "ATTR_" + attributeValueGeneratorClass.getSimpleName() + "_" + attributeValueType;
+			final boolean isInstanceAttribute = true;
+			final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute(
+					attributeName, // Attribute Name
+					attributeValueType, // Attribute Type
+					attributeValueGeneratorClass,
+					uomKg,
+					isInstanceAttribute);
+
+			final I_M_HU_PI_Attribute piAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+					.setM_HU_PI(huPI)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
+			piAttribute.setIsReadOnly(false);
+			piAttribute.setSeqNo(10);
+			InterfaceWrapperHelper.save(piAttribute);
+		}
 	}
 
 	@Test
