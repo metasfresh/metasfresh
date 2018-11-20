@@ -126,18 +126,6 @@ public class PP_Order_BOMLine
 				orderBOMLine.setM_Locator_ID(locatorIdToUse.getRepoId());
 			}
 		}
-
-		if (!newRecord
-				&& (InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyDelivered)
-						|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered)
-						|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_M_Warehouse_ID)
-						|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_M_Locator_ID)
-						|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_Processed) // changed to processed
-				) //
-		) //
-		{
-			ppOrderBOMBL.reserveStock(orderBOMLine);
-		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -150,18 +138,4 @@ public class PP_Order_BOMLine
 			InterfaceWrapperHelper.setDynAttribute(orderBOMLine, DYNATTR_ExplodePhantomRunnable, null);
 		}
 	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void beforeDelete(final I_PP_Order_BOMLine orderBOMLine)
-	{
-		// Release Reservation
-		orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
-		Services.get(IPPOrderBOMBL.class).reserveStock(orderBOMLine);
-	}
-
-	public void updateReservationOnWarehouseLocatorChange(final I_PP_Order_BOMLine orderBOMLine)
-	{
-
-	}
-
 }

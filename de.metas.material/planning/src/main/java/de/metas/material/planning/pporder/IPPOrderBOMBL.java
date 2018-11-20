@@ -23,7 +23,6 @@ package de.metas.material.planning.pporder;
  */
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order;
@@ -88,18 +87,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 */
 	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
-
-	@Deprecated
-	default void reserveStock(I_PP_Order_BOMLine orderBOMLine)
-	{
-		// nothing
-	}
-
-	@Deprecated
-	default void reserveStock(List<I_PP_Order_BOMLine> lines)
-	{
-		// nothing
-	}
 
 	/**
 	 * Add to Description

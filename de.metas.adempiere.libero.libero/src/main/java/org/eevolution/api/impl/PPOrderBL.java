@@ -32,7 +32,6 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
@@ -279,36 +278,6 @@ public class PPOrderBL implements IPPOrderBL
 		}
 	}
 
-	private final static String DYNATTR_ForceQtyReservation = PPOrderBL.class.getName() + "#ForceQtyReservation";
-
-	@Override
-	public void setForceQtyReservation(final I_PP_Order ppOrder, final boolean forceQtyReservation)
-	{
-		InterfaceWrapperHelper.setDynAttribute(ppOrder, DYNATTR_ForceQtyReservation, forceQtyReservation);
-	}
-
-	private boolean isQtyReservationEnabled(final I_PP_Order ppOrder)
-	{
-		if (ppOrder.isProcessed())
-		{
-			return true;
-		}
-
-		final Boolean forceQtyReservation = InterfaceWrapperHelper.getDynAttribute(ppOrder, DYNATTR_ForceQtyReservation);
-		if (forceQtyReservation != null && forceQtyReservation.booleanValue())
-		{
-			return true;
-		}
-
-		// If we already have reserved a quantity, continue doing reservations
-		if (ppOrder.getQtyReserved().signum() != 0)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
 	@Override
 	public void setDocType(@NonNull final I_PP_Order ppOrder, @NonNull final String docBaseType, final String docSubType)
 	{
@@ -334,11 +303,6 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setQtyBeforeClose(qtyOrderedOld);
 		setQtyOrdered(ppOrder, qtyDelivered);
 		InterfaceWrapperHelper.save(ppOrder);
-
-		//
-		// Clear Ordered Quantities
-		// NOTE: at this point we assume QtyOrdered==QtyDelivered => QtyReserved (new)=0
-		orderStock(ppOrder);
 	}
 
 	@Override
@@ -349,10 +313,6 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setQtyOrdered(qtyOrderedBeforeClose);
 		ppOrder.setQtyBeforeClose(BigDecimal.ZERO);
 		InterfaceWrapperHelper.save(ppOrder);
-
-		//
-		// Update Ordered Quantities
-		orderStock(ppOrder);
 	}
 
 	@Override

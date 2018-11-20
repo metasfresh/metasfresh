@@ -117,7 +117,6 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 		{
 			ppOrderBOMBL.unclose(line);
 		}
-		ppOrderBOMBL.reserveStock(lines);
 
 		// firing this before having updated the docstatus. This is how the *real* DocActions like MInvoice do it too.
 		ModelValidationEngine.get().fireDocValidate(ppOrder, ModelValidator.TIMING_AFTER_UNCLOSE);

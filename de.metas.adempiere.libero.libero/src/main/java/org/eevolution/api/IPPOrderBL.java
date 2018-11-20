@@ -57,12 +57,6 @@ public interface IPPOrderBL extends ISingletonService
 	 */
 	void updateQtyBatchs(I_PP_Order order, boolean override);
 
-	@Deprecated
-	default void orderStock(I_PP_Order ppOrder)
-	{
-		// nothing
-	}
-
 	/**
 	 * @return true if ANY work was delivered for this MO (i.e. Stock Issue, Stock Receipt, Activity Control Report)
 	 */
@@ -95,17 +89,6 @@ public interface IPPOrderBL extends ISingletonService
 	 * @param ppOrder
 	 */
 	void updateBOMOrderLinesWarehouseAndLocator(I_PP_Order ppOrder);
-
-	/**
-	 * Sets a dynamic (memory-only) attribute for the given record, which can later be validated by other methods of this service.
-	 *
-	 * @param ppOrder
-	 * @param forceQtyReservation
-	 * @see org.adempiere.model.InterfaceWrapperHelper#setDynAttribute(Object, String, Object)
-	 * @see #orderStock(I_PP_Order)
-	 */
-	@Deprecated
-	void setForceQtyReservation(I_PP_Order ppOrder, boolean forceQtyReservation);
 
 	/**
 	 * Sets manufacturing order's document type(s).

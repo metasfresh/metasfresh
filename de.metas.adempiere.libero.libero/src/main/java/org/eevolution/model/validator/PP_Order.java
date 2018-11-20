@@ -1,28 +1,5 @@
 package org.eevolution.model.validator;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -98,18 +75,6 @@ public class PP_Order
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
 			final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 			ppOrder.setM_Locator_ID(locatorId.getRepoId());
-		}
-
-		//
-		// Order Stock
-		if (!newRecord
-				&& (InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_QtyDelivered)
-						|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_QtyOrdered)
-						|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_QtyScrap)
-						|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Warehouse_ID)
-						|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Locator_ID)))
-		{
-			ppOrderBL.orderStock(ppOrder);
 		}
 
 		//
@@ -239,10 +204,5 @@ public class PP_Order
 			orderCostsService.deleteByOrderId(ppOrderId);
 			deleteWorkflowAndBOM(ppOrder);
 		}
-
-		//
-		// Un-Order Stock
-		ppOrderBL.setQtyOrdered(ppOrder, BigDecimal.ZERO);
-		ppOrderBL.orderStock(ppOrder);
 	}
 }

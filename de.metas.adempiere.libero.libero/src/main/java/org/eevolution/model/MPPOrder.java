@@ -190,20 +190,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			setC_DocType_ID(getC_DocTypeTarget_ID());
 		}
 
-		final String docBaseType = MDocType.get(getCtx(), getC_DocType_ID()).getDocBaseType();
-		if (X_C_DocType.DOCBASETYPE_QualityOrder.equals(docBaseType))
-		{
-			; // nothing
-		}
-		// ManufacturingOrder, MaintenanceOrder
-		else
-		{
-			Services.get(IPPOrderBOMBL.class).reserveStock(lines);
-
-			ppOrderBL.setForceQtyReservation(this, true);
-			ppOrderBL.orderStock(this);
-		}
-
 		// From this point on, don't allow MRP to remove this document
 		setMRP_AllowCleanup(false);
 
@@ -356,14 +342,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 
 		//
-		// Clear Ordered Quantities
-		ppOrderBL.orderStock(this);
-
-		//
-		// Clear BOM Lines Reservations
-		Services.get(IPPOrderBOMBL.class).reserveStock(getLines());
-
-		//
 		// Call Model Validator: AFTER_VOID
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
 
@@ -421,11 +399,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Clear Ordered Quantities
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		ppOrderBL.closeQtyOrdered(this);
-
-		//
-		// Clear BOM Lines Reservations
-		// NOTE: at this point we assume QtyRequired==QtyDelivered => QtyReserved(new)=0
-		Services.get(IPPOrderBOMBL.class).reserveStock(getLines());
 
 		if (getDateDelivered() == null)
 		{
