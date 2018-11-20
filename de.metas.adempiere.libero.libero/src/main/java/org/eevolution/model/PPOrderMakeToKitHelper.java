@@ -1,13 +1,12 @@
 package org.eevolution.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -18,6 +17,7 @@ import org.compiere.model.I_M_Storage;
 import org.compiere.model.MClient;
 import org.compiere.model.MStorage;
 import org.compiere.model.X_C_Order;
+import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ComponentIssueCreateRequest;
@@ -30,6 +30,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -65,7 +66,7 @@ public class PPOrderMakeToKitHelper
 	 *
 	 * NOTE: in this case we need a special was of completing it. After this method, the document can be automatically marked as closed.
 	 */
-	public static void complete(final MPPOrder ppOrder)
+	public static void complete(final I_PP_Order ppOrder)
 	{
 		final LocalDateTime today = SystemTime.asLocalDateTime();
 
@@ -138,16 +139,16 @@ public class PPOrderMakeToKitHelper
 			int PP_Order_BOMLine_ID = key.getKey();
 			if (PP_Order_BOMLine_ID > 0)
 			{
-				final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(ppOrder.getCtx(), PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, ppOrder.get_TrxName());
+				final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(Env.getCtx(), PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, ITrx.TRXNAME_ThreadInherited);
 				// Validate if AttributeSet generate instance
 				M_AttributeSetInstance_ID = orderBOMLine.getM_AttributeSetInstance_ID();
 			}
 
-			MStorage[] storages = getStorages(ppOrder.getCtx(),
+			MStorage[] storages = getStorages(
 					M_Product_ID,
 					ppOrder.getM_Warehouse_ID(),
 					M_AttributeSetInstance_ID,
-					today, ppOrder.get_TrxName());
+					today);
 
 			createIssue(
 					ppOrder,
@@ -190,7 +191,7 @@ public class PPOrderMakeToKitHelper
 	 * @param minGuaranteeDate Guarantee Date
 	 * @return true when the qty available is enough
 	 */
-	private static boolean isQtyAvailable(MPPOrder order, final Map<Integer, PPOrderBOMLineModel> issue, LocalDateTime minGuaranteeDate)
+	private static boolean isQtyAvailable(I_PP_Order order, final Map<Integer, PPOrderBOMLineModel> issue, LocalDateTime minGuaranteeDate)
 	{
 		boolean isCompleteQtyDeliver = false;
 		for (int i = 0; i < issue.size(); i++)
@@ -220,18 +221,17 @@ public class PPOrderMakeToKitHelper
 					int PP_Order_BOMLine_ID = key.getKey();
 					if (PP_Order_BOMLine_ID > 0)
 					{
-						final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(order.getCtx(), PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, order.get_TrxName());
+						final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(Env.getCtx(), PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, ITrx.TRXNAME_ThreadInherited);
 						// Validate if AttributeSet generate instance
 						M_AttributeSetInstance_ID = orderBOMLine.getM_AttributeSetInstance_ID();
 					}
 				}
 
-				MStorage[] storages = getStorages(order.getCtx(),
+				MStorage[] storages = getStorages(
 						M_Product_ID,
 						order.getM_Warehouse_ID(),
 						M_AttributeSetInstance_ID,
-						minGuaranteeDate,
-						order.get_TrxName());
+						minGuaranteeDate);
 
 				if (M_AttributeSetInstance_ID == 0)
 				{
@@ -271,18 +271,18 @@ public class PPOrderMakeToKitHelper
 	}
 
 	private static MStorage[] getStorages(
-			Properties ctx,
 			int M_Product_ID,
 			int M_Warehouse_ID,
 			int M_ASI_ID,
-			LocalDateTime minGuaranteeDate,
-			String trxName)
+			LocalDateTime minGuaranteeDate)
 	{
-		final I_M_Product product = loadOutOfTrx(M_Product_ID, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(M_Product_ID);
 		if (product != null && Services.get(IProductBL.class).isStocked(product))
 		{
 			String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
 
+			final Properties ctx = Env.getCtx();
+			final String trxName = ITrx.TRXNAME_ThreadInherited;
 			// Validate if AttributeSet of product generated instance
 			if (product.getM_AttributeSetInstance_ID() == 0)
 			{
