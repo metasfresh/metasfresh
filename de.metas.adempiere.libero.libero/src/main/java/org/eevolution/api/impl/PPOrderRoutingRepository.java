@@ -417,7 +417,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				I_PP_Order_Node activityRecord = existingActivityRecords.remove(activity.getId());
 				if (activityRecord == null)
 				{
-					activityRecord = toNewOrderNodeRecord(activity, ppOrderWorkflowId);
+					activityRecord = toNewOrderNodeRecord(activity, orderId, ppOrderWorkflowId);
 				}
 				else
 				{
@@ -540,10 +540,13 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setQtyBatchSize(from.getQtyPerBatch());
 	}
 
-	private I_PP_Order_Node toNewOrderNodeRecord(final PPOrderRoutingActivity activity, final int ppOrderWorkflowId)
+	private I_PP_Order_Node toNewOrderNodeRecord(
+			final PPOrderRoutingActivity activity, 
+			final PPOrderId ppOrderId,
+			final int ppOrderWorkflowId)
 	{
 		final I_PP_Order_Node record = InterfaceWrapperHelper.newInstance(I_PP_Order_Node.class);
-		record.setPP_Order_ID(activity.getOrderId().getRepoId());
+		record.setPP_Order_ID(ppOrderId.getRepoId());
 		record.setPP_Order_Workflow_ID(ppOrderWorkflowId);
 
 		setDefaults(record);
@@ -640,7 +643,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 	private void updateOrderNodeNextRecord(final I_PP_Order_NodeNext record, final PPOrderRoutingActivity activity, final PPOrderRoutingActivity nextActivity)
 	{
-		final PPOrderId orderId = activity.getId().getOrderId();
+		final PPOrderId orderId = activity.getOrderId();
 
 		// record.setAD_Org_ID(orderNode.getAD_Org_ID());
 		record.setPP_Order_ID(orderId.getRepoId());
