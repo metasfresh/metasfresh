@@ -89,6 +89,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.product.IProductDAO;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -312,7 +313,7 @@ public class HUIssuePanel implements IHUSelectPanel
 			String productEAN = null; // i.e. CU EAN
 			if (partner != null)
 			{
-				final I_M_Product product = ppOrder.getM_Product();
+				final I_M_Product product = Services.get(IProductDAO.class).getById(ppOrder.getM_Product_ID());
 
 				final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 

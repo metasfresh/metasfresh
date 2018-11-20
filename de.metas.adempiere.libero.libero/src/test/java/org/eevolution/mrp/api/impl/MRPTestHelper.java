@@ -13,11 +13,11 @@ package org.eevolution.mrp.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,6 +35,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Org;
@@ -83,6 +85,8 @@ import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.impl.MRPContext;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import de.metas.util.time.TimeSource;
@@ -120,7 +124,6 @@ public class MRPTestHelper
 	public PlainMRPDAO mrpDAO;
 	public IQueryBL queryBL;
 	public PlainDocumentBL docActionBL;
-
 
 	//
 	// Master Data
@@ -692,8 +695,12 @@ public class MRPTestHelper
 
 		//
 		// Add received qty to QtyOnHand
-		final I_M_Warehouse warehouse = ppOrder.getM_Warehouse();
-		final I_M_Product product = ppOrder.getM_Product();
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
+		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
+
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		
 		mrpDAO.addQtyOnHand(warehouse, product, qtyToReceive);
 	}
 

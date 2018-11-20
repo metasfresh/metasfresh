@@ -45,6 +45,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -480,7 +481,6 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 	private I_PP_Order createPP_OrderAndValidateBomLine(final String qtyOrderedStr, final I_PP_Product_BOM productBOM)
 	{
-		final I_M_Product product = productBOM.getM_Product();
 		final I_C_UOM uom = productBOM.getC_UOM();
 
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
@@ -490,8 +490,8 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), I_PP_Order.class, ITrx.TRXNAME_None);
 		ppOrder.setAD_Org(masterData.adOrg01);
 		ppOrder.setC_DocTypeTarget(docType);
-		ppOrder.setM_Product(product);
-		ppOrder.setPP_Product_BOM(productBOM);
+		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
+		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
 		ppOrder.setM_Warehouse(masterData.warehouse_plant01);
 		ppOrder.setS_Resource(masterData.plant01);
@@ -499,10 +499,10 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrder.setDatePromised(SystemTime.asDayTimestamp());
 		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
 		ppOrder.setDocAction(IDocument.ACTION_Complete);
-		ppOrder.setC_UOM(uom);
+		ppOrder.setC_UOM_ID(uom.getC_UOM_ID());
 		ppOrder.setDateStartSchedule(SystemTime.asTimestamp());
 		ppOrder.setPlanningStatus(PPOrderPlanningStatus.PLANNING.getCode());
-		save(ppOrder);
+		Services.get(IPPOrderDAO.class).save(ppOrder);
 		return ppOrder;
 	}
 

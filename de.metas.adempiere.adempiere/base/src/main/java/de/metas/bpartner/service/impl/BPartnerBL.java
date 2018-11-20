@@ -1,9 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,6 +27,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -61,6 +59,7 @@ import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Service
 public class BPartnerBL implements IBPartnerBL
@@ -77,7 +76,13 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public String getBPartnerValue(final BPartnerId bpartnerId)
 	{
-		return toBPartnerDisplayName(bpartnerId, bpartner -> bpartner.getValue());
+		return toBPartnerDisplayName(bpartnerId, I_C_BPartner::getValue);
+	}
+
+	@Override
+	public String getBPartnerName(final BPartnerId bpartnerId)
+	{
+		return toBPartnerDisplayName(bpartnerId, I_C_BPartner::getName);
 	}
 
 	@Override

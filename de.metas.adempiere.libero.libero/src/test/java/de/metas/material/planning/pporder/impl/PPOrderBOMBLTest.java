@@ -32,6 +32,7 @@ import org.compiere.model.X_C_DocType;
 import org.eevolution.LiberoConfiguration;
 import org.eevolution.LiberoTestConfiguration;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -226,15 +227,13 @@ public class PPOrderBOMBLTest
 
 	private I_PP_Order createPP_Order(final I_PP_Product_BOM productBOM, final String qtyOrderedStr, final I_C_UOM uom)
 	{
-		final I_M_Product product = productBOM.getM_Product();
-
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
 		ppOrder.setAD_Org(masterData.adOrg01);
 
 		setCommonProperties(ppOrder);
 
-		ppOrder.setM_Product(product);
-		ppOrder.setPP_Product_BOM(productBOM);
+		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
+		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
 		ppOrder.setM_Warehouse(masterData.warehouse_plant01);
 		ppOrder.setS_Resource(masterData.plant01);
@@ -242,8 +241,8 @@ public class PPOrderBOMBLTest
 		ppOrder.setDatePromised(helper.getToday());
 		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
 		ppOrder.setDocAction(IDocument.ACTION_Complete);
-		ppOrder.setC_UOM(uom);
-		InterfaceWrapperHelper.save(ppOrder);
+		ppOrder.setC_UOM_ID(uom.getC_UOM_ID());
+		Services.get(IPPOrderDAO.class).save(ppOrder);
 		return ppOrder;
 	}
 

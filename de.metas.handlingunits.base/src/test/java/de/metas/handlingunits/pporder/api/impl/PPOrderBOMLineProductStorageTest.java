@@ -80,15 +80,15 @@ public class PPOrderBOMLineProductStorageTest
 
 		// Finished good
 		ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
-		ppOrder.setM_Product(pABAliceSalad);
-		ppOrder.setC_UOM(uomEa);
+		ppOrder.setM_Product_ID(pABAliceSalad.getM_Product_ID());
+		ppOrder.setC_UOM_ID(uomEa.getC_UOM_ID());
 
 		// Component
 		ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class, helper.contextProvider);
 		ppOrderBOMLine.setPP_Order(ppOrder);
 		ppOrderBOMLine.setComponentType(X_PP_Order_BOMLine.COMPONENTTYPE_Packing);
-		ppOrderBOMLine.setM_Product(pFolie);
-		ppOrderBOMLine.setC_UOM(uomMm);
+		ppOrderBOMLine.setM_Product_ID(pFolie.getM_Product_ID());
+		ppOrderBOMLine.setC_UOM_ID(uomMm.getC_UOM_ID());
 		ppOrderBOMLine.setQtyRequiered(null);
 
 	}

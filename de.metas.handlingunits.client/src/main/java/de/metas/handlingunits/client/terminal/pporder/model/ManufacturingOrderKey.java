@@ -40,6 +40,8 @@ import org.eevolution.model.I_PP_Order;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -118,7 +120,8 @@ public class ManufacturingOrderKey extends TerminalKey
 		//
 		// Product Name
 		{
-			final String productName = order.getM_Product().getName();
+			final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
+			final String productName = Services.get(IProductBL.class).getProductName(productId);
 			sb.append("<br>");
 			sb.append(Util.maskHTML(productName));
 		}

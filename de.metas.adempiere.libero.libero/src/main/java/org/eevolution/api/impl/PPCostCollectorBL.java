@@ -207,7 +207,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			if (productId == null || productId.getRepoId() != order.getM_Product_ID())
 			{
 				throw new LiberoException("@Invalid@ @M_Product_ID@: " + candidate
-						+ "\n Expected: " + order.getM_Product());
+						+ "\n Expected: " + order.getM_Product_ID());
 			}
 
 			final LocatorId locatorId = getLocatorIdToUse(candidate);

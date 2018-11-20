@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMDAO;
@@ -38,9 +37,9 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.junit.Assert;
 
@@ -88,7 +87,7 @@ public class WaschprobeStandardMasterData
 
 	public WaschprobeStandardMasterData()
 	{
-		this(new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None));
+		this(PlainContextAware.createUsingOutOfTransaction());
 	}
 
 	public WaschprobeStandardMasterData(final IContextAware context)
@@ -200,12 +199,12 @@ public class WaschprobeStandardMasterData
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, context);
 		ppOrder.setDateDelivered(productionDate);
-		ppOrder.setM_Product(product);
-		ppOrder.setC_UOM(uom);
+		ppOrder.setM_Product_ID(product.getM_Product_ID());
+		ppOrder.setC_UOM_ID(uom.getC_UOM_ID());
 		ppOrder.setQtyDelivered(qtyDelivered);
 		ppOrder.setQM_QtyDeliveredPercOfRaw(BigDecimal.ZERO); // to be set by BL
 		ppOrder.setQM_QtyDeliveredAvg(BigDecimal.ZERO); // to be set by BL
-		InterfaceWrapperHelper.save(ppOrder);
+		Services.get(IPPOrderDAO.class).save(ppOrder);
 		return ppOrder;
 	}
 

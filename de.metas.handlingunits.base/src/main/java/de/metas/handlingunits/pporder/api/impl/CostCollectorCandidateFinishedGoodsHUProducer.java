@@ -16,6 +16,7 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 
 public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrderReceiptHUProducer
@@ -33,7 +34,7 @@ public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrd
 
 		_ppOrder = InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class);
 
-		_product = ppOrder.getM_Product();
+		_product = Services.get(IProductDAO.class).getById(ppOrder.getM_Product_ID());
 		Preconditions.checkNotNull(_product); // shall not happen
 	}
 
