@@ -24,6 +24,7 @@ package org.eevolution.mrp.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.LiberoConstants;
@@ -81,12 +83,14 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.impl.MRPContext;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import de.metas.util.time.TimeSource;
@@ -231,8 +235,11 @@ public class MRPTestHelper
 		this.resourceType_Plants = createResourceType("Plants");
 		this.resourceType_Workcenters = createResourceType("Workcenters");
 
+		final I_S_Resource workcenter1 = createResource("workcenter1", X_S_Resource.MANUFACTURINGRESOURCETYPE_WorkCenter, resourceType_Workcenters);
+		final ResourceId workcenter1Id = ResourceId.ofRepoId(workcenter1.getS_Resource_ID());
+
 		this.workflow_Standard = createWorkflow("Standard_MFG");
-		createWorkflowNode(workflow_Standard, "Start", true);
+		createWorkflowNode(workflow_Standard, "Start", true, workcenter1Id);
 
 		this.productCategoryDefault = createProductCategory("Default");
 		this.bpGroupDefault = createBPGroup("Default");
@@ -621,17 +628,22 @@ public class MRPTestHelper
 		wf.setValue(name);
 		wf.setName(name);
 		wf.setWorkflowType(X_AD_Workflow.WORKFLOWTYPE_Manufacturing);
+		wf.setDurationUnit(DurationUtils.toDurationUnitCode(ChronoUnit.HOURS));
 		InterfaceWrapperHelper.save(wf);
 		return wf;
 	}
 
-	public I_AD_WF_Node createWorkflowNode(final I_AD_Workflow wf, final String nodeName, final boolean startNode)
+	public I_AD_WF_Node createWorkflowNode(
+			final I_AD_Workflow wf,
+			final String nodeName,
+			final boolean startNode,
+			final ResourceId resourceId)
 	{
 		final I_AD_WF_Node node = InterfaceWrapperHelper.newInstance(I_AD_WF_Node.class, contextProvider);
 		node.setAD_Workflow_ID(wf.getAD_Workflow_ID());
 		node.setValue(nodeName);
 		node.setName(nodeName);
-
+		node.setS_Resource_ID(ResourceId.toRepoId(resourceId));
 		InterfaceWrapperHelper.save(node);
 
 		if (startNode)
@@ -700,7 +712,7 @@ public class MRPTestHelper
 
 		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		
+
 		mrpDAO.addQtyOnHand(warehouse, product, qtyToReceive);
 	}
 
