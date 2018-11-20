@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
+import lombok.NonNull;
+
 import java.util.Date;
 import java.util.Set;
 
@@ -27,7 +29,6 @@ import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuil
 import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -293,7 +294,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.ddOrderId(ddOrder.getDdOrderId())
 				.ddOrderLineId(ddOrderLine.getDdOrderLineId())
 				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
-				.plannedQty(ddOrderLine.getQty())
+				.qty(ddOrderLine.getQty())
 				.plantId(ddOrder.getPlantId())
 				.productPlanningId(ddOrder.getProductPlanningId())
 				.shipperId(ddOrder.getShipperId())

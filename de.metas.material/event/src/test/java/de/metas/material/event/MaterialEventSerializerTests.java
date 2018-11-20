@@ -57,6 +57,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.Shi
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.event.stock.StockChangedEvent;
+import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -495,6 +496,13 @@ public class MaterialEventSerializerTests
 	@Test
 	public void stockChangedEvent()
 	{
+		final StockChangeDetails stockChangeDetails = StockChangeDetails
+				.builder()
+				.resetStockAdPinstanceId(10)
+				.transactionId(20)
+				.stockId(30)
+				.build();
+
 		final StockChangedEvent stockChangedEvent = //
 				StockChangedEvent.builder()
 						.eventDescriptor(createEventDescriptor())
@@ -502,6 +510,7 @@ public class MaterialEventSerializerTests
 						.qtyOnHand(ONE)
 						.qtyOnHandOld(TEN)
 						.warehouseId(WAREHOUSE_ID)
+						.stockChangeDetails(stockChangeDetails)
 						.build();
 		stockChangedEvent.validate();
 		assertEventEqualAfterSerializeDeserialize(stockChangedEvent);

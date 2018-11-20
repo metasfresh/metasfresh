@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import lombok.NonNull;
+
 import java.util.Collection;
 import java.util.Map;
 
@@ -13,7 +15,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -83,5 +84,4 @@ public class CandidateChangeService
 		}
 		return builder.build();
 	}
-
 }

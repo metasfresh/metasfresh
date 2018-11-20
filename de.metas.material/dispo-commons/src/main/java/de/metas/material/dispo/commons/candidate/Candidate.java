@@ -1,5 +1,12 @@
 package de.metas.material.dispo.commons.candidate;
 
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import lombok.experimental.Wither;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -11,12 +18,6 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -169,13 +170,13 @@ public class Candidate
 		return Util.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
 	}
 
-	public BigDecimal getPlannedQty()
+	public BigDecimal getDetailQty()
 	{
 		if (businessCaseDetail == null)
 		{
 			return BigDecimal.ZERO;
 		}
-		return businessCaseDetail.getPlannedQty();
+		return businessCaseDetail.getQty();
 	}
 
 	private Candidate(final int clientId, final int orgId,
@@ -222,6 +223,8 @@ public class Candidate
 			case DEMAND:
 			case STOCK_UP:
 			case SUPPLY:
+			case INVENTORY_UP:
+			case INVENTORY_DOWN:
 				Check.errorIf(
 						businessCaseDetail == null,
 						"If type={}, then the given businessCaseDetail may not be null; this={}",

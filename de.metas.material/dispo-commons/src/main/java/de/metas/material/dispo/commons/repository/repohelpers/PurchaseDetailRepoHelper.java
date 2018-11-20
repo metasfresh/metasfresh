@@ -3,6 +3,8 @@ package de.metas.material.dispo.commons.repository.repohelpers;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import lombok.NonNull;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -16,7 +18,6 @@ import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -67,7 +68,7 @@ public final class PurchaseDetailRepoHelper
 		return PurchaseDetail.builder()
 				.orderLineRepoId(purchaseDetailRecord.getC_OrderLinePO_ID())
 				.orderedQty(purchaseDetailRecord.getQtyOrdered())
-				.plannedQty(purchaseDetailRecord.getPlannedQty())
+				.qty(purchaseDetailRecord.getPlannedQty())
 				.purchaseCandidateRepoId(purchaseDetailRecord.getC_PurchaseCandidate_ID())
 				.productPlanningRepoId(purchaseDetailRecord.getPP_Product_Planning_ID())
 				.receiptScheduleRepoId(purchaseDetailRecord.getM_ReceiptSchedule_ID())
@@ -125,7 +126,7 @@ public final class PurchaseDetailRepoHelper
 			recordToUpdate.setQtyOrdered(purchaseDetail.getOrderedQty());
 		}
 
-		recordToUpdate.setPlannedQty(purchaseDetail.getPlannedQty());
+		recordToUpdate.setPlannedQty(purchaseDetail.getQty());
 
 		saveRecord(recordToUpdate);
 	}

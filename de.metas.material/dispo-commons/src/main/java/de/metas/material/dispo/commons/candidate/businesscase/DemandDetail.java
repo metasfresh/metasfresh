@@ -3,9 +3,13 @@ package de.metas.material.dispo.commons.candidate.businesscase;
 import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
 import static de.metas.material.dispo.commons.candidate.IdConstants.toUnspecifiedIfZero;
 
-import java.math.BigDecimal;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
+
+import java.math.BigDecimal;
 
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.event.commons.DocumentLineDescriptor;
@@ -13,9 +17,6 @@ import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -79,7 +80,7 @@ public class DemandDetail implements BusinessCaseDetail
 				.forecastLineId(forecastLineId)
 				.forecastId(forecastId)
 				.subscriptionProgressId(subscriptionProgressId)
-				.plannedQty(plannedQty).build();
+				.qty(plannedQty).build();
 	}
 
 	public static DemandDetail forSupplyRequiredDescriptorOrNull(
@@ -97,7 +98,7 @@ public class DemandDetail implements BusinessCaseDetail
 				.orderLineId(toUnspecifiedIfZero(supplyRequiredDescriptor.getOrderLineId()))
 				.shipmentScheduleId(toUnspecifiedIfZero(supplyRequiredDescriptor.getShipmentScheduleId()))
 				.subscriptionProgressId(toUnspecifiedIfZero(supplyRequiredDescriptor.getSubscriptionProgressId()))
-				.plannedQty(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.qty(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
 				.build();
 	}
 
@@ -105,24 +106,24 @@ public class DemandDetail implements BusinessCaseDetail
 			final int shipmentScheduleId,
 			final int orderLineId,
 			final int orderId,
-			@NonNull final BigDecimal plannedQty)
+			@NonNull final BigDecimal qty)
 	{
 		return DemandDetail.builder()
 				.shipmentScheduleId(shipmentScheduleId)
 				.orderLineId(orderLineId)
 				.orderId(orderId)
-				.plannedQty(plannedQty).build();
+				.qty(qty).build();
 	}
 
 	public static DemandDetail forForecastLineId(
 			final int forecastLineId,
 			final int forecastId,
-			@NonNull final BigDecimal plannedQty)
+			@NonNull final BigDecimal qty)
 	{
 		return DemandDetail.builder()
 				.forecastLineId(forecastLineId)
 				.forecastId(forecastId)
-				.plannedQty(plannedQty).build();
+				.qty(qty).build();
 	}
 
 	int forecastId;
@@ -137,7 +138,7 @@ public class DemandDetail implements BusinessCaseDetail
 
 	int subscriptionProgressId;
 
-	BigDecimal plannedQty;
+	BigDecimal qty;
 
 	/**
 	 * Used when a new supply candidate is created, to link it to it's respective demand candidate;

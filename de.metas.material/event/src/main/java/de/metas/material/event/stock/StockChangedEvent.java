@@ -52,6 +52,8 @@ public class StockChangedEvent implements MaterialEvent
 	/** optional; might be used by some handlers; if null then "now" is assumed. */
 	Date changeDate;
 
+	StockChangeDetails stockChangeDetails;
+
 	@Builder
 	public StockChangedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
@@ -59,7 +61,8 @@ public class StockChangedEvent implements MaterialEvent
 			@JsonProperty("warehouseId") final int warehouseId,
 			@JsonProperty("qtyOnHand") final BigDecimal qtyOnHand,
 			@JsonProperty("qtyOnHandOld") final BigDecimal qtyOnHandOld,
-			@JsonProperty("changeDate") final Date changeDate)
+			@JsonProperty("changeDate") final Date changeDate,
+			@JsonProperty("stockChangeDetails") final StockChangeDetails stockChangeDetails)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.productDescriptor = productDescriptor;
@@ -67,6 +70,7 @@ public class StockChangedEvent implements MaterialEvent
 		this.qtyOnHand = qtyOnHand;
 		this.qtyOnHandOld = qtyOnHandOld;
 		this.changeDate = changeDate;
+		this.stockChangeDetails = stockChangeDetails;
 	}
 
 	public void validate()
@@ -76,10 +80,23 @@ public class StockChangedEvent implements MaterialEvent
 		Check.errorIf(qtyOnHand == null, "qtyOnHand may not be null; this={}", this);
 		Check.errorIf(qtyOnHandOld == null, "qtyOnHandOld may not be null; this={}", this);
 		Check.errorIf(warehouseId <= 0, "warehouseId needs to be > 0; this={}", this);
+		Check.errorIf(stockChangeDetails == null, "stockChangeDetails may not be null; this={}", this);
+		Check.errorIf(stockChangeDetails.getStockId() <= 0, "stockChangeDetails.stockId may not be null; this={}", this);
 	}
 
 	public int getProductId()
 	{
 		return productDescriptor.getProductId();
+	}
+
+	@Value
+	@Builder
+	public static class StockChangeDetails
+	{
+		int resetStockAdPinstanceId;
+
+		int transactionId;
+
+		int stockId;
 	}
 }

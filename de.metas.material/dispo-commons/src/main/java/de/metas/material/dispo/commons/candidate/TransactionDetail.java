@@ -1,12 +1,13 @@
 package de.metas.material.dispo.commons.candidate;
 
+import lombok.Builder;
+import lombok.Value;
+
 import java.math.BigDecimal;
 
 import com.google.common.base.Preconditions;
 
 import de.metas.material.event.commons.AttributesKey;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -33,19 +34,6 @@ import lombok.Value;
 @Value
 public class TransactionDetail
 {
-	public static TransactionDetail forCandidateOrQuery(
-			@NonNull final BigDecimal quantity,
-			@NonNull final AttributesKey storageAttributesKey,
-			final int attributeSetInstanceId,
-			final int transactionId)
-	{
-		return new TransactionDetail(
-				quantity,
-				storageAttributesKey,
-				attributeSetInstanceId,
-				transactionId,
-				true /*complete*/);
-	}
 
 	public static TransactionDetail forQuery(final int transactionId)
 	{
@@ -54,6 +42,8 @@ public class TransactionDetail
 				null /*storageAttributesKey*/,
 				-1 /*attributeSetInstanceId*/,
 				transactionId,
+				-1 /*stockId*/,
+				-1 /*resetStockAdPinstanceId*/,
 				false /*complete*/);
 	}
 
@@ -67,11 +57,21 @@ public class TransactionDetail
 
 	int attributeSetInstanceId;
 
-	public TransactionDetail(
+
+	/** {@code MD_Stock_ID} */
+	int stockId;
+
+	/** if there was no inventory, but MD_Stock had to be reset from M_HU_Storage */
+	int resetStockAdPinstanceId;
+
+	@Builder
+	private TransactionDetail(
 			final BigDecimal quantity,
 			final AttributesKey storageAttributesKey,
 			final int attributeSetInstanceId,
 			final int transactionId,
+			final int stockId,
+			final int resetStockAdPinstanceId,
 			final boolean complete)
 	{
 		this.complete = complete;
@@ -84,5 +84,8 @@ public class TransactionDetail
 
 		this.storageAttributesKey = storageAttributesKey;
 		this.attributeSetInstanceId = attributeSetInstanceId;
+
+		this.stockId = stockId;
+		this.resetStockAdPinstanceId = resetStockAdPinstanceId;
 	}
 }

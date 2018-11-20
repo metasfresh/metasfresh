@@ -1,10 +1,11 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -43,6 +44,6 @@ public class DemandDetailRepoHelper
 				.orderId(demandRecord.getC_OrderSO_ID())
 				.orderLineId(demandDetailRecord.getC_OrderLine_ID())
 				.subscriptionProgressId(demandDetailRecord.getC_SubscriptionProgress_ID())
-				.plannedQty(demandDetailRecord.getPlannedQty()).build();
+				.qty(demandDetailRecord.getPlannedQty()).build();
 	}
 }

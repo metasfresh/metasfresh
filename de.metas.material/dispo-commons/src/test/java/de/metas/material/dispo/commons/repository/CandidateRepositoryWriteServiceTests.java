@@ -146,8 +146,8 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(ONE, AttributesKey.ALL, 0, 15))
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(TEN, AttributesKey.ALL, 0, 16))
+				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(15).build())
+				.transactionDetail(TransactionDetail.builder().quantity(TEN).storageAttributesKey(AttributesKey.ALL).transactionId(16).build())
 				.build();
 
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -233,7 +233,7 @@ public class CandidateRepositoryWriteServiceTests
 						.ppOrderDocStatus("ppOrderDocStatus")
 						.advised(Flag.TRUE)
 						.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
-						.plannedQty(TEN)
+						.qty(TEN)
 						.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
@@ -333,7 +333,7 @@ public class CandidateRepositoryWriteServiceTests
 						.ddOrderLineId(110)
 						.shipperId(120)
 						.ddOrderDocStatus("ddOrderDocStatus")
-						.plannedQty(TEN)
+						.qty(TEN)
 						.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(distributionCandidate);
@@ -396,7 +396,7 @@ public class CandidateRepositoryWriteServiceTests
 				.materialDescriptor(createMaterialDescriptor()
 						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62, TEN))
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(ONE, AttributesKey.ALL, 0, 33))
+				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(33).build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 

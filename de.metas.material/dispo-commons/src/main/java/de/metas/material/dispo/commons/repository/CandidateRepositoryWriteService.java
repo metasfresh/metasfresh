@@ -6,12 +6,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -363,7 +364,7 @@ public class CandidateRepositoryWriteService
 		productionDetailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
 		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
 		productionDetailRecordToUpdate.setPP_Order_DocStatus(productionDetail.getPpOrderDocStatus());
-		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getPlannedQty());
+		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getQty());
 		productionDetailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(productionDetailRecordToUpdate);
@@ -404,7 +405,7 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
 		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus());
 		detailRecordToUpdate.setM_Shipper_ID(distributionDetail.getShipperId());
-		detailRecordToUpdate.setPlannedQty(distributionDetail.getPlannedQty());
+		detailRecordToUpdate.setPlannedQty(distributionDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(detailRecordToUpdate);
@@ -436,7 +437,7 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setC_OrderLine_ID(toRepoId(demandDetail.getOrderLineId()));
 		detailRecordToUpdate.setC_SubscriptionProgress_ID(toRepoId(demandDetail.getSubscriptionProgressId()));
 
-		detailRecordToUpdate.setPlannedQty(demandDetail.getPlannedQty());
+		detailRecordToUpdate.setPlannedQty(demandDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(detailRecordToUpdate);

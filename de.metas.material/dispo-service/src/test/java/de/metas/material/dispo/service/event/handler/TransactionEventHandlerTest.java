@@ -82,7 +82,12 @@ public class TransactionEventHandlerTest
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.build();
 
-		final TransactionDetail transactionDetail = TransactionDetail.forCandidateOrQuery(TWENTY_THREE, AttributesKey.ofAttributeValueIds(10), 20, 30);
+		final TransactionDetail transactionDetail = TransactionDetail.builder()
+				.quantity(TWENTY_THREE)
+				.storageAttributesKey(AttributesKey.ofAttributeValueIds(10))
+				.attributeSetInstanceId(20)
+				.transactionId(30)
+				.build();
 
 		// invoke the method under test
 		final List<Candidate> result = transactionEventHandler.createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(candidate, transactionDetail);

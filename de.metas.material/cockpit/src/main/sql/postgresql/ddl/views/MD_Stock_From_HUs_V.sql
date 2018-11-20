@@ -1,6 +1,9 @@
 
-CREATE OR REPLACE VIEW MD_Stock_From_HUs_V AS
+DROP VIEW IF EXISTS MD_Stock_From_HUs_V;
+CREATE VIEW MD_Stock_From_HUs_V AS
 SELECT 
+	hu.AD_Client_ID,
+	hu.AD_Org_ID,
 	l.M_Warehouse_ID,
 	hus.M_Product_ID,
 	hus.C_UOM_ID,
@@ -12,6 +15,8 @@ FROM m_hu hu
 WHERE hu.isactive='Y'
 	and M_HU_Item_Parent_ID IS NULL
 GROUP BY 
+	hu.AD_Client_ID,
+	hu.AD_Org_ID,
 	l.M_Warehouse_ID,
 	hus.M_Product_ID,
 	hus.C_UOM_ID,

@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,7 +50,6 @@ import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -309,7 +310,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			// prepare the purchase detail with our inoutLineId
 			final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
 					.advised(Flag.FALSE_DONT_UPDATE)
-					.plannedQty(receiptScheduleId2Qty.getValue())
+					.qty(receiptScheduleId2Qty.getValue())
 					.receiptScheduleRepoId(receiptScheduleId2Qty.getKey())
 					.build();
 
@@ -361,7 +362,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.toProductionDetailBuilder()
 					.advised(Flag.FALSE_DONT_UPDATE)
 					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
-					.plannedQty(event.getQuantity())
+					.qty(event.getQuantity())
 					.build();
 
 			final Candidate candidate = createBuilderForNewUnrelatedCandidate(
@@ -406,7 +407,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			final DistributionDetail distributionDetail = distributionDetailsQuery
 					.toDistributionDetailBuilder()
-					.plannedQty(event.getQuantity())
+					.qty(event.getQuantity())
 					.build();
 
 			final Candidate candidate = createBuilderForNewUnrelatedCandidate(
@@ -458,12 +459,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 	private TransactionDetail createTransactionDetail(@NonNull final AbstractTransactionEvent event)
 	{
-		final TransactionDetail transactionDetailOfEvent = TransactionDetail
-				.forCandidateOrQuery(
-						event.getQuantityDelta(), // quantity and storageAttributesKey won't be used in the query, but in the following insert or update
-						event.getMaterialDescriptor().getStorageAttributesKey(),
-						event.getMaterialDescriptor().getAttributeSetInstanceId(),
-						event.getTransactionId());
+		final TransactionDetail transactionDetailOfEvent = TransactionDetail.builder()
+				.quantity(event.getQuantityDelta()) // quantity and storageAttributesKey won't be used in the query, but in the following insert or update
+				.storageAttributesKey(event.getMaterialDescriptor().getStorageAttributesKey())
+				.attributeSetInstanceId(event.getMaterialDescriptor().getAttributeSetInstanceId())
+				.transactionId(event.getTransactionId())
+				.build();
 		return transactionDetailOfEvent;
 	}
 
@@ -527,7 +528,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 			final Candidate withTransactionDetails = candidate.withTransactionDetails(ImmutableList.copyOf(newTransactionDetailsSet));
 			final BigDecimal actualQty = withTransactionDetails.computeActualQty();
-			final BigDecimal plannedQty = candidate.getPlannedQty();
+			final BigDecimal plannedQty = candidate.getDetailQty();
 
 			return ImmutableList.of(withTransactionDetails.withQuantity(actualQty.max(plannedQty)));
 		}
@@ -555,7 +556,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 			// subtract the transaction's Qty from the candidate
 			final BigDecimal actualQty = candidate.computeActualQty();
-			final BigDecimal plannedQty = candidate.getPlannedQty().subtract(changedTransactionDetail.getQuantity());
+			final BigDecimal plannedQty = candidate.getDetailQty().subtract(changedTransactionDetail.getQuantity());
 			final BigDecimal updatedQty = actualQty.max(plannedQty);
 			final Candidate updatedCandidate = candidate.withQuantity(updatedQty);
 

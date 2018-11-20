@@ -16,6 +16,7 @@ import org.compiere.util.DB;
 
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
+import de.metas.material.cockpit.stock.StockChangeSourceInfo;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
@@ -111,15 +112,20 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 	private void createAndHandleDataUpdateRequests(
 			@NonNull final List<I_MD_Stock_From_HUs_V> huBasedDataRecords)
 	{
+		final StockChangeSourceInfo info = StockChangeSourceInfo.ofResetStockAdPinstanceId(getProcessInfo().getPinstanceId().getRepoId());
+
 		for (final I_MD_Stock_From_HUs_V huBasedDataRecord : huBasedDataRecords)
 		{
-			final StockDataUpdateRequest dataUpdateRequest = createDataUpdatedRequest(huBasedDataRecord);
+			final StockDataUpdateRequest dataUpdateRequest = createDataUpdatedRequest(
+					huBasedDataRecord,
+					info);
 			dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 		}
 	}
 
 	private StockDataUpdateRequest createDataUpdatedRequest(
-			@NonNull final I_MD_Stock_From_HUs_V huBasedDataRecord)
+			@NonNull final I_MD_Stock_From_HUs_V huBasedDataRecord,
+			@NonNull final StockChangeSourceInfo stockDataUpdateRequestSourceInfo)
 	{
 		final StockDataRecordIdentifier recordIdentifier = createDataRecordIdentifier(huBasedDataRecord);
 
@@ -130,6 +136,7 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 		final StockDataUpdateRequest dataUpdateRequest = StockDataUpdateRequest.builder()
 				.identifier(recordIdentifier)
 				.onHandQtyChange(qtyInStockingUOM.getAsBigDecimal())
+				.sourceInfo(stockDataUpdateRequestSourceInfo)
 				.build();
 		return dataUpdateRequest;
 	}
@@ -142,7 +149,10 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 						huBasedDataRecord.getM_Product_ID(),
 						AttributesKey.ofString(huBasedDataRecord.getAttributesKey()));
 
-		final StockDataRecordIdentifier recordIdentifier = StockDataRecordIdentifier.builder()
+		final StockDataRecordIdentifier recordIdentifier = StockDataRecordIdentifier
+				.builder()
+				.clientId(huBasedDataRecord.getAD_Client_ID())
+				.orgId(huBasedDataRecord.getAD_Org_ID())
 				.productDescriptor(productDescriptor)
 				.warehouseId(huBasedDataRecord.getM_Warehouse_ID())
 				.build();

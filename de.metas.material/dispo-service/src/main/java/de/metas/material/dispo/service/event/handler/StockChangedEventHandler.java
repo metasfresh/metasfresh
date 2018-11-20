@@ -15,11 +15,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.InventoryDetail;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
@@ -30,6 +28,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuilder;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stock.StockChangedEvent;
+import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.Loggables;
 import de.metas.util.time.SystemTime;
 
@@ -80,7 +79,6 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	@Override
 	public void handleEvent(@NonNull final StockChangedEvent event)
 	{
-
 		final MaterialDescriptorQuery materialDescriptorQuery = createMaterialDescriptorQuery(event);
 
 		final CandidatesQuery stockQuery = CandidatesQuery.builder()
@@ -89,17 +87,20 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.matchExactStorageAttributesKey(true)
 				.build();
 
-		final InventoryDetail inventoryDetail = createInventoryDetail(event);
+		final TransactionDetail stockChangeDetail = createStockChangeDetail(event);
 
 		final Candidate latestStockRecord = candidateRepository.retrieveLatestMatchOrNull(stockQuery);
 		if (latestStockRecord == null)
 		{
-			final BigDecimal quantityOnHand = extractQuantityOrNull(event);
+			final BigDecimal quantityOnHand = extractQuantityIfPositive(event);
 			if (quantityOnHand == null)
 			{
 				return;
 			}
-			final CandidateBuilder candidateBuilder = createCandidateBuilder(event, quantityOnHand, inventoryDetail);
+			final CandidateBuilder candidateBuilder = createCandidateBuilder(
+					event,
+					quantityOnHand,
+					stockChangeDetail);
 
 			final Candidate candidate = candidateBuilder
 					.type(CandidateType.INVENTORY_UP)
@@ -109,17 +110,26 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		}
 		else
 		{
-			final BigDecimal quantityOnHand = event.getQtyOnHand();
+			// we work with the delta to the predecessor candidate, so that we can invoke our existing candidateChangeHandler implementation
+			final BigDecimal qtyDifference = event
+					.getQtyOnHand()
+					.subtract(latestStockRecord.getQuantity());
 
-			final CandidateType type = computeCandidateTypeOrNull(latestStockRecord, quantityOnHand);
+			final CandidateType type = computeCandidateTypeOrNull(latestStockRecord, qtyDifference);
 			if (type == null)
 			{
 				return;
 			}
 
-			final int groupId = retrieveGroupIdOrZero(materialDescriptorQuery, type);
+			final int groupId = retrieveGroupIdOrZero(
+					materialDescriptorQuery,
+					type,
+					stockChangeDetail.getTransactionId());
 
-			final CandidateBuilder candidateBuilder = createCandidateBuilder(event, quantityOnHand, inventoryDetail);
+			final CandidateBuilder candidateBuilder = createCandidateBuilder(
+					event,
+					qtyDifference.abs(), // also in case of INVENTORY_DOWN, the engine expectets a positive qty
+					stockChangeDetail);
 
 			final Candidate candidate = candidateBuilder
 					.groupId(groupId)
@@ -130,58 +140,59 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		}
 	}
 
-	private BigDecimal extractQuantityOrNull(final StockChangedEvent event)
+	private BigDecimal extractQuantityIfPositive(@NonNull final StockChangedEvent event)
 	{
 		final BigDecimal quantityOnHand = event.getQtyOnHand();
 		if (quantityOnHand.signum() < 0)
 		{
-			Loggables.get().addLog("warning that something was out of sync since there is no existing 'latestMatch' to subtract from"); // TODO
+			Loggables.get().addLog("Warning: something was out of sync since there is no existing 'latestMatch' to subtract from");
 			return null;
 		}
 		return quantityOnHand;
 	}
 
-	private CandidateType computeCandidateTypeOrNull(final Candidate latestStockRecord, final BigDecimal quantityOnHand)
+	private CandidateType computeCandidateTypeOrNull(
+			@NonNull final Candidate latestStockRecord,
+			@NonNull final BigDecimal quantity)
 	{
-		final BigDecimal difference = latestStockRecord.getQuantity().subtract(quantityOnHand);
-		if (difference.signum() == 0)
+		if (quantity.signum() == 0)
 		{
-			Loggables.get().addLog("Info that the event did not caise anything to change"); // TODO
+			Loggables.get().addLog("The event's quantity is what was already expected; nothing to do");
 			return null;
 		}
-		final CandidateType type = difference.signum() > 0 ? CandidateType.INVENTORY_UP : CandidateType.INVENTORY_DOWN;
+		final CandidateType type = quantity.signum() > 0 ? CandidateType.INVENTORY_UP : CandidateType.INVENTORY_DOWN;
 		return type;
 	}
 
 	private CandidateBuilder createCandidateBuilder(
 			@NonNull final StockChangedEvent event,
-			@NonNull final BigDecimal quantityOnHand,
-			@NonNull final BusinessCaseDetail inventoryDetail)
+			@NonNull final BigDecimal quantity,
+			@NonNull final TransactionDetail stockChangeDetail)
 	{
 		final MaterialDescriptor materialDescriptorBuilder = createMaterialDescriptorBuilder(event)
-				.quantity(quantityOnHand)
+				.quantity(quantity)
 				.build();
 
 		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescriptor())
 				.status(CandidateStatus.doc_completed)
-				.businessCase(CandidateBusinessCase.INVENTORY)
 				.materialDescriptor(materialDescriptorBuilder)
-				.businessCaseDetail(inventoryDetail);
+				.transactionDetail(stockChangeDetail);
 		return candidateBuilder;
 	}
 
 	private int retrieveGroupIdOrZero(
 			@NonNull final MaterialDescriptorQuery materialDescriptorQuery,
-			@NonNull final CandidateType type)
+			@NonNull final CandidateType type,
+			final int transactionId)
 	{
 		int groupId = 0;
-		if (CandidateType.INVENTORY_UP.equals(type))
+		if (CandidateType.INVENTORY_UP.equals(type) && transactionId > 0)
 		{
 			// see if there is a preceeding "down" record to connect with
-			// that's the case when a storage attribute has schanged
+			// that's the case when a storage attribute has changed
 			final CandidatesQuery inventoryQuery = CandidatesQuery.builder()
 					.type(CandidateType.INVENTORY_DOWN)
-					// .inventoryDetail(inventoryDetail) TODO
+					.transactionDetail(TransactionDetail.forQuery(transactionId))
 					.materialDescriptorQuery(materialDescriptorQuery)
 					.matchExactStorageAttributesKey(true)
 					.build();
@@ -195,20 +206,26 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		return groupId;
 	}
 
-	private MaterialDescriptorQuery createMaterialDescriptorQuery(StockChangedEvent event)
-	{
-		return MaterialDescriptorQuery.forDescriptor(
-				createMaterialDescriptorBuilder(event).build(),
-				DateOperator.BEFORE_OR_AT);
-	}
-
-	private MaterialDescriptorBuilder createMaterialDescriptorBuilder(StockChangedEvent event)
+	private MaterialDescriptorQuery createMaterialDescriptorQuery(@NonNull final StockChangedEvent event)
 	{
 		final ProductDescriptor productDescriptor = event.getProductDescriptor();
 
-		final Date date = Util.coalesceSuppliers(
-				() -> event.getChangeDate(),
-				() -> SystemTime.asDate());
+		final Date date = computeDate(event);
+
+		return MaterialDescriptorQuery.builder()
+				.date(date)
+				.dateOperator(DateOperator.BEFORE_OR_AT)
+				.productId(productDescriptor.getProductId())
+				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
+				.warehouseId(event.getWarehouseId())
+				.build();
+	}
+
+	private MaterialDescriptorBuilder createMaterialDescriptorBuilder(@NonNull final StockChangedEvent event)
+	{
+		final ProductDescriptor productDescriptor = event.getProductDescriptor();
+
+		final Date date = computeDate(event);
 
 		return MaterialDescriptor.builder()
 				.date(date)
@@ -217,16 +234,27 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.warehouseId(event.getWarehouseId());
 	}
 
-	private InventoryDetail createInventoryDetail(StockChangedEvent event)
+	private Date computeDate(@NonNull final StockChangedEvent event)
 	{
-		return InventoryDetail.builder()
-				// .plannedQty(plannedQty)
-				// .resetStockAdPinstanceId(resetStockAdPinstanceId)
-				// .stockId(stockId)
-				// .inventoryLineId(inventoryLineId)
-				.build();
-
-		// TODO Auto-generated method stub
+		final Date date = Util.coalesceSuppliers(
+				() -> event.getChangeDate(),
+				() -> SystemTime.asDate());
+		return date;
 	}
 
+	private TransactionDetail createStockChangeDetail(@NonNull final StockChangedEvent event)
+	{
+		final StockChangeDetails stockChangeDetails = event.getStockChangeDetails();
+		final ProductDescriptor productDescriptor = event.getProductDescriptor();
+
+		return TransactionDetail.builder()
+				.attributeSetInstanceId(productDescriptor.getAttributeSetInstanceId())
+				.complete(true)
+				.quantity(event.getQtyOnHand().subtract(event.getQtyOnHandOld()))
+				.resetStockAdPinstanceId(stockChangeDetails.getResetStockAdPinstanceId())
+				.stockId(stockChangeDetails.getStockId())
+				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
+				.transactionId(stockChangeDetails.getTransactionId())
+				.build();
+	}
 }

@@ -1,12 +1,12 @@
-package de.metas.material.dispo.commons.candidate.businesscase;
+package de.metas.material.cockpit.stock;
 
-import java.math.BigDecimal;
+import lombok.Value;
 
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.util.Check;
 
 /*
  * #%L
- * metasfresh-material-dispo-commons
+ * metasfresh-material-cockpit
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,12 +26,24 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
  * #L%
  */
 
-public interface BusinessCaseDetail
+@Value
+public class StockChangeSourceInfo
 {
-	/**
-	 * @return the enum value associated with this instance.
-	 */
-	CandidateBusinessCase getCandidateBusinessCase();
+	public static StockChangeSourceInfo ofResetStockAdPinstanceId(int resetStockAdPinstanceId)
+	{
+		return new StockChangeSourceInfo(
+				Check.assumeGreaterThanZero(resetStockAdPinstanceId, "resetStockAdPinstanceId"),
+				-1);
+	}
 
-	BigDecimal getQty();
+	public static StockChangeSourceInfo ofTransactionId(int transactionId)
+	{
+		return new StockChangeSourceInfo(
+				-1,
+				Check.assumeGreaterThanZero(transactionId, "transactionId"));
+	}
+
+	int resetStockAdPinstanceId;
+
+	int transactionId;
 }

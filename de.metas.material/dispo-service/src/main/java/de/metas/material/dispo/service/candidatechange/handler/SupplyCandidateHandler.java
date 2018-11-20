@@ -123,7 +123,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 	private void assertCorrectCandidateType(@NonNull final Candidate supplyCandidate)
 	{
 		Preconditions.checkArgument(
-				supplyCandidate.getType() == CandidateType.SUPPLY || supplyCandidate.getType() == CandidateType.UNRELATED_INCREASE,
+				getHandeledTypes().contains(supplyCandidate.getType()),
 				"Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s",
 				supplyCandidate.getType(), supplyCandidate);
 	}
