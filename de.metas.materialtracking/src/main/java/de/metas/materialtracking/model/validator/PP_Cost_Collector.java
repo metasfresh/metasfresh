@@ -30,9 +30,11 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.MTLinkRequest;
@@ -104,9 +106,9 @@ public class PP_Cost_Collector
 		materialTrackingBL.unlinkModelFromMaterialTracking(ppCostCollector);
 
 		// also unlink the ppOrder, if this was the last costCollector
-		final I_PP_Order ppOrder = ppCostCollector.getPP_Order();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID());
 		boolean anyCCLeft = false;
-		final List<I_PP_Cost_Collector> costCollectors = Services.get(IPPCostCollectorDAO.class).retrieveNotReversedForOrder(ppOrder);
+		final List<I_PP_Cost_Collector> costCollectors = Services.get(IPPCostCollectorDAO.class).getCompletedOrClosedByOrderId(ppOrderId);
 
 		for (final I_PP_Cost_Collector cc : costCollectors)
 		{
@@ -122,6 +124,7 @@ public class PP_Cost_Collector
 		}
 		if (!anyCCLeft)
 		{
+			final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
 			materialTrackingBL.unlinkModelFromMaterialTracking(ppOrder);
 		}
 	}

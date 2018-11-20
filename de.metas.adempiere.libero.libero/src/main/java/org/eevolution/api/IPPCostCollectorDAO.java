@@ -28,34 +28,20 @@ import java.time.Duration;
 import java.util.List;
 
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
 
-import de.metas.costing.CostDetail;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
 public interface IPPCostCollectorDAO extends ISingletonService
 {
-
-	List<I_PP_Cost_Collector> retrieveForOrderBOMLine(I_PP_Order_BOMLine orderBOMLine);
-
 	BigDecimal getQtyUsageVariance(PPOrderBOMLineId orderBOMLineId);
 
-	List<I_PP_Cost_Collector> retrieveForParent(I_PP_Cost_Collector parentCostCollector);
-
-	List<CostDetail> retrieveCostDetails(I_PP_Cost_Collector cc);
-
-	/**
-	 * @deprecated please use {@link #retrieveForOrderId(int)}
-	 */
-	@Deprecated
-	List<I_PP_Cost_Collector> retrieveForOrder(I_PP_Order order);
+	List<I_PP_Cost_Collector> getByParent(I_PP_Cost_Collector parentCostCollector);
 
 	I_PP_Cost_Collector getById(int costCollectorId);
 
-	List<I_PP_Cost_Collector> retrieveForOrderId(PPOrderId ppOrderId);
+	List<I_PP_Cost_Collector> getByOrderId(PPOrderId ppOrderId);
 
 	/**
 	 * Retrieve the cost collectors of the given <code>order</code> that are active and are either completed or closed.
@@ -63,7 +49,7 @@ public interface IPPCostCollectorDAO extends ISingletonService
 	 * @param order
 	 * @return
 	 */
-	List<I_PP_Cost_Collector> retrieveNotReversedForOrder(I_PP_Order order);
+	List<I_PP_Cost_Collector> getCompletedOrClosedByOrderId(PPOrderId order);
 
 	/**
 	 * Retrieve the cost collectors for the given ppOrder. The cost collectors must have:
@@ -76,7 +62,7 @@ public interface IPPCostCollectorDAO extends ISingletonService
 	 * @param ppOrder
 	 * @return
 	 */
-	List<I_PP_Cost_Collector> retrieveExistingReceiptCostCollector(I_PP_Order ppOrder);
+	List<I_PP_Cost_Collector> getReceiptsByOrderId(PPOrderId ppOrderId);
 
 	Duration getTotalSetupTimeReal(PPOrderRoutingActivity activity, CostCollectorType costCollectorType);
 

@@ -31,24 +31,16 @@ import java.time.Duration;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.Adempiere;
 import org.compiere.model.IQuery.Aggregate;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Cost_Collector;
 
-import de.metas.costing.CostDetail;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostDetailRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -61,15 +53,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	}
 
 	@Override
-	public List<I_PP_Cost_Collector> retrieveForOrder(final I_PP_Order order)
-	{
-		Check.assumeNotNull(order, "order is not null");
-		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
-		return retrieveForOrderId(orderId);
-	}
-
-	@Override
-	public List<I_PP_Cost_Collector> retrieveForOrderId(@NonNull final PPOrderId ppOrderId)
+	public List<I_PP_Cost_Collector> getByOrderId(@NonNull final PPOrderId ppOrderId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Cost_Collector.class)
@@ -80,18 +64,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	}
 
 	@Override
-	public List<I_PP_Cost_Collector> retrieveForOrderBOMLine(@NonNull final I_PP_Order_BOMLine orderBOMLine)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Cost_Collector.class, orderBOMLine)
-				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_BOMLine_ID, orderBOMLine.getPP_Order_BOMLine_ID())
-				.orderBy(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_ID)
-				.create()
-				.list();
-	}
-
-	@Override
-	public List<I_PP_Cost_Collector> retrieveForParent(@NonNull final I_PP_Cost_Collector parentCostCollector)
+	public List<I_PP_Cost_Collector> getByParent(@NonNull final I_PP_Cost_Collector parentCostCollector)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Cost_Collector.class, parentCostCollector)
@@ -102,19 +75,12 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	}
 
 	@Override
-	public List<CostDetail> retrieveCostDetails(final I_PP_Cost_Collector cc)
-	{
-		final ICostDetailRepository costDetailsRepo = Adempiere.getBean(ICostDetailRepository.class);
-		return costDetailsRepo.getAllForDocument(CostingDocumentRef.ofCostCollectorId(cc.getPP_Cost_Collector_ID()));
-	}
-
-	@Override
-	public List<I_PP_Cost_Collector> retrieveExistingReceiptCostCollector(final I_PP_Order ppOrder)
+	public List<I_PP_Cost_Collector> getReceiptsByOrderId(@NonNull final PPOrderId ppOrderId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBL.createQueryBuilder(I_PP_Cost_Collector.class, ppOrder)
-				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+		return queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrderId)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_CostCollectorType, CostCollectorType.MaterialReceipt.getCode())
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_DocStatus, X_PP_Cost_Collector.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter()
@@ -124,17 +90,15 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	}
 
 	@Override
-	public List<I_PP_Cost_Collector> retrieveNotReversedForOrder(final I_PP_Order order)
+	public List<I_PP_Cost_Collector> getCompletedOrClosedByOrderId(@NonNull final PPOrderId orderId)
 	{
-		Check.assumeNotNull(order, "order not null");
-		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, order)
-				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, order.getPP_Order_ID())
-				.addInArrayOrAllFilter(I_PP_Cost_Collector.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed);
-
-		queryBuilder.orderBy()
-				.addColumn(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_ID);
-
-		return queryBuilder.create().list();
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, orderId)
+				.addInArrayFilter(I_PP_Cost_Collector.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed)
+				.orderBy(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_ID)
+				.create()
+				.list();
 	}
 
 	@Override

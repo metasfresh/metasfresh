@@ -43,6 +43,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -129,12 +130,13 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 
 		//
 		// Reverse ALL cost collectors
-		reverseAllCostCollectors(ppOrder);
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		reverseAllCostCollectors(ppOrderId);
 	}
 
-	private final void reverseAllCostCollectors(final I_PP_Order ppOrder)
+	private final void reverseAllCostCollectors(final PPOrderId ppOrderId)
 	{
-		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveForOrder(ppOrder);
+		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.getByOrderId(ppOrderId);
 
 		// Sort the cost collectors in reverse order of their creation,
 		// just to make sure we are reversing the effect from last one to first one.

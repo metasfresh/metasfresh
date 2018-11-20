@@ -270,7 +270,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			final I_PP_Cost_Collector ccOriginal = getReversal();
 
 			// Get it's child cost collectors and reverse them one by one
-			final List<I_PP_Cost_Collector> childCostCollectors = Services.get(IPPCostCollectorDAO.class).retrieveForParent(ccOriginal);
+			final List<I_PP_Cost_Collector> childCostCollectors = Services.get(IPPCostCollectorDAO.class).getByParent(ccOriginal);
 			for (final I_PP_Cost_Collector childCostCollector : childCostCollectors)
 			{
 				docActionBL.processEx(childCostCollector, X_PP_Cost_Collector.DOCACTION_Reverse_Correct, X_PP_Cost_Collector.DOCSTATUS_Reversed);

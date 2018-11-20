@@ -66,6 +66,7 @@ import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -294,6 +295,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 	{
 		final I_PP_Order ppOrder = huToProcess.getPP_Order();
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 
 		final I_M_HU hu = huToProcess.getM_HU();
 		final I_M_Product rawProduct = huToProcess.getRaw_Product();
@@ -321,7 +323,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		//
 		// Mark all cost collectors as closed.
 		// Delete the accountings for them.
-		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveForOrder(ppOrder);
+		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.getByOrderId(ppOrderId);
 
 		for (final I_PP_Cost_Collector cc : costCollectors)
 		{

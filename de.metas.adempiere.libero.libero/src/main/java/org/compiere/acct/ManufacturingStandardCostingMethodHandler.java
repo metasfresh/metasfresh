@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -462,12 +461,12 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	// return cdv;
 	// }
 
-	private ResourceId getStandardResourceId(final I_PP_Cost_Collector cc)
-	{
-		final I_AD_WF_Node node = cc.getPP_Order_Node().getAD_WF_Node();
-		final ResourceId resourceId = ResourceId.ofRepoId(node.getS_Resource_ID());
-		return resourceId;
-	}
+	// private ResourceId getStandardResourceId(final I_PP_Cost_Collector cc)
+	// {
+	// final I_AD_WF_Node node = cc.getPP_Order_Node().getAD_WF_Node();
+	// final ResourceId resourceId = ResourceId.ofRepoId(node.getS_Resource_ID());
+	// return resourceId;
+	// }
 
 	private Quantity convertDurationToQuantity(final Duration duration, final ProductId resourceProductId)
 	{

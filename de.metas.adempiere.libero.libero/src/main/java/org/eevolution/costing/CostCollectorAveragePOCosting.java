@@ -60,7 +60,7 @@ public class CostCollectorAveragePOCosting
 
 	private void createForOrder(final PPOrderId ppOrderId)
 	{
-		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveForOrderId(ppOrderId);
+		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.getByOrderId(ppOrderId);
 
 		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
 		final BigDecimal qtyReceived = ppOrder.getQtyBeforeClose();
