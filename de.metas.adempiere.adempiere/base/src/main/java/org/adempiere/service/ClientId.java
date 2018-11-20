@@ -55,7 +55,6 @@ public class ClientId implements RepoIdAware
 		return new ClientId(repoId);
 	}
 
-	@JsonCreator
 	public static ClientId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId == SYSTEM.repoId)
