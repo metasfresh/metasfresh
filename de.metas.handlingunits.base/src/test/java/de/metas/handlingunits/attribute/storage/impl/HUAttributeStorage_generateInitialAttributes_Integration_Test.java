@@ -154,6 +154,8 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 	 */
 	public void test(final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
 	{
+		testWatcher.putContext(attributeValueGeneratorClass);
+
 		// Skip Mocked implementations, used for testing
 		final String attributeValueGeneratorClassname = attributeValueGeneratorClass.getName();
 		if (attributeValueGeneratorClassname.startsWith("Mocked")
