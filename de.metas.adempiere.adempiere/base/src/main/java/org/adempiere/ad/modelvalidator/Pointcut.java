@@ -23,7 +23,6 @@ package org.adempiere.ad.modelvalidator;
  */
 
 import java.lang.reflect.Method;
-import java.util.Set;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,271 +33,196 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 
+import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NonNull;
 
-/* package */final class Pointcut implements IPointcut, Comparable<Pointcut>
+@Getter
+/* package */final class Pointcut implements Comparable<Pointcut>
 {
 	private final String pointcutId;
 	private final PointcutType type;
 	private final Method method;
-	private final Set<Integer> timings;
+	private final ImmutableSet<Integer> timings;
 	private final boolean afterCommit;
-	private String tableName;
-	private Class<?> modelClass;
-	private Class<?> methodTimingParameterType;
-	private Set<String> modelColumnNames = ImmutableSet.of();
-	private Set<String> changedColumns = ImmutableSet.of();
-	private Set<String> ignoredColumns = ImmutableSet.of();
-	private volatile Set<String> columnsToCheckForChanges = null;
-	private boolean onlyIfUIAction = false;
-	@Getter
-	@Setter
-	private boolean skipIfCopying = false;
+	private final String tableName;
+	private final Class<?> modelClass;
+	private final Class<?> methodTimingParameterType;
+	private final ImmutableSet<String> columnNamesToCheckForChanges;
 
-	public Pointcut(final PointcutType type, final Method method, final int[] timings, final boolean afterCommit)
+	private final boolean onlyIfUIAction;
+	private final boolean skipIfCopying;
+
+	@Builder
+	private Pointcut(
+			@NonNull final PointcutType type,
+			@NonNull final Method method,
+			@NonNull final int[] timings,
+			final boolean afterCommit,
+			final boolean onlyIfUIAction,
+			final boolean skipIfCopying,
+			//
+			final Class<?> modelClass,
+			final String[] columnNamesToCheckForChanges,
+			final String[] ignoreColumnNames)
 	{
-		this.pointcutId = String.format("%s#%s",
+		pointcutId = String.format("%s#%s",
 				method.getDeclaringClass().getName(),
 				method.getName());
 
 		this.type = type;
-		this.method = method;
-		this.timings = ImmutableSet.copyOf(Ints.asList(timings));
-		this.afterCommit = afterCommit;
 
-		//
-		// Validate timings
+		this.method = method;
+		if (method.getReturnType() != void.class)
+		{
+			throw new AdempiereException("Return type should be void for " + method);
+		}
+
+		this.timings = ImmutableSet.copyOf(Ints.asList(timings));
+		if (this.timings.isEmpty())
+		{
+			throw new AdempiereException("Invalid method " + method + ": no timings were specified");
+		}
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
-			for (final int timing : timings)
+			assertValidTimings(type, timings, method);
+		}
+
+		this.afterCommit = afterCommit;
+		this.onlyIfUIAction = onlyIfUIAction;
+		this.skipIfCopying = skipIfCopying;
+
+		this.modelClass = extractModelClass(method, modelClass);
+		this.tableName = extractModelTableName(this.modelClass);
+		this.columnNamesToCheckForChanges = extractColumnNamesToCheckForChanges(
+				this.modelClass,
+				columnNamesToCheckForChanges,
+				ignoreColumnNames);
+
+		this.methodTimingParameterType = extractMethodTimingParameterType(method);
+	}
+
+	private static Class<?> extractModelClass(final Method method, final Class<?> providedModelClass)
+	{
+		final Class<?>[] parameterTypes = method.getParameterTypes();
+		if (parameterTypes == null || parameterTypes.length == 0)
+		{
+			throw new AdempiereException("Invalid method " + method + ": It has no arguments");
+		}
+
+		Class<?> modelClass = parameterTypes[0];
+
+		// Case: our parameter comes from Java generics
+		// e.g. method comes from an abstract class which have annotated methods with Java Generics parameters.
+		// In this case it's quite hard to get the actual type so we assume the modelClass.
+		if (Object.class.equals(modelClass))
+		{
+			if (providedModelClass == null)
 			{
-				try
+				throw new AdempiereException("Cannot extact the model class from " + method + ". The provided model class is null.");
+			}
+			modelClass = providedModelClass;
+		}
+
+		return modelClass;
+	}
+
+	private static String extractModelTableName(final Class<?> modelClass)
+	{
+		//
+		// Get table name
+		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
+		if (Check.isEmpty(tableName, true))
+		{
+			throw new AdempiereException("Cannot find tablename for " + modelClass);
+		}
+
+		return tableName;
+	}
+
+	private static void assertValidTimings(final PointcutType type, final int[] timings, final Method method)
+	{
+		for (final int timing : timings)
+		{
+			try
+			{
+				if (PointcutType.ModelChange == type)
 				{
-					if (PointcutType.ModelChange == type)
-					{
-						ModelChangeType.valueOf(timing); // shall throw exception if timing not found
-					}
-					else if (PointcutType.DocValidate == type)
-					{
-						DocTimingType.valueOf(timing); // shall throw exception if timing not found
-					}
-					else
-					{
-						throw new IllegalArgumentException("Unknown type: " + type); // shall not happen
-					}
+					ModelChangeType.valueOf(timing); // shall throw exception if timing not found
 				}
-				catch (Exception e)
+				else if (PointcutType.DocValidate == type)
 				{
-					throw new AdempiereException("Invalid timing parameter type " + timing + " for method " + getMethod(), e);
+					DocTimingType.valueOf(timing); // shall throw exception if timing not found
 				}
+				else
+				{
+					throw new IllegalArgumentException("Unknown type: " + type); // shall not happen
+				}
+			}
+			catch (final Exception e)
+			{
+				throw new AdempiereException("Invalid timing parameter type " + timing + " for method " + method, e);
 			}
 		}
 	}
 
-	@Override
-	public String toString()
+	private Class<?> extractMethodTimingParameterType(final Method method)
 	{
-		return "Pointcut [type=" + type
-				+ ", tableName=" + tableName
-				+ ", modelClass=" + modelClass
-				+ ", method=" + method
-				+ ", timings=" + timings
-				+ ", afterCommit=" + afterCommit
-				+ ", onColumnChanged=" + changedColumns
-				+ ", ignoredColumns=" + ignoredColumns
-				+ ", methodTimingParameterType=" + methodTimingParameterType
-				+ ", onlyIfUIAction=" + onlyIfUIAction
-				+ "]";
-	}
+		final Class<?> methodTimingParameterType;
+		final Class<?>[] parameterTypes = method.getParameterTypes();
+		if (parameterTypes.length == 1)
+		{
+			methodTimingParameterType = null; // no timing parameter required
+		}
+		else if (parameterTypes.length == 2)
+		{
+			methodTimingParameterType = parameterTypes[1];
+		}
+		else
+		{
+			throw new AdempiereException("Invalid method " + method + ": definition not supported");
+		}
 
-	@Override
-	public String getPointcutId()
-	{
-		return pointcutId;
-	}
-
-	@Override
-	public Method getMethod()
-	{
-		return method;
-	}
-
-	@Override
-	public String getTableName()
-	{
-		return tableName;
-	}
-
-	protected void setTableName(final String tableName)
-	{
-		this.tableName = tableName;
-	}
-
-	@Override
-	public Class<?> getModelClass()
-	{
-		return modelClass;
-	}
-
-	protected void setModelClass(final Class<?> modelClass)
-	{
-		this.modelClass = modelClass;
-		this.modelColumnNames = InterfaceWrapperHelper.getModelColumnNames(modelClass);
-		this.columnsToCheckForChanges = null;
-	}
-
-	@Override
-	public boolean isMethodRequiresTiming()
-	{
-		return methodTimingParameterType != null;
-	}
-
-	/**
-	 * Sets timing parameter type.
-	 *
-	 * @param methodTimingParameterType timing parameter type or <code>null</code> if no timing parameter is required.
-	 */
-	protected void setMethodTimingParameterType(final Class<?> methodTimingParameterType)
-	{
 		if (methodTimingParameterType == null)
 		{
-			this.methodTimingParameterType = null;
+			return null; // OK
 		}
 		// NOTE: by putting int.class into brackets i try to avoid
 		// Fail to execute PMD. Following file is ignored: D:\Jenkins\workspace\de.metas.adempiere.adempiere.base\base\src\org\adempiere\ad\modelvalidator\AnnotatedModelValidator.java
 		// net.sourceforge.pmd.ast.ParseException: Encountered " "." ". "" at line 273, column 60.
 		// Was expecting:
 		// ")" ...
-		else if ((int.class).isAssignableFrom(methodTimingParameterType))
+		else if (int.class.isAssignableFrom(methodTimingParameterType))
 		{
-			this.methodTimingParameterType = methodTimingParameterType;
+			return methodTimingParameterType; // OK
 		}
 		else if (type == PointcutType.ModelChange && ModelChangeType.class == methodTimingParameterType)
 		{
-			this.methodTimingParameterType = methodTimingParameterType;
+			return methodTimingParameterType; // OK
 		}
 		else if (type == PointcutType.DocValidate && DocTimingType.class == methodTimingParameterType)
 		{
-			this.methodTimingParameterType = methodTimingParameterType;
+			return methodTimingParameterType; // OK
 		}
 		else
 		{
-			throw new AdempiereException("Invalid timing parameter type " + methodTimingParameterType + " for method " + getMethod());
+			throw new AdempiereException("Invalid timing parameter type " + methodTimingParameterType + " for method " + method);
 		}
-	}
-
-	@Override
-	public Object convertToMethodTimingParameterType(final int timing)
-	{
-		if (methodTimingParameterType == null)
-		{
-			// shall not happen
-			throw new AdempiereException("Method does not required timing parameter: " + getMethod());
-		}
-		else if ((int.class).isAssignableFrom(methodTimingParameterType))
-		{
-			return timing;
-		}
-		else if (ModelChangeType.class.isAssignableFrom(methodTimingParameterType))
-		{
-			return ModelChangeType.valueOf(timing);
-		}
-		else if (DocTimingType.class.isAssignableFrom(methodTimingParameterType))
-		{
-			return DocTimingType.valueOf(timing);
-		}
-		else
-		{
-			// shall not happen because we already validated the parameter type when we set it
-			throw new AdempiereException("Not supported timing parameter type '" + methodTimingParameterType + "' for method " + getMethod());
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.adempiere.modelvalidator.IPointcut#getType()
-	 */
-	@Override
-	public PointcutType getType()
-	{
-		return type;
-	}
-
-	@Override
-	public Set<Integer> getTimings()
-	{
-		return timings;
-	}
-
-	@Override
-	public boolean isAfterCommit()
-	{
-		return afterCommit;
-	}
-
-	public void setChangedColumns(final String[] changedColumns)
-	{
-		if (changedColumns == null || changedColumns.length == 0)
-		{
-			this.changedColumns = ImmutableSet.of();
-		}
-		else
-		{
-			this.changedColumns = ImmutableSet.copyOf(changedColumns);
-		}
-		this.columnsToCheckForChanges = null;
-	}
-
-	public final void setIgnoredColumns(final String[] ignoredColumns)
-	{
-		if (ignoredColumns == null || ignoredColumns.length == 0)
-		{
-			this.ignoredColumns = ImmutableSet.of();
-		}
-		else
-		{
-			this.ignoredColumns = ImmutableSet.copyOf(ignoredColumns);
-		}
-		this.columnsToCheckForChanges = null;
-	}
-
-	@Override
-	public boolean isOnlyIfUIAction()
-	{
-		return onlyIfUIAction;
-	}
-
-	public void setOnlyIfUIAction(final boolean onlyIfUIAction)
-	{
-		this.onlyIfUIAction = onlyIfUIAction;
-	}
-
-	@Override
-	public Set<String> getColumnsToCheckForChanges()
-	{
-		if (columnsToCheckForChanges == null)
-		{
-			synchronized (this)
-			{
-				if (columnsToCheckForChanges == null)
-				{
-					columnsToCheckForChanges = buildColumnsToCheckForChanges();
-				}
-			}
-		}
-		return columnsToCheckForChanges;
 	}
 
 	/**
-	 * Build the list of columns that needs to be checked for changes.
-	 *
-	 * @return
+	 * @return a list of columns that needs to be checked for changes.
 	 */
-	private final Set<String> buildColumnsToCheckForChanges()
+	private static final ImmutableSet<String> extractColumnNamesToCheckForChanges(
+			final Class<?> modelClass,
+			final String[] changedColumnsArr,
+			final String[] ignoredColumnsArr)
 	{
+		final ImmutableSet<String> changedColumns = changedColumnsArr != null ? ImmutableSet.copyOf(changedColumnsArr) : ImmutableSet.of();
+		final ImmutableSet<String> ignoredColumns = ignoredColumnsArr != null ? ImmutableSet.copyOf(ignoredColumnsArr) : ImmutableSet.of();
+
 		//
 		// Case: specific columns to be checked for changes were specified
 		if (!changedColumns.isEmpty())
@@ -306,7 +230,7 @@ import lombok.Setter;
 			// Case: no columns to be ignored from the list of columns to be checked
 			if (ignoredColumns.isEmpty())
 			{
-				return changedColumns;
+				return ImmutableSet.copyOf(changedColumns);
 			}
 			// Case: columns to be excluded from the list of columns to be checked were set
 			// => return a copy of columns to be checked, but remove the columns to exclude from it
@@ -329,6 +253,8 @@ import lombok.Setter;
 		// => return a list of all columns of this model but without those that chall be ignored
 		else if (!ignoredColumns.isEmpty())
 		{
+			final ImmutableSet<String> modelColumnNames = ImmutableSet.copyOf(InterfaceWrapperHelper.getModelColumnNames(modelClass));
+
 			final ImmutableSet.Builder<String> columnsToCheckForChanges = ImmutableSet.builder();
 			for (final String columnName : modelColumnNames)
 			{
@@ -346,6 +272,52 @@ import lombok.Setter;
 		else
 		{
 			return ImmutableSet.of();
+		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return "Pointcut [type=" + type
+				+ ", tableName=" + tableName
+				+ ", modelClass=" + modelClass
+				+ ", method=" + method
+				+ ", timings=" + timings
+				+ ", afterCommit=" + afterCommit
+				+ ", columnNamesToCheckForChanges=" + columnNamesToCheckForChanges
+				+ ", methodTimingParameterType=" + methodTimingParameterType
+				+ ", onlyIfUIAction=" + onlyIfUIAction
+				+ "]";
+	}
+
+	public boolean isMethodRequiresTiming()
+	{
+		return methodTimingParameterType != null;
+	}
+
+	public Object convertToMethodTimingParameterType(final int timing)
+	{
+		if (methodTimingParameterType == null)
+		{
+			// shall not happen
+			throw new AdempiereException("Method does not required timing parameter: " + getMethod());
+		}
+		else if (int.class.isAssignableFrom(methodTimingParameterType))
+		{
+			return timing;
+		}
+		else if (ModelChangeType.class.isAssignableFrom(methodTimingParameterType))
+		{
+			return ModelChangeType.valueOf(timing);
+		}
+		else if (DocTimingType.class.isAssignableFrom(methodTimingParameterType))
+		{
+			return DocTimingType.valueOf(timing);
+		}
+		else
+		{
+			// shall not happen because we already validated the parameter type when we set it
+			throw new AdempiereException("Not supported timing parameter type '" + methodTimingParameterType + "' for method " + getMethod());
 		}
 	}
 
@@ -392,17 +364,17 @@ import lombok.Setter;
 	{
 		return ComparisonChain.start()
 
-		.compare(getTableName(), o.getTableName())
+				.compare(getTableName(), o.getTableName())
 
-		.compare(getMethod() == null ? null : getMethod().getDeclaringClass().getName(),
-				o.getMethod() == null ? null : o.getMethod().getDeclaringClass().getName())
+				.compare(getMethod() == null ? null : getMethod().getDeclaringClass().getName(),
+						o.getMethod() == null ? null : o.getMethod().getDeclaringClass().getName())
 
-		.compare(getMethod() == null ? null : getMethod().getName(),
-				o.getMethod() == null ? null : o.getMethod().getName())
+				.compare(getMethod() == null ? null : getMethod().getName(),
+						o.getMethod() == null ? null : o.getMethod().getName())
 
-		.compare(getMethod() == null ? null : getMethod().getName(),
-				o.getMethod() == null ? null : o.getMethod().getName())
+				.compare(getMethod() == null ? null : getMethod().getName(),
+						o.getMethod() == null ? null : o.getMethod().getName())
 
-		.result();
+				.result();
 	}
 }
