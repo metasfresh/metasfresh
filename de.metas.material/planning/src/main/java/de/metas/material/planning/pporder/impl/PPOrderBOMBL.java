@@ -666,28 +666,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		InterfaceWrapperHelper.setDynAttribute(orderBOMLine, DYNATTR_ForceQtyReservation, forceQtyReservation);
 	}
 
-	private boolean isQtyReservationEnabled(final I_PP_Order_BOMLine orderBOMLine)
-	{
-		if (orderBOMLine.isProcessed())
-		{
-			return true;
-		}
-
-		final Boolean forceQtyReservation = InterfaceWrapperHelper.getDynAttribute(orderBOMLine, DYNATTR_ForceQtyReservation);
-		if (forceQtyReservation != null && forceQtyReservation.booleanValue())
-		{
-			return true;
-		}
-
-		// If we already have reserved a quantity, continue doing reservations
-		if (orderBOMLine.getQtyReserved().signum() != 0)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
 	@Override
 	public void addQtyDelivered(final I_PP_Order_BOMLine ppOrderBOMLine,
 			final boolean isUsageVariance,
