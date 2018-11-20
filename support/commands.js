@@ -238,7 +238,23 @@ Cypress.Commands.add('selectTab', (tabName) => {
 
 Cypress.Commands.add('waitForHeader', (pageName) => {
   describe('Wait for page name visible in the header', function() {
-    cy.get('.header-item').should('contain', pageName);
+    if (pageName) {
+      cy.get('.header-breadcrumb')
+        .find('.header-item-container')
+        .should('not.have.length', 1)
+        .get('.header-item').should('contain', pageName);
+    } else {
+      cy.get('.header-breadcrumb')
+        .find('.header-item-container')
+        .should('not.have.length', 1)
+        .window().its('store').invoke('getState').its('menuHandler.breadcrumb')
+        .should('not.have.length', 0)
+        .window().its('store').invoke('getState')
+        .its('menuHandler.breadcrumb')
+        .then((breadcrumbs) => {
+          cy.get('.header-item').should('contain', breadcrumbs[0].caption);
+        });
+    }
   });
 });
 
