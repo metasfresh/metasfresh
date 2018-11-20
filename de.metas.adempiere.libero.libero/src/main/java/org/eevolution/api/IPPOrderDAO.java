@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 
@@ -62,14 +61,6 @@ public interface IPPOrderDAO extends ISingletonService
 	 * @return make to order MO or null
 	 */
 	I_PP_Order retrieveMakeToOrderForOrderLine(I_C_OrderLine line);
-
-	/**
-	 * Retrieve Make-to-Order generated manufacturing orders which are linked to inout's sales order line.
-	 * 
-	 * @param inout
-	 * @return
-	 */
-	List<I_PP_Order> retrieveMakeToOrderForInOut(I_M_InOut inout);
 
 	/**
 	 * Gets released manufacturing orders based on {@link I_M_Warehouse}s.

@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
  */
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -39,13 +38,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
-import org.eevolution.model.X_PP_Order_BOM;
 
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -92,30 +88,6 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, line.getM_Product_ID())
 				.create()
 				.list(I_PP_Order.class);
-	}
-
-	@Override
-	public List<I_PP_Order> retrieveMakeToOrderForInOut(final I_M_InOut inout)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inout);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inout);
-
-		final String whereClause = "C_OrderLine_ID IS NOT NULL"
-				+ " AND EXISTS (SELECT 1 FROM M_InOutLine iol"
-				+ " WHERE iol.M_InOut_ID=? AND PP_Order.C_OrderLine_MTO_ID = iol.C_OrderLine_ID) AND "
-				+ I_PP_Order.COLUMNNAME_DocStatus + " =? "
-				+ " AND EXISTS (SELECT 1 FROM PP_Order_BOM "
-				+ " WHERE PP_Order_BOM.PP_Order_ID=PP_Order.PP_Order_ID AND PP_Order_BOM.BOMType IN (?, ?))";
-
-		final List<I_PP_Order> orders = new Query(ctx, I_PP_Order.Table_Name, whereClause, trxName)
-				.setParameters(new Object[] { inout.getM_InOut_ID(),
-						X_PP_Order.DOCSTATUS_InProgress,
-						X_PP_Order_BOM.BOMTYPE_Make_To_Kit,
-						X_PP_Order_BOM.BOMTYPE_Make_To_Order
-				})
-				.list(I_PP_Order.class);
-
-		return orders;
 	}
 
 	@Override
