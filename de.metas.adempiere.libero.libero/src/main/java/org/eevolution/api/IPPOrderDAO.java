@@ -71,4 +71,6 @@ public interface IPPOrderDAO extends ISingletonService
 	void changeOrderScheduling(PPOrderId orderId, LocalDateTime scheduledStartDate, LocalDateTime scheduledFinishDate);
 
 	Stream<I_PP_Order> streamOpenPPOrderIdsOrderedByDatePromised(ResourceId plantId);
+
+	void save(I_PP_Order order);
 }

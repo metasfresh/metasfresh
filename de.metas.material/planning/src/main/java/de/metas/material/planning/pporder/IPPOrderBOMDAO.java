@@ -61,4 +61,9 @@ public interface IPPOrderBOMDAO extends ISingletonService
 	int retrieveNextLineNo(I_PP_Order order);
 
 	I_PP_Order_BOMLine retrieveOrderBOMLine(I_PP_Order ppOrder, I_M_Product product);
+
+	void save(I_PP_Order_BOM orderBOM);
+
+	void save(I_PP_Order_BOMLine orderBOMLine);
+
 }

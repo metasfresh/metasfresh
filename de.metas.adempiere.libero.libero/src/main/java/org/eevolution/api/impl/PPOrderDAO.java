@@ -138,6 +138,12 @@ public class PPOrderDAO implements IPPOrderDAO
 		final I_PP_Order order = getById(orderId);
 		order.setDateStartSchedule(TimeUtil.asTimestamp(scheduledStartDate));
 		order.setDateFinishSchedule(TimeUtil.asTimestamp(scheduledFinishDate));
+		save(order);
+	}
+
+	@Override
+	public void save(final I_PP_Order order)
+	{
 		saveRecord(order);
 	}
 }

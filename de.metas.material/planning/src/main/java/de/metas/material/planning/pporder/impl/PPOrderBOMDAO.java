@@ -1,5 +1,7 @@
 package de.metas.material.planning.pporder.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -203,5 +205,17 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 
 		final int nextLine = maxLine + 10;
 		return nextLine;
+	}
+
+	@Override
+	public void save(@NonNull final I_PP_Order_BOM orderBOM)
+	{
+		saveRecord(orderBOM);
+	}
+
+	@Override
+	public void save(@NonNull final I_PP_Order_BOMLine orderBOMLine)
+	{
+		saveRecord(orderBOMLine);
 	}
 }

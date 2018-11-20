@@ -55,6 +55,7 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -91,7 +92,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		orderBOM.setDocumentNo(bom.getDocumentNo());
 		orderBOM.setC_UOM_ID(bom.getC_UOM_ID()); // the bom's C_UOM_ID
 
-		InterfaceWrapperHelper.save(orderBOM);
+		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+		orderBOMsRepo.save(orderBOM);
 		return orderBOM;
 	}
 
@@ -132,7 +134,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		//
 		// Save & return
-		InterfaceWrapperHelper.save(orderBOMLine);
+		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+		ppOrderBOMsRepo.save(orderBOMLine);
 		return orderBOMLine;
 	}
 
@@ -574,7 +577,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		//
 		// Save and return
-		InterfaceWrapperHelper.save(orderBOMLine);
+		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+		ppOrderBOMsRepo.save(orderBOMLine);
 		return orderBOMLine;
 	}
 
@@ -730,7 +734,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		line.setProcessed(true); // just to make sure (but it should be already set when the PP_Order was completed)
 
-		InterfaceWrapperHelper.save(line);
+		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+		ppOrderBOMsRepo.save(line);
 	}
 
 	@Override
@@ -741,6 +746,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		line.setQtyRequiered(qtyRequiredBeforeClose);
 		line.setQtyBeforeClose(BigDecimal.ZERO);
 
-		InterfaceWrapperHelper.save(line);
+		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+		ppOrderBOMsRepo.save(line);
 	}
 }

@@ -27,7 +27,6 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
@@ -267,14 +266,14 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void updateBOMOrderLinesWarehouseAndLocator(final I_PP_Order ppOrder)
 	{
-		final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
-		for (final I_PP_Order_BOMLine orderBOMLine : ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder))
+		for (final I_PP_Order_BOMLine orderBOMLine : ppOrderBOMsRepo.retrieveOrderBOMLines(ppOrder))
 		{
 			orderBOMLine.setPP_Order(ppOrder); // for caching (to not load the PP_Order again)
 			ppOrderBOMBL.updateWarehouseAndLocator(orderBOMLine);
-			InterfaceWrapperHelper.save(orderBOMLine);
+			ppOrderBOMsRepo.save(orderBOMLine);
 		}
 	}
 
@@ -302,7 +301,9 @@ public class PPOrderBL implements IPPOrderBL
 
 		ppOrder.setQtyBeforeClose(qtyOrderedOld);
 		setQtyOrdered(ppOrder, qtyDelivered);
-		InterfaceWrapperHelper.save(ppOrder);
+		
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		ppOrdersRepo.save(ppOrder);
 	}
 
 	@Override
@@ -312,7 +313,9 @@ public class PPOrderBL implements IPPOrderBL
 
 		ppOrder.setQtyOrdered(qtyOrderedBeforeClose);
 		ppOrder.setQtyBeforeClose(BigDecimal.ZERO);
-		InterfaceWrapperHelper.save(ppOrder);
+		
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		ppOrdersRepo.save(ppOrder);
 	}
 
 	@Override
