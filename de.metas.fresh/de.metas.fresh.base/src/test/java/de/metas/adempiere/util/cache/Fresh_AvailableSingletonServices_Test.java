@@ -44,6 +44,7 @@ public class Fresh_AvailableSingletonServices_Test
 				.skipServiceInterface(org.adempiere.inout.replenish.service.IReplenishForFutureQty.class) // is registered programmatically
 				.skipServiceInterface(de.metas.adempiere.service.IAppDictionaryBL.class) // is registered programmatically
 				.skipServiceInterface(de.metas.letters.api.ITextTemplateBL.class) // is registered programmatically
+				.skipServiceInterface(de.metas.product.IProductActivityProvider.class) // is registered programatically
 				.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class) // JAX-RS
 				.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class) // skip for now because the impl it's coming from spring context
 				.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class) // skip for now because the impl it's coming from spring context
