@@ -236,7 +236,7 @@ Cypress.Commands.add('selectTab', (tabName) => {
   });
 });
 
-Cypress.Commands.add('waitForHeader', (pageName) => {
+Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
   describe('Wait for page name visible in the header', function() {
     if (pageName) {
       cy.get('.header-breadcrumb')
@@ -244,6 +244,8 @@ Cypress.Commands.add('waitForHeader', (pageName) => {
         .should('not.have.length', 1)
         .get('.header-item').should('contain', pageName);
     } else {
+      const breadcrumbNumber = breadcrumbNr || 0;
+
       cy.get('.header-breadcrumb')
         .find('.header-item-container')
         .should('not.have.length', 1)
@@ -252,7 +254,7 @@ Cypress.Commands.add('waitForHeader', (pageName) => {
         .window().its('store').invoke('getState')
         .its('menuHandler.breadcrumb')
         .then((breadcrumbs) => {
-          cy.get('.header-item').should('contain', breadcrumbs[0].caption);
+          cy.get('.header-item').should('contain', breadcrumbs[breadcrumbNumber].caption);
         });
     }
   });
