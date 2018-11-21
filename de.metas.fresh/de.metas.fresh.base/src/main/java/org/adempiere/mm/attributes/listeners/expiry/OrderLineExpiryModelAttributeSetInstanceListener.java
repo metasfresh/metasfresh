@@ -31,6 +31,14 @@ import de.metas.order.grossprofit.model.I_C_OrderLine;
  * #L%
  */
 
+/**
+ * Introduced with https://github.com/metasfresh/metasfresh/issues/4768
+ * See documentation of the problem in https://github.com/metasfresh/metasfresh/issues/4012
+ * TODO: Solve this problem from the root and get rid of these particular listeners
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class OrderLineExpiryModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	private static final ImmutableList<String> SOURCE_COLUMN_NAMES = ImmutableList.of(I_C_OrderLine.COLUMNNAME_M_Product_ID);
