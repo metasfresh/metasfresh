@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import queue from 'queue';
 import * as _ from 'lodash';
 
 import { getItemsByProperty } from '../../../utils';
@@ -13,6 +14,7 @@ import WidgetTooltip from '../WidgetTooltip';
 
 class Lookup extends Component {
   rawLookupsState = {};
+  q = queue({ autostart: true });
 
   constructor(props) {
     super(props);
@@ -32,6 +34,8 @@ class Lookup extends Component {
 
       this.rawLookupsState = { ...lookupWidgets };
     }
+
+    // console.log('CONSTRUCTOR ?')
 
     this.state = {
       isInputEmpty: true,
@@ -70,23 +74,39 @@ class Lookup extends Component {
     }
   }
 
-  getLookupWidget = name => this.state.lookupWidgets[`${name}`];
+  getLookupWidget = name => {
+    return { ...this.state.lookupWidgets[`${name}`] };
+  };
 
   getFocused = fieldName => this.getLookupWidget(fieldName).isFocused;
 
   _changeWidgetProperty = (field, property, value, callback) => {
-    this.setState(
-      {
-        lookupWidgets: {
-          ...this.state.lookupWidgets,
-          [`${field}`]: {
-            ...this.state.lookupWidgets[`${field}`],
-            [`${property}`]: value,
-          },
+    const { lookupWidgets } = this.state;
+
+    if (lookupWidgets[`${field}`][`${property}`] !== property) {
+      const newLookupWidgets = {
+        ...lookupWidgets,
+        [`${field}`]: {
+          ...lookupWidgets[`${field}`],
+          [`${property}`]: value,
+          dupa: field,
         },
-      },
-      callback
-    );
+      };
+
+      // console.log('_changeWidgetProperty: ', field, property, value,', current C_BPartner_ID: ', {...this.state.lookupWidgets['C_BPartner_ID']}, ', state: ', {...this.state.lookupWidgets }, ', newState: ', lookupWidgets);
+
+      // this.q.push(cb => {
+        this.setState(
+          {
+            lookupWidgets: newLookupWidgets,
+          },
+          // () => {
+          //   console.log('callback: ', field, property)
+            callback()
+          // }
+        );
+      // });
+    }
   };
 
   checkIfDefaultValue = () => {
@@ -182,7 +202,10 @@ class Lookup extends Component {
   dropdownListToggle = (value, field, mouse) => {
     const { onFocus, onBlur } = this.props;
 
+    // console.log('dropdownListToggle: ', value, field, mouse)
+
     this._changeWidgetProperty(field, 'dropdownOpen', value, () => {
+      console.log('toggle callback)');
       this.setState({
         isDropdownListOpen: value,
       });
@@ -201,6 +224,8 @@ class Lookup extends Component {
     const curVal = this.getLookupWidget(field).tooltipOpen;
     const newVal = value != null ? value : !curVal;
 
+    console.log('toogle: ', field, value)
+
     this._changeWidgetProperty(field, 'tooltipOpen', newVal);
   };
 
@@ -214,6 +239,8 @@ class Lookup extends Component {
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
     const { isDropdownListOpen, isFocused } = this.state;
+
+    // console.log('handleclickoutside')
 
     if (isDropdownListOpen || isFocused) {
       this.setState(
@@ -268,7 +295,9 @@ class Lookup extends Component {
   };
 
   handleListFocus = field => {
+    console.log('focus')
     this._changeWidgetProperty(field, 'isFocused', true, () => {
+      console.log('focus callback')
       this.setState({
         isFocused: true,
       });
@@ -470,8 +499,8 @@ class Lookup extends Component {
                   fireDropdownList={fireDropdownList}
                   handleInputEmptyStatus={this.handleInputEmptyStatus}
                   enableAutofocus={this.enableAutofocus}
-                  onBlur={() => this.handleListBlur(item.field)}
-                  onFocus={() => this.handleListFocus(item.field)}
+                  onBlur={() => /*this.handleListBlur(item.field)*/ true}
+                  onFocus={() => /*this.handleListFocus(item.field)*/ true}
                   isOpen={lookupWidget.dropdownOpen}
                   onDropdownListToggle={(val, mouse) => {
                     this.dropdownListToggle(val, item.field, mouse);

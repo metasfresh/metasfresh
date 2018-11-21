@@ -146,13 +146,15 @@ class RawLookup extends Component {
       subentity,
     } = this.props;
 
+    console.log('SELECT: ', select);
+
     let mainProp = mainProperty[0];
 
     this.setState({
       selected: null,
     });
 
-    if (select.key === 'NEW') {
+    if (select && select.key === 'NEW') {
       this.handleAddNew();
 
       return;
@@ -499,6 +501,7 @@ const mapStateToProps = state => ({
 });
 
 RawLookup.propTypes = {
+  isOpen: PropTypes.bool,
   selected: PropTypes.object,
   forcedWidth: PropTypes.number,
   forceHeight: PropTypes.number,
