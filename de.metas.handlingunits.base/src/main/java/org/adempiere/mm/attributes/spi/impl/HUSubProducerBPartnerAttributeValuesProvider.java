@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -77,9 +76,6 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 			.additionalTableNameToResetFor(I_C_BP_Relation.Table_Name)
 			.build();
 
-	private static final ITranslatableString DISPLAYNAME_None = Services.get(IMsgBL.class).translatable("NoneOrEmpty");
-	private static final ConcurrentHashMap<String, KeyNamePair> adLanguage2keyNamePairNone = new ConcurrentHashMap<>();
-
 	private static final CtxName CTXNAME_M_HU_ID = CtxNames.parse("M_HU_ID/-1");
 	private static final CtxName CTXNAME_C_BPartner_ID = CtxNames.parse("C_BPartner_ID/-1");
 	private static final CtxName CTXNAME_CurrentSubProducer_BPartner_ID = CtxNames.parse("CurrentSubProducer_BPartner_ID/-1");
@@ -134,16 +130,15 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 	static final KeyNamePair staticNullValue()
 	{
-		final String adLanguage = Env.getAD_Language(Env.getCtx());
+		final ITranslatableString displayNameTrl = Services.get(IMsgBL.class).translatable("NoneOrEmpty");
 
-		final KeyNamePair nullValue = KeyNamePair.of(0, DISPLAYNAME_None.translate(adLanguage));
-		if (adLanguage == null)
-		{
-			return nullValue; // guard against NPE, which happened when running this code via async-processor on an "embedded server"
-		}
+		final String adLanguage = Env.getAD_Language(Env.getCtx());
+		final String displayName = adLanguage != null ? displayNameTrl.translate(adLanguage) : displayNameTrl.getDefaultValue();
+
 		// NOTE: we use KeyNamePair's Key=0 because "-1" is specially handled by KeyNamePair (see KeyNamePair.getID() which returns null)
 		// and we run in some weird problems
-		return adLanguage2keyNamePairNone.computeIfAbsent(adLanguage, key -> nullValue);
+		return KeyNamePair.of(0, displayName);
+
 	}
 
 	@Override
