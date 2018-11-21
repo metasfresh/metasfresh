@@ -672,8 +672,8 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
 
 	/**
-	 * Set Anrede.
-	 * Greeting to print on correspondence
+	 * Set Anrede (ID).
+	 * Anrede zum Druck auf Korrespondenz
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -682,8 +682,8 @@ public interface I_I_BPartner
 	public void setC_Greeting_ID (int C_Greeting_ID);
 
 	/**
-	 * Get Anrede.
-	 * Greeting to print on correspondence
+	 * Get Anrede (ID).
+	 * Anrede zum Druck auf Korrespondenz
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1256,6 +1256,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_FirstSale = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "FirstSale", null);
     /** Column name FirstSale */
     public static final String COLUMNNAME_FirstSale = "FirstSale";
+
+	/**
+	 * Set GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGLN (java.lang.String GLN);
+
+	/**
+	 * Get GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGLN();
+
+    /** Column definition for GLN */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_GLN = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "GLN", null);
+    /** Column name GLN */
+    public static final String COLUMNNAME_GLN = "GLN";
 
 	/**
 	 * Set Gruppen-Schlüssel.

@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 832653805L;
+	private static final long serialVersionUID = -1223369029L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -657,9 +657,9 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
 	}
 
-	/** Set Anrede.
+	/** Set Anrede (ID).
 		@param C_Greeting_ID 
-		Greeting to print on correspondence
+		Anrede zum Druck auf Korrespondenz
 	  */
 	@Override
 	public void setC_Greeting_ID (int C_Greeting_ID)
@@ -670,8 +670,8 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 			set_Value (COLUMNNAME_C_Greeting_ID, Integer.valueOf(C_Greeting_ID));
 	}
 
-	/** Get Anrede.
-		@return Greeting to print on correspondence
+	/** Get Anrede (ID).
+		@return Anrede zum Druck auf Korrespondenz
 	  */
 	@Override
 	public int getC_Greeting_ID () 
@@ -1142,6 +1142,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.sql.Timestamp getFirstSale () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_FirstSale);
+	}
+
+	/** Set GLN.
+		@param GLN GLN	  */
+	@Override
+	public void setGLN (java.lang.String GLN)
+	{
+		set_Value (COLUMNNAME_GLN, GLN);
+	}
+
+	/** Get GLN.
+		@return GLN	  */
+	@Override
+	public java.lang.String getGLN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GLN);
 	}
 
 	/** Set Gruppen-Schlüssel.
