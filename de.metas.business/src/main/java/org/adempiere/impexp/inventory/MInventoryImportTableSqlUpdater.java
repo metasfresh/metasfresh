@@ -68,7 +68,7 @@ public class MInventoryImportTableSqlUpdater
 		// Set M_Warehouse_ID
 		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET warehouseValue = dimensions.warehouseValue, X = dimensions.locatorX , Y = dimensions.locatorY, Z = dimensions.locatorZ, X1 = dimensions.locatorX1 ")
-				.append("FROM (SELECT I_Inventory_ID, d.warehouseValue, d.locatorValue, d.locatorX, d.locatorY, d.locatorZ, d.locatorX1 ")
+				.append("FROM (SELECT d.warehouseValue, d.locatorValue, d.locatorX, d.locatorY, d.locatorZ, d.locatorX1 ")
 				.append("	FROM I_Inventory as inv")
 				.append("	JOIN extractLocatorDimensions(inv.locatorvalue) as d on d.locatorvalue=inv.locatorvalue")
 				.append(") AS dimensions ")
@@ -108,9 +108,9 @@ public class MInventoryImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE M_Locator l ")
 				.append("SET DateLastInventory=(SELECT DateLastInventory FROM I_Inventory i ")
 				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID ")
-				.append("AND I_IsImported<>'Y') ")
-				.append(" WHERE 1=1  ")
-				.append(whereClause);
+				.append("AND I_IsImported<>'Y' ")
+				.append("ORDER BY i.DateLastInventory DESC LIMIT 1 ) ") 
+				.append("WHERE 1=1  ");
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
