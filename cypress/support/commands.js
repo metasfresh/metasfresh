@@ -236,6 +236,19 @@ Cypress.Commands.add('selectTab', (tabName) => {
   });
 });
 
+/*
+ * This command allows waiting for the breadcrumb in the header to be visible, which
+ * helps make the tests less flaky as even though the page fires load event, some
+ * requests may still be pending/running.
+ *
+ * Command accepts two params:
+ * - pageName : if we explicitly want to define what to wait for
+ * - breadcrumbNr : if we want to select breadcrumb value from the redux store at
+ *                  the given index
+ * In case pageName is not defined, command will fall back to broadcrembNr and either
+ * use the provided value or the value at index 0.
+ *
+ */
 Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
   describe('Wait for page name visible in the header', function() {
     if (pageName) {
