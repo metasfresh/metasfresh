@@ -1,5 +1,7 @@
 package de.metas.handlingunits.inout.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -55,7 +57,6 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 {
@@ -76,15 +77,15 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		final I_M_HU luHU = huToAssign.getM_LU_HU();
 		final I_M_HU tuHU = huToAssign.getM_TU_HU();
 		final I_M_HU vhu = huToAssign.getVHU();
+
 		huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(ctx, shipmentLine, topLevelHU, luHU, tuHU, trxName)
 				.setVHU(vhu)
 				.setIsTransferPackingMaterials(isTransferPackingMaterials)
 				.build();
 	}
 
-	private final void assertShipment(final I_M_InOut inout)
+	private final void assertShipment(@NonNull final I_M_InOut inout)
 	{
-		Check.assumeNotNull(inout, "shipment not null");
 		Check.assume(inout.isSOTrx(), "inout shall be a shipment: {}", inout);
 	}
 

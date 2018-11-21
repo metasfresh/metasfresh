@@ -163,7 +163,7 @@ public class TransactionCreatedHandlerTests
 						.quantity(ONE)
 						.date(SystemTime.asTimestamp())
 						.build())
-				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(TRANSACTION_ID + 1).build())
+				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(TRANSACTION_ID + 1).complete(true).build())
 				.build();
 
 		// @formatter:off

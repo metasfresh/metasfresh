@@ -460,10 +460,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	private TransactionDetail createTransactionDetail(@NonNull final AbstractTransactionEvent event)
 	{
 		final TransactionDetail transactionDetailOfEvent = TransactionDetail.builder()
+				.complete(true)
 				.quantity(event.getQuantityDelta()) // quantity and storageAttributesKey won't be used in the query, but in the following insert or update
 				.storageAttributesKey(event.getMaterialDescriptor().getStorageAttributesKey())
 				.attributeSetInstanceId(event.getMaterialDescriptor().getAttributeSetInstanceId())
 				.transactionId(event.getTransactionId())
+				.complete(true)
 				.build();
 		return transactionDetailOfEvent;
 	}

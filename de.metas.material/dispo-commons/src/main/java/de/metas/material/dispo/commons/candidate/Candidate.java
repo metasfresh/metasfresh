@@ -223,8 +223,6 @@ public class Candidate
 			case DEMAND:
 			case STOCK_UP:
 			case SUPPLY:
-			case INVENTORY_UP:
-			case INVENTORY_DOWN:
 				Check.errorIf(
 						businessCaseDetail == null,
 						"If type={}, then the given businessCaseDetail may not be null; this={}",
@@ -232,6 +230,8 @@ public class Candidate
 				break;
 			case UNRELATED_INCREASE:
 			case UNRELATED_DECREASE:
+			case INVENTORY_UP:
+			case INVENTORY_DOWN:
 				Check.errorIf(
 						transactionDetails == null || transactionDetails.isEmpty(),
 						"If type={}, then the given transactionDetails may not be null or empty; this={}",

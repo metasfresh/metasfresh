@@ -47,6 +47,7 @@ public class TransactionDetail
 				false /*complete*/);
 	}
 
+	/** true means that this detail can be persisted; false means that id can still be part of a query. */
 	boolean complete;
 
 	BigDecimal quantity;

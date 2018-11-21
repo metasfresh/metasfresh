@@ -255,6 +255,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.stockId(stockChangeDetails.getStockId())
 				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
 				.transactionId(stockChangeDetails.getTransactionId())
+				.complete(true)
 				.build();
 	}
 }
