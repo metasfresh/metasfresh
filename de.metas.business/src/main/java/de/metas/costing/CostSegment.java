@@ -39,7 +39,7 @@ import lombok.Value;
 public class CostSegment
 {
 	@Getter(AccessLevel.NONE)
-	CostingLevel costingLevel;
+	CostingLevel costingLevel; // we have it here only for toString()
 
 	AcctSchemaId acctSchemaId;
 	CostTypeId costTypeId;
@@ -72,11 +72,19 @@ public class CostSegment
 		}
 		else if (costingLevel == CostingLevel.Organization)
 		{
+			if (orgId.isAny())
+			{
+				throw new AdempiereException("Cost Segment shall have a regular organization when costing level is Organization");
+			}
 			this.orgId = orgId;
 			this.attributeSetInstanceId = AttributeSetInstanceId.NONE;
 		}
 		else if (costingLevel == CostingLevel.BatchLot)
 		{
+			if (attributeSetInstanceId.isNone())
+			{
+				throw new AdempiereException("Cost Segment shall have a regular ASI when costing level is Batch/Lot");
+			}
 			this.orgId = OrgId.ANY;
 			this.attributeSetInstanceId = attributeSetInstanceId;
 		}
