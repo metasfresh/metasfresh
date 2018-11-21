@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.Assert;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -58,6 +59,12 @@ public class ClasspathAnnotatedModelInterceptorTester
 				.addAll(classes_withInterceptor)
 				.build();
 		System.out.println("=> " + classes.size() + " classes to test");
+		
+		if(classes.isEmpty())
+		{
+			throw new AdempiereException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
+					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+		}
 
 		for (final Class<?> clazz : classes)
 		{
