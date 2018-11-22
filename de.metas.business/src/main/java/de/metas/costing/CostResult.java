@@ -43,10 +43,13 @@ import lombok.Value;
 @Value
 public final class CostResult
 {
-	CostSegment costSegment;
-	CostAmount totalAmount;
 	@Getter(AccessLevel.NONE)
-	ImmutableMap<CostElement, CostAmount> amounts;
+	CostSegment costSegment;
+
+	CostAmount totalAmount;
+
+	@Getter(AccessLevel.NONE)
+	ImmutableMap<CostElement, CostAmount> amountsPerElement;
 
 	@Builder
 	private CostResult(
@@ -56,7 +59,7 @@ public final class CostResult
 		Check.assumeNotEmpty(amounts, "amounts is not empty");
 
 		this.costSegment = costSegment;
-		this.amounts = ImmutableMap.copyOf(amounts);
+		this.amountsPerElement = ImmutableMap.copyOf(amounts);
 		totalAmount = amounts.values()
 				.stream()
 				.reduce(CostAmount::add)
@@ -65,12 +68,12 @@ public final class CostResult
 
 	public Set<CostElement> getCostElements()
 	{
-		return amounts.keySet();
+		return amountsPerElement.keySet();
 	}
 
 	public CostAmount getCostAmountForCostElement(final CostElement costElement)
 	{
-		final CostAmount amt = amounts.get(costElement);
+		final CostAmount amt = amountsPerElement.get(costElement);
 		if (amt == null)
 		{
 			throw new AdempiereException("No cost amount for " + costElement + " in " + this);
@@ -87,8 +90,8 @@ public final class CostResult
 
 		// merge amounts maps; will fail in case of duplicate cost elements
 		final ImmutableMap<CostElement, CostAmount> amountsNew = ImmutableMap.<CostElement, CostAmount> builder()
-				.putAll(amounts)
-				.putAll(other.amounts)
+				.putAll(amountsPerElement)
+				.putAll(other.amountsPerElement)
 				.build();
 
 		return new CostResult(costSegment, amountsNew);
@@ -101,8 +104,8 @@ public final class CostResult
 			throw new AdempiereException("Cannot add cost results when the cost segment is not matching: " + this + ", " + other);
 		}
 
-		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amounts);
-		other.amounts.forEach((costElement, amtToAdd) -> {
+		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amountsPerElement);
+		other.amountsPerElement.forEach((costElement, amtToAdd) -> {
 			amountsNew.compute(costElement, (ce, amtOld) -> amtOld != null ? amtOld.add(amtToAdd) : amtToAdd);
 		});
 
@@ -118,8 +121,8 @@ public final class CostResult
 			return this;
 		}
 
-		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amounts.size());
-		amounts.forEach((costElement, amt) -> amountsNew.put(costElement, amt.divide(divisor, precision, roundingMode)));
+		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amountsPerElement.size());
+		amountsPerElement.forEach((costElement, amt) -> amountsNew.put(costElement, amt.divide(divisor, precision, roundingMode)));
 
 		return new CostResult(costSegment, amountsNew);
 	}
