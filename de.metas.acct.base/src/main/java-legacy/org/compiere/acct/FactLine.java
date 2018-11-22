@@ -23,8 +23,10 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Properties;
 
+import org.adempiere.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
+import org.adempiere.user.UserId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_Fact_Acct;
@@ -45,6 +47,7 @@ import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
@@ -503,7 +506,7 @@ final class FactLine extends X_Fact_Acct
 		}
 		if (getM_Product_ID() == 0)
 		{
-			setM_Product_ID(m_doc.getM_Product_ID());
+			setM_Product_ID(m_doc.getProductId());
 		}
 
 		// UOM
@@ -522,33 +525,33 @@ final class FactLine extends X_Fact_Acct
 		}
 
 		// Loc From (maybe set earlier)
-		if (getC_LocFrom_ID() == 0 && m_docLine != null)
+		if (getC_LocFrom_ID() <= 0 && m_docLine != null)
 		{
-			setC_LocFrom_ID(m_docLine.getC_LocFrom_ID());
+			setC_LocFrom_ID(m_docLine.getLocationFromId());
 		}
-		if (getC_LocFrom_ID() == 0)
+		if (getC_LocFrom_ID() <= 0)
 		{
-			setC_LocFrom_ID(m_doc.getC_LocFrom_ID());
+			setC_LocFrom_ID(m_doc.getLocationFromId());
 		}
 
 		// Loc To (maybe set earlier)
-		if (getC_LocTo_ID() == 0 && m_docLine != null)
+		if (getC_LocTo_ID() <= 0 && m_docLine != null)
 		{
-			setC_LocTo_ID(m_docLine.getC_LocTo_ID());
+			setC_LocTo_ID(m_docLine.getLocationToId());
 		}
-		if (getC_LocTo_ID() == 0)
+		if (getC_LocTo_ID() <= 0)
 		{
-			setC_LocTo_ID(m_doc.getC_LocTo_ID());
+			setC_LocTo_ID(m_doc.getLocationToId());
 		}
 
 		// BPartner
 		if (m_docLine != null)
 		{
-			setC_BPartner_ID(m_docLine.getC_BPartner_ID());
+			setC_BPartner_ID(m_docLine.getBPartnerId());
 		}
 		if (getC_BPartner_ID() <= 0)
 		{
-			setC_BPartner_ID(m_doc.getC_BPartner_ID());
+			setC_BPartner_ID(m_doc.getBPartnerId());
 		}
 
 		// Sales Region from BPLocation/Sales Rep
@@ -591,7 +594,7 @@ final class FactLine extends X_Fact_Acct
 		}
 		if (getC_Activity_ID() <= 0)
 		{
-			setC_Activity_ID(m_doc.getC_Activity_ID());
+			setC_Activity_ID(m_doc.getActivityId());
 		}
 
 		// User List 1
@@ -615,6 +618,16 @@ final class FactLine extends X_Fact_Acct
 			// References in setAccount
 		}
 	}   // setDocumentInfo
+
+	private void setC_LocTo_ID(final LocationId locationToId)
+	{
+		setC_LocTo_ID(LocationId.toRepoId(locationToId));
+	}
+
+	private void setC_LocFrom_ID(final LocationId locationFromId)
+	{
+		super.setC_LocFrom_ID(LocationId.toRepoId(locationFromId));
+	}
 
 	private void setDateTrx(final LocalDate dateTrx)
 	{
@@ -1215,8 +1228,7 @@ final class FactLine extends X_Fact_Acct
 			// && m_acctSchema.isAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_SalesRegion))
 			{
 				String sql = "SELECT COALESCE(C_SalesRegion_ID,0) FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
-				setC_SalesRegion_ID(DB.getSQLValue(null,
-						sql, m_doc.getC_BPartner_Location_ID()));
+				setC_SalesRegion_ID(DB.getSQLValue(null, sql, m_doc.getC_BPartner_Location_ID()));
 				if (super.getC_SalesRegion_ID() != 0)		// save in VO
 				{
 					m_doc.setBP_C_SalesRegion_ID(super.getC_SalesRegion_ID());
@@ -1225,9 +1237,13 @@ final class FactLine extends X_Fact_Acct
 				else
 				// From Sales Rep of Document -> Sales Region
 				{
-					sql = "SELECT COALESCE(MAX(C_SalesRegion_ID),0) FROM C_SalesRegion WHERE SalesRep_ID=?";
-					setC_SalesRegion_ID(DB.getSQLValue(null,
-							sql, m_doc.getSalesRep_ID()));
+					final UserId salesRepId = m_doc.getSalesRepId();
+					if(salesRepId != null)
+					{
+						sql = "SELECT COALESCE(MAX(C_SalesRegion_ID),0) FROM C_SalesRegion WHERE SalesRep_ID=?";
+						setC_SalesRegion_ID(DB.getSQLValue(null, sql, salesRepId));
+					}
+					
 					if (super.getC_SalesRegion_ID() != 0)		// save in VO
 					{
 						m_doc.setBP_C_SalesRegion_ID(super.getC_SalesRegion_ID());
@@ -1632,6 +1648,11 @@ final class FactLine extends X_Fact_Acct
 	public CurrencyId getCurrencyId()
 	{
 		return CurrencyId.ofRepoId(getC_Currency_ID());
+	}
+
+	public void setC_BPartner_ID(final BPartnerId bpartnerId)
+	{
+		super.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 	}
 
 }	// FactLine

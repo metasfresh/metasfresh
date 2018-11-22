@@ -30,6 +30,7 @@ import org.compiere.util.DB;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -591,7 +592,7 @@ public class ImportAccount extends JavaProcess
 				{
 					if (m_createNewCombination)
 					{
-						MAccount acct = MAccount.get(getCtx(), C_ValidCombination_ID);
+						MAccount acct = Services.get(IAccountDAO.class).getById(C_ValidCombination_ID);
 						acct.set_TrxName(get_TrxName());
 						acct.setAccount_ID(C_ElementValue_ID);
 						if (acct.save())

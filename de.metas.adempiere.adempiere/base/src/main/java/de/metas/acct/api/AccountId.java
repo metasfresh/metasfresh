@@ -33,6 +33,7 @@ import lombok.Value;
  * #L%
  */
 
+/* C_ValidCombination_ID */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class AccountId implements RepoIdAware

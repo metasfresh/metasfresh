@@ -22,6 +22,7 @@ import org.compiere.util.Env;
 import org.eevolution.model.MHRConcept;
 import org.eevolution.model.MHRMovement;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.product.acct.api.ActivityId;
 
 /**
@@ -46,7 +47,7 @@ public class DocLine_Payroll extends DocLine<Doc_HRProcess>
 		//
 		m_HR_Concept_ID    = concept.getHR_Concept_ID();
 		m_HR_Process_ID    = line.getHR_Process_ID();
-		m_C_BPartner_ID    = C_BPartner_ID;
+		m_C_BPartner_ID    = BPartnerId.ofRepoId(C_BPartner_ID);
 		m_HR_Department_ID = line.getHR_Department_ID();
 		m_C_BP_Group_ID    = bpartner.getC_BP_Group_ID();
 		m_AccountSign      = concept.getAccountSign();
@@ -57,7 +58,7 @@ public class DocLine_Payroll extends DocLine<Doc_HRProcess>
 	//  References
 	private int m_HR_Process_ID  = 0;
 	private int m_HR_Concept_ID  = 0;
-	private int m_C_BPartner_ID  = 0;
+	private BPartnerId m_C_BPartner_ID;
 	private ActivityId m_C_Activity_ID;
 	private String m_AccountSign = "";
 	private BigDecimal m_Amount  = BigDecimal.ZERO;
@@ -77,7 +78,7 @@ public class DocLine_Payroll extends DocLine<Doc_HRProcess>
 	}
 	
 	@Override
-	public int getC_BPartner_ID(){
+	public BPartnerId getBPartnerId(){
 		return m_C_BPartner_ID;
 	}
 	

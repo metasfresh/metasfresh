@@ -37,6 +37,7 @@ import org.compiere.util.DB;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.util.Check;
@@ -374,15 +375,15 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getOrgId();
 	}
 
-	public int getInvoiceBPartner_ID()
+	public BPartnerId getInvoiceBPartnerId()
 	{
 		final I_C_Invoice invoice = getC_Invoice();
 		if (invoice != null)
 		{
-			return invoice.getC_BPartner_ID();
+			return BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		}
 
-		return getC_BPartner_ID();
+		return getBPartnerId();
 	}
 
 	public MAccount getPaymentAcct(final AcctSchema as)
@@ -573,15 +574,15 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getOrgId();
 	}
 
-	public final int getPaymentBPartner_ID()
+	public final BPartnerId getPaymentBPartnerId()
 	{
 		final I_C_Payment payment = getC_Payment();
 		if (payment != null)
 		{
-			return payment.getC_BPartner_ID();
+			return BPartnerId.ofRepoId(payment.getC_BPartner_ID());
 		}
 
-		return getC_BPartner_ID();
+		return getBPartnerId();
 	}
 
 	public boolean isPaymentReceipt()

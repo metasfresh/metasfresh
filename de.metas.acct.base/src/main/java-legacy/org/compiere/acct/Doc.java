@@ -23,23 +23,29 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
 import org.compiere.model.MNote;
@@ -54,25 +60,31 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 
 /**
  * Posting Document Root.
@@ -194,7 +206,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	public static final String DOCTYPE_PurchaseRequisition = "POR";
 
 	/** Log per Document */
-	private final Logger log = LogManager.getLogger(getClass());
+	private static final Logger log = LogManager.getLogger(Doc.class);
 
 	/**
 	 * @param docBuilder construction parameters
@@ -280,20 +292,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private MPeriod m_period = null;
 	/** Period ID */
 	private int m_C_Period_ID = 0;
-	/** Location From */
-	private int m_C_LocFrom_ID = 0;
-	/** Location To */
-	private int m_C_LocTo_ID = 0;
-	/** Accounting Date */
-	private LocalDate m_DateAcct = null;
-	/** Document Date */
-	private LocalDate m_DateDoc = null;
+	private final LocationId locationFromId = null;
+	private final LocationId locationToId = null;
+	private LocalDate _dateAcct = null;
+	private LocalDate _dateDoc = null;
 	/** Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced) */
 	private boolean m_MultiCurrency = false;
 	/** BP Sales Region */
 	private int m_BP_C_SalesRegion_ID = -1;
-	/** B Partner */
-	private int m_C_BPartner_ID = -1;
+	private Optional<BPartnerId> _bpartnerId; // lazy
 
 	/** Bank Account */
 	private int m_C_BP_BankAccount_ID = -1;
@@ -306,9 +313,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	/** Contained Doc Lines */
 	private List<DocLineType> docLines;
-
-	// /** No Currency in Document Indicator (-2) */
-	// protected static final int NO_CURRENCY = -2;
 
 	protected final Properties getCtx()
 	{
@@ -1026,9 +1030,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 
 			final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					TimeUtil.asDate(getDateAcct()), 
-					getC_ConversionType_ID(), 
-					getAD_Client_ID(), 
+					TimeUtil.asDate(getDateAcct()),
+					getC_ConversionType_ID(),
+					getAD_Client_ID(),
 					getAD_Org_ID());
 			try
 			{
@@ -1231,22 +1235,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Get the Valid Combination id for Accounting Schema
 	 *
-	 * @param AcctType see ACCTTYPE_*
-	 * @param as accounting schema
-	 * @return C_ValidCombination_ID
+	 * @param acctType see ACCTTYPE_*
+	 * @param acctSchema accounting schema
+	 * @return account ID or null
 	 */
-	protected final int getValidCombination_ID(final int AcctType, final AcctSchema as)
+	protected final AccountId getValidCombinationId(final int acctType, final AcctSchema acctSchema)
 	{
-		final int para_1;     // first parameter (second is always AcctSchema)
+		final AcctSchemaId acctSchemaId = acctSchema.getId();
+
 		final String sql;
+		final List<Object> sqlParams;
 
 		/** Account Type - Invoice */
-		if (AcctType == ACCTTYPE_Charge)	// see getChargeAccount in DocLine
+		if (acctType == ACCTTYPE_Charge)	// see getChargeAccount in DocLine
 		{
 			final int cmp = getAmount(AMTTYPE_Charge).compareTo(BigDecimal.ZERO);
 			if (cmp == 0)
 			{
-				return 0;
+				return null;
 			}
 			else if (cmp < 0)
 			{
@@ -1256,204 +1262,200 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			{
 				sql = "SELECT CH_Revenue_Acct FROM C_Charge_Acct WHERE C_Charge_ID=? AND C_AcctSchema_ID=?";
 			}
-			para_1 = getC_Charge_ID();
+			sqlParams = Arrays.asList(getC_Charge_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_V_Liability)
+		else if (acctType == ACCTTYPE_V_Liability)
 		{
 			sql = "SELECT V_Liability_Acct FROM C_BP_Vendor_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_V_Liability_Services)
+		else if (acctType == ACCTTYPE_V_Liability_Services)
 		{
 			sql = "SELECT V_Liability_Services_Acct FROM C_BP_Vendor_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_C_Receivable)
+		else if (acctType == ACCTTYPE_C_Receivable)
 		{
 			sql = "SELECT C_Receivable_Acct FROM C_BP_Customer_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_C_Receivable_Services)
+		else if (acctType == ACCTTYPE_C_Receivable_Services)
 		{
 			sql = "SELECT C_Receivable_Services_Acct FROM C_BP_Customer_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_V_Prepayment)
+		else if (acctType == ACCTTYPE_V_Prepayment)
 		{
 			// metas: changed per Mark request: don't use prepayment account:
 			log.warn("V_Prepayment account shall not be used", new Exception());
 			sql = "SELECT V_Prepayment_Acct FROM C_BP_Vendor_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_C_Prepayment)
+		else if (acctType == ACCTTYPE_C_Prepayment)
 		{
 			// metas: changed per Mark request: don't use prepayment account:
 			log.warn("C_Prepayment account shall not be used", new Exception());
 			sql = "SELECT C_Prepayment_Acct FROM C_BP_Customer_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
 
 		/** Account Type - Payment */
-		else if (AcctType == ACCTTYPE_UnallocatedCash)
+		else if (acctType == ACCTTYPE_UnallocatedCash)
 		{
 			sql = "SELECT B_UnallocatedCash_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BP_BankAccount_ID();
+			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_BankInTransit)
+		else if (acctType == ACCTTYPE_BankInTransit)
 		{
 			sql = "SELECT B_InTransit_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BP_BankAccount_ID();
+			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_PaymentSelect)
+		else if (acctType == ACCTTYPE_PaymentSelect)
 		{
 			sql = "SELECT B_PaymentSelect_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BP_BankAccount_ID();
+			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
 		}
 
 		/** Account Type - Allocation */
-		else if (AcctType == ACCTTYPE_DiscountExp)
+		else if (acctType == ACCTTYPE_DiscountExp)
 		{
 			sql = "SELECT a.PayDiscount_Exp_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_DiscountRev)
+		else if (acctType == ACCTTYPE_DiscountRev)
 		{
 			sql = "SELECT PayDiscount_Rev_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_WriteOff)
+		else if (acctType == ACCTTYPE_WriteOff)
 		{
 			sql = "SELECT WriteOff_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
 
 		/** Account Type - Bank Statement */
-		else if (AcctType == ACCTTYPE_BankAsset)
+		else if (acctType == ACCTTYPE_BankAsset)
 		{
 			sql = "SELECT B_Asset_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BP_BankAccount_ID();
+			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_InterestRev)
+		else if (acctType == ACCTTYPE_InterestRev)
 		{
 			sql = "SELECT B_InterestRev_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BP_BankAccount_ID();
+			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_InterestExp)
+		else if (acctType == ACCTTYPE_InterestExp)
 		{
 			sql = "SELECT B_InterestExp_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_BP_BankAccount_ID();
+			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
 		}
 
 		/** Account Type - Cash */
-		else if (AcctType == ACCTTYPE_CashAsset)
+		else if (acctType == ACCTTYPE_CashAsset)
 		{
 			sql = "SELECT CB_Asset_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_CashBook_ID();
+			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_CashTransfer)
+		else if (acctType == ACCTTYPE_CashTransfer)
 		{
 			sql = "SELECT CB_CashTransfer_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_CashBook_ID();
+			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_CashExpense)
+		else if (acctType == ACCTTYPE_CashExpense)
 		{
 			sql = "SELECT CB_Expense_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_CashBook_ID();
+			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_CashReceipt)
+		else if (acctType == ACCTTYPE_CashReceipt)
 		{
 			sql = "SELECT CB_Receipt_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_CashBook_ID();
+			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_CashDifference)
+		else if (acctType == ACCTTYPE_CashDifference)
 		{
 			sql = "SELECT CB_Differences_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_CashBook_ID();
+			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
 
 		/** Inventory Accounts */
-		else if (AcctType == ACCTTYPE_InvDifferences)
+		else if (acctType == ACCTTYPE_InvDifferences)
 		{
 			sql = "SELECT W_Differences_Acct FROM M_Warehouse_Acct WHERE M_Warehouse_ID=? AND C_AcctSchema_ID=?";
 			// "SELECT W_Inventory_Acct, W_Revaluation_Acct, W_InvActualAdjust_Acct FROM M_Warehouse_Acct WHERE M_Warehouse_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getM_Warehouse_ID();
+			sqlParams = Arrays.asList(getWarehouseId(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_NotInvoicedReceipts)
+		else if (acctType == ACCTTYPE_NotInvoicedReceipts)
 		{
 			sql = "SELECT NotInvoicedReceipts_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
-			para_1 = getC_BPartner_ID();
+			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
 
 		/** Project Accounts */
-		else if (AcctType == ACCTTYPE_ProjectAsset)
+		else if (acctType == ACCTTYPE_ProjectAsset)
 		{
 			sql = "SELECT PJ_Asset_Acct FROM C_Project_Acct WHERE C_Project_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_Project_ID();
+			sqlParams = Arrays.asList(getC_Project_ID(), acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_ProjectWIP)
+		else if (acctType == ACCTTYPE_ProjectWIP)
 		{
 			sql = "SELECT PJ_WIP_Acct FROM C_Project_Acct WHERE C_Project_ID=? AND C_AcctSchema_ID=?";
-			para_1 = getC_Project_ID();
+			sqlParams = Arrays.asList(getC_Project_ID(), acctSchemaId);
 		}
 
 		/** GL Accounts */
-		else if (AcctType == ACCTTYPE_PPVOffset)
+		else if (acctType == ACCTTYPE_PPVOffset)
 		{
 			sql = "SELECT PPVOffset_Acct FROM C_AcctSchema_GL WHERE C_AcctSchema_ID=?";
-			para_1 = -1;
+			sqlParams = Arrays.asList(acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_CommitmentOffset)
+		else if (acctType == ACCTTYPE_CommitmentOffset)
 		{
 			sql = "SELECT CommitmentOffset_Acct FROM C_AcctSchema_GL WHERE C_AcctSchema_ID=?";
-			para_1 = -1;
+			sqlParams = Arrays.asList(acctSchemaId);
 		}
-		else if (AcctType == ACCTTYPE_CommitmentOffsetSales)
+		else if (acctType == ACCTTYPE_CommitmentOffsetSales)
 		{
 			sql = "SELECT CommitmentOffsetSales_Acct FROM C_AcctSchema_GL WHERE C_AcctSchema_ID=?";
-			para_1 = -1;
+			sqlParams = Arrays.asList(acctSchemaId);
 		}
 		else
 		{
-			log.error("Not found AcctType=" + AcctType);
-			return 0;
-		}
-		// Do we have sql & Parameter
-		if (sql == null || para_1 == 0)
-		{
-			log.error("No Parameter for AcctType=" + AcctType + " - SQL=" + sql);
-			return 0;
+			throw newPostingException()
+					.setAcctSchema(acctSchema)
+					.setDetailMessage("Unknown AcctType=" + acctType);
 		}
 
 		// Get Acct
-		int Account_ID = 0;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			if (para_1 == -1)
-			{
-				pstmt.setInt(1, as.getId().getRepoId());
-			}
-			else
-			{
-				pstmt.setInt(1, para_1);
-				pstmt.setInt(2, as.getId().getRepoId());
-			}
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				Account_ID = rs.getInt(1);
+				final AccountId accountId = AccountId.ofRepoIdOrNull(rs.getInt(1));
+				if (accountId == null)
+				{
+					log.error("account ID not set for: account Type=" + acctType + ", Record=" + get_ID() + ", SQL=" + sql + ", sqlParams=" + sqlParams);
+				}
+
+				return accountId;
+			}
+			else
+			{
+				log.error("No record found for: account Type=" + acctType + ", Record=" + get_ID() + ", SQL=" + sql + ", sqlParams=" + sqlParams);
+				return null;
 			}
 		}
 		catch (final SQLException e)
 		{
-			log.error("AcctType=" + AcctType + " - SQL=" + sql, e);
-			return 0;
+			throw new DBException(e, sql, sqlParams);
 		}
 		finally
 		{
@@ -1461,32 +1463,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			rs = null;
 			pstmt = null;
 		}
-		// No account
-		if (Account_ID == 0)
-		{
-			log.error("NO account Type=" + AcctType + ", Record=" + get_ID() + ", SQL=" + sql + ", para_1=" + para_1);
-			return 0;
-		}
-		return Account_ID;
 	}	// getAccount_ID
 
 	/**
 	 * Get the account for Accounting Schema
 	 *
-	 * @param AcctType see ACCTTYPE_*
-	 * @param as accounting schema
+	 * @param acctType see ACCTTYPE_*
+	 * @param acctSchema accounting schema
 	 * @return Account or <code>null</code>
 	 */
-	protected final MAccount getAccount(final int AcctType, final AcctSchema as)
+	protected final MAccount getAccount(final int acctType, final AcctSchema acctSchema)
 	{
-		final int C_ValidCombination_ID = getValidCombination_ID(AcctType, as);
-		if (C_ValidCombination_ID <= 0)
+		final AccountId accountId = getValidCombinationId(acctType, acctSchema);
+		if (accountId == null)
 		{
 			return null;
 		}
-		// Return Account
-		final MAccount acct = accountDAO.getById(getCtx(), C_ValidCombination_ID);
-		return acct;
+
+		return accountDAO.getById(getCtx(), accountId);
 	}	// getAccount
 
 	protected final MAccount getRealizedGainAcct(final AcctSchema as)
@@ -1628,7 +1622,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	public final LocalDate getDateAcct()
 	{
 		return Util.coalesceSuppliers(
-				() -> m_DateAcct,
+				() -> _dateAcct,
 				() -> getValueAsLocalDateOrNull("DateAcct"),
 				() -> {
 					throw new AdempiereException("No DateAcct");
@@ -1637,13 +1631,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final void setDateAcct(final Timestamp dateAcct)
 	{
-		m_DateAcct = TimeUtil.asLocalDate(dateAcct);
+		_dateAcct = TimeUtil.asLocalDate(dateAcct);
 	}
 
 	public final LocalDate getDateDoc()
 	{
 		return Util.coalesceSuppliers(
-				() -> m_DateDoc,
+				() -> _dateDoc,
 				() -> getValueAsLocalDateOrNull("DateDoc"),
 				() -> getValueAsLocalDateOrNull("MovementDate"),
 				() -> {
@@ -1658,7 +1652,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final void setDateDoc(final LocalDate dateDoc)
 	{
-		m_DateDoc = dateDoc;
+		_dateDoc = dateDoc;
 	}
 
 	public final boolean isPosted()
@@ -1676,7 +1670,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return Util.coalesceSuppliers(
 				() -> getValueAsBoolean("IsSOTrx", null),
 				() -> getValueAsBoolean("IsReceipt", null),
-				() -> false);
+				() -> SOTrx.PURCHASE.toBoolean());
 	}
 
 	public final int getC_DocType_ID()
@@ -1697,9 +1691,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIntOrZero("C_Charge_ID");
 	}
 
-	public final int getSalesRep_ID()
+	public final UserId getSalesRepId()
 	{
-		return getValueAsIntOrZero("SalesRep_ID");
+		return getValueAsIdOrNull("SalesRep_ID", UserId::ofRepoIdOrNull);
 	}
 
 	/**
@@ -1760,9 +1754,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_C_CashBook_ID = C_CashBook_ID;
 	}
 
-	public final int getM_Warehouse_ID()
+	public final WarehouseId getWarehouseId()
 	{
-		return getValueAsIntOrZero("M_Warehouse_ID");
+		return getValueAsIdOrNull("M_Warehouse_ID", WarehouseId::ofRepoIdOrNull);
 	}
 
 	/**
@@ -1770,22 +1764,18 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return BPartner
 	 */
-	public final int getC_BPartner_ID()
+	public final BPartnerId getBPartnerId()
 	{
-		if (m_C_BPartner_ID == -1)
+		if (_bpartnerId == null)
 		{
-			m_C_BPartner_ID = getValueAsIntOrZero("C_BPartner_ID");
-			if (m_C_BPartner_ID <= 0)
-			{
-				m_C_BPartner_ID = 0;
-			}
+			_bpartnerId = getValueAsOptionalId("C_BPartner_ID", BPartnerId::ofRepoIdOrNull);
 		}
-		return m_C_BPartner_ID;
+		return _bpartnerId.orElse(null);
 	}
 
-	protected final void setC_BPartner_ID(final int C_BPartner_ID)
+	protected final void setBPartnerId(final BPartnerId bpartnerId)
 	{
-		m_C_BPartner_ID = C_BPartner_ID;
+		_bpartnerId = Optional.ofNullable(bpartnerId);
 	}
 
 	public final int getC_BPartner_Location_ID()
@@ -1824,7 +1814,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_BP_C_SalesRegion_ID = C_SalesRegion_ID;
 	}
 
-	public final ActivityId getC_Activity_ID()
+	public final ActivityId getActivityId()
 	{
 		return ActivityId.ofRepoIdOrNull(getValueAsIntOrZero("C_Activity_ID"));
 	}
@@ -1836,12 +1826,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	public final ProductId getProductId()
 	{
-		return ProductId.ofRepoIdOrNull(getM_Product_ID());
-	}
-
-	public final int getM_Product_ID()
-	{
-		return getValueAsIntOrZero("M_Product_ID");
+		return getValueAsIdOrNull("M_Product_ID", ProductId::ofRepoIdOrNull);
 	}
 
 	public final int getAD_OrgTrx_ID()
@@ -1849,24 +1834,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIntOrZero("AD_OrgTrx_ID");
 	}
 
-	public final int getC_LocFrom_ID()
+	public final LocationId getLocationFromId()
 	{
-		return m_C_LocFrom_ID;
+		return locationFromId;
 	}
 
-	protected final void setC_LocFrom_ID(final int C_LocFrom_ID)
+	public final LocationId getLocationToId()
 	{
-		m_C_LocFrom_ID = C_LocFrom_ID;
-	}
-
-	public final int getC_LocTo_ID()
-	{
-		return m_C_LocTo_ID;
-	}
-
-	protected final void setC_LocTo_ID(final int C_LocTo_ID)
-	{
-		m_C_LocTo_ID = C_LocTo_ID;
+		return locationToId;
 	}
 
 	public final int getUser1_ID()
@@ -1892,7 +1867,33 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 		}
 		return 0;
-	}	// getValue
+	}
+
+	private final <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index < 0)
+		{
+			return null;
+		}
+
+		final Object valueObj = po.get_Value(index);
+		final Integer valueInt = NumberUtils.asInteger(valueObj, null);
+		if (valueInt == null)
+		{
+			return null;
+		}
+
+		final T id = idOrNullMapper.apply(valueInt);
+		return id;
+	}
+
+	private final <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
+	{
+		final T id = getValueAsIdOrNull(columnName, idOrNullMapper);
+		return Optional.ofNullable(id);
+	}
 
 	private final LocalDate getValueAsLocalDateOrNull(final String columnName)
 	{

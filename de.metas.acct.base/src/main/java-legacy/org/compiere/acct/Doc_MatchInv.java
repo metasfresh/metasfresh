@@ -42,6 +42,7 @@ import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
@@ -118,8 +119,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			this.isCreditMemoInvoice = invoiceBL.isCreditMemo(invoice);
 
 			// BP for NotInvoicedReceipts
-			final int C_BPartner_ID = invoice.getC_BPartner_ID();
-			setC_BPartner_ID(C_BPartner_ID);
+			setBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
 
 			invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 			invoiceLineNetAmt = _invoiceLine.getLineNetAmt();

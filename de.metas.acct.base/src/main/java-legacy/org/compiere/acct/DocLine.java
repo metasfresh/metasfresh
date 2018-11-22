@@ -20,11 +20,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.IntFunction;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.location.LocationId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -46,18 +48,22 @@ import com.google.common.base.MoreObjects;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.NumberUtils;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /**
@@ -104,23 +110,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private I_M_Product _product; // lazy
 	private Boolean _productIsItem = null; // lazy
 
-	/** Accounting Date */
 	private LocalDate m_DateAcct = null;
-	/** Document Date */
 	private LocalDate m_DateDoc = null;
-	/** Sales Region */
 	private int m_C_SalesRegion_ID = -1;
-	/** Sales Region */
-	private int m_C_BPartner_ID = -1;
-	/** Location From */
-	private final int m_C_LocFrom_ID = 0;
-	/** Location To */
-	private int m_C_LocTo_ID = 0;
-	/** Currency */
+	private Optional<BPartnerId> _bpartnerId;
+	private final LocationId locationFromId = null;
+	private final LocationId locationToId = null;
 	private Optional<CurrencyId> _currencyId;
-	/** Conversion Type */
 	private int m_C_ConversionType_ID = -1;
-	/** Period */
 	private int m_C_Period_ID = -1;
 	/** C_Tax_ID (override) */
 	private Integer m_C_Tax_ID = null;
@@ -197,6 +194,10 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			if (m_C_ConversionType_ID <= 0)
 			{
 				m_C_ConversionType_ID = m_doc.getC_ConversionType_ID();
+			}
+			if(m_C_ConversionType_ID < 0)
+			{
+				m_C_ConversionType_ID = 0;
 			}
 		}
 		return m_C_ConversionType_ID;
@@ -337,16 +338,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		return m_DiscountAmt;
 	}   // getDiscount
-
-	/**
-	 * Line List Amount
-	 *
-	 * @return list amount
-	 */
-	public final BigDecimal getListAmount()
-	{
-		return m_ListAmt;
-	}   // getListAmount
 
 	/**
 	 * Set Line Net Amt Difference
@@ -585,30 +576,25 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("M_Locator_ID");
 	}
 
-	public final int getC_OrderLine_ID()
+	public final OrderLineId getOrderLineId()
 	{
-		return getValue("C_OrderLine_ID");
+		return OrderLineId.ofRepoIdOrNull(getValue("C_OrderLine_ID"));
 	}
 
-	public final int getC_LocFrom_ID()
+	public final LocationId getLocationFromId()
 	{
-		return m_C_LocFrom_ID;
+		return locationFromId;
 	}
 
-	public final int getC_LocTo_ID()
+	public final LocationId getLocationToId()
 	{
-		return m_C_LocTo_ID;
+		return locationToId;
 	}
-
-	public final void setC_LocTo_ID(final int C_LocTo_ID)
-	{
-		m_C_LocTo_ID = C_LocTo_ID;
-	}	// setC_LocTo_ID
 
 	/**
 	 * @return product or null if no product
 	 */
-	public final I_M_Product getProduct()
+	private final I_M_Product getProduct()
 	{
 		if (_product == null)
 		{
@@ -656,14 +642,13 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 
 		// Storage UOM
-		final I_M_Product product = getProduct();
-		if (product != null)
+		if (getProductId() != null)
 		{
-			return product.getC_UOM_ID();
+			final I_C_UOM uom = getProductStockingUOM();
+			return uom.getC_UOM_ID();
 		}
 
-		//
-		return 0;
+		return -1;
 	}
 
 	/**
@@ -718,25 +703,21 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("Line");
 	}
 
-	public int getC_BPartner_ID()
+	public BPartnerId getBPartnerId()
 	{
-		if (m_C_BPartner_ID == -1)
+		if (_bpartnerId == null)
 		{
-			m_C_BPartner_ID = Util.coalesceSuppliers(
-					() -> getValue("C_BPartner_ID"),
-					() -> m_doc.getC_BPartner_ID());
-			if (m_C_BPartner_ID <= 0)
-			{
-				m_C_BPartner_ID = 0;
-			}
+			_bpartnerId = Optionals.firstPresentOfSuppliers(
+					() -> getValueAsOptionalId("C_BPartner_ID", BPartnerId::ofRepoIdOrNull),
+					() -> Optional.ofNullable(m_doc.getBPartnerId()));
 		}
-		return m_C_BPartner_ID;
+		return _bpartnerId.orElse(null);
 	}
 
-	protected final void setC_BPartner_ID(final int C_BPartner_ID)
+	protected final void setBPartnerId(final BPartnerId bpartnerId)
 	{
-		m_C_BPartner_ID = C_BPartner_ID;
-	}	// setC_BPartner_ID
+		_bpartnerId = Optional.ofNullable(bpartnerId);
+	}
 
 	private final int getC_BPartner_Location_ID()
 	{
@@ -811,6 +792,31 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	public final int getUser2_ID()
 	{
 		return getValue("User2_ID");
+	}
+
+	private final <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index < 0)
+		{
+			return Optional.empty();
+		}
+
+		final Object valueObj = po.get_Value(index);
+		final Integer valueInt = NumberUtils.asInteger(valueObj, null);
+		if (valueInt == null)
+		{
+			return Optional.empty();
+		}
+
+		final T id = idOrNullMapper.apply(valueInt);
+		if (id == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(id);
 	}
 
 	/**

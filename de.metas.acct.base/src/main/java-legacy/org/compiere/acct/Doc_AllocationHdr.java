@@ -39,13 +39,13 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceTax;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.ICurrencyConversionContext;
@@ -214,12 +214,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		for (final DocLine_Allocation line : getDocLines())
 		{
-			setC_BPartner_ID(line.getC_BPartner_ID());
+			setBPartnerId(line.getBPartnerId());
 
 			// CashBankTransfer - all references null and Discount/WriteOff = 0
 			if (line.getC_Payment_ID() > 0
 					&& line.getC_Invoice_ID() <= 0
-					&& line.getC_CashLine_ID() <= 0 && line.getC_BPartner_ID() <= 0
+					&& line.getC_CashLine_ID() <= 0 && line.getBPartnerId() == null
 					&& BigDecimal.ZERO.compareTo(line.getDiscountAmt()) == 0
 					&& BigDecimal.ZERO.compareTo(line.getWriteOffAmt()) == 0)
 			{
@@ -243,7 +243,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					// p_Error = "Cannot determine SO/PO";
 					// log.error(p_Error);
 					// return null;
-					assert line.getC_OrderLine_ID() > 0 : line;
+					assert line.getOrderLineId() != null : line;
 					return facts;
 					// metas end
 				}
@@ -299,7 +299,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}            	// for all lines
 
 		// reset line info
-		setC_BPartner_ID(0);
+		setBPartnerId(null);
 		
 		return facts;
 	}   // createFact
@@ -324,7 +324,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		for (final DocLine_Allocation line : getDocLines())
 		{
 			// FRESH-523: Make sure the partner of the payment is set in the Doc. It will be needed when selecting the correct Account
-			setC_BPartner_ID(line.getPaymentBPartner_ID());
+			setBPartnerId(line.getPaymentBPartnerId());
 
 			// In case there is a line with a writeoff amount, throw an exception. This is not supported (yet).
 
@@ -363,7 +363,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				Check.assumeNotNull(fl_Payment, "fl_Payment not null");
 
 				fl_Payment.setAD_Org_ID(line.getPaymentOrgId().getRepoId());
-				fl_Payment.setC_BPartner_ID(line.getPaymentBPartner_ID());
+				fl_Payment.setC_BPartner_ID(line.getPaymentBPartnerId());
 			}
 		}
 	}
@@ -510,7 +510,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(line.getPaymentCurrencyConversionCtx())
 				.orgId(line.getPaymentOrgId())
-				.setC_BPartner_ID(line.getPaymentBPartner_ID());
+				.bpartnerId(line.getPaymentBPartnerId());
 
 		if (line.isSOTrxInvoice())
 		{
@@ -716,7 +716,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		// Return Account
-		final MAccount acct = MAccount.get(Env.getCtx(), Account_ID);
+		final MAccount acct = Services.get(IAccountDAO.class).getById(Account_ID);
 		return acct;
 	}
 
@@ -742,7 +742,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setAccount(getAccount(Doc.ACCTTYPE_WriteOff, as))
 				.setCurrencyId(getCurrencyId())
 				.orgId(line.getPaymentOrgId())
-				.setC_BPartner_ID(line.getPaymentBPartner_ID());
+				.bpartnerId(line.getPaymentBPartnerId());
 
 		if (line.isSOTrxInvoice())
 		{
@@ -797,7 +797,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
 				.orgId(line.getInvoiceOrgId())
-				.setC_BPartner_ID(line.getInvoiceBPartner_ID());
+				.bpartnerId(line.getInvoiceBPartnerId());
 
 		if (line.isSOTrxInvoice())
 		{
@@ -896,7 +896,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setDocLine(counterLine)
 				.setCurrencyId(getCurrencyId())
 				.orgId(counterLine.getInvoiceOrgId())
-				.setC_BPartner_ID(counterLine.getInvoiceBPartner_ID());
+				.bpartnerId(counterLine.getInvoiceBPartnerId());
 		if (counterLine.isSOTrxInvoice())
 		{
 			factLineBuilder.setAccount(getAccount(Doc.ACCTTYPE_C_Receivable, as));

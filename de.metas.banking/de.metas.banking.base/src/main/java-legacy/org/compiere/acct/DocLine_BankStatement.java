@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
@@ -75,7 +76,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		m_TrxAmt = line.getTrxAmt();
 		//
 		setDateDoc(TimeUtil.asLocalDate(line.getValutaDate()));
-		setC_BPartner_ID(line.getC_BPartner_ID());
+		setBPartnerId(BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID()));
 
 		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.retrieveLineReferences(line));
 

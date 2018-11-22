@@ -25,8 +25,10 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  *	Charge Model
@@ -70,7 +72,7 @@ public class MCharge extends X_C_Charge
 		}
 
 		//	Return Account
-		MAccount acct = MAccount.get (Env.getCtx(), Account_ID);
+		MAccount acct = Services.get(IAccountDAO.class).getById(Account_ID);
 		return acct;
 	}   //  getAccount
 

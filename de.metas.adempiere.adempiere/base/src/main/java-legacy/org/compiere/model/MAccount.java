@@ -203,20 +203,6 @@ public class MAccount extends X_C_ValidCombination
 	}   // getDefault
 
 	/**
-	 * Get Account
-	 * 
-	 * @param ctx context
-	 * @param C_ValidCombination_ID combination
-	 * @return Account
-	 * @deprecated Please use {@link IAccountDAO#getById(Properties, int)}
-	 */
-	@Deprecated
-	public static MAccount get(Properties ctx, int C_ValidCombination_ID)
-	{
-		return Services.get(IAccountDAO.class).getById(ctx, C_ValidCombination_ID);
-	}   // getAccount
-
-	/**
 	 * Update Value/Description after change of account element value/description.
 	 *
 	 * @param ctx context

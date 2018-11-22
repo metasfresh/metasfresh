@@ -34,6 +34,8 @@ import org.eevolution.model.X_HR_Concept_Acct;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.util.Services;
 
 /**
  * Post Payroll Documents.
@@ -134,12 +136,12 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 				{
 					// HR_Expense_Acct DR
 					// HR_Revenue_Acct CR
-					MAccount accountBPD = MAccount.get(getCtx(), getAccountBalancing(as.getId(), HR_Concept_ID, "D"));
+					MAccount accountBPD = Services.get(IAccountDAO.class).getById(getAccountBalancing(as.getId(), HR_Concept_ID, "D"));
 					FactLine debit = fact.createLine(null, accountBPD, as.getCurrencyId(), sumAmount, null);
 					debit.setAD_OrgTrx_ID(AD_OrgTrx_ID);
 					debit.setC_Activity_ID(C_Activity_ID);
 					debit.saveEx();
-					MAccount accountBPC = MAccount.get(getCtx(), this.getAccountBalancing(as.getId(), HR_Concept_ID, "C"));
+					MAccount accountBPC = Services.get(IAccountDAO.class).getById(getAccountBalancing(as.getId(), HR_Concept_ID, "C"));
 					FactLine credit = fact.createLine(null, accountBPC, as.getCurrencyId(), null, sumAmount);
 					credit.setAD_OrgTrx_ID(AD_OrgTrx_ID);
 					credit.setC_Activity_ID(C_Activity_ID);

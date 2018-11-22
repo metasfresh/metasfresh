@@ -31,14 +31,17 @@ import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.MFactAcct;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
@@ -46,6 +49,7 @@ import de.metas.money.CurrencyId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -1109,7 +1113,13 @@ public final class Fact
 			built = true;
 		}
 
-		public FactLineBuilder setAccount(MAccount account)
+		public FactLineBuilder setAccount(@NonNull final AccountId accountId)
+		{
+			final IAccountDAO accountsRepo = Services.get(IAccountDAO.class);
+			return setAccount(accountsRepo.getById(Env.getCtx(), accountId));
+		}
+
+		public FactLineBuilder setAccount(final MAccount account)
 		{
 			assertNotBuild();
 			this.account = account;
@@ -1318,9 +1328,9 @@ public final class Fact
 		}
 
 		@Deprecated
-		public FactLineBuilder setC_BPartner_ID(Integer bpartnerIdInt)
+		public FactLineBuilder setC_BPartner_ID(Integer bpartnerRepoId)
 		{
-			final BPartnerId bpartnerId = bpartnerIdInt != null ? BPartnerId.ofRepoIdOrNull(bpartnerIdInt) : null;
+			final BPartnerId bpartnerId = bpartnerRepoId != null ? BPartnerId.ofRepoIdOrNull(bpartnerRepoId) : null;
 			return bpartnerId(bpartnerId);
 		}
 
@@ -1331,15 +1341,21 @@ public final class Fact
 			return this;
 		}
 
-		public FactLineBuilder setC_BPartner_ID_IfValid(final int bpartnerId)
+		public FactLineBuilder bpartnerIdIfNotNull(final BPartnerId bpartnerId)
 		{
-			assertNotBuild();
-			if (bpartnerId > 0)
+			if (bpartnerId != null)
 			{
-				setC_BPartner_ID(bpartnerId);
+				return bpartnerId(bpartnerId);
 			}
-			return this;
+			else
+			{
+				return this;
+			}
+		}
 
+		public FactLineBuilder setC_BPartner_ID_IfValid(final int bpartnerRepoId)
+		{
+			return bpartnerIdIfNotNull(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
 		}
 
 		private BPartnerId getBpartnerId()

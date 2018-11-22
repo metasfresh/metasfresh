@@ -22,6 +22,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Invoice;
 
+import de.metas.bpartner.BPartnerId;
+
 /**
  *  Cash Journal Line
  *
@@ -45,7 +47,7 @@ public class DocLine_Cash extends DocLine<Doc_Cash>
 		if (m_C_Invoice_ID > 0)
 		{
 			I_C_Invoice invoice = line.getC_Invoice();
-			setC_BPartner_ID(invoice.getC_BPartner_ID());
+			setBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
 		}
 
 		//

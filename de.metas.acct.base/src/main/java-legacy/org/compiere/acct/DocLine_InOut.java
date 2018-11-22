@@ -17,6 +17,7 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 
 /*
@@ -65,8 +66,8 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 
 	private final int retrievePPCostCollectorId()
 	{
-		final int orderLineId = getC_OrderLine_ID();
-		if (orderLineId > 0)
+		final OrderLineId orderLineId = getOrderLineId();
+		if (orderLineId != null)
 		{
 			final String sql = "SELECT PP_Cost_Collector_ID  FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
 			return DB.getSQLValueEx(getTrxName(), sql, new Object[] { orderLineId });

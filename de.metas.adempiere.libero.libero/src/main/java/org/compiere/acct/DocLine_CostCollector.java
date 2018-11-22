@@ -13,6 +13,7 @@ import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -24,6 +25,7 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /**
  * @author Teo Sarca, www.arhipac.ro
@@ -97,7 +99,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 			return null;
 		}
 
-		return MAccount.get(getCtx(), validCombinationId);
+		return Services.get(IAccountDAO.class).getById(validCombinationId);
 	}
 
 	public CostResult getCreateCosts(final AcctSchema as)
