@@ -23,6 +23,7 @@ import java.util.List;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -75,7 +76,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		setNoCurrency();
 		docLine = new DocLine_MatchPO(getModel(I_M_MatchPO.class), this);
 
-		setDateDoc(docLine.getDateDoc());
+		setDateDoc(TimeUtil.asLocalDate(docLine.getDateDoc()));
 
 		this.noFactRecords = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_NoFactRecords, DEFAULT_NoFactRecords);
 	}

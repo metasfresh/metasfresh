@@ -26,6 +26,7 @@ import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.MAccount;
 import org.compiere.model.MElementValue;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.MHRMovement;
 import org.eevolution.model.MHRProcess;
@@ -67,7 +68,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 	protected void loadDocumentDetails()
 	{
 		final I_HR_Process process = getModel(I_HR_Process.class);
-		setDateDoc(getDateAcct());
+		setDateDoc(TimeUtil.asTimestamp(getDateAcct()));
 		setDocLines(loadLines(process));
 	}
 

@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +49,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -283,9 +285,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/** Location To */
 	private int m_C_LocTo_ID = 0;
 	/** Accounting Date */
-	private Timestamp m_DateAcct = null;
+	private LocalDate m_DateAcct = null;
 	/** Document Date */
-	private Timestamp m_DateDoc = null;
+	private LocalDate m_DateDoc = null;
 	/** Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced) */
 	private boolean m_MultiCurrency = false;
 	/** BP Sales Region */
@@ -298,15 +300,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private I_C_BP_BankAccount bpBankAccount = null;
 	/** Cach Book */
 	private int m_C_CashBook_ID = -1;
-	
+
 	private Optional<CurrencyId> _currencyId; // lazy
 	private Integer _currencyPrecision = -1; // lazy
 
 	/** Contained Doc Lines */
 	private List<DocLineType> docLines;
 
-//	/** No Currency in Document Indicator (-2) */
-//	protected static final int NO_CURRENCY = -2;
+	// /** No Currency in Document Indicator (-2) */
+	// protected static final int NO_CURRENCY = -2;
 
 	protected final Properties getCtx()
 	{
@@ -1023,7 +1025,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				continue;
 			}
 
-			final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
+			final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+					TimeUtil.asDate(getDateAcct()), 
+					getC_ConversionType_ID(), 
+					getAD_Client_ID(), 
+					getAD_Org_ID());
 			try
 			{
 				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId.getRepoId(), acctCurrencyId.getRepoId());
@@ -1055,12 +1061,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 		if (m_period == null)
 		{
-			m_period = MPeriod.get(getCtx(), getDateAcct(), getAD_Org_ID());
+			m_period = MPeriod.get(getCtx(), TimeUtil.asTimestamp(getDateAcct()), getAD_Org_ID());
 		}
 
 		// Is Period Open?
 		if (m_period != null
-				&& m_period.isOpen(getDocumentType(), getDateAcct(), getAD_Org_ID()))
+				&& m_period.isOpen(getDocumentType(), TimeUtil.asTimestamp(getDateAcct()), getAD_Org_ID()))
 		{
 			m_C_Period_ID = m_period.getC_Period_ID();
 		}
@@ -1555,12 +1561,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	public final CurrencyId getCurrencyId()
 	{
-		if(_currencyId == null)
+		if (_currencyId == null)
 		{
 			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(getValueAsIntOrZero("C_Currency_ID"));
 			_currencyId = Optional.ofNullable(currencyId);
 		}
-		
+
 		return _currencyId.orElse(null);
 	}
 
@@ -1569,13 +1575,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_currencyId = Optional.ofNullable(currencyId);
 		_currencyPrecision = null;
 	}
-	
+
 	protected final void setNoCurrency()
 	{
 		final CurrencyId currencyId = null;
 		setC_Currency_ID(currencyId);
 	}
-
 
 	public final boolean isMultiCurrency()
 	{
@@ -1595,17 +1600,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final int getStdPrecision()
 	{
-		if(_currencyPrecision != null)
+		if (_currencyPrecision != null)
 		{
 			return _currencyPrecision;
 		}
-		
+
 		final CurrencyId currencyId = getCurrencyId();
-		if(currencyId == null)
+		if (currencyId == null)
 		{
 			return ICurrencyDAO.DEFAULT_PRECISION;
 		}
-		
+
 		_currencyPrecision = currencyDAO.getStdPrecision(getCtx(), currencyId.getRepoId());
 		return _currencyPrecision;
 	}
@@ -1620,11 +1625,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIntOrZero("GL_Budget_ID");
 	}
 
-	public final Timestamp getDateAcct()
+	public final LocalDate getDateAcct()
 	{
 		return Util.coalesceSuppliers(
 				() -> m_DateAcct,
-				() -> getValueAsTSOrNull("DateAcct"),
+				() -> getValueAsLocalDateOrNull("DateAcct"),
 				() -> {
 					throw new AdempiereException("No DateAcct");
 				});
@@ -1632,21 +1637,26 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final void setDateAcct(final Timestamp dateAcct)
 	{
-		m_DateAcct = dateAcct;
+		m_DateAcct = TimeUtil.asLocalDate(dateAcct);
 	}
 
-	public final Timestamp getDateDoc()
+	public final LocalDate getDateDoc()
 	{
 		return Util.coalesceSuppliers(
 				() -> m_DateDoc,
-				() -> getValueAsTSOrNull("DateDoc"),
-				() -> getValueAsTSOrNull("MovementDate"),
+				() -> getValueAsLocalDateOrNull("DateDoc"),
+				() -> getValueAsLocalDateOrNull("MovementDate"),
 				() -> {
 					throw new AdempiereException("No DateDoc");
 				});
 	}
 
 	protected final void setDateDoc(final Timestamp dateDoc)
+	{
+		setDateDoc(TimeUtil.asLocalDate(dateDoc));
+	}
+
+	protected final void setDateDoc(final LocalDate dateDoc)
 	{
 		m_DateDoc = dateDoc;
 	}
@@ -1884,14 +1894,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return 0;
 	}	// getValue
 
-	private final Timestamp getValueAsTSOrNull(final String columnName)
+	private final LocalDate getValueAsLocalDateOrNull(final String columnName)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
 		if (index != -1)
 		{
-			final Timestamp valueDate = (Timestamp)po.get_Value(index);
-			return valueDate;
+			return TimeUtil.asLocalDate(po.get_Value(index));
 		}
 
 		return null;

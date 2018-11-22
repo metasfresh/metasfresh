@@ -68,7 +68,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final int orderLineId = matchPO.getC_OrderLine_ID();
 		orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
 
-		setDateDoc(matchPO.getDateTrx());
+		setDateDoc(TimeUtil.asLocalDate(matchPO.getDateTrx()));
 
 		final Quantity qty = Quantity.of(matchPO.getQty(), getProductStockingUOM());
 		final boolean isSOTrx = false;

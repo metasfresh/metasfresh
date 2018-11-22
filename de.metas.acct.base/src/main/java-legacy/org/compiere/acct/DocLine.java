@@ -17,7 +17,7 @@
 package org.compiere.acct;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -37,6 +37,7 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -104,9 +105,9 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private Boolean _productIsItem = null; // lazy
 
 	/** Accounting Date */
-	private Timestamp m_DateAcct = null;
+	private LocalDate m_DateAcct = null;
 	/** Document Date */
-	private Timestamp m_DateDoc = null;
+	private LocalDate m_DateDoc = null;
 	/** Sales Region */
 	private int m_C_SalesRegion_ID = -1;
 	/** Sales Region */
@@ -362,29 +363,29 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		logger.warn("Diff={} - LineNetAmt={} -> {} - {}", diff, lineNetAmtOld, m_LineNetAmt, this);
 	}
 
-	public final Timestamp getDateAcct()
+	public final LocalDate getDateAcct()
 	{
 		if (m_DateAcct == null)
 		{
 			m_DateAcct = Util.coalesceSuppliers(
-					() -> getValueAsTSOrNull("DateAcct"),
+					() -> getValueAsLocalDateOrNull("DateAcct"),
 					() -> getDoc().getDateAcct());
 		}
 		return m_DateAcct;
 	}
 
-	protected final void setDateDoc(final Timestamp dateDoc)
+	protected final void setDateDoc(final LocalDate dateDoc)
 	{
 		m_DateDoc = dateDoc;
 	}   // setDateDoc
 
-	public final Timestamp getDateDoc()
+	public final LocalDate getDateDoc()
 	{
 		if (m_DateDoc == null)
 		{
 			m_DateDoc = Util.coalesceSuppliers(
-					() -> getValueAsTSOrNull("DateDoc"),
-					() -> getValueAsTSOrNull("DateTrx"),
+					() -> getValueAsLocalDateOrNull("DateDoc"),
+					() -> getValueAsLocalDateOrNull("DateTrx"),
 					() -> getDoc().getDateAcct());
 		}
 		return m_DateDoc;
@@ -846,14 +847,13 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return defaultValue;
 	}
 
-	private final Timestamp getValueAsTSOrNull(final String columnName)
+	private final LocalDate getValueAsLocalDateOrNull(final String columnName)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
 		if (index != -1)
 		{
-			final Timestamp valueDate = (Timestamp)po.get_Value(index);
-			return valueDate;
+			return TimeUtil.asLocalDate(po.get_Value(index));
 		}
 
 		return null;

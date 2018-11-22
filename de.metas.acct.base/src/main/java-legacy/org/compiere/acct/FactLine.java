@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -27,12 +28,13 @@ import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_Movement;
 import org.compiere.model.MAccount;
 import org.compiere.model.MFactAcct;
-import org.compiere.model.MMovement;
 import org.compiere.model.MRevenueRecognitionPlan;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -61,7 +63,7 @@ import lombok.NonNull;
  *
  * @author Jorg Janke
  * @version $Id: FactLine.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
- * 
+ *
  *          Contributor(s):
  *          Chris Farley: Fix Bug [ 1657372 ] M_MatchInv records can not be balanced
  *          https://sourceforge.net/forum/message.php?msg_id=4151117
@@ -71,12 +73,12 @@ import lombok.NonNull;
  *          <li>BF [ 2213252 ] Matching Inv-Receipt generated unproperly value for src
  *          amt Teo Sarca
  *          <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
- * 
+ *
  */
 final class FactLine extends X_Fact_Acct
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1287219868802190295L;
 
@@ -89,7 +91,7 @@ final class FactLine extends X_Fact_Acct
 	 * @param Line_ID - Optional line id
 	 * @param trxName transaction
 	 */
-	FactLine(Properties ctx, int AD_Table_ID, int Record_ID, int Line_ID, String trxName)
+	FactLine(final Properties ctx, final int AD_Table_ID, final int Record_ID, final int Line_ID, final String trxName)
 	{
 		super(ctx, 0, trxName);
 		setAD_Client_ID(0);							// do not derive
@@ -122,9 +124,9 @@ final class FactLine extends X_Fact_Acct
 	 * @param description new description
 	 * @return reversal line
 	 */
-	public FactLine reverse(String description)
+	public FactLine reverse(final String description)
 	{
-		FactLine reversal = new FactLine(getCtx(), getAD_Table_ID(), getRecord_ID(), getLine_ID(), get_TrxName());
+		final FactLine reversal = new FactLine(getCtx(), getAD_Table_ID(), getRecord_ID(), getLine_ID(), get_TrxName());
 		reversal.setClientOrg(this);	// needs to be set explicitly
 		reversal.setDocumentInfo(m_doc, m_docLine);
 		reversal.setAccount(acctSchema, m_acct);
@@ -143,9 +145,9 @@ final class FactLine extends X_Fact_Acct
 	 * @param description new description
 	 * @return accrual line
 	 */
-	public FactLine accrue(String description)
+	public FactLine accrue(final String description)
 	{
-		FactLine accrual = new FactLine(getCtx(), getAD_Table_ID(), getRecord_ID(), getLine_ID(), get_TrxName());
+		final FactLine accrual = new FactLine(getCtx(), getAD_Table_ID(), getRecord_ID(), getLine_ID(), get_TrxName());
 		accrual.setClientOrg(this);	// needs to be set explicitly
 		accrual.setDocumentInfo(m_doc, m_docLine);
 		accrual.setAccount(acctSchema, m_acct);
@@ -170,47 +172,61 @@ final class FactLine extends X_Fact_Acct
 		//
 		m_acct = acct;
 		if (getAD_Client_ID() == 0)
+		{
 			setAD_Client_ID(m_acct.getAD_Client_ID());
+		}
 		setAccount_ID(m_acct.getAccount_ID());
 		setC_SubAcct_ID(m_acct.getC_SubAcct_ID());
 
 		// User Defined References
-		AcctSchemaElement ud1 = acctSchema.getSchemaElementByType(AcctSchemaElementType.UserElement1);
+		final AcctSchemaElement ud1 = acctSchema.getSchemaElementByType(AcctSchemaElementType.UserElement1);
 		if (ud1 != null)
 		{
-			String ColumnName1 = ud1.getDisplayColumnName();
+			final String ColumnName1 = ud1.getDisplayColumnName();
 			if (ColumnName1 != null)
 			{
 				int ID1 = 0;
 				if (m_docLine != null)
+				{
 					ID1 = m_docLine.getValue(ColumnName1);
+				}
 				if (ID1 == 0)
 				{
 					if (m_doc == null)
+					{
 						throw new IllegalArgumentException("Document not set yet");
+					}
 					ID1 = m_doc.getValueAsIntOrZero(ColumnName1);
 				}
 				if (ID1 != 0)
+				{
 					setUserElement1_ID(ID1);
+				}
 			}
 		}
 		final AcctSchemaElement ud2 = acctSchema.getSchemaElementByType(AcctSchemaElementType.UserElement2);
 		if (ud2 != null)
 		{
-			String ColumnName2 = ud2.getDisplayColumnName();
+			final String ColumnName2 = ud2.getDisplayColumnName();
 			if (ColumnName2 != null)
 			{
 				int ID2 = 0;
 				if (m_docLine != null)
+				{
 					ID2 = m_docLine.getValue(ColumnName2);
+				}
 				if (ID2 == 0)
 				{
 					if (m_doc == null)
+					{
 						throw new IllegalArgumentException("Document not set yet");
+					}
 					ID2 = m_doc.getValueAsIntOrZero(ColumnName2);
 				}
 				if (ID2 != 0)
+				{
 					setUserElement2_ID(ID2);
+				}
 			}
 		}
 	}   // setAccount
@@ -233,7 +249,7 @@ final class FactLine extends X_Fact_Acct
 	 * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(AcctSchema, MAccount)}.
 	 */
 	@Override
-	public final void setC_AcctSchema_ID(int C_AcctSchema_ID)
+	public final void setC_AcctSchema_ID(final int C_AcctSchema_ID)
 	{
 		throw new UnsupportedOperationException("Please use setAccount()");
 	}
@@ -245,7 +261,7 @@ final class FactLine extends X_Fact_Acct
 
 	/**
 	 * Set Source Amounts
-	 * 
+	 *
 	 * @param currencyId currency
 	 * @param AmtSourceDr source amount dr
 	 * @param AmtSourceCr source amount cr
@@ -286,7 +302,7 @@ final class FactLine extends X_Fact_Acct
 
 	/**
 	 * Set Accounted Amounts (alternative: call convert)
-	 * 
+	 *
 	 * @param AmtAcctDr acct amount dr
 	 * @param AmtAcctCr acct amount cr
 	 */
@@ -352,7 +368,7 @@ final class FactLine extends X_Fact_Acct
 
 	/**
 	 * Set Accounted Amounts rounded by currency
-	 * 
+	 *
 	 * @param currencyId currency
 	 * @param AmtAcctDr acct amount dr
 	 * @param AmtAcctCr acct amount cr
@@ -401,7 +417,7 @@ final class FactLine extends X_Fact_Acct
 
 	/**
 	 * Set Document Info
-	 * 
+	 *
 	 * @param doc document
 	 * @param docLine doc line
 	 */
@@ -416,27 +432,39 @@ final class FactLine extends X_Fact_Acct
 
 		// Client
 		if (getAD_Client_ID() <= 0)
+		{
 			setAD_Client_ID(m_doc.getClientId().getRepoId());
+		}
 
 		// Date Trx
 		setDateTrx(m_doc.getDateDoc());
 		if (m_docLine != null && m_docLine.getDateDoc() != null)
+		{
 			setDateTrx(m_docLine.getDateDoc());
+		}
 
 		// Date Acct
 		setDateAcct(m_doc.getDateAcct());
 		if (m_docLine != null && m_docLine.getDateAcct() != null)
+		{
 			setDateAcct(m_docLine.getDateAcct());
+		}
 
 		// Period
 		if (m_docLine != null && m_docLine.getC_Period_ID() > 0)
+		{
 			setC_Period_ID(m_docLine.getC_Period_ID());
+		}
 		else
+		{
 			setC_Period_ID(m_doc.getC_Period_ID());
+		}
 
 		// Tax
 		if (m_docLine != null)
+		{
 			setC_Tax_ID(m_docLine.getC_Tax_ID());
+		}
 
 		// Document infos
 		setDocumentNo(m_doc.getDocumentNo());
@@ -450,12 +478,18 @@ final class FactLine extends X_Fact_Acct
 		{
 			description.append(" #").append(m_docLine.getLine());
 			if (m_docLine.getDescription() != null)
+			{
 				description.append(" (").append(m_docLine.getDescription()).append(")");
+			}
 			else if (m_doc.getDescription() != null && m_doc.getDescription().length() > 0)
+			{
 				description.append(" (").append(m_doc.getDescription()).append(")");
+			}
 		}
 		else if (m_doc.getDescription() != null && m_doc.getDescription().length() > 0)
+		{
 			description.append(" (").append(m_doc.getDescription()).append(")");
+		}
 		setDescription(description.toString());
 
 		// Journal Info
@@ -464,13 +498,19 @@ final class FactLine extends X_Fact_Acct
 
 		// Product
 		if (m_docLine != null)
+		{
 			setM_Product_ID(m_docLine.getProductId());
+		}
 		if (getM_Product_ID() == 0)
+		{
 			setM_Product_ID(m_doc.getM_Product_ID());
+		}
 
 		// UOM
 		if (m_docLine != null)
+		{
 			setC_UOM_ID(m_docLine.getC_UOM_ID());
+		}
 
 		// Qty
 		if (get_Value("Qty") == null)	// not previously set
@@ -483,62 +523,108 @@ final class FactLine extends X_Fact_Acct
 
 		// Loc From (maybe set earlier)
 		if (getC_LocFrom_ID() == 0 && m_docLine != null)
+		{
 			setC_LocFrom_ID(m_docLine.getC_LocFrom_ID());
+		}
 		if (getC_LocFrom_ID() == 0)
+		{
 			setC_LocFrom_ID(m_doc.getC_LocFrom_ID());
+		}
 
 		// Loc To (maybe set earlier)
 		if (getC_LocTo_ID() == 0 && m_docLine != null)
+		{
 			setC_LocTo_ID(m_docLine.getC_LocTo_ID());
+		}
 		if (getC_LocTo_ID() == 0)
+		{
 			setC_LocTo_ID(m_doc.getC_LocTo_ID());
+		}
 
 		// BPartner
 		if (m_docLine != null)
+		{
 			setC_BPartner_ID(m_docLine.getC_BPartner_ID());
+		}
 		if (getC_BPartner_ID() <= 0)
+		{
 			setC_BPartner_ID(m_doc.getC_BPartner_ID());
+		}
 
 		// Sales Region from BPLocation/Sales Rep
 		// NOTE: it will be set on save or on first call of getC_SalesRegion_ID() method.
 
 		// Trx Org
 		if (m_docLine != null)
+		{
 			setAD_OrgTrx_ID(m_docLine.getAD_OrgTrx_ID());
+		}
 		if (getAD_OrgTrx_ID() <= 0)
+		{
 			setAD_OrgTrx_ID(m_doc.getAD_OrgTrx_ID());
+		}
 
 		// Project
 		if (m_docLine != null)
+		{
 			setC_Project_ID(m_docLine.getC_Project_ID());
+		}
 		if (getC_Project_ID() <= 0)
+		{
 			setC_Project_ID(m_doc.getC_Project_ID());
+		}
 
 		// Campaign
 		if (m_docLine != null)
+		{
 			setC_Campaign_ID(m_docLine.getC_Campaign_ID());
+		}
 		if (getC_Campaign_ID() <= 0)
+		{
 			setC_Campaign_ID(m_doc.getC_Campaign_ID());
+		}
 
 		// Activity
 		if (m_docLine != null)
+		{
 			setC_Activity_ID(m_docLine.getActivityId());
+		}
 		if (getC_Activity_ID() <= 0)
+		{
 			setC_Activity_ID(m_doc.getC_Activity_ID());
+		}
 
 		// User List 1
 		if (m_docLine != null)
+		{
 			setUser1_ID(m_docLine.getUser1_ID());
+		}
 		if (getUser1_ID() <= 0)
+		{
 			setUser1_ID(m_doc.getUser1_ID());
+		}
 
 		// User List 2
 		if (m_docLine != null)
+		{
 			setUser2_ID(m_docLine.getUser2_ID());
+		}
 		if (getUser2_ID() <= 0)
+		{
 			setUser2_ID(m_doc.getUser2_ID());
-		// References in setAccount
+			// References in setAccount
+		}
 	}   // setDocumentInfo
+
+	private void setDateTrx(final LocalDate dateTrx)
+	{
+		super.setDateTrx(TimeUtil.asTimestamp(dateTrx));
+	}
+
+	private final void setDateAcct(final LocalDate dateAcct)
+	{
+		super.setDateAcct(TimeUtil.asTimestamp(dateAcct));
+	}
 
 	public final Doc<?> getDoc()
 	{
@@ -560,23 +646,27 @@ final class FactLine extends X_Fact_Acct
 	 *
 	 * @param description description
 	 */
-	public void addDescription(String description)
+	public void addDescription(final String description)
 	{
-		String original = getDescription();
+		final String original = getDescription();
 		if (original == null || original.trim().length() == 0)
+		{
 			super.setDescription(description);
+		}
 		else
+		{
 			super.setDescription(original + " - " + description);
+		}
 	}	// addDescription
 
 	/**
 	 * Set Warehouse Locator.
 	 * - will overwrite Organization -
-	 * 
+	 *
 	 * @param M_Locator_ID locator
 	 */
 	@Override
-	public void setM_Locator_ID(int M_Locator_ID)
+	public void setM_Locator_ID(final int M_Locator_ID)
 	{
 		super.setM_Locator_ID(M_Locator_ID);
 		setAD_Org_ID(0);	// reset
@@ -584,30 +674,36 @@ final class FactLine extends X_Fact_Acct
 
 	/**************************************************************************
 	 * Set Location
-	 * 
+	 *
 	 * @param C_Location_ID location
 	 * @param isFrom from
 	 */
-	public void setLocation(int C_Location_ID, boolean isFrom)
+	public void setLocation(final int C_Location_ID, final boolean isFrom)
 	{
 		if (isFrom)
+		{
 			setC_LocFrom_ID(C_Location_ID);
+		}
 		else
+		{
 			setC_LocTo_ID(C_Location_ID);
+		}
 	}   // setLocator
 
 	/**
 	 * Set Location from Locator
-	 * 
+	 *
 	 * @param M_Locator_ID locator
 	 * @param isFrom from
 	 */
-	public void setLocationFromLocator(int M_Locator_ID, boolean isFrom)
+	public void setLocationFromLocator(final int M_Locator_ID, final boolean isFrom)
 	{
 		if (M_Locator_ID == 0)
+		{
 			return;
+		}
 		int C_Location_ID = 0;
-		String sql = "SELECT w.C_Location_ID FROM M_Warehouse w, M_Locator l "
+		final String sql = "SELECT w.C_Location_ID FROM M_Warehouse w, M_Locator l "
 				+ "WHERE w.M_Warehouse_ID=l.M_Warehouse_ID AND l.M_Locator_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -617,9 +713,11 @@ final class FactLine extends X_Fact_Acct
 			pstmt.setInt(1, M_Locator_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				C_Location_ID = rs.getInt(1);
+			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error(sql, e);
 			return;
@@ -631,21 +729,25 @@ final class FactLine extends X_Fact_Acct
 			pstmt = null;
 		}
 		if (C_Location_ID != 0)
+		{
 			setLocation(C_Location_ID, isFrom);
+		}
 	}   // setLocationFromLocator
 
 	/**
 	 * Set Location from Busoness Partner Location
-	 * 
+	 *
 	 * @param C_BPartner_Location_ID bp location
 	 * @param isFrom from
 	 */
-	public void setLocationFromBPartner(int C_BPartner_Location_ID, boolean isFrom)
+	public void setLocationFromBPartner(final int C_BPartner_Location_ID, final boolean isFrom)
 	{
 		if (C_BPartner_Location_ID == 0)
+		{
 			return;
+		}
 		int C_Location_ID = 0;
-		String sql = "SELECT C_Location_ID FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
+		final String sql = "SELECT C_Location_ID FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -654,9 +756,11 @@ final class FactLine extends X_Fact_Acct
 			pstmt.setInt(1, C_BPartner_Location_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				C_Location_ID = rs.getInt(1);
+			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error(sql, e);
 			return;
@@ -668,23 +772,27 @@ final class FactLine extends X_Fact_Acct
 			pstmt = null;
 		}
 		if (C_Location_ID != 0)
+		{
 			setLocation(C_Location_ID, isFrom);
+		}
 	}   // setLocationFromBPartner
 
 	/**
 	 * Set Location from Organization
-	 * 
+	 *
 	 * @param AD_Org_ID org
 	 * @param isFrom from
 	 */
-	public void setLocationFromOrg(int AD_Org_ID, boolean isFrom)
+	public void setLocationFromOrg(final int AD_Org_ID, final boolean isFrom)
 	{
 		if (AD_Org_ID == 0)
+		{
 			return;
+		}
 
 		// 03711 using OrgBP_Location_ID to the the C_Location. Note that we have removed AD_OrgInfo.C_Location_ID
 		int OrgBP_Location_ID = 0;
-		String sql = "SELECT OrgBP_Location_ID FROM AD_OrgInfo WHERE AD_Org_ID=?";
+		final String sql = "SELECT OrgBP_Location_ID FROM AD_OrgInfo WHERE AD_Org_ID=?";
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -694,9 +802,11 @@ final class FactLine extends X_Fact_Acct
 			pstmt.setInt(1, AD_Org_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				OrgBP_Location_ID = rs.getInt(1);
+			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error(sql, e);
 			return;
@@ -717,22 +827,26 @@ final class FactLine extends X_Fact_Acct
 
 	/**************************************************************************
 	 * Returns Source Balance of line
-	 * 
+	 *
 	 * @return source balance
 	 */
 	public BigDecimal getSourceBalance()
 	{
 		if (getAmtSourceDr() == null)
+		{
 			setAmtSourceDr(BigDecimal.ZERO);
+		}
 		if (getAmtSourceCr() == null)
+		{
 			setAmtSourceCr(BigDecimal.ZERO);
+		}
 		//
 		return getAmtSourceDr().subtract(getAmtSourceCr());
 	}   // getSourceBalance
 
 	/**
 	 * Is Debit Source Balance
-	 * 
+	 *
 	 * @return true if DR source balance
 	 */
 	public boolean isDrSourceBalance()
@@ -742,15 +856,19 @@ final class FactLine extends X_Fact_Acct
 
 	/**
 	 * Get Accounted Balance
-	 * 
+	 *
 	 * @return accounting balance (DR - CR)
 	 */
 	public BigDecimal getAcctBalance()
 	{
 		if (getAmtAcctDr() == null)
+		{
 			setAmtAcctDr(BigDecimal.ZERO);
+		}
 		if (getAmtAcctCr() == null)
+		{
 			setAmtAcctCr(BigDecimal.ZERO);
+		}
 		return getAmtAcctDr().subtract(getAmtAcctCr());
 	}   // getAcctBalance
 
@@ -760,7 +878,7 @@ final class FactLine extends X_Fact_Acct
 	}   // isDrSourceBalance
 
 	/**
-	 * 
+	 *
 	 * @param factLine
 	 * @return true if the given fact line is booked on same DR/CR side as this line
 	 */
@@ -848,7 +966,7 @@ final class FactLine extends X_Fact_Acct
 
 	/**
 	 * Is Account on Balance Sheet
-	 * 
+	 *
 	 * @return true if account is a balance sheet account
 	 */
 	public boolean isBalanceSheet()
@@ -858,40 +976,50 @@ final class FactLine extends X_Fact_Acct
 
 	/**
 	 * Currect Accounting Amount.
-	 * 
+	 *
 	 * <pre>
 	 *  Example:    1       -1      1       -1
 	 *  Old         100/0   100/0   0/100   0/100
 	 *  New         99/0    101/0   0/99    0/101
 	 * </pre>
-	 * 
+	 *
 	 * @param deltaAmount delta amount
 	 */
-	public void currencyCorrect(BigDecimal deltaAmount)
+	public void currencyCorrect(final BigDecimal deltaAmount)
 	{
-		boolean negative = deltaAmount.compareTo(BigDecimal.ZERO) < 0;
-		boolean adjustDr = getAmtAcctDr().abs().compareTo(getAmtAcctCr().abs()) > 0;
+		final boolean negative = deltaAmount.compareTo(BigDecimal.ZERO) < 0;
+		final boolean adjustDr = getAmtAcctDr().abs().compareTo(getAmtAcctCr().abs()) > 0;
 
 		log.debug(deltaAmount.toString()
 				+ "; Old-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr()
 				+ "; Negative=" + negative + "; AdjustDr=" + adjustDr);
 
 		if (adjustDr)
+		{
 			if (negative)
+			{
 				setAmtAcctDr(getAmtAcctDr().subtract(deltaAmount));
+			}
 			else
+			{
 				setAmtAcctDr(getAmtAcctDr().subtract(deltaAmount));
+			}
+		}
 		else if (negative)
+		{
 			setAmtAcctCr(getAmtAcctCr().add(deltaAmount));
+		}
 		else
+		{
 			setAmtAcctCr(getAmtAcctCr().add(deltaAmount));
+		}
 
 		log.debug("New-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr());
 	}	// currencyCorrect
 
 	/**
 	 * Convert to Accounted Currency
-	 * 
+	 *
 	 * @return true if converted
 	 */
 	public void convert()
@@ -979,13 +1107,13 @@ final class FactLine extends X_Fact_Acct
 
 	/**
 	 * To String
-	 * 
+	 *
 	 * @return String
 	 */
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("FactLine=[");
+		final StringBuilder sb = new StringBuilder("FactLine=[");
 		sb.append(getAD_Table_ID()).append(":").append(getRecord_ID())
 				.append(",").append(m_acct)
 				.append(",Cur=").append(getC_Currency_ID())
@@ -1000,7 +1128,7 @@ final class FactLine extends X_Fact_Acct
 	 * (if not set directly - from document line, document, account, locator)
 	 * <p>
 	 * Note that Locator needs to be set before - otherwise segment balancing might produce the wrong results
-	 * 
+	 *
 	 * @return AD_Org_ID
 	 */
 	@Override
@@ -1062,16 +1190,24 @@ final class FactLine extends X_Fact_Acct
 	public int getC_SalesRegion_ID()
 	{
 		if (super.getC_SalesRegion_ID() > 0)
+		{
 			return super.getC_SalesRegion_ID();
+		}
 		//
 		if (m_docLine != null)
+		{
 			setC_SalesRegion_ID(m_docLine.getC_SalesRegion_ID());
+		}
 		if (m_doc != null)
 		{
 			if (super.getC_SalesRegion_ID() == 0)
+			{
 				setC_SalesRegion_ID(m_doc.getC_SalesRegion_ID());
+			}
 			if (super.getC_SalesRegion_ID() == 0 && m_doc.getBP_C_SalesRegion_ID() > 0)
+			{
 				setC_SalesRegion_ID(m_doc.getBP_C_SalesRegion_ID());
+			}
 			// derive SalesRegion if AcctSegment
 			if (super.getC_SalesRegion_ID() == 0
 					&& m_doc.getC_BPartner_Location_ID() != 0
@@ -1098,11 +1234,15 @@ final class FactLine extends X_Fact_Acct
 						log.debug("C_SalesRegion_ID=" + super.getC_SalesRegion_ID() + " (from SR)");
 					}
 					else
+					{
 						m_doc.setBP_C_SalesRegion_ID(-2);	// don't try again
+					}
 				}
 			}
 			if (m_acct != null && super.getC_SalesRegion_ID() == 0)
+			{
 				setC_SalesRegion_ID(m_acct.getC_SalesRegion_ID());
+			}
 		}
 		//
 		// log.debug("C_SalesRegion_ID=" + super.getC_SalesRegion_ID()
@@ -1119,7 +1259,7 @@ final class FactLine extends X_Fact_Acct
 	 * @return true
 	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		if (newRecord)
 		{
@@ -1129,25 +1269,45 @@ final class FactLine extends X_Fact_Acct
 			getC_SalesRegion_ID();
 			// Set Default Account Info
 			if (getM_Product_ID() == 0)
+			{
 				setM_Product_ID(m_acct.getM_Product_ID());
+			}
 			if (getC_LocFrom_ID() == 0)
+			{
 				setC_LocFrom_ID(m_acct.getC_LocFrom_ID());
+			}
 			if (getC_LocTo_ID() == 0)
+			{
 				setC_LocTo_ID(m_acct.getC_LocTo_ID());
+			}
 			if (getC_BPartner_ID() == 0)
+			{
 				setC_BPartner_ID(m_acct.getC_BPartner_ID());
+			}
 			if (getAD_OrgTrx_ID() == 0)
+			{
 				setAD_OrgTrx_ID(m_acct.getAD_OrgTrx_ID());
+			}
 			if (getC_Project_ID() == 0)
+			{
 				setC_Project_ID(m_acct.getC_Project_ID());
+			}
 			if (getC_Campaign_ID() == 0)
+			{
 				setC_Campaign_ID(m_acct.getC_Campaign_ID());
+			}
 			if (getC_Activity_ID() == 0)
+			{
 				setC_Activity_ID(m_acct.getC_Activity_ID());
+			}
 			if (getUser1_ID() == 0)
+			{
 				setUser1_ID(m_acct.getUser1_ID());
+			}
 			if (getUser2_ID() == 0)
+			{
 				setUser2_ID(m_acct.getUser2_ID());
+			}
 
 			setVATCodeIfApplies();
 
@@ -1157,7 +1317,7 @@ final class FactLine extends X_Fact_Acct
 					&& m_docLine != null
 					&& m_docLine.getC_RevenueRecognition_ID() != 0)
 			{
-				int AD_User_ID = 0;
+				final int AD_User_ID = 0;
 				setAccount_ID(createRevenueRecognition(
 						m_docLine.getC_RevenueRecognition_ID(), m_docLine.get_ID(),
 						getAD_Client_ID(), getAD_Org_ID(), AD_User_ID,
@@ -1202,34 +1362,36 @@ final class FactLine extends X_Fact_Acct
 	 * @return Account_ID for Unearned Revenue or Revenue Account if not found
 	 */
 	private int createRevenueRecognition(
-			int C_RevenueRecognition_ID, int C_InvoiceLine_ID,
-			int AD_Client_ID, int AD_Org_ID, int AD_User_ID,
-			int Account_ID, int C_SubAcct_ID,
-			int M_Product_ID, int C_BPartner_ID, int AD_OrgTrx_ID,
-			int C_LocFrom_ID, int C_LocTo_ID, int C_SRegion_ID, int C_Project_ID,
-			int C_Campaign_ID, int C_Activity_ID,
-			int User1_ID, int User2_ID, int UserElement1_ID, int UserElement2_ID)
+			final int C_RevenueRecognition_ID, final int C_InvoiceLine_ID,
+			final int AD_Client_ID, final int AD_Org_ID, final int AD_User_ID,
+			final int Account_ID, final int C_SubAcct_ID,
+			final int M_Product_ID, final int C_BPartner_ID, final int AD_OrgTrx_ID,
+			final int C_LocFrom_ID, final int C_LocTo_ID, final int C_SRegion_ID, final int C_Project_ID,
+			final int C_Campaign_ID, final int C_Activity_ID,
+			final int User1_ID, final int User2_ID, final int UserElement1_ID, final int UserElement2_ID)
 	{
 		log.debug("From Accout_ID=" + Account_ID);
 		// get VC for P_Revenue (from Product)
-		MAccount revenue = MAccount.get(getCtx(),
+		final MAccount revenue = MAccount.get(getCtx(),
 				AD_Client_ID, AD_Org_ID, getAcctSchemaId(), Account_ID, C_SubAcct_ID,
 				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID, C_LocFrom_ID, C_LocTo_ID, C_SRegion_ID,
 				C_Project_ID, C_Campaign_ID, C_Activity_ID,
 				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID);
 		if (revenue != null && revenue.get_ID() == 0)
+		{
 			revenue.save();
+		}
 		if (revenue == null || revenue.get_ID() == 0)
 		{
 			log.error("Revenue_Acct not found");
 			return Account_ID;
 		}
-		int P_Revenue_Acct = revenue.get_ID();
+		final int P_Revenue_Acct = revenue.get_ID();
 
 		// get Unearned Revenue Acct from BPartner Group
 		int UnearnedRevenue_Acct = 0;
 		int new_Account_ID = 0;
-		String sql = "SELECT ga.UnearnedRevenue_Acct, vc.Account_ID "
+		final String sql = "SELECT ga.UnearnedRevenue_Acct, vc.Account_ID "
 				+ "FROM C_BP_Group_Acct ga, C_BPartner p, C_ValidCombination vc "
 				+ "WHERE ga.C_BP_Group_ID=p.C_BP_Group_ID"
 				+ " AND ga.UnearnedRevenue_Acct=vc.C_ValidCombination_ID"
@@ -1248,7 +1410,7 @@ final class FactLine extends X_Fact_Acct
 				new_Account_ID = rs.getInt(2);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error(sql, e);
 		}
@@ -1264,7 +1426,7 @@ final class FactLine extends X_Fact_Acct
 			return Account_ID;
 		}
 
-		MRevenueRecognitionPlan plan = new MRevenueRecognitionPlan(getCtx(), 0, null);
+		final MRevenueRecognitionPlan plan = new MRevenueRecognitionPlan(getCtx(), 0, null);
 		plan.setC_RevenueRecognition_ID(C_RevenueRecognition_ID);
 		plan.setC_AcctSchema_ID(getC_AcctSchema_ID());
 		plan.setC_InvoiceLine_ID(C_InvoiceLine_ID);
@@ -1286,15 +1448,15 @@ final class FactLine extends X_Fact_Acct
 	 * Update Line with reversed Original Amount in Accounting Currency.
 	 * Also copies original dimensions like Project, etc.
 	 * Called from Doc_MatchInv
-	 * 
+	 *
 	 * @param AD_Table_ID table
 	 * @param Record_ID record
 	 * @param Line_ID line
 	 * @param multiplier targetQty/documentQty
 	 * @return true if success
 	 */
-	public boolean updateReverseLine(int AD_Table_ID, int Record_ID, int Line_ID,
-			BigDecimal multiplier)
+	public boolean updateReverseLine(final int AD_Table_ID, final int Record_ID, final int Line_ID,
+			final BigDecimal multiplier)
 	{
 		boolean success = false;
 
@@ -1304,8 +1466,10 @@ final class FactLine extends X_Fact_Acct
 				+ " AND Line_ID=? AND Account_ID=?";
 		// MZ Goodwill
 		// for Inventory Move
-		if (MMovement.Table_ID == AD_Table_ID)
+		if (I_M_Movement.Table_ID == AD_Table_ID)
+		{
 			sql += " AND M_Locator_ID=?";
+		}
 		// end MZ
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1319,8 +1483,10 @@ final class FactLine extends X_Fact_Acct
 			pstmt.setInt(5, m_acct.getAccount_ID());
 			// MZ Goodwill
 			// for Inventory Move
-			if (MMovement.Table_ID == AD_Table_ID)
+			if (I_M_Movement.Table_ID == AD_Table_ID)
+			{
 				pstmt.setInt(6, getM_Locator_ID());
+			}
 			// end MZ
 			rs = pstmt.executeQuery();
 			if (rs.next())
@@ -1328,8 +1494,8 @@ final class FactLine extends X_Fact_Acct
 				final I_Fact_Acct fact = new MFactAcct(getCtx(), rs, get_TrxName());
 				final CurrencyId currencyId = CurrencyId.ofRepoId(fact.getC_Currency_ID());
 				// Accounted Amounts - reverse
-				BigDecimal dr = fact.getAmtAcctDr();
-				BigDecimal cr = fact.getAmtAcctCr();
+				final BigDecimal dr = fact.getAmtAcctDr();
+				final BigDecimal cr = fact.getAmtAcctCr();
 				// setAmtAcctDr (cr.multiply(multiplier));
 				// setAmtAcctCr (dr.multiply(multiplier));
 				setAmtAcct(
@@ -1339,8 +1505,8 @@ final class FactLine extends X_Fact_Acct
 				//
 				// Bayu Sistematika - Source Amounts
 				// Fixing source amounts
-				BigDecimal drSourceAmt = fact.getAmtSourceDr();
-				BigDecimal crSourceAmt = fact.getAmtSourceCr();
+				final BigDecimal drSourceAmt = fact.getAmtSourceDr();
+				final BigDecimal crSourceAmt = fact.getAmtSourceCr();
 				setAmtSource(
 						currencyId,
 						crSourceAmt.multiply(multiplier),
@@ -1391,7 +1557,7 @@ final class FactLine extends X_Fact_Acct
 				}
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error(sql, e);
 		}
@@ -1434,7 +1600,7 @@ final class FactLine extends X_Fact_Acct
 				.setDate(getDateAcct())
 				.build());
 
-		this.setVATCode(vatCode.getCode());
+		setVATCode(vatCode.getCode());
 	}
 
 	public void setQty(@NonNull final Quantity quantity)

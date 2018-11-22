@@ -24,6 +24,7 @@ import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MPeriod;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -73,7 +74,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		m_InterestAmt = line.getInterestAmt();
 		m_TrxAmt = line.getTrxAmt();
 		//
-		setDateDoc(line.getValutaDate());
+		setDateDoc(TimeUtil.asLocalDate(line.getValutaDate()));
 		setC_BPartner_ID(line.getC_BPartner_ID());
 
 		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.retrieveLineReferences(line));
@@ -209,7 +210,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	private final ICurrencyConversionContext getCurrencyConversionCtx(final int conversionTypeId)
 	{
 		return currencyConversionBL.createCurrencyConversionContext(
-				getDateAcct(),
+				TimeUtil.asDate(getDateAcct()),
 				conversionTypeId,
 				getClientId(),
 				getOrgId());
