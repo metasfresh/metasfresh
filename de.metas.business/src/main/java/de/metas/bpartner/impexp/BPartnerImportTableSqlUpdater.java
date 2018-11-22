@@ -8,6 +8,7 @@ import org.compiere.model.I_I_BPartner;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -244,7 +245,11 @@ public class BPartnerImportTableSqlUpdater
 		int no;
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p"
-				+ " WHERE i.Value=p.Value AND p.AD_Client_ID=i.AD_Client_ID) "
+				+ " WHERE i."
+				+ I_I_BPartner.COLUMNNAME_Value
+				+ "=p."
+				+ I_C_BPartner.COLUMNNAME_Value
+				+ " AND p.AD_Client_ID=i.AD_Client_ID) "
 				+ "WHERE C_BPartner_ID IS NULL AND Value IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
