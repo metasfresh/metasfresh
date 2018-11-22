@@ -164,7 +164,7 @@ public class MSV3ClientConfigRepository
 	public MSV3ClientConfig save(@NonNull final MSV3ClientConfig config)
 	{
 		final I_MSV3_Vendor_Config configRecord = createOrUpdateRecord(config);
-		saveRecord(config);
+		saveRecord(configRecord);
 
 		return config.toBuilder()
 				.configId(MSV3ClientConfigId.ofRepoId(configRecord.getMSV3_Vendor_Config_ID()))
