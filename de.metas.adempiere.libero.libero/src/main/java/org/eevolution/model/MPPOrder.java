@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
@@ -62,6 +61,7 @@ import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
@@ -152,8 +152,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public String prepareIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
-
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 		//
 		// Validate BOM Lines
@@ -252,11 +250,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Mark BOM Lines as processed
+		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 		final List<I_PP_Order_BOMLine> orderBOMLines = getLines();
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
 			orderBOMLine.setProcessed(true);
-			InterfaceWrapperHelper.save(orderBOMLine);
+			orderBOMsRepo.save(orderBOMLine);
 		}
 
 		//
@@ -272,7 +271,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Auto receipt and issue for kit
-		final I_PP_Order_BOM ppOrderBOM = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(this);
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(getPP_Order_ID());
+		final I_PP_Order_BOM ppOrderBOM = orderBOMsRepo.getByOrderId(ppOrderId);
 		if (X_PP_Order_BOM.BOMTYPE_Make_To_Kit.equals(ppOrderBOM.getBOMType())
 				&& X_PP_Order_BOM.BOMUSE_Manufacturing.equals(ppOrderBOM.getBOMUse()))
 		{
@@ -312,15 +312,17 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Set QtyRequired=0 on all BOM Lines
+		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+		final IPPOrderBOMBL orderBOMsService = Services.get(IPPOrderBOMBL.class);
 		for (final I_PP_Order_BOMLine line : getLines())
 		{
 			final BigDecimal qtyRequiredOld = line.getQtyRequiered();
 			if (qtyRequiredOld.signum() != 0)
 			{
-				Services.get(IPPOrderBOMBL.class).addDescription(line, Services.get(IMsgBL.class).parseTranslation(getCtx(), "@Voided@ @QtyRequiered@ : (" + qtyRequiredOld + ")"));
+				orderBOMsService.addDescription(line, Services.get(IMsgBL.class).parseTranslation(getCtx(), "@Voided@ @QtyRequiered@ : (" + qtyRequiredOld + ")"));
 				line.setQtyRequiered(BigDecimal.ZERO);
 				line.setProcessed(true);
-				InterfaceWrapperHelper.save(line);
+				orderBOMsRepo.save(line);
 			}
 		}
 
@@ -338,7 +340,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			ppOrderBL.addDescription(this, Services.get(IMsgBL.class).parseTranslation(getCtx(), "@Voided@ @QtyOrdered@ : (" + qtyOrderedOld + ")"));
 			ppOrderBL.setQtyOrdered(this, BigDecimal.ZERO);
 			ppOrderBL.setQtyEntered(this, BigDecimal.ZERO);
-			InterfaceWrapperHelper.save(this);
+			Services.get(IPPOrderDAO.class).save(this);
 		}
 
 		//
@@ -450,10 +452,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Iterate Order BOM Lines and un-process them
-		for (final I_PP_Order_BOMLine orderBOMLine : Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(this))
+		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMsRepo.retrieveOrderBOMLines(this))
 		{
 			orderBOMLine.setProcessed(false);
-			InterfaceWrapperHelper.save(orderBOMLine);
+			orderBOMsRepo.save(orderBOMLine);
 		}
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);

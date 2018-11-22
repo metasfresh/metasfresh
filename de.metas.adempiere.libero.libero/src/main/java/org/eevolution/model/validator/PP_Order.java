@@ -23,7 +23,6 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.material.event.PostMaterialEventService;
@@ -161,7 +160,8 @@ public class PP_Order
 
 		final PPOrderChangedEventFactory eventfactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderRecord);
 
-		deleteWorkflowAndBOM(ppOrderRecord);
+		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
+		deleteWorkflowAndBOM(orderId);
 		createWorkflowAndBOM(ppOrderRecord);
 
 		final PPOrderChangedEvent event = eventfactory.inspectPPOrderAfterChange();
@@ -170,16 +170,10 @@ public class PP_Order
 		materialEventService.postEventAfterNextCommit(event);
 	}
 
-	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)
+	private void deleteWorkflowAndBOM(final PPOrderId orderId)
 	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		Services.get(IPPOrderRoutingRepository.class).deleteByOrderId(orderId);
-
-		final I_PP_Order_BOM orderBOM = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(ppOrder);
-		if (orderBOM != null)
-		{
-			InterfaceWrapperHelper.delete(orderBOM);
-		}
+		Services.get(IPPOrderBOMDAO.class).deleteByOrderId(orderId);
 	}
 
 	private void createWorkflowAndBOM(final I_PP_Order ppOrder)
@@ -191,7 +185,6 @@ public class PP_Order
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(@NonNull final I_PP_Order ppOrder)
 	{
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
 
 		//
@@ -201,8 +194,9 @@ public class PP_Order
 				|| X_PP_Order.DOCSTATUS_InProgress.equals(docStatus))
 		{
 			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+
 			orderCostsService.deleteByOrderId(ppOrderId);
-			deleteWorkflowAndBOM(ppOrder);
+			deleteWorkflowAndBOM(ppOrderId);
 		}
 	}
 }

@@ -10,7 +10,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
@@ -28,10 +28,11 @@ import lombok.NonNull;
 public class PPOrderBOMDAO implements IPPOrderBOMDAO
 {
 	@Override
-	public I_PP_Order_BOM retrieveOrderBOM(final I_PP_Order order)
+	public I_PP_Order_BOM getByOrderId(@NonNull final PPOrderId orderId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_BOM.class, order)
-				.filter(new EqualsQueryFilter<I_PP_Order_BOM>(I_PP_Order_BOM.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID()))
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order_BOM.class)
+				.addEqualsFilter(I_PP_Order_BOM.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
 				// .setOnlyActiveRecords(true) // we shall have only active records anyway
 				.firstOnly(I_PP_Order_BOM.class);
@@ -217,5 +218,15 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	public void save(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
 		saveRecord(orderBOMLine);
+	}
+
+	@Override
+	public void deleteByOrderId(@NonNull final PPOrderId orderId)
+	{
+		I_PP_Order_BOM orderBOM = getByOrderId(orderId);
+		if (orderBOM != null)
+		{
+			InterfaceWrapperHelper.delete(orderBOM);
+		}
 	}
 }

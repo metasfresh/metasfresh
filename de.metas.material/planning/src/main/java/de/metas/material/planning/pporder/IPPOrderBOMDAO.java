@@ -56,7 +56,7 @@ public interface IPPOrderBOMDAO extends ISingletonService
 	 */
 	I_PP_Order_BOMLine retrieveComponentBOMLineForAlternative(I_PP_Order_BOMLine orderBOMLineAlternative);
 
-	I_PP_Order_BOM retrieveOrderBOM(I_PP_Order order);
+	I_PP_Order_BOM getByOrderId(PPOrderId orderId);
 
 	int retrieveNextLineNo(I_PP_Order order);
 
@@ -66,4 +66,5 @@ public interface IPPOrderBOMDAO extends ISingletonService
 
 	void save(I_PP_Order_BOMLine orderBOMLine);
 
+	void deleteByOrderId(PPOrderId orderId);
 }
