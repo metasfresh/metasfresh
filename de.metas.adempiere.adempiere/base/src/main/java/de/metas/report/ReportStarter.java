@@ -82,7 +82,8 @@ public abstract class ReportStarter extends JavaProcess
 
 		final ReportPrintingInfo reportPrintingInfo = extractReportPrintingInfo(pi);
 
-		if (reportPrintingInfo.isPrintPreview())
+		final boolean doNotInvokeMassPrintEngine = reportPrintingInfo.isPrintPreview() || !reportPrintingInfo.isArchiveReportData();
+		if (doNotInvokeMassPrintEngine)
 		{
 			// Create report and preview
 			startProcessPrintPreview(reportPrintingInfo);
@@ -119,7 +120,7 @@ public abstract class ReportStarter extends JavaProcess
 		swingJRReportViewerProvider = provider;
 	}
 
-	private void startProcessDirectPrint(final ReportPrintingInfo reportPrintingInfo)
+	private void startProcessDirectPrint(@NonNull final ReportPrintingInfo reportPrintingInfo)
 	{
 		final ProcessInfo pi = reportPrintingInfo.getProcessInfo();
 
@@ -175,7 +176,9 @@ public abstract class ReportStarter extends JavaProcess
 
 		//
 		// Print preview (if swing client)
-		if (Ini.isClient() && swingJRReportViewerProvider != null)
+		if (reportPrintingInfo.isPrintPreview()
+				&& Ini.isClient()
+				&& swingJRReportViewerProvider != null)
 		{
 			swingJRReportViewerProvider.openViewer(result.getReportData(), outputType, processInfo);
 		}
@@ -217,10 +220,12 @@ public abstract class ReportStarter extends JavaProcess
 
 	private ReportPrintingInfo extractReportPrintingInfo(@NonNull final ProcessInfo pi)
 	{
-		final ReportPrintingInfo.ReportPrintingInfoBuilder info = ReportPrintingInfo.builder();
-		info.processInfo(pi);
-		info.printPreview(pi.isPrintPreview());
-		info.forceSync(!pi.isAsync()); // gh #1160 if the process info says "sync", then sync it is
+		final ReportPrintingInfo.ReportPrintingInfoBuilder info = ReportPrintingInfo
+				.builder()
+				.processInfo(pi)
+				.printPreview(pi.isPrintPreview())
+				.archiveReportData(pi.isArchiveReportData())
+				.forceSync(!pi.isAsync()); // gh #1160 if the process info says "sync", then sync it is
 
 		//
 		// Determine the ReportingSystem type based on report template file extension
@@ -291,8 +296,12 @@ public abstract class ReportStarter extends JavaProcess
 	private static final class ReportPrintingInfo
 	{
 		ProcessInfo processInfo;
+
 		ReportingSystemType reportingSystemType;
+
 		boolean printPreview;
+
+		boolean archiveReportData;
 
 		/**
 		 * Even if {@link #isPrintPreview()} is {@code false}, we do <b>not</b> print in a background thread, if this is false.

@@ -61,6 +61,8 @@ import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
+import org.compiere.util.Util;
+
 /**
  * Process Instance informations.
  *
@@ -112,6 +114,8 @@ public final class ProcessInfo implements Serializable
 		tabNo = builder.getTabNo();
 
 		printPreview = builder.isPrintPreview();
+		archiveReportData = builder.isArchiveReportData();
+
 		reportingProcess = builder.isReportingProcess();
 		reportLanguage = builder.getReportLanguage();
 		reportTemplate = builder.getReportTemplate();
@@ -181,6 +185,7 @@ public final class ProcessInfo implements Serializable
 	//
 	// Reporting related
 	private final boolean printPreview;
+	private final boolean archiveReportData;
 	private final boolean reportingProcess;
 	private final Optional<String> reportTemplate;
 	private final Language reportLanguage;
@@ -539,12 +544,15 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * Is print preview instead of direct print ? Only relevant if this is a reporting process
-	 *
-	 * @return boolean
 	 */
 	public boolean isPrintPreview()
 	{
 		return printPreview;
+	}
+
+	public boolean isArchiveReportData()
+	{
+		return archiveReportData;
 	}
 
 	/**
@@ -747,6 +755,8 @@ public final class ProcessInfo implements Serializable
 
 		private Language reportLanguage;
 		private Boolean printPreview;
+		private Boolean archiveReportData;
+
 		private OutputType jrDesiredOutputType = null;
 
 		private List<ProcessInfoParameter> parameters = null;
@@ -1386,6 +1396,11 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
+		/**
+		 * Only really matters when forking with the swing client.
+		 * {@code true} means that the system shall just if the report data shall just be returned.
+		 * If not set, then the system will look at {@link Ini#P_PRINTPREVIEW} and {@code AD_Process.IsDirectPrint}.
+		 */
 		public ProcessInfoBuilder setPrintPreview(final Boolean printPreview)
 		{
 			this.printPreview = printPreview;
@@ -1396,7 +1411,7 @@ public final class ProcessInfo implements Serializable
 		 * Relevant for report processes.
 		 * {@code true} means that the system shall just if the report data shall just be returned
 		 */
-		public boolean isPrintPreview()
+		private boolean isPrintPreview()
 		{
 			if (this.printPreview != null)
 			{
@@ -1415,6 +1430,22 @@ public final class ProcessInfo implements Serializable
 			}
 
 			return false;
+		}
+
+		/**
+		 * Set to {@code false} if you only want to invoke the report engine and get the resulting PDF data, without having it archived.
+		 * <p>
+		 * Important: doesn't matter if print preview is {@code true}, because in that case, the report result is never archived.
+		 */
+		public ProcessInfoBuilder setArchiveReportData(final Boolean archiveReportData)
+		{
+			this.archiveReportData = archiveReportData;
+			return this;
+		}
+
+		private boolean isArchiveReportData()
+		{
+			return Util.coalesce(archiveReportData, Boolean.TRUE);
 		}
 
 		public ProcessInfoBuilder setWindowNo(int windowNo)
