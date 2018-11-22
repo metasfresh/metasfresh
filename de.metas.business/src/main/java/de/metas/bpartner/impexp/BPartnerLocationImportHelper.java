@@ -169,11 +169,10 @@ import lombok.NonNull;
 
 		updatePhoneAndFax(importRecord, bpartnerLocation);
 
+		bpartnerLocation.setExternalId(importRecord.getC_BPartner_Location_ExternalId());
 		bpartnerLocation.setGLN(importRecord.getGLN());
 
 		fireImportValidatorAndSaveBPartnerLocation(importRecord, bpartnerLocation);
-
-
 
 		importRecord.setC_BPartner_Location(bpartnerLocation);
 	}
