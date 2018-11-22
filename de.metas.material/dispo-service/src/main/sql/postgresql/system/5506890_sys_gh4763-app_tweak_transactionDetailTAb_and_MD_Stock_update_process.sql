@@ -158,3 +158,45 @@ INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Fi
 /* DDL */  select update_FieldTranslation_From_AD_Name_Element(543680) 
 ;
 
+-- 2018-11-22T18:22:44.112
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs', Description='Aktualisiert den Lagerbestand (MD_Stock) mit Hilfe von HU-Daten (M_HU, M_HUStorage u.A.).', Name='Lagerbestand mit HU-Daten korrigieren', Value='MD_Stock_Update_From_M_HUs',Updated=TO_TIMESTAMP('2018-11-22 18:22:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540907
+;
+
+-- 2018-11-22T18:22:44.134
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Aktualisiert den Lagerbestand (MD_Stock) mit Hilfe von HU-Daten (M_HU, M_HUStorage u.A.).', IsActive='Y', Name='Lagerbestand mit HU-Daten korrigieren',Updated=TO_TIMESTAMP('2018-11-22 18:22:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541009
+;
+
+-- 2018-11-22T18:22:54.217
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-11-22 18:22:54','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Lagerbestand mit HU-Daten korrigieren' WHERE AD_Process_ID=540907 AND AD_Language='de_CH'
+;
+
+-- 2018-11-22T18:22:57.797
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-11-22 18:22:57','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Lagerbestand mit HU-Daten korrigieren' WHERE AD_Process_ID=540907 AND AD_Language='de_DE'
+;
+
+-- 2018-11-22T18:23:14.746
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-11-22 18:23:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Update stock data from HU data' WHERE AD_Process_ID=540907 AND AD_Language='en_US'
+;
+
+-- 2018-11-22T18:23:28.892
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Aktualisiert den Lagerbestand (MD_Stock) mit Hilfe von HU-Daten (M_HU, M_HU_Storage u.A.).',Updated=TO_TIMESTAMP('2018-11-22 18:23:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540907
+;
+
+-- 2018-11-22T18:23:28.897
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Aktualisiert den Lagerbestand (MD_Stock) mit Hilfe von HU-Daten (M_HU, M_HU_Storage u.A.).', IsActive='Y', Name='Lagerbestand mit HU-Daten korrigieren',Updated=TO_TIMESTAMP('2018-11-22 18:23:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541009
+;
+
+-- 2018-11-22T18:58:33.092
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Scheduler (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,AD_Scheduler_ID,Created,CreatedBy,CronPattern,Description,EntityType,Frequency,FrequencyType,IsActive,IsIgnoreProcessingTime,KeepLogDays,ManageScheduler,Name,Processing,SchedulerProcessType,ScheduleType,Status,Supervisor_ID,Updated,UpdatedBy)
+SELECT 0,0,540907,0,550047,TO_TIMESTAMP('2018-11-22 18:58:32','YYYY-MM-DD HH24:MI:SS'),100,'*/15 * * * *','Update MD_Stock (and thus also MD_Candidate) every 15 minutes; will become obsolete once we addressed the last problems.','de.metas.material.dispo',0,'D','Y','N',7,'N','MD_Stock_Update_From_M_HUs','N','P','C','NEW',0,TO_TIMESTAMP('2018-11-22 18:58:32','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (select 1 from AD_Scheduler where AD_Process_ID=540907)
+;
+
