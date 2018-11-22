@@ -31,19 +31,6 @@ public interface IPPOrderBOMDAO extends ISingletonService
 
 	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
 
-	/**
-	 * Retrieve (active) Order BOM Line alternatives for given Component BOM Line.
-	 */
-	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLineAlternatives(I_PP_Order_BOMLine orderBOMLine, Class<T> orderBOMLineClass);
-
-	/**
-	 * Retrieve Main Component BOM Line for a given alternative BOM Line
-	 * 
-	 * @param orderBOMLineAlternative
-	 * @return
-	 */
-	I_PP_Order_BOMLine retrieveComponentBOMLineForAlternative(I_PP_Order_BOMLine orderBOMLineAlternative);
-
 	I_PP_Order_BOM getByOrderId(PPOrderId orderId);
 
 	int retrieveNextLineNo(PPOrderId orderId);
