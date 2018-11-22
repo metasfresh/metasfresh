@@ -104,8 +104,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 */
 	void updateWarehouseAndLocator(I_PP_Order_BOMLine orderBOMLine);
 
-	void setForceQtyReservation(I_PP_Order_BOMLine orderBOMLine, boolean forceQtyReservation);
-
 	/**
 	 * Returns the negated value of the given <code>qty</code>.
 	 * <p>

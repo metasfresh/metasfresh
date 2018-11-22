@@ -658,22 +658,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		}
 	}	// addDescription
 
-	private final static String DYNATTR_ForceQtyReservation = PPOrderBOMBL.class.getName() + "#ForceQtyReservation";
-
 	@Override
-	public void setForceQtyReservation(final I_PP_Order_BOMLine orderBOMLine, final boolean forceQtyReservation)
-	{
-		InterfaceWrapperHelper.setDynAttribute(orderBOMLine, DYNATTR_ForceQtyReservation, forceQtyReservation);
-	}
-
-	@Override
-	public void addQtyDelivered(final I_PP_Order_BOMLine ppOrderBOMLine,
+	public void addQtyDelivered(
+			@NonNull final I_PP_Order_BOMLine ppOrderBOMLine,
 			final boolean isUsageVariance,
-			final BigDecimal qtyDeliveredToAdd)
+			@NonNull final BigDecimal qtyDeliveredToAdd)
 	{
-		Check.assumeNotNull(ppOrderBOMLine, "ppOrderBOMLine not null");
-		Check.assumeNotNull(qtyDeliveredToAdd, "qtyDeliveredToAdd not null");
-
 		if (qtyDeliveredToAdd.signum() == 0)
 		{
 			return;
