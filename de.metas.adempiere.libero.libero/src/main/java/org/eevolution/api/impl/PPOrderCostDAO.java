@@ -2,6 +2,8 @@ package org.eevolution.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.HashMap;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -24,6 +26,7 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -46,15 +49,6 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 	}
 
 	@Override
-	public void save(@NonNull final PPOrderCosts orderCosts)
-	{
-		final PPOrderId orderId = orderCosts.getOrderId();
-		deleteByOrderId(orderId);
-
-		orderCosts.forEach(cost -> createRecordAndSave(orderId, cost));
-	}
-
-	@Override
 	public void deleteByOrderId(@NonNull final PPOrderId ppOrderId)
 	{
 		retrieveAllOrderCostsQuery(ppOrderId)
@@ -64,23 +58,51 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 
 	private IQueryBuilder<I_PP_Order_Cost> retrieveAllOrderCostsQuery(@NonNull final PPOrderId ppOrderId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Cost.class)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order_Cost.class)
 				.addEqualsFilter(I_PP_Order_Cost.COLUMNNAME_PP_Order_ID, ppOrderId)
 		// .addOnlyActiveRecordsFilter() // NOTE: we need to retrieve ALL costs
 		;
 	}
 
-	private I_PP_Order_Cost createRecordAndSave(final PPOrderId orderId, final PPOrderCost from)
+	@Override
+	public void save(@NonNull final PPOrderCosts orderCosts)
 	{
-		final I_PP_Order_Cost record = InterfaceWrapperHelper.newInstance(I_PP_Order_Cost.class);
-		record.setPP_Order_ID(orderId.getRepoId());
-		updateRecord(record, from);
+		final PPOrderId orderId = orderCosts.getOrderId();
+
+		final HashMap<Integer, I_PP_Order_Cost> existingRecordsById = retrieveAllOrderCostsQuery(orderId)
+				.create()
+				.stream()
+				.collect(GuavaCollectors.toHashMapByKey(I_PP_Order_Cost::getPP_Order_Cost_ID));
+
+		orderCosts.forEach(cost -> savePPOrderCost(cost, orderId, existingRecordsById.remove(cost.getRepoId())));
+
+		InterfaceWrapperHelper.deleteAll(existingRecordsById.values());
+	}
+
+	private void savePPOrderCost(final PPOrderCost cost, final PPOrderId orderId, final I_PP_Order_Cost existingRecord)
+	{
+		final I_PP_Order_Cost record;
+		if (existingRecord == null)
+		{
+			record = InterfaceWrapperHelper.newInstance(I_PP_Order_Cost.class);
+			record.setPP_Order_ID(orderId.getRepoId());
+		}
+		else
+		{
+			record = existingRecord;
+		}
+
+		updateRecord(record, cost);
 		saveRecord(record);
-		return record;
+
+		cost.setRepoId(record.getPP_Order_Cost_ID());
 	}
 
 	private void updateRecord(@NonNull final I_PP_Order_Cost record, @NonNull final PPOrderCost from)
 	{
+		record.setIsActive(true);
+
 		final CostSegment costSegment = from.getCostSegment();
 		record.setAD_Org_ID(costSegment.getOrgId().getRepoId());
 		record.setC_AcctSchema_ID(costSegment.getAcctSchemaId().getRepoId());
@@ -91,8 +113,8 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		final CostElementId costElementId = from.getCostElementId();
 		record.setM_CostElement_ID(costElementId.getRepoId());
 
-		final CostAmount amount = from.getAmount();
-		record.setCurrentCostPrice(amount.getValue());
+		final CostAmount price = from.getPrice();
+		record.setCurrentCostPrice(price.getValue());
 		// ppOrderCost.setCurrentCostPriceLL(cost.getCurrentCostPriceLL());
 		// ppOrderCost.setCumulatedAmt(cost.getCumulatedAmt()); // TODO: delete it
 		// ppOrderCost.setCumulatedQty(cost.getCumulatedQty()); // TODO: delete it
@@ -118,12 +140,13 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 
 		final CostElementId costElementId = CostElementId.ofRepoId(record.getM_CostElement_ID());
 
-		final CostAmount amount = CostAmount.of(record.getCurrentCostPrice(), acctSchema.getCurrencyId());
+		final CostAmount price = CostAmount.of(record.getCurrentCostPrice(), acctSchema.getCurrencyId());
 
 		return PPOrderCost.builder()
+				.repoId(record.getPP_Order_Cost_ID())
 				.costSegment(costSegment)
 				.costElementId(costElementId)
-				.amount(amount)
+				.price(price)
 				.build();
 	}
 }

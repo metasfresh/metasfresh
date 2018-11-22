@@ -3,9 +3,15 @@ package org.eevolution.api;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
+import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -29,14 +35,32 @@ import lombok.Value;
  * #L%
  */
 
-@Value
 @Builder
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@Getter
+@EqualsAndHashCode
+@ToString
 public class PPOrderCost
 {
+	@NonFinal
+	int repoId;
+
 	@NonNull
 	CostSegment costSegment;
 	@NonNull
 	CostElementId costElementId;
+
 	@NonNull
-	CostAmount amount;
+	CostAmount price;
+
+	// @NonNull
+	// CostAmount accumulatedAmount;
+	// @NonNull
+	// Quantity accumulatedQty;
+
+	public void setRepoId(final int repoId)
+	{
+		Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = repoId;
+	}
 }

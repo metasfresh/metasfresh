@@ -71,7 +71,12 @@ public final class PPOrderCosts
 			return Optional.empty();
 		}
 
-		return Optional.of(cost.getAmount());
+		return Optional.of(cost.getPrice());
+	}
+
+	public void forEach(@NonNull final Consumer<PPOrderCost> action)
+	{
+		costs.values().forEach(action);
 	}
 
 	@Value(staticConstructor = "of")
@@ -79,10 +84,5 @@ public final class PPOrderCosts
 	{
 		final CostSegment costSegment;
 		final CostElementId costElementId;
-	}
-
-	public void forEach(@NonNull final Consumer<PPOrderCost> action)
-	{
-		costs.values().forEach(action);
 	}
 }

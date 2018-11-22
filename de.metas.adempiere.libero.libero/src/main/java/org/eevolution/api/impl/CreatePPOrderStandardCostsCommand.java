@@ -197,7 +197,9 @@ final class CreatePPOrderStandardCostsCommand
 				.map(costElement -> PPOrderCost.builder()
 						.costSegment(costSegment)
 						.costElementId(costElement.getId())
-						.amount(costs.getCostAmountForCostElement(costElement))
+						.price(costs.getCostAmountForCostElement(costElement))
+						// .accumulatedAmount(accumulatedAmount)
+						// .accumulatedQty(accumulatedQty)
 						.build());
 	}
 }
