@@ -146,8 +146,6 @@ class RawLookup extends Component {
       subentity,
     } = this.props;
 
-    console.log('SELECT: ', select);
-
     let mainProp = mainProperty[0];
 
     this.setState({

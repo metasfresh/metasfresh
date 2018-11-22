@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import queue from 'queue';
 import * as _ from 'lodash';
 
 import { getItemsByProperty } from '../../../utils';
@@ -14,7 +13,6 @@ import WidgetTooltip from '../WidgetTooltip';
 
 class Lookup extends Component {
   rawLookupsState = {};
-  q = queue({ autostart: true });
 
   constructor(props) {
     super(props);
@@ -34,8 +32,6 @@ class Lookup extends Component {
 
       this.rawLookupsState = { ...lookupWidgets };
     }
-
-    // console.log('CONSTRUCTOR ?')
 
     this.state = {
       isInputEmpty: true,
@@ -93,19 +89,12 @@ class Lookup extends Component {
         },
       };
 
-      // console.log('_changeWidgetProperty: ', field, property, value,', current C_BPartner_ID: ', {...this.state.lookupWidgets['C_BPartner_ID']}, ', state: ', {...this.state.lookupWidgets }, ', newState: ', lookupWidgets);
-
-      // this.q.push(cb => {
-        this.setState(
-          {
-            lookupWidgets: newLookupWidgets,
-          },
-          // () => {
-          //   console.log('callback: ', field, property)
-            callback()
-          // }
-        );
-      // });
+      this.setState(
+        {
+          lookupWidgets: newLookupWidgets,
+        },
+        callback
+      );
     }
   };
 
@@ -202,10 +191,7 @@ class Lookup extends Component {
   dropdownListToggle = (value, field, mouse) => {
     const { onFocus, onBlur } = this.props;
 
-    // console.log('dropdownListToggle: ', value, field, mouse)
-
     this._changeWidgetProperty(field, 'dropdownOpen', value, () => {
-      console.log('toggle callback)');
       this.setState({
         isDropdownListOpen: value,
       });
@@ -224,8 +210,6 @@ class Lookup extends Component {
     const curVal = this.getLookupWidget(field).tooltipOpen;
     const newVal = value != null ? value : !curVal;
 
-    console.log('toogle: ', field, value)
-
     this._changeWidgetProperty(field, 'tooltipOpen', newVal);
   };
 
@@ -239,8 +223,6 @@ class Lookup extends Component {
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
     const { isDropdownListOpen, isFocused } = this.state;
-
-    // console.log('handleclickoutside')
 
     if (isDropdownListOpen || isFocused) {
       this.setState(
@@ -295,9 +277,7 @@ class Lookup extends Component {
   };
 
   handleListFocus = field => {
-    console.log('focus')
     this._changeWidgetProperty(field, 'isFocused', true, () => {
-      console.log('focus callback')
       this.setState({
         isFocused: true,
       });
