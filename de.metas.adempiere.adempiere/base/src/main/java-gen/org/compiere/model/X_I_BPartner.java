@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1223369029L;
+	private static final long serialVersionUID = 1422432546L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -106,6 +106,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set AD_User_ExternalId.
+		@param AD_User_ExternalId AD_User_ExternalId	  */
+	@Override
+	public void setAD_User_ExternalId (java.lang.String AD_User_ExternalId)
+	{
+		set_Value (COLUMNNAME_AD_User_ExternalId, AD_User_ExternalId);
+	}
+
+	/** Get AD_User_ExternalId.
+		@return AD_User_ExternalId	  */
+	@Override
+	public java.lang.String getAD_User_ExternalId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_User_ExternalId);
 	}
 
 	@Override
@@ -481,6 +497,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return ii.intValue();
 	}
 
+	/** Set C_BPartner_ExternalId.
+		@param C_BPartner_ExternalId C_BPartner_ExternalId	  */
+	@Override
+	public void setC_BPartner_ExternalId (java.lang.String C_BPartner_ExternalId)
+	{
+		set_Value (COLUMNNAME_C_BPartner_ExternalId, C_BPartner_ExternalId);
+	}
+
+	/** Get C_BPartner_ExternalId.
+		@return C_BPartner_ExternalId	  */
+	@Override
+	public java.lang.String getC_BPartner_ExternalId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_C_BPartner_ExternalId);
+	}
+
 	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
 	{
@@ -516,6 +548,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set C_BPartner_Location_ExternalId.
+		@param C_BPartner_Location_ExternalId C_BPartner_Location_ExternalId	  */
+	@Override
+	public void setC_BPartner_Location_ExternalId (java.lang.String C_BPartner_Location_ExternalId)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_ExternalId, C_BPartner_Location_ExternalId);
+	}
+
+	/** Get C_BPartner_Location_ExternalId.
+		@return C_BPartner_Location_ExternalId	  */
+	@Override
+	public java.lang.String getC_BPartner_Location_ExternalId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_C_BPartner_Location_ExternalId);
 	}
 
 	@Override
