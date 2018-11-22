@@ -272,6 +272,8 @@ public class CandidateRepositoryRetrieval
 					.storageAttributesKey(getEffectiveStorageAttributesKey(candidateRecord))
 					.attributeSetInstanceId(candidateRecord.getM_AttributeSetInstance_ID())
 					.transactionId(transactionDetailRecord.getM_Transaction_ID())
+					.resetStockAdPinstanceId(transactionDetailRecord.getAD_PInstance_ResetStock_ID())
+					.stockId(transactionDetailRecord.getMD_Stock_ID())
 					.complete(true)
 					.build();
 			result.add(transactionDetail);

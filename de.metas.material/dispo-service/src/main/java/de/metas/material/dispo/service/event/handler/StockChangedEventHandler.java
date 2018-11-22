@@ -143,9 +143,9 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	private BigDecimal extractQuantityIfPositive(@NonNull final StockChangedEvent event)
 	{
 		final BigDecimal quantityOnHand = event.getQtyOnHand();
-		if (quantityOnHand.signum() < 0)
+		if (quantityOnHand.signum() <= 0)
 		{
-			Loggables.get().addLog("Warning: something was out of sync since there is no existing 'latestMatch' to subtract from");
+			Loggables.get().addLog("Warning: something was out of sync since there is no existing 'latestMatch' with a qty to reduce");
 			return null;
 		}
 		return quantityOnHand;

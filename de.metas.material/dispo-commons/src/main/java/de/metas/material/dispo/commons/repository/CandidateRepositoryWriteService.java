@@ -15,6 +15,7 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Objects;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
 
@@ -461,11 +462,24 @@ public class CandidateRepositoryWriteService
 			final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
 
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+			final ICompositeQueryFilter<I_MD_Candidate_Transaction_Detail> //
+			transactionOrPInstanceId = queryBL
+					.createCompositeQueryFilter(I_MD_Candidate_Transaction_Detail.class)
+					.setJoinOr();
+			if (transactionDetail.getTransactionId() > 0)
+			{
+				transactionOrPInstanceId.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
+			}
+			if (transactionDetail.getResetStockAdPinstanceId() > 0)
+			{
+				transactionOrPInstanceId.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_AD_PInstance_ResetStock_ID, transactionDetail.getResetStockAdPinstanceId());
+			}
+
 			final I_MD_Candidate_Transaction_Detail existingDetail = //
 					queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
 							.addOnlyActiveRecordsFilter()
-							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
-							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId())
+							.filter(transactionOrPInstanceId)
 							.create()
 							.firstOnly(I_MD_Candidate_Transaction_Detail.class);
 
@@ -474,6 +488,8 @@ public class CandidateRepositoryWriteService
 				detailRecordToUpdate = newInstance(I_MD_Candidate_Transaction_Detail.class, synchedRecord);
 				detailRecordToUpdate.setMD_Candidate(synchedRecord);
 				detailRecordToUpdate.setM_Transaction_ID(transactionDetail.getTransactionId());
+				detailRecordToUpdate.setAD_PInstance_ResetStock_ID(transactionDetail.getResetStockAdPinstanceId());
+				detailRecordToUpdate.setMD_Stock_ID(transactionDetail.getStockId());
 			}
 			else
 			{

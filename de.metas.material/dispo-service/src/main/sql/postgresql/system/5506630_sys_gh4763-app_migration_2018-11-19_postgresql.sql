@@ -269,8 +269,8 @@ UPDATE AD_Tab SET AD_Element_ID=543680, Name='Bestandsänderung',Updated=TO_TIME
 
 -- 2018-11-20T12:35:03.767
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Tab_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,543680,625023,0,540885,540334,TO_TIMESTAMP('2018-11-20 12:35:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2018-11-20 12:35:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
+--INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Tab_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,543680,625023,0,540885,540334,TO_TIMESTAMP('2018-11-20 12:35:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2018-11-20 12:35:03','YYYY-MM-DD HH24:MI:SS'),100)
+--;
 
 -- 2018-11-20T12:35:03.770
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

@@ -202,4 +202,27 @@ public interface I_MD_Stock_From_HUs_V
     public static final org.adempiere.model.ModelColumn<I_MD_Stock_From_HUs_V, Object> COLUMN_QtyOnHand = new org.adempiere.model.ModelColumn<I_MD_Stock_From_HUs_V, Object>(I_MD_Stock_From_HUs_V.class, "QtyOnHand", null);
     /** Column name QtyOnHand */
     public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
+
+	/**
+	 * Set Bestandsänderung.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyOnHandChange (java.math.BigDecimal QtyOnHandChange);
+
+	/**
+	 * Get Bestandsänderung.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyOnHandChange();
+
+    /** Column definition for QtyOnHandChange */
+    public static final org.adempiere.model.ModelColumn<I_MD_Stock_From_HUs_V, Object> COLUMN_QtyOnHandChange = new org.adempiere.model.ModelColumn<I_MD_Stock_From_HUs_V, Object>(I_MD_Stock_From_HUs_V.class, "QtyOnHandChange", null);
+    /** Column name QtyOnHandChange */
+    public static final String COLUMNNAME_QtyOnHandChange = "QtyOnHandChange";
 }

@@ -15,7 +15,7 @@ public class X_MD_Stock_From_HUs_V extends org.compiere.model.PO implements I_MD
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1198473929L;
+	private static final long serialVersionUID = -1280935748L;
 
     /** Standard Constructor */
     public X_MD_Stock_From_HUs_V (Properties ctx, int MD_Stock_From_HUs_V_ID, String trxName)
@@ -185,6 +185,25 @@ public class X_MD_Stock_From_HUs_V extends org.compiere.model.PO implements I_MD
 	public java.math.BigDecimal getQtyOnHand () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHand);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Bestandsänderung.
+		@param QtyOnHandChange Bestandsänderung	  */
+	@Override
+	public void setQtyOnHandChange (java.math.BigDecimal QtyOnHandChange)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyOnHandChange, QtyOnHandChange);
+	}
+
+	/** Get Bestandsänderung.
+		@return Bestandsänderung	  */
+	@Override
+	public java.math.BigDecimal getQtyOnHandChange () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHandChange);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

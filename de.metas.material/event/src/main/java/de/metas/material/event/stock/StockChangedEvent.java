@@ -6,6 +6,7 @@ import lombok.Value;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.MaterialEvent;
@@ -54,6 +55,7 @@ public class StockChangedEvent implements MaterialEvent
 
 	StockChangeDetails stockChangeDetails;
 
+	@JsonCreator
 	@Builder
 	public StockChangedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
@@ -90,7 +92,6 @@ public class StockChangedEvent implements MaterialEvent
 	}
 
 	@Value
-	@Builder
 	public static class StockChangeDetails
 	{
 		int resetStockAdPinstanceId;
@@ -98,5 +99,17 @@ public class StockChangedEvent implements MaterialEvent
 		int transactionId;
 
 		int stockId;
+
+		@JsonCreator
+		@Builder
+		public StockChangeDetails(
+				@JsonProperty("resetStockAdPinstanceId") final int resetStockAdPinstanceId, 
+				@JsonProperty("transactionId") final int transactionId, 
+				@JsonProperty("stockId") final int stockId)
+		{
+			this.resetStockAdPinstanceId = resetStockAdPinstanceId;
+			this.transactionId = transactionId;
+			this.stockId = stockId;
+		}
 	}
 }

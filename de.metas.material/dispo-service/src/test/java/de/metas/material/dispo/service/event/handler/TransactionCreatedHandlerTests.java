@@ -246,6 +246,8 @@ public class TransactionCreatedHandlerTests
 	{
 		final Candidate exisitingCandidate = Candidate.builder()
 				.id(CandidateId.ofRepoId(11))
+				.clientId(10)
+				.orgId(20)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())

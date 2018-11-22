@@ -1,18 +1,14 @@
 package de.metas.material.cockpit.stock.process;
 
+import static java.math.BigDecimal.ZERO;
+
 import lombok.NonNull;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.lang.Mutable;
 import org.compiere.Adempiere;
-import org.compiere.util.DB;
 
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
@@ -57,7 +53,7 @@ import de.metas.util.Services;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class MD_Stock_Reset_From_M_HUs extends JavaProcess
+public class MD_Stock_Update_From_M_HUs extends JavaProcess
 {
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
@@ -67,46 +63,25 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final List<I_MD_Stock_From_HUs_V> huBasedDataRecords = truncateStockTableAndRetrieveHuData();
+		final List<I_MD_Stock_From_HUs_V> huBasedDataRecords = retrieveHuData();
 
 		addLog("Retrieved {} MD_Stock_From_HUs_V records", huBasedDataRecords.size());
 
 		createAndHandleDataUpdateRequests(huBasedDataRecords);
-		addLog("Created and handled DataUpdateRequest for all MD_Stock_From_HUs_V records");
+		addLog("Created and handled DataUpdateRequests for all MD_Stock_From_HUs_V records");
 
 		return MSG_OK;
 	}
 
-	/**
-	 * Truncate an retrieve within one transaction.
-	 * That way, the new stock are data is from the time the table was emptied.
-	 * New stock changes that occur when the select runs won't be lost.
-	 */
-	private List<I_MD_Stock_From_HUs_V> truncateStockTableAndRetrieveHuData()
+	private List<I_MD_Stock_From_HUs_V> retrieveHuData()
 	{
-		final Mutable<List<I_MD_Stock_From_HUs_V>> result = new Mutable<>();
-
-		Services.get(ITrxManager.class).run(() -> {
-			addLog("Truncating MD_Stock table");
-			try
-			{
-				DB
-						.prepareStatement("TRUNCATE TABLE " + I_MD_Stock.Table_Name, ITrx.TRXNAME_ThreadInherited)
-						.execute();
-			}
-			catch (final SQLException e)
-			{
-				throw DBException.wrapIfNeeded(e);
-			}
-
-			addLog("Performing a full select on MD_Stock_From_HUs_V");
-			final List<I_MD_Stock_From_HUs_V> huBasedDataRecords = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_MD_Stock_From_HUs_V.class)
-					.create()
-					.list();
-			result.setValue(huBasedDataRecords);
-		});
-		return result.getValue();
+		addLog("Performing a select for Records to correct on MD_Stock_From_HUs_V");
+		final List<I_MD_Stock_From_HUs_V> huBasedDataRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Stock_From_HUs_V.class)
+				.addNotEqualsFilter(I_MD_Stock_From_HUs_V.COLUMNNAME_QtyOnHandChange, ZERO)
+				.create()
+				.list();
+		return huBasedDataRecords;
 	}
 
 	private void createAndHandleDataUpdateRequests(
@@ -119,6 +94,7 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 			final StockDataUpdateRequest dataUpdateRequest = createDataUpdatedRequest(
 					huBasedDataRecord,
 					info);
+			addLog("Handling corrective dataUpdateRequest={}", dataUpdateRequest);
 			dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 		}
 	}
@@ -130,12 +106,12 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 		final StockDataRecordIdentifier recordIdentifier = createDataRecordIdentifier(huBasedDataRecord);
 
 		final ProductId productId = ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID());
-		final Quantity qtyInStorageUOM = Quantity.of(huBasedDataRecord.getQtyOnHand(), huBasedDataRecord.getC_UOM());
-		final Quantity qtyInStockingUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, productId);
+		final Quantity qtyInStorageUOM = Quantity.of(huBasedDataRecord.getQtyOnHandChange(), huBasedDataRecord.getC_UOM());
+		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, productId);
 
 		final StockDataUpdateRequest dataUpdateRequest = StockDataUpdateRequest.builder()
 				.identifier(recordIdentifier)
-				.onHandQtyChange(qtyInStockingUOM.getAsBigDecimal())
+				.onHandQtyChange(qtyInProductUOM.getAsBigDecimal())
 				.sourceInfo(stockDataUpdateRequestSourceInfo)
 				.build();
 		return dataUpdateRequest;
