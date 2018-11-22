@@ -13,24 +13,25 @@ package org.eevolution.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -43,13 +44,14 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Services;
 
 @Validator(I_PP_Order_BOMLine.class)
 public class PP_Order_BOMLine
 {
 	private static final String DYNATTR_ExplodePhantomRunnable = PP_Order_BOMLine.class.getName() + "#explodePhantomRunnable";
-	
+
 	@Init
 	public void init()
 	{
@@ -57,11 +59,11 @@ public class PP_Order_BOMLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_PP_Order_BOMLine orderBOMLine, final int changeType)
+	public void beforeSave(final I_PP_Order_BOMLine orderBOMLine, final ModelChangeType changeType)
 	{
 		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
-		final boolean newRecord = ModelValidator.TYPE_BEFORE_NEW == changeType;
+		final boolean newRecord = changeType.isNew();
 
 		// Victor Perez: The best practice in this case you do should change the component you need
 		// adding a new line in Order BOM Line with new component so do not is right
@@ -80,7 +82,8 @@ public class PP_Order_BOMLine
 		// Get Line No
 		if (orderBOMLine.getLine() == 0)
 		{
-			final int line = Services.get(IPPOrderBOMDAO.class).retrieveNextLineNo(orderBOMLine.getPP_Order());
+			final PPOrderId orderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
+			final int line = Services.get(IPPOrderBOMDAO.class).retrieveNextLineNo(orderId);
 			orderBOMLine.setLine(line);
 		}
 
@@ -91,14 +94,7 @@ public class PP_Order_BOMLine
 			final BigDecimal qtyOrderedForPhantom = orderBOMLine.getQtyRequiered();
 			orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
 
-			final Runnable explodePhantomRunnable = new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					ppOrderBOMBL.explodePhantom(orderBOMLine, qtyOrderedForPhantom);
-				}
-			};
+			final Runnable explodePhantomRunnable = () -> ppOrderBOMBL.explodePhantom(orderBOMLine, qtyOrderedForPhantom);
 			InterfaceWrapperHelper.setDynAttribute(orderBOMLine, DYNATTR_ExplodePhantomRunnable, explodePhantomRunnable);
 		}
 
@@ -107,7 +103,7 @@ public class PP_Order_BOMLine
 				|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyEntered)
 				|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered))
 		{
-			final I_C_UOM uom = orderBOMLine.getC_UOM();
+			I_C_UOM uom = Services.get(IUOMDAO.class).getById(orderBOMLine.getC_UOM_ID());
 			final int precision = uom.getStdPrecision();
 			orderBOMLine.setQtyEntered(orderBOMLine.getQtyEntered().setScale(precision, RoundingMode.UP));
 			orderBOMLine.setQtyRequiered(orderBOMLine.getQtyRequiered().setScale(precision, RoundingMode.UP));

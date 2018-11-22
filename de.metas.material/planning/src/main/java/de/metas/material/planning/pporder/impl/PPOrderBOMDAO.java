@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -172,30 +171,22 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	}
 
 	@Override
-	public List<I_PP_Order_BOMLine> retrieveAllOrderBOMLines(final I_PP_Order_BOM orderBOM)
+	public void deleteOrderBOMLinesByOrderId(@NonNull final PPOrderId orderId)
 	{
-		final IQueryBuilder<I_PP_Order_BOMLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_BOMLine.class, orderBOM)
-				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_PP_Order_BOM_ID, orderBOM.getPP_Order_BOM_ID())
-		// .addOnlyActiveRecordsFilter()
-		;
-
-		queryBuilder.orderBy()
-				.addColumn(I_PP_Order_BOMLine.COLUMN_Line, Direction.Ascending, Nulls.Last);
-		return queryBuilder
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order_BOMLine.class)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_PP_Order_ID, orderId)
+				// .addOnlyActiveRecordsFilter()
 				.create()
-				.list(I_PP_Order_BOMLine.class);
+				.delete();
 	}
 
 	@Override
-	public int retrieveNextLineNo(final I_PP_Order order)
+	public int retrieveNextLineNo(@NonNull final PPOrderId orderId)
 	{
-		final IQueryBuilder<I_PP_Order_BOMLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Order_BOMLine.class, order);
-
-		final ICompositeQueryFilter<I_PP_Order_BOMLine> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID());
-
-		Integer maxLine = queryBuilder
+		Integer maxLine = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order_BOMLine.class)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
 				.aggregate(I_PP_Order_BOMLine.COLUMNNAME_Line, Aggregate.MAX, Integer.class);
 
