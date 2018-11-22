@@ -34,25 +34,17 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.util.ISingletonService;
 
-/**
- * @author cg
- *
- */
 public interface IHUPackingMaterialDAO extends ISingletonService
 {
 	/**
 	 * Retrieve packing materials from same HU as given <code>pip</code>
 	 *
-	 * @param pip
-	 * @return
+	 * @param pip may be null in which case an empty list is returned
 	 */
 	List<I_M_HU_PackingMaterial> retrievePackingMaterials(final I_M_HU_PI_Item_Product pip);
 
 	/**
 	 * get packing material for a certain product
-	 *
-	 * @param product
-	 * @return
 	 */
 	I_M_HU_PackingMaterial retrivePackingMaterialOfProduct(final I_M_Product product);
 }
