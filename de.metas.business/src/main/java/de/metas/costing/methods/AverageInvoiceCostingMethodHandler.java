@@ -24,8 +24,6 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICostDetailRepository;
-import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
@@ -58,12 +56,9 @@ import lombok.NonNull;
 @Component
 public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	public AverageInvoiceCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailRepository costDetailsRepo,
-			@NonNull final CostingMethodHandlerUtils utils)
+	public AverageInvoiceCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
-		super(currentCostsRepo, costDetailsRepo, utils);
+		super(utils);
 	}
 
 	@Override
@@ -75,12 +70,12 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = getCurrentCost(request);
-		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request, currentCosts);
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
 		currentCosts.addWeightedAverage(request.getAmt(), request.getQty());
 
-		saveCurrentCosts(currentCosts);
+		utils.saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -91,11 +86,11 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		final Quantity qty = request.getQty();
 		final boolean isReturnTrx = qty.signum() > 0;
 
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailCreateResult result;
 		if (isReturnTrx)
 		{
-			result = createCostDetailRecordWithChangedCosts(request, currentCosts);
+			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
 			currentCosts.addWeightedAverage(request.getAmt(), qty);
 		}
@@ -103,12 +98,12 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		{
 			final CostAmount price = currentCosts.getCurrentCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			result = createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
 			currentCosts.adjustCurrentQty(qty);
 		}
 
-		saveCurrentCosts(currentCosts);
+		utils.saveCurrentCosts(currentCosts);
 
 		return result;
 	}

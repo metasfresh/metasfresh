@@ -15,7 +15,6 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
-import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.quantity.Quantity;
@@ -110,12 +109,12 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 	}
 
-	public CostResult getCreateReceiptCosts(final AcctSchema as)
+	public CostAmount getCreateReceiptCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final AcctSchemaId acctSchemaId = as.getId();
-		
+
 		if (isReversalLine())
 		{
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
@@ -123,7 +122,8 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateDoc()))
-					.build());
+					.build())
+					.getTotalAmount();
 		}
 		else
 		{
@@ -138,16 +138,17 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 							.date(TimeUtil.asLocalDate(getDateDoc()))
-							.build());
+							.build())
+					.getTotalAmount();
 		}
 	}
 
-	public CostResult getCreateShipmentCosts(final AcctSchema as)
+	public CostAmount getCreateShipmentCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final AcctSchemaId acctSchemaId = as.getId();
-		
+
 		if (isReversalLine())
 		{
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
@@ -155,7 +156,8 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateAcct()))
-					.build());
+					.build())
+					.getTotalAmount();
 		}
 		else
 		{
@@ -170,7 +172,8 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 							.date(TimeUtil.asLocalDate(getDateAcct()))
-							.build());
+							.build())
+					.getTotalAmount();
 		}
 	}
 }

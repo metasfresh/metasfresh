@@ -121,7 +121,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 				.productId(getProductId())
 				.attributeSetInstanceId(getAttributeSetInstanceId())
 				.build();
-		final CostAmount costPrice = costDetailService.getCurrentCosts(costSegment, CostingMethod.StandardCosting).getTotalAmount();
+		final CostAmount costPrice = costDetailService.getCurrentCosts(costSegment, CostingMethod.StandardCosting);
 		return costPrice.multiply(getQty());
 	}
 

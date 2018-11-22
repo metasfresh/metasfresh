@@ -30,8 +30,6 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICostDetailRepository;
-import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
@@ -65,12 +63,9 @@ import lombok.NonNull;
 @Component
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	public AveragePOCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailRepository costDetailsRepo,
-			@NonNull final CostingMethodHandlerUtils utils)
+	public AveragePOCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
-		super(currentCostsRepo, costDetailsRepo, utils);
+		super(utils);
 	}
 
 	@Override
@@ -92,7 +87,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostAmount costPrice = getPOCostPriceForMatchInv(matchInvId)
 				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request));
 		final CostAmount amt = costPrice.multiply(request.getQty());
-		return createCostDetailRecordNoCostsChanged(request.withAmount(amt));
+		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
 	}
 
 	@Override
@@ -100,9 +95,9 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final int receiptInOutLineId = request.getDocumentRef().getRecordId();
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
-				.orElseGet(() -> getCurrentCostPrice(request));
+				.orElseGet(() -> utils.getCurrentCostPrice(request));
 		final CostAmount amt = costPrice.multiply(request.getQty());
-		return createCostDetailRecordNoCostsChanged(request.withAmount(amt));
+		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
 	}
 
 	@Override
@@ -116,11 +111,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;
 
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailCreateResult result;
 		if (isInboundTrx)
 		{
-			result = createCostDetailRecordWithChangedCosts(request, currentCosts);
+			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
 			currentCosts.addWeightedAverage(request.getAmt(), qty);
 		}
@@ -128,12 +123,12 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		{
 			final CostAmount price = currentCosts.getCurrentCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			result = createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
 			currentCosts.adjustCurrentQty(qty);
 		}
 
-		saveCurrentCosts(currentCosts);
+		utils.saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -143,7 +138,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;
-		final CurrentCost currentCosts = getCurrentCost(request.getCostSegment(), request.getCostElementId());
+		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegment(), request.getCostElementId());
 		if (isInboundTrx)
 		{
 			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate());
@@ -153,7 +148,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			currentCosts.adjustCurrentQty(qty.negate());
 		}
 
-		saveCurrentCosts(currentCosts);
+		utils.saveCurrentCosts(currentCosts);
 	}
 
 	private Optional<CostAmount> getPOCostPriceForMatchInv(final int matchInvId)

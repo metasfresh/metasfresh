@@ -115,7 +115,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	{
 		final AcctSchema as = fact.getAcctSchema();
 
-		final CostAmount costs = line.getCreateCosts(as).getTotalAmount();
+		final CostAmount costs = line.getCreateCosts(as);
 
 		//
 		// Inventory DR/CR

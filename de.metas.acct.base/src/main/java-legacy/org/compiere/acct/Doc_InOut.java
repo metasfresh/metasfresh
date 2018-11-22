@@ -194,7 +194,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
+		final CostAmount costs = line.getCreateShipmentCosts(as);
 
 		//
 		// CoGS DR
@@ -244,7 +244,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
+		final CostAmount costs = line.getCreateShipmentCosts(as);
 
 		//
 		// Inventory DR
@@ -294,7 +294,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmount();
+		final CostAmount costs = line.getCreateReceiptCosts(as);
 
 		//
 		// Inventory/Asset DR
@@ -344,7 +344,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmount();
+		final CostAmount costs = line.getCreateReceiptCosts(as);
 
 		//
 		// NotInvoicedReceipt DR

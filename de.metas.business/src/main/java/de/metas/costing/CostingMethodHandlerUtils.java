@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -33,6 +34,16 @@ public class CostingMethodHandlerUtils
 {
 	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final ICostDetailRepository costDetailsRepo;
+	private final ICurrentCostsRepository currentCostsRepo;
+
+	public CostingMethodHandlerUtils(
+			@NonNull final ICurrentCostsRepository currentCostsRepo,
+			@NonNull final ICostDetailRepository costDetailsRepo)
+	{
+		this.currentCostsRepo = currentCostsRepo;
+		this.costDetailsRepo = costDetailsRepo;
+	}
 
 	public CostSegment extractCostSegment(final CostDetail costDetail)
 	{
@@ -68,6 +79,14 @@ public class CostingMethodHandlerUtils
 				.build();
 	}
 
+	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
+	{
+		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
+				.changingCosts(false));
+
+		return createCostDetailCreateResult(costDetail, request);
+	}
+
 	public CostDetailCreateResult createCostDetailCreateResult(final CostDetail costDetail, final CostDetailCreateRequest request)
 	{
 		return CostDetailCreateResult.builder()
@@ -78,5 +97,54 @@ public class CostingMethodHandlerUtils
 				.price(costDetail.getPrice())
 				.build();
 	}
+
+	protected final CostDetail getExistingCostDetailOrNull(final CostDetailCreateRequest request)
+	{
+		final CostDetailQuery costDetailQuery = extractCostDetailQuery(request);
+		return costDetailsRepo.getCostDetailOrNull(costDetailQuery);
+	}
+
+	private static CostDetailQuery extractCostDetailQuery(final CostDetailCreateRequest request)
+	{
+		final CostElementId costElementId = request.isAllCostElements() ? null : request.getCostElementId();
+
+		return CostDetailQuery.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.costElementId(costElementId)
+				.documentRef(request.getDocumentRef())
+				.build();
+	}
+
+	public final CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
+	{
+		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
+				.changingCosts(true)
+				.previousAmounts(CostDetailPreviousAmounts.of(previousCosts)));
+
+		return createCostDetailCreateResult(costDetail, request);
+	}
+
+	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
+	{
+		final CostSegment costSegment = extractCostSegment(request);
+		return getCurrentCost(costSegment, request.getCostElementId());
+	}
+
+	public final CurrentCost getCurrentCost(final CostSegment costSegment, final CostElementId costElementId)
+	{
+		return currentCostsRepo.getOrCreate(costSegment, costElementId);
+	}
+
+	public final CostAmount getCurrentCostPrice(final CostDetailCreateRequest request)
+	{
+		return getCurrentCost(request).getCurrentCostPrice();
+	}
+
+	public final void saveCurrentCosts(final CurrentCost currentCost)
+	{
+		currentCostsRepo.save(currentCost);
+	}
+
 
 }

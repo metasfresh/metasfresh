@@ -41,6 +41,7 @@ import org.eevolution.model.X_PP_Cost_Collector;
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -49,6 +50,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	@Override
 	public I_PP_Cost_Collector getById(final int costCollectorId)
 	{
+		Check.assumeGreaterThanZero(costCollectorId, "costCollectorId");
 		return load(costCollectorId, I_PP_Cost_Collector.class);
 	}
 

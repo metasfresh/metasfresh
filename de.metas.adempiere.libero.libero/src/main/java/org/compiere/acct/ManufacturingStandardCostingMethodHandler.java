@@ -9,10 +9,7 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
-import org.eevolution.api.IPPCostCollectorDAO;
-import org.eevolution.api.IPPOrderRoutingRepository;
-import org.eevolution.api.PPOrderRoutingActivity;
-import org.eevolution.api.PPOrderRoutingActivityId;
+import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +37,6 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -77,8 +73,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 {
 	// services
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-	private final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
-	private final IPPCostCollectorDAO costCollectorsRepo = Services.get(IPPCostCollectorDAO.class);
+	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	//
@@ -115,7 +110,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final I_PP_Cost_Collector cc = costCollectorsRepo.getById(request.getDocumentRef().getRecordId());
+		final I_PP_Cost_Collector cc = costCollectorsService.getById(request.getDocumentRef().getRecordId());
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
 
@@ -128,7 +123,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
-			final Duration totalDuration = getTotalDurationReported(cc);
+			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
 			return Optional.of(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
 		}
@@ -143,7 +138,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
-				final Duration totalDurationReported = getTotalDurationReported(cc);
+				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);
 
 				return Optional.of(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
@@ -153,20 +148,6 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		{
 			throw new AdempiereException("Unknown cost collector type: " + costCollectorType);
 		}
-	}
-
-	private Duration getTotalDurationReported(final I_PP_Cost_Collector cc)
-	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
-		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, cc.getPP_Order_Node_ID());
-
-		final PPOrderRoutingActivity activity = orderRoutingsRepo.getOrderRoutingActivity(activityId);
-		final TemporalUnit durationUnit = activity.getDurationUnit();
-
-		final Duration setupTimeReported = DurationUtils.toDuration(cc.getSetupTimeReal(), durationUnit);
-		final Duration runningTimeReported = DurationUtils.toDuration(cc.getDurationReal(), durationUnit);
-		final Duration totalDuration = setupTimeReported.plus(runningTimeReported);
-		return totalDuration;
 	}
 
 	@Override

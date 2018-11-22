@@ -1,5 +1,7 @@
 package org.eevolution.api;
 
+import java.time.Duration;
+
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -12,10 +14,13 @@ import de.metas.util.ISingletonService;
 
 public interface IPPCostCollectorBL extends ISingletonService
 {
+	I_PP_Cost_Collector getById(int costCollectorId);
+
 	Quantity getMovementQty(I_PP_Cost_Collector cc);
 
 	I_C_UOM getStockingUOM(I_PP_Cost_Collector cc);
 
+	Duration getTotalDurationReported(I_PP_Cost_Collector cc);
 
 	default boolean isMaterialReceipt(final I_PP_Cost_Collector cc)
 	{

@@ -45,7 +45,9 @@ import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderRoutingActivity;
+import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -61,6 +63,7 @@ import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -76,6 +79,12 @@ import lombok.Value;
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
 	@Override
+	public I_PP_Cost_Collector getById(final int costCollectorId)
+	{
+		return Services.get(IPPCostCollectorDAO.class).getById(costCollectorId);
+	}
+
+	@Override
 	public Quantity getMovementQty(final I_PP_Cost_Collector cc)
 	{
 		return Quantity.of(cc.getMovementQty(), getStockingUOM(cc));
@@ -84,8 +93,24 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	@Override
 	public I_C_UOM getStockingUOM(final I_PP_Cost_Collector cc)
 	{
-		ProductId productId = ProductId.ofRepoId(cc.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(cc.getM_Product_ID());
 		return Services.get(IProductBL.class).getStockingUOM(productId);
+	}
+
+	@Override
+	public Duration getTotalDurationReported(final I_PP_Cost_Collector cc)
+	{
+		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, cc.getPP_Order_Node_ID());
+
+		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
+		final PPOrderRoutingActivity activity = orderRoutingsRepo.getOrderRoutingActivity(activityId);
+		final TemporalUnit durationUnit = activity.getDurationUnit();
+
+		final Duration setupTimeReported = DurationUtils.toDuration(cc.getSetupTimeReal(), durationUnit);
+		final Duration runningTimeReported = DurationUtils.toDuration(cc.getDurationReal(), durationUnit);
+		final Duration totalDuration = setupTimeReported.plus(runningTimeReported);
+		return totalDuration;
 	}
 
 	/**

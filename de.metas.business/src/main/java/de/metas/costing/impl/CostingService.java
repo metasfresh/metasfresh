@@ -83,18 +83,18 @@ public class CostingService implements ICostingService
 	private static final Logger logger = LogManager.getLogger(CostingService.class);
 
 	private final ICostDetailRepository costDetailsRepo;
-	private final ICostElementRepository costElementRepo;
+	private final ICostElementRepository costElementsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final ImmutableSetMultimap<CostingMethod, CostingMethodHandler> costingMethodHandlers;
 
 	public CostingService(
 			@NonNull final ICostDetailRepository costDetailsRepo,
-			@NonNull final ICostElementRepository costElementRepo,
+			@NonNull final ICostElementRepository costElementsRepo,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final List<CostingMethodHandler> costingMethodHandlers)
 	{
 		this.costDetailsRepo = costDetailsRepo;
-		this.costElementRepo = costElementRepo;
+		this.costElementsRepo = costElementsRepo;
 		this.currentCostsRepo = currentCostsRepo;
 		this.costingMethodHandlers = costingMethodHandlers.stream()
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(CostingMethodHandler::getCostingMethod, Function.identity()));
@@ -189,7 +189,7 @@ public class CostingService implements ICostingService
 		if (costDetail.isChangingCosts())
 		{
 			final CostElementId costElementId = costDetail.getCostElementId();
-			final CostElement costElement = costElementRepo.getById(costElementId);
+			final CostElement costElement = costElementsRepo.getById(costElementId);
 			final CostDetailVoidRequest request = createCostDetailVoidRequest(costDetail);
 			getCostingMethodHandlers(costElement.getCostingMethod(), documentRef)
 					.forEach(handler -> handler.voidCosts(request));
@@ -275,7 +275,7 @@ public class CostingService implements ICostingService
 
 		if (request.isAllCostElements())
 		{
-			return costElementRepo.getMaterialCostingMethods(request.getClientId());
+			return costElementsRepo.getMaterialCostingMethods(request.getClientId());
 		}
 		else
 		{
@@ -347,7 +347,7 @@ public class CostingService implements ICostingService
 	private Stream<CostDetailCreateResult> createReversalCostDetailsAndStream(final CostDetail costDetail, final CostDetailReverseRequest reversalRequest)
 	{
 		final CostElementId costElementId = costDetail.getCostElementId();
-		final CostElement costElement = costElementRepo.getById(costElementId);
+		final CostElement costElement = costElementsRepo.getById(costElementId);
 		final CostDetailCreateRequest request = createCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail);
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
@@ -375,8 +375,8 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public CostResult getCurrentCosts(final CostSegment costSegment, final CostingMethod costingMethod)
+	public CostAmount getCurrentCosts(final CostSegment costSegment, final CostingMethod costingMethod)
 	{
-		return currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod);
+		return currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod).getTotalAmount();
 	}
 }

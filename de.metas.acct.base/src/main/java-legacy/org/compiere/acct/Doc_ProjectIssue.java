@@ -25,7 +25,6 @@ import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -37,6 +36,7 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 
 /**
@@ -123,7 +123,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 
 		MProject project = new MProject(getCtx(), m_issue.getC_Project_ID(), getTrxName());
 		String ProjectCategory = project.getProjectCategory();
-		I_M_Product product = MProduct.get(getCtx(), m_issue.getM_Product_ID());
+		I_M_Product product = Services.get(IProductDAO.class).getById(m_issue.getM_Product_ID());
 
 		// Line pointers
 		FactLine dr = null;
@@ -136,7 +136,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		else if (m_issue.getS_TimeExpenseLine_ID() > 0)
 			cost = getLaborCost(as);
 		if (cost == null)	// standard Product Costs
-			cost = m_line.getCreateCosts(as).getTotalAmount();
+			cost = m_line.getCreateCosts(as);
 
 		//
 		// Project DR

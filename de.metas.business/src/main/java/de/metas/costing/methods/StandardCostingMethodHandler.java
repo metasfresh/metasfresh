@@ -10,8 +10,6 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICostDetailRepository;
-import de.metas.costing.ICurrentCostsRepository;
 import de.metas.quantity.Quantity;
 
 /*
@@ -39,12 +37,9 @@ import de.metas.quantity.Quantity;
 @Component
 public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	public StandardCostingMethodHandler(
-			final ICurrentCostsRepository currentCostsRepo,
-			final ICostDetailRepository costDetailsRepo,
-			final CostingMethodHandlerUtils utils)
+	public StandardCostingMethodHandler(final CostingMethodHandlerUtils utils)
 	{
-		super(currentCostsRepo, costDetailsRepo, utils);
+		super(utils);
 	}
 
 	@Override
@@ -56,15 +51,15 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final Quantity qty = request.getQty();
 		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
 
-		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
 		currentCosts.adjustCurrentQty(qty);
 		currentCosts.addCumulatedAmtAndQty(amt, qty);
-		saveCurrentCosts(currentCosts);
+		utils.saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -72,21 +67,21 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final Quantity qty = request.getQty();
 		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
-		return createCostDetailRecordNoCostsChanged(request.withAmount(amt));
+		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
 	}
 
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final Quantity qty = request.getQty();
 		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
 		final boolean isReturnTrx = qty.signum() > 0;
 
-		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
 		currentCosts.adjustCurrentQty(qty);
 		if (isReturnTrx)
@@ -94,7 +89,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 			currentCosts.addCumulatedAmtAndQty(amt, qty);
 		}
 
-		saveCurrentCosts(currentCosts);
+		utils.saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -102,7 +97,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
-		final CurrentCost currentCosts = getCurrentCost(request.getCostSegment(), request.getCostElementId());
+		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegment(), request.getCostElementId());
 
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;
@@ -113,6 +108,6 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 			currentCosts.addCumulatedAmtAndQty(request.getAmt().negate(), qty.negate());
 		}
 
-		saveCurrentCosts(currentCosts);
+		utils.saveCurrentCosts(currentCosts);
 	}
 }

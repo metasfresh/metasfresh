@@ -26,8 +26,6 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICostDetailRepository;
-import de.metas.costing.ICurrentCostsRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -61,12 +59,9 @@ import lombok.NonNull;
 @Component
 public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	public LastPOCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailRepository costDetailsRepo,
-			@NonNull final CostingMethodHandlerUtils utils)
+	public LastPOCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
-		super(currentCostsRepo, costDetailsRepo, utils);
+		super(utils);
 	}
 
 	@Override
@@ -78,8 +73,8 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = getCurrentCost(request);
-		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request, currentCosts);
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
 		final CostAmount amt = request.getAmt();
 		final Quantity qty = request.getQty();
@@ -102,7 +97,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 		currentCosts.adjustCurrentQty(qty);
 		currentCosts.addCumulatedAmtAndQty(amt, qty);
 
-		saveCurrentCosts(currentCosts);
+		utils.saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -110,12 +105,12 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = getCurrentCost(request);
-		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request, currentCosts);
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
 		currentCosts.adjustCurrentQty(request.getQty());
 
-		saveCurrentCosts(currentCosts);
+		utils.saveCurrentCosts(currentCosts);
 
 		return result;
 	}

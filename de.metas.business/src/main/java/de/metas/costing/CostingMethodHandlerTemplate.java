@@ -34,9 +34,7 @@ import lombok.NonNull;
 
 public abstract class CostingMethodHandlerTemplate implements CostingMethodHandler
 {
-	private final ICurrentCostsRepository currentCostsRepo;
-	private final ICostDetailRepository costDetailsRepo;
-	private final CostingMethodHandlerUtils utils;
+	protected final CostingMethodHandlerUtils utils;
 
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
 			.add(CostingDocumentRef.TABLE_NAME_M_MatchInv)
@@ -47,20 +45,15 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			.add(CostingDocumentRef.TABLE_NAME_C_ProjectIssue)
 			.build();
 
+	protected CostingMethodHandlerTemplate(@NonNull final CostingMethodHandlerUtils utils)
+	{
+		this.utils = utils;
+	}
+
 	@Override
 	public final Set<String> getHandledTableNames()
 	{
 		return HANDLED_TABLE_NAMES;
-	}
-
-	protected CostingMethodHandlerTemplate(
-			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailRepository costDetailsRepo,
-			@NonNull final CostingMethodHandlerUtils utils)
-	{
-		this.currentCostsRepo = currentCostsRepo;
-		this.costDetailsRepo = costDetailsRepo;
-		this.utils = utils;
 	}
 
 	@Override
@@ -72,9 +65,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	@Override
 	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		//
-		// Check if existing cost detail
-		final CostDetail costDetail = getExistingCostDetailOrNull(request);
+		final CostDetail costDetail = utils.getExistingCostDetailOrNull(request);
 		if (costDetail != null)
 		{
 			return Optional.of(utils.createCostDetailCreateResult(costDetail, request));
@@ -85,7 +76,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 	}
 
-	protected final CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
+	private final CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
 	{
 		//
 		// Create new cost detail
@@ -128,24 +119,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 	}
 
-	protected final CostDetail getExistingCostDetailOrNull(final CostDetailCreateRequest request)
-	{
-		final CostDetailQuery costDetailQuery = extractCostDetailQuery(request);
-		return costDetailsRepo.getCostDetailOrNull(costDetailQuery);
-	}
-
-	private static CostDetailQuery extractCostDetailQuery(final CostDetailCreateRequest request)
-	{
-		final CostElementId costElementId = request.isAllCostElements() ? null : request.getCostElementId();
-
-		return CostDetailQuery.builder()
-				.acctSchemaId(request.getAcctSchemaId())
-				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.costElementId(costElementId)
-				.documentRef(request.getDocumentRef())
-				.build();
-	}
-
 	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
@@ -185,44 +158,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
-
-	protected final CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
-	{
-		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
-				.changingCosts(false));
-
-		return utils.createCostDetailCreateResult(costDetail, request);
-	}
-
-	protected final CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
-	{
-		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
-				.changingCosts(true)
-				.previousAmounts(CostDetailPreviousAmounts.of(previousCosts)));
-
-		return utils.createCostDetailCreateResult(costDetail, request);
-	}
-
-	protected final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
-	{
-		final CostSegment costSegment = utils.extractCostSegment(request);
-		return getCurrentCost(costSegment, request.getCostElementId());
-	}
-
-	protected final CurrentCost getCurrentCost(final CostSegment costSegment, final CostElementId costElementId)
-	{
-		return currentCostsRepo.getOrCreate(costSegment, costElementId);
-	}
-
-	protected final CostAmount getCurrentCostPrice(final CostDetailCreateRequest request)
-	{
-		return getCurrentCost(request).getCurrentCostPrice();
-	}
-
-	protected final void saveCurrentCosts(final CurrentCost currentCost)
-	{
-		currentCostsRepo.save(currentCost);
-	}
 
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)

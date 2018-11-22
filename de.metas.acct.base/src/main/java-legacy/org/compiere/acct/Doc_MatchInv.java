@@ -44,7 +44,6 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
@@ -216,8 +215,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		facts.add(fact);
 		setC_Currency_ID(as.getCurrencyId());
 
-		final CostResult costResult = getCreateCostDetails(as);
-		final CostAmount costs = costResult.getTotalAmount();
+		final CostAmount costs = getCreateCostDetails(as);
 
 		//
 		// NotInvoicedReceipt DR
@@ -492,7 +490,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setAD_Org_ID(receiptLine.getAD_Org_ID());
 	}
 
-	private CostResult getCreateCostDetails(final AcctSchema as)
+	private CostAmount getCreateCostDetails(final AcctSchema as)
 	{
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
@@ -525,7 +523,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(currencyConvCtx.getC_ConversionType_ID()))
 						.date(TimeUtil.asLocalDate(currencyConvCtx.getConversionDate()))
 						.description(getDescription())
-						.build());
+						.build())
+				.getTotalAmount();
 	}
 
 }   // Doc_MatchInv
