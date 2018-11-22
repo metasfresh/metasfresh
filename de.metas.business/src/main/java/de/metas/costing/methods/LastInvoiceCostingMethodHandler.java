@@ -4,9 +4,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +27,9 @@ import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,7 +60,7 @@ import lombok.NonNull;
 public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	public LastInvoiceCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo, 
+			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailRepository costDetailsRepo,
 			@NonNull final CostingMethodHandlerUtils utils)
 	{
@@ -112,32 +119,38 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
+	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
 		return getLastInvoicePrice(costSegment);
 	}
 
-	public static BigDecimal getLastInvoicePrice(final CostSegment costSegment)
+	private static Optional<CostAmount> getLastInvoicePrice(final CostSegment costSegment)
 	{
-		final int productId = costSegment.getProductId().getRepoId();
-		final int AD_Org_ID = costSegment.getOrgId().getRepoId();
-		final int M_ASI_ID = costSegment.getAttributeSetInstanceId().getRepoId();
-		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
-		final int currencyId = as.getCurrencyId().getRepoId();
+		final ProductId productId = costSegment.getProductId();
+		final OrgId orgId = costSegment.getOrgId();
+		final AttributeSetInstanceId asiId = costSegment.getAttributeSetInstanceId();
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
+		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 
+		List<Object> sqlParams = new ArrayList<>();
 		String sql = "SELECT currencyConvert(il.PriceActual, i.C_Currency_ID, ?, i.DateAcct, i.C_ConversionType_ID, il.AD_Client_ID, il.AD_Org_ID) "
 				// ,il.PriceActual, il.QtyInvoiced, i.DateInvoiced, il.Line
 				+ "FROM C_InvoiceLine il "
 				+ " INNER JOIN C_Invoice i ON (il.C_Invoice_ID=i.C_Invoice_ID) "
 				+ "WHERE il.M_Product_ID=?"
 				+ " AND i.IsSOTrx='N'";
-		if (AD_Org_ID != 0)
+		sqlParams.add(acctCurrencyId);
+		sqlParams.add(productId);
+
+		if (orgId.isRegular())
 		{
 			sql += " AND il.AD_Org_ID=?";
+			sqlParams.add(orgId);
 		}
-		else if (M_ASI_ID != 0)
+		else if (asiId.isRegular())
 		{
 			sql += " AND il.M_AttributeSetInstance_ID=?";
+			sqlParams.add(asiId);
 		}
 		sql += " ORDER BY i.DateInvoiced DESC, il.Line DESC";
 		//
@@ -146,24 +159,17 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setInt(1, currencyId);
-			pstmt.setInt(2, productId);
-			if (AD_Org_ID != 0)
-			{
-				pstmt.setInt(3, AD_Org_ID);
-			}
-			else if (M_ASI_ID != 0)
-			{
-				pstmt.setInt(3, M_ASI_ID);
-			}
+			DB.setParameters(pstmt, sqlParams);
+
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				return rs.getBigDecimal(1);
+				final BigDecimal priceActual = rs.getBigDecimal(1);
+				return Optional.ofNullable(CostAmount.of(priceActual, acctCurrencyId));
 			}
 			else
 			{
-				return null;
+				return Optional.empty();
 			}
 		}
 		catch (final Exception e)

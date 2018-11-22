@@ -57,15 +57,13 @@ public class CostElement
 
 	public boolean isMaterialCostingMethod()
 	{
-		return CostElementType.Material == getCostElementType()
+		return getCostElementType().isMaterial()
 				&& getCostingMethod() != null;
 	}
 
 	public boolean isActivityControlElement()
 	{
-		return CostElementType.Resource.equals(costElementType)
-				|| CostElementType.Overhead.equals(costElementType)
-				|| CostElementType.BurdenMOverhead.equals(costElementType);
+		return getCostElementType().isActivityControlElement();
 	}
 
 }

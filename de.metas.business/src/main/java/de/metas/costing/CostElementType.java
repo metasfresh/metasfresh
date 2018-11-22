@@ -77,4 +77,11 @@ public enum CostElementType
 	{
 		return this == Material;
 	}
+
+	public boolean isActivityControlElement()
+	{
+		return Resource.equals(this)
+				|| Overhead.equals(this)
+				|| BurdenMOverhead.equals(this);
+	}
 }

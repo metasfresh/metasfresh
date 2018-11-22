@@ -34,7 +34,7 @@ public class CostDetailVoidRequest
 	@NonNull
 	CostSegment costSegment;
 	@NonNull
-	CostElement costElement;
+	CostElementId costElementId;
 	@NonNull
 	CostAmount amt;
 	@NonNull

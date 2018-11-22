@@ -317,7 +317,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	 * @param element MCostElement
 	 * @return Cost Price Lower Level
 	 */
-	private CostAmount getCurrentCostPriceLL(I_PP_Product_BOM bom, CostElement element)
+	private CostAmount getCurrentCostPriceLL(final I_PP_Product_BOM bom, final CostElement element)
 	{
 		log.info("Element: {}", element);
 

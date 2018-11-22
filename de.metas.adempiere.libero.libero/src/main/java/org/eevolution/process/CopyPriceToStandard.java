@@ -67,7 +67,6 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
-import de.metas.costing.CostElementType;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
@@ -140,11 +139,11 @@ public class CopyPriceToStandard extends JavaProcess
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
-		CostElement element = Adempiere.getBean(ICostElementRepository.class).getById(p_M_CostElement_ID);
-		if (CostElementType.Material != element.getCostElementType())
+		final AcctSchema acctSchema = getAcctSchema();
+		final CostElement element = getCostElement();
+		if (!element.isMaterialCostingMethod())
 		{
 			throw new LiberoException("Only Material Cost Elements are allowed");
 		}
@@ -157,15 +156,15 @@ public class CopyPriceToStandard extends JavaProcess
 			BigDecimal price = pprice.getPriceStd();
 			final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(plv.getM_PriceList_ID());
 			int C_Currency_ID = pl.getC_Currency_ID();
-			if (C_Currency_ID != as.getCurrencyId().getRepoId())
+			if (C_Currency_ID != acctSchema.getCurrencyId().getRepoId())
 			{
 				price = currencyConversionBL.convert(getCtx(), pprice.getPriceStd(),
-						C_Currency_ID, as.getCurrencyId().getRepoId(),
+						C_Currency_ID, acctSchema.getCurrencyId().getRepoId(),
 						getAD_Client_ID(), p_AD_Org_ID.getRepoId());
 			}
 
 			final I_M_Product product = Services.get(IProductDAO.class).getById(pprice.getM_Product_ID());
-			final CostDimension d = new CostDimension(product, as, p_M_CostType_ID, p_AD_Org_ID, AttributeSetInstanceId.NONE, p_M_CostElement_ID);
+			final CostDimension d = new CostDimension(product, acctSchema, p_M_CostType_ID, p_AD_Org_ID, AttributeSetInstanceId.NONE, element.getId());
 			final Collection<I_M_Cost> costs = d.toQuery(I_M_Cost.class, get_TrxName()).list();
 			for (I_M_Cost cost : costs)
 			{
@@ -179,6 +178,16 @@ public class CopyPriceToStandard extends JavaProcess
 			}
 		}
 		return "@Updated@ #" + count_updated;
+	}
+
+	private AcctSchema getAcctSchema()
+	{
+		return Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
+	}
+
+	private CostElement getCostElement()
+	{
+		return Adempiere.getBean(ICostElementRepository.class).getById(p_M_CostElement_ID);
 	}
 
 	private static List<I_M_ProductPrice> getProductPrice(int priceListVersionId)

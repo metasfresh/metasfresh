@@ -5,9 +5,14 @@ import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +30,9 @@ import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -55,7 +62,7 @@ import lombok.NonNull;
 public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	public LastPOCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo, 
+			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailRepository costDetailsRepo,
 			@NonNull final CostingMethodHandlerUtils utils)
 	{
@@ -114,25 +121,17 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(CostSegment costSegment, OrderLineId orderLineId)
+	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
 	{
-		BigDecimal costs = null;
-		if (orderLineId != null)
-			costs = getPOPrice(costSegment, orderLineId);
-		if (costs == null || costs.signum() == 0)
-			costs = getLastPOPrice(costSegment);
-		return costs;
+		return Optionals.firstPresentOfSuppliers(
+				() -> getPOPrice(costSegment, orderLineId),
+				() -> getLastPOPrice(costSegment));
 	}
 
-	/**
-	 * Get PO Price in currency
-	 * 
-	 * @return last PO price in currency or null
-	 */
-	public static BigDecimal getPOPrice(@NonNull final CostSegment costSegment, @NonNull final OrderLineId orderLineId)
+	private static Optional<CostAmount> getPOPrice(@NonNull final CostSegment costSegment, @NonNull final OrderLineId orderLineId)
 	{
-		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
-		final CurrencyId currencyId = as.getCurrencyId();
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
+		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 
 		final String sql = "SELECT"
 				+ " currencyConvert(ol.PriceCost, o.C_Currency_ID, ?, o.DateAcct, o.C_ConversionType_ID, ol.AD_Client_ID, ol.AD_Org_ID)"
@@ -141,7 +140,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
 				+ " WHERE ol.C_OrderLine_ID=?"
 				+ " AND o.IsSOTrx=?";
-		final Object[] sqlParams = new Object[] {currencyId, currencyId, orderLineId, false};
+		final Object[] sqlParams = new Object[] { acctCurrencyId, acctCurrencyId, orderLineId, false };
 		//
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -152,21 +151,26 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				BigDecimal priceCost = rs.getBigDecimal(1);
+				final BigDecimal priceCost = rs.getBigDecimal(1);
 				if (priceCost != null && priceCost.signum() != 0)
 				{
-					return priceCost;
+					return Optional.of(CostAmount.of(priceCost, acctCurrencyId));
 				}
-				
+
 				final BigDecimal priceActual = rs.getBigDecimal(2);
-				return priceActual;
+				if (priceActual != null)
+				{
+					return Optional.of(CostAmount.of(priceActual, acctCurrencyId));
+				}
+
+				return Optional.empty();
 			}
 			else
 			{
-				return null;
+				return Optional.empty();
 			}
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new DBException(e, sql);
 		}
@@ -178,23 +182,15 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 		}
 	}	// getPOPrice
 
-	/**
-	 * Get Last PO Price in currency
-	 * 
-	 * @param product product
-	 * @param M_ASI_ID attribute set instance
-	 * @param AD_Org_ID org
-	 * @param C_Currency_ID accounting currency
-	 * @return last PO price in currency or null
-	 */
-	public static BigDecimal getLastPOPrice(final CostSegment costSegment)
+	private static Optional<CostAmount> getLastPOPrice(final CostSegment costSegment)
 	{
-		final int productId = costSegment.getProductId().getRepoId();
-		final int AD_Org_ID = costSegment.getOrgId().getRepoId();
-		final int M_ASI_ID = costSegment.getAttributeSetInstanceId().getRepoId();
-		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
-		final int currencyId = as.getCurrencyId().getRepoId();
+		final ProductId productId = costSegment.getProductId();
+		final OrgId orgId = costSegment.getOrgId();
+		final AttributeSetInstanceId asiId = costSegment.getAttributeSetInstanceId();
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
+		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 
+		final List<Object> sqlParams = new ArrayList<>();
 		String sql = "SELECT currencyConvert(ol.PriceCost, o.C_Currency_ID, ?, o.DateAcct, o.C_ConversionType_ID, ol.AD_Client_ID, ol.AD_Org_ID),"
 				+ " currencyConvert(ol.PriceActual, o.C_Currency_ID, ?, o.DateAcct, o.C_ConversionType_ID, ol.AD_Client_ID, ol.AD_Org_ID) "
 				// ,ol.PriceCost,ol.PriceActual, ol.QtyOrdered, o.DateOrdered, ol.Line
@@ -202,10 +198,19 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
 				+ "WHERE ol.M_Product_ID=?"
 				+ " AND o.IsSOTrx='N'";
-		if (AD_Org_ID > 0)
+		sqlParams.add(acctCurrencyId);
+		sqlParams.add(acctCurrencyId);
+		sqlParams.add(productId);
+		if (orgId.isRegular())
+		{
 			sql += " AND ol.AD_Org_ID=?";
-		else if (M_ASI_ID > 0)
+			sqlParams.add(orgId);
+		}
+		else if (asiId.isRegular())
+		{
 			sql += " AND ol.M_AttributeSetInstance_ID=?";
+			sqlParams.add(asiId);
+		}
 		sql += " ORDER BY o.DateOrdered DESC, ol.Line DESC";
 		//
 		PreparedStatement pstmt = null;
@@ -213,29 +218,30 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setInt(1, currencyId);
-			pstmt.setInt(2, currencyId);
-			pstmt.setInt(3, productId);
-			if (AD_Org_ID != 0)
-				pstmt.setInt(4, AD_Org_ID);
-			else if (M_ASI_ID != 0)
-				pstmt.setInt(4, M_ASI_ID);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				BigDecimal retValue = rs.getBigDecimal(1);
-				if (retValue == null || retValue.signum() == 0)
+				final BigDecimal priceCost = rs.getBigDecimal(1);
+				if (priceCost != null && priceCost.signum() != 0)
 				{
-					retValue = rs.getBigDecimal(2);
+					return Optional.of(CostAmount.of(priceCost, acctCurrencyId));
 				}
-				return retValue;
+
+				final BigDecimal priceActual = rs.getBigDecimal(2);
+				if (priceActual != null && priceActual.signum() != 0)
+				{
+					return Optional.of(CostAmount.of(priceActual, acctCurrencyId));
+				}
+				
+				return Optional.empty();
 			}
 			else
 			{
-				return null;
+				return Optional.empty();
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql);
 		}

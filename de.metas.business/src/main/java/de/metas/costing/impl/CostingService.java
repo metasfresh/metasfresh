@@ -14,6 +14,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -220,14 +221,13 @@ public class CostingService implements ICostingService
 				.build();
 
 		final CostElementId costElementId = costDetail.getCostElementId();
-		final CostElement costElement = costElementRepo.getById(costElementId);
 
 		final CostAmount amt = costDetail.getAmt();
 		final Quantity qty = costDetail.getQty();
 
 		return CostDetailVoidRequest.builder()
 				.costSegment(costSegment)
-				.costElement(costElement)
+				.costElementId(costElementId)
 				.amt(amt)
 				.qty(qty)
 				.build();
@@ -272,7 +272,7 @@ public class CostingService implements ICostingService
 	private List<CostElement> extractCostElements(final CostDetailCreateRequest request)
 	{
 		// FIXME: we need to handle manufacturing costs, where we have non-material cost elements!!!
-		
+
 		if (request.isAllCostElements())
 		{
 			return costElementRepo.getMaterialCostingMethods(request.getClientId());
@@ -314,12 +314,15 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final CostingMethod costingMethod, final OrderLineId orderLineId)
+	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final CostingMethod costingMethod, final OrderLineId orderLineId)
 	{
 		return getCostingMethodHandlers(costingMethod)
 				.stream()
 				.map(handler -> handler.calculateSeedCosts(costSegment, orderLineId))
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+				.filter(Predicates.notNull())
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.reduce(CostAmount::add);
 	}
 
 	@Override

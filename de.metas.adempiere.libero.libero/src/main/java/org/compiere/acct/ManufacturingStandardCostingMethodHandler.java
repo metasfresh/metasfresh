@@ -172,20 +172,19 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
-		// TODO Auto-generated method stub
-
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
+	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
 	{
-		return BigDecimal.ZERO;
+		return Optional.empty();
 	}
 
 	private CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
 		final CostSegment costSegment = utils.extractCostSegment(request);
-		final CostElementId costElementId = request.getCostElement().getId();
+		final CostElementId costElementId = request.getCostElementId();
 		return currentCostsRepo.getOrCreate(costSegment, costElementId);
 	}
 
@@ -250,7 +249,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
 		final CostSegment costSegment = utils.extractCostSegment(request);
-		final CostAmount price = getProductActualCostPrice(costSegment, request.getCostElement().getId());
+		final CostAmount price = getProductActualCostPrice(costSegment, request.getCostElementId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
 		final CurrentCost currentCosts = getCurrentCost(request);

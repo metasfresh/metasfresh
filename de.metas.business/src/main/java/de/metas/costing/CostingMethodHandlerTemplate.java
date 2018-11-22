@@ -1,6 +1,5 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 
@@ -65,9 +64,9 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
+	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
 	{
-		return null;
+		return Optional.empty();
 	}
 
 	@Override
@@ -137,7 +136,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	private static CostDetailQuery extractCostDetailQuery(final CostDetailCreateRequest request)
 	{
-		final CostElementId costElementId = request.isAllCostElements() ? null : request.getCostElement().getId();
+		final CostElementId costElementId = request.isAllCostElements() ? null : request.getCostElementId();
 
 		return CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
@@ -207,12 +206,12 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	protected final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
 		final CostSegment costSegment = utils.extractCostSegment(request);
-		return getCurrentCost(costSegment, request.getCostElement());
+		return getCurrentCost(costSegment, request.getCostElementId());
 	}
 
-	protected final CurrentCost getCurrentCost(final CostSegment costSegment, final CostElement costElement)
+	protected final CurrentCost getCurrentCost(final CostSegment costSegment, final CostElementId costElementId)
 	{
-		return currentCostsRepo.getOrCreate(costSegment, costElement.getId());
+		return currentCostsRepo.getOrCreate(costSegment, costElementId);
 	}
 
 	protected final CostAmount getCurrentCostPrice(final CostDetailCreateRequest request)

@@ -102,7 +102,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
-		final CurrentCost currentCosts = getCurrentCost(request.getCostSegment(), request.getCostElement());
+		final CurrentCost currentCosts = getCurrentCost(request.getCostSegment(), request.getCostElementId());
 
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;

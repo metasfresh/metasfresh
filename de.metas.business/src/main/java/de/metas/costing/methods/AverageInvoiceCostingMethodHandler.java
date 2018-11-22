@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -58,7 +59,7 @@ import lombok.NonNull;
 public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	public AverageInvoiceCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo, 
+			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailRepository costDetailsRepo,
 			@NonNull final CostingMethodHandlerUtils utils)
 	{
@@ -113,7 +114,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
+	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = Env.getCtx();
@@ -208,9 +209,12 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		//
 		if (newAverageAmt != null && newAverageAmt.signum() != 0)
 		{
-			return newAverageAmt;
+			return Optional.of(CostAmount.of(newAverageAmt, acctCurencyId));
 		}
-		return null;
+		else
+		{
+			return Optional.empty();
+		}
 	}
 
 }

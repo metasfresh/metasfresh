@@ -1,6 +1,6 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
+import java.util.Optional;
 
 import de.metas.order.OrderLineId;
 
@@ -29,13 +29,13 @@ import de.metas.order.OrderLineId;
 public interface ICostingService
 {
 	CostResult createCostDetail(CostDetailCreateRequest request);
-	
+
 	CostResult createReversalCostDetails(CostDetailReverseRequest request);
 
 	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
 
 	/** @return seed cost or null */
-	BigDecimal calculateSeedCosts(CostSegment costSegment, CostingMethod costingMethod, final OrderLineId orderLineId);
+	Optional<CostAmount> calculateSeedCosts(CostSegment costSegment, CostingMethod costingMethod, final OrderLineId orderLineId);
 
 	CostResult getCurrentCosts(CostSegment costSegment, CostingMethod costingMethod);
 }

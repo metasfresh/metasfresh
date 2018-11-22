@@ -1,6 +1,5 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 
@@ -43,6 +42,6 @@ public interface CostingMethodHandler
 
 	void voidCosts(CostDetailVoidRequest request);
 
-	BigDecimal calculateSeedCosts(CostSegment costSegment, final OrderLineId orderLineId);
+	Optional<CostAmount> calculateSeedCosts(CostSegment costSegment, final OrderLineId orderLineId);
 
 }

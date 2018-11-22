@@ -16,6 +16,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
@@ -44,6 +45,7 @@ import lombok.Value;
 
 @Value
 @ToString(doNotUseGetters = true) // because we are throwing exception on some getters, see below...
+@EqualsAndHashCode(doNotUseGetters = true) // because we are throwing exception on some getters, see below...
 public class CostDetailCreateRequest
 {
 	AcctSchemaId acctSchemaId;
@@ -107,6 +109,11 @@ public class CostDetailCreateRequest
 	{
 		Check.assumeNotNull(costElement, "costElement shall be set for {}", this);
 		return costElement;
+	}
+
+	public CostElementId getCostElementId()
+	{
+		return getCostElement().getId();
 	}
 
 	public boolean isAllCostElements()
@@ -188,7 +195,7 @@ public class CostDetailCreateRequest
 
 		if (!isAllCostElements())
 		{
-			costDetail.costElementId(getCostElement().getId());
+			costDetail.costElementId(getCostElementId());
 		}
 
 		return costDetail;

@@ -66,7 +66,7 @@ import lombok.NonNull;
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	public AveragePOCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo, 
+			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailRepository costDetailsRepo,
 			@NonNull final CostingMethodHandlerUtils utils)
 	{
@@ -143,7 +143,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;
-		final CurrentCost currentCosts = getCurrentCost(request.getCostSegment(), request.getCostElement());
+		final CurrentCost currentCosts = getCurrentCost(request.getCostSegment(), request.getCostElementId());
 		if (isInboundTrx)
 		{
 			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate());
@@ -176,13 +176,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
+	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = Env.getCtx();
 		final int productId = costSegment.getProductId().getRepoId();
 		final int AD_Org_ID = costSegment.getOrgId().getRepoId();
-		final int M_AttributeSetInstance_ID = costSegment.getAttributeSetInstanceId().getRepoId();				
+		final int M_AttributeSetInstance_ID = costSegment.getAttributeSetInstanceId().getRepoId();
 		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
 		final CurrencyId acctCurencyId = acctSchema.getCurrencyId();
 		final int costingPrecision = acctSchema.getCosting().getCostingPrecision();
@@ -276,8 +276,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		//
 		if (newAverageAmt != null && newAverageAmt.signum() != 0)
 		{
-			return newAverageAmt;
+			return Optional.of(CostAmount.of(newAverageAmt, acctCurencyId));
 		}
-		return null;
+		else
+		{
+			return Optional.empty();
+		}
 	}
 }
