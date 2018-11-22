@@ -200,3 +200,8 @@ SELECT 0,0,540907,0,550047,TO_TIMESTAMP('2018-11-22 18:58:32','YYYY-MM-DD HH24:M
 WHERE NOT EXISTS (select 1 from AD_Scheduler where AD_Process_ID=540907)
 ;
 
+CREATE INDEX IF NOT EXISTS m_product_c_uom_id
+   ON public.m_product (c_uom_id ASC NULLS LAST);
+COMMENT ON INDEX public.m_product_c_uom_id
+  IS 'The purpose of this index is to support ccases where products are left-join just because their C_UOM_ID is needed.
+Concrete example: MD_Stock_From_HUs_V';
