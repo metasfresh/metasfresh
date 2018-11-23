@@ -123,7 +123,6 @@
     "prop-types": "^15.5.6",
     "quagga": "^0.12.1",
     "query-string": "^5.0.1",
-    "queue": "^4.5.0",
     "react": "^16.5.0",
     "react-addons-css-transition-group": "~15.6.2",
     "react-addons-transition-group": "~15.6.2",
