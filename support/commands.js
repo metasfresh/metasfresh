@@ -225,7 +225,8 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
 
 Cypress.Commands.add('openAdvancedEdit', () => {
   describe('Open the advanced edit overlay via ALT+E shortcut', function() {
-    cy.get('body').type('{alt}E')
+    cy.get('body').type('{alt}E');
+    cy.get('.panel-modal').should('exist');
   })
 });
 
@@ -257,6 +258,43 @@ Cypress.Commands.add('pressDoneButton', () => {
 Cypress.Commands.add('selectTab', (tabName) => {
   describe('Select and activate the tab with a certain name', function() {
     return cy.get(`#tab_${tabName}`).click()
+  });
+});
+
+/*
+ * This command allows waiting for the breadcrumb in the header to be visible, which
+ * helps make the tests less flaky as even though the page fires load event, some
+ * requests may still be pending/running.
+ *
+ * Command accepts two params:
+ * - pageName : if we explicitly want to define what to wait for
+ * - breadcrumbNr : if we want to select breadcrumb value from the redux store at
+ *                  the given index
+ * In case pageName is not defined, command will fall back to broadcrembNr and either
+ * use the provided value or the value at index 0.
+ *
+ */
+Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
+  describe('Wait for page name visible in the header', function() {
+    if (pageName) {
+      cy.get('.header-breadcrumb')
+        .find('.header-item-container')
+        .should('not.have.length', 1)
+        .get('.header-item').should('contain', pageName);
+    } else {
+      const breadcrumbNumber = breadcrumbNr || 0;
+
+      cy.get('.header-breadcrumb')
+        .find('.header-item-container')
+        .should('not.have.length', 1)
+        .window().its('store').invoke('getState').its('menuHandler.breadcrumb')
+        .should('not.have.length', 0)
+        .window().its('store').invoke('getState')
+        .its('menuHandler.breadcrumb')
+        .then((breadcrumbs) => {
+          cy.get('.header-item').should('contain', breadcrumbs[breadcrumbNumber].caption);
+        });
+    }
   });
 });
 
