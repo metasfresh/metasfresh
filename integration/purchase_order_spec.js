@@ -13,15 +13,12 @@ describe('purchase order Test', function() {
 
             cy.writeIntoStringField('POReference', poReference);
 
-            cy.writeIntoCompositeLookupField('C_BPartner_ID','G0002', 'Test Lieferant')
-            // cy.get('.input-dropdown-container .raw-lookup-wrapper')
-            //     .first()
-            //     .find('input')
-            //     .clear()
-            //     .type('G0002');
-            // these two shall work as of issue https://github.com/metasfresh/metasfresh-webui-frontend/issues/1981
-            //cy.writeIntoCompositeLookupField('C_BPartner_ID', 'Test L', 'Test Lieferant');
-            //cy.writeIntoCompositeLookupField('C_BPartner_Location_ID', 'Testaddresse');
+            cy.writeIntoCompositeLookupField('C_BPartner_ID','G0002', 'Test Lieferant');
+
+            // TODO: I don't see a reason why we would like to fill this field, if it's pre-filled
+            // automatically. But maybe I'm missing something here.  - Kuba
+            // cy.writeIntoCompositeLookupField('C_BPartner_Location_ID', 'Testaddresse');
+            cy.writeIntoCompositeLookupField('AD_User_ID', 'Testensen', 'Testensen');
 
             cy.clickOnCheckBox('IsDropShip');
     });
