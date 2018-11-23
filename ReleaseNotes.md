@@ -10,6 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.82
+# Features
+
+# Fixes
+* metasfresh-webui-frontend
+  * [#1997](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1997) Cypress: Product set Documentnote Test fails
+    * Fixes the cypress test on setting Doument Notes.
+
 # metasfresh 5.81
 ## Features
 
