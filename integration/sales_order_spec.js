@@ -81,8 +81,8 @@ describe('New sales order test', function() {
 
     it('Fill Business Partner', function() {
       cy.writeIntoCompositeLookupField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
-      cy.get('#lookup_C_BPartner_ID').click();
-      cy.writeIntoCompositeLookupField('C_BPartner_Location_ID', 'test', 'Testadresse 3');
+      cy.writeIntoCompositeLookupField('C_BPartner_Location_ID', 'Testadresse 3', 'Testadresse 3');
+      cy.writeIntoCompositeLookupField('AD_User_ID', 'Test', 'Test');
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
     });
@@ -90,10 +90,6 @@ describe('New sales order test', function() {
     it('Fill order reference to differentiate cypress tests', function() {
       cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
       /*
-      cy.get('.form-field-POReference')
-        .find('input')
-        .type(`Cypress Test ${new Date().getTime()}{enter}`);
-
       cy.get('.indicator-pending').should('exist');
       cy.wait(100);
       cy.get('.indicator-pending').should('not.exist');
