@@ -54,6 +54,8 @@ public interface IADWindowDAO extends ISingletonService
 	 */
 	ITranslatableString retrieveWindowName(int adWindowId);
 
+	String retrieveInternalWindowName(int adWindowId);
+	
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
 
 	List<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup);
