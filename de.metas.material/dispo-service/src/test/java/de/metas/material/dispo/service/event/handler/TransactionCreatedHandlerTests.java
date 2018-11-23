@@ -7,6 +7,8 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -31,7 +33,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionCreatedEventBuilder;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
@@ -153,6 +154,7 @@ public class TransactionCreatedHandlerTests
 		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(TEN).build();
 
 		final Candidate exisitingCandidate = Candidate.builder()
+				.clientId(10).orgId(20)
 				.type(CandidateType.UNRELATED_INCREASE)
 				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -161,7 +163,7 @@ public class TransactionCreatedHandlerTests
 						.quantity(ONE)
 						.date(SystemTime.asTimestamp())
 						.build())
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(ONE, AttributesKey.ALL, 0, TRANSACTION_ID + 1))
+				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(TRANSACTION_ID + 1).complete(true).build())
 				.build();
 
 		// @formatter:off
@@ -244,6 +246,8 @@ public class TransactionCreatedHandlerTests
 	{
 		final Candidate exisitingCandidate = Candidate.builder()
 				.id(CandidateId.ofRepoId(11))
+				.clientId(10)
+				.orgId(20)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
@@ -326,6 +330,8 @@ public class TransactionCreatedHandlerTests
 	private void makeCommonAssertions(final Candidate candidate)
 	{
 		assertThat(candidate).isNotNull();
+		assertThat(candidate.getClientId()).isEqualTo(10);
+		assertThat(candidate.getOrgId()).isEqualTo(20);
 		assertThat(candidate.getMaterialDescriptor()).isNotNull();
 		assertThat(candidate.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(candidate.getWarehouseId()).isEqualTo(WAREHOUSE_ID);

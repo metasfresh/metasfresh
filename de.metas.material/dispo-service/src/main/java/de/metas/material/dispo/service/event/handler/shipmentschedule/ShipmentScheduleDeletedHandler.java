@@ -2,6 +2,8 @@ package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
 import static java.math.BigDecimal.ZERO;
 
+import lombok.NonNull;
+
 import java.util.Collection;
 
 import org.springframework.context.annotation.Profile;
@@ -22,7 +24,6 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.util.Loggables;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -88,7 +89,7 @@ public class ShipmentScheduleDeletedHandler implements MaterialEventHandler<Ship
 				.getDemandDetail()
 				.toBuilder()
 				.shipmentScheduleId(IdConstants.NULL_REPO_ID)
-				.plannedQty(ZERO)
+				.qty(ZERO)
 				.build();
 		final Candidate updatedCandidate = candidate
 				.withQuantity(ZERO)

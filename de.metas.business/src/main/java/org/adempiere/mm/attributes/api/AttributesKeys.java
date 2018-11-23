@@ -2,21 +2,28 @@ package org.adempiere.mm.attributes.api;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -116,5 +123,41 @@ public final class AttributesKeys
 		}
 
 		return Optional.of(AttributesKey.ofAttributeValueIds(attributeValueIds));
+	}
+
+	public AttributeSetInstanceId createAttributeSetInstanceFromAttributesKey(@NonNull final AttributesKey attributesKey)
+	{
+		final IAttributeSet attributeSet = createAttributeSetFromStorageAttributesKey(attributesKey);
+
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIFromAttributeSet(attributeSet);
+
+		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+	}
+
+	public IAttributeSet createAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey attributesKey)
+	{
+		final Builder builder = ImmutableAttributeSet.builder();
+		for (final I_M_AttributeValue attributeValueRecord : extractAttributeSetFromStorageAttributesKey(attributesKey))
+		{
+			builder.attributeValue(attributeValueRecord);
+		}
+		return builder.build();
+	}
+
+	private List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey attributesKey)
+	{
+		final Collection<Integer> attributeValueIds = attributesKey.getAttributeValueIds();
+		if (attributeValueIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_AttributeValue.class)
+				.addInArrayFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueIds)
+				.orderBy(I_M_AttributeValue.COLUMN_M_AttributeValue_ID)
+				.create()
+				.list(I_M_AttributeValue.class);
 	}
 }

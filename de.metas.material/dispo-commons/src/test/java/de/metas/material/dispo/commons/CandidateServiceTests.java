@@ -78,7 +78,7 @@ public class CandidateServiceTests
 						.productPlanningId(220)
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
-						.plannedQty(TEN)
+						.qty(TEN)
 						.build())
 				.build();
 
@@ -93,7 +93,7 @@ public class CandidateServiceTests
 						.productBomLineId(500)
 						.advised(Flag.TRUE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
-						.plannedQty(TEN)
+						.qty(TEN)
 						.build());
 
 		final Candidate candidate3 = candidate
@@ -107,7 +107,7 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.TRUE)
-						.plannedQty(TEN)
+						.qty(TEN)
 						.build());
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService
@@ -141,7 +141,7 @@ public class CandidateServiceTests
 						.productPlanningId(220)
 						.plantId(230)
 						.shipperId(240)
-						.plannedQty(TEN)
+						.qty(TEN)
 						.build())
 				.build();
 
@@ -155,7 +155,7 @@ public class CandidateServiceTests
 						.plantId(230)
 						.shipperId(240)
 						.networkDistributionLineId(500)
-						.plannedQty(TEN)
+						.qty(TEN)
 						.build());
 
 		final Candidate candidate3 = candidate
@@ -168,7 +168,7 @@ public class CandidateServiceTests
 						.plantId(230)
 						.shipperId(240)
 						.networkDistributionLineId(501)
-						.plannedQty(TEN)
+						.qty(TEN)
 						.build());
 
 		final DDOrderRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));

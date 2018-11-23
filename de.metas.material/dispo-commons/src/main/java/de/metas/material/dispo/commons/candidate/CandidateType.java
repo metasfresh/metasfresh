@@ -30,7 +30,17 @@ import de.metas.material.dispo.model.X_MD_Candidate;
  */
 public enum CandidateType
 {
-	DEMAND, SUPPLY, STOCK_UP, UNRELATED_INCREASE, UNRELATED_DECREASE, 
+	DEMAND, SUPPLY,
+
+	STOCK_UP,
+
+	UNRELATED_INCREASE,
+
+	UNRELATED_DECREASE,
+
+	INVENTORY_DOWN,
+
+	INVENTORY_UP,
 
 	/** TODO: remove this type; instead, "just" add an ATP column to candidate. */
 	STOCK
