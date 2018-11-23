@@ -1,11 +1,11 @@
 describe('Product DocumentNote test', function() {
     before(function() {
-        cy.loginByForm();
+      cy.loginByForm();
     });
 
     it('open the product window', function() {
-        cy.visit('window/140/2005577');
-
+      cy.visit('window/140/2005577');
+        cy.waitForHeader();
         cy.openAdvancedEdit();
         cy.writeIntoTextField('DocumentNote', 'blah-blah-blah');
     });
