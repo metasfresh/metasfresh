@@ -34,6 +34,35 @@ describe('New sales order test', function() {
     cy.visit('/window/'+windowId);
   });
 
+  describe('List tests', function() {
+    it('Test if rows get selected/deselected properly', function() {
+      cy.get('.table-flex-wrapper-row')
+        .find('tbody tr').eq(0)
+        .should('exist')
+
+      cy.get('.table-flex-wrapper-row')
+        .find('tbody tr').eq(1)
+        .find('td').eq(0)
+        .type('{shift}', { release: false })
+        .click();
+
+      cy.get('.table-flex-wrapper-row')
+        .find('tbody tr').eq(2)
+        .find('td').eq(0)
+        .type('{shift}', { release: false })
+        .click();
+
+      cy.get('.row-selected')
+        .should('have.length', 2);
+
+      cy.get('.document-list-header')
+        .click();
+
+      cy.get('.row-selected')
+        .should('have.length', 0);
+    });
+  });
+
   context('Create a new sales order', function() {
     before(function() {
       cy.get('.header-breadcrumb')

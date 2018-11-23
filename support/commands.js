@@ -303,7 +303,7 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {
     if (!active) {
-      cy.get('.quick-actions-wrapper .btn-inline').click();
+      cy.get('.quick-actions-wrapper .btn-inline').eq(0).click();
       cy.get('.quick-actions-dropdown').should('exist');
 
       return cy.get(`#quickAction_${actionName}`).click();
