@@ -26,7 +26,7 @@ describe('purchase order Test', function() {
             cy.clickOnCheckBox('IsVendor');
             cy.pressDoneButton();
 
-            note that the partner needs an address to be eligible in the purchase order without causing an error
+            // note that the partner needs an address to be eligible in the purchase order without causing an error
             cy.selectTab('C_BPartner_Location');
             cy.pressAddNewButton();
             cy.writeIntoStringField('Name', 'Address');
@@ -36,7 +36,7 @@ describe('purchase order Test', function() {
             cy.writeIntoStringField('City', 'Cologne');
 
             /*
-            here the test fails for me; i get
+            Here the test fails for me; i get
 CypressError: Timed out retrying: cy.click() failed because this element is not visible:
 
 <button tabindex="0" class="btn btn-block tag tag-lg tag-block tag-secondary pointer tag-disabled">Edit</button>
