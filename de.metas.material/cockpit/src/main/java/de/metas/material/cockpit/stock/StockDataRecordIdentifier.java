@@ -1,10 +1,12 @@
 package de.metas.material.cockpit.stock;
 
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -41,16 +43,26 @@ public class StockDataRecordIdentifier
 		return identifier;
 	}
 
+	int clientId;
+
+	int orgId;
+
 	ProductDescriptor productDescriptor;
+
 	int warehouseId;
 
 	@Builder
 	private StockDataRecordIdentifier(
+			int clientId,
+			int orgId,
 			@NonNull final ProductDescriptor productDescriptor,
 			int warehouseId)
 	{
 		productDescriptor.getStorageAttributesKey().assertNotAllOrOther();
+
+		this.clientId = Check.assumeGreaterThanZero(clientId, "clientId");
+		this.orgId = orgId;
+		this.warehouseId =  Check.assumeGreaterThanZero(warehouseId, "warehouseId");
 		this.productDescriptor = productDescriptor;
-		this.warehouseId = warehouseId;
 	}
 }

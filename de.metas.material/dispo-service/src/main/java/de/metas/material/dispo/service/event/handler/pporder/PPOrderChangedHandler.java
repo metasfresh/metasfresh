@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +25,6 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
 import de.metas.util.Check;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -119,7 +120,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			final BigDecimal newPlannedQty = ppOrderChangedEvent.getNewQtyRequired();
 			final ProductionDetail updatedProductionDetail = productionDetailToUpdate.toBuilder()
 					.ppOrderDocStatus(newDocStatusFromEvent)
-					.plannedQty(newPlannedQty)
+					.qty(newPlannedQty)
 					.build();
 
 			final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());
@@ -164,7 +165,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			final ProductionDetail updatedProductionDetail = productionDetailToUpdate.toBuilder()
 					.ppOrderDocStatus(newDocStatusFromEvent)
 					.ppOrderLineId(changeDescriptor.getNewPPOrderLineId())
-					.plannedQty(newPlannedQty)
+					.qty(newPlannedQty)
 					.build();
 
 			final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());

@@ -1,15 +1,16 @@
 package de.metas.material.dispo.commons.candidate.businesscase;
 
-import java.math.BigDecimal;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
+
+import java.math.BigDecimal;
 
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -59,7 +60,7 @@ public class ProductionDetail implements BusinessCaseDetail
 				.ppOrderId(productionDetailRecord.getPP_Order_ID())
 				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
 				.ppOrderDocStatus(productionDetailRecord.getPP_Order_DocStatus())
-				.plannedQty(productionDetailRecord.getPlannedQty())
+				.qty(productionDetailRecord.getPlannedQty())
 				.build();
 
 		return productionDetail;
@@ -83,7 +84,7 @@ public class ProductionDetail implements BusinessCaseDetail
 
 	Flag pickDirectlyIfFeasible;
 
-	BigDecimal plannedQty;
+	BigDecimal qty;
 
 	@Builder(toBuilder = true)
 	private ProductionDetail(
@@ -96,7 +97,7 @@ public class ProductionDetail implements BusinessCaseDetail
 			final int ppOrderLineId,
 			@NonNull final Flag advised,
 			@NonNull final Flag pickDirectlyIfFeasible,
-			@NonNull final BigDecimal plannedQty)
+			@NonNull final BigDecimal qty)
 	{
 		this.advised = advised;
 		this.pickDirectlyIfFeasible = pickDirectlyIfFeasible;
@@ -116,7 +117,7 @@ public class ProductionDetail implements BusinessCaseDetail
 		this.ppOrderId = ppOrderId;
 		this.ppOrderDocStatus = ppOrderDocStatus;
 		this.ppOrderLineId = ppOrderLineId;
-		this.plannedQty = plannedQty;
+		this.qty = qty;
 	}
 
 	@Override

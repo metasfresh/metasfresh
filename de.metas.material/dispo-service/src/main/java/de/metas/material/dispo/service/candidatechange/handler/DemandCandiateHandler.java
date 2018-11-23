@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
@@ -18,7 +20,6 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -72,7 +73,10 @@ public class DemandCandiateHandler implements CandidateHandler
 	@Override
 	public Collection<CandidateType> getHandeledTypes()
 	{
-		return ImmutableList.of(CandidateType.DEMAND, CandidateType.UNRELATED_DECREASE);
+		return ImmutableList.of(
+				CandidateType.DEMAND,
+				CandidateType.UNRELATED_DECREASE,
+				CandidateType.INVENTORY_DOWN);
 	}
 
 	/**
@@ -106,25 +110,12 @@ public class DemandCandiateHandler implements CandidateHandler
 		}
 		else
 		{
-			// check if there is a supply record with the same demand detail and material descriptor
-			// final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateDeltaWithId);
-			// if (existingSupplyParentStockWithoutParentId != null)
-			// {
-			// //
-			// final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutParentId
-			// .withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateDeltaWithId.getQuantity()))
-			// .withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
-			//
-			// childStockWithDemandDelta = stockCandidateService.updateQty(existingSupplyParentStockWithUpdatedQty);
-			// childStockWithDemand = existingSupplyParentStockWithUpdatedQty;
-			// }
-			// else
-			// {
-			final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(demandCandidateDeltaWithId.withNegatedQuantity());
+			final Candidate templateForNewDemandCandidateChild = demandCandidateDeltaWithId.withNegatedQuantity().withSeqNo(expectedStockSeqNo);
+			final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(templateForNewDemandCandidateChild);
+
 			childStockWithDemandDelta = candidateRepositoryWriteService
 					.addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
 			childStockWithDemand = childStockWithDemandDelta.withQuantity(newDemandCandidateChild.getQuantity());
-			// }
 		}
 
 		candidateRepositoryWriteService
@@ -160,7 +151,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final CandidateType type = demandCandidate.getType();
 
 		Preconditions.checkArgument(
-				type == CandidateType.DEMAND || type == CandidateType.UNRELATED_DECREASE,
+				getHandeledTypes().contains(demandCandidate.getType()),
 				"Given parameter 'demandCandidate' has type=%s; demandCandidate=%s",
 				type, demandCandidate);
 	}

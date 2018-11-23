@@ -9,6 +9,9 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +21,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stock.StockChangedEvent;
+import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 
@@ -57,6 +61,7 @@ public class StockDataUpdateRequestHandler
 	public void handleDataUpdateRequest(@NonNull final StockDataUpdateRequest dataUpdateRequest)
 	{
 		final I_MD_Stock dataRecord = retrieveOrCreateDataRecord(dataUpdateRequest.getIdentifier());
+
 		final BigDecimal qtyOnHandOld = dataRecord.getQtyOnHand();
 
 		final BigDecimal qtyOnHandToAdd = dataUpdateRequest.getOnHandQtyChange();
@@ -64,7 +69,7 @@ public class StockDataUpdateRequestHandler
 		dataRecord.setQtyOnHand(qtyOnHandNew);
 		save(dataRecord);
 
-		fireStockChangedEvent(dataRecord, qtyOnHandOld);
+		fireStockChangedEvent(dataRecord, qtyOnHandOld, dataUpdateRequest.getSourceInfo());
 	}
 
 	private I_MD_Stock retrieveOrCreateDataRecord(@NonNull final StockDataRecordIdentifier identifier)
@@ -78,6 +83,9 @@ public class StockDataUpdateRequestHandler
 		}
 
 		final I_MD_Stock newDataRecord = newInstance(I_MD_Stock.class);
+		InterfaceWrapperHelper.setValue(newDataRecord, I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId());
+
+		newDataRecord.setAD_Org_ID(identifier.getOrgId());
 		newDataRecord.setM_Product_ID(identifier.getProductDescriptor().getProductId());
 		newDataRecord.setAttributesKey(identifier.getProductDescriptor().getStorageAttributesKey().getAsString());
 		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId());
@@ -95,6 +103,8 @@ public class StockDataUpdateRequestHandler
 		final IQueryBuilder<I_MD_Stock> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Stock.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Stock.COLUMN_AD_Client_ID, identifier.getClientId())
+				.addEqualsFilter(I_MD_Stock.COLUMN_AD_Org_ID, identifier.getOrgId())
 				.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, productDescriptor.getProductId())
 				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
 				.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, identifier.getWarehouseId());
@@ -102,7 +112,10 @@ public class StockDataUpdateRequestHandler
 		return queryBuilder.create();
 	}
 
-	private void fireStockChangedEvent(final I_MD_Stock dataRecord, final BigDecimal qtyOnHandOld)
+	private void fireStockChangedEvent(
+			@NonNull final I_MD_Stock dataRecord,
+			@NonNull final BigDecimal qtyOnHandOld,
+			@NonNull final StockChangeSourceInfo stockChangeSourceInfo)
 	{
 		final BigDecimal qtyOnHandNew = dataRecord.getQtyOnHand();
 		if (qtyOnHandOld.compareTo(qtyOnHandNew) == 0)
@@ -110,16 +123,37 @@ public class StockDataUpdateRequestHandler
 			return;
 		}
 
-		final StockChangedEvent event = StockChangedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(dataRecord.getAD_Client_ID(), dataRecord.getAD_Org_ID()))
-				.productDescriptor(ProductDescriptor.forProductAndAttributes(
+		final AttributesKey attributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
+		final AttributeSetInstanceId asiId = AttributesKeys.createAttributeSetInstanceFromAttributesKey(attributesKey);
+
+		final EventDescriptor eventDescriptor = EventDescriptor
+				.ofClientAndOrg(
+						dataRecord.getAD_Client_ID(),
+						dataRecord.getAD_Org_ID());
+
+		final ProductDescriptor productDescriptor = ProductDescriptor
+				.forProductAndAttributes(
 						dataRecord.getM_Product_ID(),
-						AttributesKey.ofString(dataRecord.getAttributesKey())))
+						attributesKey,
+						asiId.getRepoId());
+
+		final StockChangeDetails details = StockChangeDetails
+				.builder()
+				.transactionId(stockChangeSourceInfo.getTransactionId())
+				.resetStockAdPinstanceId(stockChangeSourceInfo.getResetStockAdPinstanceId())
+				.stockId(dataRecord.getMD_Stock_ID())
+				.build();
+
+		final StockChangedEvent event = StockChangedEvent
+				.builder()
+				.eventDescriptor(eventDescriptor)
+				.productDescriptor(productDescriptor)
 				.warehouseId(dataRecord.getM_Warehouse_ID())
 				.qtyOnHand(qtyOnHandNew)
 				.qtyOnHandOld(qtyOnHandOld)
+				.stockChangeDetails(details)
 				.build();
+
 		postMaterialEventService.postEventNow(event);
 	}
-
 }

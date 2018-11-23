@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler.purchasecandidate;
 
+import lombok.NonNull;
+
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -14,7 +16,6 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateEvent;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -82,7 +83,7 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 		}
 
 		final PurchaseDetail purchaseDetail = purchaseDetailBuilder
-				.plannedQty(materialDescriptor.getQuantity())
+				.qty(materialDescriptor.getQuantity())
 				.vendorRepoId(event.getVendorId())
 				.purchaseCandidateRepoId(event.getPurchaseCandidateRepoId())
 				.advised(Flag.FALSE_DONT_UPDATE)

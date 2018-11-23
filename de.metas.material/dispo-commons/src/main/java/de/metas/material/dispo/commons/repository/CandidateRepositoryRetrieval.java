@@ -2,6 +2,8 @@ package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
+import lombok.NonNull;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -43,7 +45,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -265,11 +266,16 @@ public class CandidateRepositoryRetrieval
 		final ImmutableList.Builder<TransactionDetail> result = ImmutableList.builder();
 		for (final I_MD_Candidate_Transaction_Detail transactionDetailRecord : transactionDetailRecords)
 		{
-			final TransactionDetail transactionDetail = TransactionDetail.forCandidateOrQuery(
-					transactionDetailRecord.getMovementQty(),
-					getEffectiveStorageAttributesKey(candidateRecord),
-					candidateRecord.getM_AttributeSetInstance_ID(),
-					transactionDetailRecord.getM_Transaction_ID());
+			final TransactionDetail transactionDetail = TransactionDetail
+					.builder()
+					.quantity(transactionDetailRecord.getMovementQty())
+					.storageAttributesKey(getEffectiveStorageAttributesKey(candidateRecord))
+					.attributeSetInstanceId(candidateRecord.getM_AttributeSetInstance_ID())
+					.transactionId(transactionDetailRecord.getM_Transaction_ID())
+					.resetStockAdPinstanceId(transactionDetailRecord.getAD_PInstance_ResetStock_ID())
+					.stockId(transactionDetailRecord.getMD_Stock_ID())
+					.complete(true)
+					.build();
 			result.add(transactionDetail);
 		}
 		return result.build();

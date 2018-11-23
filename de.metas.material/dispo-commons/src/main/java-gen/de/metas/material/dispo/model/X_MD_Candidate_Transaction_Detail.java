@@ -15,7 +15,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1346359366L;
+	private static final long serialVersionUID = 1683244131L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Transaction_Detail (Properties ctx, int MD_Candidate_Transaction_Detail_ID, String trxName)
@@ -43,6 +43,40 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_AD_PInstance getAD_PInstance_ResetStock() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ResetStock_ID, org.compiere.model.I_AD_PInstance.class);
+	}
+
+	@Override
+	public void setAD_PInstance_ResetStock(org.compiere.model.I_AD_PInstance AD_PInstance_ResetStock)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PInstance_ResetStock_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance_ResetStock);
+	}
+
+	/** Set Prozesslauf "Lagerbestand zurücksetzen".
+		@param AD_PInstance_ResetStock_ID Prozesslauf "Lagerbestand zurücksetzen"	  */
+	@Override
+	public void setAD_PInstance_ResetStock_ID (int AD_PInstance_ResetStock_ID)
+	{
+		if (AD_PInstance_ResetStock_ID < 1) 
+			set_Value (COLUMNNAME_AD_PInstance_ResetStock_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PInstance_ResetStock_ID, Integer.valueOf(AD_PInstance_ResetStock_ID));
+	}
+
+	/** Get Prozesslauf "Lagerbestand zurücksetzen".
+		@return Prozesslauf "Lagerbestand zurücksetzen"	  */
+	@Override
+	public int getAD_PInstance_ResetStock_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_ResetStock_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate() throws RuntimeException
@@ -95,6 +129,28 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	public int getMD_Candidate_Transaction_Detail_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_Transaction_Detail_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Bestand.
+		@param MD_Stock_ID Bestand	  */
+	@Override
+	public void setMD_Stock_ID (int MD_Stock_ID)
+	{
+		if (MD_Stock_ID < 1) 
+			set_Value (COLUMNNAME_MD_Stock_ID, null);
+		else 
+			set_Value (COLUMNNAME_MD_Stock_ID, Integer.valueOf(MD_Stock_ID));
+	}
+
+	/** Get Bestand.
+		@return Bestand	  */
+	@Override
+	public int getMD_Stock_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Stock_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
