@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Bugfix for the unselecting of grid selections when clicking outside grid.
   * [#2058](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2058) Cannot close the HU Editor in manufacturing order anymore
     * Fixes a bug in modal Handling Unit Editor that prevented the unselecting of rows.
+  * [#2067](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2067) Dropdown in bpartner field in order sometimes remains displayed after selecting bpartner
+    * Fixes a minor Bug that occurred when selecting dropdown entries with mouse. Now closing the dropdown after selecting again.
 
 # metasfresh 5.81
 ## Features
