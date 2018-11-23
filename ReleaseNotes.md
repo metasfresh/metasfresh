@@ -17,6 +17,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1997](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1997) Cypress: Product set Documentnote Test fails
     * Fixes the cypress test on setting Doument Notes.
+  * [#2048](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2048) View: clicking outside of table does not unselect the current selected lines
+    * Bugfix for the unselecting of grid selections when clicking outside grid.
 
 # metasfresh 5.81
 ## Features
