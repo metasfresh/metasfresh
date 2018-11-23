@@ -70,23 +70,32 @@ class Lookup extends Component {
     }
   }
 
-  getLookupWidget = name => this.state.lookupWidgets[`${name}`];
+  getLookupWidget = name => {
+    return { ...this.state.lookupWidgets[`${name}`] };
+  };
 
   getFocused = fieldName => this.getLookupWidget(fieldName).isFocused;
 
   _changeWidgetProperty = (field, property, value, callback) => {
-    this.setState(
-      {
-        lookupWidgets: {
-          ...this.state.lookupWidgets,
-          [`${field}`]: {
-            ...this.state.lookupWidgets[`${field}`],
-            [`${property}`]: value,
-          },
+    const { lookupWidgets } = this.state;
+
+    if (lookupWidgets[`${field}`][`${property}`] !== property) {
+      const newLookupWidgets = {
+        ...lookupWidgets,
+        [`${field}`]: {
+          ...lookupWidgets[`${field}`],
+          [`${property}`]: value,
+          dupa: field,
         },
-      },
-      callback
-    );
+      };
+
+      this.setState(
+        {
+          lookupWidgets: newLookupWidgets,
+        },
+        callback
+      );
+    }
   };
 
   checkIfDefaultValue = () => {
@@ -470,8 +479,8 @@ class Lookup extends Component {
                   fireDropdownList={fireDropdownList}
                   handleInputEmptyStatus={this.handleInputEmptyStatus}
                   enableAutofocus={this.enableAutofocus}
-                  onBlur={() => this.handleListBlur(item.field)}
-                  onFocus={() => this.handleListFocus(item.field)}
+                  onBlur={() => /*this.handleListBlur(item.field)*/ true}
+                  onFocus={() => /*this.handleListFocus(item.field)*/ true}
                   isOpen={lookupWidget.dropdownOpen}
                   onDropdownListToggle={(val, mouse) => {
                     this.dropdownListToggle(val, item.field, mouse);

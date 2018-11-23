@@ -78,7 +78,6 @@ class RawWidget extends Component {
     dispatch(disableShortcut());
 
     setTimeout(() => {
-      // console.log("set cachedValue="+el.value+" on timeout");
       this.setState({
         isEdited: true,
         cachedValue: el.value,
@@ -97,13 +96,10 @@ class RawWidget extends Component {
       enableOnClickOutside,
     } = this.props;
 
-    // console.log('handleBlur for '+widgetField+': Reseting cached value.'
-    //   +'\n Status is: '+JSON.stringify(this.props.widgetData)
-    // );
     this.setState(
       {
         isEdited: false,
-        cachedValue_DELETEME: undefined,
+        cachedValue: undefined,
       },
       () => {
         enableOnClickOutside && enableOnClickOutside();
@@ -131,43 +127,16 @@ class RawWidget extends Component {
   handlePatch = (property, value, id, valueTo, isForce) => {
     const { handlePatch } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
-    // console.log('handlePatch for '+property+': value='+value+', willPatch='+willPatch);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if (
-      (isForce || willPatch) &&
-      handlePatch &&
-      !this.state.requestInProgress
-    ) {
-      // console.log("handlePatch for "+property+": Setting cacheValue="+value+", requestInProgress=true");
-      return this.setState(
-        {
-          cachedValue: value,
-          clearedFieldWarning: false,
-          requestInProgress: true,
-        },
-        () => {
-          const patchReturn = handlePatch(property, value, id, valueTo);
-          // console.log("patchReturn="+patchReturn);
+    if ((isForce || willPatch) && handlePatch) {
+      this.setState({
+        cachedValue: value,
+        clearedFieldWarning: false,
+      });
 
-          if (patchReturn && patchReturn.then) {
-            return patchReturn.then(() => {
-              this.setState({
-                requestInProgress: false,
-              });
-              // console.log("set requestInProgress=false for "+property);
-            });
-          } else {
-            this.setState({
-              requestInProgress: false,
-            });
-            // console.log("DIRECT set requestInProgress=false for "+property);
-          }
-
-          return patchReturn;
-        }
-      );
+      return handlePatch(property, value, id, valueTo);
     }
 
     return Promise.resolve(null);
@@ -212,15 +181,7 @@ class RawWidget extends Component {
       (isValue &&
         (JSON.stringify(fieldData.value) !== JSON.stringify(value) ||
           JSON.stringify(fieldData.valueTo) !== JSON.stringify(valueTo))) ||
-      (cachedValue !== undefined &&
-        JSON.stringify(cachedValue) !== JSON.stringify(value));
-
-    // console.log("willPatch "+property+" => "+allowPatching
-    //   +"\n value="+value+ ", valueTo="+valueTo
-    //   +"\n isValue="+isValue
-    //   +"\n fieldData="+JSON.stringify(fieldData)
-    //   +"\n cachedValue="+cachedValue
-    // );
+      JSON.stringify(cachedValue) !== JSON.stringify(value);
 
     return allowPatching;
   };

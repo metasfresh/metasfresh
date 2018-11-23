@@ -152,7 +152,7 @@ class RawLookup extends Component {
       selected: null,
     });
 
-    if (select.key === 'NEW') {
+    if (select && select.key === 'NEW') {
       this.handleAddNew();
 
       return;
@@ -499,6 +499,7 @@ const mapStateToProps = state => ({
 });
 
 RawLookup.propTypes = {
+  isOpen: PropTypes.bool,
   selected: PropTypes.object,
   forcedWidth: PropTypes.number,
   forceHeight: PropTypes.number,
