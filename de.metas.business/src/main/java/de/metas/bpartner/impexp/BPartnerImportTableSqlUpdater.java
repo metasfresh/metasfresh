@@ -76,6 +76,9 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateCBPartnerLocationsFromC_BPartner_Location_ExternalIds(whereClause);
 
+
+		dbUpdateCBPartnerLocationsFromGLN(whereClause);
+
 		dbUpdateLocations(whereClause);
 
 		dbUpdateInterestAreas(whereClause);
@@ -92,6 +95,7 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateErrorMessages(whereClause);
 	}
+
 
 	private void dbUpdateOrgs(final String whereClause)
 	{
@@ -403,6 +407,45 @@ public class BPartnerImportTableSqlUpdater
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Found Contact={}", no);
+	}
+
+
+	private void dbUpdateCBPartnerLocationsFromGLN(String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE "
+				+ I_I_BPartner.Table_Name
+				+ " i SET "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
+				+ "=(SELECT "
+				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID
+				+ " FROM "
+				+ I_C_BPartner_Location.Table_Name
+				+ " bpl  WHERE i."
+				+ I_I_BPartner.COLUMNNAME_GLN
+				+ "=bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_GLN
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ "=bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID
+				+ " AND bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_AD_Client_ID
+				+ "=i."
+				+ I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ ") "
+				+ "WHERE "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " IS NOT NULL AND "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
+				+ " IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_GLN
+				+ " IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Found Contact={}", no);
+
 	}
 
 	private void dbUpdateLocations(final String whereClause)
