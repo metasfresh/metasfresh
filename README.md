@@ -72,11 +72,48 @@ To run the tests, navigate to this repository's root folder type this in the ter
 
 > npm run cypress:open
 
-If the webui you test against is not running on http://localhost:3000 you can start cypress like this (example):
+If the webui you test against is not running on http://localhost:3000 you can start cypress with the `CYPRESS_baseUrl` vairable (see examples).
+
+When it runs, you can select particular test suites, or the whole suite to run. 
+
+##### Examples:
+
+For my local minikube (with webui-api running in my IDE)
+
+...edit the `cypress/config.js` like this:
+
+```json
+module.exports = {
+  API_URL: 'http://localhost:8080/rest/api',
+  PLUGIN_API_URL: 'http://localhost:9192/',
+  WS_URL: 'http://localhost:8080/stomp',
+  username: 'metasfresh',
+  password: '<your-pw>',
+};
+```
+
+...and start cypress like this:
 
 > CYPRESS_baseUrl=http://192.168.99.100:30080 npm run cypress:open
 
-When it runs, you can select particular test suites, or the whole suite to run. 
+For a dev-instance (dev133 in this example)
+
+...edit the `cypress/config.js` like this:
+
+```json
+module.exports = {
+  API_URL: 'https://dev133.metasfresh.com/rest/api/',
+  WS_URL: 'https://dev133.metasfresh.com/stomp',
+  PLUGIN_API_URL: 'http://localhost:9192/',
+  username: 'dev',
+  password: '<your-pw>',
+};
+
+...and start cypress like this:
+
+```
+
+> CYPRESS_baseUrl=https://dev133.metasfresh.com:443 npm run cypress:open
 
 ### Contribution
 

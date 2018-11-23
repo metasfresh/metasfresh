@@ -31,6 +31,10 @@ const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
 const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
+if (window.Cypress) {
+  window.store = store;
+}
+
 export default class App extends Component {
   constructor(props) {
     super(props);

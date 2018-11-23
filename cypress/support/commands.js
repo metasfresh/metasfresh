@@ -225,7 +225,33 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
 
 Cypress.Commands.add('openAdvancedEdit', () => {
   describe('Open the advanced edit overlay via ALT+E shortcut', function() {
-    cy.get('body').type('{alt}E')
+    cy.get('body').type('{alt}E');
+    cy.get('.panel-modal').should('exist');
+  })
+});
+
+Cypress.Commands.add('pressAddNewButton', () => {
+  describe('Press a tab\'s add-new-record-button', function() {
+    const addNewText = Cypress.messages.window.addNew.caption;
+    cy.get('.btn')
+        .contains(addNewText)
+        .should('exist')
+        .click();
+        
+    cy.get('.panel-modal').should('exist');
+  })
+});
+
+/* ts: I don't see a nicer way to address this button; */
+Cypress.Commands.add('pressDoneButton', () => {
+  describe('Press an overlay\'s done-button', function() {
+
+    //webui.modal.actions.done
+    const doneText = Cypress.messages.modal.actions.done;
+    cy.get('.btn')
+      .contains(doneText)
+      .should('exist')
+      .click();
   })
 });
 
@@ -235,12 +261,49 @@ Cypress.Commands.add('selectTab', (tabName) => {
   });
 });
 
+/*
+ * This command allows waiting for the breadcrumb in the header to be visible, which
+ * helps make the tests less flaky as even though the page fires load event, some
+ * requests may still be pending/running.
+ *
+ * Command accepts two params:
+ * - pageName : if we explicitly want to define what to wait for
+ * - breadcrumbNr : if we want to select breadcrumb value from the redux store at
+ *                  the given index
+ * In case pageName is not defined, command will fall back to broadcrembNr and either
+ * use the provided value or the value at index 0.
+ *
+ */
+Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
+  describe('Wait for page name visible in the header', function() {
+    if (pageName) {
+      cy.get('.header-breadcrumb')
+        .find('.header-item-container')
+        .should('not.have.length', 1)
+        .get('.header-item').should('contain', pageName);
+    } else {
+      const breadcrumbNumber = breadcrumbNr || 0;
+
+      cy.get('.header-breadcrumb')
+        .find('.header-item-container')
+        .should('not.have.length', 1)
+        .window().its('store').invoke('getState').its('menuHandler.breadcrumb')
+        .should('not.have.length', 0)
+        .window().its('store').invoke('getState')
+        .its('menuHandler.breadcrumb')
+        .then((breadcrumbs) => {
+          cy.get('.header-item').should('contain', breadcrumbs[breadcrumbNumber].caption);
+        });
+    }
+  });
+});
+
 // This command runs a quick actions. If second parameter is truthy, the default action
 // will be executed.
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {
     if (!active) {
-      cy.get('.quick-actions-wrapper .btn-inline').click();
+      cy.get('.quick-actions-wrapper .btn-inline').eq(0).click();
       cy.get('.quick-actions-dropdown').should('exist');
 
       return cy.get(`#quickAction_${actionName}`).click();
