@@ -64,19 +64,14 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateJobs(whereClause);
 
-		dbUpdateAdUserIdsFromExisting(whereClause);
-
+		dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(whereClause);
 		dbUpdateCbPartnerIdsFromValue(whereClause);
 
-		dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(whereClause);
-
 		dbUpdateAdUserIdsFromAD_User_ExternalIds(whereClause);
-
+		dbUpdateAdUserIdsFromExisting(whereClause);
 		dbUpdateAdUserIdsFromContactNames(whereClause);
 
 		dbUpdateCBPartnerLocationsFromC_BPartner_Location_ExternalIds(whereClause);
-
-
 		dbUpdateCBPartnerLocationsFromGLN(whereClause);
 
 		dbUpdateLocations(whereClause);
