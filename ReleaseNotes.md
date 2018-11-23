@@ -17,6 +17,14 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1997](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1997) Cypress: Product set Documentnote Test fails
     * Fixes the cypress test on setting Doument Notes.
+  * [#2048](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2048) View: clicking outside of table does not unselect the current selected lines
+    * Bugfix for the unselecting of grid selections when clicking outside grid.
+  * [#2058](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2058) Cannot close the HU Editor in manufacturing order anymore
+    * Fixes a bug in modal Handling Unit Editor that prevented the unselecting of rows.
+  * [#2067](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2067) Dropdown in bpartner field in order sometimes remains displayed after selecting bpartner
+    * Fixes a minor Bug that occurred when selecting dropdown entries with mouse. Now closing the dropdown after selecting again.
+  * [#2069](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2069) Number Inserting in Order Quick Input
+    * Fixes the Batch Entry in Sales Order, now reacting creating a new line after presssing enter again.
 
 # metasfresh 5.81
 ## Features
