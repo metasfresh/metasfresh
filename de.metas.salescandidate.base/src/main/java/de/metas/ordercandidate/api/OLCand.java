@@ -1,5 +1,9 @@
 package de.metas.ordercandidate.api;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -12,9 +16,6 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.util.Services;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -69,28 +70,28 @@ public final class OLCand implements IProductPriceAware
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL != null ? olCandEffectiveValuesBL : Services.get(IOLCandEffectiveValuesBL.class);
 
 		bpartnerInfo = OLCandBPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getC_BPartner_Effective_ID(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getC_BP_Location_Effective_ID(candidate))
-				.contactId(this.olCandEffectiveValuesBL.getAD_User_Effective_ID(candidate))
+				.bpartnerId(this.olCandEffectiveValuesBL.getBPartnerEffectiveId(candidate))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getLocationEffectiveId(candidate))
+				.contactId(this.olCandEffectiveValuesBL.getContactEffectiveId(candidate))
 				.build();
 		billBPartnerInfo = OLCandBPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBill_BPartner_Effective_ID(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBill_Location_Effective_ID(candidate))
-				.contactId(this.olCandEffectiveValuesBL.getBill_User_Effective_ID(candidate))
+				.bpartnerId(this.olCandEffectiveValuesBL.getBillBPartnerEffectiveId(candidate))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBillLocationEffectiveId(candidate))
+				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(candidate))
 				.build();
 		dropShipBPartnerInfo = OLCandBPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(candidate))
-				.contactId(this.olCandEffectiveValuesBL.getDropShip_User_Effective_ID(candidate))
+				.bpartnerId(this.olCandEffectiveValuesBL.getDropShipBPartnerEffectiveId(candidate))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getDropShipLocationEffectiveId(candidate))
+				.contactId(this.olCandEffectiveValuesBL.getDropShipContactEffectiveId(candidate))
 				.build();
 		handOverBPartnerInfo = OLCandBPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getHandOver_Partner_Effective_ID(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getHandOver_Location_Effective_ID(candidate))
+				.bpartnerId(this.olCandEffectiveValuesBL.getHandOverPartnerEffectiveId(candidate))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getHandOverLocationEffectiveId(candidate))
 				// .contactId(this.xolCandEffectiveValuesBL.getHandOver_User_Effective_ID(candidate))
 				.build();
 
 		this.pricingSystemId = pricingSystemId;
-		
+
 		this.externalId = candidate.getExternalId();
 	}
 

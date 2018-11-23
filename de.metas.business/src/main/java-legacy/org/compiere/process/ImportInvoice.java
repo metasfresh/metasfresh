@@ -308,7 +308,7 @@ public class ImportInvoice extends JavaProcess
 		if (no != 0)
 			log.warn("Invalid Charge=" + no);
 		//
-		
+
 		//	BP from EMail
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET (C_BPartner_ID,AD_User_ID)=(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u"
@@ -489,9 +489,9 @@ public class ImportInvoice extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Tax=" + no);
-		
+
 		commitEx();
-		
+
 		//	-- New BPartner ---------------------------------------------------
 
 		//	Go through Invoice Records w/o C_BPartner_ID
@@ -532,9 +532,9 @@ public class ImportInvoice extends JavaProcess
 						continue;
 				}
 				imp.setC_BPartner_ID (bp.getC_BPartner_ID ());
-				
+
 				//	BP Location
-				MBPartnerLocation bpl = null; 
+				MBPartnerLocation bpl = null;
 				MBPartnerLocation[] bpls = bp.getLocations(true);
 				for (int i = 0; bpl == null && i < bpls.length; i++)
 				{
@@ -547,8 +547,8 @@ public class ImportInvoice extends JavaProcess
 					else if (imp.getC_Location_ID() == 0)
 					{
 						MLocation loc = bpl.getLocation(false);
-						if (loc.equals(imp.getC_Country_ID(), imp.getC_Region_ID(), 
-								imp.getPostal(), "", imp.getCity(), 
+						if (loc.equals(imp.getC_Country_ID(), imp.getC_Region_ID(),
+								imp.getPostal(), "", imp.getCity(),
 								imp.getAddress1(), imp.getAddress2()))
 							bpl = bpls[i];
 					}
@@ -574,18 +574,18 @@ public class ImportInvoice extends JavaProcess
 				}
 				imp.setC_Location_ID (bpl.getC_Location_ID ());
 				imp.setC_BPartner_Location_ID (bpl.getC_BPartner_Location_ID ());
-				
+
 				//	User/Contact
-				if (imp.getContactName () != null 
-					|| imp.getEMail () != null 
+				if (imp.getContactName () != null
+					|| imp.getEMail () != null
 					|| imp.getPhone () != null)
 				{
-					List<de.metas.adempiere.model.I_AD_User> users = bp.getContacts(true);
+					List<I_AD_User> users = bp.getContacts(true);
 					I_AD_User user = null;
 					for (int i = 0; user == null && i < users.size();  i++)
 					{
 						String name = users.get(i).getName();
-						if (name.equals(imp.getContactName()) 
+						if (name.equals(imp.getContactName())
 							|| name.equals(imp.getName()))
 						{
 							user = users.get(i);
@@ -623,9 +623,9 @@ public class ImportInvoice extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("No BPartner=" + no);
-		
+
 		commitEx();
-		
+
 		//	-- New Invoices -----------------------------------------------------
 
 		int noInsert = 0;
@@ -653,7 +653,7 @@ public class ImportInvoice extends JavaProcess
 				if (cmpDocumentNo == null)
 					cmpDocumentNo = "";
 				//	New Invoice
-				if (oldC_BPartner_ID != imp.getC_BPartner_ID() 
+				if (oldC_BPartner_ID != imp.getC_BPartner_ID()
 					|| oldC_BPartner_Location_ID != imp.getC_BPartner_Location_ID()
 					|| !oldDocumentNo.equals(cmpDocumentNo)	)
 				{
@@ -724,7 +724,7 @@ public class ImportInvoice extends JavaProcess
 				// globalqss - import invoice with charges
 				if (imp.getC_Charge_ID() != 0)
 					line.setC_Charge_ID(imp.getC_Charge_ID());
-				// globalqss - [2855673] - assign dimensions to lines also in case they're different 
+				// globalqss - [2855673] - assign dimensions to lines also in case they're different
 				if (imp.getC_Activity_ID() != 0)
 					line.setC_Activity_ID(imp.getC_Activity_ID());
 				if (imp.getC_Campaign_ID() != 0)
@@ -755,7 +755,7 @@ public class ImportInvoice extends JavaProcess
 				//
 				if (imp.save())
 					noInsertLine++;
-				
+
 				commitEx(); // metas
 			}
 			if (invoice != null)

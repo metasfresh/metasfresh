@@ -10,7 +10,10 @@ FROM m_hu hu
 	JOIN M_HU_Storage hus ON hus.M_HU_ID = hu.M_HU_ID
 	JOIN M_Locator l ON l.M_Locator_ID=hu.M_Locator_ID
 WHERE hu.isactive='Y'
-	and M_HU_Item_Parent_ID IS NULL
+	and hu.M_HU_Item_Parent_ID IS NULL
+
+	/*please keep in sync with de.metas.handlingunits.IHUStatusBL.isPhysicalHU(I_M_HU)*/
+	and hu.HuStatus NOT IN ('P'/*Planning*/,'D'/*Destroyed*/,'E'/*Shipped*/) 
 GROUP BY 
 	l.M_Warehouse_ID,
 	hus.M_Product_ID,

@@ -1,9 +1,13 @@
 package de.metas.ordercandidate.rest;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -11,9 +15,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -196,5 +197,39 @@ public final class JsonOLCandCreateRequest
 					this);
 		}
 		return this;
+	}
+
+	/** Creates an instance with the given {@code syncAdvise} in all bPartners. */
+	public JsonOLCandCreateRequest withBPartnerSyncAdvise(@Nullable final SyncAdvise syncAdvise)
+	{
+		if (syncAdvise == null)
+		{
+			return this;
+		}
+
+		final JsonOLCandCreateRequestBuilder builder = toBuilder();
+		if (org != null && org.getBpartner() != null)
+		{
+			builder.org(org.toBuilder()
+					.bpartner(org.getBpartner().toBuilder().syncAdvise(syncAdvise).build())
+					.build());
+		}
+		if (billBPartner != null)
+		{
+			builder.billBPartner(billBPartner.toBuilder().syncAdvise(syncAdvise).build());
+		}
+		if (bpartner != null)
+		{
+			builder.bpartner(bpartner.toBuilder().syncAdvise(syncAdvise).build());
+		}
+		if (dropShipBPartner != null)
+		{
+			builder.dropShipBPartner(dropShipBPartner.toBuilder().syncAdvise(syncAdvise).build());
+		}
+		if (handOverBPartner != null)
+		{
+			builder.handOverBPartner(handOverBPartner.toBuilder().syncAdvise(syncAdvise).build());
+		}
+		return builder.build();
 	}
 }

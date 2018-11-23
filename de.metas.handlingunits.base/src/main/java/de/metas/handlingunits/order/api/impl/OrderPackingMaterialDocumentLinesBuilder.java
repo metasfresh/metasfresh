@@ -1,5 +1,7 @@
 package de.metas.handlingunits.order.api.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -40,7 +42,6 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * Iterates an order's lines and creates additional lines for the HU packing material.
@@ -67,6 +68,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 
 	public final void addAllOrderLinesFromOrder()
 	{
+		// note that we want all because there might be existing inactive packaging lines to reuse
 		final List<I_C_OrderLine> orderLinesAll = retrieveAllOrderLinesFromOrder();
 
 		//
@@ -181,8 +183,15 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		// qtyOrdered is in the product's UOM whereas QtyEntered is in the order line's UOM. They don't have to be the same.
 		// pmOrderLine.setQtyEntered(pmOrderLine.getQtyOrdered());
 
+		final boolean ordereWasInactive = !pmOrderLine.isActive();
 		pmOrderLine.setIsActive(true);
-		
+
+		if (ordereWasInactive)
+		{
+			// while the order line was inactive e.g. the order's datePromised might have been changed
+			orderLineBL.setOrder(pmOrderLine, order);
+		}
+
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(pmOrderLine)
 				.resultUOM(ResultUOM.CONTEXT_UOM)

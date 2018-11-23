@@ -56,7 +56,8 @@ public class ExecuteReportStrategyUtil
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
 				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(Env.getCtx()))
 				.addParameter(IPrintService.PARAM_PrintCopies, 1)
-				.setPrintPreview(true) // don't archive it! just give us the PDF data
+				.setArchiveReportData(false) // don't archive it! just give us the PDF data
+				.setPrintPreview(false) 
 				.buildAndPrepareExecution()
 				.onErrorThrowException(true)
 				.executeSync();
@@ -65,7 +66,7 @@ public class ExecuteReportStrategyUtil
 		return processPdfData;
 	}
 
-	public byte[] concatenate(
+	public byte[] concatenatePDF(
 			@NonNull final byte[] documentPdfData,
 			@NonNull final List<PdfDataProvider> additionalDataItemsToAttach)
 	{

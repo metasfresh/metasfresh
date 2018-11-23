@@ -39,7 +39,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import de.metas.attachments.AttachmentEntryService;
@@ -150,7 +149,7 @@ public abstract class AbstractHUTest
 	 * Watches current test and dumps the database to console in case of failure
 	 */
 	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher()
+	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher()
 	{
 		@Override
 		protected void failed(final Throwable e, final Description description)

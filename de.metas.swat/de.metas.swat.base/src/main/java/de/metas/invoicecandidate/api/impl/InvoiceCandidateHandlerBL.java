@@ -289,7 +289,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			//
 			// Create the initial request and then ask the handler to expand it to proper models to be used.
 			final Object model = models.next();
+			if (!invoiceCandiateHandler.isMissingInvoiceCandidate(model))
+			{
+				continue;
+			}
+
 			final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
+
 			final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
 
 			//

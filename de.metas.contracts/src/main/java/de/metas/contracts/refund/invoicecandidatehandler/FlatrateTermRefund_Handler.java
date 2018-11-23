@@ -68,6 +68,12 @@ public class FlatrateTermRefund_Handler
 				.iterator();
 	}
 
+	@Override
+	public boolean isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
+	{
+		return false;
+	}
+
 	/**
 	 * Does nothing
 	 */

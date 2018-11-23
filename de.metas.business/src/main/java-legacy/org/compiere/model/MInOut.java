@@ -45,7 +45,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;

@@ -30,6 +30,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
@@ -43,7 +44,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -533,7 +533,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	private void reserveStock(MDDOrderLine[] lines)
 	{
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-		
+
 		BigDecimal Volume = BigDecimal.ZERO;
 		BigDecimal Weight = BigDecimal.ZERO;
 
@@ -576,8 +576,8 @@ public class MDDOrder extends X_DD_Order implements IDocument
 						throw new AdempiereException();
 					}
 
-					if (!storageBL.add(getCtx(), 
-							toWarehouseId.getRepoId(), 
+					if (!storageBL.add(getCtx(),
+							toWarehouseId.getRepoId(),
 							toLocatorId,
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstanceTo_ID(), line.getM_AttributeSetInstance_ID(),
