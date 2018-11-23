@@ -115,7 +115,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 					.getQtyOnHand()
 					.subtract(latestStockRecord.getQuantity());
 
-			final CandidateType type = computeCandidateTypeOrNull(latestStockRecord, qtyDifference);
+			final CandidateType type = computeCandidateTypeOrNull(qtyDifference);
 			if (type == null)
 			{
 				return;
@@ -152,7 +152,6 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	}
 
 	private CandidateType computeCandidateTypeOrNull(
-			@NonNull final Candidate latestStockRecord,
 			@NonNull final BigDecimal quantity)
 	{
 		if (quantity.signum() == 0)
