@@ -4,10 +4,14 @@ import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.model.I_AD_User;
+import de.metas.adempiere.model.I_C_Location;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -33,8 +37,6 @@ import lombok.experimental.UtilityClass;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
 
 /**
  * A helper class for {@link BPartnerImportProcess} that performs the "dirty" but efficient SQL updates on the {@link I_I_BPartner} table.
@@ -62,11 +64,15 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateJobs(whereClause);
 
+		dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(whereClause);
+		dbUpdateCbPartnerIdsFromValue(whereClause);
+
+		dbUpdateAdUserIdsFromAD_User_ExternalIds(whereClause);
 		dbUpdateAdUserIdsFromExisting(whereClause);
-
-		dbUpdateCbPartnerIds(whereClause);
-
 		dbUpdateAdUserIdsFromContactNames(whereClause);
+
+		dbUpdateCBPartnerLocationsFromC_BPartner_Location_ExternalIds(whereClause);
+		dbUpdateCBPartnerLocationsFromGLN(whereClause);
 
 		dbUpdateLocations(whereClause);
 
@@ -84,6 +90,7 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateErrorMessages(whereClause);
 	}
+
 
 	private void dbUpdateOrgs(final String whereClause)
 	{
@@ -224,7 +231,6 @@ public class BPartnerImportTableSqlUpdater
 		logger.info("Invalid Job={}", no);
 	}
 
-
 	private void dbUpdateAdUserIdsFromExisting(final String whereClause)
 	{
 		StringBuilder sql;
@@ -238,14 +244,50 @@ public class BPartnerImportTableSqlUpdater
 		logger.debug("Found EMail User={}", no);
 	}
 
-	private void dbUpdateCbPartnerIds(final String whereClause)
+	private void dbUpdateCbPartnerIdsFromValue(final String whereClause)
 	{
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p"
-				+ " WHERE i.Value=p.Value AND p.AD_Client_ID=i.AD_Client_ID) "
+				+ " WHERE i."
+				+ I_I_BPartner.COLUMNNAME_Value
+				+ "=p."
+				+ I_C_BPartner.COLUMNNAME_Value
+				+ " AND p.AD_Client_ID=i.AD_Client_ID) "
 				+ "WHERE C_BPartner_ID IS NULL AND Value IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Found BPartner={}", no);
+	}
+
+	private void dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE "
+				+ I_I_BPartner.Table_Name
+				+ " i "
+				+ "SET "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ "=(SELECT "
+				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " FROM "
+				+ I_C_BPartner.Table_Name
+				+ " p WHERE i."
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId
+				+ "=p."
+				+ I_C_BPartner.COLUMNNAME_ExternalId
+				+ " AND p."
+				+ I_C_BPartner.COLUMNNAME_AD_Client_ID
+				+ "=i."
+				+ I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ ") "
+				+ "WHERE "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId
+				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Found BPartner={}", no);
@@ -255,27 +297,212 @@ public class BPartnerImportTableSqlUpdater
 	{
 		StringBuilder sql;
 		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET AD_User_ID=(SELECT AD_User_ID FROM AD_User c"
-				+ " WHERE i.ContactName=c.Name AND i.C_BPartner_ID=c.C_BPartner_ID AND c.AD_Client_ID=i.AD_Client_ID) "
-				+ "WHERE C_BPartner_ID IS NOT NULL AND AD_User_ID IS NULL AND ContactName IS NOT NULL"
+		sql = new StringBuilder("UPDATE "
+				+ I_I_BPartner.Table_Name
+				+ " i SET "
+				+ I_I_BPartner.COLUMNNAME_AD_User_ID
+				+ "=(SELECT "
+				+ I_AD_User.COLUMNNAME_AD_User_ID
+				+ " FROM "
+				+ I_AD_User.Table_Name
+				+ " c WHERE i."
+				+ I_I_BPartner.COLUMNNAME_ContactName
+				+ "=c."
+				+ I_AD_User.COLUMNNAME_Name
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ "=c."
+				+ I_AD_User.COLUMNNAME_C_BPartner_ID
+				+ " AND c."
+				+ I_AD_User.COLUMNNAME_AD_Client_ID
+				+ "=i."
+				+ I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ ") "
+				+ "WHERE "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " IS NOT NULL AND "
+				+ I_I_BPartner.COLUMNNAME_AD_User_ID
+				+ " IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_ContactName
+				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Found Contact={}", no);
+	}
+
+	private void dbUpdateAdUserIdsFromAD_User_ExternalIds(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE "
+				+ I_I_BPartner.Table_Name
+				+ " i SET "
+				+ I_I_BPartner.COLUMNNAME_AD_User_ID
+				+ "=(SELECT "
+				+ I_AD_User.COLUMNNAME_AD_User_ID
+				+ " FROM "
+				+ I_AD_User.Table_Name
+				+ " c WHERE i."
+				+ I_I_BPartner.COLUMNNAME_AD_User_ExternalId
+				+ "=c."
+				+ I_AD_User.COLUMNNAME_ExternalId
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ "=c."
+				+ I_AD_User.COLUMNNAME_C_BPartner_ID
+				+ " AND c."
+				+ I_AD_User.COLUMNNAME_AD_Client_ID
+				+ "=i."
+				+ I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ ") "
+				+ "WHERE "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " IS NOT NULL AND "
+				+ I_I_BPartner.COLUMNNAME_AD_User_ID
+				+ " IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_AD_User_ExternalId
+				+ " IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Found Contact={}", no);
+	}
+
+	private void dbUpdateCBPartnerLocationsFromC_BPartner_Location_ExternalIds(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE "
+				+ I_I_BPartner.Table_Name
+				+ " i SET "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
+				+ "=(SELECT "
+				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID
+				+ " FROM "
+				+ I_C_BPartner_Location.Table_Name
+				+ " bpl  WHERE i."
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ExternalId
+				+ "=bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_ExternalId
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ "=bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID
+				+ " AND bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_AD_Client_ID
+				+ "=i."
+				+ I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ ") "
+				+ "WHERE "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " IS NOT NULL AND "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
+				+ " IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ExternalId
+				+ " IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Found Contact={}", no);
+	}
+
+
+	private void dbUpdateCBPartnerLocationsFromGLN(String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE "
+				+ I_I_BPartner.Table_Name
+				+ " i SET "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
+				+ "=(SELECT "
+				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID
+				+ " FROM "
+				+ I_C_BPartner_Location.Table_Name
+				+ " bpl  WHERE i."
+				+ I_I_BPartner.COLUMNNAME_GLN
+				+ "=bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_GLN
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ "=bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID
+				+ " AND bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_AD_Client_ID
+				+ "=i."
+				+ I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ ") "
+				+ "WHERE "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " IS NOT NULL AND "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
+				+ " IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_GLN
+				+ " IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Found Contact={}", no);
+
 	}
 
 	private void dbUpdateLocations(final String whereClause)
 	{
 		StringBuilder sql;
 		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_BPartner_Location_ID=(SELECT C_BPartner_Location_ID"
-				+ " FROM C_BPartner_Location bpl INNER JOIN C_Location l ON (bpl.C_Location_ID=l.C_Location_ID)"
-				+ " WHERE i.C_BPartner_ID=bpl.C_BPartner_ID AND bpl.AD_Client_ID=i.AD_Client_ID"
-				+ " AND i.Address1=l.Address1 AND i.Address2=l.Address2"
-				+ " AND i.City=l.City AND i.Postal=l.Postal AND i.Postal_Add=l.Postal_Add"
-				+ " AND i.C_Region_ID=l.C_Region_ID AND i.C_Country_ID=l.C_Country_ID) "
-				+ "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
+		sql = new StringBuilder("UPDATE "
+				+ I_I_BPartner.Table_Name
+				+ " i SET "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
+				+ "=(SELECT "
+				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID
+				+ " FROM "
+				+ I_C_BPartner_Location.Table_Name
+				+ " bpl INNER JOIN "
+				+ I_C_Location.Table_Name
+				+ " l ON (bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_C_Location_ID
+				+ "=l."
+				+ I_C_Location.COLUMNNAME_C_Location_ID
+				+ ") WHERE i."
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ "=bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID
+				+ " AND bpl."
+				+ I_C_BPartner_Location.COLUMNNAME_AD_Client_ID
+				+ "=i."
+				+ I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_Address1
+				+ "=l."
+				+ I_C_Location.COLUMNNAME_Address1
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_Address2
+				+ "=l."
+				+ I_C_Location.COLUMNNAME_Address2
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_City
+				+ "=l."
+				+ I_C_Location.COLUMNNAME_City
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_Postal
+				+ "=l."
+				+ I_C_Location.COLUMNNAME_Postal
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_Postal_Add
+				+ "=l."
+				+ I_C_Location.COLUMNNAME_Postal_Add
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_C_Region_ID
+				+ "=l."
+				+ I_C_Location.COLUMNNAME_C_Region_ID
+				+ " AND i."
+				+ I_I_BPartner.COLUMNNAME_C_Country_ID
+				+ "=l."
+				+ I_C_Location.COLUMNNAME_C_Country_ID
+				+ ") "
+				+ "WHERE "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " IS NOT NULL AND "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
+				+ " IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Found Location={}", no);
@@ -401,7 +628,6 @@ public class BPartnerImportTableSqlUpdater
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid AD_PrintFormat_ID={}", no);
 	}
-
 
 	private void dbUpdateErrorMessages(final String whereClause)
 	{
