@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,6 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_AttributeValue;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -253,6 +253,18 @@ public class AttributeDAO implements IAttributeDAO
 
 		return attribute.isHighVolume();
 	}
+	
+	@Override
+	public List<I_M_AttributeInstance> retrieveAttributeInstances(final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		if (attributeSetInstanceId.isNone())
+		{
+			return ImmutableList.of();
+		}
+
+		I_M_AttributeSetInstance asi = loadOutOfTrx(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+		return retrieveAttributeInstances(asi);
+	}
 
 	@Override
 	public List<I_M_AttributeInstance> retrieveAttributeInstances(final I_M_AttributeSetInstance attributeSetInstance)
@@ -279,16 +291,7 @@ public class AttributeDAO implements IAttributeDAO
 		//
 		// Ordering by M_AttributeUse.SeqNo
 		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSet_ID());
-		final List<AttributeId> attributeIds = getAttributeIdsByAttributeSetId(attributeSetId);
-		if (attributeIds.isEmpty())
-		{
-			return attributeInstances;
-		}
-
-		final FixedOrderByKeyComparator<I_M_AttributeInstance, AttributeId> order;
-		order = FixedOrderByKeyComparator.notMatchedAtTheEnd(
-				attributeIds,
-				ai -> AttributeId.ofRepoId(ai.getM_Attribute_ID()));
+		final Comparator<I_M_AttributeInstance> order = createAttributeInstanceOrderComparator(attributeSetId);
 
 		return attributeInstances
 				.stream()
@@ -296,9 +299,17 @@ public class AttributeDAO implements IAttributeDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull final AttributeSetInstanceId asiId)
+	private Comparator<I_M_AttributeInstance> createAttributeInstanceOrderComparator(final AttributeSetId attributeSetId)
 	{
-		return retrieveAttributeInstances(Env.getCtx(), asiId, ITrx.TRXNAME_ThreadInherited);
+		final List<AttributeId> attributeIds = getAttributeIdsByAttributeSetId(attributeSetId);
+		if (attributeIds.isEmpty())
+		{
+			return Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID);
+		}
+
+		return FixedOrderByKeyComparator.notMatchedAtTheEnd(
+				attributeIds,
+				ai -> AttributeId.ofRepoId(ai.getM_Attribute_ID()));
 	}
 
 	private ImmutableList<I_M_AttributeInstance> retrieveAttributeInstances(

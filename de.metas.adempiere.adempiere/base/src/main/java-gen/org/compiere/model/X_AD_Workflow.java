@@ -1,39 +1,21 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_Workflow
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflow, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -83830051L;
 
     /** Standard Constructor */
     public X_AD_Workflow (Properties ctx, int AD_Workflow_ID, String trxName)
@@ -44,22 +26,18 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 			setAccessLevel (null);
 			setAD_Workflow_ID (0);
 			setAuthor (null);
-			setCost (Env.ZERO);
+			setCost (BigDecimal.ZERO);
 			setDuration (0);
-			setEntityType (null);
-// U
-			setIsBetaFunctionality (false);
-// N
+			setEntityType (null); // U
+			setIsBetaFunctionality (false); // N
 			setIsDefault (false);
 			setIsValid (false);
 			setName (null);
-			setPublishStatus (null);
-// U
+			setPublishStatus (null); // U
 			setValue (null);
 			setVersion (0);
 			setWaitingTime (0);
-			setWorkflowType (null);
-// G
+			setWorkflowType (null); // G
 			setWorkingTime (0);
         } */
     }
@@ -70,69 +48,69 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Workflow[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** AccessLevel AD_Reference_ID=5 */
+	/** 
+	 * AccessLevel AD_Reference_ID=5
+	 * Reference name: AD_Table Access Levels
+	 */
 	public static final int ACCESSLEVEL_AD_Reference_ID=5;
 	/** Organization = 1 */
 	public static final String ACCESSLEVEL_Organization = "1";
-	/** Client+Organization = 3 */
+	/** ClientPlusOrganization = 3 */
 	public static final String ACCESSLEVEL_ClientPlusOrganization = "3";
-	/** System only = 4 */
+	/** SystemOnly = 4 */
 	public static final String ACCESSLEVEL_SystemOnly = "4";
 	/** All = 7 */
 	public static final String ACCESSLEVEL_All = "7";
-	/** System+Client = 6 */
+	/** SystemPlusClient = 6 */
 	public static final String ACCESSLEVEL_SystemPlusClient = "6";
-	/** Client only = 2 */
+	/** ClientOnly = 2 */
 	public static final String ACCESSLEVEL_ClientOnly = "2";
-	/** Set Data Access Level.
+	/** Set Berechtigungsstufe.
 		@param AccessLevel 
 		Access Level required
 	  */
-	public void setAccessLevel (String AccessLevel)
+	@Override
+	public void setAccessLevel (java.lang.String AccessLevel)
 	{
 
 		set_Value (COLUMNNAME_AccessLevel, AccessLevel);
 	}
 
-	/** Get Data Access Level.
+	/** Get Berechtigungsstufe.
 		@return Access Level required
 	  */
-	public String getAccessLevel () 
+	@Override
+	public java.lang.String getAccessLevel () 
 	{
-		return (String)get_Value(COLUMNNAME_AccessLevel);
+		return (java.lang.String)get_Value(COLUMNNAME_AccessLevel);
 	}
 
-	public I_AD_Table getAD_Table() throws RuntimeException
-    {
-		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
-			.getPO(getAD_Table_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
 
-	/** Set Table.
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
+
+	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
 	  */
+	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
@@ -141,9 +119,10 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
-	/** Get Table.
+	/** Get DB-Tabelle.
 		@return Database Table information
 	  */
+	@Override
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
@@ -152,15 +131,60 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_WF_Node getAD_WF_Node() throws RuntimeException
-    {
-		return (I_AD_WF_Node)MTable.get(getCtx(), I_AD_WF_Node.Table_Name)
-			.getPO(getAD_WF_Node_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_User getAD_User_InCharge() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class);
+	}
 
-	/** Set Node.
+	@Override
+	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class, AD_User_InCharge);
+	}
+
+	/** Set Betreuer.
+		@param AD_User_InCharge_ID 
+		Person, die bei einem fachlichen Problem vom System informiert wird.
+	  */
+	@Override
+	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID)
+	{
+		if (AD_User_InCharge_ID < 1) 
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, Integer.valueOf(AD_User_InCharge_ID));
+	}
+
+	/** Get Betreuer.
+		@return Person, die bei einem fachlichen Problem vom System informiert wird.
+	  */
+	@Override
+	public int getAD_User_InCharge_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_WF_Node getAD_WF_Node() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class);
+	}
+
+	@Override
+	public void setAD_WF_Node(org.compiere.model.I_AD_WF_Node AD_WF_Node)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class, AD_WF_Node);
+	}
+
+	/** Set Knoten.
 		@param AD_WF_Node_ID 
 		Workflow Node (activity), step or process
 	  */
+	@Override
 	public void setAD_WF_Node_ID (int AD_WF_Node_ID)
 	{
 		if (AD_WF_Node_ID < 1) 
@@ -169,9 +193,10 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 			set_Value (COLUMNNAME_AD_WF_Node_ID, Integer.valueOf(AD_WF_Node_ID));
 	}
 
-	/** Get Node.
+	/** Get Knoten.
 		@return Workflow Node (activity), step or process
 	  */
+	@Override
 	public int getAD_WF_Node_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Node_ID);
@@ -180,15 +205,23 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_WF_Responsible getAD_WF_Responsible() throws RuntimeException
-    {
-		return (I_AD_WF_Responsible)MTable.get(getCtx(), I_AD_WF_Responsible.Table_Name)
-			.getPO(getAD_WF_Responsible_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class);
+	}
 
-	/** Set Workflow Responsible.
+	@Override
+	public void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class, AD_WF_Responsible);
+	}
+
+	/** Set Workflow - Verantwortlicher.
 		@param AD_WF_Responsible_ID 
 		Responsible for Workflow Execution
 	  */
+	@Override
 	public void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID)
 	{
 		if (AD_WF_Responsible_ID < 1) 
@@ -197,9 +230,10 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 			set_Value (COLUMNNAME_AD_WF_Responsible_ID, Integer.valueOf(AD_WF_Responsible_ID));
 	}
 
-	/** Get Workflow Responsible.
+	/** Get Workflow - Verantwortlicher.
 		@return Responsible for Workflow Execution
 	  */
+	@Override
 	public int getAD_WF_Responsible_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Responsible_ID);
@@ -212,6 +246,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		@param AD_Workflow_ID 
 		Workflow or combination of tasks
 	  */
+	@Override
 	public void setAD_Workflow_ID (int AD_Workflow_ID)
 	{
 		if (AD_Workflow_ID < 1) 
@@ -223,6 +258,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Workflow.
 		@return Workflow or combination of tasks
 	  */
+	@Override
 	public int getAD_Workflow_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Workflow_ID);
@@ -231,15 +267,23 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_WorkflowProcessor getAD_WorkflowProcessor() throws RuntimeException
-    {
-		return (I_AD_WorkflowProcessor)MTable.get(getCtx(), I_AD_WorkflowProcessor.Table_Name)
-			.getPO(getAD_WorkflowProcessor_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_WorkflowProcessor getAD_WorkflowProcessor() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_WorkflowProcessor_ID, org.compiere.model.I_AD_WorkflowProcessor.class);
+	}
 
-	/** Set Workflow Processor.
+	@Override
+	public void setAD_WorkflowProcessor(org.compiere.model.I_AD_WorkflowProcessor AD_WorkflowProcessor)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_WorkflowProcessor_ID, org.compiere.model.I_AD_WorkflowProcessor.class, AD_WorkflowProcessor);
+	}
+
+	/** Set Workflow - Prozessor.
 		@param AD_WorkflowProcessor_ID 
 		Workflow Processor Server
 	  */
+	@Override
 	public void setAD_WorkflowProcessor_ID (int AD_WorkflowProcessor_ID)
 	{
 		if (AD_WorkflowProcessor_ID < 1) 
@@ -248,9 +292,10 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 			set_Value (COLUMNNAME_AD_WorkflowProcessor_ID, Integer.valueOf(AD_WorkflowProcessor_ID));
 	}
 
-	/** Get Workflow Processor.
+	/** Get Workflow - Prozessor.
 		@return Workflow Processor Server
 	  */
+	@Override
 	public int getAD_WorkflowProcessor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WorkflowProcessor_ID);
@@ -263,7 +308,8 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		@param Author 
 		Author/Creator of the Entity
 	  */
-	public void setAuthor (String Author)
+	@Override
+	public void setAuthor (java.lang.String Author)
 	{
 		set_Value (COLUMNNAME_Author, Author);
 	}
@@ -271,70 +317,75 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Author.
 		@return Author/Creator of the Entity
 	  */
-	public String getAuthor () 
+	@Override
+	public java.lang.String getAuthor () 
 	{
-		return (String)get_Value(COLUMNNAME_Author);
+		return (java.lang.String)get_Value(COLUMNNAME_Author);
 	}
 
-	/** Set Cost.
+	/** Set Kosten.
 		@param Cost 
 		Cost information
 	  */
-	public void setCost (BigDecimal Cost)
+	@Override
+	public void setCost (java.math.BigDecimal Cost)
 	{
 		set_Value (COLUMNNAME_Cost, Cost);
 	}
 
-	/** Get Cost.
+	/** Get Kosten.
 		@return Cost information
 	  */
-	public BigDecimal getCost () 
+	@Override
+	public java.math.BigDecimal getCost () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Cost);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Document No.
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
-	public void setDocumentNo (String DocumentNo)
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
-	public String getDocumentNo () 
+	@Override
+	public java.lang.String getDocumentNo () 
 	{
-		return (String)get_Value(COLUMNNAME_DocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	/** Set Document Value Logic.
 		@param DocValueLogic 
 		Logic to determine Workflow Start - If true, a workflow process is started for the document
 	  */
-	public void setDocValueLogic (String DocValueLogic)
+	@Override
+	public void setDocValueLogic (java.lang.String DocValueLogic)
 	{
 		set_Value (COLUMNNAME_DocValueLogic, DocValueLogic);
 	}
@@ -342,15 +393,17 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Document Value Logic.
 		@return Logic to determine Workflow Start - If true, a workflow process is started for the document
 	  */
-	public String getDocValueLogic () 
+	@Override
+	public java.lang.String getDocValueLogic () 
 	{
-		return (String)get_Value(COLUMNNAME_DocValueLogic);
+		return (java.lang.String)get_Value(COLUMNNAME_DocValueLogic);
 	}
 
 	/** Set Duration.
 		@param Duration 
 		Normal Duration in Duration Unit
 	  */
+	@Override
 	public void setDuration (int Duration)
 	{
 		set_Value (COLUMNNAME_Duration, Integer.valueOf(Duration));
@@ -359,6 +412,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Duration.
 		@return Normal Duration in Duration Unit
 	  */
+	@Override
 	public int getDuration () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Duration);
@@ -367,7 +421,32 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		return ii.intValue();
 	}
 
-	/** DurationUnit AD_Reference_ID=299 */
+	/** Set Duration Limit.
+		@param DurationLimit 
+		Maximum Duration in Duration Unit
+	  */
+	@Override
+	public void setDurationLimit (int DurationLimit)
+	{
+		set_Value (COLUMNNAME_DurationLimit, Integer.valueOf(DurationLimit));
+	}
+
+	/** Get Duration Limit.
+		@return Maximum Duration in Duration Unit
+	  */
+	@Override
+	public int getDurationLimit () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DurationLimit);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * DurationUnit AD_Reference_ID=299
+	 * Reference name: WF_DurationUnit
+	 */
 	public static final int DURATIONUNIT_AD_Reference_ID=299;
 	/** Year = Y */
 	public static final String DURATIONUNIT_Year = "Y";
@@ -375,17 +454,18 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	public static final String DURATIONUNIT_Month = "M";
 	/** Day = D */
 	public static final String DURATIONUNIT_Day = "D";
-	/** hour = h */
+	/** Hour = h */
 	public static final String DURATIONUNIT_Hour = "h";
-	/** minute = m */
+	/** Minute = m */
 	public static final String DURATIONUNIT_Minute = "m";
-	/** second = s */
+	/** Second = s */
 	public static final String DURATIONUNIT_Second = "s";
 	/** Set Duration Unit.
 		@param DurationUnit 
 		Unit of Duration
 	  */
-	public void setDurationUnit (String DurationUnit)
+	@Override
+	public void setDurationUnit (java.lang.String DurationUnit)
 	{
 
 		set_Value (COLUMNNAME_DurationUnit, DurationUnit);
@@ -394,60 +474,70 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Duration Unit.
 		@return Unit of Duration
 	  */
-	public String getDurationUnit () 
+	@Override
+	public java.lang.String getDurationUnit () 
 	{
-		return (String)get_Value(COLUMNNAME_DurationUnit);
+		return (java.lang.String)get_Value(COLUMNNAME_DurationUnit);
 	}
 
-	/** EntityType AD_Reference_ID=389 */
+	/** 
+	 * EntityType AD_Reference_ID=389
+	 * Reference name: _EntityTypeNew
+	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entity Type.
+	/** Set Entitäts-Art.
 		@param EntityType 
 		Dictionary Entity Type; Determines ownership and synchronization
 	  */
-	public void setEntityType (String EntityType)
+	@Override
+	public void setEntityType (java.lang.String EntityType)
 	{
 
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entity Type.
+	/** Get Entitäts-Art.
 		@return Dictionary Entity Type; Determines ownership and synchronization
 	  */
-	public String getEntityType () 
+	@Override
+	public java.lang.String getEntityType () 
 	{
-		return (String)get_Value(COLUMNNAME_EntityType);
+		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
 	}
 
-	/** Set Comment/Help.
+	/** Set Kommentar/Hilfe.
 		@param Help 
 		Comment or Hint
 	  */
-	public void setHelp (String Help)
+	@Override
+	public void setHelp (java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Comment/Help.
+	/** Get Kommentar/Hilfe.
 		@return Comment or Hint
 	  */
-	public String getHelp () 
+	@Override
+	public java.lang.String getHelp () 
 	{
-		return (String)get_Value(COLUMNNAME_Help);
+		return (java.lang.String)get_Value(COLUMNNAME_Help);
 	}
 
-	/** Set Beta Functionality.
+	/** Set Beta-Funktionalität.
 		@param IsBetaFunctionality 
 		This functionality is considered Beta
 	  */
+	@Override
 	public void setIsBetaFunctionality (boolean IsBetaFunctionality)
 	{
 		set_Value (COLUMNNAME_IsBetaFunctionality, Boolean.valueOf(IsBetaFunctionality));
 	}
 
-	/** Get Beta Functionality.
+	/** Get Beta-Funktionalität.
 		@return This functionality is considered Beta
 	  */
+	@Override
 	public boolean isBetaFunctionality () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsBetaFunctionality);
@@ -460,18 +550,20 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		return false;
 	}
 
-	/** Set Default.
+	/** Set Standard.
 		@param IsDefault 
 		Default value
 	  */
+	@Override
 	public void setIsDefault (boolean IsDefault)
 	{
 		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
 	}
 
-	/** Get Default.
+	/** Get Standard.
 		@return Default value
 	  */
+	@Override
 	public boolean isDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefault);
@@ -484,18 +576,20 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		return false;
 	}
 
-	/** Set Valid.
+	/** Set Gültig.
 		@param IsValid 
 		Element is valid
 	  */
+	@Override
 	public void setIsValid (boolean IsValid)
 	{
 		set_Value (COLUMNNAME_IsValid, Boolean.valueOf(IsValid));
 	}
 
-	/** Get Valid.
+	/** Get Gültig.
 		@return Element is valid
 	  */
+	@Override
 	public boolean isValid () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsValid);
@@ -508,28 +602,9 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		return false;
 	}
 
-	/** Set Duration Limit.
-		@param Limit 
-		Maximum Duration in Duration Unit
-	  */
-	public void setDurationLimit (int DurationLimit)
-	{
-		set_Value (COLUMNNAME_DurationLimit, Integer.valueOf(DurationLimit));
-	}
-
-	/** Get Duration Limit.
-		@return Maximum Duration in Duration Unit
-	  */
-	public int getDurationLimit () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DurationLimit);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Moving Time.
 		@param MovingTime Moving Time	  */
+	@Override
 	public void setMovingTime (int MovingTime)
 	{
 		set_Value (COLUMNNAME_MovingTime, Integer.valueOf(MovingTime));
@@ -537,6 +612,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 
 	/** Get Moving Time.
 		@return Moving Time	  */
+	@Override
 	public int getMovingTime () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MovingTime);
@@ -549,7 +625,8 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
-	public void setName (String Name)
+	@Override
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -557,24 +634,18 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName () 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
 
 	/** Set Overlap Units.
 		@param OverlapUnits 
 		Overlap Units are number of units that must be completed before they are moved the next activity
 	  */
-	public void setOverlapUnits (BigDecimal OverlapUnits)
+	@Override
+	public void setOverlapUnits (java.math.BigDecimal OverlapUnits)
 	{
 		set_Value (COLUMNNAME_OverlapUnits, OverlapUnits);
 	}
@@ -582,26 +653,29 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Overlap Units.
 		@return Overlap Units are number of units that must be completed before they are moved the next activity
 	  */
-	public BigDecimal getOverlapUnits () 
+	@Override
+	public java.math.BigDecimal getOverlapUnits () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverlapUnits);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Priority.
+	/** Set Priorität.
 		@param Priority 
 		Indicates if this request is of a high, medium or low priority.
 	  */
+	@Override
 	public void setPriority (int Priority)
 	{
 		set_Value (COLUMNNAME_Priority, Integer.valueOf(Priority));
 	}
 
-	/** Get Priority.
+	/** Get Priorität.
 		@return Indicates if this request is of a high, medium or low priority.
 	  */
+	@Override
 	public int getPriority () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Priority);
@@ -610,7 +684,10 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		return ii.intValue();
 	}
 
-	/** ProcessType AD_Reference_ID=53224 */
+	/** 
+	 * ProcessType AD_Reference_ID=53224
+	 * Reference name: PP_Process Type
+	 */
 	public static final int PROCESSTYPE_AD_Reference_ID=53224;
 	/** Batch Flow  = BF */
 	public static final String PROCESSTYPE_BatchFlow = "BF";
@@ -626,7 +703,8 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	public static final String PROCESSTYPE_Plant = "PL";
 	/** Set Process Type.
 		@param ProcessType Process Type	  */
-	public void setProcessType (String ProcessType)
+	@Override
+	public void setProcessType (java.lang.String ProcessType)
 	{
 
 		set_Value (COLUMNNAME_ProcessType, ProcessType);
@@ -634,12 +712,16 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 
 	/** Get Process Type.
 		@return Process Type	  */
-	public String getProcessType () 
+	@Override
+	public java.lang.String getProcessType () 
 	{
-		return (String)get_Value(COLUMNNAME_ProcessType);
+		return (java.lang.String)get_Value(COLUMNNAME_ProcessType);
 	}
 
-	/** PublishStatus AD_Reference_ID=310 */
+	/** 
+	 * PublishStatus AD_Reference_ID=310
+	 * Reference name: _PublishStatus
+	 */
 	public static final int PUBLISHSTATUS_AD_Reference_ID=310;
 	/** Released = R */
 	public static final String PUBLISHSTATUS_Released = "R";
@@ -647,13 +729,14 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	public static final String PUBLISHSTATUS_Test = "T";
 	/** Under Revision = U */
 	public static final String PUBLISHSTATUS_UnderRevision = "U";
-	/** Void = V */
-	public static final String PUBLISHSTATUS_Void = "V";
+	/** Löschen = V */
+	public static final String PUBLISHSTATUS_Loeschen = "V";
 	/** Set Publication Status.
 		@param PublishStatus 
 		Status of Publication
 	  */
-	public void setPublishStatus (String PublishStatus)
+	@Override
+	public void setPublishStatus (java.lang.String PublishStatus)
 	{
 
 		set_Value (COLUMNNAME_PublishStatus, PublishStatus);
@@ -662,30 +745,34 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Publication Status.
 		@return Status of Publication
 	  */
-	public String getPublishStatus () 
+	@Override
+	public java.lang.String getPublishStatus () 
 	{
-		return (String)get_Value(COLUMNNAME_PublishStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_PublishStatus);
 	}
 
 	/** Set Qty Batch Size.
 		@param QtyBatchSize Qty Batch Size	  */
-	public void setQtyBatchSize (BigDecimal QtyBatchSize)
+	@Override
+	public void setQtyBatchSize (java.math.BigDecimal QtyBatchSize)
 	{
 		set_Value (COLUMNNAME_QtyBatchSize, QtyBatchSize);
 	}
 
 	/** Get Qty Batch Size.
 		@return Qty Batch Size	  */
-	public BigDecimal getQtyBatchSize () 
+	@Override
+	public java.math.BigDecimal getQtyBatchSize () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBatchSize);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
 	/** Set Queuing Time.
 		@param QueuingTime Queuing Time	  */
+	@Override
 	public void setQueuingTime (int QueuingTime)
 	{
 		set_Value (COLUMNNAME_QueuingTime, Integer.valueOf(QueuingTime));
@@ -693,9 +780,47 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 
 	/** Get Queuing Time.
 		@return Queuing Time	  */
+	@Override
 	public int getQueuingTime () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_QueuingTime);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+	}
+
+	/** Set Ressource.
+		@param S_Resource_ID 
+		Resource
+	  */
+	@Override
+	public void setS_Resource_ID (int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1) 
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Resource_ID, Integer.valueOf(S_Resource_ID));
+	}
+
+	/** Get Ressource.
+		@return Resource
+	  */
+	@Override
+	public int getS_Resource_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_Resource_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -705,6 +830,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		@param SetupTime 
 		Setup time before starting Production
 	  */
+	@Override
 	public void setSetupTime (int SetupTime)
 	{
 		set_Value (COLUMNNAME_SetupTime, Integer.valueOf(SetupTime));
@@ -713,37 +839,10 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Setup Time.
 		@return Setup time before starting Production
 	  */
+	@Override
 	public int getSetupTime () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SetupTime);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	public I_S_Resource getS_Resource() throws RuntimeException
-    {
-		return (I_S_Resource)MTable.get(getCtx(), I_S_Resource.Table_Name)
-			.getPO(getS_Resource_ID(), get_TrxName());	}
-
-	/** Set Resource.
-		@param S_Resource_ID 
-		Resource
-	  */
-	public void setS_Resource_ID (int S_Resource_ID)
-	{
-		if (S_Resource_ID < 1) 
-			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Resource_ID, Integer.valueOf(S_Resource_ID));
-	}
-
-	/** Get Resource.
-		@return Resource
-	  */
-	public int getS_Resource_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Resource_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -753,7 +852,8 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		@param UnitsCycles 
 		The Units by Cycles are defined for process type  Flow Repetitive Dedicated and  indicated the product to be manufactured on a production line for duration unit.
 	  */
-	public void setUnitsCycles (BigDecimal UnitsCycles)
+	@Override
+	public void setUnitsCycles (java.math.BigDecimal UnitsCycles)
 	{
 		set_Value (COLUMNNAME_UnitsCycles, UnitsCycles);
 	}
@@ -761,83 +861,93 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Units by Cycles.
 		@return The Units by Cycles are defined for process type  Flow Repetitive Dedicated and  indicated the product to be manufactured on a production line for duration unit.
 	  */
-	public BigDecimal getUnitsCycles () 
+	@Override
+	public java.math.BigDecimal getUnitsCycles () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_UnitsCycles);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Validate Workflow.
-		@param ValidateWorkflow Validate Workflow	  */
-	public void setValidateWorkflow (String ValidateWorkflow)
+	/** Set Workflow validieren.
+		@param ValidateWorkflow Workflow validieren	  */
+	@Override
+	public void setValidateWorkflow (java.lang.String ValidateWorkflow)
 	{
 		set_Value (COLUMNNAME_ValidateWorkflow, ValidateWorkflow);
 	}
 
-	/** Get Validate Workflow.
-		@return Validate Workflow	  */
-	public String getValidateWorkflow () 
+	/** Get Workflow validieren.
+		@return Workflow validieren	  */
+	@Override
+	public java.lang.String getValidateWorkflow () 
 	{
-		return (String)get_Value(COLUMNNAME_ValidateWorkflow);
+		return (java.lang.String)get_Value(COLUMNNAME_ValidateWorkflow);
 	}
 
-	/** Set Valid from.
+	/** Set Gültig ab.
 		@param ValidFrom 
 		Valid from including this date (first day)
 	  */
-	public void setValidFrom (Timestamp ValidFrom)
+	@Override
+	public void setValidFrom (java.sql.Timestamp ValidFrom)
 	{
 		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}
 
-	/** Get Valid from.
+	/** Get Gültig ab.
 		@return Valid from including this date (first day)
 	  */
-	public Timestamp getValidFrom () 
+	@Override
+	public java.sql.Timestamp getValidFrom () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_ValidFrom);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
 	}
 
-	/** Set Valid to.
+	/** Set Gültig bis.
 		@param ValidTo 
 		Valid to including this date (last day)
 	  */
-	public void setValidTo (Timestamp ValidTo)
+	@Override
+	public void setValidTo (java.sql.Timestamp ValidTo)
 	{
 		set_Value (COLUMNNAME_ValidTo, ValidTo);
 	}
 
-	/** Get Valid to.
+	/** Get Gültig bis.
 		@return Valid to including this date (last day)
 	  */
-	public Timestamp getValidTo () 
+	@Override
+	public java.sql.Timestamp getValidTo () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_ValidTo);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidTo);
 	}
 
-	/** Set Search Key.
+	/** Set Suchschlüssel.
 		@param Value 
 		Search key for the record in the format required - must be unique
 	  */
-	public void setValue (String Value)
+	@Override
+	public void setValue (java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Search Key.
+	/** Get Suchschlüssel.
 		@return Search key for the record in the format required - must be unique
 	  */
-	public String getValue () 
+	@Override
+	public java.lang.String getValue () 
 	{
-		return (String)get_Value(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 
 	/** Set Version.
 		@param Version 
 		Version of the table definition
 	  */
+	@Override
 	public void setVersion (int Version)
 	{
 		set_Value (COLUMNNAME_Version, Integer.valueOf(Version));
@@ -846,6 +956,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Version.
 		@return Version of the table definition
 	  */
+	@Override
 	public int getVersion () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Version);
@@ -858,6 +969,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		@param WaitingTime 
 		Workflow Simulation Waiting time
 	  */
+	@Override
 	public void setWaitingTime (int WaitingTime)
 	{
 		set_Value (COLUMNNAME_WaitingTime, Integer.valueOf(WaitingTime));
@@ -866,6 +978,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Waiting Time.
 		@return Workflow Simulation Waiting time
 	  */
+	@Override
 	public int getWaitingTime () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_WaitingTime);
@@ -874,7 +987,10 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		return ii.intValue();
 	}
 
-	/** WorkflowType AD_Reference_ID=328 */
+	/** 
+	 * WorkflowType AD_Reference_ID=328
+	 * Reference name: AD_Workflow Type
+	 */
 	public static final int WORKFLOWTYPE_AD_Reference_ID=328;
 	/** General = G */
 	public static final String WORKFLOWTYPE_General = "G";
@@ -890,7 +1006,8 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		@param WorkflowType 
 		Type of Worflow
 	  */
-	public void setWorkflowType (String WorkflowType)
+	@Override
+	public void setWorkflowType (java.lang.String WorkflowType)
 	{
 
 		set_Value (COLUMNNAME_WorkflowType, WorkflowType);
@@ -899,15 +1016,17 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Workflow Type.
 		@return Type of Worflow
 	  */
-	public String getWorkflowType () 
+	@Override
+	public java.lang.String getWorkflowType () 
 	{
-		return (String)get_Value(COLUMNNAME_WorkflowType);
+		return (java.lang.String)get_Value(COLUMNNAME_WorkflowType);
 	}
 
 	/** Set Working Time.
 		@param WorkingTime 
 		Workflow Simulation Execution Time
 	  */
+	@Override
 	public void setWorkingTime (int WorkingTime)
 	{
 		set_Value (COLUMNNAME_WorkingTime, Integer.valueOf(WorkingTime));
@@ -916,6 +1035,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Working Time.
 		@return Workflow Simulation Execution Time
 	  */
+	@Override
 	public int getWorkingTime () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_WorkingTime);
@@ -928,6 +1048,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 		@param Yield 
 		The Yield is the percentage of a lot that is expected to be of acceptable wuality may fall below 100 percent
 	  */
+	@Override
 	public void setYield (int Yield)
 	{
 		set_Value (COLUMNNAME_Yield, Integer.valueOf(Yield));
@@ -936,6 +1057,7 @@ public class X_AD_Workflow extends PO implements I_AD_Workflow, I_Persistent
 	/** Get Yield %.
 		@return The Yield is the percentage of a lot that is expected to be of acceptable wuality may fall below 100 percent
 	  */
+	@Override
 	public int getYield () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Yield);

@@ -1,5 +1,9 @@
 package de.metas.handlingunits.attribute.impl;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -54,7 +58,7 @@ import de.metas.util.time.SystemTime;
 public class HUAttributesBL implements IHUAttributesBL
 {
 	@Override
-	public I_M_HU getM_HU_OrNull(final IAttributeSet attributeSet)
+	public I_M_HU getM_HU_OrNull(@Nullable final IAttributeSet attributeSet)
 	{
 		if (attributeSet instanceof IHUAware)
 		{
@@ -68,7 +72,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	}
 
 	@Override
-	public I_M_HU getM_HU(final IAttributeSet attributeSet)
+	public I_M_HU getM_HU(@NonNull final IAttributeSet attributeSet)
 	{
 		final I_M_HU hu = getM_HU_OrNull(attributeSet);
 		if (hu == null)

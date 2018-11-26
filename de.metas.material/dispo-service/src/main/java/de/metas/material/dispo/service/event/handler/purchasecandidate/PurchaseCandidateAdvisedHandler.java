@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler.purchasecandidate;
 
+import lombok.NonNull;
+
 import java.util.Collection;
 
 import org.springframework.context.annotation.Profile;
@@ -21,7 +23,6 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -93,7 +94,7 @@ public final class PurchaseCandidateAdvisedHandler
 				.getMaterialDescriptor();
 
 		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
-				.plannedQty(materialDescriptor.getQuantity())
+				.qty(materialDescriptor.getQuantity())
 				.vendorRepoId(event.getVendorId())
 				.purchaseCandidateRepoId(-1)
 				.productPlanningRepoId(event.getProductPlanningId())

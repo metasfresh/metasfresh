@@ -1,8 +1,13 @@
 package de.metas.event.log;
 
-import java.util.Collection;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
+
+import java.util.Collection;
 
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -17,10 +22,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -188,8 +189,10 @@ public class EventLogUserService
 		}
 		catch (final RuntimeException e)
 		{
-			newErrorLogEntry(request.getHandlerClass(), e)
-					.createAndStore();
+			// e.printStackTrace();
+			newErrorLogEntry(
+					request.getHandlerClass(), e)
+							.createAndStore();
 		}
 	}
 

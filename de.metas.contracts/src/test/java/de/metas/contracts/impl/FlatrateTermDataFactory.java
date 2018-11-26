@@ -114,7 +114,7 @@ public class FlatrateTermDataFactory
 	@Builder(builderMethodName = "flatrateConditionsNew")
 	public static I_C_Flatrate_Conditions createFlatrateConditions(final String name, final String invoiceRule,
 			final String typeConditions, @NonNull final I_C_Calendar calendar, @NonNull final String onFlatrateTermExtend,
-			@NonNull final I_M_PricingSystem pricingSystem, final String extensionType)
+			@NonNull final I_M_PricingSystem pricingSystem, final String extensionType, final boolean isCreateNoInvoice)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setM_PricingSystem(pricingSystem);
@@ -139,6 +139,7 @@ public class FlatrateTermDataFactory
 		conditions.setProcessed(true);
 		conditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Completed);
 		conditions.setDocAction(X_C_Flatrate_Conditions.DOCACTION_Re_Activate);
+		conditions.setIsCreateNoInvoice(isCreateNoInvoice);
 		save(conditions);
 
 		return conditions;

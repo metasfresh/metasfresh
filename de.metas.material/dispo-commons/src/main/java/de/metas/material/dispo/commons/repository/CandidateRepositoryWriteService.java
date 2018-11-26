@@ -6,13 +6,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Objects;
 
-import javax.annotation.Nullable;
-
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +43,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -363,7 +365,7 @@ public class CandidateRepositoryWriteService
 		productionDetailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
 		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
 		productionDetailRecordToUpdate.setPP_Order_DocStatus(productionDetail.getPpOrderDocStatus());
-		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getPlannedQty());
+		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getQty());
 		productionDetailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(productionDetailRecordToUpdate);
@@ -404,7 +406,7 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
 		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus());
 		detailRecordToUpdate.setM_Shipper_ID(distributionDetail.getShipperId());
-		detailRecordToUpdate.setPlannedQty(distributionDetail.getPlannedQty());
+		detailRecordToUpdate.setPlannedQty(distributionDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(detailRecordToUpdate);
@@ -436,7 +438,7 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setC_OrderLine_ID(toRepoId(demandDetail.getOrderLineId()));
 		detailRecordToUpdate.setC_SubscriptionProgress_ID(toRepoId(demandDetail.getSubscriptionProgressId()));
 
-		detailRecordToUpdate.setPlannedQty(demandDetail.getPlannedQty());
+		detailRecordToUpdate.setPlannedQty(demandDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(detailRecordToUpdate);
@@ -460,11 +462,24 @@ public class CandidateRepositoryWriteService
 			final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
 
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+			final ICompositeQueryFilter<I_MD_Candidate_Transaction_Detail> //
+			transactionOrPInstanceId = queryBL
+					.createCompositeQueryFilter(I_MD_Candidate_Transaction_Detail.class)
+					.setJoinOr();
+			if (transactionDetail.getTransactionId() > 0)
+			{
+				transactionOrPInstanceId.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
+			}
+			if (transactionDetail.getResetStockAdPinstanceId() > 0)
+			{
+				transactionOrPInstanceId.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_AD_PInstance_ResetStock_ID, transactionDetail.getResetStockAdPinstanceId());
+			}
+
 			final I_MD_Candidate_Transaction_Detail existingDetail = //
 					queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
 							.addOnlyActiveRecordsFilter()
-							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
-							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId())
+							.filter(transactionOrPInstanceId)
 							.create()
 							.firstOnly(I_MD_Candidate_Transaction_Detail.class);
 
@@ -473,6 +488,8 @@ public class CandidateRepositoryWriteService
 				detailRecordToUpdate = newInstance(I_MD_Candidate_Transaction_Detail.class, synchedRecord);
 				detailRecordToUpdate.setMD_Candidate(synchedRecord);
 				detailRecordToUpdate.setM_Transaction_ID(transactionDetail.getTransactionId());
+				detailRecordToUpdate.setAD_PInstance_ResetStock_ID(transactionDetail.getResetStockAdPinstanceId());
+				detailRecordToUpdate.setMD_Stock_ID(transactionDetail.getStockId());
 			}
 			else
 			{

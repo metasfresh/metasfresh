@@ -8,7 +8,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_I_BPartner;
 
-import de.metas.bpartner.impexp.BPartnerLocationImportHelper;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -21,12 +20,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +34,7 @@ import lombok.experimental.UtilityClass;
 
 /**
  * A collection of bpartner import test helpers.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -71,6 +70,7 @@ import lombok.experimental.UtilityClass;
 		assertThat(bplocation.getPhone()).isEqualTo(ibpartner.getPhone());
 		assertThat(bplocation.getPhone2()).isEqualTo(ibpartner.getPhone2());
 		assertThat(bplocation.getFax()).isEqualTo(ibpartner.getFax());
+		assertThat(bplocation.getGLN()).isEqualTo(ibpartner.getGLN());
 
 		// Location
 		final I_C_Location location = bplocation.getC_Location();

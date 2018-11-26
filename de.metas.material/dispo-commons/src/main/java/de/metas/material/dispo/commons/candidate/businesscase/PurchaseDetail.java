@@ -1,14 +1,15 @@
 package de.metas.material.dispo.commons.candidate.businesscase;
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+
+import java.math.BigDecimal;
+
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -46,7 +47,7 @@ public class PurchaseDetail implements BusinessCaseDetail
 		return (PurchaseDetail)businessCaseDetail;
 	}
 
-	BigDecimal plannedQty;
+	BigDecimal qty;
 
 	/** the quantity (if any) that was ordered at the vendor */
 	BigDecimal orderedQty;
@@ -73,7 +74,7 @@ public class PurchaseDetail implements BusinessCaseDetail
 
 	@Builder(toBuilder = true)
 	private PurchaseDetail(
-			@NonNull final BigDecimal plannedQty,
+			@NonNull final BigDecimal qty,
 			@Nullable final BigDecimal orderedQty,
 			@NonNull Flag advised,
 			final int orderLineRepoId,
@@ -82,8 +83,8 @@ public class PurchaseDetail implements BusinessCaseDetail
 			final int vendorRepoId,
 			final int productPlanningRepoId)
 	{
-		Check.errorIf(plannedQty.signum() < 0, "The given plannedQty={} needs to be >= 0", plannedQty);
-		this.plannedQty = plannedQty;
+		Check.errorIf(qty.signum() < 0, "The given plannedQty={} needs to be >= 0", qty);
+		this.qty = qty;
 
 		Check.errorIf(orderedQty != null && orderedQty.signum() < 0, "The given orderedQty={} needs to be >= 0", orderedQty);
 		this.orderedQty = orderedQty;

@@ -116,7 +116,7 @@ public class OLCandBL implements IOLCandBL
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-			final int bpartnerId = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
+			final int bpartnerId = BPartnerId.toRepoId(effectiveValuesBL.getBillBPartnerEffectiveId(olCand));
 
 			final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemId(Env.getCtx(), bpartnerId, SOTrx.SALES, ITrx.TRXNAME_None);
 			return pricingSystemId;
@@ -167,7 +167,7 @@ public class OLCandBL implements IOLCandBL
 		final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(effectiveValuesBL.getBill_BPartner_Effective_ID(olCand));
+		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
 
 		final I_C_BPartner_Location dropShipLocation = effectiveValuesBL.getDropShip_Location_Effective(olCand);
 

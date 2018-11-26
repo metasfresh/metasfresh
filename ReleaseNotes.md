@@ -10,10 +10,77 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.82
+# Features
+
+# Fixes
+* metasfresh-webui-frontend
+  * [#1997](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1997) Cypress: Product set Documentnote Test fails
+    * Fixes the cypress test on setting Doument Notes.
+  * [#2048](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2048) View: clicking outside of table does not unselect the current selected lines
+    * Bugfix for the unselecting of grid selections when clicking outside grid.
+  * [#2058](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2058) Cannot close the HU Editor in manufacturing order anymore
+    * Fixes a bug in modal Handling Unit Editor that prevented the unselecting of rows.
+  * [#2067](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2067) Dropdown in bpartner field in order sometimes remains displayed after selecting bpartner
+    * Fixes a minor Bug that occurred when selecting dropdown entries with mouse. Now closing the dropdown after selecting again.
+  * [#2069](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2069) Number Inserting in Order Quick Input
+    * Fixes the Batch Entry in Sales Order, now reacting creating a new line after presssing enter again.
+
 # metasfresh 5.81
 ## Features
 
+* metasfresh
+  * [#4734](https://github.com/metasfresh/metasfresh/issues/4734) Shipper transportation identifier shall contain documentNo, date and the shipper name
+    * Improvement of the shipper transportation identifiere, now including the documentNo, date and shipper name.
+
+* metasfresh-webui-frontend
+  * [#2006](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2006) View selection for touch screens
+    * Enhancement of selection behavior, now possible for touch screens to select and unselect rows with finger tap.
+
 ## Fixes
+* metasfresh
+  * [#4738](https://github.com/metasfresh/metasfresh/issues/4738) Error creating receipt schedule if order line was created via "add new"
+    * Bugfix for the receiept schedule in case the orderline was created via add new button.
+  * [#4739](https://github.com/metasfresh/metasfresh/issues/4739) Fix context parse errors while using order's product batch entry
+    * Fixes product search and add new on orderline for Batch entry.
+  * [#4741](https://github.com/metasfresh/metasfresh/issues/4741) Process C_Order_VoidWithRelatedDocsAndRecreate hangs
+    * Improvement of Order voiding, now reverting the document and related documents too.
+  * [#4742](https://github.com/metasfresh/metasfresh/issues/4742) Attachment-Download from BPartner B2C window broken
+    * Fixes the download of Attachments from the B2C Business Partner window.
+  * [#4743](https://github.com/metasfresh/metasfresh/issues/4743) C_Invoice_CreateExportData async WP processor runs into error with most "normal" invoices
+    * Fixes a Bug that occurred when an Organisation Business Partner does not have a remit-to address nor an ESR account.
+
+* metasfresh-webui-api
+  * [#1097](https://github.com/metasfresh/metasfresh-webui-api/issues/1097) "Issue only for what was received" method: Issued HUs remain issued and don't get destroyed
+    * Fixes the "Issue only for what was received" Method in manufacturing receipt.
+  * [#1098](https://github.com/metasfresh/metasfresh-webui-api/issues/1098) Label Element filters not working
+    * Fixes the Filtering of Label Elements/ Attributes.
+  * [#1099](https://github.com/metasfresh/metasfresh-webui-api/issues/1099) Zooming into a parent column from a translation window not working
+    * Improves the zoom To into the parent column from translation windows.
+  * [#1102](https://github.com/metasfresh/metasfresh-webui-api/issues/1102) Document filters: consider empty strings as no filters
+    * Empty Strings are now considered as a non set filter criteria.
+
+* metasfresh-webui-frontend
+  * [#2008](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2008) Business partner field in order: bpartner and location not alligned
+    * Minor frontend Fix for Businesspartner Lookup widget dropdown alignment.
+  * [#2012](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2012) Modal view's title is not set when opened from process
+    * Improvement of modal overlays, now setting the overlay Title correctly when opened via process.
+  * [#2015](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2015) Make sure `Run QR code action` process can be executed from everywhere
+    * Fixes the QR Code action, so that it can be run from any window.
+  * [#2029](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2029) View quickActions timing issue
+    * Fixes a timing issue with Quick Actions in WebUI.
+  * [#2039](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2039) Uncaught TypeError: e.toISO is not a function
+    * Bugfix for an error in action "create purchase orders".
+  * [#2049](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2049) quick actions: not refreshed on selection changed in tablet/mobile mode
+    * Improvement of the Quickaction refreshing in case of changes selections.
+  * [#2050](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2050) Views: refresh `quickActions` after `GET /byIds` shall consider current selected rows
+    * Bugfix for the Quickactions in WebUI now considering the selected rows again.
+  * [#2054](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2054) Error while trying to add a new sales order line using batch entry
+    * Fixes the Batch entry in Sales Order.
+  * [#2060](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2060) Text widgets are not PATCHED anymore
+    * Fixes tha patching of Text widgets. Now these are patched again after change.
+  * [#2061](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2061) Cannot untick filter checkbox
+    * Fixes the Filter checkboxes, now it's possible to untick them again.
 
 # metasfresh 5.80
 ## Features

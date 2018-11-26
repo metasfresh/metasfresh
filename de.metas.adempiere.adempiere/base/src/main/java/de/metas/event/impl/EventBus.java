@@ -1,5 +1,9 @@
 package de.metas.event.impl;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,6 +34,7 @@ import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
@@ -43,7 +48,6 @@ import de.metas.event.log.EventLogSystemBusTools;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.impl.EventLogEntryCollector;
 import de.metas.util.Check;
-import lombok.NonNull;
 
 final class EventBus implements IEventBus
 {
@@ -74,9 +78,12 @@ final class EventBus implements IEventBus
 
 	private final ExecutorService executorOrNull;
 
+	/**
+	 * @param executor if not null, the system creates an {@link AsyncEventBus}; also, it shuts down this executor on {@link #destroy()}
+	 */
 	public EventBus(
 			final String topicName,
-			final ExecutorService executor)
+			@Nullable final ExecutorService executor)
 	{
 		this.executorOrNull = executor;
 		this.name = Check.assumeNotEmpty(topicName, "name not empty");

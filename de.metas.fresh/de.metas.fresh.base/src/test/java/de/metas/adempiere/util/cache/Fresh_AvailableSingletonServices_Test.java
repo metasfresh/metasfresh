@@ -53,6 +53,12 @@ public class Fresh_AvailableSingletonServices_Test
 				.skipServiceInterface(org.adempiere.util.testservice.ITestMissingService.class) // because it's supposed to fail
 				.skipServiceInterfaceIfStartsWith("org.adempiere.util.proxy.impl.JavaAssistInterceptorTests") // some test interface
 				.skipServiceInterface(de.metas.cache.interceptor.testservices.ITestServiceWithPrivateCachedMethod.class)
+				//
+				// Skip services with no default constructor (spring components):
+				.skipServiceInterface(de.metas.payment.esr.api.IESRImportBL.class)
+				.skipServiceInterface(de.metas.notification.INotificationRepository.class)
+				.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleBL.class)
+				//
 				.test();
 	}
 }

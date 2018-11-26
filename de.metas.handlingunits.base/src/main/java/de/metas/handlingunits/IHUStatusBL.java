@@ -29,6 +29,7 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.ISingletonService;
 
 public interface IHUStatusBL extends ISingletonService
@@ -86,17 +87,20 @@ public interface IHUStatusBL extends ISingletonService
 	/**
 	 * Check if an HU has a status that is "physical"/ "concrete"/ "material" Which means the HU exists as a box/ will still be used by us.
 	 *
-	 * The following hu statuses are not phyical:
+	 * The following hu statuses are not physical:
 	 * <ul>
-	 * <li>{@link X_M_HU_Status#HUSTATUS_Planning Planning}: is a draft state, may or may not be used further
-	 * <li>{@link X_M_HU_Status#HUSTATUS_Destroyed Destroyed}: not used any longer
-	 * <li>{@link X_M_HU_Status#HUSTATUS_Shipped Shipped}: No longer in our warehouses
+	 * <li>{@link X_M_HU#HUSTATUS_Planning Planning}: is a draft state, may or may not be used further
+	 * <li>{@link X_M_HU#HUSTATUS_Destroyed Destroyed}: not used any longer
+	 * <li>{@link X_M_HU#HUSTATUS_Shipped Shipped}: no longer in our warehouses
 	 * </ul>
-	 * NOTE: if status is <code>null</code>, it is considered not physical. It means that the HU was just created and will soon get another status.
+	 * NOTE: if status is <code>null</code>, it is considered not physical.
 	 *
-	 * In the future, if another status of such kind (let's call it "intangible"), please add it in the implementation of this method.
+	 * In the future, if another status of such kind (let's call it "intangible"), please add it to the implementation of this method.
 	 *
-	 * @return <code>true</code> if the status is a "physical" status (active or picked), false otherwise
+	 * Note: please also keep in sync with the view {@code MD_Stock_From_HUs_V}.
+	 * <p>
+	 *
+	 * @return <code>true</code> if the status is a "physical" status (active, picked or issued), false otherwise
 	 */
 	boolean isPhysicalHU(I_M_HU huRecord);
 
@@ -119,7 +123,7 @@ public interface IHUStatusBL extends ISingletonService
 
 	/**
 	 * Activate the HU (assuming it was Planning)
- */
+	 */
 	void setHUStatusActive(Collection<I_M_HU> hus);
 
 }

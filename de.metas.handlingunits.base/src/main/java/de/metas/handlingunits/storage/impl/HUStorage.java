@@ -1,5 +1,7 @@
 package de.metas.handlingunits.storage.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -52,7 +54,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
+import de.metas.util.collections.CollectionUtils;
 
 /* package */class HUStorage implements IHUStorage
 {
@@ -270,25 +272,12 @@ import lombok.NonNull;
 	{
 		final List<I_M_HU_Storage> storages = dao.retrieveStorages(hu);
 
-		ProductId productId = null;
-		for (final I_M_HU_Storage storage : storages)
-		{
-			if (productId == null)
-			{
-				productId = ProductId.ofRepoId(storage.getM_Product_ID());
-			}
-			else if (productId.getRepoId() != storage.getM_Product_ID())
-			{
-				// found more then one product stored in our HU
-				return null;
-			}
-			else
-			{
-				// same product => go on
-			}
-		}
+		final int productRepoId = CollectionUtils.extractSingleElementOrDefault(
+				storages, 
+				I_M_HU_Storage::getM_Product_ID,
+				-1);
 
-		return productId;
+		return ProductId.ofRepoIdOrNull(productRepoId);
 	}
 
 	@Override

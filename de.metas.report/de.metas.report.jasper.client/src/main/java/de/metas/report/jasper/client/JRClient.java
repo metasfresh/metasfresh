@@ -25,6 +25,8 @@ package de.metas.report.jasper.client;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -48,6 +50,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfo.ProcessInfoBuilder;
 import de.metas.util.Services;
+import lombok.NonNull;
 import net.sf.jasperreports.engine.JasperPrint;
 
 public final class JRClient
@@ -152,7 +155,7 @@ public final class JRClient
 		return report(pi, pi.getJRDesiredOutputType());
 	}
 
-	public byte[] report(final ProcessInfo pi, final OutputType outputType)
+	public byte[] report(@NonNull final ProcessInfo pi, @Nullable final OutputType outputType)
 	{
 		try
 		{

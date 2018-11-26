@@ -1,5 +1,7 @@
 package de.metas.materialtracking.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -13,11 +15,11 @@ package de.metas.materialtracking.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -62,7 +64,6 @@ import de.metas.util.Services;
 
 	public MaterialTrackingQueryCompiler()
 	{
-		super();
 	}
 
 	public MaterialTrackingQueryCompiler setCtx(final Properties ctx)
@@ -73,8 +74,7 @@ import de.metas.util.Services;
 
 	private Properties getCtx()
 	{
-		Check.assumeNotNull(_ctx, "ctx not null");
-		return _ctx;
+		return Check.assumeNotNull(_ctx, "ctx not null");
 	}
 
 	public MaterialTrackingQueryCompiler setContext(final Object contextProvider)
@@ -89,12 +89,10 @@ import de.metas.util.Services;
 		return _trxName;
 	}
 
-	public IQueryBuilder<I_M_Material_Tracking> createQueryBuilder(final IMaterialTrackingQuery queryVO)
+	public IQuery<I_M_Material_Tracking> createQuery(@NonNull final IMaterialTrackingQuery queryVO)
 	{
-		Check.assumeNotNull(queryVO, "queryVO not null");
-
-		final IQueryBuilder<I_M_Material_Tracking> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Tracking.class, getCtx(), getTrxName())
-				.addOnlyContextClient()
+		final IQueryBuilder<I_M_Material_Tracking> queryBuilder = queryBL
+				.createQueryBuilder(I_M_Material_Tracking.class, getCtx(), getTrxName())
 				.addOnlyActiveRecordsFilter();
 
 		final IQueryOrderByBuilder<I_M_Material_Tracking> orderBy = queryBuilder.orderBy();
@@ -155,13 +153,15 @@ import de.metas.util.Services;
 						I_M_Material_Tracking.COLUMN_M_Material_Tracking_ID,
 						I_M_Material_Tracking_Ref.COLUMN_M_Material_Tracking_ID,
 						materialTrackingRefQuery);
-
 			}
 			// TODO
 		}
 
-		return queryBuilder;
+		final IQuery<I_M_Material_Tracking> query = queryBuilder
+				.create()
+				.setOption(IQuery.OPTION_ReturnReadOnlyRecords, queryVO.isReturnReadOnlyRecords());
 
+		return query;
 	}
 
 	private final IQuery<I_M_Material_Tracking_Ref> createMaterialTrackingRefQueryForModels(final List<?> models)

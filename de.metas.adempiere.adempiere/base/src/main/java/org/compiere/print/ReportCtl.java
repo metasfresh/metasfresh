@@ -64,7 +64,6 @@ public final class ReportCtl
 
 	private ReportCtl(final Builder builder)
 	{
-		super();
 		this.processInfo = builder.getProcessInfo();
 	}
 
@@ -358,7 +357,6 @@ public final class ReportCtl
 		
 		private Builder()
 		{
-			super();
 		}
 
 		public ReportCtl start()

@@ -3,6 +3,12 @@ package de.metas.ordercandidate.api;
 import lombok.Builder;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,12 +19,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,18 +34,18 @@ import lombok.Value;
 @Value
 public final class OLCandBPartnerInfo
 {
-	private final int bpartnerId;
-	private final int bpartnerLocationId;
-	private final int contactId;
+	private final BPartnerId bpartnerId;
+	private final BPartnerLocationId bpartnerLocationId;
+	private final BPartnerContactId contactId;
 
 	@Builder
 	private OLCandBPartnerInfo(
-			final int bpartnerId,
-			final int bpartnerLocationId,
-			final int contactId)
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final BPartnerLocationId bpartnerLocationId,
+			@Nullable final BPartnerContactId contactId)
 	{
-		this.bpartnerId = bpartnerId > 0 ? bpartnerId : -1;
-		this.bpartnerLocationId = bpartnerLocationId > 0 ? bpartnerLocationId : -1;
-		this.contactId = contactId > 0 ? contactId : -1;
+		this.bpartnerId = bpartnerId;
+		this.bpartnerLocationId = bpartnerLocationId;
+		this.contactId = contactId;
 	}
 }

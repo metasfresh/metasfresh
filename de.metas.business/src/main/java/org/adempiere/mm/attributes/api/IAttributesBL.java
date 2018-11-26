@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,10 +44,8 @@ public interface IAttributesBL extends ISingletonService
 	IAttributeValueGenerator getAttributeValueGenerator(org.compiere.model.I_M_Attribute attributeParam);
 
 	/**
-	 * Returns a new attribute value generator instance for the given <code>attributeParam</code> or <code>null</code> if the given parameter has no <code>AD_JavaClass_ID</code> set.
-	 * 
-	 * @param attributeParam
-	 * @return
+	 * Returns a new attribute value generator instance for the given <code>attributeParam</code>
+	 * or <code>null</code> if the given parameter has no <code>AD_JavaClass_ID</code> set or that class is not an IAttributeValueGenerator.
 	 */
 	IAttributeValueGenerator getAttributeValueGeneratorOrNull(org.compiere.model.I_M_Attribute attributeParam);
 
@@ -61,10 +59,10 @@ public interface IAttributesBL extends ISingletonService
 
 	/**
 	 * Gets product attribute by ID.
-	 * 
+	 *
 	 * If the attribute is applicable to given product (i.e. it's included in product's attribute set), the attribute will be returned.
 	 * Else, null will be returned.
-	 * 
+	 *
 	 * @param product
 	 * @param attributeId
 	 * @return {@link I_M_Attribute} or null
@@ -81,7 +79,7 @@ public interface IAttributesBL extends ISingletonService
 
 	/**
 	 * Calculates Best-Before date for given product and bpartner.
-	 * 
+	 *
 	 * @param ctx
 	 * @param productId
 	 * @param vendorBPartnerId
