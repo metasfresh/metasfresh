@@ -103,7 +103,12 @@ public class FactAcctZoomProvider implements IZoomProvider
 
 		//
 		final ITranslatableString destinationDisplay = Services.get(IADWindowDAO.class).retrieveWindowName(factAcctWindowId);
-		return ImmutableList.of(ZoomInfo.of(I_Fact_Acct.Table_Name, factAcctWindowId, query, destinationDisplay));
+		return ImmutableList.of(ZoomInfo.of(
+				I_Fact_Acct.Table_Name/*id*/, 
+				I_Fact_Acct.Table_Name/*internalName*/, 
+				factAcctWindowId, 
+				query, 
+				destinationDisplay));
 	}
 
 }
