@@ -101,7 +101,7 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	{
 		return true;
 	}
-	
+
 	@Override
 	public void cacheInvalidate()
 	{
@@ -146,7 +146,7 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	@Override
 	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
-		return cache_retrieveEntities.getOrLoad(evalCtx, () -> delegate.retrieveEntities(evalCtx));
+		return cache_retrieveEntities.getOrLoad(evalCtx, delegate::retrieveEntities);
 	}
 
 	@Override

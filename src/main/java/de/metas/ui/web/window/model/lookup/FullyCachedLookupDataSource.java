@@ -87,7 +87,7 @@ class FullyCachedLookupDataSource implements LookupDataSource
 				.putFilter(LookupDataSourceContext.FILTER_Any, FIRST_ROW, Integer.MAX_VALUE)
 				.build();
 
-		return cacheByPartition.getOrLoad(evalCtx, () -> fetcher.retrieveEntities(evalCtx));
+		return cacheByPartition.getOrLoad(evalCtx, fetcher::retrieveEntities);
 	}
 
 	@Override
