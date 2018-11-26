@@ -118,6 +118,15 @@ context('Reusable "login" custom command', function() {
   });
 });
 
+
+Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
+  describe('Click on a checkbox field', function() {
+    cy.get(`.form-field-${fieldName}`)
+      .find('.input-checkbox-tick')
+      .click();
+  });
+});
+
 // Should also work for date columns, e.g. '01/01/2018{enter}'
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
   describe('Enter value into string field', function() {
@@ -135,6 +144,10 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
     });
   });
 
+/* TODO: What is this command for ? Looks like a dupe of
+ * writeIntoCompositeLookupField
+ * Kuba
+ */
 Cypress.Commands.add(
   'writeIntoLookupListField',
   (fieldName, partialValue, listValue) => {
@@ -154,7 +167,7 @@ Cypress.Commands.add(
     describe('Enter value into lookup list field', function() {
       cy.get(`#lookup_${fieldName}`)
         .within(($el) => {
-          if ($el.find('.raw-lookup-wrapper input').length) {
+          if ($el.find('.lookup-widget-wrapper input').length) {
             return cy.get('input').type(partialValue);
           }
 
@@ -162,7 +175,7 @@ Cypress.Commands.add(
         })
 
       cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click();
+      cy.contains('.input-dropdown-list-option', listValue).click({ force: true });
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
     });
 });
@@ -178,14 +191,6 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
         .click();
     }
   );
-});
-
-Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
-  describe('Click on a checkbox field', function() {
-    cy.get(`.form-field-${fieldName}`)
-      .find('.input-checkbox-tick')
-      .click();
-  });
 });
 
 /** !!not working!! */
