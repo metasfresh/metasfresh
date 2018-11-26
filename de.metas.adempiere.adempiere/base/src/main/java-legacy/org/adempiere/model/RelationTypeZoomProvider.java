@@ -39,7 +39,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
@@ -174,7 +173,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			updateRecordsCountAndZoomValue(query);
 		}
 
-		return ImmutableList.of(ZoomInfo.of(getZoomInfoId(), adWindowId, query, display));
+		return ImmutableList.of(ZoomInfo.of(
+				getZoomInfoId(),
+				getInternalName(),
+				adWindowId, query, display));
 	}
 
 	public boolean isDirected()
@@ -554,7 +556,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		private Builder()
 		{
-			super();
 		}
 
 		public RelationTypeZoomProvider buildOrNull()
@@ -583,13 +584,12 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		private int getAD_RelationType_ID()
 		{
-			Check.assume(adRelationTypeId > 0, "adRelationTypeId > 0");
-			return adRelationTypeId;
+			return Check.assumeGreaterThanZero(adRelationTypeId, "adRelationTypeId");
 		}
 
 		private String getZoomInfoId()
 		{
-			return "relationType-" + getAD_RelationType_ID();
+			return "AD_RelationType_ID-" + getAD_RelationType_ID();
 		}
 
 		public Builder setInternalName(final String internalName)
