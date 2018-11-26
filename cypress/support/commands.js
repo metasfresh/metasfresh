@@ -193,21 +193,6 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
   );
 });
 
-/** !!not working!! */
-Cypress.Commands.add(
-  'writeIntoMultiListField',
-  (fieldName, index, partialValue, listValue) => {
-    describe('Enter value into list field within a "fieldgroup" (field with additional fields, e.g sales order bPartner with lcoation and user)', function() {
-      cy.get(`.form-field-${fieldName}`)
-        .find('input')
-        .find(`:nth.child(${index})`)
-        .type(partialValue);
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    });
-});
-
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
   describe('Execute a doc action', function() {
     cy.get('.form-field-DocAction')
