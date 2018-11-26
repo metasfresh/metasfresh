@@ -115,8 +115,11 @@ class RawWidget extends Component {
     );
   };
 
-  handleKeyDown = (e, property, value, widgetType) => {
-    if ((e.key === 'Enter' || e.key === 'Tab') && widgetType !== 'LongText') {
+  handleKeyDown = (e, property, value) => {
+    if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+      }
       this.handlePatch(property, value);
     }
   };
@@ -284,8 +287,7 @@ class RawWidget extends Component {
         return handleChange && handleChange(widgetField, e.target.value);
       },
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
-      onKeyDown: e =>
-        this.handleKeyDown(e, widgetField, e.target.value, widgetType),
+      onKeyDown: e => this.handleKeyDown(e, widgetField, e.target.value),
       title: widgetValue,
     };
 
