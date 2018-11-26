@@ -247,11 +247,9 @@ Cypress.Commands.add('pressAddNewButton', () => {
   })
 });
 
-/* ts: I don't see a nicer way to address this button; */
 Cypress.Commands.add('pressDoneButton', () => {
   describe('Press an overlay\'s done-button', function() {
 
-    //webui.modal.actions.done
     const doneText = Cypress.messages.modal.actions.done;
     cy.get('.btn')
       .contains(doneText)
@@ -300,6 +298,15 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
           cy.get('.header-item').should('contain', breadcrumbs[breadcrumbNumber].caption);
         });
     }
+  });
+});
+
+Cypress.Commands.add('selectSingleTabRow', (tabName) => {
+  describe('Select the only row in the currently selected tab', function() {
+    cy.get('.table-flex-wrapper')
+    .find('tbody tr')
+    .should('exist')
+    .click();
   });
 });
 
