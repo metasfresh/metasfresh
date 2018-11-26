@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import lombok.NonNull;
+
 import java.util.Collection;
 
 import org.springframework.stereotype.Service;
@@ -13,7 +15,6 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -58,7 +59,10 @@ public class SupplyCandidateHandler implements CandidateHandler
 	@Override
 	public Collection<CandidateType> getHandeledTypes()
 	{
-		return ImmutableList.of(CandidateType.SUPPLY, CandidateType.UNRELATED_INCREASE);
+		return ImmutableList.of(
+				CandidateType.SUPPLY,
+				CandidateType.UNRELATED_INCREASE,
+				CandidateType.INVENTORY_UP);
 	}
 
 	/**
@@ -119,7 +123,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 	private void assertCorrectCandidateType(@NonNull final Candidate supplyCandidate)
 	{
 		Preconditions.checkArgument(
-				supplyCandidate.getType() == CandidateType.SUPPLY || supplyCandidate.getType() == CandidateType.UNRELATED_INCREASE,
+				getHandeledTypes().contains(supplyCandidate.getType()),
 				"Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s",
 				supplyCandidate.getType(), supplyCandidate);
 	}

@@ -69,7 +69,7 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 	{
 		final DunningDocId dunningDocId = DunningDocId.ofRepoId(processInfo.getRecord_ID());
 
-		final byte[] dunningDocData = ExecuteReportStrategyUtil.executeJasperProcess(dunningDocJasperProcessId, processInfo);
+		final byte[] dunningDocData = ExecuteReportStrategyUtil.executeJasperProcess(dunningDocJasperProcessId, processInfo, outputType);
 
 		final boolean isPDF = OutputType.PDF.equals(outputType);
 		if (!isPDF)

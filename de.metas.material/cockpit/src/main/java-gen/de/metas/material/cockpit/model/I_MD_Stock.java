@@ -147,7 +147,7 @@ public interface I_MD_Stock
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Betand.
+	 * Set Bestand.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -156,7 +156,7 @@ public interface I_MD_Stock
 	public void setMD_Stock_ID (int MD_Stock_ID);
 
 	/**
-	 * Get Betand.
+	 * Get Bestand.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

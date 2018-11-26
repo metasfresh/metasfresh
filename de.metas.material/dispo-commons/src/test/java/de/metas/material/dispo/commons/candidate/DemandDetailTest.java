@@ -67,7 +67,7 @@ public class DemandDetailTest
 		assertThat(demandDetail.getOrderId()).isEqualTo(50);
 		assertThat(demandDetail.getOrderLineId()).isEqualTo(60);
 
-		assertThat(demandDetail.getPlannedQty()).isEqualByComparingTo(TEN);
+		assertThat(demandDetail.getQty()).isEqualByComparingTo(TEN);
 	}
 
 	@Test
@@ -90,7 +90,7 @@ public class DemandDetailTest
 		assertThat(demandDetail.getOrderId()).isEqualTo(UNSPECIFIED_REPO_ID);
 		assertThat(demandDetail.getOrderLineId()).isEqualTo(UNSPECIFIED_REPO_ID);
 
-		assertThat(demandDetail.getPlannedQty()).isEqualByComparingTo(TEN);
+		assertThat(demandDetail.getQty()).isEqualByComparingTo(TEN);
 	}
 
 	@Test
@@ -108,7 +108,7 @@ public class DemandDetailTest
 		assertThat(demandDetail.getOrderId()).isLessThanOrEqualTo(0);
 		assertThat(demandDetail.getOrderLineId()).isLessThanOrEqualTo(0);
 
-		assertThat(demandDetail.getPlannedQty()).isEqualByComparingTo(TEN);
+		assertThat(demandDetail.getQty()).isEqualByComparingTo(TEN);
 	}
 
 	@Test

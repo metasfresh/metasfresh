@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
@@ -48,7 +49,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
-
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -105,7 +106,12 @@ import lombok.NonNull;
 			}
 
 			final String zoomInfoId = "generic-" + AD_Window_ID;
-			result.add(ZoomInfoFactory.ZoomInfo.of(zoomInfoId, AD_Window_ID, query, name));
+			result.add(ZoomInfoFactory.ZoomInfo.of(
+					zoomInfoId,
+					zoomInfoDescriptor.getInternalName(),
+					AD_Window_ID,
+					query,
+					name));
 		}
 
 		return result.build();
@@ -350,6 +356,8 @@ import lombok.NonNull;
 		private final ImmutableTranslatableString nameTrl;
 		private final int targetAD_Window_ID;
 
+		private final String targetWindowInternalName;
+		
 		private final String targetTableName;
 		private final String targetColumnName;
 		private final boolean dynamicTargetColumnName;
@@ -358,9 +366,12 @@ import lombok.NonNull;
 		private final Boolean isSOTrx;
 		private final boolean targetHasIsSOTrxColumn;
 
-		private GenericZoomInfoDescriptor(final Builder builder, final ImmutableTranslatableString nameTrl, final int targetAD_Window_ID, final Boolean isSOTrx)
+		private GenericZoomInfoDescriptor(
+				final Builder builder,
+				final ImmutableTranslatableString nameTrl,
+				final int targetAD_Window_ID,
+				final Boolean isSOTrx)
 		{
-			super();
 			this.nameTrl = nameTrl;
 
 			this.targetTableName = builder.targetTableName;
@@ -377,6 +388,9 @@ import lombok.NonNull;
 			this.targetAD_Window_ID = targetAD_Window_ID;
 			Check.assume(targetAD_Window_ID > 0, "AD_Window_ID > 0");
 
+			final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
+			this.targetWindowInternalName = windowDAO.retrieveInternalWindowName(targetAD_Window_ID);
+			
 			this.isSOTrx = isSOTrx; // null is also accepted
 			this.targetHasIsSOTrxColumn = builder.targetHasIsSOTrxColumn;
 		}
@@ -436,6 +450,11 @@ import lombok.NonNull;
 		public String getVirtualTargetColumnSql()
 		{
 			return virtualTargetColumnSql;
+		}
+
+		public String getInternalName()
+		{
+			return targetWindowInternalName;
 		}
 
 		private static final class Builder

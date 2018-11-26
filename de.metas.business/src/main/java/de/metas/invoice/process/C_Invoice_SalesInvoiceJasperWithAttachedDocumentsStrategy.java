@@ -79,7 +79,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 						Env.getAD_Client_ID(),
 						Env.getAD_Org_ID(Env.getCtx()));
 		Check.assume(invoiceDocReportProcessId > 0, "The sysconfig with name {} needs to have a value greater than 0; AD_Client_ID={}; AD_Org_ID={}", C_INVOICE_REPORT_AD_PROCESS_ID, Env.getAD_Client_ID(), Env.getAD_Org_ID(Env.getCtx()));
-		final byte[] invoiceData = ExecuteReportStrategyUtil.executeJasperProcess(invoiceDocReportProcessId, processInfo);
+		final byte[] invoiceData = ExecuteReportStrategyUtil.executeJasperProcess(invoiceDocReportProcessId, processInfo, outputType);
 
 		final boolean isPDF = OutputType.PDF.equals(outputType);
 		if (!isPDF)

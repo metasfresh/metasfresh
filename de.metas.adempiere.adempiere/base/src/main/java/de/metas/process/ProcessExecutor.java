@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
 
+import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.i18n.IMsgBL;
 // import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
@@ -747,5 +748,4 @@ public final class ProcessExecutor
 			return this;
 		}
 	}
-
 }	// ProcessCtl

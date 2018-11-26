@@ -1,9 +1,11 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import java.math.BigDecimal;
-import java.util.Optional;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -24,7 +26,6 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -262,7 +263,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		final ProductionDetail newProductionDetailForPPOrder = initialBuilder
 				.advised(extractIsAdviseEvent(ppOrderEvent))
 				.pickDirectlyIfFeasible(extractIsDirectlyPickSupply(ppOrderEvent))
-				.plannedQty(ppOrder.getQtyRequired())
+				.qty(ppOrder.getQtyRequired())
 				.plantId(ppOrder.getPlantId())
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())
@@ -281,7 +282,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 				.advised(extractIsAdviseEvent(ppOrderEvent))
 				.pickDirectlyIfFeasible(extractIsDirectlyPickSupply(ppOrderEvent))
 				.plantId(ppOrder.getPlantId())
-				.plannedQty(ppOrderLine.getQtyRequired())
+				.qty(ppOrderLine.getQtyRequired())
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.productBomLineId(ppOrderLine.getProductBomLineId())
 				.description(ppOrderLine.getDescription())

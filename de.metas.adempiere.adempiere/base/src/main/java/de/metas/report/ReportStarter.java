@@ -82,10 +82,11 @@ public abstract class ReportStarter extends JavaProcess
 
 		final ReportPrintingInfo reportPrintingInfo = extractReportPrintingInfo(pi);
 
-		if (reportPrintingInfo.isPrintPreview())
+		final boolean doNotInvokeMassPrintEngine = reportPrintingInfo.isPrintPreview() || !reportPrintingInfo.isArchiveReportData();
+		if (doNotInvokeMassPrintEngine)
 		{
-			// Create report and preview
-			startProcessPrintPreview(reportPrintingInfo);
+			// Create report and preview / not-archive
+			startProcessInvokeReportOnly(reportPrintingInfo);
 		}
 		else
 		{
@@ -119,7 +120,7 @@ public abstract class ReportStarter extends JavaProcess
 		swingJRReportViewerProvider = provider;
 	}
 
-	private void startProcessDirectPrint(final ReportPrintingInfo reportPrintingInfo)
+	private void startProcessDirectPrint(@NonNull final ReportPrintingInfo reportPrintingInfo)
 	{
 		final ProcessInfo pi = reportPrintingInfo.getProcessInfo();
 
@@ -129,14 +130,21 @@ public abstract class ReportStarter extends JavaProcess
 		printService.print(result, pi);
 	}
 
-	private void startProcessPrintPreview(@NonNull final ReportPrintingInfo reportPrintingInfo) throws Exception
+	private void startProcessInvokeReportOnly(@NonNull final ReportPrintingInfo reportPrintingInfo) throws Exception
 	{
 		final ProcessInfo processInfo = reportPrintingInfo.getProcessInfo();
 
-		//
-		// Get Jasper report viewer provider
-		final JRReportViewerProvider jrReportViewerProvider = getJRReportViewerProviderOrNull();
-		final OutputType desiredOutputType = jrReportViewerProvider == null ? null : jrReportViewerProvider.getDesiredOutputType();
+		final OutputType desiredOutputType;
+		if (reportPrintingInfo.isPrintPreview())
+		{
+			// Get the jasper report viewer provider and ask it what format it wants
+			final JRReportViewerProvider jrReportViewerProvider = getJRReportViewerProviderOrNull();
+			desiredOutputType = jrReportViewerProvider == null ? null : jrReportViewerProvider.getDesiredOutputType();
+		}
+		else
+		{
+			desiredOutputType = OutputType.PDF;
+		}
 
 		//
 		// Based on reporting system type, determine: output type
@@ -148,7 +156,11 @@ public abstract class ReportStarter extends JavaProcess
 			// Jasper reporting
 			case Jasper:
 			case Other:
-				outputType = Util.coalesce(desiredOutputType, processInfo.getJRDesiredOutputType(), OutputType.PDF);
+				outputType = Util.coalesce(
+						// needs to take precedence because we might be invoked for an outer "preview" process, but with isPrintPreview()=false
+						processInfo.getJRDesiredOutputType(), 
+						desiredOutputType, 
+						OutputType.PDF);
 				break;
 
 			//
@@ -175,7 +187,9 @@ public abstract class ReportStarter extends JavaProcess
 
 		//
 		// Print preview (if swing client)
-		if (Ini.isClient() && swingJRReportViewerProvider != null)
+		if (reportPrintingInfo.isPrintPreview()
+				&& Ini.isClient()
+				&& swingJRReportViewerProvider != null)
 		{
 			swingJRReportViewerProvider.openViewer(result.getReportData(), outputType, processInfo);
 		}
@@ -217,10 +231,12 @@ public abstract class ReportStarter extends JavaProcess
 
 	private ReportPrintingInfo extractReportPrintingInfo(@NonNull final ProcessInfo pi)
 	{
-		final ReportPrintingInfo.ReportPrintingInfoBuilder info = ReportPrintingInfo.builder();
-		info.processInfo(pi);
-		info.printPreview(pi.isPrintPreview());
-		info.forceSync(!pi.isAsync()); // gh #1160 if the process info says "sync", then sync it is
+		final ReportPrintingInfo.ReportPrintingInfoBuilder info = ReportPrintingInfo
+				.builder()
+				.processInfo(pi)
+				.printPreview(pi.isPrintPreview())
+				.archiveReportData(pi.isArchiveReportData())
+				.forceSync(!pi.isAsync()); // gh #1160 if the process info says "sync", then sync it is
 
 		//
 		// Determine the ReportingSystem type based on report template file extension
@@ -282,7 +298,7 @@ public abstract class ReportStarter extends JavaProcess
 
 		Excel,
 
-		/** May be used no invocation to the jasper service is done */
+		/** May be used when no invocation to the jasper service is done */
 		Other
 	};
 
@@ -291,8 +307,12 @@ public abstract class ReportStarter extends JavaProcess
 	private static final class ReportPrintingInfo
 	{
 		ProcessInfo processInfo;
+
 		ReportingSystemType reportingSystemType;
+
 		boolean printPreview;
+
+		boolean archiveReportData;
 
 		/**
 		 * Even if {@link #isPrintPreview()} is {@code false}, we do <b>not</b> print in a background thread, if this is false.

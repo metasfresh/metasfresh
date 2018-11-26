@@ -123,6 +123,29 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
+	 * Set AD_User_ExternalId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_ExternalId (java.lang.String AD_User_ExternalId);
+
+	/**
+	 * Get AD_User_ExternalId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_User_ExternalId();
+
+    /** Column definition for AD_User_ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_AD_User_ExternalId = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "AD_User_ExternalId", null);
+    /** Column name AD_User_ExternalId */
+    public static final String COLUMNNAME_AD_User_ExternalId = "AD_User_ExternalId";
+
+	/**
 	 * Set Ansprechpartner.
 	 * User within the system - Internal or Business Partner Contact
 	 *
@@ -533,6 +556,29 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_C_BP_PrintFormat_ID = "C_BP_PrintFormat_ID";
 
 	/**
+	 * Set C_BPartner_ExternalId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ExternalId (java.lang.String C_BPartner_ExternalId);
+
+	/**
+	 * Get C_BPartner_ExternalId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getC_BPartner_ExternalId();
+
+    /** Column definition for C_BPartner_ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_C_BPartner_ExternalId = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "C_BPartner_ExternalId", null);
+    /** Column name C_BPartner_ExternalId */
+    public static final String COLUMNNAME_C_BPartner_ExternalId = "C_BPartner_ExternalId";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Identifies a Business Partner
 	 *
@@ -560,6 +606,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner>(I_I_BPartner.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set C_BPartner_Location_ExternalId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_Location_ExternalId (java.lang.String C_BPartner_Location_ExternalId);
+
+	/**
+	 * Get C_BPartner_Location_ExternalId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getC_BPartner_Location_ExternalId();
+
+    /** Column definition for C_BPartner_Location_ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_C_BPartner_Location_ExternalId = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "C_BPartner_Location_ExternalId", null);
+    /** Column name C_BPartner_Location_ExternalId */
+    public static final String COLUMNNAME_C_BPartner_Location_ExternalId = "C_BPartner_Location_ExternalId";
 
 	/**
 	 * Set Standort.
@@ -672,8 +741,8 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
 
 	/**
-	 * Set Anrede.
-	 * Greeting to print on correspondence
+	 * Set Anrede (ID).
+	 * Anrede zum Druck auf Korrespondenz
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -682,8 +751,8 @@ public interface I_I_BPartner
 	public void setC_Greeting_ID (int C_Greeting_ID);
 
 	/**
-	 * Get Anrede.
-	 * Greeting to print on correspondence
+	 * Get Anrede (ID).
+	 * Anrede zum Druck auf Korrespondenz
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1256,6 +1325,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_FirstSale = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "FirstSale", null);
     /** Column name FirstSale */
     public static final String COLUMNNAME_FirstSale = "FirstSale";
+
+	/**
+	 * Set GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGLN (java.lang.String GLN);
+
+	/**
+	 * Get GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGLN();
+
+    /** Column definition for GLN */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_GLN = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "GLN", null);
+    /** Column name GLN */
+    public static final String COLUMNNAME_GLN = "GLN";
 
 	/**
 	 * Set Gruppen-Schlüssel.
