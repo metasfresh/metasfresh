@@ -36,6 +36,7 @@ import org.compiere.model.MQuery.Operator;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
@@ -357,7 +358,7 @@ import lombok.NonNull;
 		private final int targetAD_Window_ID;
 
 		private final String targetWindowInternalName;
-		
+
 		private final String targetTableName;
 		private final String targetColumnName;
 		private final boolean dynamicTargetColumnName;
@@ -389,8 +390,11 @@ import lombok.NonNull;
 			Check.assume(targetAD_Window_ID > 0, "AD_Window_ID > 0");
 
 			final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
-			this.targetWindowInternalName = windowDAO.retrieveInternalWindowName(targetAD_Window_ID);
-			
+
+			this.targetWindowInternalName = Util.coalesceSuppliers(
+					() -> windowDAO.retrieveInternalWindowName(targetAD_Window_ID),
+					() -> windowDAO.retrieveWindowName(targetAD_Window_ID).translate(Env.getAD_Language()));
+
 			this.isSOTrx = isSOTrx; // null is also accepted
 			this.targetHasIsSOTrxColumn = builder.targetHasIsSOTrxColumn;
 		}
