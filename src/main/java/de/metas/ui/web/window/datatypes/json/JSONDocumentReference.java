@@ -18,6 +18,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentReference;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -74,6 +75,8 @@ public final class JSONDocumentReference
 
 	@JsonProperty("id")
 	private final String id;
+	@JsonProperty("internalName")
+	private final String internalName;
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("documentType")
@@ -87,11 +90,14 @@ public final class JSONDocumentReference
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String loadDurationStr;
 
-	private JSONDocumentReference(final DocumentReference documentReference, final JSONOptions jsonOpts)
+	private JSONDocumentReference(
+			@NonNull final DocumentReference documentReference, 
+			@NonNull final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
 
 		id = documentReference.getId();
+		internalName = documentReference.getInternalName();
 		caption = documentReference.getCaption(adLanguage);
 		windowId = documentReference.getWindowId();
 		documentsCount = documentReference.getDocumentsCount();

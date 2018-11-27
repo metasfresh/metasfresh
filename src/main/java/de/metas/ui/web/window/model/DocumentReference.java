@@ -38,6 +38,7 @@ import lombok.Value;
 public final class DocumentReference
 {
 	private final String id;
+	private final String internalName;
 	private final ITranslatableString caption;
 	private final WindowId windowId;
 	private final int documentsCount;
@@ -47,6 +48,7 @@ public final class DocumentReference
 	@Builder
 	private DocumentReference(
 			@NonNull final String id,
+			@Nullable final String internalName,
 			@NonNull final ITranslatableString caption,
 			@NonNull final WindowId windowId,
 			final int documentsCount,
@@ -54,6 +56,7 @@ public final class DocumentReference
 			@Nullable final Duration loadDuration)
 	{
 		this.id = id;
+		this.internalName = internalName;
 		this.caption = caption;
 		this.windowId = windowId;
 		this.documentsCount = documentsCount;
