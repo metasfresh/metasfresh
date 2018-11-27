@@ -22,7 +22,7 @@ import Link from './Link';
 import List from './List/List';
 import Lookup from './Lookup/Lookup';
 
-class RawWidget extends Component {
+export class RawWidget extends Component {
   constructor(props) {
     super(props);
 
@@ -120,7 +120,7 @@ class RawWidget extends Component {
       if (e.key === 'Enter') {
         e.preventDefault();
       }
-      this.handlePatch(property, value);
+      return this.handlePatch(property, value);
     }
   };
 
@@ -253,6 +253,7 @@ class RawWidget extends Component {
       dateFormat,
       initialFocus,
     } = this.props;
+
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
 
