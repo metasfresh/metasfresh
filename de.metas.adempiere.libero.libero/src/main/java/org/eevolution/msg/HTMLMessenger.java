@@ -58,7 +58,7 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.model.MStorage;
 import org.compiere.util.Env;
-import org.eevolution.model.MPPOrder;
+import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.reasoner.StorageReasoner;
 import org.eevolution.model.wrapper.BOMLineWrapper;
 import org.eevolution.model.wrapper.BOMWrapper;
@@ -230,7 +230,7 @@ public class HTMLMessenger {
 		return MessageFormat.format(LENGTHTRANSFORM_INFO_PATTERN, obj);	    	
 	}
 
-	public String getMfcOrderInfo(MPPOrder o) {
+	public String getMfcOrderInfo(I_PP_Order o) {
 
 		MProject pj = new MProject(Env.getCtx(), o.getC_Project_ID(), null);
 		MProduct pd = new MProduct(Env.getCtx(), o.getM_Product_ID(), null);
