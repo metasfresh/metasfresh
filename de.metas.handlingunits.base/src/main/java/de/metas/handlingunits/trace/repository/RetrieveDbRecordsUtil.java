@@ -297,6 +297,11 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trace_ID, query.getHuTraceEventId().getAsInt());
 			queryIsEmpty = false;
 		}
+		if(query.getType() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_HUTraceType, query.getType().getCode());
+			queryIsEmpty = false;
+		}
 		if (query.getOrgId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_AD_Org_ID, query.getOrgId());
