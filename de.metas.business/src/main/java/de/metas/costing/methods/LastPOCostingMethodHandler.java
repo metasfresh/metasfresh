@@ -23,8 +23,6 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.CostingMethodHandlerTemplate;
-import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.CurrentCost;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;

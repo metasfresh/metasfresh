@@ -1,4 +1,4 @@
-package org.compiere.acct;
+package de.metas.costing.methods;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -22,10 +22,10 @@ import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.CostingMethodHandler;
-import de.metas.costing.CostingMethodHandlerUtils;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.methods.CostingMethodHandler;
+import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;

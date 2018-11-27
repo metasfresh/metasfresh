@@ -1,4 +1,4 @@
-package de.metas.costing;
+package de.metas.costing.methods;
 
 import java.util.Optional;
 import java.util.Set;
@@ -7,6 +7,13 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailVoidRequest;
+import de.metas.costing.CostSegment;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
 
