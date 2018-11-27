@@ -249,7 +249,7 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Sperre Verkauf Grund.
+	 * Set Exclusion From Sale Reason.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -258,7 +258,7 @@ public interface I_C_BPartner_Product
 	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason);
 
 	/**
-	 * Get Sperre Verkauf Grund.
+	 * Get Exclusion From Sale Reason.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -272,18 +272,18 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_ExclusionFromSaleReason = "ExclusionFromSaleReason";
 
 	/**
-	 * Set Zutaten.
+	 * Set Ingredients.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setIngredients (java.lang.String Ingredients);
 
 	/**
-	 * Get Zutaten.
+	 * Get Ingredients.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -391,35 +391,6 @@ public interface I_C_BPartner_Product
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_IsExcludedFromSale = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "IsExcludedFromSale", null);
     /** Column name IsExcludedFromSale */
     public static final String COLUMNNAME_IsExcludedFromSale = "IsExcludedFromSale";
-
-	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
-	 *
-	 * <br>Type: PAttribute
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
-
-	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
-	 *
-	 * <br>Type: PAttribute
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_AttributeSetInstance_ID();
-
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
-
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
-
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_AttributeSetInstance>(I_C_BPartner_Product.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
 	 * Set Produkt.
