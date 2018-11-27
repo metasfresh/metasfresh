@@ -65,6 +65,9 @@ public class MProductImportTableSqlUpdater
 	@Builder(buildMethodName = "updateIProduct")
 	private void updateMProductImportTable(@NonNull final String whereClause, @NonNull final Properties ctx)
 	{
+		targetTableName = I_I_Product.Table_Name;
+		valueColumnName = I_I_Product.COLUMNNAME_Value;
+		
 		dbUpdateBPartners(whereClause);
 
 		dbUpdateManufacturers(whereClause);
