@@ -1,13 +1,11 @@
 package org.eevolution.api;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.costing.CostAmount;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.material.planning.pporder.PPOrderId;
 import lombok.Builder;
@@ -53,17 +51,6 @@ public final class PPOrderCosts
 	{
 		this.orderId = orderId;
 		this.costs = Maps.uniqueIndex(costs, PPOrderCost::getCostSegmentAndElement);
-	}
-
-	public Optional<CostAmount> getByCostSegmentAndElement(@NonNull final CostSegmentAndElement costSegmentAndElement)
-	{
-		final PPOrderCost cost = costs.get(costSegmentAndElement);
-		if (cost == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(cost.getPrice());
 	}
 
 	public void forEach(@NonNull final Consumer<PPOrderCost> action)
