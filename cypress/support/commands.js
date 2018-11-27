@@ -180,6 +180,9 @@ Cypress.Commands.add(
     });
 });
 
+/**
+ * Select the given list value in a static list.
+ */
 Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
   describe('Select value in list field', function() {
       cy.get(`.form-field-${fieldName}`)
@@ -232,9 +235,17 @@ Cypress.Commands.add('pressAddNewButton', () => {
   })
 });
 
-/* ts: I don't see a nicer way to address this button; */
+/*
+ * Press an overlay's "Done" button. Fail if there is a confirm dialog since that means the record could not be saved. 
+ */
 Cypress.Commands.add('pressDoneButton', () => {
   describe('Press an overlay\'s done-button', function() {
+
+    // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
+    // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
+    cy.on('window:confirm', (str) => {
+      expect(str).to.eq('Everything is awesome and the data record is saved')
+    });
 
     //webui.modal.actions.done
     const doneText = Cypress.messages.modal.actions.done;
