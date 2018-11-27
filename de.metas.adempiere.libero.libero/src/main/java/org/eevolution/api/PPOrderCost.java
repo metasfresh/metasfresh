@@ -1,8 +1,7 @@
 package org.eevolution.api;
 
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostElementId;
-import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -46,9 +45,7 @@ public class PPOrderCost
 	int repoId;
 
 	@NonNull
-	CostSegment costSegment;
-	@NonNull
-	CostElementId costElementId;
+	CostSegmentAndElement costSegmentAndElement;
 
 	@NonNull
 	CostAmount price;

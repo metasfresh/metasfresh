@@ -74,6 +74,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -228,15 +229,17 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	protected void rollup(MProduct product, I_PP_Product_BOM bom)
 	{
-		for (final CostElement element : getCostElements())
+		for (final CostElement costElement : getCostElements())
 		{
-			for (final CurrentCost cost : getCosts(product, element.getId()))
+			final CostElementId costElementId = costElement.getId();
+			
+			for (final CurrentCost cost : getCosts(product, costElementId))
 			{
 				log.info("Calculate Lower Cost for: {}", bom);
-				final CostAmount price = getCurrentCostPriceLL(bom, element);
-				log.info("{} Cost Low Level: {}", element, price);
+				final CostAmount price = getCurrentCostPriceLL(bom, costElement);
+				log.info("{} Cost Low Level: {}", costElement, price);
 				cost.setCurrentCostPriceLL(price);
-				updateCoProductCosts(bom, cost, element);
+				updateCoProductCosts(bom, cost, costElementId);
 				currentCostsRepo.save(cost);
 			} // for each Costs
 		} // for Elements
@@ -250,7 +253,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	 * @param baseCost base product cost (BOM Cost)
 	 * @param costElement
 	 */
-	private void updateCoProductCosts(final I_PP_Product_BOM bom, final CurrentCost baseCost, final CostElement costElement)
+	private void updateCoProductCosts(final I_PP_Product_BOM bom, final CurrentCost baseCost, final CostElementId costElementId)
 	{
 		// Skip if not BOM found
 		if (bom == null)
@@ -273,7 +276,7 @@ public class RollupBillOfMaterial extends JavaProcess
 			// Get/Create Cost
 			final ProductId productId = ProductId.ofRepoId(bomline.getM_Product_ID());
 			final CostSegment costSegment = createCostSegment(baseCost.getCostSegment(), productId);
-			final CurrentCost cost = currentCostsRepo.getOrCreate(costSegment, costElement.getId());
+			final CurrentCost cost = currentCostsRepo.getOrCreate(costSegment.withCostElementId(costElementId));
 			cost.setCurrentCostPriceLL(costPrice);
 			currentCostsRepo.save(cost);
 
@@ -371,19 +374,19 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	private Collection<CurrentCost> getCosts(final I_M_Product product, final CostElementId costElementId)
 	{
-		final CostSegment costSegment = createCostSegment(product);
-		final CurrentCost cost = currentCostsRepo.getOrNull(costSegment, costElementId);
+		final CostSegmentAndElement costSegmentAndElement = createCostSegmentAndElement(product, costElementId);
+		final CurrentCost cost = currentCostsRepo.getOrNull(costSegmentAndElement);
 		return cost != null ? ImmutableList.of(cost) : ImmutableList.of();
 	}
 
-	private CostSegment createCostSegment(final I_M_Product product)
+	private CostSegmentAndElement createCostSegmentAndElement(final I_M_Product product, final CostElementId costElementId)
 	{
 		final AcctSchema as = getAcctSchema();
 
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, as);
 
-		return CostSegment.builder()
+		return CostSegmentAndElement.builder()
 				.costingLevel(costingLevel)
 				.acctSchemaId(as.getId())
 				.costTypeId(p_M_CostType_ID)
@@ -391,6 +394,7 @@ public class RollupBillOfMaterial extends JavaProcess
 				.clientId(ClientId.ofRepoId(product.getAD_Client_ID()))
 				.orgId(p_AD_Org_ID)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.costElementId(costElementId)
 				.build();
 
 	}

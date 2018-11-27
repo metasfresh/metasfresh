@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,6 +36,7 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -80,9 +80,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	private ICostElementRepository costElementRepo;
 
 	@Override
-	public CurrentCost getOrNull(@NonNull final CostSegment costSegment, final CostElementId costElementId)
+	public CurrentCost getOrNull(@NonNull CostSegmentAndElement costSegmentAndElement)
 	{
-		final I_M_Cost costRecord = getCostRecordOrNull(costSegment, costElementId);
+		final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
 		if (costRecord == null)
 		{
 			return null;
@@ -91,17 +91,17 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		return toCurrentCost(costRecord);
 	}
 
-	private I_M_Cost getCostRecordOrNull(@NonNull final CostSegment costSegment, @NonNull final CostElementId costElementId)
+	private I_M_Cost getCostRecordOrNull(@NonNull CostSegmentAndElement costSegmentAndElement)
 	{
-		return retrieveCostRecords(costSegment, costElementId)
+		return retrieveCostRecords(costSegmentAndElement)
 				.create()
 				.firstOnly(I_M_Cost.class);
 	}
 
-	private IQueryBuilder<I_M_Cost> retrieveCostRecords(@NonNull final CostSegment costSegment, @NonNull final CostElementId costElementId)
+	private IQueryBuilder<I_M_Cost> retrieveCostRecords(@NonNull CostSegmentAndElement costSegmentAndElement)
 	{
-		return retrieveCostRecords(costSegment)
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementId);
+		return retrieveCostRecords(costSegmentAndElement.toCostSegment())
+				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID, costSegmentAndElement.getCostElementId());
 	}
 
 	private IQueryBuilder<I_M_Cost> retrieveCostRecords(@NonNull final CostSegment costSegment)
@@ -116,15 +116,17 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public CurrentCost getOrCreate(@NonNull final CostSegment costSegment, final CostElementId costElementId)
+	public CurrentCost getOrCreate(@NonNull CostSegmentAndElement costSegmentAndElement)
 	{
-		final I_M_Cost costRecord = getCostRecordOrNull(costSegment, costElementId);
+		final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
 		if (costRecord != null)
 		{
 			return toCurrentCost(costRecord);
 		}
-
-		return create(costSegment, costElementId);
+		else
+		{
+			return create(costSegmentAndElement);
+		}
 	}
 
 	@Override
@@ -153,15 +155,15 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public CurrentCost create(final CostSegment costSegment, @NonNull final CostElementId costElementId)
+	public CurrentCost create(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		final I_M_Cost costRecord = InterfaceWrapperHelper.newInstance(I_M_Cost.class);
-		costRecord.setAD_Org_ID(costSegment.getOrgId().getRepoId());
-		costRecord.setC_AcctSchema_ID(costSegment.getAcctSchemaId().getRepoId());
-		costRecord.setM_CostType_ID(costSegment.getCostTypeId().getRepoId());
-		costRecord.setM_Product_ID(costSegment.getProductId().getRepoId());
-		costRecord.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId().getRepoId());
-		costRecord.setM_CostElement_ID(costElementId.getRepoId());
+		costRecord.setAD_Org_ID(costSegmentAndElement.getOrgId().getRepoId());
+		costRecord.setC_AcctSchema_ID(costSegmentAndElement.getAcctSchemaId().getRepoId());
+		costRecord.setM_CostType_ID(costSegmentAndElement.getCostTypeId().getRepoId());
+		costRecord.setM_Product_ID(costSegmentAndElement.getProductId().getRepoId());
+		costRecord.setM_AttributeSetInstance_ID(costSegmentAndElement.getAttributeSetInstanceId().getRepoId());
+		costRecord.setM_CostElement_ID(costSegmentAndElement.getCostElementId().getRepoId());
 
 		costRecord.setCurrentCostPrice(BigDecimal.ZERO);
 		costRecord.setCurrentCostPriceLL(BigDecimal.ZERO);
@@ -171,15 +173,15 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		costRecord.setCumulatedAmt(BigDecimal.ZERO);
 		costRecord.setCumulatedQty(BigDecimal.ZERO);
 
-		InterfaceWrapperHelper.save(costRecord);
+		InterfaceWrapperHelper.saveRecord(costRecord);
 
 		return toCurrentCost(costRecord);
 	}
 
 	@Override
-	public void createIfMissing(@NonNull final CostSegment costSegment, final CostElementId costElementId)
+	public void createIfMissing(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		getOrCreate(costSegment, costElementId);
+		getOrCreate(costSegmentAndElement);
 	}
 
 	@Override
@@ -243,14 +245,14 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public void createDefaultProductCosts(final I_M_Product product)
 	{
-		forEachCostSegmentAndElement(product, (costSegment, costElement) -> createIfMissing(costSegment, costElement.getId()));
+		forEachCostSegmentAndElement(product, this::createIfMissing);
 	}
 
 	@Override
 	public void deleteForProduct(final I_M_Product product)
 	{
-		forEachCostSegmentAndElement(product, (costSegment, costElement) -> {
-			final I_M_Cost costRecord = getCostRecordOrNull(costSegment, costElement.getId());
+		forEachCostSegmentAndElement(product, costSegmentAndElement -> {
+			final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
 			if (costRecord != null)
 			{
 				InterfaceWrapperHelper.delete(costRecord);
@@ -258,7 +260,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		});
 	}
 
-	private void forEachCostSegmentAndElement(final I_M_Product product, final BiConsumer<CostSegment, CostElement> consumer)
+	private void forEachCostSegmentAndElement(final I_M_Product product, final Consumer<CostSegmentAndElement> consumer)
 	{
 		final ClientId clientId = ClientId.ofRepoId(product.getAD_Client_ID());
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
@@ -290,7 +292,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 						.build();
 
-				costElements.forEach(costElement -> consumer.accept(costSegment, costElement));
+				costElements.forEach(costElement -> consumer.accept(costSegment.withCostElementId(costElement.getId())));
 			}
 			else if (costingLevel == CostingLevel.Organization)
 			{
@@ -307,7 +309,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 							.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 							.build();
 
-					costElements.forEach(costElement -> consumer.accept(costSegment, costElement));
+					costElements.forEach(costElement -> consumer.accept(costSegment.withCostElementId(costElement.getId())));
 				}
 			}
 			else
@@ -319,11 +321,10 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 	@Override
 	public void updateCostRecord(
-			@NonNull final CostSegment costSegment,
-			@NonNull final CostElementId costElementId,
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
 			@NonNull final Consumer<I_M_Cost> updater)
 	{
-		final I_M_Cost costRecord = getCostRecordOrNull(costSegment, costElementId);
+		final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
 		if (costRecord == null)
 		{
 			return;

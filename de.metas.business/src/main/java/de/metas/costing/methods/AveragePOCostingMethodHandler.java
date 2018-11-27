@@ -136,7 +136,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;
-		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegment(), request.getCostElementId());
+		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
 		if (isInboundTrx)
 		{
 			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate());

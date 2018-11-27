@@ -22,7 +22,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
-import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
@@ -103,15 +103,13 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 	{
 		record.setIsActive(true);
 
-		final CostSegment costSegment = from.getCostSegment();
-		record.setAD_Org_ID(costSegment.getOrgId().getRepoId());
-		record.setC_AcctSchema_ID(costSegment.getAcctSchemaId().getRepoId());
-		record.setM_CostType_ID(costSegment.getCostTypeId().getRepoId());
-		record.setM_Product_ID(costSegment.getProductId().getRepoId());
-		record.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId().getRepoId());
-
-		final CostElementId costElementId = from.getCostElementId();
-		record.setM_CostElement_ID(costElementId.getRepoId());
+		final CostSegmentAndElement costSegmentAndElement = from.getCostSegmentAndElement();
+		record.setAD_Org_ID(costSegmentAndElement.getOrgId().getRepoId());
+		record.setC_AcctSchema_ID(costSegmentAndElement.getAcctSchemaId().getRepoId());
+		record.setM_CostType_ID(costSegmentAndElement.getCostTypeId().getRepoId());
+		record.setM_Product_ID(costSegmentAndElement.getProductId().getRepoId());
+		record.setM_AttributeSetInstance_ID(costSegmentAndElement.getAttributeSetInstanceId().getRepoId());
+		record.setM_CostElement_ID(costSegmentAndElement.getCostElementId().getRepoId());
 
 		final CostAmount price = from.getPrice();
 		record.setCurrentCostPrice(price.getValue());
@@ -128,7 +126,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		final AcctSchema acctSchema = acctSchemasRepo.getById(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()));
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 
-		final CostSegment costSegment = CostSegment.builder()
+		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
 				.costingLevel(productCostingBL.getCostingLevel(productId, acctSchema))
 				.acctSchemaId(acctSchema.getId())
 				.costTypeId(acctSchema.getCosting().getCostTypeId())
@@ -136,16 +134,14 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.build();
-
-		final CostElementId costElementId = CostElementId.ofRepoId(record.getM_CostElement_ID());
 
 		final CostAmount price = CostAmount.of(record.getCurrentCostPrice(), acctSchema.getCurrencyId());
 
 		return PPOrderCost.builder()
 				.repoId(record.getPP_Order_Cost_ID())
-				.costSegment(costSegment)
-				.costElementId(costElementId)
+				.costSegmentAndElement(costSegmentAndElement)
 				.price(price)
 				.build();
 	}

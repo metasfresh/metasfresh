@@ -12,6 +12,7 @@ import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CurrentCost;
@@ -76,13 +77,13 @@ public class CostingMethodHandlerUtils
 				.build();
 	}
 
-	public CostSegment extractCostSegment(final CostDetailCreateRequest request)
+	public CostSegmentAndElement extractCostSegmentAndElement(final CostDetailCreateRequest request)
 	{
 		final AcctSchema acctSchema = acctSchemaRepo.getById(request.getAcctSchemaId());
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), acctSchema);
 		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
 
-		return CostSegment.builder()
+		return CostSegmentAndElement.builder()
 				.costingLevel(costingLevel)
 				.acctSchemaId(request.getAcctSchemaId())
 				.costTypeId(costTypeId)
@@ -90,6 +91,7 @@ public class CostingMethodHandlerUtils
 				.clientId(request.getClientId())
 				.orgId(request.getOrgId())
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.costElementId(request.getCostElementId())
 				.build();
 	}
 
@@ -141,13 +143,13 @@ public class CostingMethodHandlerUtils
 
 	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
-		final CostSegment costSegment = extractCostSegment(request);
-		return getCurrentCost(costSegment, request.getCostElementId());
+		final CostSegmentAndElement costSegmentAndElement = extractCostSegmentAndElement(request);
+		return getCurrentCost(costSegmentAndElement);
 	}
 
-	public final CurrentCost getCurrentCost(final CostSegment costSegment, final CostElementId costElementId)
+	public final CurrentCost getCurrentCost(final CostSegmentAndElement costSegmentAndElement)
 	{
-		return currentCostsRepo.getOrCreate(costSegment, costElementId);
+		return currentCostsRepo.getOrCreate(costSegmentAndElement);
 	}
 
 	public final CostAmount getCurrentCostPrice(final CostDetailCreateRequest request)
@@ -159,6 +161,5 @@ public class CostingMethodHandlerUtils
 	{
 		currentCostsRepo.save(currentCost);
 	}
-
 
 }

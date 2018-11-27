@@ -29,13 +29,13 @@ import org.compiere.model.I_M_Product;
 
 public interface ICurrentCostsRepository
 {
-	CurrentCost getOrNull(CostSegment costSegment, CostElementId costElementId);
+	CurrentCost getOrNull(CostSegmentAndElement costSegmentAndElement);
 
-	CurrentCost getOrCreate(CostSegment costSegment, CostElementId costElementId);
+	CurrentCost getOrCreate(CostSegmentAndElement costSegmentAndElement);
 
-	CurrentCost create(CostSegment costSegment, CostElementId costElementId);
+	CurrentCost create(CostSegmentAndElement costSegmentAndElement);
 
-	void createIfMissing(CostSegment costSegment, CostElementId costElementId);
+	void createIfMissing(CostSegmentAndElement costSegmentAndElement);
 
 	void createDefaultProductCosts(I_M_Product product);
 
@@ -45,5 +45,5 @@ public interface ICurrentCostsRepository
 
 	CostResult getByCostSegmentAndCostingMethod(CostSegment costSegment, CostingMethod costingMethod);
 
-	void updateCostRecord(CostSegment costSegment, CostElementId costElementId, Consumer<I_M_Cost> updater);
+	void updateCostRecord(CostSegmentAndElement costSegmentAndElement, Consumer<I_M_Cost> updater);
 }

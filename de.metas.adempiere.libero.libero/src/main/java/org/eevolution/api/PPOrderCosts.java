@@ -8,15 +8,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostElementId;
-import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.material.planning.pporder.PPOrderId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import lombok.Value;
 
 /*
  * #%L
@@ -54,17 +52,11 @@ public final class PPOrderCosts
 			@NonNull final Collection<PPOrderCost> costs)
 	{
 		this.orderId = orderId;
-		this.costs = Maps.uniqueIndex(costs, PPOrderCosts::extractCostSegmentAndElement);
+		this.costs = Maps.uniqueIndex(costs, PPOrderCost::getCostSegmentAndElement);
 	}
 
-	private static CostSegmentAndElement extractCostSegmentAndElement(final PPOrderCost cost)
+	public Optional<CostAmount> getByCostSegmentAndElement(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		return CostSegmentAndElement.of(cost.getCostSegment(), cost.getCostElementId());
-	}
-
-	public Optional<CostAmount> getByCostSegmentAndElement(final CostSegment costSegment, final CostElementId costElementId)
-	{
-		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.of(costSegment, costElementId);
 		final PPOrderCost cost = costs.get(costSegmentAndElement);
 		if (cost == null)
 		{
@@ -77,12 +69,5 @@ public final class PPOrderCosts
 	public void forEach(@NonNull final Consumer<PPOrderCost> action)
 	{
 		costs.values().forEach(action);
-	}
-
-	@Value(staticConstructor = "of")
-	private static class CostSegmentAndElement
-	{
-		final CostSegment costSegment;
-		final CostElementId costElementId;
 	}
 }

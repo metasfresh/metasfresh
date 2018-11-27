@@ -101,4 +101,9 @@ public class CostSegment
 				.costingLevel(costingLevel)
 				.build();
 	}
+
+	public CostSegmentAndElement withCostElementId(@NonNull final CostElementId costElementId)
+	{
+		return CostSegmentAndElement.of(this, costElementId);
+	}
 }

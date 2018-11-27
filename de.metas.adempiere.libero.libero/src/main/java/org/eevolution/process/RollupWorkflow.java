@@ -49,6 +49,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -233,7 +234,8 @@ public class RollupWorkflow extends JavaProcess
 
 		final List<RoutingActivitySegmentCost> costs = costElements.stream()
 				.filter(costElement -> !costElement.isActivityControlElement())
-				.flatMap(costElement -> computeRoutingSegmentCostsAndStream(context.getRouting(), costSegment, costElement.getId()))
+				.map(costElement -> costSegment.withCostElementId(costElement.getId()))
+				.flatMap(costSegmentAndElement -> computeRoutingSegmentCostsAndStream(context.getRouting(), costSegmentAndElement))
 				.collect(ImmutableList.toImmutableList());
 
 		//
@@ -272,7 +274,9 @@ public class RollupWorkflow extends JavaProcess
 
 	private BiConsumer<CostElementId, BigDecimal> updateCostRecord(final CostSegment costSegment)
 	{
-		return (costElementId, costValue) -> currentCostsRepo.updateCostRecord(costSegment, costElementId, costRecord -> costRecord.setCurrentCostPrice(costValue));
+		return (costElementId, costValue) -> currentCostsRepo.updateCostRecord(
+				costSegment.withCostElementId(costElementId),
+				costRecord -> costRecord.setCurrentCostPrice(costValue));
 	}
 
 	private RoutingDurationsAndYield computeRoutingDurationsAndYield(final PPRouting routing)
@@ -282,29 +286,31 @@ public class RollupWorkflow extends JavaProcess
 		return result;
 	}
 
-	private Stream<RoutingActivitySegmentCost> computeRoutingSegmentCostsAndStream(final PPRouting routing, final CostSegment costSegment, final CostElementId costElementId)
+	private Stream<RoutingActivitySegmentCost> computeRoutingSegmentCostsAndStream(final PPRouting routing, final CostSegmentAndElement costSegmentAndElement)
 	{
-		final int precision = getCostingPrecision(costSegment);
+		final int precision = getCostingPrecision(costSegmentAndElement.getAcctSchemaId());
 
 		return routing.getActivities()
 				.stream()
-				.map(activity -> computeRoutingActivitySegmentCost(activity, costSegment, costElementId, precision));
+				.map(activity -> computeRoutingActivitySegmentCost(activity, costSegmentAndElement, precision));
 	}
 
-	private int getCostingPrecision(final CostSegment costSegment)
+	private int getCostingPrecision(final AcctSchemaId acctSchemaId)
 	{
-		final AcctSchemaId acctSchemaId = costSegment.getAcctSchemaId();
 		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
 		final int precision = acctSchema.getCosting().getCostingPrecision();
 		return precision;
 	}
 
-	private RoutingActivitySegmentCost computeRoutingActivitySegmentCost(final PPRoutingActivity activity, final CostSegment costSegment, final CostElementId costElementId, final int precision)
+	private RoutingActivitySegmentCost computeRoutingActivitySegmentCost(
+			final PPRoutingActivity activity,
+			final CostSegmentAndElement costSegmentAndElement,
+			final int precision)
 	{
 		final ResourceId stdResourceId = activity.getResourceId();
-		final CostSegment resourceCostSegment = createCostSegment(costSegment, stdResourceId);
+		final CostSegmentAndElement resourceCostSegmentAndElement = createCostSegment(costSegmentAndElement, stdResourceId);
 
-		final CostAmount rate = currentCostsRepo.getOrCreate(resourceCostSegment, costElementId)
+		final CostAmount rate = currentCostsRepo.getOrCreate(resourceCostSegmentAndElement)
 				.getCurrentCostPriceTotal()
 				.roundToPrecisionIfNeeded(precision);
 
@@ -314,7 +320,7 @@ public class RollupWorkflow extends JavaProcess
 		final CostAmount cost = rate.multiply(durationBD)
 				.roundToPrecisionIfNeeded(precision);
 
-		return RoutingActivitySegmentCost.of(cost, activity.getId(), costElementId);
+		return RoutingActivitySegmentCost.of(cost, activity.getId(), costSegmentAndElement.getCostElementId());
 	}
 
 	private CostSegment createCostSegment(final I_M_Product product)
@@ -333,15 +339,15 @@ public class RollupWorkflow extends JavaProcess
 				.build();
 	}
 
-	private CostSegment createCostSegment(final CostSegment costSegment, final ResourceId resourceId)
+	private CostSegmentAndElement createCostSegment(final CostSegmentAndElement costSegmentAndElement, final ResourceId resourceId)
 	{
 		final I_M_Product product = resourceProductService.getProductByResourceId(resourceId);
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
-		final AcctSchema acctSchema = acctSchemasRepo.getById(costSegment.getAcctSchemaId());
+		final AcctSchema acctSchema = acctSchemasRepo.getById(costSegmentAndElement.getAcctSchemaId());
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(product, acctSchema);
 
-		return costSegment.withProductIdAndCostingLevel(productId, costingLevel);
+		return costSegmentAndElement.withProductIdAndCostingLevel(productId, costingLevel);
 	}
 
 	/**

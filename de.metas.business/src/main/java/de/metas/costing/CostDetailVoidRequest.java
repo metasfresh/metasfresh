@@ -32,9 +32,7 @@ import lombok.Value;
 public class CostDetailVoidRequest
 {
 	@NonNull
-	CostSegment costSegment;
-	@NonNull
-	CostElementId costElementId;
+	CostSegmentAndElement costSegmentAndElement;
 	@NonNull
 	CostAmount amt;
 	@NonNull

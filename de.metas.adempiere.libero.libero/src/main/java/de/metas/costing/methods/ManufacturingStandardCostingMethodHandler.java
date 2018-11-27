@@ -25,15 +25,13 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
-import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
-import de.metas.costing.methods.CostingMethodHandler;
-import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
@@ -164,9 +162,8 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 	private CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
-		final CostSegment costSegment = utils.extractCostSegment(request);
-		final CostElementId costElementId = request.getCostElementId();
-		return currentCostsRepo.getOrCreate(costSegment, costElementId);
+		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
+		return currentCostsRepo.getOrCreate(costSegmentAndElement);
 	}
 
 	public CostDetailCreateResult createIssueOrReceipt(final CostDetailCreateRequest request)
@@ -205,8 +202,8 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final Quantity qty = convertDurationToQuantity(duration, request.getProductId());
 
-		final CostSegment costSegment = utils.extractCostSegment(request);
-		final CostAmount price = getProductActualCostPrice(costSegment, costElement.getId());
+		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
+		final CostAmount price = getProductActualCostPrice(costSegmentAndElement);
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
 		final CurrentCost currentCosts = getCurrentCost(request);
@@ -229,8 +226,8 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = request.getQty();
 
 		final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
-		final CostSegment costSegment = utils.extractCostSegment(request);
-		final CostAmount price = getProductActualCostPrice(costSegment, request.getCostElementId());
+		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
+		final CostAmount price = getProductActualCostPrice(costSegmentAndElement);
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
 		final CurrentCost currentCosts = getCurrentCost(request);
@@ -457,11 +454,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		return Quantity.of(durationBD, durationUOM);
 	}
 
-	private CostAmount getProductActualCostPrice(@NonNull final CostSegment costSegment, @NonNull final CostElementId costElementId)
+	private CostAmount getProductActualCostPrice(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		final CurrentCost cost = currentCostsRepo.getOrCreate(costSegment, costElementId);
+		final CurrentCost cost = currentCostsRepo.getOrCreate(costSegmentAndElement);
 		final CostAmount price = cost.getCurrentCostPriceTotal();
-		return roundCost(price, costSegment.getAcctSchemaId());
+		return roundCost(price, costSegmentAndElement.getAcctSchemaId());
 	}
 
 	private CostAmount roundCost(final CostAmount price, final AcctSchemaId acctSchemaId)

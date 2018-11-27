@@ -168,7 +168,7 @@ public class CreateCostElement extends JavaProcess
 				for (final I_M_CostElement element : getElements())
 				{
 					final CostElementId costElementId = CostElementId.ofRepoId(element.getM_CostElement_ID());
-					currentCostsRepo.createIfMissing(costSegment, costElementId);
+					currentCostsRepo.createIfMissing(costSegment.withCostElementId(costElementId));
 					count_all++;
 				}
 			}

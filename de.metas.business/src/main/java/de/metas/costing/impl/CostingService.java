@@ -32,6 +32,7 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
@@ -210,7 +211,7 @@ public class CostingService implements ICostingService
 		final ProductId productId = costDetail.getProductId();
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchema);
 
-		final CostSegment costSegment = CostSegment.builder()
+		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
 				.costingLevel(costingLevel)
 				.acctSchemaId(acctSchemaId)
 				.costTypeId(costTypeId)
@@ -218,16 +219,14 @@ public class CostingService implements ICostingService
 				.clientId(costDetail.getClientId())
 				.orgId(costDetail.getOrgId())
 				.attributeSetInstanceId(costDetail.getAttributeSetInstanceId())
+				.costElementId(costDetail.getCostElementId())
 				.build();
-
-		final CostElementId costElementId = costDetail.getCostElementId();
 
 		final CostAmount amt = costDetail.getAmt();
 		final Quantity qty = costDetail.getQty();
 
 		return CostDetailVoidRequest.builder()
-				.costSegment(costSegment)
-				.costElementId(costElementId)
+				.costSegmentAndElement(costSegmentAndElement)
 				.amt(amt)
 				.qty(qty)
 				.build();
