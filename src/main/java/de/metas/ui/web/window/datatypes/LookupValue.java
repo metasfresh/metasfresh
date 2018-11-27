@@ -103,7 +103,7 @@ public abstract class LookupValue
 		}
 	}
 
-	public static final LookupValue fromObject(final Object id, final String displayName)
+	public static final LookupValue fromObject(@Nullable final Object id, final String displayName)
 	{
 		if (id == null)
 		{
@@ -121,20 +121,25 @@ public abstract class LookupValue
 		}
 	}
 
-	public static final LookupValue fromNamePair(final NamePair namePair)
+	public static final LookupValue fromNamePair(@Nullable final NamePair namePair)
 	{
 		final String adLanguage = null;
 		final LookupValue defaultValue = null;
 		return fromNamePair(namePair, adLanguage, defaultValue);
 	}
 
-	public static final LookupValue fromNamePair(final NamePair namePair, final String adLanguage)
+	public static final LookupValue fromNamePair(
+			@Nullable final NamePair namePair, 
+			@Nullable final String adLanguage)
 	{
 		final LookupValue defaultValue = null;
 		return fromNamePair(namePair, adLanguage, defaultValue);
 	}
 
-	public static final LookupValue fromNamePair(final NamePair namePair, final String adLanguage, final LookupValue defaultValue)
+	public static final LookupValue fromNamePair(
+			@Nullable final NamePair namePair, 
+			@Nullable final String adLanguage, 
+			@Nullable final LookupValue defaultValue)
 	{
 		if (namePair == null)
 		{
