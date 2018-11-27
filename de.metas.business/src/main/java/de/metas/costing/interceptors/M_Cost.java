@@ -6,7 +6,9 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.ModelValidator;
@@ -15,7 +17,6 @@ import org.springframework.stereotype.Component;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
-import de.metas.costing.CostElementType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.IProductCostingBL;
@@ -51,8 +52,8 @@ public class M_Cost
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_Cost costRecord)
 	{
-		CostElementId costElementId = CostElementId.ofRepoId(costRecord.getM_CostElement_ID());
-		final CostElement ce = Adempiere.getBean(ICostElementRepository.class).getById(costElementId);
+		final CostElementId costElementId = CostElementId.ofRepoId(costRecord.getM_CostElement_ID());
+		final CostElement costElement = Adempiere.getBean(ICostElementRepository.class).getById(costElementId);
 		final boolean userEntry = InterfaceWrapperHelper.isUIAction(costRecord);
 
 		// Check if data entry makes sense
@@ -61,36 +62,35 @@ public class M_Cost
 			final ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
 			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRecord.getC_AcctSchema_ID());
 			final CostingLevel costingLevel = Services.get(IProductCostingBL.class).getCostingLevel(productId, acctSchemaId);
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(costRecord.getM_AttributeSetInstance_ID());
 			if (CostingLevel.Client.equals(costingLevel))
 			{
-				if (costRecord.getAD_Org_ID() > 0 || costRecord.getM_AttributeSetInstance_ID() > 0)
+				final OrgId orgId = OrgId.ofRepoIdOrAny(costRecord.getAD_Org_ID());
+				if (orgId.isRegular() || asiId.isRegular())
 				{
 					throw new AdempiereException("@CostingLevelClient@");
 				}
 			}
 			else if (CostingLevel.BatchLot.equals(costingLevel))
 			{
-				if (costRecord.getM_AttributeSetInstance_ID() <= 0 && ce.isMaterialCostingMethod())
+				if (asiId.isNone() && costElement != null && costElement.isMaterialCostingMethod())
 				{
 					throw new FillMandatoryException(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID);
 				}
-				if (costRecord.getAD_Org_ID() != 0)
-				{
-					costRecord.setAD_Org_ID(0);
-				}
+				costRecord.setAD_Org_ID(OrgId.ANY.getRepoId());
 			}
 		}
 
 		// Cannot enter calculated
-		if (userEntry && ce != null && ce.isCalculated())
+		if (userEntry && costElement != null && !costElement.isAllowUserChangingCurrentCosts())
 		{
 			throw new AdempiereException("@IsCalculated@");
 		}
 
 		// Percentage
-		if (ce != null)
+		if (costElement != null)
 		{
-			if ((ce.isCalculated() || CostElementType.Material.equals(ce.getCostElementType())) && costRecord.getPercent() != 0)
+			if ((!costElement.isAllowUserChangingCurrentCosts() || costElement.isMaterialCostingMethod()) && costRecord.getPercent() != 0)
 			{
 				costRecord.setPercent(0);
 			}

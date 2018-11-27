@@ -35,7 +35,7 @@ public class CostElement
 	String name;
 	CostElementType costElementType;
 	CostingMethod costingMethod;
-	boolean calculated;
+	boolean allowUserChangingCurrentCosts;
 	ClientId clientId;
 
 	@Builder
@@ -44,14 +44,14 @@ public class CostElement
 			@NonNull final String name,
 			@NonNull final CostElementType costElementType,
 			@NonNull final CostingMethod costingMethod,
-			final boolean calculated,
+			final boolean allowUserChangingCurrentCosts,
 			@NonNull final ClientId clientId)
 	{
 		this.id = id;
 		this.name = name;
 		this.costElementType = costElementType;
 		this.costingMethod = costingMethod;
-		this.calculated = calculated;
+		this.allowUserChangingCurrentCosts = allowUserChangingCurrentCosts;
 		this.clientId = clientId;
 	}
 

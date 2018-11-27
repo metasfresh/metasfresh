@@ -128,7 +128,7 @@ public class CostElementRepository implements ICostElementRepository
 				.name(costElement.getName())
 				.costingMethod(CostingMethod.ofNullableCode(costElement.getCostingMethod()))
 				.costElementType(CostElementType.ofCode(costElement.getCostElementType()))
-				.calculated(costElement.isCalculated())
+				.allowUserChangingCurrentCosts(!costElement.isCalculated())
 				.clientId(ClientId.ofRepoId(costElement.getAD_Client_ID()))
 				.build();
 	}
