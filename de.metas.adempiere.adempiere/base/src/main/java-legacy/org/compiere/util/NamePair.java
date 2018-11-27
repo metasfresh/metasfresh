@@ -40,7 +40,6 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	 */
 	protected NamePair(final String name)
 	{
-		super();
 		if (name == null)
 		{
 			m_name = "";
