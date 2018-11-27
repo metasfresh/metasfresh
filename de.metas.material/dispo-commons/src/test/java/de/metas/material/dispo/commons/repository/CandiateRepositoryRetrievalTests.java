@@ -198,7 +198,7 @@ public class CandiateRepositoryRetrievalTests
 
 		final ProductionDetail productionDetail = ProductionDetail.cast(cand.getBusinessCaseDetail());
 		assertThat(productionDetail).isNotNull();
-		assertThat(productionDetail.getPlannedQty()).isZero();
+		assertThat(productionDetail.getQty()).isZero();
 		assertThat(productionDetail.getDescription()).isEqualTo("description1");
 		assertThat(productionDetail.getProductBomLineId()).isEqualTo(71);
 		assertThat(productionDetail.getProductPlanningId()).isEqualTo(81);

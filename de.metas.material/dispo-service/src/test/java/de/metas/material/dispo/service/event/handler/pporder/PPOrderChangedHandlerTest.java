@@ -69,7 +69,7 @@ public class PPOrderChangedHandlerTest
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(ProductionDetail.builder()
-						.plannedQty(BigDecimal.TEN)
+						.qty(BigDecimal.TEN)
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
 						.build())

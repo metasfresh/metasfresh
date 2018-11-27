@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
+import lombok.NonNull;
+
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -14,7 +16,6 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -60,7 +61,7 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 		final CandidateBuilder candidateBuilder = createCandidateBuilder(event);
 
 		final PurchaseDetailBuilder purchaseDetailBuilder = PurchaseDetail.builder()
-				.plannedQty(event.getMaterialDescriptor().getQuantity())
+				.qty(event.getMaterialDescriptor().getQuantity())
 				.receiptScheduleRepoId(event.getReceiptScheduleId())
 				.advised(Flag.FALSE_DONT_UPDATE);
 

@@ -33,5 +33,5 @@ public interface BusinessCaseDetail
 	 */
 	CandidateBusinessCase getCandidateBusinessCase();
 
-	BigDecimal getPlannedQty();
+	BigDecimal getQty();
 }

@@ -69,6 +69,33 @@ public interface I_MD_Candidate_Transaction_Detail
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Prozesslauf "Lagerbestand zurücksetzen".
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_PInstance_ResetStock_ID (int AD_PInstance_ResetStock_ID);
+
+	/**
+	 * Get Prozesslauf "Lagerbestand zurücksetzen".
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_PInstance_ResetStock_ID();
+
+	public org.compiere.model.I_AD_PInstance getAD_PInstance_ResetStock();
+
+	public void setAD_PInstance_ResetStock(org.compiere.model.I_AD_PInstance AD_PInstance_ResetStock);
+
+    /** Column definition for AD_PInstance_ResetStock_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ResetStock_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_AD_PInstance>(I_MD_Candidate_Transaction_Detail.class, "AD_PInstance_ResetStock_ID", org.compiere.model.I_AD_PInstance.class);
+    /** Column name AD_PInstance_ResetStock_ID */
+    public static final String COLUMNNAME_AD_PInstance_ResetStock_ID = "AD_PInstance_ResetStock_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -172,6 +199,29 @@ public interface I_MD_Candidate_Transaction_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object> COLUMN_MD_Candidate_Transaction_Detail_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object>(I_MD_Candidate_Transaction_Detail.class, "MD_Candidate_Transaction_Detail_ID", null);
     /** Column name MD_Candidate_Transaction_Detail_ID */
     public static final String COLUMNNAME_MD_Candidate_Transaction_Detail_ID = "MD_Candidate_Transaction_Detail_ID";
+
+	/**
+	 * Set Bestand.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Stock_ID (int MD_Stock_ID);
+
+	/**
+	 * Get Bestand.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getMD_Stock_ID();
+
+    /** Column definition for MD_Stock_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object> COLUMN_MD_Stock_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object>(I_MD_Candidate_Transaction_Detail.class, "MD_Stock_ID", null);
+    /** Column name MD_Stock_ID */
+    public static final String COLUMNNAME_MD_Stock_ID = "MD_Stock_ID";
 
 	/**
 	 * Set Versand-/Wareneingangsposition.

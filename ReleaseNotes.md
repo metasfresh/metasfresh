@@ -10,6 +10,52 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.82
+# Features
+* metasfresh
+  * [#4662](https://github.com/metasfresh/metasfresh/issues/4662) AD_Element based Names and Translations for AD_Tab, Window, Menu
+  * [#4663](https://github.com/metasfresh/metasfresh/issues/4663) Add base language to AD_Element Translation Tables
+  * [#4664](https://github.com/metasfresh/metasfresh/issues/4664) New Window "Application Elements"
+  * [#4717](https://github.com/metasfresh/metasfresh/issues/4717) Set Order-Checkup printout receiver via AD_Workflow
+  * [#4737](https://github.com/metasfresh/metasfresh/issues/4737) Fix attribute value lookup for webui
+  * [#4745](https://github.com/metasfresh/metasfresh/issues/4745) Allow editing attachment descriptions in BPartner-B2C
+  * [#4756](https://github.com/metasfresh/metasfresh/issues/4756) order-candidates REST-API - option to just lookup, but not create BPartners
+  * [#4763](https://github.com/metasfresh/metasfresh/issues/4763) Update material dispo correction from StockChangedEvents
+  * [#4764](https://github.com/metasfresh/metasfresh/issues/4764) Translation of Greetings in WebUI
+  * [#4766](https://github.com/metasfresh/metasfresh/issues/4766) C_OrderLine: ProductDescription - don't add qty from BOM if is one
+  * [#4768](https://github.com/metasfresh/metasfresh/issues/4768) ModelAttributeSetInstanceListener for Expired attribute
+  * [#4770](https://github.com/metasfresh/metasfresh/issues/4770) Improve ClasspathAnnotatedModelInterceptorTester
+  * [#4771](https://github.com/metasfresh/metasfresh/issues/4771) Fix Fresh_AvailableSingletonServices_Test
+  * [#4777](https://github.com/metasfresh/metasfresh/issues/4777) Import Address GLN via I_BPartner
+
+# Fixes
+* metasfresh
+  * [#4740](https://github.com/metasfresh/metasfresh/issues/4740) Swing: "IOException: PDF header signature not found." for invoice print / print preview
+  * [#4754](https://github.com/metasfresh/metasfresh/issues/4754) Address different stability issues
+  * [#4759](https://github.com/metasfresh/metasfresh/issues/4759) Contract Condition Option No Invoice does not prevent Invoicing
+  * [#4773](https://github.com/metasfresh/metasfresh/issues/4773) google Reflections not working with maven surefire plugin
+  * [#4775](https://github.com/metasfresh/metasfresh/issues/4775) package order line out of sync when order is reactivated and completed again
+  * [#4778](https://github.com/metasfresh/metasfresh/issues/4778) Fix failing tests when running de.metas.fresh all tests suite in eclipse
+  * [#4779](https://github.com/metasfresh/metasfresh/issues/4779) MD_Stock_Reset process includes planned HUs
+
+* metasfresh-webui-api
+  * [#1108](https://github.com/metasfresh/metasfresh-webui-api/issues/1108) Migration Script Endpoint Improvement
+
+* metasfresh-webui-frontend
+  * [#1997](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1997) Cypress: Product set Documentnote Test fails
+    * Fixes the cypress test on setting Doument Notes.
+  * [#2048](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2048) View: clicking outside of table does not unselect the current selected lines
+    * Bugfix for the unselecting of grid selections when clicking outside grid.
+  * [#2058](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2058) Cannot close the HU Editor in manufacturing order anymore
+    * Fixes a bug in modal Handling Unit Editor that prevented the unselecting of rows.
+  * [#2067](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2067) Dropdown in bpartner field in order sometimes remains displayed after selecting bpartner
+    * Fixes a minor Bug that occurred when selecting dropdown entries with mouse. Now closing the dropdown after selecting again.
+  * [#2069](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2069) Number Inserting in Order Quick Input
+    * Fixes the Batch Entry in Sales Order, now reacting creating a new line after presssing enter again.
+
+* metasfresh-parent
+  * [#25](https://github.com/metasfresh/metasfresh-parent/issues/25) jasper reports are compiled with wrong version
+
 # metasfresh 5.81
 ## Features
 
@@ -28,7 +74,7 @@ Here come the actual release notes:
   * [#4739](https://github.com/metasfresh/metasfresh/issues/4739) Fix context parse errors while using order's product batch entry
     * Fixes product search and add new on orderline for Batch entry.
   * [#4741](https://github.com/metasfresh/metasfresh/issues/4741) Process C_Order_VoidWithRelatedDocsAndRecreate hangs
-    * Improvement of Orde voiding, now reverting the document and related documents too.
+    * Improvement of Order voiding, now reverting the document and related documents too.
   * [#4742](https://github.com/metasfresh/metasfresh/issues/4742) Attachment-Download from BPartner B2C window broken
     * Fixes the download of Attachments from the B2C Business Partner window.
   * [#4743](https://github.com/metasfresh/metasfresh/issues/4743) C_Invoice_CreateExportData async WP processor runs into error with most "normal" invoices

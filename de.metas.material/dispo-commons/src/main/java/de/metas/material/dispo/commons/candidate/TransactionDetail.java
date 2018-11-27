@@ -1,12 +1,13 @@
 package de.metas.material.dispo.commons.candidate;
 
+import lombok.Builder;
+import lombok.Value;
+
 import java.math.BigDecimal;
 
 import com.google.common.base.Preconditions;
 
 import de.metas.material.event.commons.AttributesKey;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -33,50 +34,57 @@ import lombok.Value;
 @Value
 public class TransactionDetail
 {
-	public static TransactionDetail forCandidateOrQuery(
-			@NonNull final BigDecimal quantity,
-			@NonNull final AttributesKey storageAttributesKey,
-			final int attributeSetInstanceId,
-			final int transactionId)
-	{
-		return new TransactionDetail(
-				quantity,
-				storageAttributesKey,
-				attributeSetInstanceId,
-				transactionId,
-				true /*complete*/);
-	}
 
 	public static TransactionDetail forQuery(final int transactionId)
 	{
 		return new TransactionDetail(
-				null /*quantity*/,
-				null /*storageAttributesKey*/,
-				-1 /*attributeSetInstanceId*/,
+				null /* quantity */,
+				null /* storageAttributesKey */,
+				-1 /* attributeSetInstanceId */,
 				transactionId,
-				false /*complete*/);
+				-1 /* stockId */,
+				-1 /* resetStockAdPinstanceId */,
+				false /* complete */);
 	}
 
+	/** true means that this detail can be persisted; false means that id can still be part of a query. */
 	boolean complete;
 
 	BigDecimal quantity;
 
+	/** 
+	 * Used in queries if > 0. 
+	 */
 	int transactionId;
 
+	/** 
+	 * If there was no inventory, but MD_Stock had to be reset from M_HU_Storage.
+	 * Also used in queries if > 0. 
+	 */
+	int resetStockAdPinstanceId;
+	
 	AttributesKey storageAttributesKey;
 
 	int attributeSetInstanceId;
 
-	public TransactionDetail(
+	/** {@code MD_Stock_ID} */
+	int stockId;
+
+
+	@Builder
+	private TransactionDetail(
 			final BigDecimal quantity,
 			final AttributesKey storageAttributesKey,
 			final int attributeSetInstanceId,
 			final int transactionId,
+			final int stockId,
+			final int resetStockAdPinstanceId,
 			final boolean complete)
 	{
 		this.complete = complete;
 
-		Preconditions.checkArgument(transactionId > 0, "The given parameter transactionId=%s needs to be > 0", transactionId);
+		Preconditions.checkArgument(transactionId > 0 || resetStockAdPinstanceId > 0,
+				"From the given parameters transactionId=%s and resetStockAdPinstanceId=%s, at least one needs to be > 0", transactionId, resetStockAdPinstanceId);
 		this.transactionId = transactionId;
 
 		Preconditions.checkArgument(!complete || quantity != null, "The given parameter quantity may not be null because complete=true; transactionId=%s", transactionId);
@@ -84,5 +92,8 @@ public class TransactionDetail
 
 		this.storageAttributesKey = storageAttributesKey;
 		this.attributeSetInstanceId = attributeSetInstanceId;
+
+		this.stockId = stockId;
+		this.resetStockAdPinstanceId = resetStockAdPinstanceId;
 	}
 }

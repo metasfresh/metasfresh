@@ -135,6 +135,7 @@ import lombok.NonNull;
 	 */
 	private static void updateWithImportRecordFields(final I_I_BPartner importRecord, final I_AD_User user)
 	{
+		user.setExternalId(importRecord.getAD_User_ExternalId());
 		user.setFirstname(importRecord.getFirstname());
 		user.setLastname(importRecord.getLastname());
 
@@ -163,6 +164,11 @@ import lombok.NonNull;
 		user.setFirstname(importRecord.getFirstname());
 		user.setLastname(importRecord.getLastname());
 
+		final String userExternalId = importRecord.getAD_User_ExternalId();
+		if(userExternalId != null)
+		{
+			user.setExternalId(userExternalId);
+		}
 		if (importRecord.getTitle() != null)
 		{
 			user.setTitle(importRecord.getTitle());

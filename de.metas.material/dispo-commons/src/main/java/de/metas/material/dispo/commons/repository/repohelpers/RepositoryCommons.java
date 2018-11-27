@@ -336,11 +336,14 @@ public class RepositoryCommons
 
 		for (final TransactionDetail transactionDetail : transactionDetails)
 		{
-			Preconditions.checkArgument(
-					transactionDetail.getTransactionId() > 0,
-					"Every transactionDetail instance needs to have transactionId>0; transactionDetail=%s",
-					transactionDetail);
-			transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
+			if (transactionDetail.getTransactionId() > 0)
+			{
+				transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
+			}
+			if (transactionDetail.getResetStockAdPinstanceId() > 0)
+			{
+				transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_AD_PInstance_ResetStock_ID, transactionDetail.getResetStockAdPinstanceId());
+			}
 
 			if (transactionDetail.getQuantity() != null)
 			{

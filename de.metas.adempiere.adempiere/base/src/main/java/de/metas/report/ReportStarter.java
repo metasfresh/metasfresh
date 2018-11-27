@@ -85,8 +85,8 @@ public abstract class ReportStarter extends JavaProcess
 		final boolean doNotInvokeMassPrintEngine = reportPrintingInfo.isPrintPreview() || !reportPrintingInfo.isArchiveReportData();
 		if (doNotInvokeMassPrintEngine)
 		{
-			// Create report and preview
-			startProcessPrintPreview(reportPrintingInfo);
+			// Create report and preview / not-archive
+			startProcessInvokeReportOnly(reportPrintingInfo);
 		}
 		else
 		{
@@ -130,14 +130,21 @@ public abstract class ReportStarter extends JavaProcess
 		printService.print(result, pi);
 	}
 
-	private void startProcessPrintPreview(@NonNull final ReportPrintingInfo reportPrintingInfo) throws Exception
+	private void startProcessInvokeReportOnly(@NonNull final ReportPrintingInfo reportPrintingInfo) throws Exception
 	{
 		final ProcessInfo processInfo = reportPrintingInfo.getProcessInfo();
 
-		//
-		// Get Jasper report viewer provider
-		final JRReportViewerProvider jrReportViewerProvider = getJRReportViewerProviderOrNull();
-		final OutputType desiredOutputType = jrReportViewerProvider == null ? null : jrReportViewerProvider.getDesiredOutputType();
+		final OutputType desiredOutputType;
+		if (reportPrintingInfo.isPrintPreview())
+		{
+			// Get the jasper report viewer provider and ask it what format it wants
+			final JRReportViewerProvider jrReportViewerProvider = getJRReportViewerProviderOrNull();
+			desiredOutputType = jrReportViewerProvider == null ? null : jrReportViewerProvider.getDesiredOutputType();
+		}
+		else
+		{
+			desiredOutputType = OutputType.PDF;
+		}
 
 		//
 		// Based on reporting system type, determine: output type
@@ -149,7 +156,11 @@ public abstract class ReportStarter extends JavaProcess
 			// Jasper reporting
 			case Jasper:
 			case Other:
-				outputType = Util.coalesce(desiredOutputType, processInfo.getJRDesiredOutputType(), OutputType.PDF);
+				outputType = Util.coalesce(
+						// needs to take precedence because we might be invoked for an outer "preview" process, but with isPrintPreview()=false
+						processInfo.getJRDesiredOutputType(), 
+						desiredOutputType, 
+						OutputType.PDF);
 				break;
 
 			//
@@ -287,7 +298,7 @@ public abstract class ReportStarter extends JavaProcess
 
 		Excel,
 
-		/** May be used no invocation to the jasper service is done */
+		/** May be used when no invocation to the jasper service is done */
 		Other
 	};
 

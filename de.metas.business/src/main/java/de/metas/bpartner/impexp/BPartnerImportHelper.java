@@ -1,8 +1,7 @@
 package de.metas.bpartner.impexp;
 
-import java.util.Properties;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -52,11 +51,6 @@ import de.metas.util.Check;
 		return this;
 	}
 
-	private Properties getCtx()
-	{
-		return process.getCtx();
-	}
-
 	public I_C_BPartner importRecord(final I_I_BPartner importRecord)
 	{
 		final I_C_BPartner bpartner;
@@ -92,7 +86,7 @@ import de.metas.util.Check;
 		setTypeOfBPartner(importRecord, bpartner);
 
 		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartner, IImportInterceptor.TIMING_AFTER_IMPORT);
-		InterfaceWrapperHelper.save(bpartner);
+		save(bpartner);
 		importRecord.setC_BPartner(bpartner);
 
 		return bpartner;
@@ -100,8 +94,9 @@ import de.metas.util.Check;
 
 	private I_C_BPartner createNewBPartner(final I_I_BPartner importRecord)
 	{
-		final I_C_BPartner bpartner;
-		bpartner = InterfaceWrapperHelper.create(getCtx(), I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+
+		bpartner.setExternalId(importRecord.getC_BPartner_ExternalId());
 		bpartner.setAD_Org_ID(importRecord.getAD_Org_ID());
 		//
 		bpartner.setValue(extractBPValue(importRecord));
@@ -159,6 +154,12 @@ import de.metas.util.Check;
 	{
 		final I_C_BPartner bpartner;
 		bpartner = importRecord.getC_BPartner();
+
+		final String partnerExternalId = importRecord.getC_BPartner_ExternalId();
+		if(partnerExternalId != null)
+		{
+			bpartner.setExternalId(partnerExternalId);
+		}
 		if (importRecord.getName() != null)
 		{
 			bpartner.setName(importRecord.getName());

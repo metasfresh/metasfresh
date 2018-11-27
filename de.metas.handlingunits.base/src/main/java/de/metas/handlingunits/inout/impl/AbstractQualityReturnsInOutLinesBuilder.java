@@ -1,5 +1,7 @@
 package de.metas.handlingunits.inout.impl;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -29,7 +31,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -180,7 +181,14 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			final I_M_HU luHU = handlingUnitsBL.getLoadingUnitHU(hu);
 			final I_M_HU tuHU = handlingUnitsBL.getTransportUnitHU(hu);
 
-			huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(InterfaceWrapperHelper.getCtx(hu), inOutLine, huTopLevel, luHU, tuHU, trxName)
+			huAssignmentBL
+					.createTradingUnitDerivedAssignmentBuilder(
+							InterfaceWrapperHelper.getCtx(hu),
+							inOutLine,
+							huTopLevel,
+							luHU,
+							tuHU,
+							trxName)
 					.build();
 
 			// mark hu as shipped ( if vendor return) or Active (if customer return)
