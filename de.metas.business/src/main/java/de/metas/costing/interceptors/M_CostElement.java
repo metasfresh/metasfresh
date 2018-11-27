@@ -7,6 +7,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
@@ -46,31 +47,6 @@ import de.metas.util.Services;
 @Interceptor(I_M_CostElement.class)
 public class M_CostElement
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_CostElement.COLUMNNAME_CostingMethod)
-	public void assertUniqueCostingMethod(final I_M_CostElement costElement)
-	{
-		final CostElementType costElementType = CostElementType.ofCode(costElement.getCostElementType());
-		if (CostElementType.Material.equals(costElementType)
-				// || COSTELEMENTTYPE_Resource.equals(costElementType)
-				// || COSTELEMENTTYPE_BurdenMOverhead.equals(costElementType)
-				// || COSTELEMENTTYPE_Overhead.equals(costElementType)
-				|| CostElementType.OutsideProcessing.equals(costElementType))
-		{
-			final boolean costingMethodAlreadyExists = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_CostElement.class)
-					.addNotEqualsFilter(I_M_CostElement.COLUMN_M_CostElement_ID, costElement.getM_CostElement_ID())
-					.addEqualsFilter(I_M_CostElement.COLUMN_AD_Client_ID, costElement.getAD_Client_ID())
-					.addEqualsFilter(I_M_CostElement.COLUMN_CostingMethod, costElement.getCostingMethod())
-					.addEqualsFilter(I_M_CostElement.COLUMN_CostElementType, costElementType.getCode())
-					.create()
-					.match();
-			if (costingMethodAlreadyExists)
-			{
-				throw new AdempiereException("@AlreadyExists@ @CostingMethod@");
-			}
-		}
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_CostElement costElement)
 	{
@@ -94,10 +70,7 @@ public class M_CostElement
 		 * }
 		 */
 
-		if (costElement.getAD_Org_ID() != 0)
-		{
-			costElement.setAD_Org_ID(0);
-		}
+		costElement.setAD_Org_ID(OrgId.ANY.getRepoId());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
