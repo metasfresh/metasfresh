@@ -123,7 +123,7 @@ public class CostDetailCreateRequest
 
 	public boolean isReversal()
 	{
-		return initialDocumentRef != null;
+		return getInitialDocumentRef() != null;
 	}
 
 	public CostDetailCreateRequest withAcctSchemaId(@NonNull final AcctSchemaId acctSchemaId)
