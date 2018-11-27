@@ -1,0 +1,38 @@
+{
+  "longText": {
+    "data1": {
+      "displayed": true,
+      "field": "ProductDescription",
+      "mandatory": false,
+      "readonly": false,
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "ProductDescription"
+      },
+      "fieldName": "ProductDescription",
+      "initialValue": true,
+      "valid": true,
+      "value": "Test 134",
+      "viewEditorRenderMode": "always",
+      "widgetType": "LongText"
+    },
+    "layout1": {
+      "caption": "Product Description",
+      "description": "Product Description",
+      "fields": [
+        {
+          "field": "ProductDescription",
+          "emptyText": "none"
+        }
+      ],
+      "gridAlign": "left",
+      "multilineText": true,
+      "multilineTextLines": 3,
+      "size": "L",
+      "sortable": true,
+      "viewEditorRenderMode": "never",
+      "widgetType": "LongText"
+    }
+  }
+}
