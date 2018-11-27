@@ -2,7 +2,7 @@
 
 import { createAndCompleteTransition, createAndCompleteRefundPercentConditions } from '../../support/utils/contract';
 
-describe('Create refund flatrate conditions', function() {
+describe('Create tiered percent-based refund conditions', function() {
     before(function() {
         // login before each test and open the flatrate conditions window
         cy.loginByForm();
@@ -11,7 +11,7 @@ describe('Create refund flatrate conditions', function() {
     it('Create tiered percent-based refund conditions', function () {
         const timestamp = new Date().getTime(); // used in the document names, for ordering
 
-        const transitionName = `${timestamp} Refund contract transisiton (Cypress Test)`;
+        const transitionName = `${timestamp} tiered percent-based refund conditions (Cypress Test)`;
         createAndCompleteTransition(transitionName, null, null);
 
         const conditionsName = `${timestamp} tiered percent-based refund conditions (Cypress Test)`;
