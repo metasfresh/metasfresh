@@ -113,7 +113,7 @@ public final class AttributesKeys
 		final int[] attributeValueIds = attributeDAO.retrieveAttributeInstances(attributeSetInstance).stream()
 				.filter(ai -> ai.getM_AttributeValue_ID() > 0)
 				.filter(additionalFilter)
-				.sorted(Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID))
+				// no point in sorting; AttributesKey.ofAttributeValueIds(..) does its own sorting.
 				.mapToInt(I_M_AttributeInstance::getM_AttributeValue_ID)
 				.toArray();
 
