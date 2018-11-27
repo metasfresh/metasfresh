@@ -52,11 +52,14 @@ import lombok.NonNull;
 @Component
 public class CostElementRepository implements ICostElementRepository
 {
-	private final CCache<Integer, IndexedCostElements> cache = CCache.newCache(I_M_CostElement.Table_Name + "#All", 1, 0);
+	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements> builder()
+			.tableName(I_M_CostElement.Table_Name)
+			.initialCapacity(1)
+			.build();
 
 	private IndexedCostElements getIndexedCostElements()
 	{
-		return cache.getOrLoad(0, () -> retrieveIndexedCostElements());
+		return cache.getOrLoad(0, this::retrieveIndexedCostElements);
 	}
 
 	private IndexedCostElements retrieveIndexedCostElements()
