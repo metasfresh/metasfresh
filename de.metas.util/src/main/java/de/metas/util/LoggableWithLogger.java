@@ -47,9 +47,10 @@ public class LoggableWithLogger implements ILoggable
 	}
 
 	@Override
-	public void addLog(String msg, Object... msgParameters)
+	public ILoggable addLog(String msg, Object... msgParameters)
 	{
 		parent.addLog(msg, msgParameters);
 		LoggingHelper.log(logger, level, msg, msgParameters);
+		return this;
 	}
 }

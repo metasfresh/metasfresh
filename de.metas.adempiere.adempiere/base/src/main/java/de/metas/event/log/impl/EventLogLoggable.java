@@ -47,7 +47,7 @@ public class EventLogLoggable implements ILoggable
 	}
 
 	@Override
-	public void addLog(
+	public ILoggable addLog(
 			@NonNull final String msg,
 			@Nullable final Object... msgParameters)
 	{
@@ -55,6 +55,8 @@ public class EventLogLoggable implements ILoggable
 				.formattedMessage(msg, msgParameters)
 				.eventHandlerClass(handlerClass)
 				.createAndStore();
+		
+		return this;
 	}
 
 }
