@@ -159,12 +159,13 @@ class PPOrderLinesLoader
 						.thenComparing(row -> row.getPP_Order_BOMLine_ID());  // BOM lines order
 
 		final Function<? super I_PP_Order_BOMLine, ? extends PPOrderLineRow> ppOrderBomLineRowCreator = //
-				ppOrderBOMLine -> createRowForBOMLine(ppOrder,
+				ppOrderBOMLine -> createRowForBOMLine(
 						ppOrderBOMLine,
 						isReadOnly(ppOrder),
 						ppOrderQtysByBOMLineId.get(ppOrderBOMLine.getPP_Order_BOMLine_ID()));
 
-		final ImmutableList<PPOrderLineRow> bomLineRows = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final ImmutableList<PPOrderLineRow> bomLineRows = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.map(ppOrderBomLineRowCreator)
 				.sorted(ppOrderBomLineRowSorter)
@@ -245,7 +246,6 @@ class PPOrderLinesLoader
 	}
 
 	private PPOrderLineRow createRowForBOMLine(
-			final I_PP_Order ppOrder,
 			final I_PP_Order_BOMLine ppOrderBOMLine,
 			final boolean readOnly,
 			final List<I_PP_Order_Qty> ppOrderQtys)
