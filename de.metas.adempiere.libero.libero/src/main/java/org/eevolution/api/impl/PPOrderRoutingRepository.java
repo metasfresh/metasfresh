@@ -3,7 +3,6 @@ package org.eevolution.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalUnit;
@@ -41,10 +40,10 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
-import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityScheduleChangeRequest;
@@ -57,8 +56,6 @@ import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_NodeNext;
 import org.eevolution.model.I_PP_Order_Workflow;
-import org.eevolution.model.X_PP_Order_Node;
-import org.eevolution.model.X_PP_Order_Workflow;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -237,8 +234,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		final PPRoutingId routingId = PPRoutingId.ofRepoId(record.getAD_Workflow_ID());
 
 		final ResourceId resourceId = ResourceId.ofRepoId(record.getS_Resource_ID());
-		// final I_C_UOM uom = Services.get(IResourceProductService.class).getResoureUOM(resourceId);
-		final I_C_UOM uom = null; // TODO: introduce PP_Order_Node.C_UOM_ID
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(record.getC_UOM_ID());
 
 		return PPOrderRoutingActivity.builder()
 				.id(PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID()))
@@ -494,25 +490,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		final I_PP_Order_Workflow record = InterfaceWrapperHelper.newInstance(I_PP_Order_Workflow.class);
 		record.setPP_Order_ID(from.getPpOrderId().getRepoId());
 
-		setDefaults(record);
-		updateOrderWorkflowRecord(record, from);
-
-		return record;
-	}
-
-	private void setDefaults(final I_PP_Order_Workflow record)
-	{
-		record.setAccessLevel(X_PP_Order_Workflow.ACCESSLEVEL_Organization);
-		record.setWorkflowType(X_PP_Order_Workflow.WORKFLOWTYPE_Transaktion);
-		record.setValue("-");
-		record.setName("-");
-		record.setAuthor("-");
-		record.setPriority(5);
-		record.setEntityType("U");	// U
-		record.setIsDefault(false);
-		record.setPublishStatus(X_PP_Order_Workflow.PUBLISHSTATUS_UnderRevision);	// U
-		record.setVersion(0);
-		record.setCost(BigDecimal.ZERO);
 		record.setWaitingTime(0);
 		record.setWorkingTime(0);
 		record.setDurationLimit(0);
@@ -520,16 +497,10 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setSetupTime(0);
 		record.setMovingTime(0);
 		record.setDuration(0);
-		// record.setAD_WF_Responsible_ID();
-		// record.setS_Resource_ID();
-		// record.setValidateWorkflow(workflow.getValidateWorkflow()); // buttons do not need to copy
-		// record.setProcessType(workflow.getProcessType());
-		// record.setAD_Table_ID(workflow.getAD_Table_ID());
-		// record.setAD_WF_Node_ID(orderRouting.getAD_WF_Node_ID());
-		// record.setAD_WorkflowProcessor_ID(workflow.getAD_WorkflowProcessor_ID());
-		// record.setDescription(workflow.getDescription());
-		// record.setValidFrom(workflow.getValidFrom());
-		// record.setValidTo(workflow.getValidTo());
+		
+		updateOrderWorkflowRecord(record, from);
+
+		return record;
 	}
 
 	private void updateOrderWorkflowRecord(final I_PP_Order_Workflow record, final PPOrderRouting from)
@@ -541,7 +512,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	}
 
 	private I_PP_Order_Node toNewOrderNodeRecord(
-			final PPOrderRoutingActivity activity, 
+			final PPOrderRoutingActivity activity,
 			final PPOrderId ppOrderId,
 			final int ppOrderWorkflowId)
 	{
@@ -549,7 +520,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setPP_Order_ID(ppOrderId.getRepoId());
 		record.setPP_Order_Workflow_ID(ppOrderWorkflowId);
 
-		setDefaults(record);
 		updateOrderNodeRecord(record, activity);
 
 		return record;
@@ -590,6 +560,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTimeRequired(), durationUnit));
 		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
 		record.setQtyRequiered(from.getQtyRequired().getAsBigDecimal());
+		record.setC_UOM_ID(from.getQtyRequired().getUOMId());
 
 		//
 		// Reported values
@@ -600,38 +571,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setQtyReject(from.getQtyRejected().getAsBigDecimal());
 		record.setDateStart(TimeUtil.asTimestamp(from.getDateStart()));
 		record.setDateFinish(TimeUtil.asTimestamp(from.getDateFinish()));
-	}
-
-	private void setDefaults(final I_PP_Order_Node orderNode)
-	{
-		orderNode.setValue("-");
-		orderNode.setName("-");
-		orderNode.setPriority(5);
-		orderNode.setJoinElement(X_PP_Order_Node.JOINELEMENT_XOR); // X
-		orderNode.setSplitElement(X_PP_Order_Node.SPLITELEMENT_XOR); // X
-		orderNode.setEntityType(PO.ENTITYTYPE_UserMaintained);
-		orderNode.setIsCentrallyMaintained(true);
-		orderNode.setAction(X_PP_Order_Node.ACTION_WaitSleep); // N/a
-		orderNode.setCost(BigDecimal.ZERO);
-		orderNode.setWorkingTime(0);
-		orderNode.setDurationLimit(0);
-		// orderNode.setAD_Org_ID(order.getAD_Org_ID());
-		// orderNode.setAD_WF_Responsible_ID();
-		// orderNode.setSubflowExecution(activity.getSubflowExecution());
-		// orderNode.setUnitsCycles(activity.getUnitsCycles().intValueExact());
-		// orderNode.setOverlapUnits(activity.getOverlapUnits());
-		// orderNode.setDocAction(activity.getDocAction());
-		// orderNode.setAD_Column_ID(activity.getAD_Column_ID());
-		// orderNode.setAD_Form_ID(activity.getAD_Form_ID());
-		// orderNode.setAD_Image_ID(activity.getAD_Image_ID());
-		// orderNode.setAD_Window_ID(activity.getAD_Window_ID());
-		// orderNode.setAD_Process_ID(activity.getAD_Process_ID());
-		// orderNode.setAttributeName(activity.getAttributeName());
-		// orderNode.setAttributeValue(activity.getAttributeValue());
-		// orderNode.setStartMode(activity.getStartMode());
-		// orderNode.setFinishMode(activity.getFinishMode());
-		// orderNode.setValidFrom(activity.getValidFrom());
-		// orderNode.setValidTo(activity.getValidTo());
 	}
 
 	private I_PP_Order_NodeNext toNewOrderNodeNextRecord(final PPOrderRoutingActivity activity, final PPOrderRoutingActivity nextActivity)

@@ -23,31 +23,6 @@ public interface I_PP_Order_Workflow
     /** Load Meta Data */
 
 	/**
-	 * Set Berechtigungsstufe.
-	 * Access Level required
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAccessLevel (java.lang.String AccessLevel);
-
-	/**
-	 * Get Berechtigungsstufe.
-	 * Access Level required
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAccessLevel();
-
-    /** Column definition for AccessLevel */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_AccessLevel = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "AccessLevel", null);
-    /** Column name AccessLevel */
-    public static final String COLUMNNAME_AccessLevel = "AccessLevel";
-
-	/**
 	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
@@ -94,93 +69,6 @@ public interface I_PP_Order_Workflow
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Table_ID (int AD_Table_ID);
-
-	/**
-	 * Get DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Table_ID();
-
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_Table>(I_PP_Order_Workflow.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
-
-//	/**
-//	 * Set Knoten.
-//	 * Workflow Node (activity), step or process
-//	 *
-//	 * <br>Type: TableDir
-//	 * <br>Mandatory: false
-//	 * <br>Virtual Column: false
-//	 */
-//	public void setAD_WF_Node_ID (int AD_WF_Node_ID);
-//
-//	/**
-//	 * Get Knoten.
-//	 * Workflow Node (activity), step or process
-//	 *
-//	 * <br>Type: TableDir
-//	 * <br>Mandatory: false
-//	 * <br>Virtual Column: false
-//	 */
-//	public int getAD_WF_Node_ID();
-//
-//	public org.compiere.model.I_AD_WF_Node getAD_WF_Node();
-//
-//	public void setAD_WF_Node(org.compiere.model.I_AD_WF_Node AD_WF_Node);
-//
-//    /** Column definition for AD_WF_Node_ID */
-//    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_WF_Node> COLUMN_AD_WF_Node_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_WF_Node>(I_PP_Order_Workflow.class, "AD_WF_Node_ID", org.compiere.model.I_AD_WF_Node.class);
-//    /** Column name AD_WF_Node_ID */
-//    public static final String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
-
-	/**
-	 * Set Workflow - Verantwortlicher.
-	 * Responsible for Workflow Execution
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID);
-
-	/**
-	 * Get Workflow - Verantwortlicher.
-	 * Responsible for Workflow Execution
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_WF_Responsible_ID();
-
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible();
-
-	public void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible);
-
-    /** Column definition for AD_WF_Responsible_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_WF_Responsible> COLUMN_AD_WF_Responsible_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_WF_Responsible>(I_PP_Order_Workflow.class, "AD_WF_Responsible_ID", org.compiere.model.I_AD_WF_Responsible.class);
-    /** Column name AD_WF_Responsible_ID */
-    public static final String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
-
-	/**
 	 * Set Workflow.
 	 * Workflow or combination of tasks
 	 *
@@ -208,85 +96,6 @@ public interface I_PP_Order_Workflow
     public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_Workflow> COLUMN_AD_Workflow_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_Workflow>(I_PP_Order_Workflow.class, "AD_Workflow_ID", org.compiere.model.I_AD_Workflow.class);
     /** Column name AD_Workflow_ID */
     public static final String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
-
-	/**
-	 * Set Workflow - Prozessor.
-	 * Workflow Processor Server
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_WorkflowProcessor_ID (int AD_WorkflowProcessor_ID);
-
-	/**
-	 * Get Workflow - Prozessor.
-	 * Workflow Processor Server
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_WorkflowProcessor_ID();
-
-	public org.compiere.model.I_AD_WorkflowProcessor getAD_WorkflowProcessor();
-
-	public void setAD_WorkflowProcessor(org.compiere.model.I_AD_WorkflowProcessor AD_WorkflowProcessor);
-
-    /** Column definition for AD_WorkflowProcessor_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_WorkflowProcessor> COLUMN_AD_WorkflowProcessor_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_WorkflowProcessor>(I_PP_Order_Workflow.class, "AD_WorkflowProcessor_ID", org.compiere.model.I_AD_WorkflowProcessor.class);
-    /** Column name AD_WorkflowProcessor_ID */
-    public static final String COLUMNNAME_AD_WorkflowProcessor_ID = "AD_WorkflowProcessor_ID";
-
-	/**
-	 * Set Author.
-	 * Author/Creator of the Entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAuthor (java.lang.String Author);
-
-	/**
-	 * Get Author.
-	 * Author/Creator of the Entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAuthor();
-
-    /** Column definition for Author */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_Author = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "Author", null);
-    /** Column name Author */
-    public static final String COLUMNNAME_Author = "Author";
-
-	/**
-	 * Set Kosten.
-	 * Cost information
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setCost (java.math.BigDecimal Cost);
-
-	/**
-	 * Get Kosten.
-	 * Cost information
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getCost();
-
-    /** Column definition for Cost */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_Cost = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "Cost", null);
-    /** Column name Cost */
-    public static final String COLUMNNAME_Cost = "Cost";
 
 	/**
 	 * Get Erstellt.
@@ -340,31 +149,6 @@ public interface I_PP_Order_Workflow
     public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
-
-	/**
-	 * Get Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDocumentNo();
-
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Duration.
@@ -442,33 +226,6 @@ public interface I_PP_Order_Workflow
     public static final String COLUMNNAME_DurationUnit = "DurationUnit";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setEntityType (java.lang.String EntityType);
-
-	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getEntityType();
-
-    /** Column definition for EntityType */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "EntityType", null);
-    /** Column name EntityType */
-    public static final String COLUMNNAME_EntityType = "EntityType";
-
-	/**
 	 * Set Kommentar/Hilfe.
 	 * Comment or Hint
 	 *
@@ -519,31 +276,6 @@ public interface I_PP_Order_Workflow
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setIsDefault (boolean IsDefault);
-
-	/**
-	 * Get Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public boolean isDefault();
-
-    /** Column definition for IsDefault */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_IsDefault = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "IsDefault", null);
-    /** Column name IsDefault */
-    public static final String COLUMNNAME_IsDefault = "IsDefault";
-
-	/**
 	 * Set Moving Time.
 	 *
 	 * <br>Type: Integer
@@ -565,31 +297,6 @@ public interface I_PP_Order_Workflow
     public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_MovingTime = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "MovingTime", null);
     /** Column name MovingTime */
     public static final String COLUMNNAME_MovingTime = "MovingTime";
-
-	/**
-	 * Set Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setName (java.lang.String Name);
-
-	/**
-	 * Get Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getName();
-
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Overlap Units.
@@ -696,31 +403,6 @@ public interface I_PP_Order_Workflow
     public static final String COLUMNNAME_PP_Order_Workflow_ID = "PP_Order_Workflow_ID";
 
 	/**
-	 * Set Priorität.
-	 * Indicates if this request is of a high, medium or low priority.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setPriority (int Priority);
-
-	/**
-	 * Get Priorität.
-	 * Indicates if this request is of a high, medium or low priority.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getPriority();
-
-    /** Column definition for Priority */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_Priority = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "Priority", null);
-    /** Column name Priority */
-    public static final String COLUMNNAME_Priority = "Priority";
-
-	/**
 	 * Set Process Type.
 	 *
 	 * <br>Type: List
@@ -742,31 +424,6 @@ public interface I_PP_Order_Workflow
     public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_ProcessType = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "ProcessType", null);
     /** Column name ProcessType */
     public static final String COLUMNNAME_ProcessType = "ProcessType";
-
-	/**
-	 * Set Publication Status.
-	 * Status of Publication
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setPublishStatus (java.lang.String PublishStatus);
-
-	/**
-	 * Get Publication Status.
-	 * Status of Publication
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getPublishStatus();
-
-    /** Column definition for PublishStatus */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_PublishStatus = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "PublishStatus", null);
-    /** Column name PublishStatus */
-    public static final String COLUMNNAME_PublishStatus = "PublishStatus";
 
 	/**
 	 * Set Qty Batch Size.
@@ -924,129 +581,6 @@ public interface I_PP_Order_Workflow
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Workflow validieren.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValidateWorkflow (java.lang.String ValidateWorkflow);
-
-	/**
-	 * Get Workflow validieren.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getValidateWorkflow();
-
-    /** Column definition for ValidateWorkflow */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_ValidateWorkflow = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "ValidateWorkflow", null);
-    /** Column name ValidateWorkflow */
-    public static final String COLUMNNAME_ValidateWorkflow = "ValidateWorkflow";
-
-	/**
-	 * Set Gültig ab.
-	 * Valid from including this date (first day)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValidFrom (java.sql.Timestamp ValidFrom);
-
-	/**
-	 * Get Gültig ab.
-	 * Valid from including this date (first day)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getValidFrom();
-
-    /** Column definition for ValidFrom */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "ValidFrom", null);
-    /** Column name ValidFrom */
-    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
-
-	/**
-	 * Set Gültig bis.
-	 * Valid to including this date (last day)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValidTo (java.sql.Timestamp ValidTo);
-
-	/**
-	 * Get Gültig bis.
-	 * Valid to including this date (last day)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getValidTo();
-
-    /** Column definition for ValidTo */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_ValidTo = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "ValidTo", null);
-    /** Column name ValidTo */
-    public static final String COLUMNNAME_ValidTo = "ValidTo";
-
-	/**
-	 * Set Suchschlüssel.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValue (java.lang.String Value);
-
-	/**
-	 * Get Suchschlüssel.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getValue();
-
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
-
-	/**
-	 * Set Version.
-	 * Version of the table definition
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setVersion (int Version);
-
-	/**
-	 * Get Version.
-	 * Version of the table definition
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getVersion();
-
-    /** Column definition for Version */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_Version = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "Version", null);
-    /** Column name Version */
-    public static final String COLUMNNAME_Version = "Version";
-
-	/**
 	 * Set Waiting Time.
 	 * Workflow Simulation Waiting time
 	 *
@@ -1070,31 +604,6 @@ public interface I_PP_Order_Workflow
     public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_WaitingTime = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "WaitingTime", null);
     /** Column name WaitingTime */
     public static final String COLUMNNAME_WaitingTime = "WaitingTime";
-
-	/**
-	 * Set Workflow Type.
-	 * Type of Worflow
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setWorkflowType (java.lang.String WorkflowType);
-
-	/**
-	 * Get Workflow Type.
-	 * Type of Worflow
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getWorkflowType();
-
-    /** Column definition for WorkflowType */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object> COLUMN_WorkflowType = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, Object>(I_PP_Order_Workflow.class, "WorkflowType", null);
-    /** Column name WorkflowType */
-    public static final String COLUMNNAME_WorkflowType = "WorkflowType";
 
 	/**
 	 * Set Working Time.
