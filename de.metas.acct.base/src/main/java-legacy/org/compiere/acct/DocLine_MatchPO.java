@@ -121,7 +121,12 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 				.productId(getProductId())
 				.attributeSetInstanceId(getAttributeSetInstanceId())
 				.build();
-		final CostAmount costPrice = costDetailService.getCurrentCosts(costSegment, CostingMethod.StandardCosting);
+
+		final CostAmount costPrice = costDetailService.getCurrentCosts(costSegment, CostingMethod.StandardCosting)
+				.orElseThrow(() -> newPostingException()
+						.setAcctSchema(as)
+						.setDetailMessage("No standard costs found for " + costSegment));
+
 		return costPrice.multiply(getQty());
 	}
 
@@ -161,7 +166,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 	I_C_OrderLine getOrderLine()
 	{
-		return orderLine; 
+		return orderLine;
 	}
 
 	private CostAmount getOrderLineCostAmount()

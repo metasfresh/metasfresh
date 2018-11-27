@@ -4,13 +4,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -130,7 +130,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public CostResult getByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
+	public Optional<CostResult> getByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
 	{
 		final Set<CostElementId> costElementIds = costElementRepo.getByCostingMethod(costingMethod)
 				.stream()
@@ -138,7 +138,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.collect(ImmutableSet.toImmutableSet());
 		if (costElementIds.isEmpty())
 		{
-			throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
+			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
+			return Optional.empty();
 		}
 
 		final ImmutableMap<CostElement, CostAmount> amounts = retrieveCostRecords(costSegment)
@@ -149,13 +150,15 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, CurrentCost::getCurrentCostPrice));
 		if (amounts.isEmpty())
 		{
-			throw new AdempiereException("No costs found for " + costSegment + " and " + costingMethod);
+			// throw new AdempiereException("No costs found for " + costSegment + " and " + costingMethod);
+			return Optional.empty();
 		}
 
-		return CostResult.builder()
-				.costSegment(costSegment)
-				.amounts(amounts)
-				.build();
+		return Optional.of(
+				CostResult.builder()
+						.costSegment(costSegment)
+						.amounts(amounts)
+						.build());
 	}
 
 	@Override

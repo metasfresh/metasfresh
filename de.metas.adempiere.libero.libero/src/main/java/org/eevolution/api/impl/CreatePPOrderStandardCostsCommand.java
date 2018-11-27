@@ -190,7 +190,12 @@ final class CreatePPOrderStandardCostsCommand
 
 	private Stream<PPOrderCost> createPPOrderCostsAndStream(final CostSegment costSegment)
 	{
-		final CostResult costs = currentCostsRepository.getByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting);
+		final CostResult costs = currentCostsRepository.getByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting)
+				.orElse(null);
+		if(costs == null)
+		{
+			return Stream.empty();
+		}
 
 		return costs.getCostElements()
 				.stream()

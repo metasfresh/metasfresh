@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.compiere.model.I_M_Cost;
@@ -43,7 +44,7 @@ public interface ICurrentCostsRepository
 
 	void deleteForProduct(I_M_Product product);
 
-	CostResult getByCostSegmentAndCostingMethod(CostSegment costSegment, CostingMethod costingMethod);
+	Optional<CostResult> getByCostSegmentAndCostingMethod(CostSegment costSegment, CostingMethod costingMethod);
 
 	void updateCostRecord(CostSegmentAndElement costSegmentAndElement, Consumer<I_M_Cost> updater);
 }

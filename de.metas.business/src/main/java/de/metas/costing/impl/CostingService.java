@@ -52,6 +52,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -122,6 +123,8 @@ public class CostingService implements ICostingService
 
 	private CostResult createCostResult(final ImmutableList<CostDetailCreateResult> costElementResults)
 	{
+		Check.assumeNotEmpty(costElementResults, "costElementResults is not empty");
+		
 		final CostSegment costSegment = costElementResults
 				.stream()
 				.map(CostDetailCreateResult::getCostSegment)
@@ -339,6 +342,10 @@ public class CostingService implements ICostingService
 				.filter(costDetail -> !costElementIdsWithExistingCostDetails.contains(costDetail.getCostElementId())) // not already created
 				.flatMap(costDetail -> createReversalCostDetailsAndStream(costDetail, request))
 				.collect(ImmutableList.toImmutableList());
+		if (costElementResults.isEmpty())
+		{
+			throw new AdempiereException("No costs created for " + request);
+		}
 
 		return createCostResult(costElementResults);
 	}
@@ -374,8 +381,9 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public CostAmount getCurrentCosts(final CostSegment costSegment, final CostingMethod costingMethod)
+	public Optional<CostAmount> getCurrentCosts(final CostSegment costSegment, final CostingMethod costingMethod)
 	{
-		return currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod).getTotalAmount();
+		return currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod)
+				.map(CostResult::getTotalAmount);
 	}
 }
