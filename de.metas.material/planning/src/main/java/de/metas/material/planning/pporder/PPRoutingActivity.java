@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalUnit;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 
@@ -92,10 +91,6 @@ public class PPRoutingActivity
 	@NonNull
 	@Default
 	ImmutableSet<PPRoutingActivityId> nextActivityIds = ImmutableSet.of();
-
-	@NonNull
-	@Default
-	final ImmutableList<Integer> assetIds = ImmutableList.of();
 
 	public boolean isValidAtDate(final LocalDateTime dateTime)
 	{

@@ -206,7 +206,6 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.milestone(activityRecord.isMilestone())
 				//
 				.nextActivityIds(nextActivityIds)
-				.assetIds(retrieveAssetIds(activityId))
 				//
 				.build();
 	}
@@ -224,21 +223,6 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						nodeNextRecord -> activityIdsByRepoId.get(nodeNextRecord.getAD_WF_Node_ID()),
 						nodeNextRecord -> activityIdsByRepoId.get(nodeNextRecord.getAD_WF_Next_ID())));
-	}
-
-	private ImmutableList<Integer> retrieveAssetIds(final PPRoutingActivityId activityId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_PP_WF_Node_Asset.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_WF_Node_Asset.COLUMNNAME_AD_WF_Node_ID, activityId)
-				.orderBy(I_PP_WF_Node_Asset.COLUMNNAME_SeqNo)
-				.create()
-				.listDistinct(I_PP_WF_Node_Asset.COLUMNNAME_A_Asset_ID, Integer.class)
-				.stream()
-				.filter(assetId -> assetId != null && assetId > 0)
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static TemporalUnit extractDurationUnit(final I_AD_Workflow routingRecord)
