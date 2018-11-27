@@ -67,6 +67,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	//
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final ICostDetailRepository costDetailsRepo;
@@ -136,11 +137,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	private CostDetailCreateResult createComponentIssue(
-			@NonNull final CostDetailCreateRequest request, 
+			@NonNull final CostDetailCreateRequest request,
 			@NonNull final PPOrderId orderId)
 	{
 		// TODO Auto-generated method stub
-		final PPOrderCosts orderCosts = Services.get(IPPOrderCostBL.class).getByOrderId(orderId);
+		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
 		throw new UnsupportedOperationException();
 	}
 
