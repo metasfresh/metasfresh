@@ -253,6 +253,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.incomeSummaryAcctId(AccountId.ofRepoId(acctSchemaGL.getIncomeSummary_Acct()))
 				.retainedEarningAcctId(AccountId.ofRepoId(acctSchemaGL.getRetainedEarning_Acct()))
 				//
+				.purchasePriceVarianceOffsetAcctId(AccountId.ofRepoId(acctSchemaGL.getPPVOffset_Acct()))
+				//
 				.build();
 	}
 

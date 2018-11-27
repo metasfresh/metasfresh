@@ -45,6 +45,9 @@ public class AcctSchemaGeneralLedger
 	AccountId incomeSummaryAcctId;
 	@NonNull
 	AccountId retainedEarningAcctId;
+	
+	@NonNull
+	AccountId purchasePriceVarianceOffsetAcctId;
 
 	public AccountId getDueToAcctId(final AcctSchemaElementType segment)
 	{

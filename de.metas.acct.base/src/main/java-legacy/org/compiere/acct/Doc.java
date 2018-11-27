@@ -1227,10 +1227,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	/** GL Accounts - PPV Offset */
 	public static final int ACCTTYPE_PPVOffset = 101;
-	/** GL Accounts - Commitment Offset */
-	public static final int ACCTTYPE_CommitmentOffset = 111;
-	/** GL Accounts - Commitment Offset Sales */
-	public static final int ACCTTYPE_CommitmentOffsetSales = 112;
+	// /** GL Accounts - Commitment Offset */
+	// public static final int ACCTTYPE_CommitmentOffset = 111;
+	// /** GL Accounts - Commitment Offset Sales */
+	// public static final int ACCTTYPE_CommitmentOffsetSales = 112;
 
 	/**
 	 * Get the Valid Combination id for Accounting Schema
@@ -1409,18 +1409,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		/** GL Accounts */
 		else if (acctType == ACCTTYPE_PPVOffset)
 		{
-			sql = "SELECT PPVOffset_Acct FROM C_AcctSchema_GL WHERE C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(acctSchemaId);
-		}
-		else if (acctType == ACCTTYPE_CommitmentOffset)
-		{
-			sql = "SELECT CommitmentOffset_Acct FROM C_AcctSchema_GL WHERE C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(acctSchemaId);
-		}
-		else if (acctType == ACCTTYPE_CommitmentOffsetSales)
-		{
-			sql = "SELECT CommitmentOffsetSales_Acct FROM C_AcctSchema_GL WHERE C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(acctSchemaId);
+			return acctSchema.getGeneralLedger().getPurchasePriceVarianceOffsetAcctId();
 		}
 		else
 		{
@@ -1557,8 +1546,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		if (_currencyId == null)
 		{
-			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(getValueAsIntOrZero("C_Currency_ID"));
-			_currencyId = Optional.ofNullable(currencyId);
+			_currencyId = getValueAsOptionalId("C_Currency_ID", CurrencyId::ofRepoIdOrNull);
 		}
 
 		return _currencyId.orElse(null);
