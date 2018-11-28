@@ -7,12 +7,17 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Services;
@@ -40,12 +45,14 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_C_BPartner_Product.class)
+@Component("de.metas.purchasing.model.interceptor.C_BPartner_Product")
 public class C_BPartner_Product
 {
+	private final static String MSG_C_BPartner_Product_Duplicate_ASI = "C_BPartner_Product_Duplicate_ASI";
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BPartner_Product.COLUMNNAME_M_AttributeSetInstance_ID)
 	public void onASISet(final I_C_BPartner_Product bpProduct)
 	{
-
 		if (bpProduct.getM_AttributeSetInstance_ID() <= 0)
 		{
 			// nothing to do
@@ -69,12 +76,15 @@ public class C_BPartner_Product
 
 		if (!isASIValid)
 		{
-			throw new AdempiereException("Duplicate Attribute");
+			final ITranslatableString translatableMsgText = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_C_BPartner_Product_Duplicate_ASI);
+			throw new AdempiereException(translatableMsgText).markAsUserValidationError();
 		}
 	}
 
 	private boolean isASIValid(final I_C_BPartner_Product bpProduct, final AttributeSetInstanceId attributeSetInstanceId)
 	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
 		if (bpProduct.getM_AttributeSetInstance_ID() <= 0)
 		{
 			return true;
@@ -82,6 +92,9 @@ public class C_BPartner_Product
 
 		final AttributeSetInstanceId bpProductASIId = AttributeSetInstanceId.ofRepoId(bpProduct.getM_AttributeSetInstance_ID());
 
-		return bpProductASIId.equals(attributeSetInstanceId);
+		final ImmutableAttributeSet bpAttributeSet = attributeDAO.getImmutableAttributeSetById(bpProductASIId);
+		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(attributeSetInstanceId);
+
+		return !attributeSet.equals(bpAttributeSet);
 	}
 }
