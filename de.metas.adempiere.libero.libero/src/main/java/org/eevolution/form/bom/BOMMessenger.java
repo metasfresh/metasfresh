@@ -46,7 +46,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import org.compiere.model.MProduct;
-import org.eevolution.model.MPPOrder;
+import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.wrapper.BOMLineWrapper;
 import org.eevolution.model.wrapper.BOMWrapper;
 import org.eevolution.msg.HTMLMessenger;
@@ -95,9 +95,9 @@ public class BOMMessenger extends HTMLMessenger {
 	    	
 			tooltip = getProductInfo((MProduct)node.getUserObject());	    	
 	    }
-	    if(node.getUserObject() instanceof MPPOrder) {
+	    if(node.getUserObject() instanceof I_PP_Order) {
 	    	
-			tooltip = getMfcOrderInfo((MPPOrder)node.getUserObject());	    	
+			tooltip = getMfcOrderInfo((I_PP_Order)node.getUserObject());	    	
 	    }
 	    else if(node.getUserObject() instanceof BOMWrapper) {
 	    	
