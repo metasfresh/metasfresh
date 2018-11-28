@@ -8,6 +8,8 @@ import java.sql.Timestamp;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IErrorManager;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -77,14 +79,14 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
 			ifColumnsChanged = {
 					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice,
-					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Effective,
+					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice,
 					I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced })
 	public void associateWithRefundCandidate(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		if (!Services.get(IInvoiceCandBL.class).isUpdateProcessInProgress())
 		{
-			return; // we one want one part to manage refund invoice candidate to avoid locking problems and other race conditions
+			return; // only the update process shall manage refund invoice candidates, to avoid locking problems and other race conditions
 		}
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(invoiceCandidateRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
@@ -99,7 +101,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		associateDuringUpdateProcess0(invoiceCandidateRecord);
 	}
 
-	private void associateDuringUpdateProcess0(final I_C_Invoice_Candidate invoiceCandidateRecord)
+	private void associateDuringUpdateProcess0(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		try
 		{
@@ -109,10 +111,13 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		catch (final RuntimeException e)
 		{
 			// allow the "normal ICs" to be updated, even if something is wrong with the "refund-ICs"
-			Loggables
-					.get()
+			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
+			Loggables.get()
 					.withLogger(logger, Level.WARN)
-					.addLog("associateDuringUpdateProcess0 - Caught an exception; please check the async workpackage log; e={}", e.toString());
+					.addLog("associateDuringUpdateProcess0 - Caught an exception withe processing C_Invoice_Candidate_ID={}; "
+							+ "please check the async workpackage log; AD_Issue_ID={}; e={}",
+							invoiceCandidateRecord.getC_Invoice_Candidate_ID(), issue.getAD_Issue_ID(), e.toString());
+
 		}
 	}
 

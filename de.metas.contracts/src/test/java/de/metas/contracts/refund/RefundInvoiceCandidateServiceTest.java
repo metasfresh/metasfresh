@@ -133,11 +133,11 @@ public class RefundInvoiceCandidateServiceTest
 	{
 		if (RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundMode))
 		{
-			refundConfigRecords.get(0).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale);
+			refundConfigRecords.get(0).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Tiered);
 			saveRecord(refundConfigRecords.get(0));
-			refundConfigRecords.get(1).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale);
+			refundConfigRecords.get(1).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Tiered);
 			saveRecord(refundConfigRecords.get(1));
-			refundConfigRecords.get(2).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale);
+			refundConfigRecords.get(2).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Tiered);
 			saveRecord(refundConfigRecords.get(2));
 		}
 		else
