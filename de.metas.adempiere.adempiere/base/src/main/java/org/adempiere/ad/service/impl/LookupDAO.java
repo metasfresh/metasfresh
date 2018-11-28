@@ -929,7 +929,6 @@ public class LookupDAO implements ILookupDAO
 
 		public SQLNamePairIterator(final String sql, final boolean numericKey, final int entityTypeColumnIndex)
 		{
-			super();
 			this.sql = sql;
 			this.numericKey = numericKey;
 			this.entityTypeColumnIndex = entityTypeColumnIndex;

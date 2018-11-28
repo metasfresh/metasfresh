@@ -35,9 +35,10 @@ public class ConsoleLoggable implements ILoggable
 	}
 
 	@Override
-	public void addLog(String msg, Object... msgParameter)
+	public ILoggable addLog(String msg, Object... msgParameter)
 	{
 		out.println(StringUtils.formatMessage(msg, msgParameter));
+		return this;
 	}
 
 }
