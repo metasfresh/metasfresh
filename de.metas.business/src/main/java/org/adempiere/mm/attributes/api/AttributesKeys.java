@@ -2,9 +2,6 @@ package org.adempiere.mm.attributes.api;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -24,6 +21,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -84,6 +83,20 @@ public final class AttributesKeys
 		return createAttributesKeyWithFilter(
 				attributeSetInstanceId,
 				ai -> true);
+	}
+
+	public static Optional<AttributesKey> createAttributesKeyFromASIStorageAttributes(final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		if (AttributeSetInstanceId.isRegular(attributeSetInstanceId))
+		{
+			return createAttributesKeyWithFilter(
+					attributeSetInstanceId.getRepoId(),
+					ai -> ai.getM_Attribute().isStorageRelevant());
+		}
+		else
+		{
+			return Optional.empty();
+		}
 	}
 
 	/**
