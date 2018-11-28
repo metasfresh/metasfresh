@@ -17,6 +17,7 @@ import de.metas.letters.model.Letter;
 import de.metas.letters.model.LetterRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.util.Loggables;
 
 /*
  * #%L
@@ -42,8 +43,6 @@ import de.metas.marketing.base.model.ContactPersonRepository;
 
 public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProcessorAdapter
 {
-
-
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
@@ -52,8 +51,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 		final LetterRepository letterRepo = Adempiere.getBean(LetterRepository.class);
 		final LocationRepository locationRepo = Adempiere.getBean(LocationRepository.class);
 		final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
-		final BoilerPlateRepository  boilerPlateRepo = Adempiere.getBean(BoilerPlateRepository.class);
-
+		final BoilerPlateRepository boilerPlateRepo = Adempiere.getBean(BoilerPlateRepository.class);
 
 		final Set<Integer> campaignContactPersonsIDs = retrieveAllItemIds();
 
@@ -66,19 +64,34 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 			// create letter
 			String subject = "";
 			String body = "";
-			if (contactPerson.getBoilerPlateId() != null)
+			if (contactPerson.getBoilerPlateId() == null)
+			{
+				Loggables.get().addLog(
+						"contact person with id={} has no boilerPlate text-snippet; skipping",
+						contactPerson.getContactPersonId());
+				continue;
+			}
+			else
 			{
 				final BoilerPlate boilerPlate = boilerPlateRepo.getByBoilerPlateId(
 						contactPerson.getBoilerPlateId(),
 						contactPerson.getLanguage());
 
-				if (boilerPlate != null)
+				if (boilerPlate == null)
+				{
+					Loggables.get().addLog(
+							"contact person with id={} has no boilerPlate text-snippet for language={}; skipping",
+							contactPerson.getContactPersonId(), contactPerson.getLanguage());
+					continue;
+				}
+				else
 				{
 					subject = boilerPlate.getSubject();
 					body = boilerPlate.getTextSnippet();
 				}
 			}
-			Letter letter = Letter.builder()
+
+			final Letter letter = Letter.builder()
 					.boilerPlateId(contactPerson.getBoilerPlateId())
 					.bpartnerId(contactPerson.getBPartnerId())
 					.bpartnerLocationId(bpLocation.getId())
@@ -89,12 +102,11 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 					.body(body)
 					.bodyParsed(body)
 					.build();
-
-			// save letter
-			letter = letterRepo.save(letter);
+			final Letter savedLetter = letterRepo.save(letter);
+			Loggables.get().addLog(
+					"Created and saved a letter with id={} for contact person with id={}; boilerPlateId={}; language={}",
+					savedLetter.getId(), contactPerson.getContactPersonId(), contactPerson.getBoilerPlateId(), contactPerson.getLanguage());
 		}
-
 		return Result.SUCCESS;
 	}
-
 }
