@@ -215,7 +215,11 @@ public class BPartnerMasterDataProvider
 		// ..code (aka value)
 		if (existingBPartnerId == null && json.getCode() != null)
 		{
-			existingBPartnerId = bpartnersRepo.getBPartnerIdByValueIfExists(json.getCode()).orElse(null);
+			existingBPartnerId = bpartnersRepo
+					.getBPartnerIdByValueIfExists(
+							json.getCode(),
+							context.getOrgId())
+					.orElse(null);
 
 			searchedByInfo.add(StringUtils.formatMessage("Value/Code={}", json.getCode()));
 		}
@@ -226,7 +230,9 @@ public class BPartnerMasterDataProvider
 			if (jsonLocation != null && jsonLocation.getGln() != null)
 			{
 				existingBPartnerId = bpartnersRepo
-						.getBPartnerIdByLocatorGln(jsonLocation.getGln())
+						.getBPartnerIdByLocatorGlnIfExists(
+								jsonLocation.getGln(),
+								context.getOrgId())
 						.orElse(null);
 
 				searchedByInfo.add(StringUtils.formatMessage("Location.GLN={}", jsonLocation.getGln()));
@@ -346,20 +352,9 @@ public class BPartnerMasterDataProvider
 			}
 		}
 
-		// try
-		// {
 		updateBPartnerRecord(bpartnerRecord, json);
 		permissionService.assertCanCreateOrUpdate(bpartnerRecord);
 		bpartnersRepo.save(bpartnerRecord);
-		// }
-		// catch (final PermissionNotGrantedException ex)
-		// {
-		// throw ex;
-		// }
-		// catch (final Exception ex)
-		// {
-		// throw new AdempiereException("Failed creating/updating record for " + json, ex);
-		// }
 
 		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
@@ -444,20 +439,9 @@ public class BPartnerMasterDataProvider
 			bpLocationRecord.setAD_Org_ID(orgRepoId);
 		}
 
-		// try
-		// {
 		updateBPartnerLocationRecord(bpLocationRecord, bpartnerId, jsonBPartnerLocation);
 		permissionService.assertCanCreateOrUpdate(bpLocationRecord);
 		bpartnersRepo.save(bpLocationRecord);
-		// }
-		// catch (final PermissionNotGrantedException ex)
-		// {
-		// throw ex;
-		// }
-		// catch (final Exception ex)
-		// {
-		// throw new AdempiereException("Failed creating/updating record for " + jsonBPartnerLocation, ex);
-		// }
 
 		if (context.isBPartnerIsOrgBP())
 		{
@@ -577,20 +561,9 @@ public class BPartnerMasterDataProvider
 			contactRecord.setAD_Org_ID(context.getOrgId().getRepoId());
 		}
 
-		// try
-		// {
 		updateBPartnerContactRecord(contactRecord, bpartnerId, jsonBPartnerContact);
 		permissionService.assertCanCreateOrUpdate(contactRecord);
 		bpartnersRepo.save(contactRecord);
-		// }
-		// catch (final PermissionNotGrantedException ex)
-		// {
-		// throw ex;
-		// }
-		// catch (final Exception ex)
-		// {
-		// throw new AdempiereException("Failed creating/updating record for " + jsonBPartnerContact, ex);
-		// }
 
 		return BPartnerContactId.ofRepoId(bpartnerId, contactRecord.getAD_User_ID());
 	}

@@ -120,6 +120,7 @@ public interface IQueryBuilder<T>
 	default IQueryBuilder<T> orderBy(final String columnName) { orderBy().addColumn(columnName); return this; }
 	default IQueryBuilder<T> orderBy(final ModelColumn<T, ?> column) { orderBy().addColumn(column); return this; }
 	default IQueryBuilder<T> orderByDescending(final String columnName) { orderBy().addColumnDescending(columnName); return this; }
+	default IQueryBuilder<T> orderByDescending(final ModelColumn<T, ?> column) { orderBy().addColumnDescending(column.getColumnName()); return this; }
 	//@formatter:on
 
 	IQuery<T> create();
