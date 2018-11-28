@@ -10,6 +10,7 @@ import de.metas.acct.api.AcctSchemaCosting;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -115,6 +116,22 @@ public class CostAmount
 	public CostAmount multiply(@NonNull final Quantity quantity)
 	{
 		return multiply(quantity.getAsBigDecimal());
+	}
+
+	public CostAmount multiply(@NonNull final Percent percent, final int precision)
+	{
+		if (percent.isZero())
+		{
+			return zero(currencyId);
+		}
+		else if (percent.isOneHundred())
+		{
+			return this;
+		}
+		else
+		{
+			return new CostAmount(percent.multiply(value, precision), currencyId);
+		}
 	}
 
 	public CostAmount add(@NonNull final CostAmount amtToAdd)
