@@ -60,7 +60,7 @@ public class HuTraceEventToDbRecordUtil
 				.inOutId(dbRecord.getM_InOut_ID())
 				.movementId(dbRecord.getM_Movement_ID())
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(dbRecord.getM_ShipmentSchedule_ID()))
-				.type(HUTraceType.valueOf(dbRecord.getHUTraceType())); // HUTraceType is also a mandatory column, so no NPE
+				.type(HUTraceType.ofCode(dbRecord.getHUTraceType())); // HUTraceType is also a mandatory column, so no NPE
 
 		if (dbRecord.getM_HU_Trace_ID() > 0)
 		{
