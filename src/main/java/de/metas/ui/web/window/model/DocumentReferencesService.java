@@ -129,10 +129,13 @@ public class DocumentReferencesService
 		return ITranslatableString.compose(" ", windowCaption, documentSummary);
 	}
 
-	private static final DocumentReference createDocumentReference(final ZoomInfo zoomInfo, ITranslatableString filterCaption)
+	private static final DocumentReference createDocumentReference(
+			@NonNull final ZoomInfo zoomInfo, 
+			@NonNull final ITranslatableString filterCaption)
 	{
 		return DocumentReference.builder()
 				.id(zoomInfo.getId())
+				.internalName(zoomInfo.getInternalName())
 				.caption(zoomInfo.getLabel())
 				.windowId(WindowId.of(zoomInfo.getAD_Window_ID()))
 				.documentsCount(zoomInfo.getRecordCount())

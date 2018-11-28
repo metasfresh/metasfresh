@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,7 +47,9 @@ public final class MQueryDocumentFilterHelper
 	{
 	}
 
-	public static DocumentFilter createDocumentFilterFromMQuery(final MQuery mquery, final ITranslatableString caption)
+	public static DocumentFilter createDocumentFilterFromMQuery(
+			@NonNull final MQuery mquery, 
+			@NonNull final ITranslatableString caption)
 	{
 		final List<DocumentFilterParam> parameters = new ArrayList<>();
 		for (int restrictionIdx = 0, restrictionsCount = mquery.getRestrictionCount(); restrictionIdx < restrictionsCount; restrictionIdx++)

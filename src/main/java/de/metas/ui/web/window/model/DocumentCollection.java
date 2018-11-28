@@ -769,9 +769,14 @@ public class DocumentCollection
 			return document.getFieldView(fieldName).getValue();
 		}
 
+		/** @return the given {@code defaultValue} if this document does not have a field with the given {@code fieldName} or if the field does not have a value. */
 		@Override
 		public int getFieldValueAsInt(final String fieldName, final int defaultValue)
 		{
+			if(!document.hasField(fieldName))
+			{
+				return defaultValue;
+			}
 			return document.getFieldView(fieldName).getValueAsInt(defaultValue);
 		}
 	}
