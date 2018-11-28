@@ -88,6 +88,8 @@ public final class AttributesKeys
 
 	/**
 	 * Similar to {@link #createAttributesKeyFromASIAllAttributeValues(int)}, but only attributes flagged as "storage relevant" are considered.
+	 * <p>
+	 * Please make sure the output of this method is in sync with the DB function @{code generateHUAttributesKey}.
 	 *
 	 * @return see {@link #createAttributesKeyFromASIAllAttributeValues(int)}
 	 */
