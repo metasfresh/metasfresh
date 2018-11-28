@@ -118,6 +118,15 @@ context('Reusable "login" custom command', function() {
   });
 });
 
+
+Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
+  describe('Click on a checkbox field', function() {
+    cy.get(`.form-field-${fieldName}`)
+      .find('.input-checkbox-tick')
+      .click();
+  });
+});
+
 // Should also work for date columns, e.g. '01/01/2018{enter}'
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
   describe('Enter value into string field', function() {
@@ -135,6 +144,10 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
     });
   });
 
+/* TODO: What is this command for ? Looks like a dupe of
+ * writeIntoCompositeLookupField
+ * Kuba
+ */
 Cypress.Commands.add(
   'writeIntoLookupListField',
   (fieldName, partialValue, listValue) => {
@@ -154,7 +167,7 @@ Cypress.Commands.add(
     describe('Enter value into lookup list field', function() {
       cy.get(`#lookup_${fieldName}`)
         .within(($el) => {
-          if ($el.find('.raw-lookup-wrapper input').length) {
+          if ($el.find('.lookup-widget-wrapper input').length) {
             return cy.get('input').type(partialValue);
           }
 
@@ -162,11 +175,14 @@ Cypress.Commands.add(
         })
 
       cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click();
+      cy.contains('.input-dropdown-list-option', listValue).click({ force: true });
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
     });
 });
 
+/**
+ * Select the given list value in a static list.
+ */
 Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
   describe('Select value in list field', function() {
       cy.get(`.form-field-${fieldName}`)
@@ -178,29 +194,6 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
         .click();
     }
   );
-});
-
-Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
-  describe('Click on a checkbox field', function() {
-    cy.get(`.form-field-${fieldName}`)
-      .find('.input-checkbox-tick')
-      .click();
-  });
-});
-
-/** !!not working!! */
-Cypress.Commands.add(
-  'writeIntoMultiListField',
-  (fieldName, index, partialValue, listValue) => {
-    describe('Enter value into list field within a "fieldgroup" (field with additional fields, e.g sales order bPartner with lcoation and user)', function() {
-      cy.get(`.form-field-${fieldName}`)
-        .find('input')
-        .find(`:nth.child(${index})`)
-        .type(partialValue);
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    });
 });
 
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
@@ -242,9 +235,17 @@ Cypress.Commands.add('pressAddNewButton', () => {
   })
 });
 
-/* ts: I don't see a nicer way to address this button; */
+/*
+ * Press an overlay's "Done" button. Fail if there is a confirm dialog since that means the record could not be saved. 
+ */
 Cypress.Commands.add('pressDoneButton', () => {
   describe('Press an overlay\'s done-button', function() {
+
+    // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
+    // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
+    cy.on('window:confirm', (str) => {
+      expect(str).to.eq('Everything is awesome and the data record is saved')
+    });
 
     //webui.modal.actions.done
     const doneText = Cypress.messages.modal.actions.done;
