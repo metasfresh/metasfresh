@@ -1,6 +1,6 @@
 -- Function: de_metas_endcustomer_fresh_reports.docs_sales_invoice_details_compensation_subgroup(numeric, character varying, numeric)
 
-DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice_details_compensation_subgroup(numeric, character varying, numeric);
+--DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice_details_compensation_subgroup(numeric, character varying, numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice_details_compensation_subgroup(
     IN c_invoice_id numeric,
