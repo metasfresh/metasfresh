@@ -179,7 +179,7 @@ public class RollupWorkflow extends JavaProcess
 		if (routingId == null)
 		{
 			productPlanning = Services.get(IProductPlanningDAO.class).find(ProductPlanningQuery.builder()
-					.orgId(p_AD_Org_ID.getRepoId())
+					.orgId(p_AD_Org_ID)
 					.productId(productId)
 					.build());
 			if (productPlanning != null)

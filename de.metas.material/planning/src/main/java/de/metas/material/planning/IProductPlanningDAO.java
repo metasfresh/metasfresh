@@ -28,6 +28,7 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
@@ -36,6 +37,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,26 +48,26 @@ public interface IProductPlanningDAO extends ISingletonService
 	@Value
 	public static class ProductPlanningQuery
 	{
-		int orgId;
+		OrgId orgId;
 		WarehouseId warehouseId;
-		int plantId;
+		ResourceId plantId;
 		ProductId productId;
 		AttributeSetInstanceId attributeSetInstanceId;
 
 		/**
-		 * @param orgId may be 0 which means only the * org
+		 * @param orgId may be null which means only the * org
 		 * @param warehouseId may be null which means "no warehouse" (not any warehouse!)
-		 * @param plantId may be 0 which means "no plantId"
+		 * @param plantId may be null which means "no plantId"
 		 * @param productId mandatory
 		 * @param attributeSetInstanceId mandatory, but might contain the 0-ASI-Id;
 		 */
 		@Builder
 		private ProductPlanningQuery(
-				int orgId,
+				@Nullable final OrgId orgId,
 				@Nullable final WarehouseId warehouseId,
-				int plantId, // may be 0
-				@NonNull ProductId productId,
-				@NonNull AttributeSetInstanceId attributeSetInstanceId)
+				@Nullable final ResourceId plantId,
+				@NonNull final ProductId productId,
+				@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 		{
 			this.orgId = orgId;
 			this.warehouseId = warehouseId;

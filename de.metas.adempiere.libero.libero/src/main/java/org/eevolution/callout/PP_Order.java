@@ -30,6 +30,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.warehouse.LocatorId;
@@ -52,6 +53,7 @@ import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -180,9 +182,9 @@ public class PP_Order extends CalloutEngine
 	protected static I_PP_Product_Planning findPP_Product_Planning(@NonNull final I_PP_Order ppOrder)
 	{
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
-				.orgId(ppOrder.getAD_Org_ID())
+				.orgId(OrgId.ofRepoIdOrAny(ppOrder.getAD_Org_ID()))
 				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrder.getM_Warehouse_ID()))
-				.plantId(ppOrder.getS_Resource_ID())
+				.plantId(ResourceId.ofRepoIdOrNull(ppOrder.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(ppOrder.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID()))
 				.build();
