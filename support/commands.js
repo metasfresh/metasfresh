@@ -148,18 +148,19 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
  * writeIntoCompositeLookupField
  * Kuba
  */
-Cypress.Commands.add(
-  'writeIntoLookupListField',
-  (fieldName, partialValue, listValue) => {
-    describe('Enter value into lookup list field', function() {
-      cy.get(`.form-field-${fieldName}`)
-        .find('input')
-        .type(partialValue);
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    });
-});
+// Cypress.Commands.add(
+//   'writeIntoLookupField',
+//   (fieldName, partialValue, listValue) => {
+//     describe('Enter value into lookup field', function() {
+//       cy.get(`#lookup_${fieldName}`)
+//         .find('input')
+//         .clear()
+//         .type(partialValue);
+//       cy.get('.input-dropdown-list').should('exist');
+//       cy.contains('.input-dropdown-list-option', listValue).click();
+//       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+//     });
+// });
 
 Cypress.Commands.add(
   'writeIntoCompositeLookupField',
@@ -168,7 +169,8 @@ Cypress.Commands.add(
       cy.get(`#lookup_${fieldName}`)
         .within(($el) => {
           if ($el.find('.lookup-widget-wrapper input').length) {
-            return cy.get('input').type(partialValue);
+            return cy.get('input').clear()
+              .type(partialValue);
           }
 
           return cy.get('.lookup-dropdown').click();
