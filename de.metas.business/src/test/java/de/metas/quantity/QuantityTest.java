@@ -38,6 +38,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.util.lang.Percent;
+
 public class QuantityTest
 {
 	private UOMTestHelper uomHelper;
@@ -91,13 +93,13 @@ public class QuantityTest
 			// Calculate average quantity by using "weightedAverage" method
 			final int previousAverageWeight = count - 1;
 			quantity = new Quantity(currentQtyValue, uom)
-					.weightedAverage(quantity.getQty(), previousAverageWeight);
+					.weightedAverage(quantity.getAsBigDecimal(), previousAverageWeight);
 			// System.out.println("Actual quantity avg=" + quantity.getQty());
 
 			//
 			// Assume their are equal
 			Assert.assertThat("Invalid Quantity.weightedAverage result (count=" + count + ")",
-					quantity.getQty(), // Actual
+					quantity.getAsBigDecimal(), // Actual
 					BigDecimalCloseTo.closeTo(currentQtyAvg, comparationError) // expectation
 			);
 		}
@@ -113,7 +115,7 @@ public class QuantityTest
 		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM2", 2);
 
 		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
-		Assert.assertSame("Invalid Qty", qty, quantity.getQty());
+		Assert.assertSame("Invalid Qty", qty, quantity.getAsBigDecimal());
 		Assert.assertSame("Invalid UOM", uom, quantity.getUOM());
 		Assert.assertSame("Invalid Source Qty", sourceQty, quantity.getSourceQty());
 		Assert.assertSame("Invalid Source UOM", sourceUOM, quantity.getSourceUOM());
@@ -292,5 +294,17 @@ public class QuantityTest
 		assertThat(qty.compareTo(qtyPlusOne)).isLessThan(0);
 		assertThat(qtyPlusOne.compareTo(qty)).isGreaterThan(0);
 		assertThat(otherQty.compareTo(qty)).isEqualTo(0);
+	}
+
+	@Test
+	public void addPercent_100_plus_30perc()
+	{
+		final I_C_UOM uom2 = uomHelper.createUOM("uom2", 2);
+		assertThat(Quantity.of(100, uom2).add(Percent.of(33)).getAsBigDecimal())
+				.isEqualTo("133.00");
+
+		final I_C_UOM uom5 = uomHelper.createUOM("uom5", 5);
+		assertThat(Quantity.of(100, uom5).add(Percent.of(33)).getAsBigDecimal())
+				.isEqualTo("133.00000");
 	}
 }

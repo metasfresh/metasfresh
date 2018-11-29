@@ -35,6 +35,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /**
@@ -584,6 +585,20 @@ public final class Quantity implements Comparable<Quantity>
 			return this;
 		}
 		return add(of(qtyToAdd, uom));
+	}
+
+	public Quantity add(@NonNull final Percent percent)
+	{
+		if (percent.isZero())
+		{
+			return this;
+		}
+
+		return new Quantity(
+				percent.addToBase(this.qty, this.uom.getStdPrecision()),
+				this.uom,
+				percent.addToBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				this.sourceUom);
 	}
 
 	public Quantity subtract(@NonNull final Quantity qtyToSubtract)
