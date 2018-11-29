@@ -59,7 +59,7 @@ class RawList extends PureComponent {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     window.addEventListener('keydown', this.handleTab);
   }
 

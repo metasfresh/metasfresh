@@ -19,7 +19,7 @@ class Sidenav extends Component {
     };
   }
 
-  componentWillMount = () => {
+  UNSAFE_componentWillMount = () => {
     const { boardId, viewId, setViewId } = this.props;
 
     this.setState({
