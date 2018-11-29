@@ -75,7 +75,7 @@ public class UOMDAO implements IUOMDAO
 	@Override
 	public I_C_UOM retrieveByX12DE355(@CacheCtx final Properties ctx, final String x12de355, final boolean throwExIfNull)
 	{
-		UomId uomId = retrieveUomIdByX12DE355(ctx, x12de355, throwExIfNull);
+		final UomId uomId = retrieveUomIdByX12DE355(ctx, x12de355, throwExIfNull);
 		if (uomId == null)
 		{
 			return null;
@@ -127,5 +127,12 @@ public class UOMDAO implements IUOMDAO
 	{
 		final I_C_UOM uom = getById(uomId);
 		return UOMUtil.toTemporalUnit(uom);
+	}
+
+	@Override
+	public int getStandardPrecision(final int uomId)
+	{
+		final I_C_UOM uom = getById(uomId);
+		return uom.getStdPrecision();
 	}
 }

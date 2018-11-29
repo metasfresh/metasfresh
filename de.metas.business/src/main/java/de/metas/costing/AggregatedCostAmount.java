@@ -41,7 +41,7 @@ import lombok.Value;
  */
 
 @Value
-public final class CostResult
+public final class AggregatedCostAmount
 {
 	@Getter(AccessLevel.NONE)
 	CostSegment costSegment;
@@ -52,7 +52,7 @@ public final class CostResult
 	ImmutableMap<CostElement, CostAmount> amountsPerElement;
 
 	@Builder
-	private CostResult(
+	private AggregatedCostAmount(
 			@NonNull final CostSegment costSegment,
 			@NonNull final Map<CostElement, CostAmount> amounts)
 	{
@@ -81,7 +81,7 @@ public final class CostResult
 		return amt;
 	}
 
-	public CostResult merge(@NonNull final CostResult other)
+	public AggregatedCostAmount merge(@NonNull final AggregatedCostAmount other)
 	{
 		if (!Objects.equals(costSegment, other.costSegment))
 		{
@@ -94,10 +94,10 @@ public final class CostResult
 				.putAll(other.amountsPerElement)
 				.build();
 
-		return new CostResult(costSegment, amountsNew);
+		return new AggregatedCostAmount(costSegment, amountsNew);
 	}
 
-	public CostResult add(@NonNull final CostResult other)
+	public AggregatedCostAmount add(@NonNull final AggregatedCostAmount other)
 	{
 		if (!Objects.equals(costSegment, other.costSegment))
 		{
@@ -109,10 +109,10 @@ public final class CostResult
 			amountsNew.compute(costElement, (ce, amtOld) -> amtOld != null ? amtOld.add(amtToAdd) : amtToAdd);
 		});
 
-		return new CostResult(costSegment, amountsNew);
+		return new AggregatedCostAmount(costSegment, amountsNew);
 	}
 
-	public CostResult divide(@NonNull final BigDecimal divisor, final int precision, @NonNull final RoundingMode roundingMode)
+	public AggregatedCostAmount divide(@NonNull final BigDecimal divisor, final int precision, @NonNull final RoundingMode roundingMode)
 	{
 		Check.assume(divisor.signum() != 0, "divisor != 0");
 
@@ -124,6 +124,6 @@ public final class CostResult
 		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amountsPerElement.size());
 		amountsPerElement.forEach((costElement, amt) -> amountsNew.put(costElement, amt.divide(divisor, precision, roundingMode)));
 
-		return new CostResult(costSegment, amountsNew);
+		return new AggregatedCostAmount(costSegment, amountsNew);
 	}
 }

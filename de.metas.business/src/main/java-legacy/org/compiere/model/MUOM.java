@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -29,6 +30,7 @@ import org.compiere.util.Ini;
 import de.metas.cache.CCache;
 import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMUtil;
+import de.metas.util.Services;
 
 /**
  * Unit Of Measure Model
@@ -95,6 +97,7 @@ public class MUOM extends X_C_UOM
 	 * @param C_UOM_ID ID
 	 * @return UOM
 	 */
+	@Deprecated
 	public static MUOM get(Properties ctx, int C_UOM_ID)
 	{
 		if (s_cache.size() == 0)
@@ -116,10 +119,14 @@ public class MUOM extends X_C_UOM
 	 * @param C_UOM_ID ID
 	 * @return Precision
 	 */
+	@Deprecated
 	public static int getPrecision(Properties ctx, int C_UOM_ID)
 	{
-		MUOM uom = get(ctx, C_UOM_ID);
-		return uom.getStdPrecision();
+		if(C_UOM_ID <= 0)
+		{
+			return 2;
+		}
+		return Services.get(IUOMDAO.class).getStandardPrecision(C_UOM_ID);
 	}	// getPrecision
 
 	/**
