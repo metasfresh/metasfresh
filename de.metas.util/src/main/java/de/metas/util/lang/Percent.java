@@ -145,7 +145,7 @@ public class Percent
 	{
 		return value;
 	}
-	
+
 	public int toInt()
 	{
 		return value.intValue();
@@ -232,6 +232,31 @@ public class Percent
 					.setScale(precision + 2, RoundingMode.HALF_UP)
 					.divide(ONE_HUNDRED_VALUE, RoundingMode.HALF_UP)
 					.multiply(value)
+					.setScale(precision, RoundingMode.HALF_UP);
+		}
+	}
+
+	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision)
+	{
+		Check.assumeGreaterOrEqualToZero(precision, "precision");
+
+		if (base.signum() == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		else if (isZero())
+		{
+			return base.setScale(precision, RoundingMode.HALF_UP);
+		}
+		else
+		{
+			// make sure the base we work with does not have more digits than we expect from the given precision.
+			final BigDecimal baseToUse = base.setScale(precision, RoundingMode.HALF_UP);
+
+			return baseToUse
+					.setScale(precision + 2)
+					.divide(ONE_HUNDRED_VALUE, RoundingMode.UNNECESSARY) // no rounding needed because we raised the current precision by 2
+					.multiply(ONE_HUNDRED_VALUE.add(value))
 					.setScale(precision, RoundingMode.HALF_UP);
 		}
 	}
