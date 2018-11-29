@@ -25,6 +25,7 @@
       "js",
       "jsx"
     ],
+    "roots": ["<rootDir>/src/__tests__/"],
     "moduleDirectories": [
       "node_modules"
     ],
@@ -42,7 +43,7 @@
     "testEnvironment": "jsdom"
   },
   "devDependencies": {
-    "@cypress/webpack-preprocessor": "^2.0.1",
+    "@cypress/webpack-preprocessor": "^4.0.2",
     "@storybook/react": "^3.2.13",
     "autoprefixer": "~8.3.0",
     "axios-mock-adapter": "^1.14.0",
@@ -66,13 +67,13 @@
     "cypress": "^3.1.1",
     "enzyme": "^3.7.0",
     "enzyme-adapter-react-16": "^1.6.0",
-    "eslint": "^4.9.0",
-    "eslint-config-prettier": "^2.6.0",
+    "eslint": "^5.9.0",
+    "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-jest": "^21.7.0",
-    "eslint-plugin-jsx-a11y": "^6.0.2",
-    "eslint-plugin-prettier": "^2.3.1",
-    "eslint-plugin-react": "^7.4.0",
+    "eslint-plugin-jest": "^22.1.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-prettier": "^3.0.0",
+    "eslint-plugin-react": "^7.11.1",
     "globby": "^6.1.0",
     "html-loader": "0.5.5",
     "html-webpack-plugin": "3.0.7",
@@ -104,7 +105,7 @@
     "why-did-you-update": "^1.0.6"
   },
   "dependencies": {
-    "@zxing/library": "^0.8.3",
+    "@zxing/library": "^0.8.4",
     "axios": "^0.16.2",
     "bootstrap": "4.1.3",
     "bundle-loader": "0.5.6",
@@ -120,10 +121,9 @@
     "intro.js": "^2.7.0",
     "intro.js-react": "^0.1.5",
     "jest-junit": "^5.2.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.11",
     "luxon": "^1.3.3",
     "moment": "~2.21.0",
-    "node-uuid": "^1.4.8",
     "numeral": "^2.0.6",
     "prop-types": "^15.5.6",
     "quagga": "^0.12.1",
@@ -162,6 +162,7 @@
     "sockjs-client": "1.0.0",
     "stompjs": "~2.3.3",
     "timer-machine": "^1.1.0",
+    "uuid": "^3.3.2",
     "webpack-git-hash": "^1.0.2"
   }
 }
