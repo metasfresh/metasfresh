@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1628242771L;
+	private static final long serialVersionUID = -482198016L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -649,43 +649,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_TaxCategory getC_TaxCategory() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class);
-	}
-
-	@Override
-	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory)
-	{
-		set_ValueFromPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class, C_TaxCategory);
-	}
-
-	/** Set Steuerkategorie.
-		@param C_TaxCategory_ID 
-		Steuerkategorie
-	  */
-	@Override
-	public void setC_TaxCategory_ID (int C_TaxCategory_ID)
-	{
-		if (C_TaxCategory_ID < 1) 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, Integer.valueOf(C_TaxCategory_ID));
-	}
-
-	/** Get Steuerkategorie.
-		@return Steuerkategorie
-	  */
-	@Override
-	public int getC_TaxCategory_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public org.compiere.model.I_C_Tax getC_Tax() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Tax_ID, org.compiere.model.I_C_Tax.class);
@@ -717,6 +680,43 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_Tax_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Tax_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_TaxCategory getC_TaxCategory() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class);
+	}
+
+	@Override
+	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory)
+	{
+		set_ValueFromPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class, C_TaxCategory);
+	}
+
+	/** Set Steuerkategorie.
+		@param C_TaxCategory_ID 
+		Steuerkategorie
+	  */
+	@Override
+	public void setC_TaxCategory_ID (int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, Integer.valueOf(C_TaxCategory_ID));
+	}
+
+	/** Get Steuerkategorie.
+		@return Steuerkategorie
+	  */
+	@Override
+	public int getC_TaxCategory_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1385,6 +1385,43 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class);
+	}
+
+	@Override
+	public void setM_DiscountSchema(org.compiere.model.I_M_DiscountSchema M_DiscountSchema)
+	{
+		set_ValueFromPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, M_DiscountSchema);
+	}
+
+	/** Set Rabatt Schema.
+		@param M_DiscountSchema_ID 
+		Schema um den prozentualen Rabatt zu berechnen
+	  */
+	@Override
+	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
+	{
+		if (M_DiscountSchema_ID < 1) 
+			set_Value (COLUMNNAME_M_DiscountSchema_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
+	}
+
+	/** Get Rabatt Schema.
+		@return Schema um den prozentualen Rabatt zu berechnen
+	  */
+	@Override
+	public int getM_DiscountSchema_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_DiscountSchemaBreak_ID, org.compiere.model.I_M_DiscountSchemaBreak.class);
@@ -1421,41 +1458,20 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return ii.intValue();
 	}
 
+	/** Set Produktnotiz.
+		@param M_Product_DocumentNote Produktnotiz	  */
 	@Override
-	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema() throws RuntimeException
+	public void setM_Product_DocumentNote (java.lang.String M_Product_DocumentNote)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class);
+		set_ValueNoCheck (COLUMNNAME_M_Product_DocumentNote, M_Product_DocumentNote);
 	}
 
+	/** Get Produktnotiz.
+		@return Produktnotiz	  */
 	@Override
-	public void setM_DiscountSchema(org.compiere.model.I_M_DiscountSchema M_DiscountSchema)
+	public java.lang.String getM_Product_DocumentNote () 
 	{
-		set_ValueFromPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, M_DiscountSchema);
-	}
-
-	/** Set Rabatt Schema.
-		@param M_DiscountSchema_ID 
-		Schema um den prozentualen Rabatt zu berechnen
-	  */
-	@Override
-	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
-	{
-		if (M_DiscountSchema_ID < 1) 
-			set_Value (COLUMNNAME_M_DiscountSchema_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
-	}
-
-	/** Get Rabatt Schema.
-		@return Schema um den prozentualen Rabatt zu berechnen
-	  */
-	@Override
-	public int getM_DiscountSchema_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_M_Product_DocumentNote);
 	}
 
 	@Override
