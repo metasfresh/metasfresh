@@ -199,4 +199,16 @@ public class CostAmount
 
 		return new CostAmount(value.subtract(amtToSubtract), currencyId);
 	}
+
+	public CostAmount toZero()
+	{
+		if (isZero())
+		{
+			return this;
+		}
+		else
+		{
+			return zero(currencyId);
+		}
+	}
 }
