@@ -719,8 +719,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 				</file>
 			</activation>
 
-
-
 			<build>
 				<plugins>
 					<!-- outputDirectory is the same as jasperreports-maven-plugin's outputDirectory -->
@@ -780,6 +778,19 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 								<artifactId>jasperreports</artifactId>
 								<version>${jasperreports.version}</version>
 							</dependency>
+
+							<!-- Thx to https://stackoverflow.com/questions/23756133/the-jrxml-file-compilation-failed-due-to-built-in-missing-in-ant -->
+							<dependency>
+								<groupId>net.sf.jasperreports</groupId>
+								<artifactId>jasperreports-functions</artifactId>
+								<version>${jasperreports.version}</version>
+							</dependency>
+							<dependency>
+								<groupId>joda-time</groupId>
+								<artifactId>joda-time</artifactId>
+								<version>2.1</version>
+							</dependency>
+
 							<dependency>
 								<!-- avoid compile error 
 								Error while compiling Jasper reports: java.lang.NoClassDefFoundError: org/springframework/beans/factory/support/BeanDefinitionRegistry: org.springframework.beans.factory.support.BeanDefinitionRegistry
