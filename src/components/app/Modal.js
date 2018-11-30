@@ -159,7 +159,9 @@ class Modal extends Component {
             type: parentType,
             ids: modalViewId
               ? modalViewDocumentIds
-              : dataId ? [dataId] : parentSelection,
+              : dataId
+              ? [dataId]
+              : parentSelection,
             tabId,
             rowId,
           };
@@ -367,7 +369,9 @@ class Modal extends Component {
     const cancelHandler =
       modalType === 'process'
         ? this.handleClose
-        : isNewDoc ? this.removeModal : undefined;
+        : isNewDoc
+        ? this.removeModal
+        : undefined;
 
     return (
       Object.keys(data).length > 0 && (
@@ -505,7 +509,9 @@ class Modal extends Component {
     const cancelHandler =
       modalType === 'process'
         ? this.handleClose
-        : isNewDoc ? this.removeModal : undefined;
+        : isNewDoc
+        ? this.removeModal
+        : undefined;
 
     function defer() {
       let res, rej;

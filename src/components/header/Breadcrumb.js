@@ -127,22 +127,21 @@ class Breadcrumb extends Component {
               {index ? menu.caption : <i className="meta-icon-menu" />}
             </span>
           </div>
-          {menuOverlay === menu.nodeId &&
-            typeof menuOverlay !== 'undefined' && (
-              <MenuOverlay
-                {...{
-                  siteName,
-                  handleMenuOverlay,
-                  openModal,
-                  windowType,
-                  docId,
-                }}
-                nodeId={menu.nodeId}
-                node={menu}
-                onClickOutside={e => handleMenuOverlay(e, '')}
-                disableOnClickOutside={menuOverlay !== menu.nodeId}
-              />
-            )}
+          {menuOverlay === menu.nodeId && typeof menuOverlay !== 'undefined' && (
+            <MenuOverlay
+              {...{
+                siteName,
+                handleMenuOverlay,
+                openModal,
+                windowType,
+                docId,
+              }}
+              nodeId={menu.nodeId}
+              node={menu}
+              onClickOutside={e => handleMenuOverlay(e, '')}
+              disableOnClickOutside={menuOverlay !== menu.nodeId}
+            />
+          )}
         </div>
       </div>
     );

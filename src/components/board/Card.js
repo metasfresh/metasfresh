@@ -92,13 +92,12 @@ class Card extends Component {
       return connectDragSource(
         connectDropTarget(
           <div className="card">
-            {mouseOn &&
-              onDelete && (
-                <i
-                  className="pointer meta-icon-close-1 float-right"
-                  onClick={() => onDelete(laneId, cardId)}
-                />
-              )}
+            {mouseOn && onDelete && (
+              <i
+                className="pointer meta-icon-close-1 float-right"
+                onClick={() => onDelete(laneId, cardId)}
+              />
+            )}
             <b className="pointer" onClick={() => onCaptionClick(documentPath)}>
               {caption}
             </b>

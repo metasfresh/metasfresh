@@ -145,11 +145,8 @@ export default function appHandler(state = initialState, action) {
       return update(state, {
         inbox: {
           notifications: {
-            $set: state.inbox.notifications.map(
-              item =>
-                item.id === action.notificationId
-                  ? { ...item, read: true }
-                  : item
+            $set: state.inbox.notifications.map(item =>
+              item.id === action.notificationId ? { ...item, read: true } : item
             ),
           },
           unreadCount: {

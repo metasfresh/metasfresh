@@ -214,12 +214,11 @@ class Actions extends Component {
         onClick={handleClick}
       >
         {item.caption}
-        {item.disabled &&
-          item.disabledReason && (
-            <p className="one-line">
-              <small>({item.disabledReason})</small>
-            </p>
-          )}
+        {item.disabled && item.disabledReason && (
+          <p className="one-line">
+            <small>({item.disabledReason})</small>
+          </p>
+        )}
       </div>
     );
   };
@@ -251,12 +250,11 @@ class Actions extends Component {
         onClick={handleClick}
       >
         {item.caption}
-        {item.disabled &&
-          item.disabledReason && (
-            <p className="one-line">
-              <small>({item.disabledReason})</small>
-            </p>
-          )}
+        {item.disabled && item.disabledReason && (
+          <p className="one-line">
+            <small>({item.disabledReason})</small>
+          </p>
+        )}
       </div>
     );
   };

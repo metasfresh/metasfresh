@@ -320,9 +320,9 @@ class Filters extends Component {
   };
 
   /*
-     *  Method to lock backdrop, to do not close on click onClickOutside
-     *  widgets that are bigger than filter wrapper
-     */
+   *  Method to lock backdrop, to do not close on click onClickOutside
+   *  widgets that are bigger than filter wrapper
+   */
   handleShow = value => {
     this.setState({
       widgetShown: value,

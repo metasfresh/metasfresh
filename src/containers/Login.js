@@ -10,7 +10,7 @@ class Login extends Component {
     super(props);
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { logged, dispatch } = this.props;
     if (logged) {
       dispatch(push('/'));
