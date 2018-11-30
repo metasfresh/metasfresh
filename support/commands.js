@@ -262,6 +262,12 @@ Cypress.Commands.add('selectTab', (tabName) => {
   });
 });
 
+Cypress.Commands.add('selectReference', (refName) => {
+  describe('Select reference with a certain name', function() {
+    return cy.get(`.reference_${refName}`)
+  });
+});
+
 /*
  * This command allows waiting for the breadcrumb in the header to be visible, which
  * helps make the tests less flaky as even though the page fires load event, some
