@@ -24,14 +24,23 @@ Here come the actual release notes:
   * [#4737](https://github.com/metasfresh/metasfresh/issues/4737) Fix attribute value lookup for webui
     * Minor Improvement of the Attribute alue Lookup in WebUI.
   * [#4745](https://github.com/metasfresh/metasfresh/issues/4745) Allow editing attachment descriptions in BPartner-B2C
+    * Feature to Edit attachment descriptions in Businesspartner B2C window in WebUI.
   * [#4756](https://github.com/metasfresh/metasfresh/issues/4756) order-candidates REST-API - option to just lookup, but not create BPartners
+    * New Endpoint in Rest API to lookup Business Partners.
   * [#4763](https://github.com/metasfresh/metasfresh/issues/4763) Update material dispo correction from StockChangedEvents
+    * Improvement of the Material Disposition. Now updateing adjustment from Dtock Change Events.
   * [#4764](https://github.com/metasfresh/metasfresh/issues/4764) Translation of Greetings in WebUI
+    * New Window for Greetings Translation in WebUI.
   * [#4766](https://github.com/metasfresh/metasfresh/issues/4766) C_OrderLine: ProductDescription - don't add qty from BOM if is one
+    * Adjustment of the Orderline Product Description. Not adding the Quantity of 1 Unit in Product description anymore.
   * [#4768](https://github.com/metasfresh/metasfresh/issues/4768) ModelAttributeSetInstanceListener for Expired attribute
+    * Improves the way, the expired Attribute is set.
   * [#4770](https://github.com/metasfresh/metasfresh/issues/4770) Improve ClasspathAnnotatedModelInterceptorTester
+    * Internal housekeeping issue.
   * [#4771](https://github.com/metasfresh/metasfresh/issues/4771) Fix Fresh_AvailableSingletonServices_Test
+    * Internal housekeeping issue.
   * [#4777](https://github.com/metasfresh/metasfresh/issues/4777) Import Address GLN via I_BPartner
+    * Extends the Business Partner Import, now allowing to import GLN Information too.
 
 # Fixes
 * metasfresh
