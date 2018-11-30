@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
@@ -139,7 +140,7 @@ public class ImmutableAttributeSetTest
 
 		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
 
-		assertTrue(!attributeSet1.equals(attributeSet2));
+		assertFalse(attributeSet1.equals(attributeSet2));
 
 	}
 
@@ -173,7 +174,7 @@ public class ImmutableAttributeSetTest
 
 		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
 
-		assertTrue(!attributeSet1.equals(attributeSet2));
+		assertFalse(attributeSet1.equals(attributeSet2));
 	}
 
 	@Test
@@ -182,7 +183,7 @@ public class ImmutableAttributeSetTest
 		final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.EMPTY;
 		final Object otherObject = new Object();
 
-		assertTrue(!attributeSet.equals(otherObject));
+		assertFalse(attributeSet.equals(otherObject));
 	}
 
 
