@@ -14,10 +14,15 @@ Here come the actual release notes:
 # Features
 * metasfresh
   * [#4662](https://github.com/metasfresh/metasfresh/issues/4662) AD_Element based Names and Translations for AD_Tab, Window, Menu
+    * New and easier Translation Functionality for Tab, Window and Manu Elements.
   * [#4663](https://github.com/metasfresh/metasfresh/issues/4663) Add base language to AD_Element Translation Tables
+    * The Base Language of the System is now stored on Element Level too making it much easier to maintain.
   * [#4664](https://github.com/metasfresh/metasfresh/issues/4664) New Window "Application Elements"
+    * New Window in WebUI that Allows to maintain the Window Element Names and Description in a central place.
   * [#4717](https://github.com/metasfresh/metasfresh/issues/4717) Set Order-Checkup printout receiver via AD_Workflow
+    * Improvement of the Printing Routing. Now receiving printing Infomration for Manufacturing via workflows, instead of warehouse.
   * [#4737](https://github.com/metasfresh/metasfresh/issues/4737) Fix attribute value lookup for webui
+    * Minor Improvement of the Attribute alue Lookup in WebUI.
   * [#4745](https://github.com/metasfresh/metasfresh/issues/4745) Allow editing attachment descriptions in BPartner-B2C
   * [#4756](https://github.com/metasfresh/metasfresh/issues/4756) order-candidates REST-API - option to just lookup, but not create BPartners
   * [#4763](https://github.com/metasfresh/metasfresh/issues/4763) Update material dispo correction from StockChangedEvents
