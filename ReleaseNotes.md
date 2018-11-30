@@ -45,12 +45,19 @@ Here come the actual release notes:
 # Fixes
 * metasfresh
   * [#4740](https://github.com/metasfresh/metasfresh/issues/4740) Swing: "IOException: PDF header signature not found." for invoice print / print preview
+    * Bugfix for Printing on metasfresh Swing Client that occurred when using the invoice print and print preview.
   * [#4754](https://github.com/metasfresh/metasfresh/issues/4754) Address different stability issues
+    * Fixes different stability issues, mostly discovered in material receipt.
   * [#4759](https://github.com/metasfresh/metasfresh/issues/4759) Contract Condition Option No Invoice does not prevent Invoicing
+    * Fixes the Configuration of No Invoice in Contracts, now not creating invoices when this option is set.
   * [#4773](https://github.com/metasfresh/metasfresh/issues/4773) google Reflections not working with maven surefire plugin
+    * Internal Bugfix for using google reflections with the maven surefire plugin.
   * [#4775](https://github.com/metasfresh/metasfresh/issues/4775) package order line out of sync when order is reactivated and completed again
+    * Fixes a Bug in Orderline that occurred with out of sync package material lines after reactivating an Order.
   * [#4778](https://github.com/metasfresh/metasfresh/issues/4778) Fix failing tests when running de.metas.fresh all tests suite in eclipse
+    * Fixes some failing automated tests.
   * [#4779](https://github.com/metasfresh/metasfresh/issues/4779) MD_Stock_Reset process includes planned HUs
+    * Removes the Stock calulation for Handling Units with Status planned.
 
 * metasfresh-webui-api
   * [#1108](https://github.com/metasfresh/metasfresh-webui-api/issues/1108) Migration Script Endpoint Improvement
