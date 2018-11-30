@@ -945,13 +945,15 @@ class Table extends Component {
 
       if (!rows || !rows.length) return;
 
-      rows.filter(row => row[keyProperty] === rowId).map(item => {
-        let field = item.fieldsByName[prop];
+      rows
+        .filter(row => row[keyProperty] === rowId)
+        .map(item => {
+          let field = item.fieldsByName[prop];
 
-        if (field) {
-          field.value = value;
-        }
-      });
+          if (field) {
+            field.value = value;
+          }
+        });
     }
 
     onRowEdited && onRowEdited(true);
@@ -1314,13 +1316,12 @@ class Table extends Component {
           />
         )}
 
-        {allowShortcut &&
-          !readonly && (
-            <TableContextShortcuts
-              handleToggleQuickInput={this.handleBatchEntryToggle}
-              handleToggleExpand={() => toggleFullScreen(!fullScreen)}
-            />
-          )}
+        {allowShortcut && !readonly && (
+          <TableContextShortcuts
+            handleToggleQuickInput={this.handleBatchEntryToggle}
+            handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+          />
+        )}
       </div>
     );
   }
@@ -1331,6 +1332,9 @@ const mapStateToProps = state => ({
   allowOutsideClick: state.windowHandler.allowOutsideClick,
 });
 
-export default connect(mapStateToProps, false, false, { withRef: true })(
-  onClickOutside(Table)
-);
+export default connect(
+  mapStateToProps,
+  false,
+  false,
+  { withRef: true }
+)(onClickOutside(Table));

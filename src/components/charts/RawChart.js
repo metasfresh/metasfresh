@@ -245,8 +245,8 @@ class RawChart extends Component {
     return err
       ? this.renderError()
       : chartData && chartData.length > 0
-        ? this.renderChart()
-        : this.renderNoData(chartData);
+      ? this.renderChart()
+      : this.renderNoData(chartData);
   }
 }
 

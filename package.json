@@ -91,7 +91,7 @@
     "postcss-simple-vars": "~4.1.0",
     "postcss-url": "~7.3.2",
     "precss": "~3.1.2",
-    "prettier": "^1.7.4",
+    "prettier": "^1.15.3",
     "react-hot-loader": "4.3.12",
     "react-test-renderer": "^16.2.0",
     "redux-devtools": "~3.4.0",

@@ -34,18 +34,19 @@ class Referenced extends Component {
 
   handleReferenceClick = (type, filter) => {
     const { dispatch, windowType, docId } = this.props;
+
     dispatch(setFilter(filter, type));
-    dispatch(
-      push('/window/' + type + '?refType=' + windowType + '&refId=' + docId)
-    );
+    dispatch(push(`/window/${type}?refType=${windowType}&refId=${docId}`));
   };
 
   handleKeyDown = e => {
     const active = document.activeElement;
 
     const keyHandler = (e, dir) => {
-      const sib = dir ? 'nextSibling' : 'previousSibling';
       e.preventDefault();
+
+      const sib = dir ? 'nextSibling' : 'previousSibling';
+
       if (active.classList.contains('js-subheader-item')) {
         if (!active[sib]) {
           return;
@@ -80,7 +81,10 @@ class Referenced extends Component {
     return data && data.length ? (
       data.map(item => {
         return [
-          <div key="caption" className="subheader-caption">
+          <div
+            key="caption"
+            className={`subheader-caption reference_${item.internalName}`}
+          >
             {item.caption}
           </div>,
         ].concat(

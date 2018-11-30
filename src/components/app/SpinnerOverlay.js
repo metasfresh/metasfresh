@@ -117,7 +117,10 @@ const mapStateToProps = ({ windowHandler }) => ({
   spinnerDisplayed: windowHandler.spinner,
 });
 
-export default connect(mapStateToProps, {
-  showSpinner,
-  hideSpinner,
-})(SpinnerOverlay);
+export default connect(
+  mapStateToProps,
+  {
+    showSpinner,
+    hideSpinner,
+  }
+)(SpinnerOverlay);

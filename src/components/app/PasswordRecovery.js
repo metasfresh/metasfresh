@@ -262,12 +262,11 @@ class PasswordRecovery extends Component {
 
     return (
       <div>
-        {resetPassword &&
-          avatarSrc && (
-            <div className="text-center">
-              <img src={avatarSrc} className="avatar mt-2 mb-2" />
-            </div>
-          )}
+        {resetPassword && avatarSrc && (
+          <div className="text-center">
+            <img src={avatarSrc} className="avatar mt-2 mb-2" />
+          </div>
+        )}
         {form.fullname && (
           <div className="text-center">
             <span className="user-data">{form.fullname}</span>

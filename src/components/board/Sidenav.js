@@ -131,13 +131,12 @@ class Sidenav extends Component {
               view.result.map((card, i) => (
                 <Card key={i} index={i} {...card} />
               ))}
-            {view.result &&
-              view.result.length === 0 && (
-                <div className="empty-text">
-                  {emptyText}
-                  {emptyHint ? '. ' + emptyHint : ''}
-                </div>
-              )}
+            {view.result && view.result.length === 0 && (
+              <div className="empty-text">
+                {emptyText}
+                {emptyHint ? '. ' + emptyHint : ''}
+              </div>
+            )}
           </div>
         </InfiniteScroll>
       </div>
