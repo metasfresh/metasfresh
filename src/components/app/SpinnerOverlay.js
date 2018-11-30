@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { v4 as uuid } from 'uuid';
+import uuid from 'uuid/v4';
 
 import { showSpinner, hideSpinner } from '../../actions/WindowActions';
 
