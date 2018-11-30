@@ -61,6 +61,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1108](https://github.com/metasfresh/metasfresh-webui-api/issues/1108) Migration Script Endpoint Improvement
+    * Fixes a Bug in the Migration Script Endpoint
 
 * metasfresh-webui-frontend
   * [#1997](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1997) Cypress: Product set Documentnote Test fails
@@ -76,6 +77,7 @@ Here come the actual release notes:
 
 * metasfresh-parent
   * [#25](https://github.com/metasfresh/metasfresh-parent/issues/25) jasper reports are compiled with wrong version
+    * Fixes the Build Process in jenkins for the compilation of Jasper Reports. Now using the correct Jasper Version.
 
 # metasfresh 5.81
 ## Features
