@@ -10,7 +10,7 @@ class TableHeader extends PureComponent {
     this.state = {};
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.setInitialState();
   }
 

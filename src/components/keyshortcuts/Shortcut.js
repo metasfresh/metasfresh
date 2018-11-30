@@ -16,7 +16,7 @@ export default class Shortcut extends PureComponent {
     handler: PropTypes.func.isRequired,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { subscribe } = this.context.shortcuts;
     const { name, handler } = this.props;
 

@@ -26,7 +26,7 @@ class NewLetter extends Component {
     };
   }
 
-  async componentWillMount() {
+  async UNSAFE_componentWillMount() {
     const { windowId, docId, handleCloseLetter } = this.props;
 
     try {

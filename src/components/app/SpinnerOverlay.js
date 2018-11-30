@@ -16,7 +16,7 @@ class SpinnerOverlay extends Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.ID = uuid();
   }
 
