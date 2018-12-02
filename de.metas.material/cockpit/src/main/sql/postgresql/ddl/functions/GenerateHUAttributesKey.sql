@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION GenerateHUAttributesKey(huId numeric)
 $BODY$
 BEGIN
 	RETURN (
-		SELECT COALESCE(string_agg(sub.M_AttributeValue_ID::VARCHAR, 'ยง&ยง'), '-1002')
+		SELECT COALESCE(string_agg(sub.M_AttributeValue_ID::VARCHAR, '§&§'), '-1002'/*NONE*/)
 		FROM (
 			SELECT
 				av.M_AttributeValue_ID AS M_AttributeValue_ID
@@ -16,8 +16,9 @@ BEGIN
 				AND hua.IsActive='Y'
 				AND av.IsActive='Y'
 				AND a.IsActive='Y'
-			GROUP BY a.M_Attribute_ID, av.M_AttributeValue_ID
-			ORDER BY a.M_Attribute_ID, av.M_AttributeValue_ID
+				AND a.IsStorageRelevant='Y'
+			GROUP BY av.M_AttributeValue_ID
+			ORDER BY av.M_AttributeValue_ID
 		) sub
 	);
 END;
@@ -26,6 +27,7 @@ $BODY$
   COST 100;
 COMMENT ON FUNCTION GenerateHUAttributesKey(numeric) IS
 'This function is used to generate values for the MD_Stock.AttributesKey column when initializing or resetting the MD_Stock table. 
-Please make sure it is in sync with the java implemention in AttributesKeys.createAttributesKeyFromASIAllAttributeValues()
+Please make sure it is in sync with the java implemention in AttributesKeys.createAttributesKeyFromASIStorageAttributes().
+Note that we sort by M_AttributeValue_ID because that is what AttributesKey.ofAttributeValueIds() does.
 
 Belongs to issue "Show onhand quantity in new WebUI MRP Product Info Window" https://github.com/metasfresh/metasfresh-webui-api/issues/762';

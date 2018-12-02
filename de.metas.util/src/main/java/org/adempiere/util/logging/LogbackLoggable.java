@@ -47,8 +47,9 @@ public class LogbackLoggable implements ILoggable
 	}
 
 	@Override
-	public void addLog(final String msg, final Object... msgParameters)
+	public ILoggable addLog(final String msg, final Object... msgParameters)
 	{
 		LoggingHelper.log(logger, level, msg, msgParameters);
+		return this;
 	}
 }

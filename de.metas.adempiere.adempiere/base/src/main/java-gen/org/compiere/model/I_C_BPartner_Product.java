@@ -249,7 +249,7 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Exclusion From Sale Reason.
+	 * Set Sperre Verkauf Grund.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -258,7 +258,7 @@ public interface I_C_BPartner_Product
 	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason);
 
 	/**
-	 * Get Exclusion From Sale Reason.
+	 * Get Sperre Verkauf Grund.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -272,18 +272,18 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_ExclusionFromSaleReason = "ExclusionFromSaleReason";
 
 	/**
-	 * Set Ingredients.
+	 * Set Zutaten.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setIngredients (java.lang.String Ingredients);
 
 	/**
-	 * Get Ingredients.
+	 * Get Zutaten.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -391,6 +391,35 @@ public interface I_C_BPartner_Product
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_IsExcludedFromSale = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "IsExcludedFromSale", null);
     /** Column name IsExcludedFromSale */
     public static final String COLUMNNAME_IsExcludedFromSale = "IsExcludedFromSale";
+
+	/**
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_AttributeSetInstance_ID();
+
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+    /** Column definition for M_AttributeSetInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_AttributeSetInstance>(I_C_BPartner_Product.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    /** Column name M_AttributeSetInstance_ID */
+    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
 	 * Set Produkt.
@@ -616,6 +645,33 @@ public interface I_C_BPartner_Product
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_QualityRating = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "QualityRating", null);
     /** Column name QualityRating */
     public static final String COLUMNNAME_QualityRating = "QualityRating";
+
+	/**
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo (int SeqNo);
+
+	/**
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo();
+
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Mindesthaltbarkeit Tage.

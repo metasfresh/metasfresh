@@ -1009,12 +1009,13 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * @param msg message
 	 */
 	@Override
-	public final void addLog(final String msg, final Object... msgParameters)
+	public final ILoggable addLog(final String msg, final Object... msgParameters)
 	{
 		if (msg != null)
 		{
 			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters));
 		}
+		return this;
 	}	// addLog
 
 	/**

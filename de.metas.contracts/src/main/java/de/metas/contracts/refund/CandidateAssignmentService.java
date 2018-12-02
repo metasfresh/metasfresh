@@ -106,7 +106,7 @@ public class CandidateAssignmentService
 				refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, refundContract);
 
 		// guards
-		matchingRefundCandidates.forEach(c -> Check.assumeNotEmpty(c.getRefundConfigs(), "Every refundInvoiceCandidate retuned by retrieveOrCreateMatchingRefundCandidates() needs to have at least one config", c));
+		matchingRefundCandidates.forEach(c -> Check.assumeNotEmpty(c.getRefundConfigs(), "Every refundInvoiceCandidate returned by retrieveOrCreateMatchingRefundCandidates() needs to have at least one config", c));
 		final RefundMode refundMode = refundContract.extractRefundMode();
 
 		final ImmutableMap<InvoiceCandidateId, RefundInvoiceCandidate> //
@@ -158,7 +158,7 @@ public class CandidateAssignmentService
 		else
 		{
 			matchingRefundCandidates.forEach(c -> Check.assume(c.getRefundConfigs().size() == 1,
-					"If refundMode={}, then every refundInvoiceCandidate retuned by retrieveOrCreateMatchingRefundCandidates() needs to have exactly one config", refundMode, c));
+					"If refundMode={}, then every refundInvoiceCandidate returned by retrieveOrCreateMatchingRefundCandidates() needs to have exactly one config", refundMode, c));
 
 			final CandidateAssignServiceExceedingQty candidateAssignService = new CandidateAssignServiceExceedingQty(
 					refundInvoiceCandidateRepository,
@@ -169,7 +169,6 @@ public class CandidateAssignmentService
 					reloadedAssignableCandidate,
 					refundCandidatesToAssign,
 					refundContract);
-
 		}
 	}
 

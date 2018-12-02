@@ -12,8 +12,57 @@ Here come the actual release notes:
 
 # metasfresh 5.82
 # Features
+* metasfresh
+  * [#4662](https://github.com/metasfresh/metasfresh/issues/4662) AD_Element based Names and Translations for AD_Tab, Window, Menu
+    * New and easier Translation Functionality for Tab, Window and Manu Elements.
+  * [#4663](https://github.com/metasfresh/metasfresh/issues/4663) Add base language to AD_Element Translation Tables
+    * The Base Language of the System is now stored on Element Level too making it much easier to maintain.
+  * [#4664](https://github.com/metasfresh/metasfresh/issues/4664) New Window "Application Elements"
+    * New Window in WebUI that Allows to maintain the Window Element Names and Description in a central place.
+  * [#4717](https://github.com/metasfresh/metasfresh/issues/4717) Set Order-Checkup printout receiver via AD_Workflow
+    * Improvement of the Printing Routing. Now receiving printing Infomration for Manufacturing via workflows, instead of warehouse.
+  * [#4737](https://github.com/metasfresh/metasfresh/issues/4737) Fix attribute value lookup for webui
+    * Minor Improvement of the Attribute alue Lookup in WebUI.
+  * [#4745](https://github.com/metasfresh/metasfresh/issues/4745) Allow editing attachment descriptions in BPartner-B2C
+    * Feature to Edit attachment descriptions in Businesspartner B2C window in WebUI.
+  * [#4756](https://github.com/metasfresh/metasfresh/issues/4756) order-candidates REST-API - option to just lookup, but not create BPartners
+    * New Endpoint in Rest API to lookup Business Partners.
+  * [#4763](https://github.com/metasfresh/metasfresh/issues/4763) Update material dispo correction from StockChangedEvents
+    * Improvement of the Material Disposition. Now updateing adjustment from Dtock Change Events.
+  * [#4764](https://github.com/metasfresh/metasfresh/issues/4764) Translation of Greetings in WebUI
+    * New Window for Greetings Translation in WebUI.
+  * [#4766](https://github.com/metasfresh/metasfresh/issues/4766) C_OrderLine: ProductDescription - don't add qty from BOM if is one
+    * Adjustment of the Orderline Product Description. Not adding the Quantity of 1 Unit in Product description anymore.
+  * [#4768](https://github.com/metasfresh/metasfresh/issues/4768) ModelAttributeSetInstanceListener for Expired attribute
+    * Improves the way, the expired Attribute is set.
+  * [#4770](https://github.com/metasfresh/metasfresh/issues/4770) Improve ClasspathAnnotatedModelInterceptorTester
+    * Internal housekeeping issue.
+  * [#4771](https://github.com/metasfresh/metasfresh/issues/4771) Fix Fresh_AvailableSingletonServices_Test
+    * Internal housekeeping issue.
+  * [#4777](https://github.com/metasfresh/metasfresh/issues/4777) Import Address GLN via I_BPartner
+    * Extends the Business Partner Import, now allowing to import GLN Information too.
 
 # Fixes
+* metasfresh
+  * [#4740](https://github.com/metasfresh/metasfresh/issues/4740) Swing: "IOException: PDF header signature not found." for invoice print / print preview
+    * Bugfix for Printing on metasfresh Swing Client that occurred when using the invoice print and print preview.
+  * [#4754](https://github.com/metasfresh/metasfresh/issues/4754) Address different stability issues
+    * Fixes different stability issues, mostly discovered in material receipt.
+  * [#4759](https://github.com/metasfresh/metasfresh/issues/4759) Contract Condition Option No Invoice does not prevent Invoicing
+    * Fixes the Configuration of No Invoice in Contracts, now not creating invoices when this option is set.
+  * [#4773](https://github.com/metasfresh/metasfresh/issues/4773) google Reflections not working with maven surefire plugin
+    * Internal Bugfix for using google reflections with the maven surefire plugin.
+  * [#4775](https://github.com/metasfresh/metasfresh/issues/4775) package order line out of sync when order is reactivated and completed again
+    * Fixes a Bug in Orderline that occurred with out of sync package material lines after reactivating an Order.
+  * [#4778](https://github.com/metasfresh/metasfresh/issues/4778) Fix failing tests when running de.metas.fresh all tests suite in eclipse
+    * Fixes some failing automated tests.
+  * [#4779](https://github.com/metasfresh/metasfresh/issues/4779) MD_Stock_Reset process includes planned HUs
+    * Removes the Stock calulation for Handling Units with Status planned.
+
+* metasfresh-webui-api
+  * [#1108](https://github.com/metasfresh/metasfresh-webui-api/issues/1108) Migration Script Endpoint Improvement
+    * Fixes a Bug in the Migration Script Endpoint
+
 * metasfresh-webui-frontend
   * [#1997](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1997) Cypress: Product set Documentnote Test fails
     * Fixes the cypress test on setting Doument Notes.
@@ -25,6 +74,10 @@ Here come the actual release notes:
     * Fixes a minor Bug that occurred when selecting dropdown entries with mouse. Now closing the dropdown after selecting again.
   * [#2069](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2069) Number Inserting in Order Quick Input
     * Fixes the Batch Entry in Sales Order, now reacting creating a new line after presssing enter again.
+
+* metasfresh-parent
+  * [#25](https://github.com/metasfresh/metasfresh-parent/issues/25) jasper reports are compiled with wrong version
+    * Fixes the Build Process in jenkins for the compilation of Jasper Reports. Now using the correct Jasper Version.
 
 # metasfresh 5.81
 ## Features

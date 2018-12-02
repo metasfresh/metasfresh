@@ -8,6 +8,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -107,7 +108,10 @@ public class SalesOrderRestController
 			salesOrderFactory.docType(docTypeId);
 		}
 
-		final BPartnerId shipBPartnerId = bpartnersRepo.getBPartnerIdByValue(request.getShipBPartnerCode());
+		final BPartnerId shipBPartnerId = bpartnersRepo
+				.getBPartnerIdByValue(
+						request.getShipBPartnerCode(),
+						OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx())));
 		salesOrderFactory.shipBPartner(shipBPartnerId);
 
 		salesOrderFactory.datePromised(request.getDatePromised());
