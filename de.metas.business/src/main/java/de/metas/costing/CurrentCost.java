@@ -9,6 +9,7 @@ import org.compiere.model.I_C_UOM;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -39,14 +40,16 @@ import lombok.NonNull;
 public final class CurrentCost
 {
 	private final int id;
-	private final CostSegment costSegment;
+
+	// private final CostSegment costSegment;
 	private final CostElement costElement;
 
+	@Getter(AccessLevel.PRIVATE)
 	private final CurrencyId currencyId;
 	private final int precision;
 
-	private CostAmount currentCostPrice;
-	private CostAmount currentCostPriceLL;
+	private CostAmount ownCostPrice;
+	private CostAmount componentsCostPrice;
 	private Quantity currentQty;
 
 	private CostAmount cumulatedAmt;
@@ -55,45 +58,45 @@ public final class CurrentCost
 	@Builder
 	private CurrentCost(
 			final int id,
-			@NonNull final CostSegment costSegment,
+			// @NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
 			@NonNull final CurrencyId currencyId,
 			final int precision,
 			@NonNull final I_C_UOM uom,
-			@NonNull final BigDecimal currentCostPrice,
-			@NonNull final BigDecimal currentCostPriceLL,
-			@NonNull final BigDecimal currentQty,
-			@NonNull final BigDecimal cumulatedAmt,
-			@NonNull final BigDecimal cumulatedQty)
+			final BigDecimal ownCostPrice,
+			final BigDecimal componentsCostPrice,
+			final BigDecimal currentQty,
+			final BigDecimal cumulatedAmt,
+			final BigDecimal cumulatedQty)
 	{
 		Check.assume(id > 0, "id > 0");
 		Check.assume(precision >= 0, "precision >= 0");
 
 		this.id = id;
-		this.costSegment = costSegment;
+		// this.costSegment = costSegment;
 		this.costElement = costElement;
 
 		this.currencyId = currencyId;
 		this.precision = precision;
 
-		this.currentCostPrice = CostAmount.of(currentCostPrice, currencyId);
-		this.currentCostPriceLL = CostAmount.of(currentCostPriceLL, currencyId);
-		this.currentQty = Quantity.of(currentQty, uom);
-		this.cumulatedAmt = CostAmount.of(cumulatedAmt, currencyId);
-		this.cumulatedQty = Quantity.of(cumulatedQty, uom);
+		this.ownCostPrice = ownCostPrice != null ? CostAmount.of(ownCostPrice, currencyId) : CostAmount.zero(currencyId);
+		this.componentsCostPrice = componentsCostPrice != null ? CostAmount.of(componentsCostPrice, currencyId) : CostAmount.zero(currencyId);
+		this.currentQty = currentQty != null ? Quantity.of(currentQty, uom) : Quantity.zero(uom);
+		this.cumulatedAmt = cumulatedAmt != null ? CostAmount.of(cumulatedAmt, currencyId) : CostAmount.zero(currencyId);
+		this.cumulatedQty = cumulatedQty != null ? Quantity.of(cumulatedQty, uom) : Quantity.zero(uom);
 	}
 
 	private CurrentCost(@NonNull final CurrentCost from)
 	{
 		this.id = from.id;
-		this.costSegment = from.costSegment;
+		// this.costSegment = from.costSegment;
 		this.costElement = from.costElement;
 
 		this.currencyId = from.currencyId;
 		this.precision = from.precision;
 
-		this.currentCostPrice = from.currentCostPrice;
-		this.currentCostPriceLL = from.currentCostPriceLL;
+		this.ownCostPrice = from.ownCostPrice;
+		this.componentsCostPrice = from.componentsCostPrice;
 		this.currentQty = from.currentQty;
 		this.cumulatedAmt = from.cumulatedAmt;
 		this.cumulatedQty = from.cumulatedQty;
@@ -102,6 +105,11 @@ public final class CurrentCost
 	public CurrentCost copy()
 	{
 		return new CurrentCost(this);
+	}
+
+	public CostElementId getCostElementId()
+	{
+		return getCostElement().getId();
 	}
 
 	private final void assertCostCurrency(@NonNull final CostAmount amt)
@@ -126,12 +134,12 @@ public final class CurrentCost
 		assertCostCurrency(amt);
 		Check.assume(qty.signum() != 0, "qty not zero");
 
-		final CostAmount currentAmt = currentCostPrice.multiply(currentQty);
+		final CostAmount currentAmt = ownCostPrice.multiply(currentQty);
 		final CostAmount newAmt = currentAmt.add(amt);
 		final Quantity newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
-			currentCostPrice = newAmt.divide(newQty.getAsBigDecimal(), precision, RoundingMode.HALF_UP);
+			ownCostPrice = newAmt.divide(newQty.getAsBigDecimal(), precision, RoundingMode.HALF_UP);
 		}
 		currentQty = newQty;
 
@@ -151,20 +159,30 @@ public final class CurrentCost
 		currentQty = currentQty.add(qtyToAdd);
 	}
 
-	public CostAmount getCurrentCostPriceTotal()
+	public CostAmount getCostPrice()
 	{
-		return currentCostPrice.add(currentCostPriceLL);
+		return getOwnCostPrice().add(getComponentsCostPrice());
 	}
 
-	public void setCurrentCostPrice(@NonNull final CostAmount costPrice)
+	public void setOwnCostPrice(@NonNull final CostAmount ownCostPrice)
 	{
-		assertCostCurrency(costPrice);
-		currentCostPrice = costPrice;
+		assertCostCurrency(ownCostPrice);
+		this.ownCostPrice = ownCostPrice;
 	}
 
-	public void setCurrentCostPriceLL(@NonNull final CostAmount costPrice)
+	public void addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)
 	{
-		assertCostCurrency(costPrice);
-		currentCostPriceLL = costPrice;
+		setOwnCostPrice(getOwnCostPrice().add(ownCostPriceToAdd));
+	}
+
+	public void setComponentsCostPrice(@NonNull final CostAmount componentsCostPrice)
+	{
+		assertCostCurrency(componentsCostPrice);
+		this.componentsCostPrice = componentsCostPrice;
+	}
+
+	public void clearComponentsCostPrice()
+	{
+		setComponentsCostPrice(CostAmount.zero(getCurrencyId()));
 	}
 }

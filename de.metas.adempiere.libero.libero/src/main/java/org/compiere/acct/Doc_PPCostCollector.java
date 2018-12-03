@@ -53,7 +53,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
-import de.metas.costing.CostResult;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.util.Services;
 
 /**
@@ -233,7 +233,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 
-		final CostResult costResult = docLine.getCreateCosts(as);
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
@@ -275,7 +275,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
 
-		final CostResult costResult = docLine.getCreateCosts(as);
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
@@ -302,7 +302,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 
-		final CostResult costResult = docLine.getCreateCosts(as);
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
@@ -330,7 +330,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		final BigDecimal qty = getMovementQty();
 
-		final CostResult costResult = docLine.getCreateCosts(as);
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);

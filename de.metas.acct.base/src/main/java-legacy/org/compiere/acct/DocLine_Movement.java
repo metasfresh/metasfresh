@@ -13,7 +13,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
-import de.metas.costing.CostResult;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.quantity.Quantity;
@@ -75,7 +75,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		return movementLine.getM_LocatorTo_ID();
 	}
 
-	public final CostResult getCreateInboundCosts(final AcctSchema as)
+	public final AggregatedCostAmount getCreateInboundCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
@@ -90,19 +90,19 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		}
 		else
 		{
-			final CostResult outboundCostResult = getCreateOutboundCosts(as);
-			final CostResult inboundCostResult = outboundCostResult.getCostElements()
+			final AggregatedCostAmount outboundCostResult = getCreateOutboundCosts(as);
+			final AggregatedCostAmount inboundCostResult = outboundCostResult.getCostElements()
 					.stream()
 					.map(costElement -> createInboundCostDetailCreateRequest(as.getId(), costElement, outboundCostResult.getCostAmountForCostElement(costElement).negate()))
 					.map(costDetailService::createCostDetail)
-					.reduce(CostResult::merge)
+					.reduce(AggregatedCostAmount::merge)
 					.orElse(null);
 
 			return inboundCostResult;
 		}
 	}
 
-	public final CostResult getCreateOutboundCosts(final AcctSchema as)
+	public final AggregatedCostAmount getCreateOutboundCosts(final AcctSchema as)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 

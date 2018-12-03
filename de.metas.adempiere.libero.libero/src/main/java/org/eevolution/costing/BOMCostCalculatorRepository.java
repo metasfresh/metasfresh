@@ -1,13 +1,12 @@
-package de.metas.costing;
+package org.eevolution.costing;
 
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.Optional;
+
+import de.metas.product.ProductId;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.libero.libero
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,23 +26,11 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class CostDetailPreviousAmounts
+public interface BOMCostCalculatorRepository
 {
-	public static CostDetailPreviousAmounts of(CurrentCost currentCosts)
-	{
-		return builder()
-				.ownCostPrice(currentCosts.getOwnCostPrice())
-				.componentsCostPrice(currentCosts.getComponentsCostPrice())
-				.qty(currentCosts.getCurrentQty())
-				.build();
-	}
+	Optional<BOM> getProductBOM(ProductId productId);
 
-	@NonNull
-	CostAmount ownCostPrice;
-	@NonNull
-	CostAmount componentsCostPrice;
-	@NonNull
-	Quantity qty;
+	void save(BOM bom);
+
+	void resetComponentsCostPrice(ProductId productId);
 }

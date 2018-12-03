@@ -22,6 +22,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -86,7 +87,7 @@ public class PPOrderUtil
 		//
 		// Adjust the qtyRequired by adding the scrap percentage to it.
 		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-		final BigDecimal qtyScrap = productBomLine.getScrap();
+		final Percent qtyScrap = Percent.of(productBomLine.getScrap());
 		final BigDecimal qtyRequiredPlusScrap = productBOMBL.calculateQtyWithScrap(qtyRequired, qtyScrap);
 		return qtyRequiredPlusScrap;
 	}

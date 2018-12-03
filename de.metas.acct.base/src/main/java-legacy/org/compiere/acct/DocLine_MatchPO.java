@@ -18,7 +18,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostResult;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -130,7 +130,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return costPrice.multiply(getQty());
 	}
 
-	public CostResult createCostDetails(final AcctSchema as)
+	public AggregatedCostAmount createCostDetails(final AcctSchema as)
 	{
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");

@@ -37,7 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
-import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
@@ -190,22 +189,6 @@ public class MRPDAO implements IMRPDAO
 				.addNotEqualsFilter(I_PP_MRP.COLUMNNAME_Qty, BigDecimal.ZERO)
 				.create()
 				.match();
-	}
-
-	@Override
-	public int getMaxLowLevel(final IContextAware context)
-	{
-		final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, context)
-				.addOnlyContextClient()
-				.addNotEqualsFilter(I_M_Product.COLUMNNAME_LowLevel, null); // LowLevel is not null
-
-		final BigDecimal lowLevelMaxBD = queryBuilder.create()
-				.aggregate(I_M_Product.COLUMNNAME_LowLevel, Aggregate.MAX, BigDecimal.class);
-
-		final int lowLevelMax = lowLevelMaxBD == null ? -1 : lowLevelMaxBD.intValueExact();
-
-		// TODO: Question: not sure why we return LowLevelMax+1, but we keep old logic for now
-		return lowLevelMax + 1;
 	}
 
 	/**

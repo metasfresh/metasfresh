@@ -154,7 +154,7 @@ public class CostingMethodHandlerUtils
 
 	public final CostAmount getCurrentCostPrice(final CostDetailCreateRequest request)
 	{
-		return getCurrentCost(request).getCurrentCostPrice();
+		return getCurrentCost(request).getCostPrice();
 	}
 
 	public final void saveCurrentCosts(final CurrentCost currentCost)

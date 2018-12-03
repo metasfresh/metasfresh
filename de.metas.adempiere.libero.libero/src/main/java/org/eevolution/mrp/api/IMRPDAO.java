@@ -89,15 +89,6 @@ public interface IMRPDAO extends ISingletonService
 	boolean hasProductRecords(I_M_Product product);
 
 	/**
-	 * Maximum Low Level Code
-	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return maximum low level
-	 */
-	int getMaxLowLevel(final IContextAware context);
-
-	/**
 	 * Get Qty On Hand
 	 *
 	 * @param context

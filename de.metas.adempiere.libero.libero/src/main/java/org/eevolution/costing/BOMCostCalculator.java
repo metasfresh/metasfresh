@@ -1,13 +1,12 @@
-package de.metas.costing;
+package org.eevolution.costing;
 
-import de.metas.quantity.Quantity;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.libero.libero
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,23 +26,29 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class CostDetailPreviousAmounts
+public class BOMCostCalculator
 {
-	public static CostDetailPreviousAmounts of(CurrentCost currentCosts)
+	// services
+	private final BOMCostCalculatorRepository repository;
+
+	@Builder
+	private BOMCostCalculator(@NonNull final BOMCostCalculatorRepository repository)
 	{
-		return builder()
-				.ownCostPrice(currentCosts.getOwnCostPrice())
-				.componentsCostPrice(currentCosts.getComponentsCostPrice())
-				.qty(currentCosts.getCurrentQty())
-				.build();
+		this.repository = repository;
 	}
 
-	@NonNull
-	CostAmount ownCostPrice;
-	@NonNull
-	CostAmount componentsCostPrice;
-	@NonNull
-	Quantity qty;
+	public void rollup(final ProductId productId)
+	{
+		final BOM bom = repository.getProductBOM(productId).orElse(null);
+
+		if (bom != null)
+		{
+			bom.rollupCosts();
+			repository.save(bom);
+		}
+		else
+		{
+			repository.resetComponentsCostPrice(productId);
+		}
+	}
 }

@@ -1,13 +1,15 @@
-package de.metas.costing;
+package org.eevolution.costing;
 
-import de.metas.quantity.Quantity;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostElementId;
+import de.metas.money.CurrencyId;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.libero.libero
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,23 +29,39 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Data
 @Builder
-public class CostDetailPreviousAmounts
+public class BOMCostElementPrice
 {
-	public static CostDetailPreviousAmounts of(CurrentCost currentCosts)
+	public static BOMCostElementPrice zero(final CostElementId costElementId, final CurrencyId currencyId)
 	{
+		final CostAmount zero = CostAmount.zero(currencyId);
 		return builder()
-				.ownCostPrice(currentCosts.getOwnCostPrice())
-				.componentsCostPrice(currentCosts.getComponentsCostPrice())
-				.qty(currentCosts.getCurrentQty())
+				.costElementId(costElementId)
+				.ownCostPrice(zero)
+				.componentsCostPrice(zero)
 				.build();
 	}
 
+	private int repoId;
+
 	@NonNull
-	CostAmount ownCostPrice;
+	private final CostElementId costElementId;
+
 	@NonNull
-	CostAmount componentsCostPrice;
+	private final CostAmount ownCostPrice;
+
 	@NonNull
-	Quantity qty;
+	private CostAmount componentsCostPrice;
+
+	public CostAmount getTotalCostPrice()
+	{
+		return getOwnCostPrice()
+				.add(getComponentsCostPrice());
+	}
+
+	public void clearComponentsCostPrice()
+	{
+		setComponentsCostPrice(getComponentsCostPrice().toZero());
+	}
 }

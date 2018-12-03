@@ -30,7 +30,7 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
-import de.metas.costing.CostResult;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
@@ -104,7 +104,7 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public CostResult createCostDetail(@NonNull final CostDetailCreateRequest request)
+	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		final ImmutableList<CostDetailCreateResult> costElementResults = Stream.of(request)
 				.flatMap(this::explodeAcctSchemas)
@@ -121,7 +121,7 @@ public class CostingService implements ICostingService
 		return createCostResult(costElementResults);
 	}
 
-	private CostResult createCostResult(final ImmutableList<CostDetailCreateResult> costElementResults)
+	private AggregatedCostAmount createCostResult(final ImmutableList<CostDetailCreateResult> costElementResults)
 	{
 		Check.assumeNotEmpty(costElementResults, "costElementResults is not empty");
 		
@@ -138,7 +138,7 @@ public class CostingService implements ICostingService
 						CostDetailCreateResult::getAmt, // valueMapper
 						CostAmount::add)); // mergeFunction
 
-		return CostResult.builder()
+		return AggregatedCostAmount.builder()
 				.costSegment(costSegment)
 				.amounts(amountsByCostElement)
 				.build();
@@ -328,7 +328,7 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public CostResult createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
+	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
 	{
 		final Set<CostElementId> costElementIdsWithExistingCostDetails = costDetailsRepo
 				.getAllForDocumentAndAcctSchemaId(request.getReversalDocumentRef(), request.getAcctSchemaId())
@@ -383,7 +383,7 @@ public class CostingService implements ICostingService
 	@Override
 	public Optional<CostAmount> getCurrentCosts(final CostSegment costSegment, final CostingMethod costingMethod)
 	{
-		return currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod)
-				.map(CostResult::getTotalAmount);
+		return currentCostsRepo.getAggregatedCostAmountByCostSegmentAndCostingMethod(costSegment, costingMethod)
+				.map(AggregatedCostAmount::getTotalAmount);
 	}
 }

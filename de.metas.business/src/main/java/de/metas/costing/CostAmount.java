@@ -45,6 +45,11 @@ public class CostAmount
 		return new CostAmount(value, currencyId);
 	}
 
+	public static final CostAmount of(final int valueInt, final CurrencyId currencyId)
+	{
+		return of(BigDecimal.valueOf(valueInt), currencyId);
+	}
+
 	public static final CostAmount ofMoney(@NonNull final Money money)
 	{
 		return new CostAmount(money.getValue(), money.getCurrencyId());

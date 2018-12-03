@@ -85,8 +85,8 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setQty(cd.getQty().getAsBigDecimal());
 
 		record.setIsChangingCosts(cd.isChangingCosts());
-		record.setPrev_CurrentCostPrice(cd.getPreviousAmounts().getCostPrice().getValue());
-		record.setPrev_CurrentCostPriceLL(cd.getPreviousAmounts().getCostPriceLL().getValue());
+		record.setPrev_CurrentCostPrice(cd.getPreviousAmounts().getOwnCostPrice().getValue());
+		record.setPrev_CurrentCostPriceLL(cd.getPreviousAmounts().getComponentsCostPrice().getValue());
 		record.setPrev_CurrentQty(cd.getPreviousAmounts().getQty().getAsBigDecimal());
 
 		updateRecordFromDocumentRef(record, cd.getDocumentRef());
@@ -249,8 +249,8 @@ public class CostDetailRepository implements ICostDetailRepository
 				.price(price)
 				.changingCosts(record.isChangingCosts())
 				.previousAmounts(CostDetailPreviousAmounts.builder()
-						.costPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), acctCurrencyId))
-						.costPriceLL(CostAmount.of(record.getPrev_CurrentCostPriceLL(), acctCurrencyId))
+						.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), acctCurrencyId))
+						.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), acctCurrencyId))
 						.qty(Quantity.of(record.getPrev_CurrentQty(), productUOM))
 						.build())
 				.documentRef(extractDocumentRef(record))

@@ -15,7 +15,7 @@ import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.costing.CostResult;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -68,15 +68,15 @@ public class CostCollectorAveragePOCosting
 
 		//
 		// First process the issues
-		final CostResult costs = costCollectors.stream()
+		final AggregatedCostAmount costs = costCollectors.stream()
 				.filter(cc -> ppCostCollectorBL.isAnyComponentIssue(cc))
 				.map(cc -> createMaterialIssueCosts(cc))
-				.reduce(CostResult::add)
+				.reduce(AggregatedCostAmount::add)
 				.orElse(null);
 
 		// TODO: handle null case
 
-		final CostResult costPrice = costs.divide(qtyReceived, 12, RoundingMode.HALF_UP);
+		final AggregatedCostAmount costPrice = costs.divide(qtyReceived, 12, RoundingMode.HALF_UP);
 
 		//
 		// Then process the receipts
@@ -85,14 +85,14 @@ public class CostCollectorAveragePOCosting
 				.forEach(cc -> createMaterialReceiptCosts(cc, costPrice, qtyReceivedUOM));
 	}
 
-	private CostResult createMaterialIssueCosts(final I_PP_Cost_Collector cc)
+	private AggregatedCostAmount createMaterialIssueCosts(final I_PP_Cost_Collector cc)
 	{
 		// TODO Auto-generated method stub
 		// create a standard outbound cost detail (Avg)
 		return null;
 	}
 
-	private void createMaterialReceiptCosts(final I_PP_Cost_Collector cc, final CostResult costPrice, final I_C_UOM uom)
+	private void createMaterialReceiptCosts(final I_PP_Cost_Collector cc, final AggregatedCostAmount costPrice, final I_C_UOM uom)
 	{
 		// TODO Auto-generated method stub
 		// final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

@@ -25,16 +25,17 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
-import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
@@ -78,6 +79,24 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	private static final Logger logger = LogManager.getLogger(CurrentCostsRepository.class);
 	@Autowired
 	private ICostElementRepository costElementRepo;
+
+	@Override
+	public List<CurrentCost> getByIds(@NonNull final Set<Integer> repoIds)
+	{
+		if (repoIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Cost.class)
+				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Cost_ID, repoIds)
+				.create()
+				.stream()
+				.map(this::toCurrentCost)
+				.collect(ImmutableList.toImmutableList());
+
+	}
 
 	@Override
 	public CurrentCost getOrNull(@NonNull CostSegmentAndElement costSegmentAndElement)
@@ -130,7 +149,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public Optional<CostResult> getByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
+	public Optional<AggregatedCostAmount> getAggregatedCostAmountByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
 	{
 		final Set<CostElementId> costElementIds = costElementRepo.getByCostingMethod(costingMethod)
 				.stream()
@@ -147,7 +166,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.create()
 				.stream(I_M_Cost.class)
 				.map(this::toCurrentCost)
-				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, CurrentCost::getCurrentCostPrice));
+				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, CurrentCost::getCostPrice));
 		if (amounts.isEmpty())
 		{
 			// throw new AdempiereException("No costs found for " + costSegment + " and " + costingMethod);
@@ -155,10 +174,31 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		}
 
 		return Optional.of(
-				CostResult.builder()
+				AggregatedCostAmount.builder()
 						.costSegment(costSegment)
 						.amounts(amounts)
 						.build());
+	}
+
+	@Override
+	public ImmutableList<CurrentCost> getByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
+	{
+		final Set<CostElementId> costElementIds = costElementRepo.getByCostingMethod(costingMethod)
+				.stream()
+				.map(CostElement::getId)
+				.collect(ImmutableSet.toImmutableSet());
+		if (costElementIds.isEmpty())
+		{
+			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
+			return ImmutableList.of();
+		}
+
+		return retrieveCostRecords(costSegment)
+				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
+				.create()
+				.stream(I_M_Cost.class)
+				.map(this::toCurrentCost)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -203,37 +243,26 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	private CurrentCost toCurrentCost(final I_M_Cost costRecord)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-
 		final ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
 		final I_C_UOM uom = productBL.getStockingUOM(productId);
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRecord.getC_AcctSchema_ID());
 
-		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, as);
-
-		final CostSegment costSegment = CostSegment.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(acctSchemaId)
-				.costTypeId(CostTypeId.ofRepoId(costRecord.getM_CostType_ID()))
-				.productId(productId)
-				.clientId(ClientId.ofRepoId(costRecord.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(costRecord.getAD_Org_ID()))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(costRecord.getM_AttributeSetInstance_ID()))
-				.build();
+		// final CostSegment costSegment = extractCostSegment(costRecord);
 
 		final CostElementId costElementId = CostElementId.ofRepoId(costRecord.getM_CostElement_ID());
 		final CostElement costElement = costElementRepo.getById(costElementId);
 
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRecord.getC_AcctSchema_ID());
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+
 		return CurrentCost.builder()
 				.id(costRecord.getM_Cost_ID())
-				.costSegment(costSegment)
+				// .costSegment(costSegment)
 				.costElement(costElement)
-				.currencyId(as.getCurrencyId())
-				.precision(as.getCosting().getCostingPrecision())
+				.currencyId(acctSchema.getCurrencyId())
+				.precision(acctSchema.getCosting().getCostingPrecision())
 				.uom(uom)
-				.currentCostPrice(costRecord.getCurrentCostPrice())
-				.currentCostPriceLL(costRecord.getCurrentCostPriceLL())
+				.ownCostPrice(costRecord.getCurrentCostPrice())
+				.componentsCostPrice(costRecord.getCurrentCostPriceLL())
 				.currentQty(costRecord.getCurrentQty())
 				.cumulatedAmt(costRecord.getCumulatedAmt())
 				.cumulatedQty(costRecord.getCumulatedQty())
@@ -242,8 +271,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 	private void updateCostRecord(final I_M_Cost cost, final CurrentCost from)
 	{
-		cost.setCurrentCostPrice(from.getCurrentCostPrice().getValue());
-		cost.setCurrentCostPriceLL(from.getCurrentCostPriceLL().getValue());
+		cost.setCurrentCostPrice(from.getOwnCostPrice().getValue());
+		cost.setCurrentCostPriceLL(from.getComponentsCostPrice().getValue());
 		cost.setCurrentQty(from.getCurrentQty().getAsBigDecimal());
 		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
 		cost.setCumulatedQty(from.getCumulatedQty().getAsBigDecimal());

@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.CostResult;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICurrentCostsRepository;
@@ -190,7 +190,7 @@ final class CreatePPOrderStandardCostsCommand
 
 	private Stream<PPOrderCost> createPPOrderCostsAndStream(final CostSegment costSegment)
 	{
-		final CostResult costs = currentCostsRepository.getByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting)
+		final AggregatedCostAmount costs = currentCostsRepository.getAggregatedCostAmountByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting)
 				.orElse(null);
 		if(costs == null)
 		{

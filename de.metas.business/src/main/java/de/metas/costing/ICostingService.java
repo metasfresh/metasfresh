@@ -28,9 +28,9 @@ import de.metas.order.OrderLineId;
 
 public interface ICostingService
 {
-	CostResult createCostDetail(CostDetailCreateRequest request);
+	AggregatedCostAmount createCostDetail(CostDetailCreateRequest request);
 
-	CostResult createReversalCostDetails(CostDetailReverseRequest request);
+	AggregatedCostAmount createReversalCostDetails(CostDetailReverseRequest request);
 
 	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
 
