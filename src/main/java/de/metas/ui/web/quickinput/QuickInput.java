@@ -89,7 +89,6 @@ public final class QuickInput
 
 	private QuickInput(final Builder builder)
 	{
-		super();
 		descriptor = builder.getQuickInputDescriptor();
 		rootDocumentPath = builder.getRootDocumentPath();
 		targetDetailId = builder.getTargetDetailId();
@@ -107,7 +106,6 @@ public final class QuickInput
 	/** Copy constructor */
 	private QuickInput(final QuickInput from, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
-		super();
 		descriptor = from.descriptor;
 		rootDocumentPath = from.rootDocumentPath;
 		targetDetailId = from.targetDetailId;

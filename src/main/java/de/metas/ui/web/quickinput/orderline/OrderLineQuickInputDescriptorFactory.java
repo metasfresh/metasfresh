@@ -35,6 +35,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.model.Document;
 import de.metas.util.Services;
 
 import lombok.NonNull;
@@ -170,6 +171,12 @@ import lombok.NonNull;
 		if (quickInput == null)
 		{
 			return;
+		}
+
+		final Document quickInputDocument = quickInput.getQuickInputDocument();
+		if (quickInputDocument == null || !quickInputDocument.hasField(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
+		{
+			return; // there are users whose systems don't have M_HU_PI_Item_Product_ID in their quick-input
 		}
 
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
