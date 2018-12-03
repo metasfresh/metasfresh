@@ -101,6 +101,8 @@ public final class AttributesKeys
 
 	/**
 	 * Similar to {@link #createAttributesKeyFromASIAllAttributeValues(int)}, but only attributes flagged as "storage relevant" are considered.
+	 * <p>
+	 * Please make sure the output of this method is in sync with the DB function @{code generateHUAttributesKey}.
 	 *
 	 * @return see {@link #createAttributesKeyFromASIAllAttributeValues(int)}
 	 */
@@ -126,7 +128,7 @@ public final class AttributesKeys
 		final int[] attributeValueIds = attributeDAO.retrieveAttributeInstances(attributeSetInstance).stream()
 				.filter(ai -> ai.getM_AttributeValue_ID() > 0)
 				.filter(additionalFilter)
-				.sorted(Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID))
+				// no point in sorting; AttributesKey.ofAttributeValueIds(..) does its own sorting.
 				.mapToInt(I_M_AttributeInstance::getM_AttributeValue_ID)
 				.toArray();
 

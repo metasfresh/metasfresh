@@ -12,7 +12,7 @@ SELECT
 FROM 
 	MD_Stock s
 	LEFT JOIN M_Product p ON p.M_Product_ID = s.M_Product_ID /*needed for its C_UOM_ID*/
-	LEFT OUTER JOIN 
+	FULL OUTER JOIN 
 	(
 		SELECT 
 			hu.AD_Client_ID,

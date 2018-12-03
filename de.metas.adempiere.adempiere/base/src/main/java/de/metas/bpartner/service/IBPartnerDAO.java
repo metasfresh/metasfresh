@@ -269,15 +269,32 @@ public interface IBPartnerDAO extends ISingletonService
 
 	String getBPartnerNameById(BPartnerId bpartnerId);
 
-	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
+	/**
+	 * If there is at least one bPartner with the given {@code bpartnerValue} and either the given {@code orgId} or {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
+	 * The return it. Otherwise, fail.
+	 * Prefer the one with the specific orgId over the one with orgId "ANY".
+	 */
+	BPartnerId getBPartnerIdByValue(final String bpartnerValue, OrgId orgId);
 
-	Optional<BPartnerId> getBPartnerIdByValueIfExists(String bpartnerValue);
+	/**
+	 * If there is at least one bPartner with the given {@code bpartnerValue} and either the given {@code orgId} or {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
+	 * The return it. Prefer the one with the specific orgId over the one with orgId "ANY".
+	 */
+	Optional<BPartnerId> getBPartnerIdByValueIfExists(String bpartnerValue, OrgId orgId);
 
+	/**
+	 * If there is at least one bPartner with the given {@code externalId} and either the given {@code orgId} or {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
+	 * The return it. Prefer the one with the specific orgId over the one with orgId "ANY".
+	 */
 	Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(String externalId, OrgId orgId);
 
-	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+	/**
+	 * If there is at least one bPartner a bPartner-Location that has the given {@code gln} and either the given {@code orgId} or {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
+	 * The return it. Prefer the one with the specific orgId over the one with orgId "ANY".
+	 */
+	Optional<BPartnerId> getBPartnerIdByLocatorGlnIfExists(String gln, OrgId orgId);
 
-	Optional<BPartnerId> getBPartnerIdByLocatorGln(String gln);
+	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 
 	@Value
 	@Builder

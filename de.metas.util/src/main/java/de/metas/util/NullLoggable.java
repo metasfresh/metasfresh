@@ -40,13 +40,13 @@ public final class NullLoggable implements ILoggable
 
 	private NullLoggable()
 	{
-		super();
 	}
 
 	@Override
-	public void addLog(String msg_IGNORED, Object... msgParameters_IGNORED)
+	public ILoggable addLog(String msg_IGNORED, Object... msgParameters_IGNORED)
 	{
 		// nothing to do
+		return this;
 	}
 
 }

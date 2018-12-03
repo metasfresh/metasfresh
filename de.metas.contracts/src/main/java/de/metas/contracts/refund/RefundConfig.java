@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import javax.annotation.Nullable;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -52,18 +53,23 @@ public class RefundConfig
 
 	public enum RefundMode
 	{
-		/** The config matching the respective minQty is applied only to the part that exceeds that quantity. */
+		/**
+		 * The config matching the respective minQty is applied only to the part that exceeds that quantity.
+		 * A.k.a {@link X_C_Flatrate_RefundConfig#REFUNDMODE_Tiered}
+		 */
 		APPLY_TO_EXCEEDING_QTY,
 
-		/** The config matching the respective minQty is applied to all assignments. */
+		/**
+		 * The config matching the respective minQty is applied to all assignments.
+		 * A.k.a {@link X_C_Flatrate_RefundConfig#REFUNDMODE_Accumulated}
+		 */
 		APPLY_TO_ALL_QTIES;
 	}
-
 
 	RefundConfigId id;
 
 	/**
-	 *  Why BigDecimal and not Quantity: this config might apply to "any" product (if productId == null). The quantity's UOM is always the uom of the respective product.
+	 * Why BigDecimal and not Quantity: this config might apply to "any" product (if productId == null). The quantity's UOM is always the uom of the respective product.
 	 */
 	BigDecimal minQty;
 
@@ -83,7 +89,6 @@ public class RefundConfig
 	ConditionsId conditionsId;
 
 	boolean useInProfitCalculation;
-
 
 	RefundMode refundMode;
 

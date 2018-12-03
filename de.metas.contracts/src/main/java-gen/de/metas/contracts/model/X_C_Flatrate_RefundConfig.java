@@ -15,7 +15,7 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -325827629L;
+	private static final long serialVersionUID = -2052796655L;
 
     /** Standard Constructor */
     public X_C_Flatrate_RefundConfig (Properties ctx, int C_Flatrate_RefundConfig_ID, String trxName)
@@ -341,8 +341,8 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
 	 * Reference name: RefundMode
 	 */
 	public static final int REFUNDMODE_AD_Reference_ID=540903;
-	/** PerScale = S */
-	public static final String REFUNDMODE_PerScale = "S";
+	/** Tiered = T */
+	public static final String REFUNDMODE_Tiered = "T";
 	/** Accumulated = A */
 	public static final String REFUNDMODE_Accumulated = "A";
 	/** Set Staffel-Modus.
