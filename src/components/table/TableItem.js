@@ -430,14 +430,13 @@ class TableItem extends PureComponent {
     return (
       <div className={'indent'}>
         {indentation}
-        {includedDocuments &&
-          !collapsed && (
-            <div
-              className={classnames('indent-bot', {
-                'indent-collapsible-bot': collapsible,
-              })}
-            />
-          )}
+        {includedDocuments && !collapsed && (
+          <div
+            className={classnames('indent-bot', {
+              'indent-collapsible-bot': collapsible,
+            })}
+          />
+        )}
         {includedDocuments && collapsible ? (
           collapsed ? (
             <i
@@ -495,10 +494,9 @@ class TableItem extends PureComponent {
           'item-caption': caption,
         })}
       >
-        {indentSupported &&
-          indent && (
-            <td className="indented">{this.renderTree(contextType)}</td>
-          )}
+        {indentSupported && indent && (
+          <td className="indented">{this.renderTree(contextType)}</td>
+        )}
         {this.renderCells()}
       </tr>
     );
@@ -517,4 +515,9 @@ TableItem.propTypes = {
   isSelected: PropTypes.bool,
 };
 
-export default connect(false, false, false, { withRef: true })(TableItem);
+export default connect(
+  false,
+  false,
+  false,
+  { withRef: true }
+)(TableItem);

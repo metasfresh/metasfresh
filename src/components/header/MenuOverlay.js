@@ -435,7 +435,9 @@ class MenuOverlay extends Component {
     const { nodeId, node, handleMenuOverlay, openModal } = this.props;
     const nodeData = data.length
       ? data
-      : node && node.children ? node.children : node;
+      : node && node.children
+      ? node.children
+      : node;
 
     return (
       <div className="menu-overlay menu-overlay-primary">
@@ -485,8 +487,9 @@ class MenuOverlay extends Component {
                     />
                   ))}
 
-                {queriedResults.length === 0 &&
-                  query !== '' && <span>There are no results</span>}
+                {queriedResults.length === 0 && query !== '' && (
+                  <span>There are no results</span>
+                )}
               </div>
             </div>
           ) : (

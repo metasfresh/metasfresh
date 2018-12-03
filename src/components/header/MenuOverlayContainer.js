@@ -81,43 +81,42 @@ class MenuOverlayContainer extends Component {
 
         {children &&
           children.length > 0 &&
-          children.map(
-            (subitem, subindex) =>
-              subitem.children && printChildren ? (
-                <MenuOverlayContainer
-                  key={subindex}
-                  printChildren={true}
-                  deep={true}
-                  {...subitem}
-                  {...{
-                    showBookmarks,
-                    openModal,
-                    updateData,
-                    transparentBookmarks,
-                    handleNewRedirect,
-                    handleRedirect,
-                    handleClickOnFolder,
-                  }}
-                />
-              ) : (
-                <MenuOverlayItem
-                  key={subindex}
-                  {...subitem}
-                  {...{
-                    showBookmarks,
-                    openModal,
-                    back,
-                    printChildren,
-                    handlePath,
-                    updateData,
-                    transparentBookmarks,
-                    handleMenuOverlay,
-                    handleNewRedirect,
-                    handleRedirect,
-                    handleClickOnFolder,
-                  }}
-                />
-              )
+          children.map((subitem, subindex) =>
+            subitem.children && printChildren ? (
+              <MenuOverlayContainer
+                key={subindex}
+                printChildren={true}
+                deep={true}
+                {...subitem}
+                {...{
+                  showBookmarks,
+                  openModal,
+                  updateData,
+                  transparentBookmarks,
+                  handleNewRedirect,
+                  handleRedirect,
+                  handleClickOnFolder,
+                }}
+              />
+            ) : (
+              <MenuOverlayItem
+                key={subindex}
+                {...subitem}
+                {...{
+                  showBookmarks,
+                  openModal,
+                  back,
+                  printChildren,
+                  handlePath,
+                  updateData,
+                  transparentBookmarks,
+                  handleMenuOverlay,
+                  handleNewRedirect,
+                  handleRedirect,
+                  handleClickOnFolder,
+                }}
+              />
+            )
           )}
       </div>
     );
