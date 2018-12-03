@@ -185,4 +185,6 @@ public interface IAttributeDAO extends ISingletonService
 	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds, Set<AttributeId> attributeIds);
 
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
+
+	boolean areAttributeSetsEqual(AttributeSetInstanceId firstASIId, AttributeSetInstanceId secondASIId);
 }

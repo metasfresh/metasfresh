@@ -101,4 +101,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(Set<BPartnerId> vendorIds, ProductId productId, OrgId orgId);
 
 	I_C_BPartner_Product retrieveByVendorId(BPartnerId vendorId, ProductId productId, OrgId orgId);
+
+	List<I_C_BPartner_Product> retrieveAllBPartnerProductAssociations(Properties ctx, BPartnerId bpartnerId, ProductId productId, OrgId orgId, String trxName);
 }
