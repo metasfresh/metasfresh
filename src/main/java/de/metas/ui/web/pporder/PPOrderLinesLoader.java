@@ -14,8 +14,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -253,9 +253,8 @@ class PPOrderLinesLoader
 		final PPOrderLineType lineType;
 		final String packingInfo;
 		final BigDecimal qtyPlan;
-		final String componentType = ppOrderBOMLine.getComponentType();
-		if (X_PP_Order_BOMLine.COMPONENTTYPE_By_Product.equals(componentType)
-				|| X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType))
+		final BOMComponentType componentType = BOMComponentType.ofCode(ppOrderBOMLine.getComponentType());
+		if (componentType.isByOrCoProduct())
 		{
 			lineType = PPOrderLineType.BOMLine_ByCoProduct;
 			packingInfo = computePackingInfo(ppOrderBOMLine);
