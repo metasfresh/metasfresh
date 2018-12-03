@@ -117,7 +117,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequiredProjected(ppOrderBOMLine),
+				ppOrderBOMBL.calculateQtyRequiredProjected(ppOrderBOMLine).getAsBigDecimal(),
 				// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("28600")));
 	}
@@ -138,12 +138,12 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequired(ppOrderBOMBL.fromRecord(ppOrderBOMLine), ppOrder.getQtyOrdered()),
+				ppOrderBOMBL.calculateQtyRequired(ppOrderBOMBL.fromRecord(ppOrderBOMLine), ppOrder.getQtyOrdered()).getAsBigDecimal(),
 				// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("28600")));
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequiredProjected(ppOrderBOMLine),
+				ppOrderBOMBL.calculateQtyRequiredProjected(ppOrderBOMLine).getAsBigDecimal(),
 				// Expected: 200(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("57200")));
 	}

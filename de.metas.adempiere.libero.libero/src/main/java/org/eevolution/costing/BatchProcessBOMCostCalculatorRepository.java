@@ -99,7 +99,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	}
 
 	@Override
-	public Optional<BOM> getProductBOM(final ProductId productId)
+	public Optional<BOM> getBOM(final ProductId productId)
 	{
 		final I_PP_Product_Planning productPlanning = Services.get(IProductPlanningDAO.class)
 				.find(ProductPlanningQuery.builder()
@@ -257,7 +257,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	}
 
 	@Override
-	public void resetComponentsCostPrice(ProductId productId)
+	public void resetComponentsCostPrices(ProductId productId)
 	{
 		final CostSegment costSegment = createCostSegment(productId);
 		for (final CurrentCost cost : currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod))

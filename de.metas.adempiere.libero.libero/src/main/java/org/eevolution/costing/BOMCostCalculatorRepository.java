@@ -28,9 +28,9 @@ import de.metas.product.ProductId;
 
 public interface BOMCostCalculatorRepository
 {
-	Optional<BOM> getProductBOM(ProductId productId);
+	Optional<BOM> getBOM(ProductId productId);
 
 	void save(BOM bom);
 
-	void resetComponentsCostPrice(ProductId productId);
+	void resetComponentsCostPrices(ProductId productId);
 }

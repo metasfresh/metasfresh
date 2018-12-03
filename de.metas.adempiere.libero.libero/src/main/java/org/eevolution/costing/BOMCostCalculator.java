@@ -39,7 +39,7 @@ public class BOMCostCalculator
 
 	public void rollup(final ProductId productId)
 	{
-		final BOM bom = repository.getProductBOM(productId).orElse(null);
+		final BOM bom = repository.getBOM(productId).orElse(null);
 
 		if (bom != null)
 		{
@@ -48,7 +48,7 @@ public class BOMCostCalculator
 		}
 		else
 		{
-			repository.resetComponentsCostPrice(productId);
+			repository.resetComponentsCostPrices(productId);
 		}
 	}
 }

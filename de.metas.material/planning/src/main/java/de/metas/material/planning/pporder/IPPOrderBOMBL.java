@@ -145,7 +145,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @param orderBOMLine
 	 * @return projected quantity required.
 	 */
-	BigDecimal calculateQtyRequiredProjected(I_PP_Order_BOMLine orderBOMLine);
+	Quantity calculateQtyRequiredProjected(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
 	 * Calculates how much qty we STILL have to issue to cover proportionally the quantity of finished goods that was already received.
@@ -168,5 +168,5 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @param qtyFinishedGood
 	 * @return
 	 */
-	BigDecimal calculateQtyRequired(PPOrderLine ppOrderLinePojo, PPOrder ppOrderPojo, BigDecimal qtyFinishedGood);
+	Quantity calculateQtyRequired(PPOrderLine ppOrderLinePojo, PPOrder ppOrderPojo, BigDecimal qtyFinishedGood);
 }
