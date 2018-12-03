@@ -256,18 +256,17 @@ export default function windowHandler(state = initialState, action) {
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
           layout: Object.assign({}, state[action.scope].layout, {
-            tabs: state[action.scope].layout.tabs.map(
-              tab =>
-                tab.tabId === action.tabId
-                  ? Object.assign({}, tab, {
-                      orderBy: [
-                        {
-                          fieldName: action.field,
-                          ascending: action.asc,
-                        },
-                      ],
-                    })
-                  : tab
+            tabs: state[action.scope].layout.tabs.map(tab =>
+              tab.tabId === action.tabId
+                ? Object.assign({}, tab, {
+                    orderBy: [
+                      {
+                        fieldName: action.field,
+                        ascending: action.asc,
+                      },
+                    ],
+                  })
+                : tab
             ),
           }),
         }),
@@ -378,20 +377,19 @@ export default function windowHandler(state = initialState, action) {
         const updateRowFieldProperty = state[action.scope].rowData.update(
           `${tabid}`,
           list =>
-            list.map(
-              item =>
-                item.rowId === rowid
-                  ? {
-                      ...item,
-                      fieldsByName: {
-                        ...item.fieldsByName,
-                        [property]: {
-                          ...item.fieldsByName[property],
-                          ...action.item,
-                        },
+            list.map(item =>
+              item.rowId === rowid
+                ? {
+                    ...item,
+                    fieldsByName: {
+                      ...item.fieldsByName,
+                      [property]: {
+                        ...item.fieldsByName[property],
+                        ...action.item,
                       },
-                    }
-                  : item
+                    },
+                  }
+                : item
             )
         );
 
@@ -410,14 +408,13 @@ export default function windowHandler(state = initialState, action) {
       const updateRowPropertyData = state[action.scope].rowData.update(
         `${action.tabid}`,
         list =>
-          list.map(
-            item =>
-              item.rowId === action.rowid
-                ? {
-                    ...item,
-                    [action.property]: action.item,
-                  }
-                : item
+          list.map(item =>
+            item.rowId === action.rowid
+              ? {
+                  ...item,
+                  [action.property]: action.item,
+                }
+              : item
           )
       );
 
@@ -432,14 +429,13 @@ export default function windowHandler(state = initialState, action) {
       const updateRowStatusData = state[action.scope].rowData.update(
         `${action.tabid}`,
         list =>
-          list.map(
-            item =>
-              item.rowId !== action.rowid
-                ? {
-                    ...item,
-                    saveStatus: action.saveStatus,
-                  }
-                : item
+          list.map(item =>
+            item.rowId !== action.rowid
+              ? {
+                  ...item,
+                  saveStatus: action.saveStatus,
+                }
+              : item
           )
       );
 

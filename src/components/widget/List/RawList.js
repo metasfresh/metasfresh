@@ -360,13 +360,11 @@ class RawList extends PureComponent {
                 disabled={readonly || disabled}
               />
             </div>
-            {clearable &&
-              selected &&
-              !readonly && (
-                <div className="input-icon" onClick={this.handleClear}>
-                  <i className="meta-icon-close-alt" />
-                </div>
-              )}
+            {clearable && selected && !readonly && (
+              <div className="input-icon" onClick={this.handleClear}>
+                <i className="meta-icon-close-alt" />
+              </div>
+            )}
             {!selected && (
               <div className="input-icon input-readonly">
                 <i className="meta-icon-down-1" />
@@ -374,19 +372,18 @@ class RawList extends PureComponent {
             )}
           </div>
         </div>
-        {isFocused &&
-          isToggled && (
-            <SelectionDropdown
-              loading={loading}
-              options={this.state.dropdownList}
-              empty="There is no choice available"
-              selected={this.state.selected}
-              width={this.dropdown.offsetWidth}
-              onChange={this.handleTemporarySelection}
-              onSelect={this.handleSelect}
-              onCancel={this.handleCancel}
-            />
-          )}
+        {isFocused && isToggled && (
+          <SelectionDropdown
+            loading={loading}
+            options={this.state.dropdownList}
+            empty="There is no choice available"
+            selected={this.state.selected}
+            width={this.dropdown.offsetWidth}
+            onChange={this.handleTemporarySelection}
+            onSelect={this.handleSelect}
+            onCancel={this.handleCancel}
+          />
+        )}
       </TetherComponent>
     );
   }

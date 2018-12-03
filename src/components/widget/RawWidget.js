@@ -889,61 +889,61 @@ class RawWidget extends Component {
         )}
       >
         {captionElement || null}
-        {!noLabel &&
-          caption && (
-            <div
-              key="title"
-              className={
-                'form-control-label ' +
-                (type === 'primary' && !oneLineException
-                  ? 'col-sm-12 panel-title'
-                  : type === 'primaryLongLabels' ? 'col-sm-6' : 'col-sm-3 ')
-              }
-              title={description || caption}
-            >
-              {fields[0].supportZoomInto ? (
-                <span
-                  className="zoom-into"
-                  onClick={() => handleZoomInto(fields[0].field)}
-                >
-                  {caption}
-                </span>
-              ) : (
-                caption
-              )}
-            </div>
-          )}
+        {!noLabel && caption && (
+          <div
+            key="title"
+            className={
+              'form-control-label ' +
+              (type === 'primary' && !oneLineException
+                ? 'col-sm-12 panel-title'
+                : type === 'primaryLongLabels'
+                ? 'col-sm-6'
+                : 'col-sm-3 ')
+            }
+            title={description || caption}
+          >
+            {fields[0].supportZoomInto ? (
+              <span
+                className="zoom-into"
+                onClick={() => handleZoomInto(fields[0].field)}
+              >
+                {caption}
+              </span>
+            ) : (
+              caption
+            )}
+          </div>
+        )}
         <div
           className={
             ((type === 'primary' || noLabel) && !oneLineException
               ? 'col-sm-12 '
-              : type === 'primaryLongLabels' ? 'col-sm-6' : 'col-sm-9 ') +
-            (fields[0].devices ? 'form-group-flex ' : '')
+              : type === 'primaryLongLabels'
+              ? 'col-sm-6'
+              : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex ' : '')
           }
           onMouseEnter={() => this.handleErrorPopup(true)}
           onMouseLeave={() => this.handleErrorPopup(false)}
         >
-          {!clearedFieldWarning &&
-            warning && (
-              <div
-                className={classnames('field-warning', {
-                  'field-warning-message': warning,
-                  'field-error-message': warning && warning.error,
-                })}
-                onMouseEnter={() => this.toggleTooltip(true)}
-                onMouseLeave={() => this.toggleTooltip(false)}
-              >
-                <span>{warning.caption}</span>
-                <i
-                  className="meta-icon-close-alt"
-                  onClick={() => this.clearFieldWarning(warning)}
-                />
-                {warning.message &&
-                  tooltipToggled && (
-                    <Tooltips action={warning.message} type="" />
-                  )}
-              </div>
-            )}
+          {!clearedFieldWarning && warning && (
+            <div
+              className={classnames('field-warning', {
+                'field-warning-message': warning,
+                'field-error-message': warning && warning.error,
+              })}
+              onMouseEnter={() => this.toggleTooltip(true)}
+              onMouseLeave={() => this.toggleTooltip(false)}
+            >
+              <span>{warning.caption}</span>
+              <i
+                className="meta-icon-close-alt"
+                onClick={() => this.clearFieldWarning(warning)}
+              />
+              {warning.message && tooltipToggled && (
+                <Tooltips action={warning.message} type="" />
+              )}
+            </div>
+          )}
 
           <div className="input-body-container">
             <ReactCSSTransitionGroup
@@ -959,16 +959,15 @@ class RawWidget extends Component {
             </ReactCSSTransitionGroup>
             {widgetBody}
           </div>
-          {fields[0].devices &&
-            !widgetData[0].readonly && (
-              <DevicesWidget
-                devices={fields[0].devices}
-                tabIndex={1}
-                handleChange={value =>
-                  handlePatch && handlePatch(fields[0].field, value)
-                }
-              />
-            )}
+          {fields[0].devices && !widgetData[0].readonly && (
+            <DevicesWidget
+              devices={fields[0].devices}
+              tabIndex={1}
+              handleChange={value =>
+                handlePatch && handlePatch(fields[0].field, value)
+              }
+            />
+          )}
         </div>
       </div>
     );

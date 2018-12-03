@@ -168,6 +168,7 @@ class NewLetter extends Component {
               <a
                 href={`${config.API_URL}/letter/${letterId}/printPreview`}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="input-icon input-icon-lg letter-icon-print"
               >
                 <i className="meta-icon-print" />
