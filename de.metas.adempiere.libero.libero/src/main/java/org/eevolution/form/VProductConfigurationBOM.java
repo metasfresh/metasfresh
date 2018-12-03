@@ -55,7 +55,6 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
-import org.compiere.model.MProductBOM;
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectLine;
 import org.compiere.swing.CComboBox;
@@ -66,15 +65,14 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.form.bom.RadioButtonTreeCellRenderer;
 import org.eevolution.form.bom.nodeUserObject;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /*
@@ -520,16 +518,14 @@ public class VProductConfigurationBOM extends CPanel
 		log.debug("In addBOMLine");
 		log.debug(line.toString());
 		//FIXME:  add a bomtype accessor here
-		String bomType = line.getComponentType();
-		if (bomType == null)
-			bomType = MProductBOM.BOMTYPE_StandardPart;
-		BigDecimal lineQty = new BigDecimal(0);
+		final BOMComponentType componentType = BOMComponentType.ofCode(line.getComponentType());
+		BigDecimal lineQty = BigDecimal.ZERO;
 		MProduct product = getProductFromMPPProductBOMLine(line);
 		if (product == null)
 			return;
 		
 		addDisplay (line.getM_Product_ID(),
-		product.getM_Product_ID(), bomType, product.getName(), lineQty, line.getPP_Product_BOM_ID(), line.getFeature(), line.get_ID());
+		product.getM_Product_ID(), componentType, product.getName(), lineQty, line.getPP_Product_BOM_ID(), line.getFeature(), line.get_ID());
 	}	//	addBOMLine
 
 	/**
@@ -540,13 +536,21 @@ public class VProductConfigurationBOM extends CPanel
 	 *	@param name name
 	 *	@param lineQty qty
 	 */
-	private void addDisplay (int parentM_Product_ID,int M_Product_ID, String bomType, String name, BigDecimal lineQty, int PP_Product_BOM_ID, String M_Feature, int PP_Product_BOMLine_ID)
+	private void addDisplay (
+			int parentM_Product_ID,
+			int M_Product_ID,
+			BOMComponentType componentType, 
+			String name, 
+			BigDecimal lineQty, 
+			int PP_Product_BOM_ID, 
+			String M_Feature, 
+			int PP_Product_BOMLine_ID)
 	{
-		log.debug("M_Product_ID=" + M_Product_ID + ",Type=" + bomType + ",Name=" + name + ",Qty=" + lineQty);
+		log.debug("M_Product_ID=" + M_Product_ID + ",Type=" + componentType + ",Name=" + name + ",Qty=" + lineQty);
 		//
 		boolean selected = true;
 	        	
-		if (MPPProductBOMLine.COMPONENTTYPE_Component.equals(bomType))
+		if (componentType.isComponent())
 		{
 			String title = "";
 			JCheckBox cb = new JCheckBox(title);
@@ -557,7 +561,7 @@ public class VProductConfigurationBOM extends CPanel
 		}
 		
 		//FIXME:  add different types for libero
-		else if (MPPProductBOMLine.COMPONENTTYPE_Variant.equals(bomType))
+		else if (componentType.isVariant())
 		{
 			String title = Msg.getMsg(Env.getCtx(), "Optional");
 			JCheckBox cb = new JCheckBox(title);
@@ -574,7 +578,7 @@ public class VProductConfigurationBOM extends CPanel
 			String title = M_Feature;
 			JRadioButton b = new JRadioButton(title);
 			//String groupName = String.valueOf(parentM_Product_ID) + "_" + bomType;
-			String groupName = String.valueOf(getProductFromMPPProductBOM(PP_Product_BOM_ID).get_ID()) + "_" + bomType;
+			String groupName = String.valueOf(getProductFromMPPProductBOM(PP_Product_BOM_ID).get_ID()) + "_" + componentType.getCode();
 			ButtonGroup group = m_buttonGroups.get(groupName);
 			if (group == null)
 			{

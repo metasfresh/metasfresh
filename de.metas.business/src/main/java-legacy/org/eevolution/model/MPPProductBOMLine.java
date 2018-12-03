@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 
 import de.metas.util.Services;
@@ -43,7 +44,8 @@ public class MPPProductBOMLine extends X_PP_Product_BOMLine
 	{
 		//
 		// For Co/By Products, Qty should be always negative:
-		if (isCoProduct()
+		final BOMComponentType componentType = BOMComponentType.ofCode(getComponentType());
+		if (componentType.isCoProduct()
 				&& Services.get(IProductBOMBL.class).getQtyExcludingScrap(this).signum() >= 0)
 		{
 			throw new AdempiereException("@Qty@ > 0");
@@ -59,11 +61,5 @@ public class MPPProductBOMLine extends X_PP_Product_BOMLine
 		}
 
 		return true;
-	}
-
-	private boolean isCoProduct()
-	{
-		final String componentType = getComponentType();
-		return COMPONENTTYPE_Co_Product.equals(componentType);
 	}
 }

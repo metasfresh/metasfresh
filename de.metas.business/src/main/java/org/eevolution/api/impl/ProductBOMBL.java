@@ -32,12 +32,12 @@ import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.IProductLowLevelUpdater;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -122,7 +122,8 @@ public class ProductBOMBL implements IProductBOMBL
 	@Override
 	public boolean isValidVariantGroup(final I_PP_Product_BOMLine bomLine)
 	{
-		if (!X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomLine.getComponentType()))
+		final BOMComponentType currentComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		if (!currentComponentType.isVariant())
 		{
 			return true;
 		}
@@ -132,8 +133,8 @@ public class ProductBOMBL implements IProductBOMBL
 		final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
 		for (I_PP_Product_BOMLine bl : bomLines)
 		{
-			if ((X_PP_Order_BOMLine.COMPONENTTYPE_Component.equals(bl.getComponentType()) || X_PP_Order_BOMLine.COMPONENTTYPE_Packing.equals(bl.getComponentType()))
-					&& bomLine.getVariantGroup().equals(bl.getVariantGroup()))
+			final BOMComponentType componentType = BOMComponentType.ofCode(bl.getComponentType());
+			if (componentType.isComponentOrPacking() && bomLine.getVariantGroup().equals(bl.getVariantGroup()))
 			{
 				isComponentOrPacking = true;
 				continue;

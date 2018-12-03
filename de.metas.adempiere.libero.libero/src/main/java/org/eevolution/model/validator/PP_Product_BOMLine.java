@@ -31,11 +31,11 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.util.Check;
@@ -53,8 +53,8 @@ public class PP_Product_BOMLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_PP_Product_BOMLine bomLine)
 	{
-		if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomLine.getComponentType()) //
-				&& Check.isEmpty(bomLine.getVariantGroup()))
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		if (componentType.isVariant() && Check.isEmpty(bomLine.getVariantGroup()))
 		{
 			throw new LiberoException("@MandatoryVariant@");
 		}
@@ -69,13 +69,15 @@ public class PP_Product_BOMLine
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_PP_Order_BOMLine.COLUMNNAME_VariantGroup)
 	public void setVariantGroupToVA(final I_PP_Product_BOMLine bomLine)
 	{
-		if (X_PP_Order_BOMLine.COMPONENTTYPE_Component.equals(bomLine.getComponentType()))
+		final BOMComponentType currentComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		if (currentComponentType.isComponent())
 		{
 			final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 			final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
 			for (I_PP_Product_BOMLine bl : bomLines)
 			{
-				if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bl.getComponentType()) && noAccordinglyVariantGroup(bl))
+				final BOMComponentType componentType = BOMComponentType.ofCode(bl.getComponentType());
+				if (componentType.isVariant() && noAccordinglyVariantGroup(bl))
 				{
 					bl.setVariantGroup(bomLine.getVariantGroup());
 					InterfaceWrapperHelper.save(bl);
@@ -90,7 +92,8 @@ public class PP_Product_BOMLine
 		final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
 		for (I_PP_Product_BOMLine bl : bomLines)
 		{
-			if (bl.getComponentType().equals(X_PP_Order_BOMLine.COMPONENTTYPE_Component) && bomLine.getVariantGroup().equals(bl.getVariantGroup()))
+			final BOMComponentType componentType = BOMComponentType.ofCode(bl.getComponentType());
+			if (componentType.isComponent() && bomLine.getVariantGroup().equals(bl.getVariantGroup()))
 			{
 				return false;
 			}

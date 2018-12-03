@@ -37,6 +37,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Order;
@@ -44,7 +45,6 @@ import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -254,23 +254,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		// final I_PP_Product_BOMLine productBomLine = PPOrderUtil.getProductBomLine(ppOrderLinePojo);
 
 		final BigDecimal qtyRequired;
-		if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine.getComponentType(),
-				X_PP_Order_BOMLine.COMPONENTTYPE_Component,
-				X_PP_Order_BOMLine.COMPONENTTYPE_Phantom,
-				X_PP_Order_BOMLine.COMPONENTTYPE_Packing,
-				X_PP_Order_BOMLine.COMPONENTTYPE_By_Product,
-				X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product,
-				X_PP_Order_BOMLine.COMPONENTTYPE_Variant))
-		{
-			qtyRequired = qtyFinishedGood.multiply(multiplier).setScale(8, RoundingMode.UP);
-		}
-		else if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine.getComponentType(), X_PP_Order_BOMLine.COMPONENTTYPE_Tools))
+		if (orderBOMLine.getComponentType().isTools())
 		{
 			qtyRequired = multiplier;
 		}
 		else
 		{
-			throw new MrpException("@NotSupported@ @ComponentType@ " + orderBOMLine.getComponentType());
+			qtyRequired = qtyFinishedGood.multiply(multiplier).setScale(8, RoundingMode.UP);
 		}
 
 		//
@@ -344,7 +334,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		I_C_UOM getBOMProductUOM();
 
-		String getComponentType();
+		BOMComponentType getComponentType();
 
 		boolean isQtyPercentage();
 
@@ -403,10 +393,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			}
 
 			@Override
-			public String getComponentType()
+			public BOMComponentType getComponentType()
 			{
 				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
-				return productBomLine.getComponentType();
+				return BOMComponentType.ofCode(productBomLine.getComponentType());
 			}
 
 			@Override
@@ -482,9 +472,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			}
 
 			@Override
-			public String getComponentType()
+			public BOMComponentType getComponentType()
 			{
-				return ppOrderBOMLine.getComponentType();
+				return BOMComponentType.ofCode(ppOrderBOMLine.getComponentType());
 			}
 		};
 	}
@@ -535,8 +525,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public void explodePhantom(@NonNull final I_PP_Order_BOMLine orderBOMLine, @NonNull final BigDecimal qtyOrdered)
 	{
-		final String componentType = orderBOMLine.getComponentType();
-		if (!X_PP_Order_BOMLine.COMPONENTTYPE_Phantom.equals(componentType))
+		final BOMComponentType componentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
+		if (!componentType.isPhantom())
 		{
 			throw new MrpException("Only Phantom lines can be exploded");
 		}

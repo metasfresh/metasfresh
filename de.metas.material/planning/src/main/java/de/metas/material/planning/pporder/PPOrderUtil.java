@@ -8,11 +8,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -70,18 +70,14 @@ public class PPOrderUtil
 		final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderLinePojo);
 
 		final BigDecimal qtyRequired;
-		if (isComponentTypeOneOf(productBomLine.getComponentType(),
-				X_PP_Order_BOMLine.COMPONENTTYPE_Component, X_PP_Order_BOMLine.COMPONENTTYPE_Phantom, X_PP_Order_BOMLine.COMPONENTTYPE_Packing, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Variant))
-		{
-			qtyRequired = qtyFinishedGood.multiply(multiplier).setScale(8, RoundingMode.UP);
-		}
-		else if (isComponentTypeOneOf(productBomLine.getComponentType(), X_PP_Order_BOMLine.COMPONENTTYPE_Tools))
+		final BOMComponentType componentType = BOMComponentType.ofCode(productBomLine.getComponentType());
+		if (componentType.isTools())
 		{
 			qtyRequired = multiplier;
 		}
 		else
 		{
-			throw new MrpException("@NotSupported@ @ComponentType@ " + productBomLine.getComponentType());
+			qtyRequired = qtyFinishedGood.multiply(multiplier).setScale(8, RoundingMode.UP);
 		}
 
 		//
@@ -109,61 +105,16 @@ public class PPOrderUtil
 		return Services.get(IProductBOMBL.class).getQtyMultiplier(productBomLine, endProductId);
 	}
 
-	/**
-	 *
-	 * @param orderBOMLine
-	 * @param componentTypes zero or more component types
-	 *
-	 * @return {@code true} if the given {@code orderBOMLine}'s componentType is any of the given {@code componentTypes}.
-	 */
-	public boolean isComponentTypeOneOf(@NonNull final I_PP_Order_BOMLine orderBOMLine, @NonNull final String... componentTypes)
-	{
-		final String currentType = orderBOMLine.getComponentType();
-		return isComponentTypeOneOf(currentType, componentTypes);
-	}
-
 	public boolean isCoProduct(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
-		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product);
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		return componentType.isCoProduct();
 	}
 
 	public boolean isByProduct(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
-		Check.assumeNotNull(bomLine, "bomLine not null");
-		final String componentType = bomLine.getComponentType();
-		return isByProduct(componentType);
-	}
-
-	/**
-	 *
-	 * @param currentType may be {@code null}. In that case, the method returns {@code false}.
-	 * @param componentTypes
-	 * @return
-	 */
-	public boolean isComponentTypeOneOf(final String currentType, @NonNull final String... componentTypes)
-	{
-		if (currentType == null)
-		{
-			return false;
-		}
-
-		for (final String type : componentTypes)
-		{
-			if (currentType.equals(type))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * @param componentType may be {@code null}. In that case, the method returns {@code false}.
-	 * @return
-	 */
-	public boolean isByProduct(final String componentType)
-	{
-		return X_PP_Order_BOMLine.COMPONENTTYPE_By_Product.equals(componentType);
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		return componentType.isByProduct();
 	}
 
 	/**
@@ -171,9 +122,9 @@ public class PPOrderUtil
 	 * @param componentType may be {@code null}. In that case, the method returns {@code false}.
 	 * @return true if given {@code componentType} is for receiving materials from manufacturing order (i.e. ComponentType is Co/By-Product) and not for issuing
 	 */
-	public boolean isReceipt(final String componentType)
+	public boolean isReceipt(final BOMComponentType componentType)
 	{
-		return isComponentTypeOneOf(componentType, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product);
+		return componentType != null && componentType.isByOrCoProduct();
 	}
 
 	/**
@@ -181,14 +132,15 @@ public class PPOrderUtil
 	 * @param componentType may be {@code null}. In that case, the method returns {@code false}.
 	 * @return
 	 */
-	public boolean isIssue(final String componentType)
+	public boolean isIssue(final BOMComponentType componentType)
 	{
 		return !isReceipt(componentType);
 	}
 
 	public boolean isCoOrByProduct(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
-		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product);
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		return componentType.isByOrCoProduct();
 	}
 
 	/**
@@ -198,14 +150,16 @@ public class PPOrderUtil
 	 */
 	public boolean isVariant(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
-		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_Variant);
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		return componentType.isVariant();
 	}
 
 	public boolean isReceipt(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
-		return isReceipt(bomLine.getComponentType());
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		return isReceipt(componentType);
 	}
-	
+
 	public boolean isMethodChangeVariance(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		// If QtyBatch and QtyBOM is zero, than this is a method variance
@@ -232,7 +186,8 @@ public class PPOrderUtil
 
 	public boolean isComponent(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
-		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_Component, X_PP_Order_BOMLine.COMPONENTTYPE_Packing);
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		return componentType.isComponentOrPacking();
 	}
 
 	public I_PP_Product_BOMLine getProductBomLine(@NonNull final PPOrderLine ppOrderLinePojo)

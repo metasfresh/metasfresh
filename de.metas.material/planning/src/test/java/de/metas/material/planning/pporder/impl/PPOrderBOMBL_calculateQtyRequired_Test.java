@@ -30,9 +30,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -94,7 +94,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		// Component
 		ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
 		ppOrderBOMLine.setPP_Order(ppOrder);
-		ppOrderBOMLine.setComponentType(X_PP_Order_BOMLine.COMPONENTTYPE_Packing);
+		ppOrderBOMLine.setComponentType(BOMComponentType.Packing.getCode());
 		ppOrderBOMLine.setM_Product_ID(pFolie.getRepoId());
 		ppOrderBOMLine.setC_UOM(uomMm);
 		ppOrderBOMLine.setQtyRequiered(null);

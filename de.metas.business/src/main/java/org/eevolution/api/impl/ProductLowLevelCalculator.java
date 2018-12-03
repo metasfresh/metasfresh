@@ -11,11 +11,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.X_PP_Product_BOMLine;
 
 import de.metas.util.Services;
 
@@ -93,9 +93,8 @@ import de.metas.util.Services;
 
 	private static final boolean isByOrCoProduct(final I_PP_Product_BOMLine bomLine)
 	{
-		final String componentType = bomLine.getComponentType();
-		return X_PP_Product_BOMLine.COMPONENTTYPE_By_Product.equals(componentType)
-				|| X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType);
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		return componentType.isByOrCoProduct();
 	}
 
 	private DefaultMutableTreeNode createParentProductNodeForBOMLine(final I_PP_Product_BOMLine bomLine)

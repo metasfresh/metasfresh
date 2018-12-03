@@ -30,6 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_PP_Order;
@@ -122,7 +123,7 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public String getComponentType()
+	public BOMComponentType getComponentType()
 	{
 		return null;
 	}

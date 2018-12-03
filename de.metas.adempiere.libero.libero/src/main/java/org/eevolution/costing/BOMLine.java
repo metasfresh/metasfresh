@@ -2,8 +2,7 @@ package org.eevolution.costing;
 
 import java.math.BigDecimal;
 
-import org.eevolution.model.X_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Product_BOMLine;
+import org.eevolution.api.BOMComponentType;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
@@ -46,10 +45,13 @@ import lombok.Value;
 public final class BOMLine
 {
 	@NonNull
-	final String componentType;
+	@Getter(AccessLevel.PRIVATE)
+	final BOMComponentType componentType;
+
 	@NonNull
 	final ProductId componentId;
 	@NonNull
+
 	final Quantity qty;
 	@NonNull
 	@Default
@@ -67,17 +69,17 @@ public final class BOMLine
 
 	public boolean isCoProduct()
 	{
-		return X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product.equals(getComponentType());
+		return getComponentType().isCoProduct();
 	}
 
 	public boolean isByProduct()
 	{
-		return X_PP_Product_BOMLine.COMPONENTTYPE_By_Product.equals(getComponentType());
+		return getComponentType().isByProduct();
 	}
 
 	public boolean isVariant()
 	{
-		return X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(getComponentType());
+		return getComponentType().isVariant();
 	}
 
 	public Quantity getQtyIncludingScrap()

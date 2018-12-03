@@ -12,6 +12,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -187,7 +188,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	{
 		final ProductId productId = ProductId.ofRepoId(bomLineRecord.getM_Product_ID());
 		return BOMLine.builder()
-				.componentType(bomLineRecord.getComponentType())
+				.componentType(BOMComponentType.ofCode(bomLineRecord.getComponentType()))
 				.componentId(productId)
 				.qty(productBOMBL.getQtyExcludingScrap(bomLineRecord))
 				.scrapPercent(Percent.of(bomLineRecord.getScrap()))

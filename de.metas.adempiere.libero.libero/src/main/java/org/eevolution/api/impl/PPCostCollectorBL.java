@@ -41,6 +41,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -384,7 +385,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		{
 			return;
 		}
-		if (PPOrderUtil.isComponentTypeOneOf(line, X_PP_Order_BOMLine.COMPONENTTYPE_Variant))
+		
+		final BOMComponentType componentType = BOMComponentType.ofCode(line.getComponentType());
+		if(componentType.isVariant())
 		{
 			return;
 		}

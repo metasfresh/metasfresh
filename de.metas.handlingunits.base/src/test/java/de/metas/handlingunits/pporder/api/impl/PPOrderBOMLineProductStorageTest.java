@@ -30,6 +30,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -86,7 +87,7 @@ public class PPOrderBOMLineProductStorageTest
 		// Component
 		ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class, helper.contextProvider);
 		ppOrderBOMLine.setPP_Order(ppOrder);
-		ppOrderBOMLine.setComponentType(X_PP_Order_BOMLine.COMPONENTTYPE_Packing);
+		ppOrderBOMLine.setComponentType(BOMComponentType.Packing.getCode());
 		ppOrderBOMLine.setM_Product_ID(pFolie.getM_Product_ID());
 		ppOrderBOMLine.setC_UOM_ID(uomMm.getC_UOM_ID());
 		ppOrderBOMLine.setQtyRequiered(null);

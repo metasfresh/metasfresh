@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
@@ -79,7 +80,8 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 
 		final Quantity qtyCapacity;
 		final Quantity qtyToIssueOrReceive;
-		if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
+		final BOMComponentType componentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
+		if (PPOrderUtil.isReceipt(componentType))
 		{
 			qtyCapacity = ppOrderBOMBL.getQtyRequiredToReceive(orderBOMLine);
 			qtyToIssueOrReceive = ppOrderBOMBL.getQtyToReceive(orderBOMLine);

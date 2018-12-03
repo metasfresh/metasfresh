@@ -1,17 +1,17 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
  *****************************************************************************/
 
 package org.eevolution.model.wrapper;
@@ -29,11 +29,11 @@ package org.eevolution.model.wrapper;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,6 +44,7 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PO;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -103,22 +104,24 @@ public class BOMLineWrapper extends AbstractPOWrapper
 		return po;
 	}
 
-	public String getComponentType()
+	public BOMComponentType getComponentType()
 	{
-
-		String type = null;
-		if (get() instanceof I_PP_Product_BOMLine)
+		final PO obj = get();
+		if (obj instanceof I_PP_Product_BOMLine)
 		{
 
-			type = ((I_PP_Product_BOMLine)get()).getComponentType();
+			final I_PP_Product_BOMLine bomLine = (I_PP_Product_BOMLine)obj;
+			return BOMComponentType.ofCode(bomLine.getComponentType());
 		}
-		else if (get() instanceof I_PP_Order_BOMLine)
+		else if (obj instanceof I_PP_Order_BOMLine)
 		{
-
-			type = ((I_PP_Order_BOMLine)get()).getComponentType();
+			final I_PP_Order_BOMLine orderBOMLine = (I_PP_Order_BOMLine)obj;
+			return BOMComponentType.ofCode(orderBOMLine.getComponentType());
 		}
-
-		return type;
+		else
+		{
+			return null;
+		}
 	}
 
 	public BigDecimal getAssay()

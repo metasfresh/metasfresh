@@ -20,13 +20,12 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Product_BOMLine;
 import org.eevolution.model.validator.PP_Order;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
 import org.junit.Before;
@@ -133,7 +132,7 @@ public class PPOrderRequestedEventHandlerTests
 			save(bomCoProduct);
 
 			bomCoProductLine = newInstance(I_PP_Product_BOMLine.class);
-			bomCoProductLine.setComponentType(X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product);
+			bomCoProductLine.setComponentType(BOMComponentType.CoProduct.getCode());
 			bomCoProductLine.setPP_Product_BOM(productBom);
 			bomCoProductLine.setM_Product(bomCoProduct);
 			bomCoProductLine.setDescription("supposed to become the co-product line");
@@ -146,7 +145,7 @@ public class PPOrderRequestedEventHandlerTests
 			save(bomComponentProduct);
 
 			bomComponentLine = newInstance(I_PP_Product_BOMLine.class);
-			bomComponentLine.setComponentType(X_PP_Product_BOMLine.COMPONENTTYPE_Component);
+			bomComponentLine.setComponentType(BOMComponentType.Component.getCode());
 			bomComponentLine.setPP_Product_BOM(productBom);
 			bomComponentLine.setM_Product(bomComponentProduct);
 			bomComponentLine.setDescription("supposed to become the component line");
@@ -229,27 +228,25 @@ public class PPOrderRequestedEventHandlerTests
 		assertThat(orderBOMLines.isEmpty()).isFalse();
 		assertThat(orderBOMLines).hasSize(2);
 
-		assertThat(filter(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Component).size(), is(1));
-		final I_PP_Order_BOMLine componentLine = filter(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Component).get(0);
+		assertThat(filter(ppOrder, BOMComponentType.Component).size(), is(1));
+		final I_PP_Order_BOMLine componentLine = filter(ppOrder, BOMComponentType.Component).get(0);
 		assertThat(componentLine.getDescription()).isEqualTo("supposed to become the component line");
 		assertThat(componentLine.getM_Product_ID()).isEqualTo(bomComponentProduct.getM_Product_ID());
 
-		assertThat(filter(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product).size(), is(1));
-		final I_PP_Order_BOMLine coProductLine = filter(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product).get(0);
+		assertThat(filter(ppOrder, BOMComponentType.CoProduct).size(), is(1));
+		final I_PP_Order_BOMLine coProductLine = filter(ppOrder, BOMComponentType.CoProduct).get(0);
 		assertThat(coProductLine.getDescription()).isEqualTo("supposed to become the co-product line");
 		assertThat(coProductLine.getM_Product_ID()).isEqualTo(bomCoProduct.getM_Product_ID());
 	}
 
-	private List<I_PP_Order_BOMLine> filter(final I_PP_Order ppOrder, final String componenttypeComponent)
+	private List<I_PP_Order_BOMLine> filter(final I_PP_Order ppOrder, final BOMComponentType componentType)
 	{
 		final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 
 		final List<I_PP_Order_BOMLine> allBomLines = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder);
 
 		return allBomLines.stream()
-				.filter(l -> {
-					return componenttypeComponent.equals(l.getComponentType());
-				})
+				.filter(l -> componentType.equals(BOMComponentType.ofCode(l.getComponentType())))
 				.collect(Collectors.toList());
 	}
 

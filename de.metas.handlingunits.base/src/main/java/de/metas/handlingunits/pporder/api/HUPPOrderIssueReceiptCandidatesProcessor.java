@@ -23,6 +23,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
@@ -173,7 +174,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private boolean isMaterialReceipt(final I_PP_Order_Qty candidate)
 	{
 		final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine = candidate.getPP_Order_BOMLine();
-		return ppOrderBOMLine == null || PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType());
+		return ppOrderBOMLine == null || PPOrderUtil.isReceipt(BOMComponentType.ofCode(ppOrderBOMLine.getComponentType()));
 	}
 
 	private final void markProcessedAndSave(@NonNull final I_PP_Order_Qty candidate, @NonNull final I_PP_Cost_Collector cc)
@@ -447,7 +448,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Make sure it's a issue line (shall not happen)
-			if (!PPOrderUtil.isIssue(ppOrderBOMLine.getComponentType()))
+			if (!PPOrderUtil.isIssue(BOMComponentType.ofCode(ppOrderBOMLine.getComponentType())))
 			{
 				throw new HUException("BOM line does not allow issuing materials."
 						+ "\n @PP_Order_BOMLine_ID@: " + ppOrderBOMLine);

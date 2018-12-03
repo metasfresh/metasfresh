@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
 import org.eevolution.model.I_PP_Order;
@@ -141,7 +142,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 	private final HUPPOrderReceiptCUKey createCoProductCUKey(final I_PP_Order_BOMLine ppOrderBOMLine, final I_PP_Order ppOrder)
 	{
 		// Make sure we can receive on this BOM Line
-		if (!PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType()))
+		if (!PPOrderUtil.isReceipt(BOMComponentType.ofCode(ppOrderBOMLine.getComponentType())))
 		{
 			return null;
 		}

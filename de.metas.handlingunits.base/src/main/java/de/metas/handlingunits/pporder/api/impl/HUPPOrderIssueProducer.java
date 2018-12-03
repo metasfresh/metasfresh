@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -186,7 +187,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId, I_PP_Order_BOMLine.class)
 				.stream()
-				.filter(line -> PPOrderUtil.isIssue(line.getComponentType()))
+				.filter(line -> PPOrderUtil.isIssue(BOMComponentType.ofCode(line.getComponentType())))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -196,7 +197,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 
 		final List<I_PP_Order_BOMLine> notIssueBOMLines = targetOrderBOMLines.stream()
-				.filter(bomLine -> !PPOrderUtil.isIssue(bomLine.getComponentType()))
+				.filter(bomLine -> !PPOrderUtil.isIssue(BOMComponentType.ofCode(bomLine.getComponentType())))
 				.collect(ImmutableList.toImmutableList());
 		if (!notIssueBOMLines.isEmpty())
 		{

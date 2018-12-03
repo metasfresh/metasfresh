@@ -26,8 +26,8 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.exceptions.BOMCycleException;
-import org.eevolution.model.X_PP_Product_BOMLine;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -157,13 +157,13 @@ public class ProductLowLevelCalculatorTest
 
 		helper.newProductBOM()
 				.product(pA)
-				.newBOMLine().product(pB).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).componentType(X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product).endLine()
+				.newBOMLine().product(pB).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).componentType(BOMComponentType.CoProduct).endLine()
 				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 
 		helper.newProductBOM()
 				.product(pB)
-				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).componentType(X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product).endLine()
+				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).componentType(BOMComponentType.CoProduct).endLine()
 				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.Adempiere;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
@@ -11,8 +12,8 @@ import org.springframework.stereotype.Service;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
-import de.metas.util.Services;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -56,7 +57,8 @@ public class PPOrderPojoConverter
 		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrderRecord);
 		for (final I_PP_Order_BOMLine ppOrderLineRecord : orderBOMLines)
 		{
-			final boolean receipt = PPOrderUtil.isReceipt(ppOrderLineRecord.getComponentType());
+			final BOMComponentType componentType = BOMComponentType.ofCode(ppOrderLineRecord.getComponentType());
+			final boolean receipt = PPOrderUtil.isReceipt(componentType);
 
 			final PPOrderLine ppOrderLinePojo = PPOrderLine.builder()
 					.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))

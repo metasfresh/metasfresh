@@ -31,8 +31,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -163,7 +163,7 @@ import de.metas.util.Services;
 			// Component Type
 			final String componentType = orderBOMLine.getComponentType();
 			final String componentTypeName = Services.get(IADReferenceDAO.class)
-					.retrieveListNameTrl(Env.getCtx(), X_PP_Order_BOMLine.COMPONENTTYPE_AD_Reference_ID, componentType);
+					.retrieveListNameTrl(Env.getCtx(), BOMComponentType.AD_REFERENCE_ID, componentType);
 			sb.append(Util.maskHTML(componentTypeName));
 
 			// Variant Group

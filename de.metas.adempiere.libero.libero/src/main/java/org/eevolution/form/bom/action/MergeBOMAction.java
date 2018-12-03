@@ -77,21 +77,25 @@ public class MergeBOMAction extends PopupAction {
 		this.tree = tree;
 	}
 
+	@Override
 	protected String getCommand() {
 
 		return COMMAND;
 	}
 
+	@Override
 	protected boolean successful() {
 		
 		return actionResult;
 	}
 
+	@Override
 	protected String validateAction() {
 
 		return null;
 	}
 
+	@Override
 	protected void doAction(ActionEvent e) {
 	
 		if(tree != null) {
@@ -160,7 +164,7 @@ public class MergeBOMAction extends PopupAction {
         targetLine.setQtyBatch(sourceLine.getQtyBatch());
         targetLine.setQtyBOM(sourceLine.getQtyBOM());
         targetLine.setIsQtyPercentage(sourceLine.isQtyPercentage());
-        targetLine.setComponentType(sourceLine.getComponentType());          
+        targetLine.setComponentType(sourceLine.getComponentType().getCode());
         targetLine.setC_UOM_ID(sourceLine.getC_UOM_ID());
         targetLine.setForecast(sourceLine.getForecast());
         targetLine.setIsCritical(sourceLine.isCritical());

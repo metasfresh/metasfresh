@@ -38,6 +38,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -209,14 +210,14 @@ public class WaschprobeStandardMasterData
 	}
 
 	public I_PP_Order_BOMLine createPP_Order_BOMLine(final org.eevolution.model.I_PP_Order ppOrder,
-			final String componentType,
+			final BOMComponentType componentType,
 			final I_M_Product product,
 			final BigDecimal qtyDelivered,
 			final I_C_UOM uom)
 	{
 		final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class, context);
 		ppOrderBOMLine.setPP_Order(ppOrder);
-		ppOrderBOMLine.setComponentType(componentType);
+		ppOrderBOMLine.setComponentType(componentType.getCode());
 		ppOrderBOMLine.setM_Product(product);
 		ppOrderBOMLine.setC_UOM(uom);
 

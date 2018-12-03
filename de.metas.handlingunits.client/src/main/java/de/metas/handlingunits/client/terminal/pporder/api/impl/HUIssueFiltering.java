@@ -40,6 +40,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -129,7 +130,8 @@ public class HUIssueFiltering implements IHUIssueFiltering
 		final Set<Integer> productIds = new HashSet<>();
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
-			if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
+			final BOMComponentType componentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
+			if (PPOrderUtil.isReceipt(componentType))
 			{
 				continue;
 			}

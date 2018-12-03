@@ -6,7 +6,7 @@ import static org.eevolution.costing.BOMAssertUtils.assertOwnCostPrice;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.model.X_PP_Product_BOMLine;
+import org.eevolution.api.BOMComponentType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -74,7 +74,7 @@ public class BOMTest
 						.build())
 				.line(BOMLine.builder()
 						.componentId(componentId1)
-						.componentType(X_PP_Product_BOMLine.COMPONENTTYPE_Component)
+						.componentType(BOMComponentType.Component)
 						.qty(Quantity.of(5, uom_Each))
 						.costPrice(BOMCostPrice.builder()
 								.productId(componentId1)
@@ -106,7 +106,7 @@ public class BOMTest
 						.build())
 				.line(BOMLine.builder()
 						.componentId(componentId1)
-						.componentType(X_PP_Product_BOMLine.COMPONENTTYPE_Component)
+						.componentType(BOMComponentType.Component)
 						.qty(Quantity.of(5, uom_Each))
 						.costPrice(BOMCostPrice.builder()
 								.productId(componentId1)
@@ -119,7 +119,7 @@ public class BOMTest
 						.build())
 				.line(BOMLine.builder()
 						.componentId(coProductId)
-						.componentType(X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product)
+						.componentType(BOMComponentType.CoProduct)
 						.qty(Quantity.of(-2, uom_Each))
 						.costPrice(BOMCostPrice.builder()
 								.productId(componentId1)

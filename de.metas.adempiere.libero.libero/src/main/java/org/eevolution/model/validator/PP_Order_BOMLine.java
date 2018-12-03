@@ -38,8 +38,8 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -89,7 +89,7 @@ public class PP_Order_BOMLine
 
 		//
 		// If Phantom, we need to explode this line (see afterSave):
-		if (newRecord && X_PP_Order_BOMLine.COMPONENTTYPE_Phantom.equals(orderBOMLine.getComponentType()))
+		if (newRecord && BOMComponentType.ofCode(orderBOMLine.getComponentType()).isPhantom())
 		{
 			final BigDecimal qtyOrderedForPhantom = orderBOMLine.getQtyRequiered();
 			orderBOMLine.setQtyRequiered(BigDecimal.ZERO);

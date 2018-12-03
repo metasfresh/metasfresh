@@ -13,6 +13,7 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -218,7 +219,7 @@ public class PPOrderPojoSupplier
 
 			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productBomLine);
 
-			final boolean receipt = PPOrderUtil.isReceipt(productBomLine.getComponentType());
+			final boolean receipt = PPOrderUtil.isReceipt(BOMComponentType.ofCode(productBomLine.getComponentType()));
 
 			final PPOrderLine intermedidatePPOrderLine = PPOrderLine.builder()
 					.productBomLineId(productBomLine.getPP_Product_BOMLine_ID())
