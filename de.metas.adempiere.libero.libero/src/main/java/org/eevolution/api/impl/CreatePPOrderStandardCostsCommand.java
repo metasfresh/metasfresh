@@ -63,7 +63,6 @@ final class CreatePPOrderStandardCostsCommand
 	// services
 	private final IPPOrderCostDAO ppOrderCostsRepo = Services.get(IPPOrderCostDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderRoutingRepository orderWorkflowsRepo = Services.get(IPPOrderRoutingRepository.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
@@ -85,6 +84,7 @@ final class CreatePPOrderStandardCostsCommand
 		mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		mainProductAsiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
 
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		acctSchema = acctSchemasRepo.getByCliendAndOrg(clientId, orgId);
 	}
 
@@ -192,7 +192,7 @@ final class CreatePPOrderStandardCostsCommand
 	{
 		final AggregatedCostAmount costs = currentCostsRepository.getAggregatedCostAmountByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting)
 				.orElse(null);
-		if(costs == null)
+		if (costs == null)
 		{
 			return Stream.empty();
 		}
