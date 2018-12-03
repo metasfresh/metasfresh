@@ -43,7 +43,7 @@ describe('purchase order Test', function() {
     cy.on('emit:addressPatchResolved', (requestId) => {
       cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
       cy.writeIntoStringField('City', 'Cologne')
-        .writeIntoCompositeLookupField('C_Country_ID', 'Deu', 'Deutschland');
+        .writeIntoLookupField('C_Country_ID', 'Deu', 'Deutschland');
       cy.get('.panel-modal-header').click();
 
       cy.wait('@completeAddress');

@@ -144,26 +144,8 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
     });
   });
 
-/* TODO: What is this command for ? Looks like a dupe of
- * writeIntoCompositeLookupField
- * Kuba
- */
-// Cypress.Commands.add(
-//   'writeIntoLookupField',
-//   (fieldName, partialValue, listValue) => {
-//     describe('Enter value into lookup field', function() {
-//       cy.get(`#lookup_${fieldName}`)
-//         .find('input')
-//         .clear()
-//         .type(partialValue);
-//       cy.get('.input-dropdown-list').should('exist');
-//       cy.contains('.input-dropdown-list-option', listValue).click();
-//       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-//     });
-// });
-
 Cypress.Commands.add(
-  'writeIntoCompositeLookupField',
+  'writeIntoLookupField',
   (fieldName, partialValue, listValue) => {
     describe('Enter value into lookup list field', function() {
       cy.get(`#lookup_${fieldName}`)
@@ -301,7 +283,7 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
   });
 });
 
-Cypress.Commands.add('selectSingleTabRow', (tabName) => {
+Cypress.Commands.add('selectSingleTabRow', () => {
   describe('Select the only row in the currently selected tab', function() {
     cy.get('.table-flex-wrapper')
     .find('tbody tr')
