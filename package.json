@@ -25,7 +25,9 @@
       "js",
       "jsx"
     ],
-    "roots": ["<rootDir>/src/__tests__/"],
+    "roots": [
+      "<rootDir>/src/__tests__/"
+    ],
     "moduleDirectories": [
       "node_modules"
     ],

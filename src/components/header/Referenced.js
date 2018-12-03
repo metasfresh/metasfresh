@@ -91,8 +91,8 @@ class Referenced extends Component {
           item.references.map((ref, refKey) => (
             <div
               className={`subheader-item js-subheader-item reference_${
-                ref.internalName}`
-              }
+                ref.internalName
+              }`}
               onClick={() => {
                 this.handleReferenceClick(ref.documentType, ref.filter);
               }}
