@@ -194,8 +194,8 @@ class MenuOverlayItem extends Component {
               children
                 ? ''
                 : type === 'group'
-                  ? 'query-clickable-group'
-                  : 'query-clickable-link'
+                ? 'query-clickable-group'
+                : 'query-clickable-link'
             }
             onClick={
               children ? '' : e => this.clickedItem(e, elementId, nodeId, type)

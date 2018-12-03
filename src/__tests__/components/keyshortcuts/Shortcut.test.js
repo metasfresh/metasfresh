@@ -17,7 +17,7 @@ describe('Shortcut', () => {
 
     const subscribe = jest.spyOn(shortcut.context.shortcuts, 'subscribe');
 
-    shortcut.componentWillMount();
+    shortcut.UNSAFE_componentWillMount();
 
     expect(subscribe).toHaveBeenCalledWith(name, handler);
   });
@@ -53,7 +53,7 @@ describe('Shortcut', () => {
     const unsubscribe = jest.spyOn(shortcut.context.shortcuts, 'unsubscribe');
 
     shortcut.props = { name: name1, handler: handler1 };
-    shortcut.componentWillMount();
+    shortcut.UNSAFE_componentWillMount();
 
     expect(subscribe).toHaveBeenCalledWith(name1, handler1);
 

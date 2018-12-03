@@ -40,7 +40,7 @@ class LoginForm extends Component {
     }
   }
 
-  componentWillUpdate(nextProps, nextState) {
+  UNSAFE_componentWillUpdate(nextProps, nextState) {
     if (this.roleSelector && nextState.roleSelect) {
       this.roleSelector.instanceRef.dropdown.focus();
     }

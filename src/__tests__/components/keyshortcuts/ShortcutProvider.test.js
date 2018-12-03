@@ -42,7 +42,7 @@ describe('ShortcutProvider', () => {
     try {
       const shortcutProvider = new ShortcutProvider();
 
-      shortcutProvider.componentWillMount();
+      shortcutProvider.UNSAFE_componentWillMount();
 
       shortcutProvider.componentWillUnmount();
 

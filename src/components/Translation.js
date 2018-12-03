@@ -34,7 +34,7 @@ class Translation extends Component {
     INSTANCE = this;
   }
 
-  componentWillMount = () => {
+  UNSAFE_componentWillMount = () => {
     Translation.getMessages();
   };
 

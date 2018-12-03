@@ -30,7 +30,7 @@ class NewEmail extends Component {
     };
   }
 
-  componentWillMount = () => {
+  UNSAFE_componentWillMount = () => {
     const { windowId, docId, handleCloseEmail } = this.props;
     createEmail(windowId, docId)
       .then(res => {

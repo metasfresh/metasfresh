@@ -40,4 +40,7 @@ class Overlay extends Component {
   }
 }
 
-export default connect(null, { toggleOverlay })(Overlay);
+export default connect(
+  null,
+  { toggleOverlay }
+)(Overlay);

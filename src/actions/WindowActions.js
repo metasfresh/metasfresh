@@ -847,7 +847,7 @@ export function updatePropertyValue(
 
 function handleUploadProgress(dispatch, notificationTitle, progressEvent) {
   let percentLeft = Math.min(
-    Math.floor(progressEvent.loaded * 100 / progressEvent.total),
+    Math.floor((progressEvent.loaded * 100) / progressEvent.total),
     98
   );
 
@@ -1291,7 +1291,10 @@ export function connectWS(topic, onMessageCallback) {
     this.sock = new SockJs(config.WS_URL);
     this.sockClient = Stomp.Stomp.over(this.sock);
     this.sockClient.debug = null;
-    this.sockClient.connect({}, subscribe);
+    this.sockClient.connect(
+      {},
+      subscribe
+    );
   };
 
   const wasConnected = disconnectWS.call(this, connect);
