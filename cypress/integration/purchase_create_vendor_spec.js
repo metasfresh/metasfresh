@@ -22,8 +22,7 @@ describe('purchase order Test', function() {
 
     // note that the partner needs an address to be eligible in the purchase order without causing an error
     // TODO: Use proper tab name when rolled out - Kuba
-    // cy.selectTab('C_BPartner_Location');
-    cy.selectTab('Window-123-222');
+    cy.selectTab('C_BPartner_Location');
     cy.pressAddNewButton();
     cy.writeIntoStringField('Name', 'Address');
 
@@ -54,14 +53,14 @@ describe('purchase order Test', function() {
       cy.pressDoneButton();
 
       // TODO: Use proper tab name when rolled out - Kuba
-      cy.selectTab('Window-123-496');
+      cy.selectTab('AD_User');
       cy.pressAddNewButton();
       cy.writeIntoStringField('Firstname', 'Default');
       cy.writeIntoStringField('Lastname', 'Contact');
       cy.clickOnCheckBox('IsDefaultContact');
       cy.pressDoneButton();
 
-      cy.selectTab('Window-123-496');
+      cy.selectTab('AD_User');
       cy.pressAddNewButton();
       cy.writeIntoStringField('Firstname', 'Secondary');
       cy.writeIntoStringField('Lastname', 'Contact');
