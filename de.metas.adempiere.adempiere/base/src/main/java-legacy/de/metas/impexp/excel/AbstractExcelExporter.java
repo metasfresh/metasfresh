@@ -13,6 +13,8 @@
  *****************************************************************************/
 package de.metas.impexp.excel;
 
+import lombok.NonNull;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,6 +26,10 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.CellValue;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
@@ -45,11 +51,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-
-import lombok.NonNull;
 
 /**
  * Abstract MS Excel Format (xls) Exporter

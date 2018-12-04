@@ -16,6 +16,9 @@ package de.metas.impexp.excel;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.impexp.CellValue;
+import org.adempiere.impexp.CellValues;
+
 import lombok.Builder;
 import lombok.NonNull;
 
