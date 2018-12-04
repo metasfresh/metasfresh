@@ -1,18 +1,28 @@
 package org.eevolution.api;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -56,5 +66,43 @@ public final class PPOrderCosts
 	public void forEach(@NonNull final Consumer<PPOrderCost> action)
 	{
 		costs.values().forEach(action);
+	}
+
+	public List<PPOrderCost> getByProductAndCostElements(
+			@NonNull final ProductId productId,
+			@NonNull final Set<CostElementId> costElementIds)
+	{
+		Check.assumeNotEmpty(costElementIds, "costElementIds is not empty");
+
+		return filterAndList(PPOrderCostFilter.builder()
+				.productId(productId)
+				.costElementIds(costElementIds)
+				.build());
+	}
+
+	private List<PPOrderCost> filterAndList(@NonNull final Predicate<PPOrderCost> filter)
+	{
+		return costs.values()
+				.stream()
+				.filter(filter)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Value
+	@Builder
+	private static class PPOrderCostFilter implements Predicate<PPOrderCost>
+	{
+		final ProductId productId;
+		@NonNull
+		@Default
+		final Set<CostElementId> costElementIds = ImmutableSet.of();
+
+		@Override
+		public boolean test(PPOrderCost cost)
+		{
+			final CostSegmentAndElement costSegmentAndElement = cost.getCostSegmentAndElement();
+			return (productId == null || productId.equals(costSegmentAndElement.getProductId()))
+					|| (costElementIds == null || costElementIds.isEmpty() || costElementIds.contains(costSegmentAndElement.getCostElementId()));
+		}
 	}
 }
