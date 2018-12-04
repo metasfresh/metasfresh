@@ -1,61 +1,55 @@
--- Function: de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric)
 
--- DROP FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric);
+DROP VIEW IF EXISTS M_AttributeSetInstance_ID_AttributeInstances;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(IN p_M_Product_id numeric, IN p_C_BPartner_ID numeric, IN p_M_AttributeSetInstance_ID numeric)
-  RETURNS TABLE(M_Product_ID numeric, ProductNo character varying, ProductName character varying, attributes text[], C_BPartner_ID numeric,C_BPartner_Product_ID numeric) AS
+CREATE OR REPLACE VIEW M_AttributeSetInstance_ID_AttributeInstances AS
+SELECT
+  ai.M_AttributeSetInstance_ID,
+  array_agg(
+    ai.M_Attribute_ID || '_' || 
+    coalesce(
+      ai.m_attributevalue_id::character varying, ai.value, ai.valuenumber::character varying, ai.valuedate::character varying, '')
+  ) as AttributeInstances
+FROM M_AttributeInstance ai
+GROUP BY ai.M_AttributeSetInstance_ID;
+COMMENT ON VIEW M_AttributeSetInstance_ID_AttributeInstances 
+IS 'Returns M_AttributeSetInstance_IDs with arrays that represent all M_AttributeInstances of the respective ASI.
+Each array element is a string containing of <M_Attribute_ID>_<Attribute-Instance-Value>';
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(
+	IN p_M_Product_id numeric, 
+	IN p_C_BPartner_ID numeric, 
+	IN p_M_AttributeSetInstance_ID numeric)
+RETURNS TABLE(
+	ProductNo character varying, 
+	ProductName character varying, 
+	C_BPartner_Product_ID numeric
+) AS
 $BODY$
-	SELECT M_Product_ID, ProductNo, ProductName, Attributes, C_BPartner_ID, C_BPartner_Product_ID
-FROM
-  (
-    SELECT
-      array_agg(bpp.AttValue) as paramAttributes,
-      array_agg(bpp.Value)    as Attributes,
-      ProductNo,
-      ProductName,
-      M_Product_ID,
-      C_BPartner_ID,
-	  C_BPartner_Product_ID
-    FROM
-      (
-        SELECT
-          ai1.M_attribute_ID,
-          bpp.ProductNo,
-          bpp.ProductName,
-          bpp.M_Product_ID,
-          bpp.C_BPartner_ID,
-		  bpp.C_BPartner_Product_ID,
-          bpp.M_AttributeSetInstance_ID,
-          seqno,
-          ai1.M_attribute_ID || '_' ||
-          coalesce(ai1.m_attributevalue_id :: VARCHAR, ai1.value, ai1.valuenumber :: VARCHAR, ai1.valuedate :: VARCHAR,
-                   '') as value,
-          att.M_attribute_ID || '_' ||
-          coalesce(att.m_attributevalue_id :: VARCHAR, att.value, att.valuenumber :: VARCHAR, att.valuedate :: VARCHAR,
-                   '') as attValue
-        FROM C_BPartner_Product bpp
-          LEFT JOIN M_AttributeSetInstance asi1 on asi1.M_AttributeSetInstance_ID = bpp.M_AttributeSetInstance_ID
-          LEFT JOIN M_AttributeInstance ai1 ON ai1.M_AttributeSetInstance_ID = asi1.M_AttributeSetInstance_ID
-          LEFT JOIN
-          (
-            SELECT
-              ai2.M_attribute_ID,
-              ai2.value,
-              ai2.m_attributevalue_id,
-              ai2.valuenumber,
-              ai2.valuedate
-            FROM M_AttributeSetInstance asi2
-              INNER JOIN M_AttributeInstance ai2 ON ai2.M_AttributeSetInstance_ID = asi2.M_AttributeSetInstance_ID
-            WHERE asi2.M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID
-          ) as att on att.m_attribute_id = ai1.m_attribute_id OR ai1.m_attribute_id is null
-        WHERE bpp.isActive = 'Y'
-        ORDER by bpp.M_AttributeSetInstance_ID desc, seqno
-      ) bpp
-    WHERE bpp.M_Product_ID = p_M_Product_id AND bpp.C_BPartner_ID = p_C_BPartner_ID
-    GROUP by ProductNo, ProductName, M_Product_ID, bpp.C_BPartner_ID, C_BPartner_Product_ID
-  ) sub
-where sub.paramAttributes @> sub.Attributes or sub.Attributes = ARRAY[NULL]
-order by Attributes
-limit 1
+
+SELECT 
+	DISTINCT ON (ProductNo, ProductName)
+	ProductNo, ProductName, C_BPartner_Product_ID
+FROM C_BPartner_Product bpp
+	LEFT JOIN M_AttributeSetInstance_ID_AttributeInstances asi_bpp ON asi_bpp.M_AttributeSetInstance_ID = bpp.M_AttributeSetInstance_ID
+WHERE true
+	AND bpp.M_Product_id = p_M_Product_id
+	AND bpp.C_BPartner_ID = p_C_BPartner_ID
+	
+	/*asi_bpp is null, or its AttributeInstances array is contained in the given p_M_AttributeSetInstance_ID's AttributeInstances array */
+	AND (select asi.AttributeInstances from M_AttributeSetInstance_ID_AttributeInstances asi where asi.M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID)
+		@> COALESCE(asi_bpp.AttributeInstances, ARRAY[]::character varying[]) 
+ORDER BY ProductNo, ProductName, SeqNo
 $BODY$
 LANGUAGE sql STABLE;
+COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric) 
+IS 'This function returns a C_BPartner_Product record with a matching matching given product-Id, bpartner-Id and p_M_AttributeSetInstance_ID.
+For the attribute-set-instance-id to match, its array as returned by the view M_AttributeSetInstance_ID_AttributeInstances 
+needs to be included in the given p_M_AttributeSetInstance_ID''s M_AttributeSetInstance_ID_AttributeInstances-array.
+C_BPartner_Product records that have no M_AttributeSetInstance_ID match every p_M_AttributeSetInstance_ID.
+If multiple C_BPartner_Product records match, the one with the lowest SeqNo is returned.
+
+Also see 
+view M_AttributeSetInstance_ID_AttributeInstances and
+issue https://github.com/metasfresh/metasfresh/issues/4795'
+;
