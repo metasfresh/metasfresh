@@ -17,14 +17,12 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -61,22 +59,6 @@ public class MProduct extends X_M_Product
 		final I_M_Product product = Services.get(IProductDAO.class).getById(M_Product_ID);
 		return LegacyAdapters.convertToPO(product);
 	}	// get
-
-	/**
-	 * Get MProduct using UPC/EAN (case sensitive)
-	 *
-	 * @param ctx Context
-	 * @param upc The upc to look for
-	 * @return List of MProduct
-	 */
-	@Deprecated
-	public static List<MProduct> getByUPC(Properties ctx, String upc, String trxName)
-	{
-		String whereClause = "AD_Client_ID=? AND UPC=?";
-		Query q = new Query(ctx, Table_Name, whereClause, trxName);
-		q.setParameters(new Object[] { Env.getAD_Client_ID(ctx), upc });
-		return (q.list(MProduct.class));
-	}
 
 	/**************************************************************************
 	 * Standard Constructor
@@ -265,17 +247,6 @@ public class MProduct extends X_M_Product
 	}	// getUOMPrecision
 
 	/**
-	 * Create Asset Group for this product
-	 *
-	 * @return asset group id
-	 */
-	public int getA_Asset_Group_ID()
-	{
-		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
-		return pc.getA_Asset_Group_ID();
-	}	// getA_Asset_Group_ID
-
-	/**
 	 * Create Asset for this product
 	 *
 	 * @return true if asset is created
@@ -301,21 +272,6 @@ public class MProduct extends X_M_Product
 		MAssetGroup ag = MAssetGroup.get(getCtx(), pc.getA_Asset_Group_ID());
 		return ag.isOneAssetPerUOM();
 	}	// isOneAssetPerUOM
-
-	/**
-	 * Get UOM Symbol
-	 *
-	 * @return UOM Symbol
-	 */
-	public String getUOMSymbol()
-	{
-		int C_UOM_ID = getC_UOM_ID();
-		if (C_UOM_ID == 0)
-		{
-			return "";
-		}
-		return MUOM.get(getCtx(), C_UOM_ID).getUOMSymbol();
-	}	// getUOMSymbol
 
 	@Override
 	public String toString()
@@ -398,16 +354,4 @@ public class MProduct extends X_M_Product
 		//
 		return delete_Accounting("M_Product_Acct");
 	}	// beforeDelete
-
-	/**
-	 * Gets Material Management Policy. Tries: Product Category, Client (in this order)
-	 *
-	 * @return Material Management Policy
-	 * @deprecated Please use {@link IProductBL#getMMPolicy(I_M_Product)}
-	 */
-	@Deprecated
-	public String getMMPolicy()
-	{
-		return Services.get(IProductBL.class).getMMPolicy(this);
-	}
 }
