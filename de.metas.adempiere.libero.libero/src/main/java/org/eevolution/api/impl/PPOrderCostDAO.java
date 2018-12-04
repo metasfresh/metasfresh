@@ -22,6 +22,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -111,9 +112,9 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		record.setM_AttributeSetInstance_ID(costSegmentAndElement.getAttributeSetInstanceId().getRepoId());
 		record.setM_CostElement_ID(costSegmentAndElement.getCostElementId().getRepoId());
 
-		final CostAmount price = from.getPrice();
-		record.setCurrentCostPrice(price.getValue());
-		// ppOrderCost.setCurrentCostPriceLL(cost.getCurrentCostPriceLL());
+		final CostPrice price = from.getPrice();
+		record.setCurrentCostPrice(price.getOwnCostPrice().getValue());
+		record.setCurrentCostPriceLL(price.getComponentsCostPrice().getValue());
 		// ppOrderCost.setCumulatedAmt(cost.getCumulatedAmt()); // TODO: delete it
 		// ppOrderCost.setCumulatedQty(cost.getCumulatedQty()); // TODO: delete it
 	}
@@ -137,12 +138,13 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.build();
 
-		final CostAmount price = CostAmount.of(record.getCurrentCostPrice(), acctSchema.getCurrencyId());
-
 		return PPOrderCost.builder()
 				.repoId(record.getPP_Order_Cost_ID())
 				.costSegmentAndElement(costSegmentAndElement)
-				.price(price)
+				.price(CostPrice.builder()
+						.ownCostPrice(CostAmount.of(record.getCurrentCostPrice(), acctSchema.getCurrencyId()))
+						.componentsCostPrice(CostAmount.of(record.getCurrentCostPriceLL(), acctSchema.getCurrencyId()))
+						.build())
 				.build();
 	}
 }

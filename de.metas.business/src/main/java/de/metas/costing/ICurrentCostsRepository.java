@@ -48,7 +48,7 @@ public interface ICurrentCostsRepository
 
 	void deleteForProduct(I_M_Product product);
 
-	Optional<AggregatedCostAmount> getAggregatedCostAmountByCostSegmentAndCostingMethod(CostSegment costSegment, CostingMethod costingMethod);
+	Optional<AggregatedCostPrice> getAggregatedCostPriceByCostSegmentAndCostingMethod(CostSegment costSegment, CostingMethod costingMethod);
 
 	List<CurrentCost> getByCostSegmentAndCostingMethod(CostSegment costSegment, CostingMethod costingMethod);
 

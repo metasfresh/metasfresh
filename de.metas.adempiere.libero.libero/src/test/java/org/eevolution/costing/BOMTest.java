@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -80,8 +81,10 @@ public class BOMTest
 								.productId(componentId1)
 								.costElementPrice(BOMCostElementPrice.builder()
 										.costElementId(costElementId1)
-										.ownCostPrice(CostAmount.of(5, currencyId))
-										.componentsCostPrice(CostAmount.of(55, currencyId))
+										.costPrice(CostPrice.builder()
+												.ownCostPrice(CostAmount.of(5, currencyId))
+												.componentsCostPrice(CostAmount.of(55, currencyId))
+												.build())
 										.build())
 								.build())
 						.build())
@@ -112,8 +115,10 @@ public class BOMTest
 								.productId(componentId1)
 								.costElementPrice(BOMCostElementPrice.builder()
 										.costElementId(costElementId1)
-										.ownCostPrice(CostAmount.of(5, currencyId))
-										.componentsCostPrice(CostAmount.of(55, currencyId))
+										.costPrice(CostPrice.builder()
+												.ownCostPrice(CostAmount.of(5, currencyId))
+												.componentsCostPrice(CostAmount.of(55, currencyId))
+												.build())
 										.build())
 								.build())
 						.build())
@@ -125,8 +130,7 @@ public class BOMTest
 								.productId(componentId1)
 								.costElementPrice(BOMCostElementPrice.builder()
 										.costElementId(costElementId1)
-										.ownCostPrice(CostAmount.of(0, currencyId))
-										.componentsCostPrice(CostAmount.of(0, currencyId))
+										.costPrice(CostPrice.zero(currencyId))
 										.build())
 								.build())
 						.build())

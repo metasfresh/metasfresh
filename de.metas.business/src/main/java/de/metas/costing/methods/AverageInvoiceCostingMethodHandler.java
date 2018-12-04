@@ -94,7 +94,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		}
 		else
 		{
-			final CostAmount price = currentCosts.getCostPrice();
+			final CostAmount price = currentCosts.getCostPrice().toCostAmount();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 

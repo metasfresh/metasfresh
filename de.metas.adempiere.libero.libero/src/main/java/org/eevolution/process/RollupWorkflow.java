@@ -312,6 +312,7 @@ public class RollupWorkflow extends JavaProcess
 
 		final CostAmount rate = currentCostsRepo.getOrCreate(resourceCostSegmentAndElement)
 				.getCostPrice()
+				.toCostAmount()
 				.roundToPrecisionIfNeeded(precision);
 
 		final Duration duration = routingService.getResourceBaseValue(activity);

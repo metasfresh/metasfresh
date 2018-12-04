@@ -172,7 +172,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final Quantity qty = request.getQty();
 		final CurrentCost currentCosts = getCurrentCost(request);
-		final CostAmount price = currentCosts.getCostPrice().roundToCostingPrecisionIfNeeded(acctSchema);
+		final CostAmount price = currentCosts.getCostPrice().toCostAmount().roundToCostingPrecisionIfNeeded(acctSchema);
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
 				.amt(amt)
@@ -457,7 +457,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private CostAmount getProductActualCostPrice(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		final CurrentCost cost = currentCostsRepo.getOrCreate(costSegmentAndElement);
-		final CostAmount price = cost.getCostPrice();
+		final CostAmount price = cost.getCostPrice().toCostAmount();
 		return roundCost(price, costSegmentAndElement.getAcctSchemaId());
 	}
 

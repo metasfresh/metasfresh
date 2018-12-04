@@ -241,7 +241,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 				existingCost = currentCostsRepo.create(costSegmentAndElement);
 			}
 
-			existingCost.setComponentsCostPrice(elementPrice.getComponentsCostPrice());
+			existingCost.setCostPrice(elementPrice.getCostPrice());
 			currentCostsRepo.save(existingCost);
 		}
 	}
@@ -251,8 +251,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 		return BOMCostElementPrice.builder()
 				.repoId(currentCost.getId())
 				.costElementId(currentCost.getCostElementId())
-				.componentsCostPrice(currentCost.getComponentsCostPrice())
-				.ownCostPrice(currentCost.getOwnCostPrice())
+				.costPrice(currentCost.getCostPrice())
 				.build();
 	}
 

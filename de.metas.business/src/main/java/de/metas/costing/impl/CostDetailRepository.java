@@ -30,6 +30,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.logging.LogManager;
@@ -85,8 +86,8 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setQty(cd.getQty().getAsBigDecimal());
 
 		record.setIsChangingCosts(cd.isChangingCosts());
-		record.setPrev_CurrentCostPrice(cd.getPreviousAmounts().getOwnCostPrice().getValue());
-		record.setPrev_CurrentCostPriceLL(cd.getPreviousAmounts().getComponentsCostPrice().getValue());
+		record.setPrev_CurrentCostPrice(cd.getPreviousAmounts().getCostPrice().getOwnCostPrice().getValue());
+		record.setPrev_CurrentCostPriceLL(cd.getPreviousAmounts().getCostPrice().getComponentsCostPrice().getValue());
 		record.setPrev_CurrentQty(cd.getPreviousAmounts().getQty().getAsBigDecimal());
 
 		updateRecordFromDocumentRef(record, cd.getDocumentRef());
@@ -249,8 +250,10 @@ public class CostDetailRepository implements ICostDetailRepository
 				.price(price)
 				.changingCosts(record.isChangingCosts())
 				.previousAmounts(CostDetailPreviousAmounts.builder()
-						.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), acctCurrencyId))
-						.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), acctCurrencyId))
+						.costPrice(CostPrice.builder()
+								.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), acctCurrencyId))
+								.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), acctCurrencyId))
+								.build())
 						.qty(Quantity.of(record.getPrev_CurrentQty(), productUOM))
 						.build())
 				.documentRef(extractDocumentRef(record))

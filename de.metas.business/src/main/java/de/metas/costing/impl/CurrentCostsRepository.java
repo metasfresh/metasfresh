@@ -32,10 +32,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.AggregatedCostAmount;
-import de.metas.costing.CostAmount;
+import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
@@ -149,7 +149,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public Optional<AggregatedCostAmount> getAggregatedCostAmountByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
+	public Optional<AggregatedCostPrice> getAggregatedCostPriceByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
 	{
 		final Set<CostElementId> costElementIds = costElementRepo.getByCostingMethod(costingMethod)
 				.stream()
@@ -161,22 +161,21 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return Optional.empty();
 		}
 
-		final ImmutableMap<CostElement, CostAmount> amounts = retrieveCostRecords(costSegment)
+		final ImmutableMap<CostElement, CostPrice> costPrices = retrieveCostRecords(costSegment)
 				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
 				.create()
 				.stream(I_M_Cost.class)
 				.map(this::toCurrentCost)
-				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, CurrentCost::getCostPrice));
-		if (amounts.isEmpty())
+				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, currentCost -> currentCost.getCostPrice()));
+		if (costPrices.isEmpty())
 		{
 			// throw new AdempiereException("No costs found for " + costSegment + " and " + costingMethod);
 			return Optional.empty();
 		}
 
 		return Optional.of(
-				AggregatedCostAmount.builder()
-						.costSegment(costSegment)
-						.amounts(amounts)
+				AggregatedCostPrice.builder()
+						.prices(costPrices)
 						.build());
 	}
 
@@ -271,8 +270,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 	private void updateCostRecord(final I_M_Cost cost, final CurrentCost from)
 	{
-		cost.setCurrentCostPrice(from.getOwnCostPrice().getValue());
-		cost.setCurrentCostPriceLL(from.getComponentsCostPrice().getValue());
+		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().getValue());
+		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().getValue());
 		cost.setCurrentQty(from.getCurrentQty().getAsBigDecimal());
 		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
 		cost.setCumulatedQty(from.getCumulatedQty().getAsBigDecimal());

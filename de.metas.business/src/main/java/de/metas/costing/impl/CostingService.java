@@ -22,6 +22,8 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.AggregatedCostAmount;
+import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
@@ -30,7 +32,7 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
-import de.metas.costing.AggregatedCostAmount;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
@@ -124,7 +126,7 @@ public class CostingService implements ICostingService
 	private AggregatedCostAmount createCostResult(final ImmutableList<CostDetailCreateResult> costElementResults)
 	{
 		Check.assumeNotEmpty(costElementResults, "costElementResults is not empty");
-		
+
 		final CostSegment costSegment = costElementResults
 				.stream()
 				.map(CostDetailCreateResult::getCostSegment)
@@ -383,7 +385,8 @@ public class CostingService implements ICostingService
 	@Override
 	public Optional<CostAmount> getCurrentCosts(final CostSegment costSegment, final CostingMethod costingMethod)
 	{
-		return currentCostsRepo.getAggregatedCostAmountByCostSegmentAndCostingMethod(costSegment, costingMethod)
-				.map(AggregatedCostAmount::getTotalAmount);
+		return currentCostsRepo.getAggregatedCostPriceByCostSegmentAndCostingMethod(costSegment, costingMethod)
+				.map(AggregatedCostPrice::getTotalPrice)
+				.map(CostPrice::toCostAmount);
 	}
 }

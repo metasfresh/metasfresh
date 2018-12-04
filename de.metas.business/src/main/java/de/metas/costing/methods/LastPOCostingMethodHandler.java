@@ -21,6 +21,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
@@ -83,7 +84,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 			if (qty.signum() != 0)
 			{
 				final CostAmount price = amt.divide(qty, currentCosts.getPrecision(), RoundingMode.HALF_UP);
-				currentCosts.setOwnCostPrice(price);
+				currentCosts.setCostPrice(CostPrice.ownCostPrice(price));
 			}
 			else
 			{

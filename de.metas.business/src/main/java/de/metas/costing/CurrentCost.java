@@ -48,8 +48,7 @@ public final class CurrentCost
 	private final CurrencyId currencyId;
 	private final int precision;
 
-	private CostAmount ownCostPrice;
-	private CostAmount componentsCostPrice;
+	private CostPrice costPrice;
 	private Quantity currentQty;
 
 	private CostAmount cumulatedAmt;
@@ -79,8 +78,10 @@ public final class CurrentCost
 		this.currencyId = currencyId;
 		this.precision = precision;
 
-		this.ownCostPrice = ownCostPrice != null ? CostAmount.of(ownCostPrice, currencyId) : CostAmount.zero(currencyId);
-		this.componentsCostPrice = componentsCostPrice != null ? CostAmount.of(componentsCostPrice, currencyId) : CostAmount.zero(currencyId);
+		this.costPrice = CostPrice.builder()
+				.ownCostPrice(ownCostPrice != null ? CostAmount.of(ownCostPrice, currencyId) : CostAmount.zero(currencyId))
+				.componentsCostPrice(componentsCostPrice != null ? CostAmount.of(componentsCostPrice, currencyId) : CostAmount.zero(currencyId))
+				.build();
 		this.currentQty = currentQty != null ? Quantity.of(currentQty, uom) : Quantity.zero(uom);
 		this.cumulatedAmt = cumulatedAmt != null ? CostAmount.of(cumulatedAmt, currencyId) : CostAmount.zero(currencyId);
 		this.cumulatedQty = cumulatedQty != null ? Quantity.of(cumulatedQty, uom) : Quantity.zero(uom);
@@ -95,8 +96,7 @@ public final class CurrentCost
 		this.currencyId = from.currencyId;
 		this.precision = from.precision;
 
-		this.ownCostPrice = from.ownCostPrice;
-		this.componentsCostPrice = from.componentsCostPrice;
+		this.costPrice = from.costPrice;
 		this.currentQty = from.currentQty;
 		this.cumulatedAmt = from.cumulatedAmt;
 		this.cumulatedQty = from.cumulatedQty;
@@ -134,12 +134,13 @@ public final class CurrentCost
 		assertCostCurrency(amt);
 		Check.assume(qty.signum() != 0, "qty not zero");
 
-		final CostAmount currentAmt = ownCostPrice.multiply(currentQty);
+		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
 		final CostAmount newAmt = currentAmt.add(amt);
 		final Quantity newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
-			ownCostPrice = newAmt.divide(newQty.getAsBigDecimal(), precision, RoundingMode.HALF_UP);
+			final CostAmount ownCostPrice = newAmt.divide(newQty.getAsBigDecimal(), precision, RoundingMode.HALF_UP);
+			this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
 		}
 		currentQty = newQty;
 
@@ -159,30 +160,18 @@ public final class CurrentCost
 		currentQty = currentQty.add(qtyToAdd);
 	}
 
-	public CostAmount getCostPrice()
+	public void setCostPrice(@NonNull final CostPrice costPrice)
 	{
-		return getOwnCostPrice().add(getComponentsCostPrice());
-	}
-
-	public void setOwnCostPrice(@NonNull final CostAmount ownCostPrice)
-	{
-		assertCostCurrency(ownCostPrice);
-		this.ownCostPrice = ownCostPrice;
+		this.costPrice = costPrice;
 	}
 
 	public void addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)
 	{
-		setOwnCostPrice(getOwnCostPrice().add(ownCostPriceToAdd));
-	}
-
-	public void setComponentsCostPrice(@NonNull final CostAmount componentsCostPrice)
-	{
-		assertCostCurrency(componentsCostPrice);
-		this.componentsCostPrice = componentsCostPrice;
+		setCostPrice(getCostPrice().addToOwnCostPrice(ownCostPriceToAdd));
 	}
 
 	public void clearComponentsCostPrice()
 	{
-		setComponentsCostPrice(CostAmount.zero(getCurrencyId()));
+		setCostPrice(getCostPrice().withZeroComponentsCostPrice());
 	}
 }

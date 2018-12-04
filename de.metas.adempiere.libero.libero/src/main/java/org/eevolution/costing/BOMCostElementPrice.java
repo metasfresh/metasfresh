@@ -2,6 +2,7 @@ package org.eevolution.costing;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.Data;
@@ -35,11 +36,9 @@ public class BOMCostElementPrice
 {
 	public static BOMCostElementPrice zero(final CostElementId costElementId, final CurrencyId currencyId)
 	{
-		final CostAmount zero = CostAmount.zero(currencyId);
 		return builder()
 				.costElementId(costElementId)
-				.ownCostPrice(zero)
-				.componentsCostPrice(zero)
+				.costPrice(CostPrice.zero(currencyId))
 				.build();
 	}
 
@@ -49,19 +48,15 @@ public class BOMCostElementPrice
 	private final CostElementId costElementId;
 
 	@NonNull
-	private final CostAmount ownCostPrice;
-
-	@NonNull
-	private CostAmount componentsCostPrice;
-
-	public CostAmount getTotalCostPrice()
-	{
-		return getOwnCostPrice()
-				.add(getComponentsCostPrice());
-	}
+	private CostPrice costPrice;
 
 	public void clearComponentsCostPrice()
 	{
-		setComponentsCostPrice(getComponentsCostPrice().toZero());
+		setCostPrice(getCostPrice().withZeroComponentsCostPrice());
+	}
+
+	public void setComponentsCostPrice(CostAmount componentsCostPrice)
+	{
+		setCostPrice(getCostPrice().withComponentsCostPrice(componentsCostPrice));
 	}
 }

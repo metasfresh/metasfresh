@@ -93,7 +93,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final int receiptInOutLineId = request.getDocumentRef().getRecordId();
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
-				.orElseGet(() -> utils.getCurrentCostPrice(request));
+				.orElseGet(() -> utils.getCurrentCostPrice(request).toCostAmount());
 		final CostAmount amt = costPrice.multiply(request.getQty());
 		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
 	}
@@ -119,7 +119,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		}
 		else
 		{
-			final CostAmount price = currentCosts.getCostPrice();
+			final CostAmount price = currentCosts.getCostPrice().toCostAmount();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 

@@ -34,16 +34,17 @@ public class CostDetailPreviousAmounts
 	public static CostDetailPreviousAmounts of(CurrentCost currentCosts)
 	{
 		return builder()
-				.ownCostPrice(currentCosts.getOwnCostPrice())
-				.componentsCostPrice(currentCosts.getComponentsCostPrice())
+				.costPrice(currentCosts.getCostPrice())
 				.qty(currentCosts.getCurrentQty())
 				.build();
 	}
 
 	@NonNull
-	CostAmount ownCostPrice;
+	CostPrice costPrice;
+
 	@NonNull
 	CostAmount componentsCostPrice;
+
 	@NonNull
 	Quantity qty;
 }

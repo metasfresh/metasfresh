@@ -116,11 +116,11 @@ public final class BOMLine
 		final CostAmount componentCostPrice;
 		if (isByProduct())
 		{
-			componentCostPrice = componentCost.getOwnCostPrice(); // without LL price
+			componentCostPrice = componentCost.getCostPrice().getOwnCostPrice(); // without LL price
 		}
 		else
 		{
-			componentCostPrice = componentCost.getTotalCostPrice();
+			componentCostPrice = componentCost.getCostPrice().toCostAmount();
 		}
 
 		final Quantity qty = getQtyIncludingScrap();

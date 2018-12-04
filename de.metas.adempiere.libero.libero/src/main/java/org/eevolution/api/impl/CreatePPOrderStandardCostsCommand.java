@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.AggregatedCostAmount;
+import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICurrentCostsRepository;
@@ -190,20 +190,18 @@ final class CreatePPOrderStandardCostsCommand
 
 	private Stream<PPOrderCost> createPPOrderCostsAndStream(final CostSegment costSegment)
 	{
-		final AggregatedCostAmount costs = currentCostsRepository.getAggregatedCostAmountByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting)
+		final AggregatedCostPrice price = currentCostsRepository.getAggregatedCostPriceByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting)
 				.orElse(null);
-		if (costs == null)
+		if (price == null)
 		{
 			return Stream.empty();
 		}
 
-		return costs.getCostElements()
+		return price.getCostElements()
 				.stream()
 				.map(costElement -> PPOrderCost.builder()
 						.costSegmentAndElement(costSegment.withCostElementId(costElement.getId()))
-						.price(costs.getCostAmountForCostElement(costElement))
-						// .accumulatedAmount(accumulatedAmount)
-						// .accumulatedQty(accumulatedQty)
+						.price(price.getCostPriceForCostElement(costElement))
 						.build());
 	}
 }

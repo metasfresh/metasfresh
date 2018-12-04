@@ -4,13 +4,13 @@ import org.springframework.stereotype.Service;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
@@ -152,7 +152,7 @@ public class CostingMethodHandlerUtils
 		return currentCostsRepo.getOrCreate(costSegmentAndElement);
 	}
 
-	public final CostAmount getCurrentCostPrice(final CostDetailCreateRequest request)
+	public final CostPrice getCurrentCostPrice(final CostDetailCreateRequest request)
 	{
 		return getCurrentCost(request).getCostPrice();
 	}

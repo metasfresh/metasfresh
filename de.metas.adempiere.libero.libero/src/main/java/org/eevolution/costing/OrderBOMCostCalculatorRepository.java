@@ -123,8 +123,6 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 			throw new AdempiereException("Component type not supported: " + componentType);
 		}
 
-		orderBOMLineRecord.getQtyRequiered();
-		// TODO
 		return BOMLine.builder()
 				.componentType(componentType)
 				.componentId(productId)
@@ -153,8 +151,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		return BOMCostElementPrice.builder()
 				.repoId(cost.getRepoId())
 				.costElementId(cost.getCostSegmentAndElement().getCostElementId())
-				.ownCostPrice(cost.getPrice())
-				.componentsCostPrice(cost.getPrice().toZero()) // FIXME: introduce cost.getComponentsCostPrice()
+				.costPrice(cost.getPrice())
 				.build();
 	}
 
