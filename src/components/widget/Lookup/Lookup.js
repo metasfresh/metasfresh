@@ -23,7 +23,6 @@ class Lookup extends Component {
         lookupWidgets[`${item.field}`] = {
           dropdownOpen: false,
           tooltipOpen: false,
-          fireClickOutside: false,
           fireDropdownList: false,
           isFocused: false,
           isInputEmpyt: false,
@@ -37,7 +36,6 @@ class Lookup extends Component {
       isInputEmpty: true,
       propertiesCopy: getItemsByProperty(props.properties, 'source', 'list'),
       property: '',
-      fireClickOutside: false,
       initialFocus: props.initialFocus,
       localClearing: false,
       autofocusDisabled: false,
@@ -85,7 +83,6 @@ class Lookup extends Component {
         [`${field}`]: {
           ...lookupWidgets[`${field}`],
           [`${property}`]: value,
-          dupa: field,
         },
       };
 
@@ -126,37 +123,37 @@ class Lookup extends Component {
           let nextProp = properties[nextIndex];
 
           // TODO: Looks like this code was never used
-          if (nextProp.source === 'list') {
-            this.linkedList.map(listComponent => {
-              if (listComponent && listComponent.props) {
-                let listProp = listComponent.props.mainProperty;
+          // if (nextProp.source === 'list') {
+          //   this.linkedList.map(listComponent => {
+          //     if (listComponent && listComponent.props) {
+          //       let listProp = listComponent.props.mainProperty;
 
-                if (
-                  listProp &&
-                  Array.isArray(listProp) &&
-                  listProp.length > 0
-                ) {
-                  const listPropField = listProp[0].field;
+          //       if (
+          //         listProp &&
+          //         Array.isArray(listProp) &&
+          //         listProp.length > 0
+          //       ) {
+          //         const listPropField = listProp[0].field;
 
-                  if (
-                    listComponent.activate &&
-                    listPropField === nextProp.field
-                  ) {
-                    listComponent.requestListData(true, true);
-                    listComponent.activate();
-                  }
-                }
-              }
-            });
+          //         if (
+          //           listComponent.activate &&
+          //           listPropField === nextProp.field
+          //         ) {
+          //           listComponent.requestListData(true, true);
+          //           listComponent.activate();
+          //         }
+          //       }
+          //     }
+          //   });
 
-            this.setState({
-              property: nextProp.field,
-            });
-          } else {
-            this.setState({
-              property: nextProp.field,
-            });
-          }
+          //   this.setState({
+          //     property: nextProp.field,
+          //   });
+          // } else {
+          this.setState({
+            property: nextProp.field,
+          });
+          // }
         } else if (defaultValue[defaultValue.length - 1].field === prop) {
           this.setState(
             {
@@ -170,20 +167,6 @@ class Lookup extends Component {
       });
     }
   };
-
-  // TODO: I think it's not needed anymore - Kuba
-  // openDropdownList = () => {
-  //   this.setState(
-  //     {
-  //       fireDropdownList: true,
-  //     },
-  //     () => {
-  //       this.setState({
-  //         fireDropdownList: false,
-  //       });
-  //     }
-  //   );
-  // };
 
   // mouse param is to tell us if we should enable listening to keys
   // in Table or not. If user selected option with mouse, we still
@@ -227,7 +210,6 @@ class Lookup extends Component {
     if (isDropdownListOpen || isFocused) {
       this.setState(
         {
-          // fireClickOutside: true,
           isDropdownListOpen: false,
           isFocused: false,
           lookupWidgets: this.rawLookupsState,
@@ -235,22 +217,18 @@ class Lookup extends Component {
         },
         () => {
           onClickOutside && onClickOutside();
-          // this.setState({
-          //   fireClickOutside: false,
-          // });
         }
       );
     }
   };
 
   handleInputEmptyStatus = isEmpty => {
-    // TODO: Rewrite per widget
     this.setState({
       isInputEmpty: isEmpty,
     });
   };
 
-  // TODO: Rewrite per widget
+  // TODO: Rewrite per widget if needed
   handleClear = () => {
     const { onChange, properties, onSelectBarcode } = this.props;
     const propsWithoutTooltips = properties.filter(
@@ -313,7 +291,7 @@ class Lookup extends Component {
     return (
       <div
         className="input-icon input-icon-lg lookup-widget-wrapper"
-        onClick={null /*isInputEmpty ? this.openDropdownList : null*/}
+        onClick={null}
       >
         {showBarcodeScanner ? (
           <button
@@ -372,7 +350,6 @@ class Lookup extends Component {
     const {
       isInputEmpty,
       property,
-      fireClickOutside,
       initialFocus,
       localClearing,
       fireDropdownList,
@@ -383,6 +360,7 @@ class Lookup extends Component {
       mandatory &&
       (isInputEmpty ||
         (validStatus && validStatus.initialValue && !validStatus.valid));
+
     const errorInputCondition =
       validStatus && (!validStatus.valid && !validStatus.initialValue);
     const classRank = rank || 'primary';
@@ -477,10 +455,10 @@ class Lookup extends Component {
                   setNextProperty={this.setNextProperty}
                   lookupEmpty={isInputEmpty}
                   fireDropdownList={fireDropdownList}
-                  handleInputEmptyStatus={this.handleInputEmptyStatus}
+                  handleInputEmptyStatus={
+                    index === 0 && this.handleInputEmptyStatus
+                  }
                   enableAutofocus={this.enableAutofocus}
-                  onBlur={() => /*this.handleListBlur(item.field)*/ true}
-                  onFocus={() => /*this.handleListFocus(item.field)*/ true}
                   isOpen={lookupWidget.dropdownOpen}
                   onDropdownListToggle={(val, mouse) => {
                     this.dropdownListToggle(val, item.field, mouse);
@@ -507,7 +485,6 @@ class Lookup extends Component {
                     onChange,
                     item,
                     disabled,
-                    fireClickOutside,
                     viewId,
                     subentity,
                     subentityId,
@@ -565,6 +542,7 @@ class Lookup extends Component {
                     {...{
                       dataId,
                       entity,
+                      mandatory,
                       windowType,
                       filterWidget,
                       tabId,
