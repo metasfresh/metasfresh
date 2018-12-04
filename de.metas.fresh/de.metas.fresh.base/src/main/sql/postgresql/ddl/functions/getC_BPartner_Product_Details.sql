@@ -1,7 +1,11 @@
+-- Function: de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric)
+
+-- DROP FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric);
+
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(IN M_Product_id numeric, IN C_BPartner_ID numeric, IN M_AttributeSetInstance_ID numeric)
-  RETURNS TABLE(M_Product_ID numeric, ProductNo character varying, ProductName character varying, attributes text[], C_BPartner_ID numeric) AS
+  RETURNS TABLE(M_Product_ID numeric, ProductNo character varying, ProductName character varying, attributes text[], C_BPartner_ID numeric,C_BPartner_Product_ID numeric) AS
 $BODY$
-	SELECT M_Product_ID, ProductNo, ProductName, Attributes, C_BPartner_ID
+	SELECT M_Product_ID, ProductNo, ProductName, Attributes, C_BPartner_ID, C_BPartner_Product_ID
 FROM
   (
     SELECT
@@ -10,7 +14,8 @@ FROM
       ProductNo,
       ProductName,
       M_Product_ID,
-      bpp.C_BPartner_ID
+      C_BPartner_ID,
+	  C_BPartner_Product_ID
     FROM
       (
         SELECT
@@ -19,6 +24,7 @@ FROM
           bpp.ProductName,
           bpp.M_Product_ID,
           bpp.C_BPartner_ID,
+		  bpp.C_BPartner_Product_ID,
           bpp.M_AttributeSetInstance_ID,
           seqno,
           ai1.M_attribute_ID || '_' ||
@@ -46,7 +52,7 @@ FROM
         ORDER by bpp.M_AttributeSetInstance_ID desc, seqno
       ) bpp
     WHERE bpp.M_Product_ID = $1 AND bpp.C_BPartner_ID = $2
-    GROUP by ProductNo, ProductName, M_Product_ID, bpp.C_BPartner_ID
+    GROUP by ProductNo, ProductName, M_Product_ID, bpp.C_BPartner_ID, C_BPartner_Product_ID
   ) sub
 where sub.paramAttributes @> sub.Attributes or sub.Attributes = ARRAY[NULL]
 order by Attributes
