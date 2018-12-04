@@ -50,12 +50,12 @@ class Lookup extends Component {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const { defaultValue, selected } = this.props;
+    const { widgetData, selected } = this.props;
 
     if (
-      defaultValue &&
-      nextProps.defaultValue &&
-      !_.isEqual(defaultValue[0].value, nextProps.defaultValue[0].value)
+      widgetData &&
+      nextProps.widgetData &&
+      !_.isEqual(widgetData[0].value, nextProps.widgetData[0].value)
     ) {
       this.checkIfDefaultValue();
     }
@@ -96,10 +96,10 @@ class Lookup extends Component {
   };
 
   checkIfDefaultValue = () => {
-    const { defaultValue } = this.props;
+    const { widgetData } = this.props;
 
-    if (defaultValue) {
-      defaultValue.map(item => {
+    if (widgetData) {
+      widgetData.map(item => {
         if (item.value) {
           this.setState({
             isInputEmpty: false,
@@ -110,15 +110,15 @@ class Lookup extends Component {
   };
 
   setNextProperty = prop => {
-    const { defaultValue, properties, onBlurWidget } = this.props;
+    const { widgetData, properties, onBlurWidget } = this.props;
 
-    if (defaultValue) {
-      defaultValue.map((item, index) => {
+    if (widgetData) {
+      widgetData.map((item, index) => {
         const nextIndex = index + 1;
 
         if (
-          nextIndex < defaultValue.length &&
-          defaultValue[index].field === prop
+          nextIndex < widgetData.length &&
+          widgetData[index].field === prop
         ) {
           let nextProp = properties[nextIndex];
 
@@ -154,7 +154,7 @@ class Lookup extends Component {
             property: nextProp.field,
           });
           // }
-        } else if (defaultValue[defaultValue.length - 1].field === prop) {
+        } else if (widgetData[widgetData.length - 1].field === prop) {
           this.setState(
             {
               property: '',
@@ -316,7 +316,7 @@ class Lookup extends Component {
     const {
       rank,
       readonly,
-      defaultValue,
+      widgetData,
       placeholder,
       align,
       isModal,
@@ -399,7 +399,7 @@ class Lookup extends Component {
             const lookupWidget = this.getLookupWidget(item.field);
             const disabled = isInputEmpty && index !== 0;
             const itemByProperty = getItemsByProperty(
-              defaultValue,
+              widgetData,
               'field',
               item.field
             )[0];
@@ -451,6 +451,8 @@ class Lookup extends Component {
                   autoFocus={index === 0 && autoFocus}
                   initialFocus={index === 0 && initialFocus}
                   mainProperty={[item]}
+                  readonly={widgetData[index].readonly}
+                  mandatory={widgetData[index].mandatory}
                   resetLocalClearing={this.resetLocalClearing}
                   setNextProperty={this.setNextProperty}
                   lookupEmpty={isInputEmpty}
@@ -468,7 +470,6 @@ class Lookup extends Component {
                   parentElement={forceFullWidth && this.dropdown}
                   {...{
                     placeholder,
-                    readonly,
                     tabIndex,
                     windowType,
                     parameterName,
@@ -479,7 +480,6 @@ class Lookup extends Component {
                     rank,
                     updated,
                     filterWidget,
-                    mandatory,
                     validStatus,
                     align,
                     onChange,
@@ -572,6 +572,7 @@ Lookup.propTypes = {
   onBlur: PropTypes.func,
   forceFullWidth: PropTypes.bool,
   forceHeight: PropTypes.number,
+  widgetData: PropTypes.array,
 };
 
 export default connect()(BarcodeScanner(onClickOutside(Lookup)));

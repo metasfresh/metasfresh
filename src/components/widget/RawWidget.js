@@ -463,7 +463,7 @@ class RawWidget extends Component {
             dataId={dataId}
             properties={fields}
             windowType={windowType}
-            defaultValue={widgetData}
+            widgetData={widgetData}
             placeholder={fields[0].emptyText}
             readonly={readonly}
             mandatory={widgetData[0].mandatory}
