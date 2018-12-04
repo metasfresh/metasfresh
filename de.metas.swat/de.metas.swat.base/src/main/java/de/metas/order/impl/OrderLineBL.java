@@ -1,6 +1,7 @@
 package de.metas.order.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 /*
  * #%L
@@ -78,7 +79,6 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 public class OrderLineBL implements IOrderLineBL
@@ -622,7 +622,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	/**
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/4535
 	 */
 	@Override
@@ -654,4 +654,24 @@ public class OrderLineBL implements IOrderLineBL
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SetBOMDescription, false);
 	}
 
+	@Override
+	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_M_Product product = orderLine.getM_Product();
+
+		if (product == null)
+		{
+			orderLine.setM_Product_DocumentNote(null);
+		}
+
+		final I_C_Order order = orderLine.getC_Order();
+
+		final org.compiere.model.I_C_BPartner partner = order.getC_BPartner();
+
+		final String adLanguage = partner.getAD_Language();
+
+		final org.compiere.model.I_M_Product translatedProduct = translate(product, org.compiere.model.I_M_Product.class, adLanguage);
+
+		orderLine.setM_Product_DocumentNote(translatedProduct.getDocumentNote());
+	}
 }
