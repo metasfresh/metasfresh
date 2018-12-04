@@ -39,6 +39,11 @@ import lombok.ToString;
 @ToString
 public class BOMCostPrice
 {
+	public static BOMCostPrice empty(@NonNull final ProductId productId)
+	{
+		return builder().productId(productId).build();
+	}
+
 	@Getter
 	private final ProductId productId;
 	private final HashMap<CostElementId, BOMCostElementPrice> pricesByElementId;
