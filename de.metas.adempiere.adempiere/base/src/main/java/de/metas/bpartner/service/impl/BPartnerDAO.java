@@ -47,6 +47,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
@@ -58,6 +60,7 @@ import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
@@ -806,21 +809,27 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public BPartnerId getBPartnerIdByValue(@NonNull final String bpartnerValue)
+	public BPartnerId getBPartnerIdByValue(
+			@NonNull final String bpartnerValue,
+			@NonNull final OrgId orgId)
 	{
-		return getBPartnerIdByValueIfExists(bpartnerValue)
+		return getBPartnerIdByValueIfExists(bpartnerValue, orgId)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_BPartner_ID@: @Value@=" + bpartnerValue));
 	}
 
 	@Override
-	public Optional<BPartnerId> getBPartnerIdByValueIfExists(@NonNull final String bpartnerValue)
+	public Optional<BPartnerId> getBPartnerIdByValueIfExists(
+			@NonNull final String bpartnerValue,
+			@NonNull final OrgId orgId)
 	{
 		final int bpartnerRepoId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addEqualsFilter(I_C_BPartner.COLUMN_Value, bpartnerValue)
+				.addInArrayFilter(I_C_BPartner.COLUMN_AD_Org_ID, orgId, OrgId.ANY)
 				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_C_BPartner.COLUMN_AD_Org_ID)
 				.create()
-				.firstIdOnly();
+				.firstId();
 
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
@@ -832,11 +841,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		final int bpartnerRepoId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMN_AD_Org_ID, orgId)
+				.addInArrayFilter(I_C_BPartner.COLUMN_AD_Org_ID, orgId, OrgId.ANY)
 				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, externalId)
 				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_C_BPartner.COLUMN_AD_Org_ID)
 				.create()
-				.firstIdOnly();
+				.firstId();
 
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
@@ -923,24 +933,33 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 	}
 
-	private final CCache<String, Optional<BPartnerId>> gln2BPartnerID = CCache.<String, Optional<BPartnerId>> newCache(
-			I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_GLN,
-			10,
-			CCache.EXPIREMINUTES_Never);
+	private final CCache<IPair<String, OrgId>, Optional<BPartnerId>> gln2BPartnerID = CCache
+			.<IPair<String, OrgId>, Optional<BPartnerId>> newCache(
+					I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_GLN,
+					10,
+					CCache.EXPIREMINUTES_Never);
 
 	@Override
-	public Optional<BPartnerId> getBPartnerIdByLocatorGln(@NonNull final String gln)
+	public Optional<BPartnerId> getBPartnerIdByLocatorGlnIfExists(
+			@NonNull final String gln,
+			@NonNull final OrgId orgId)
 	{
-		return gln2BPartnerID.getOrLoad(gln, g -> getBPartnerIdByLocatorGln0(g));
+		final IPair<String, OrgId> key = ImmutablePair.of(gln, orgId);
+		return gln2BPartnerID.getOrLoad(key, this::getBPartnerIdByLocatorGln0);
 	}
 
-	private Optional<BPartnerId> getBPartnerIdByLocatorGln0(@NonNull final String gln)
+	private Optional<BPartnerId> getBPartnerIdByLocatorGln0(@NonNull final IPair<String, OrgId> key)
 	{
+		final String gln = key.getLeft();
+		final OrgId orgId = key.getRight();
+
 		final I_C_BPartner_Location bPartnerLocationRecord = Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMN_GLN, gln)
+				.addInArrayFilter(I_C_BPartner_Location.COLUMN_AD_Org_ID, orgId, OrgId.ANY)
+				.orderByDescending(I_C_BPartner_Location.COLUMN_AD_Org_ID)
 				.create()
-				.firstOnly(I_C_BPartner_Location.class);
+				.first(I_C_BPartner_Location.class);
 
 		if (bPartnerLocationRecord == null)
 		{

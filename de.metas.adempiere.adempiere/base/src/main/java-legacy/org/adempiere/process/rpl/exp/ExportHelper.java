@@ -782,7 +782,7 @@ public class ExportHelper
 			valueString = str.isEmpty() ? null : str;
 		}
 
-		log.info("Encoded column '{}' from '{}' to '{}' (attributes: {})", new Object[] { column.getColumnName(), value, valueString, valueAttributes });
+		log.debug("Encoded column '{}' from '{}' to '{}' (attributes: {})", new Object[] { column.getColumnName(), value, valueString, valueAttributes });
 		return valueString;
 	}
 
