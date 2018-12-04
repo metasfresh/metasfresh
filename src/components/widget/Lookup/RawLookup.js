@@ -53,7 +53,6 @@ class RawLookup extends Component {
     const {
       autoFocus,
       defaultValue,
-      // fireClickOutside,
       handleInputEmptyStatus,
       filterWidget,
       lookupEmpty,
@@ -88,16 +87,8 @@ class RawLookup extends Component {
       (prevProps.defaultValue == null ||
         (prevProps.defaultValue &&
           prevProps.defaultValue.caption !== defaultValue.caption)) &&
+      handleInputEmptyStatus &&
       handleInputEmptyStatus(false);
-
-    // TODO: Commenting this out as I think it's not needed. - Kuba
-    // if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
-    //   if (defaultValue !== null && typeof defaultValue !== 'undefined') {
-    //     if (defaultValue.caption !== this.inputSearch.value) {
-    //       this.inputSearch.value = defaultValue.caption || '';
-    //     }
-    //   }
-    // }
 
     if (filterWidget && lookupEmpty && defaultValue === null) {
       this.inputSearch.value = defaultValue;
@@ -190,7 +181,7 @@ class RawLookup extends Component {
       this.inputSearch.value = select.caption;
     }
 
-    handleInputEmptyStatus(false);
+    handleInputEmptyStatus && handleInputEmptyStatus(false);
 
     setTimeout(() => {
       this.inputSearch.focus();
@@ -238,15 +229,17 @@ class RawLookup extends Component {
     );
   };
 
-  handleFocus = () => {
-    const { onFocus } = this.props;
+  handleFocus = mouse => {
+    const { mandatory } = this.props;
 
     this.setState(
       {
         isFocused: true,
       },
       () => {
-        onFocus && onFocus();
+        if (!mandatory && mouse) {
+          this.props.onDropdownListToggle(true);
+        }
       }
     );
   };
@@ -278,7 +271,7 @@ class RawLookup extends Component {
     }
 
     if (this.inputSearch.value || allowEmpty) {
-      !allowEmpty && handleInputEmptyStatus(false);
+      !allowEmpty && handleInputEmptyStatus && handleInputEmptyStatus(false);
 
       this.setState({
         isInputEmpty: false,
@@ -351,7 +344,7 @@ class RawLookup extends Component {
         list: recent,
       });
 
-      handleInputEmptyStatus(true);
+      handleInputEmptyStatus && handleInputEmptyStatus(true);
     }
   };
 
@@ -503,8 +496,7 @@ RawLookup.propTypes = {
   forcedWidth: PropTypes.number,
   forceHeight: PropTypes.number,
   dispatch: PropTypes.func.isRequired,
-  onFocus: PropTypes.func,
-  onBlur: PropTypes.func,
+  onDropdownListToggle: PropTypes.func,
 };
 
 export default connect(mapStateToProps)(RawLookup);
