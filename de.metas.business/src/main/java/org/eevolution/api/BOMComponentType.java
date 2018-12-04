@@ -119,4 +119,16 @@ public enum BOMComponentType
 	{
 		return this == Tools;
 	}
+
+	//
+
+	public boolean isReceipt()
+	{
+		return isByOrCoProduct();
+	}
+
+	public boolean isIssue()
+	{
+		return !isReceipt();
+	}
 }

@@ -29,7 +29,6 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
@@ -40,7 +39,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	I_PP_Order_BOM createOrderBOMAndLines(I_PP_Order ppOrder);
 
-	void explodePhantom(I_PP_Order_BOMLine orderBOMLine, BigDecimal qtyOrdered);
+	void explodePhantom(I_PP_Order_BOMLine orderBOMLine, Quantity qtyOrdered);
 
 	I_C_UOM getStockingUOM(I_PP_Order_BOMLine orderBOMLine);
 
@@ -128,26 +127,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 			BigDecimal qtyDeliveredToAdd);
 
 	/**
-	 * Calculates how much qty is required for given BOM Line considering the actual quantity required of finished good.<br/>
-	 * In other words, how much will be required considering that the delivered finish goods could be more then planned initially.<br/>
-	 * By "actual quantity required of finished good" we mean the maximum between the "quantity required of finished good" and "quantity delivered of finished good".<br/>
-	 * <br/>
-	 * Example:<br/>
-	 * Consider a manufacturing order with 100 finished goods ordered. Quantity that was actually produced is 100 finished goods.<br/>
-	 * We have a component which needs 350mm for each finished good.<br/>
-	 * So the total standard quantity required of that component, to produce 100 finish good items is 100 x 350mm = 35000mm.<br/>
-	 * Same will be projected quantity required.<br/>
-	 * <br/>
-	 * Now, consider that quantity of finished goods produced is 110 (more then ordered).<br/>
-	 * In this case projected quantity required will consider the quantity actually produced instead of quantity ordered, because it's bigger.<br/>
-	 * So the result will be 110(quantity produced) x 350mm.<br/>
-	 *
-	 * @param orderBOMLine
-	 * @return projected quantity required.
-	 */
-	Quantity calculateQtyRequiredProjected(I_PP_Order_BOMLine orderBOMLine);
-
-	/**
 	 * Calculates how much qty we STILL have to issue to cover proportionally the quantity of finished goods that was already received.
 	 *
 	 * @param orderBOMLine
@@ -161,12 +140,12 @@ public interface IPPOrderBOMBL extends ISingletonService
 	void unclose(I_PP_Order_BOMLine line);
 
 	/**
-	 * Computes the quantity for the given {@code ppOrderLinePojo} based on infos from all three paramaters.
+	 * Computes the quantity for the given {@code ppOrderLinePojo} based on infos from all three parameters.
 	 *
 	 * @param ppOrderLinePojo
 	 * @param ppOrderPojo
 	 * @param qtyFinishedGood
 	 * @return
 	 */
-	Quantity calculateQtyRequired(PPOrderLine ppOrderLinePojo, PPOrder ppOrderPojo, BigDecimal qtyFinishedGood);
+	Quantity calculateQtyRequired(PPOrderLine ppOrderLinePojo, BigDecimal qtyFinishedGood);
 }

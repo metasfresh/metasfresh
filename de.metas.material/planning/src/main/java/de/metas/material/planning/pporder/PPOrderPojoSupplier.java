@@ -231,11 +231,9 @@ public class PPOrderPojoSupplier
 					.build();
 
 			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-			final Quantity qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder, ppOrder.getQtyRequired());
+			final Quantity qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder.getQtyRequired());
 
-			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.toBuilder()
-					.qtyRequired(qtyRequired.getAsBigDecimal())
-					.build();
+			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.withQtyRequired(qtyRequired.getAsBigDecimal());
 
 			result.add(ppOrderLine);
 		}

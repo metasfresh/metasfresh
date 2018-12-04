@@ -124,7 +124,7 @@ public class PPOrderUtil
 	 */
 	public boolean isReceipt(final BOMComponentType componentType)
 	{
-		return componentType != null && componentType.isByOrCoProduct();
+		return componentType != null && componentType.isReceipt();
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class PPOrderUtil
 	 */
 	public boolean isIssue(final BOMComponentType componentType)
 	{
-		return !isReceipt(componentType);
+		return componentType != null && componentType.isIssue();
 	}
 
 	public boolean isCoOrByProduct(@NonNull final I_PP_Order_BOMLine bomLine)

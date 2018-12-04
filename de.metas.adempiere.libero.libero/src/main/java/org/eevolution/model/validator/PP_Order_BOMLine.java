@@ -45,6 +45,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
 @Validator(I_PP_Order_BOMLine.class)
@@ -91,10 +92,10 @@ public class PP_Order_BOMLine
 		// If Phantom, we need to explode this line (see afterSave):
 		if (newRecord && BOMComponentType.ofCode(orderBOMLine.getComponentType()).isPhantom())
 		{
-			final BigDecimal qtyOrderedForPhantom = orderBOMLine.getQtyRequiered();
+			final Quantity qtyRequired = ppOrderBOMBL.getQtyRequiredToIssue(orderBOMLine);
 			orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
 
-			final Runnable explodePhantomRunnable = () -> ppOrderBOMBL.explodePhantom(orderBOMLine, qtyOrderedForPhantom);
+			final Runnable explodePhantomRunnable = () -> ppOrderBOMBL.explodePhantom(orderBOMLine, qtyRequired);
 			InterfaceWrapperHelper.setDynAttribute(orderBOMLine, DYNATTR_ExplodePhantomRunnable, explodePhantomRunnable);
 		}
 
