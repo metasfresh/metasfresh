@@ -2,7 +2,7 @@
 
 -- DROP FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(IN M_Product_id numeric, IN C_BPartner_ID numeric, IN M_AttributeSetInstance_ID numeric)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(IN p_M_Product_id numeric, IN p_C_BPartner_ID numeric, IN p_M_AttributeSetInstance_ID numeric)
   RETURNS TABLE(M_Product_ID numeric, ProductNo character varying, ProductName character varying, attributes text[], C_BPartner_ID numeric,C_BPartner_Product_ID numeric) AS
 $BODY$
 	SELECT M_Product_ID, ProductNo, ProductName, Attributes, C_BPartner_ID, C_BPartner_Product_ID
@@ -46,12 +46,12 @@ FROM
               ai2.valuedate
             FROM M_AttributeSetInstance asi2
               INNER JOIN M_AttributeInstance ai2 ON ai2.M_AttributeSetInstance_ID = asi2.M_AttributeSetInstance_ID
-            WHERE asi2.M_AttributeSetInstance_ID = $3
+            WHERE asi2.M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID
           ) as att on att.m_attribute_id = ai1.m_attribute_id OR ai1.m_attribute_id is null
         WHERE bpp.isActive = 'Y'
         ORDER by bpp.M_AttributeSetInstance_ID desc, seqno
       ) bpp
-    WHERE bpp.M_Product_ID = $1 AND bpp.C_BPartner_ID = $2
+    WHERE bpp.M_Product_ID = p_M_Product_id AND bpp.C_BPartner_ID = p_C_BPartner_ID
     GROUP by ProductNo, ProductName, M_Product_ID, bpp.C_BPartner_ID, C_BPartner_Product_ID
   ) sub
 where sub.paramAttributes @> sub.Attributes or sub.Attributes = ARRAY[NULL]
