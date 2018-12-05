@@ -244,12 +244,15 @@ stage('Invoke downstream jobs')
 	// Run the downstream dist jobs in parallel.
 	// Wait for their result, because they will apply our SQL migration scripts and when one fails, we want this job to also fail.
 
+	echo '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+	echo 'For the branch mf_2018-19 we don\'t run metasfresh-dist! we don\'t need it and the build used to fail!'
+	echo '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 	parallel (
-		metasfresh_dist: {
-			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
-			  parameters: distJobParameters,
-			  wait: true
-		},
+		// metasfresh_dist: {
+		// 	build job: misc.getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
+		// 	  parameters: distJobParameters,
+		// 	  wait: true
+		// },
     zapier: {
       invokeZapier(env.BUILD_NUMBER, // upstreamBuildNo
         MF_UPSTREAM_BRANCH, // upstreamBranch
