@@ -37,5 +37,5 @@ public interface ICostingService
 	/** @return seed cost or null */
 	Optional<CostAmount> calculateSeedCosts(CostSegment costSegment, CostingMethod costingMethod, final OrderLineId orderLineId);
 
-	Optional<CostAmount> getCurrentCosts(CostSegment costSegment, CostingMethod costingMethod);
+	Optional<CostPrice> getCurrentCostPrice(CostSegment costSegment, CostingMethod costingMethod);
 }

@@ -9,7 +9,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.IPPOrderCostDAO;
+import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
@@ -25,6 +25,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegment.CostSegmentBuilder;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
@@ -61,7 +62,7 @@ import lombok.NonNull;
 final class CreatePPOrderStandardCostsCommand
 {
 	// services
-	private final IPPOrderCostDAO ppOrderCostsRepo = Services.get(IPPOrderCostDAO.class);
+	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderRoutingRepository orderWorkflowsRepo = Services.get(IPPOrderRoutingRepository.class);
@@ -100,7 +101,7 @@ final class CreatePPOrderStandardCostsCommand
 				.costs(orderCostsList)
 				.build();
 
-		ppOrderCostsRepo.save(orderCosts);
+		ppOrderCostsService.save(orderCosts);
 
 		return orderCosts;
 	}
@@ -116,15 +117,21 @@ final class CreatePPOrderStandardCostsCommand
 
 	private CostSegment createCostSegmentForMainProduct()
 	{
-		return CostSegment.builder()
-				.costingLevel(productCostingBL.getCostingLevel(mainProductId, acctSchema))
-				.acctSchemaId(acctSchema.getId())
-				.costTypeId(acctSchema.getCosting().getCostTypeId())
-				.productId(mainProductId)
-				.clientId(clientId)
-				.orgId(orgId)
+		return prepareCostSegment(mainProductId)
 				.attributeSetInstanceId(mainProductAsiId)
 				.build();
+	}
+
+	private CostSegmentBuilder prepareCostSegment(final ProductId productId)
+	{
+		return CostSegment.builder()
+				.costingLevel(productCostingBL.getCostingLevel(productId, acctSchema))
+				.acctSchemaId(acctSchema.getId())
+				.costTypeId(acctSchema.getCosting().getCostTypeId())
+				.productId(productId)
+				.clientId(clientId)
+				.orgId(orgId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE);
 	}
 
 	private ImmutableSet<CostSegment> createCostSegmentsForBOMLines()
@@ -138,15 +145,10 @@ final class CreatePPOrderStandardCostsCommand
 	private CostSegment createCostSegmentForBOMLine(final I_PP_Order_BOMLine bomLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
 
-		return CostSegment.builder()
-				.costingLevel(productCostingBL.getCostingLevel(productId, acctSchema))
-				.acctSchemaId(acctSchema.getId())
-				.costTypeId(acctSchema.getCosting().getCostTypeId())
-				.productId(productId)
-				.clientId(ClientId.ofRepoId(bomLine.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(bomLine.getAD_Org_ID()))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID()))
+		return prepareCostSegment(productId)
+				.attributeSetInstanceId(asiId)
 				.build();
 	}
 
@@ -176,14 +178,7 @@ final class CreatePPOrderStandardCostsCommand
 		}
 		final ProductId resourceProductId = ProductId.ofRepoId(resourceProduct.getM_Product_ID());
 
-		return CostSegment.builder()
-				.costingLevel(productCostingBL.getCostingLevel(resourceProduct, acctSchema))
-				.acctSchemaId(acctSchema.getId())
-				.costTypeId(acctSchema.getCosting().getCostTypeId())
-				.productId(resourceProductId)
-				.clientId(clientId)
-				.orgId(orgId)
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+		return prepareCostSegment(resourceProductId)
 				.build();
 
 	}

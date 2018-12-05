@@ -73,7 +73,6 @@ import org.eevolution.api.PPOrderRoutingActivityId;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
@@ -83,6 +82,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import de.metas.util.time.DurationUtils;
 
 /**
  * PP Cost Collector Model

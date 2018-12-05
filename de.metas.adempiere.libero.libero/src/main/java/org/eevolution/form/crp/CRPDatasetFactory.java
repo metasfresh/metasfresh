@@ -69,13 +69,13 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
 import de.metas.i18n.Msg;
-import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import de.metas.util.time.DurationUtils;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany

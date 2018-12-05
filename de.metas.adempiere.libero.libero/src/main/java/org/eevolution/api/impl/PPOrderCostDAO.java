@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.HashMap;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -81,7 +83,10 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		InterfaceWrapperHelper.deleteAll(existingRecordsById.values());
 	}
 
-	private void savePPOrderCost(final PPOrderCost cost, final PPOrderId orderId, final I_PP_Order_Cost existingRecord)
+	private void savePPOrderCost(
+			@NonNull final PPOrderCost cost,
+			@NonNull final PPOrderId orderId,
+			@Nullable final I_PP_Order_Cost existingRecord)
 	{
 		final I_PP_Order_Cost record;
 		if (existingRecord == null)
@@ -95,8 +100,8 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		}
 
 		updateRecord(record, cost);
+		
 		saveRecord(record);
-
 		cost.setRepoId(record.getPP_Order_Cost_ID());
 	}
 

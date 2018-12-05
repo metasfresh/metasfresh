@@ -83,7 +83,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.DurationUtils;
+import de.metas.material.planning.DurationUnitCodeUtils;
 import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
@@ -628,7 +628,7 @@ public class MRPTestHelper
 		wf.setValue(name);
 		wf.setName(name);
 		wf.setWorkflowType(X_AD_Workflow.WORKFLOWTYPE_Manufacturing);
-		wf.setDurationUnit(DurationUtils.toDurationUnitCode(ChronoUnit.HOURS));
+		wf.setDurationUnit(DurationUnitCodeUtils.toDurationUnitCode(ChronoUnit.HOURS));
 		InterfaceWrapperHelper.save(wf);
 		return wf;
 	}

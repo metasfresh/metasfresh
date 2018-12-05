@@ -383,10 +383,9 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public Optional<CostAmount> getCurrentCosts(final CostSegment costSegment, final CostingMethod costingMethod)
+	public Optional<CostPrice> getCurrentCostPrice(final CostSegment costSegment, final CostingMethod costingMethod)
 	{
 		return currentCostsRepo.getAggregatedCostPriceByCostSegmentAndCostingMethod(costSegment, costingMethod)
-				.map(AggregatedCostPrice::getTotalPrice)
-				.map(CostPrice::toCostAmount);
+				.map(AggregatedCostPrice::getTotalPrice);
 	}
 }

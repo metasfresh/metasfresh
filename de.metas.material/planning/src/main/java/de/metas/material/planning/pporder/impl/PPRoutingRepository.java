@@ -34,7 +34,7 @@ import com.google.common.collect.Range;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.DurationUtils;
+import de.metas.material.planning.DurationUnitCodeUtils;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
@@ -47,6 +47,7 @@ import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.time.DurationUtils;
 import lombok.NonNull;
 
 /*
@@ -228,7 +229,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 	private static TemporalUnit extractDurationUnit(final I_AD_Workflow routingRecord)
 	{
 		final String durationUnitCode = routingRecord.getDurationUnit();
-		return DurationUtils.toTemporalUnit(durationUnitCode);
+		return DurationUnitCodeUtils.toTemporalUnit(durationUnitCode);
 	}
 
 	@Override

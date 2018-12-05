@@ -20,7 +20,6 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.CostSegment;
@@ -214,10 +213,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	@Override
 	public void save(final BOM bom)
 	{
-		final Set<Integer> costRepoIds = bom.streamCostPrices()
-				.flatMap(BOMCostPrice::streamRepoIds)
-				.distinct()
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<Integer> costRepoIds = bom.getCostRepoIds();
 
 		final Map<Integer, CurrentCost> existingCostsById = currentCostsRepo.getByIds(costRepoIds)
 				.stream()
@@ -227,7 +223,9 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 				.forEach(bomCostPrice -> save(bomCostPrice, existingCostsById));
 	}
 
-	private void save(@NonNull final BOMCostPrice bomCostPrice, final Map<Integer, CurrentCost> existingCostsByRepoId)
+	private void save(
+			@NonNull final BOMCostPrice bomCostPrice,
+			final Map<Integer, CurrentCost> existingCostsByRepoId)
 	{
 		final ProductId productId = bomCostPrice.getProductId();
 
@@ -243,6 +241,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 
 			existingCost.setCostPrice(elementPrice.getCostPrice());
 			currentCostsRepo.save(existingCost);
+			elementPrice.setRepoId(existingCost.getId());
 		}
 	}
 

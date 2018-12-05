@@ -64,7 +64,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.material.planning.DurationUtils;
+import de.metas.material.planning.DurationUnitCodeUtils;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.LiberoException;
@@ -76,6 +76,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.time.DurationUtils;
 import lombok.NonNull;
 
 public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
@@ -87,7 +88,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		// Order Routing header
 		final I_PP_Order_Workflow orderRoutingRecord = retrieveOrderWorkflowOrNull(orderId);
 		Check.assumeNotNull(orderRoutingRecord, "Parameter orderWorkflow is not null");
-		final TemporalUnit durationUnit = DurationUtils.toTemporalUnit(orderRoutingRecord.getDurationUnit());
+		final TemporalUnit durationUnit = DurationUnitCodeUtils.toTemporalUnit(orderRoutingRecord.getDurationUnit());
 		final int unitsPerCycle = orderRoutingRecord.getUnitsCycles().intValue();
 
 		//
@@ -136,7 +137,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		final PPOrderId orderId = orderRoutingActivityId.getOrderId();
 		final I_PP_Order_Workflow orderRoutingRecord = retrieveOrderWorkflowOrNull(orderId);
 		Check.assumeNotNull(orderRoutingRecord, "Parameter orderWorkflow is not null");
-		final TemporalUnit durationUnit = DurationUtils.toTemporalUnit(orderRoutingRecord.getDurationUnit());
+		final TemporalUnit durationUnit = DurationUnitCodeUtils.toTemporalUnit(orderRoutingRecord.getDurationUnit());
 		final int unitsPerCycle = orderRoutingRecord.getUnitsCycles().intValue();
 
 		final I_PP_Order_Node orderActivityRecord = load(orderRoutingActivityId, I_PP_Order_Node.class);
@@ -507,7 +508,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	{
 		record.setIsActive(true);
 		record.setAD_Workflow_ID(from.getRoutingId().getRepoId());
-		record.setDurationUnit(DurationUtils.toDurationUnitCode(from.getDurationUnit()));
+		record.setDurationUnit(DurationUnitCodeUtils.toDurationUnitCode(from.getDurationUnit()));
 		record.setQtyBatchSize(from.getQtyPerBatch());
 	}
 

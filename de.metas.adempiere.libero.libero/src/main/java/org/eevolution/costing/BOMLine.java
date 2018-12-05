@@ -2,10 +2,12 @@ package org.eevolution.costing;
 
 import java.math.BigDecimal;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.eevolution.api.BOMComponentType;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -51,8 +53,12 @@ public final class BOMLine
 	@NonNull
 	final ProductId componentId;
 	@NonNull
+	@Default
+	final AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 
+	@NonNull
 	final Quantity qty;
+
 	@NonNull
 	@Default
 	final Percent scrapPercent = Percent.ZERO;
@@ -107,24 +113,24 @@ public final class BOMLine
 
 	public CostAmount getCostAmountOrNull(final CostElementId costElementId)
 	{
-		final BOMCostElementPrice componentCost = getCostPrice().getCostElementPriceOrNull(costElementId);
-		if (componentCost == null)
+		final BOMCostElementPrice costPriceHolder = getCostPrice().getCostElementPriceOrNull(costElementId);
+		if (costPriceHolder == null)
 		{
 			return null;
 		}
 
-		final CostAmount componentCostPrice;
+		final CostPrice costPrice;
 		if (isByProduct())
 		{
-			componentCostPrice = componentCost.getCostPrice().getOwnCostPrice(); // without LL price
+			costPrice = costPriceHolder.getCostPrice().withZeroComponentsCostPrice();
 		}
 		else
 		{
-			componentCostPrice = componentCost.getCostPrice().toCostAmount();
+			costPrice = costPriceHolder.getCostPrice();
 		}
 
 		final Quantity qty = getQtyIncludingScrap();
-		final CostAmount componentCostAmount = componentCostPrice.multiply(qty);
+		final CostAmount componentCostAmount = costPrice.multiply(qty);
 		return componentCostAmount;
 	}
 

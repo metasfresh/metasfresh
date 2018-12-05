@@ -1,7 +1,13 @@
 package de.metas.costing;
 
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
+
 import de.metas.money.CurrencyId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.time.DurationUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -119,5 +125,16 @@ public class CostPrice
 				.ownCostPrice(getOwnCostPrice().add(costPrice.getOwnCostPrice()))
 				.componentsCostPrice(getComponentsCostPrice().add(costPrice.getComponentsCostPrice()))
 				.build();
+	}
+
+	public CostAmount multiply(@NonNull final Quantity quantity)
+	{
+		return toCostAmount().multiply(quantity);
+	}
+
+	public CostAmount multiply(@NonNull final Duration duration, @NonNull final TemporalUnit durationUnit)
+	{
+		final BigDecimal durationBD = DurationUtils.toBigDecimal(duration, durationUnit);
+		return toCostAmount().multiply(durationBD);
 	}
 }

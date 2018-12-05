@@ -1,7 +1,9 @@
 package org.eevolution.api;
 
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -11,6 +13,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -48,16 +51,23 @@ public class PPOrderCost
 	CostSegmentAndElement costSegmentAndElement;
 
 	@NonNull
+	@Wither
 	CostPrice price;
 
-	// @NonNull
-	// CostAmount accumulatedAmount;
-	// @NonNull
-	// Quantity accumulatedQty;
-
+	/** DON'T call it directly. It's called only by API */
 	public void setRepoId(final int repoId)
 	{
 		Check.assumeGreaterThanZero(repoId, "repoId");
 		this.repoId = repoId;
+	}
+
+	public ProductId getProductId()
+	{
+		return getCostSegmentAndElement().getProductId();
+	}
+
+	public CostElementId getCostElementId()
+	{
+		return getCostSegmentAndElement().getCostElementId();
 	}
 }

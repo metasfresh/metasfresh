@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
 
+import de.metas.util.time.DurationUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

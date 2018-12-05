@@ -17,5 +17,7 @@ public interface IPPOrderCostBL extends ISingletonService
 
 	PPOrderCosts getByOrderId(PPOrderId orderId);
 
+	void save(PPOrderCosts orderCosts);
+
 	void deleteByOrderId(PPOrderId orderId);
 }

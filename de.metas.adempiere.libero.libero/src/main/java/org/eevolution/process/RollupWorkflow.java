@@ -48,6 +48,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
@@ -56,7 +57,6 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
-import de.metas.material.planning.DurationUtils;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.IResourceProductService;
@@ -310,15 +310,12 @@ public class RollupWorkflow extends JavaProcess
 		final ResourceId stdResourceId = activity.getResourceId();
 		final CostSegmentAndElement resourceCostSegmentAndElement = createCostSegment(costSegmentAndElement, stdResourceId);
 
-		final CostAmount rate = currentCostsRepo.getOrCreate(resourceCostSegmentAndElement)
-				.getCostPrice()
-				.toCostAmount()
-				.roundToPrecisionIfNeeded(precision);
+		final CostPrice rate = currentCostsRepo.getOrCreate(resourceCostSegmentAndElement)
+				.getCostPrice();
 
 		final Duration duration = routingService.getResourceBaseValue(activity);
-		final BigDecimal durationBD = DurationUtils.toBigDecimal(duration, activity.getDurationUnit());
 
-		final CostAmount cost = rate.multiply(durationBD)
+		final CostAmount cost = rate.multiply(duration, activity.getDurationUnit())
 				.roundToPrecisionIfNeeded(precision);
 
 		return RoutingActivitySegmentCost.of(cost, activity.getId(), costSegmentAndElement.getCostElementId());

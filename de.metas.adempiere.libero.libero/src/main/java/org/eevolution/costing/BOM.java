@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -16,6 +18,7 @@ import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
@@ -50,6 +53,9 @@ public final class BOM
 {
 	@NonNull
 	ProductId productId;
+	@NonNull
+	@Default
+	final AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 
 	@NonNull
 	@Singular
@@ -135,7 +141,7 @@ public final class BOM
 	{
 		return streamCostPrices()
 				.flatMap(BOMCostPrice::streamRepoIds)
-				.distinct()
+				.filter(repoId -> repoId > 0)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }

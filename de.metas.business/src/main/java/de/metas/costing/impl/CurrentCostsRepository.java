@@ -166,7 +166,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.create()
 				.stream(I_M_Cost.class)
 				.map(this::toCurrentCost)
-				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, currentCost -> currentCost.getCostPrice()));
+				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, CurrentCost::getCostPrice));
 		if (costPrices.isEmpty())
 		{
 			// throw new AdempiereException("No costs found for " + costSegment + " and " + costingMethod);

@@ -16,9 +16,10 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.AggregatedCostAmount;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -106,25 +107,23 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 				.roundToPrecisionIfNeeded(as.getCosting().getCostingPrecision());
 	}
 
-	public CostAmount getStandardCosts(final AcctSchema as)
+	public CostAmount getStandardCosts(final AcctSchema acctSchema)
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
-		final AcctSchemaId acctSchemaId = as.getId();
-
 		final CostSegment costSegment = CostSegment.builder()
-				.costingLevel(getProductCostingLevel(as))
-				.acctSchemaId(acctSchemaId)
-				.costTypeId(as.getCosting().getCostTypeId())
+				.costingLevel(getProductCostingLevel(acctSchema))
+				.acctSchemaId(acctSchema.getId())
+				.costTypeId(acctSchema.getCosting().getCostTypeId())
 				.clientId(getClientId())
 				.orgId(getOrgId())
 				.productId(getProductId())
 				.attributeSetInstanceId(getAttributeSetInstanceId())
 				.build();
 
-		final CostAmount costPrice = costDetailService.getCurrentCosts(costSegment, CostingMethod.StandardCosting)
+		final CostPrice costPrice = costDetailService.getCurrentCostPrice(costSegment, CostingMethod.StandardCosting)
 				.orElseThrow(() -> newPostingException()
-						.setAcctSchema(as)
+						.setAcctSchema(acctSchema)
 						.setDetailMessage("No standard costs found for " + costSegment));
 
 		return costPrice.multiply(getQty());

@@ -31,4 +31,11 @@ public class PPOrderCostBL implements IPPOrderCostBL
 		final IPPOrderCostDAO orderCostsRepo = Services.get(IPPOrderCostDAO.class);
 		orderCostsRepo.deleteByOrderId(orderId);
 	}
+
+	@Override
+	public void save(@NonNull final PPOrderCosts orderCosts)
+	{
+		final IPPOrderCostDAO orderCostsRepo = Services.get(IPPOrderCostDAO.class);
+		orderCostsRepo.save(orderCosts);
+	}
 }
