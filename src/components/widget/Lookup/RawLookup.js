@@ -149,6 +149,8 @@ class RawLookup extends Component {
       return;
     }
 
+    // console.log('handleSelect')
+
     if (filterWidget) {
       const promise = onChange(mainProp.parameterName, select);
 
@@ -219,6 +221,7 @@ class RawLookup extends Component {
   };
 
   handleBlur = mouse => {
+    // console.log('handleBlur')
     this.setState(
       {
         isFocused: false,
@@ -232,16 +235,22 @@ class RawLookup extends Component {
   handleFocus = mouse => {
     const { mandatory } = this.props;
 
-    this.setState(
-      {
-        isFocused: true,
-      },
-      () => {
-        if (!mandatory && mouse) {
-          this.props.onDropdownListToggle(true);
+    if (mouse && this.state.isFocused) {
+      this.handleBlur(mouse);
+    } else {
+      this.setState(
+        {
+          isFocused: true,
+        },
+        () => {
+          if (!mandatory && mouse) {
+            // console.log('handleFocus: ', mouse)
+
+            this.props.onDropdownListToggle(true);
+          }
         }
-      }
-    );
+      );
+    }
   };
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
@@ -262,6 +271,8 @@ class RawLookup extends Component {
       enableAutofocus,
       isModal,
       newRecordCaption,
+      mandatory,
+      placeholder,
     } = this.props;
 
     enableAutofocus();
@@ -270,13 +281,15 @@ class RawLookup extends Component {
       this.props.resetLocalClearing();
     }
 
-    if (this.inputSearch.value || allowEmpty) {
+    const inputValue = this.inputSearch.value;
+
+    if (inputValue || allowEmpty) {
       !allowEmpty && handleInputEmptyStatus && handleInputEmptyStatus(false);
 
       this.setState({
         isInputEmpty: false,
         loading: true,
-        query: this.inputSearch.value,
+        query: inputValue,
       });
 
       this.props.onDropdownListToggle(true);
@@ -288,7 +301,7 @@ class RawLookup extends Component {
           viewId,
           dataId,
           mainProperty[0].field,
-          this.inputSearch.value
+          inputValue
         );
       } else if (viewId && !filterWidget) {
         typeaheadRequest = autocompleteModalRequest({
@@ -296,7 +309,7 @@ class RawLookup extends Component {
           docType: windowType,
           entity: 'documentView',
           propertyName: filterWidget ? parameterName : mainProperty[0].field,
-          query: this.inputSearch.value,
+          query: inputValue,
           viewId,
           rowId,
           tabId,
@@ -307,7 +320,7 @@ class RawLookup extends Component {
           docType: windowType,
           entity,
           propertyName: filterWidget ? parameterName : mainProperty[0].field,
-          query: this.inputSearch.value,
+          query: inputValue,
           rowId,
           subentity,
           subentityId,
@@ -317,30 +330,40 @@ class RawLookup extends Component {
 
       typeaheadRequest.then(response => {
         let values = response.data.values || [];
+        let list = null;
+        const newState = {
+          loading: false,
+        };
 
         if (values.length === 0 && !isModal) {
           const optionNew = { key: 'NEW', caption: newRecordCaption };
-          const list = [optionNew];
+          list = [optionNew];
 
-          this.setState({
-            list,
-            forceEmpty: true,
-            loading: false,
-            selected: optionNew,
-          });
+          newState.forceEmpty = true;
+          newState.selected = optionNew;
         } else {
-          this.setState({
-            list: values,
-            forceEmpty: false,
-            loading: false,
-            selected: values[0],
+          list = values;
+
+          newState.forceEmpty = false;
+          newState.selected = values[0];
+        }
+
+        if (!mandatory) {
+          list.unshift({
+            caption: placeholder,
+            key: null,
           });
         }
+        newState.list = list;
+
+        console.log('newState: ', newState);
+
+        this.setState({ ...newState });
       });
     } else {
       this.setState({
         isInputEmpty: true,
-        query: this.inputSearch.value,
+        query: inputValue,
         list: recent,
       });
 
@@ -385,6 +408,7 @@ class RawLookup extends Component {
   };
 
   handleTemporarySelection = selected => {
+    console.log('handleTemporarySelection')
     this.setState({ selected });
   };
 
@@ -453,7 +477,8 @@ class RawLookup extends Component {
                   tabIndex={tabIndex}
                   placeholder={placeholder}
                   onChange={this.handleChange}
-                  onFocus={this.handleFocus}
+                  _onFocus={this.handleFocus}
+                  onClick={() => this.handleFocus(true)}
                 />
               </div>
             </div>
