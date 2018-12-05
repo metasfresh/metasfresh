@@ -228,4 +228,6 @@ public interface IOrderLineBL extends ISingletonService
 	Map<OrderAndLineId, Quantity> getQtyToDeliver(Collection<OrderAndLineId> orderAndLineIds);
 
 	void updateProductDescriptionFromProductBOMIfConfigured(org.compiere.model.I_C_OrderLine orderLine);
+
+	void updateProductDocumentNote(I_C_OrderLine orderLine);
 }

@@ -317,4 +317,11 @@ public class C_OrderLine
 	{
 		Services.get(IOrderLineBL.class).updateProductDescriptionFromProductBOMIfConfigured(orderLine);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
+	{
+		Services.get(IOrderLineBL.class).updateProductDocumentNote(orderLine);
+	}
 }
