@@ -37,9 +37,9 @@ $$
 SELECT
 	ol.line,
 	COALESCE(pt.Name, p.name)		AS Name,
-	CASE WHEN Length( Attributes ) > 15
-		THEN Attributes || E'\n'
-		ELSE Attributes
+	CASE WHEN Length( att.Attributes ) > 15
+		THEN att.Attributes || E'\n'
+		ELSE att.Attributes
 	END AS Attributes,
 	ol.QtyEnteredTU			AS HUQty,
 	CASE WHEN piit.M_HU_PI_Version_ID = 101 OR ol.QtyEnteredTU IS NULL
@@ -86,9 +86,7 @@ FROM
 	LEFT OUTER JOIN M_Product p 			ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Trl pt 		ON ol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-	
-	LEFT OUTER JOIN 
-			de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID, att.M_AttributeSetInstance_ID) as bpp on 1=1
+		
 	-- Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom			ON ol.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM_Trl uomt			ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y' AND uomt.isActive = 'Y'
@@ -104,6 +102,9 @@ FROM
 		GROUP BY	att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
 
+	LEFT OUTER JOIN 
+			de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID, att.M_AttributeSetInstance_ID) as bpp on 1=1
+			
 	-- compensation group
 	LEFT JOIN c_order_compensationgroup cg ON ol.c_order_compensationgroup_id = cg.c_order_compensationgroup_id 
 	
@@ -118,7 +119,6 @@ ORDER BY
 $$
 LANGUAGE sql STABLE	
 ;
-
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details ( IN C_Invoice_ID numeric, IN AD_Language Character Varying (6) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details ( IN C_Invoice_ID numeric, IN AD_Language Character Varying (6) )
@@ -229,8 +229,6 @@ FROM
 		WHERE isActive = 'Y'
 	) pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
 	
-	LEFT OUTER JOIN 
-			de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID, att.M_AttributeSetInstance_ID) as bpp on 1=1
 	-- Get Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom ON il.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM_Trl uomt ON il.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
@@ -314,6 +312,9 @@ GROUP BY x.C_InvoiceLine_ID,	x.shipLocation
 		GROUP BY	att.M_AttributeSetInstance_ID, il.C_InvoiceLine_ID
 	) att ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND il.C_InvoiceLine_ID = att.C_InvoiceLine_ID
 
+	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
+		
 	-- get inoutline - to order by it. The main error i think is that the lines in invoice are not ordered anymore as they used to
 	LEFT OUTER JOIN M_InOutLine miol ON il.M_InOutLine_ID = miol.M_InOutLine_ID AND miol.isActive = 'Y'
 	--ordering gebinde if config exists
@@ -452,8 +453,6 @@ FROM
 	LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 	
-	LEFT OUTER JOIN 
-			de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID, att.M_AttributeSetInstance_ID) as bpp on 1=1
 	-- Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom			ON ic.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM_Trl uomt			ON ic.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
@@ -479,6 +478,9 @@ FROM
 			AND iol.M_InOut_ID = $1
 		GROUP BY	at.M_AttributeSetInstance_ID
 	) att ON iol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
+	
+	LEFT OUTER JOIN 
+			de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID, att.M_AttributeSetInstance_ID) as bpp on 1=1
 WHERE
 	iol.M_InOut_ID = $1 AND iol.isActive = 'Y'
 	AND (COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID))
