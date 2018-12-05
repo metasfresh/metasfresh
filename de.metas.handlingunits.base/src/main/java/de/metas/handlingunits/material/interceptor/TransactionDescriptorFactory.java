@@ -1,6 +1,7 @@
 package de.metas.handlingunits.material.interceptor;
 
 import org.compiere.model.I_M_Transaction;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -40,7 +41,7 @@ public class TransactionDescriptorFactory
 				.productId(record.getM_Product_ID())
 				.transactionId(record.getM_Transaction_ID())
 				.warehouseId(record.getM_Locator().getM_Warehouse_ID())
-				.movementDate(record.getMovementDate())
+				.movementDate(TimeUtil.asInstant(record.getMovementDate()))
 				.movementQty(record.getMovementQty())
 				.costCollectorId(record.getPP_Cost_Collector_ID())
 				.inoutLineId(record.getM_InOutLine_ID())

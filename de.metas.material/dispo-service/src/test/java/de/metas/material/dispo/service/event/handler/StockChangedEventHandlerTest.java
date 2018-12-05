@@ -10,9 +10,9 @@ import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -150,7 +150,7 @@ public class StockChangedEventHandlerTest
 	{
 		final StockChangedEvent event = StockChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.changeDate(TimeUtil.parseTimestamp("2018-11-19"))
+				.changeDate(Instant.parse("2018-11-19T10:15:30.00Z"))
 				.productDescriptor(createProductDescriptor())
 				.qtyOnHand(TEN)
 				.qtyOnHandOld(ZERO)

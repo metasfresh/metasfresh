@@ -3,12 +3,13 @@ package de.metas.purchasecandidate.material.interceptor;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -212,7 +213,7 @@ public class M_ReceiptSchedule_PostEvents
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(receiptSchedule);
 
 		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
-				.date(preparationDate)
+				.date(TimeUtil.asInstant(preparationDate))
 				.productDescriptor(productDescriptor)
 				.warehouseId(receiptScheduleBL.getM_Warehouse_Effective_ID(receiptSchedule))
 				// .customerId() we don't have the *customer* ID

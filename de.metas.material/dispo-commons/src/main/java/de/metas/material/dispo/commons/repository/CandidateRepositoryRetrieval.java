@@ -2,10 +2,7 @@ package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
-import lombok.NonNull;
-
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,6 +10,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +43,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -185,8 +184,9 @@ public class CandidateRepositoryRetrieval
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
 				.customerId(candidateRecord.getC_BPartner_Customer_ID())
+
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
-				.date(new Date(dateProjected.getTime()))
+				.date(TimeUtil.asInstant(dateProjected))
 				.build();
 
 		final CandidateBuilder candidateBuilder = Candidate.builder()

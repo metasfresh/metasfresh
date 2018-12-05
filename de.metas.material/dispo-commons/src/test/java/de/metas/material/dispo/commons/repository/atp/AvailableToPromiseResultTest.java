@@ -8,8 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -51,7 +50,7 @@ public class AvailableToPromiseResultTest
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofAttributeValueIds(1, 2, 3);
 
-	private static final LocalDateTime NOW = LocalDateTime.now();
+	private static final Instant NOW = Instant.now();
 
 	@Before
 	public void init()
@@ -64,7 +63,7 @@ public class AvailableToPromiseResultTest
 		final I_MD_Candidate_ATP_QueryResult viewRecord = newInstance(I_MD_Candidate_ATP_QueryResult.class);
 		viewRecord.setM_Product_ID(PRODUCT_ID);
 		viewRecord.setM_Warehouse_ID(warehouseId);
-		viewRecord.setDateProjected(new Timestamp(BEFORE_NOW.getTime()));
+		viewRecord.setDateProjected(TimeUtil.asTimestamp(BEFORE_NOW));
 		viewRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		viewRecord.setQty(BigDecimal.TEN);
 		viewRecord.setSeqNo(1);

@@ -1,11 +1,9 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.math.BigDecimal;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -26,6 +24,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import lombok.NonNull;
 
 /*
  * #%L

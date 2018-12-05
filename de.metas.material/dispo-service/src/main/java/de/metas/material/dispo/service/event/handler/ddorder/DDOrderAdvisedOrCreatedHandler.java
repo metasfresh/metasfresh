@@ -1,12 +1,10 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
-import lombok.NonNull;
-
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -29,6 +27,7 @@ import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuil
 import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -262,7 +261,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.setParameter("abstractDDOrderEvent", ddOrderEvent);
 	}
 
-	protected final Date computeDate(
+	protected final Instant computeDate(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent,
 			@NonNull final DDOrderLine ddOrderLine,
 			@NonNull final CandidateType candidateType)
@@ -270,9 +269,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		switch (candidateType)
 		{
 			case DEMAND:
-				return TimeUtil.addDaysExact(
-						ddOrderEvent.getDdOrder().getDatePromised(),
-						-ddOrderLine.getDurationDays());
+				final Instant datePromised = ddOrderEvent.getDdOrder().getDatePromised();
+				final int durationDays = ddOrderLine.getDurationDays();
+				return datePromised.minus(durationDays, ChronoUnit.DAYS);
 
 			case SUPPLY:
 				return ddOrderEvent.getDdOrder().getDatePromised();

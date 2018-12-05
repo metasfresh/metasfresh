@@ -56,8 +56,6 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 
 	protected final void handleReceiptScheduleEvent(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
-
 		final CandidateBuilder candidateBuilder = createCandidateBuilder(event);
 
 		final PurchaseDetailBuilder purchaseDetailBuilder = PurchaseDetail.builder()
@@ -68,7 +66,6 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 		final PurchaseDetail purchaseDetail = updatePurchaseDetailBuilderFromEvent(purchaseDetailBuilder, event).build();
 
 		final Candidate supplyCandidate = candidateBuilder
-				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.build();
 
@@ -78,10 +75,15 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 	private CandidateBuilder createCandidateBuilder(@NonNull final AbstractReceiptScheduleEvent event)
 	{
 		final CandidatesQuery query = createCandidatesQuery(event);
-		final Candidate existingCandidteOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
-		if (existingCandidteOrNull != null)
+		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
+		if (existingCandidateOrNull != null)
 		{
-			return existingCandidteOrNull.toBuilder();
+			final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
+			CandidateBuilder builder = existingCandidateOrNull
+					.toBuilder()
+					// do not change the existing candidate's date, unless we can do it right and also change the date of the candidate's stock-candidate
+					.materialDescriptor(materialDescriptor.withDate(existingCandidateOrNull.getDate()));
+			return builder;
 		}
 
 		return createInitialBuilder(event);

@@ -54,7 +54,7 @@ public class SupplyRequiredEventCreatorTest
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
-						.date(SystemTime.asTimestamp())
+						.date(SystemTime.asInstant())
 						.quantity(BigDecimal.TEN)
 						.warehouseId(WAREHOUSE_ID)
 						.build())

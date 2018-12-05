@@ -4,7 +4,7 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -82,12 +82,12 @@ public class PPOrder
 	/**
 	 * This is usually the respective supply candidates' date value.
 	 */
-	Date datePromised;
+	Instant datePromised;
 
 	/**
-	 * This is usually the respective demand candiates' date value.
+	 * This is usually the respective demand candidates' date value.
 	 */
-	Date dateStartSchedule;
+	Instant dateStartSchedule;
 
 	BigDecimal qtyRequired;
 
@@ -110,8 +110,8 @@ public class PPOrder
 			@JsonProperty("orderLineId") final int orderLineId,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("docStatus") @Nullable final String docStatus,
-			@JsonProperty("datePromised") @NonNull final Date datePromised,
-			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
+			@JsonProperty("datePromised") @NonNull final Instant datePromised,
+			@JsonProperty("dateStartSchedule") @NonNull final Instant dateStartSchedule,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,

@@ -52,6 +52,7 @@ public class MaterialDescriptorTest
 				.quantity(BigDecimal.TEN)
 				.warehouseId(WAREHOUSE_ID)
 				.build();
+
 		assertThat(result.getQuantity()).isEqualByComparingTo("10");
 		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);

@@ -12,6 +12,7 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.event.PostMaterialEventService;
@@ -83,10 +84,11 @@ public class StockUpCandiateHandler implements CandidateHandler
 				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
 				candidate.getType(), candidate);
 
-		final Candidate candidateWithQtyDeltaAndId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(
-				candidate);
+		final SaveResult candidateSaveResult = candidateRepositoryCommands
+				.addOrUpdateOverwriteStoredSeqNo(candidate);
+		final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
 
-		if (candidateWithQtyDeltaAndId.getQuantity().signum() == 0)
+		if (!candidateSaveResult.isQtyChanged() && !candidateSaveResult.isDateChanged())
 		{
 			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
 		}
@@ -94,8 +96,8 @@ public class StockUpCandiateHandler implements CandidateHandler
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(candidate.getMaterialDescriptor());
 		final BigDecimal projectedQty = stockRepository.retrieveAvailableStockQtySum(query);
 
-		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId
-				.getQuantity()
+		final BigDecimal requiredAdditionalQty = candidateSaveResult
+				.getQtyDelta()
 				.subtract(projectedQty);
 
 		if (requiredAdditionalQty.signum() > 0)

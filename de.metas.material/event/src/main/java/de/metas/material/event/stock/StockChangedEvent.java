@@ -1,10 +1,7 @@
 package de.metas.material.event.stock;
 
-import lombok.Builder;
-import lombok.Value;
-
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,6 +10,8 @@ import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Check;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -51,7 +50,7 @@ public class StockChangedEvent implements MaterialEvent
 	BigDecimal qtyOnHandOld;
 
 	/** optional; might be used by some handlers; if null then "now" is assumed. */
-	Date changeDate;
+	Instant changeDate;
 
 	StockChangeDetails stockChangeDetails;
 
@@ -63,7 +62,7 @@ public class StockChangedEvent implements MaterialEvent
 			@JsonProperty("warehouseId") final int warehouseId,
 			@JsonProperty("qtyOnHand") final BigDecimal qtyOnHand,
 			@JsonProperty("qtyOnHandOld") final BigDecimal qtyOnHandOld,
-			@JsonProperty("changeDate") final Date changeDate,
+			@JsonProperty("changeDate") final Instant changeDate,
 			@JsonProperty("stockChangeDetails") final StockChangeDetails stockChangeDetails)
 	{
 		this.eventDescriptor = eventDescriptor;
@@ -103,8 +102,8 @@ public class StockChangedEvent implements MaterialEvent
 		@JsonCreator
 		@Builder
 		public StockChangeDetails(
-				@JsonProperty("resetStockAdPinstanceId") final int resetStockAdPinstanceId, 
-				@JsonProperty("transactionId") final int transactionId, 
+				@JsonProperty("resetStockAdPinstanceId") final int resetStockAdPinstanceId,
+				@JsonProperty("transactionId") final int transactionId,
 				@JsonProperty("stockId") final int stockId)
 		{
 			this.resetStockAdPinstanceId = resetStockAdPinstanceId;

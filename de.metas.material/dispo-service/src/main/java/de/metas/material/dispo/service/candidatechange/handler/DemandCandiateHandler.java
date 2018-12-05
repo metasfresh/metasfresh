@@ -1,7 +1,5 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
@@ -15,11 +13,13 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -83,68 +83,127 @@ public class DemandCandiateHandler implements CandidateHandler
 	 * Persists (updates or creates) the given demand candidate and also its <b>child</b> stock candidate.
 	 */
 	@Override
-	public Candidate onCandidateNewOrChange(@NonNull final Candidate demandCandidate)
+	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-		assertCorrectCandidateType(demandCandidate);
+		assertCorrectCandidateType(candidate);
 
-		final Candidate demandCandidateDeltaWithId = candidateRepositoryWriteService
-				.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
+		final SaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
 
-		if (demandCandidateDeltaWithId.getQuantity().signum() == 0)
+		if (!candidateSaveResult.isDateChanged() && !candidateSaveResult.isQtyChanged())
 		{
-			// this candidate didn't change anything
-			return demandCandidateDeltaWithId;
+			return candidateSaveResult.toCandidateWithQtyDelta(); // nothing to do
 		}
 
-		// this is the seqno which the new stock candidate shall get according to the demand candidate
-		final int expectedStockSeqNo = demandCandidateDeltaWithId.getSeqNo() + 1;
+		final Candidate stockCandidate;
 
-		final Candidate childStockWithDemand;
-		final Candidate childStockWithDemandDelta;
-
-		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateDeltaWithId.getId());
-		if (possibleChildStockCandidate.isPresent())
+		final Candidate savedCandidate = candidateSaveResult.getCandidate();
+		final Optional<Candidate> childStockCandidate = candidateRepository.retrieveSingleChild(savedCandidate.getId());
+		if (childStockCandidate.isPresent())
 		{
-			childStockWithDemand = possibleChildStockCandidate.get().withQuantity(demandCandidate.getQuantity().negate());
-			childStockWithDemandDelta = stockCandidateService.updateQty(childStockWithDemand);
+			stockCandidate = stockCandidateService
+					.createStockCandidate(savedCandidate.withNegatedQuantity())
+					.withId(childStockCandidate.get().getId());
 		}
 		else
 		{
-			final Candidate templateForNewDemandCandidateChild = demandCandidateDeltaWithId.withNegatedQuantity().withSeqNo(expectedStockSeqNo);
-			final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(templateForNewDemandCandidateChild);
-
-			childStockWithDemandDelta = candidateRepositoryWriteService
-					.addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
-			childStockWithDemand = childStockWithDemandDelta.withQuantity(newDemandCandidateChild.getQuantity());
+			stockCandidate = stockCandidateService
+					.createStockCandidate(savedCandidate.withNegatedQuantity());
 		}
 
-		candidateRepositoryWriteService
-				.updateCandidateById(childStockWithDemand.withParentId(demandCandidateDeltaWithId.getId()));
+		final Candidate savedStockCandidate = candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.withParentId(savedCandidate.getId()))
+				.getCandidate();
 
-		stockCandidateService
-				.applyDeltaToMatchingLaterStockCandidates(childStockWithDemandDelta);
+		final SaveResult deltaToApplyToLaterStockCandiates = SaveResult.builder()
+				.previousQty(candidateSaveResult.getPreviousQty())
+				.previousTime(candidateSaveResult.getPreviousTime())
+				.candidate(savedCandidate)
+				.build();
 
-		final Candidate demandCandidateToReturn;
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandiates);
 
-		if (childStockWithDemandDelta.getSeqNo() != expectedStockSeqNo)
+		// set the stock candidate as child for the demand candidate
+		candidateRepositoryWriteService.updateCandidateById(
+				savedCandidate
+						.withParentId(savedStockCandidate.getId()));
+
+		final Candidate candidateToReturn = candidateSaveResult
+				.toCandidateWithQtyDelta()
+				.withParentId(savedStockCandidate.getId());
+
+		if (savedCandidate.getType() == CandidateType.DEMAND)
 		{
-			// there was already a stock candidate which already had a seqNo.
-			// keep it and in turn update the demandCandidate's seqNo accordingly
-			demandCandidateToReturn = demandCandidate
-					.withSeqNo(childStockWithDemandDelta.getSeqNo() - 1);
-			candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
+			fireSupplyRequiredEventIfQtyBelowZero(candidateToReturn);
 		}
-		else
-		{
-			demandCandidateToReturn = demandCandidateDeltaWithId;
-		}
-
-		if (demandCandidateDeltaWithId.getType() == CandidateType.DEMAND)
-		{
-			fireSupplyRequiredEventIfQtyBelowZero(demandCandidateDeltaWithId);
-		}
-		return demandCandidateToReturn;
+		return candidateToReturn;
 	}
+	//
+	// public Candidate onCandidateNewOrChange2(@NonNull final Candidate candidate)
+	// {
+	// assertCorrectCandidateType(candidate);
+	//
+	// final SaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
+	//
+	// final Candidate savedCandidate = candidateSaveResult.getCandidate();
+	// if (!candidateSaveResult.isDateChanged() && !candidateSaveResult.isQtyChanged())
+	// {
+	// return candidateSaveResult.toCandidateWithQtyDelta(); // nothing to do
+	// }
+	//
+	// // this is the seqno which the new stock candidate shall get according to the demand candidate
+	// final int expectedStockSeqNo = savedCandidate.getSeqNo() + 1;
+	//
+	// final Candidate childStockWithDemand;
+	// final SaveResult childStockWithDemandDelta;
+	//
+	// final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(savedCandidate.getId());
+	// if (possibleChildStockCandidate.isPresent())
+	// {
+	// // TODO must know&handle if date changed
+	// childStockWithDemand = possibleChildStockCandidate.get()
+	// .withQuantity(savedCandidate.getQuantity().negate())
+	// .withDate(savedCandidate.getDate());
+	// childStockWithDemandDelta = stockCandidateService.updateQtyAndDate(childStockWithDemand); // TODO shall be updateQtyAndDate
+	// }
+	// else
+	// {
+	// final Candidate templateForNewDemandCandidateChild = savedCandidate
+	// .withQuantity(candidateSaveResult.getQtyDelta().negate())
+	// .withSeqNo(expectedStockSeqNo);
+	// final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(templateForNewDemandCandidateChild);
+	//
+	// childStockWithDemandDelta = candidateRepositoryWriteService
+	// .addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
+	// childStockWithDemand = childStockWithDemandDelta.getCandidate();
+	// }
+	//
+	// candidateRepositoryWriteService
+	// .updateCandidateById(childStockWithDemand.withParentId(savedCandidate.getId()));
+	//
+	// stockCandidateService
+	// .applyDeltaToMatchingLaterStockCandidates(childStockWithDemandDelta);
+	//
+	// final Candidate demandCandidateToReturn;
+	//
+	// if (childStockWithDemand.getSeqNo() != expectedStockSeqNo)
+	// {
+	// // there was already a stock candidate which already had a seqNo.
+	// // keep it and in turn update the demandCandidate's seqNo accordingly
+	// demandCandidateToReturn = candidate
+	// .withSeqNo(childStockWithDemand.getSeqNo() - 1);
+	// candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
+	// }
+	// else
+	// {
+	// demandCandidateToReturn = candidateSaveResult.toCandidateWithQtyDelta();
+	// }
+	//
+	// if (savedCandidate.getType() == CandidateType.DEMAND)
+	// {
+	// fireSupplyRequiredEventIfQtyBelowZero(demandCandidateToReturn);
+	// }
+	// return demandCandidateToReturn;
+	// }
 
 	private void assertCorrectCandidateType(@NonNull final Candidate demandCandidate)
 	{

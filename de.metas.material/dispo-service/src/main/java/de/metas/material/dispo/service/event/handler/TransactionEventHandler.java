@@ -530,9 +530,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 			final Candidate withTransactionDetails = candidate.withTransactionDetails(ImmutableList.copyOf(newTransactionDetailsSet));
 			final BigDecimal actualQty = withTransactionDetails.computeActualQty();
-			final BigDecimal plannedQty = candidate.getDetailQty();
+			final BigDecimal detailQty = candidate.getDetailQty();
 
-			return ImmutableList.of(withTransactionDetails.withQuantity(actualQty.max(plannedQty)));
+			return ImmutableList.of(withTransactionDetails.withQuantity(actualQty.max(detailQty)));
 		}
 		else
 		{

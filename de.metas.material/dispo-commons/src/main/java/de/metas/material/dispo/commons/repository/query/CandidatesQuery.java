@@ -1,7 +1,6 @@
 package de.metas.material.dispo.commons.repository.query;
 
 import java.util.List;
-import java.util.Objects;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -13,7 +12,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
-import de.metas.util.Check;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -57,6 +56,12 @@ public final class CandidatesQuery
 	 */
 	public static final CandidatesQuery FALSE = CandidatesQuery.fromId(CandidateId.ofRepoId(Integer.MAX_VALUE - 3));
 
+	/**
+	 *
+	 * @param candidate
+	 * @param includeParentId if true, we include the given candidate's parent ID in the query.
+	 * @return
+	 */
 	public static CandidatesQuery fromCandidate(
 			@NonNull final Candidate candidate,
 			final boolean includeParentId)
@@ -78,8 +83,12 @@ public final class CandidatesQuery
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery
 				.ofDemandDetailOrNull(DemandDetail.castOrNull(candidate.getBusinessCaseDetail()));
 
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.forDescriptor(
+				candidate.getMaterialDescriptor(),
+				DateAndSeqNo.ofCandidate(candidate));
+
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
-				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
+				.materialDescriptorQuery(materialDescriptorQuery)
 				.matchExactStorageAttributesKey(true)
 				.demandDetailsQuery(demandDetailsQuery)
 				.distributionDetailsQuery(distributionDetailsQuery)
@@ -129,6 +138,9 @@ public final class CandidatesQuery
 
 	CandidateStatus status;
 
+	/**
+	 * If the {@code id} is set, the system will ignore any other property of this instance.
+	 */
 	CandidateId id;
 
 	/**
@@ -206,72 +218,5 @@ public final class CandidatesQuery
 
 		this.demandDetailsQuery = demandDetailsQuery;
 		this.transactionDetails = transactionDetails;
-	}
-
-	/**
-	 * This method ignores parent {@link #getParentProductId()}, {@link #getParentWarehouseId()},
-	 * because we don't need it right now and it would mean that we had to fetch the given {@code candidate}'s parent from the repo.
-	 *
-	 * @param candidate
-	 * @return
-	 */
-	public boolean matches(final Candidate candidate)
-	{
-		if (materialDescriptorQuery != null && materialDescriptorQuery.getDate() != null)
-		{
-			final boolean dateMatches;
-			switch (materialDescriptorQuery.getDateOperator())
-			{
-				case BEFORE:
-					dateMatches = candidate.getDate().getTime() < materialDescriptorQuery.getDate().getTime();
-					break;
-				case BEFORE_OR_AT:
-					dateMatches = candidate.getDate().getTime() <= materialDescriptorQuery.getDate().getTime();
-					break;
-				case AT:
-					dateMatches = candidate.getDate().getTime() == materialDescriptorQuery.getDate().getTime();
-					break;
-				case AT_OR_AFTER:
-					dateMatches = candidate.getDate().getTime() >= materialDescriptorQuery.getDate().getTime();
-					break;
-				case AFTER:
-					dateMatches = candidate.getDate().getTime() > materialDescriptorQuery.getDate().getTime();
-					break;
-				default:
-					Check.errorIf(true, "Unexpected date operator={}; this={}", materialDescriptorQuery.getDateOperator(), this);
-					return false; // won't be reached
-			}
-			if (!dateMatches)
-			{
-				return false;
-			}
-		}
-
-		if (isProductIdSpecified() && !Objects.equals(materialDescriptorQuery.getProductId(), candidate.getProductId()))
-		{
-			return false;
-		}
-
-		if (getType() != null && !Objects.equals(getType(), candidate.getType()))
-		{
-			return false;
-		}
-
-		if (isWarehouseIdSpecified() && !Objects.equals(materialDescriptorQuery.getWarehouseId(), candidate.getWarehouseId()))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	private boolean isProductIdSpecified()
-	{
-		return materialDescriptorQuery != null && materialDescriptorQuery.getProductId() > 0;
-	}
-
-	private boolean isWarehouseIdSpecified()
-	{
-		return materialDescriptorQuery != null && materialDescriptorQuery.getWarehouseId() > 0;
 	}
 }

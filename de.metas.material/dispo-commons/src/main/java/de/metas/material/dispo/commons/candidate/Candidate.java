@@ -1,14 +1,7 @@
 package de.metas.material.dispo.commons.candidate;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-import lombok.experimental.Wither;
-
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import org.compiere.util.Util;
@@ -18,6 +11,12 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -115,7 +114,7 @@ public class Candidate
 		return withMaterialDescriptor(materialDescriptor.withQuantity(quantity));
 	}
 
-	public Candidate withDate(@NonNull final Date date)
+	public Candidate withDate(@NonNull final Instant date)
 	{
 		return withMaterialDescriptor(materialDescriptor.withDate(date));
 	}
@@ -142,7 +141,7 @@ public class Candidate
 		return id.getRepoId();
 	}
 
-	public Date getDate()
+	public Instant getDate()
 	{
 		return materialDescriptor.getDate();
 	}

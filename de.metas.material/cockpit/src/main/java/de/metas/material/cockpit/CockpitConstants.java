@@ -1,20 +1,15 @@
-package de.metas.material.planning.event;
+package de.metas.material.cockpit;
 
-import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMaterialRequest;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
- * metasfresh-material-planning
+ * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,20 +27,8 @@ import lombok.experimental.Wither;
  * #L%
  */
 
-@Value
-@Builder
-@Wither
-public class MaterialRequest implements IMaterialRequest
+@UtilityClass
+public class CockpitConstants
 {
-	Quantity qtyToSupply;
-
-	@Default
-	int mrpDemandOrderLineSOId = -1;
-
-	@Default
-	int mrpDemandBPartnerId = -1;
-
-	IMaterialPlanningContext  mrpContext;
-
-	Instant demandDate;
+	public static final ZoneId TIME_ZONE = ZoneOffset.UTC;
 }

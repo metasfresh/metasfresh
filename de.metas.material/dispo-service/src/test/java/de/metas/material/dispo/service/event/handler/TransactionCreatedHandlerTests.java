@@ -7,13 +7,11 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +31,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionCreatedEventBuilder;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
@@ -161,7 +160,7 @@ public class TransactionCreatedHandlerTests
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(ONE)
-						.date(SystemTime.asTimestamp())
+						.date(SystemTime.asInstant())
 						.build())
 				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(TRANSACTION_ID + 1).complete(true).build())
 				.build();
@@ -253,7 +252,7 @@ public class TransactionCreatedHandlerTests
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(SIXTY_THREE)
-						.date(SystemTime.asTimestamp())
+						.date(SystemTime.asInstant())
 						.build())
 
 				.businessCase(CandidateBusinessCase.SHIPMENT)
@@ -320,7 +319,7 @@ public class TransactionCreatedHandlerTests
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.date(TimeUtil.parseTimestamp("2017-10-15"))
+						.date(Instant.parse("2017-10-15T00:00:00.00Z"))
 						.productDescriptor(createProductDescriptor())
 						.quantity(quantity)
 						.warehouseId(WAREHOUSE_ID)

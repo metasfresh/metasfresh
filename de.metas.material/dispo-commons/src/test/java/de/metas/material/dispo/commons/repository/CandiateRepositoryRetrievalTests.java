@@ -23,6 +23,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -91,8 +92,7 @@ public class CandiateRepositoryRetrievalTests
 
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
-		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryCommands);
+		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
 	}
 
 	@Test
@@ -125,7 +125,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(result.isPresent());
 		final Candidate candidate = result.get();
 		assertThat(candidate.getParentId().isNull()).isTrue();
-		assertThat(candidate.getDate()).isEqualTo(dateProjected);
+		assertThat(candidate.getDate()).isEqualTo(TimeUtil.asInstant(dateProjected));
 
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
@@ -162,7 +162,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(result.isPresent());
 		final Candidate candidate = result.get();
 		assertThat(candidate.getParentId().isNull()).isTrue();
-		assertThat(candidate.getDate()).isEqualTo(dateProjected);
+		assertThat(candidate.getDate()).isEqualTo(TimeUtil.asInstant(dateProjected));
 		assertThat(candidate.getTransactionDetails()).hasSize(2);
 
 		assertThat(candidate.getTransactionDetails()).anySatisfy(transactionDetail -> {
@@ -648,7 +648,7 @@ public class CandiateRepositoryRetrievalTests
 	{
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
-		candidateRecord.setDateProjected(new Timestamp(NOW.getTime()));
+		candidateRecord.setDateProjected(TimeUtil.asTimestamp(NOW));
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
 		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());

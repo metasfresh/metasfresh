@@ -1,7 +1,7 @@
 package de.metas.material.event.stockestimate;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -45,7 +45,7 @@ public class StockEstimateCreatedEvent extends AbstractStockEstimateEvent
 	public StockEstimateCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
-			@JsonProperty("date") final Date date,
+			@JsonProperty("date") final Instant date,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("quantity") final BigDecimal quantity)
 	{

@@ -19,12 +19,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -174,7 +174,8 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		final Candidate originalCandidate = repositoryTestHelper.stockCandidate;
 		final Candidate candidateReturnedfromRepo = candidateRepositoryWriteService
-				.addOrUpdateOverwriteStoredSeqNo(originalCandidate);
+				.addOrUpdateOverwriteStoredSeqNo(originalCandidate)
+				.getCandidate();
 
 		final Candidate originalCandidateWithZeroDelta = originalCandidate
 				.withMaterialDescriptor(originalCandidate.getMaterialDescriptor().withQuantity(ZERO));
@@ -236,7 +237,9 @@ public class CandidateRepositoryWriteServiceTests
 						.qty(TEN)
 						.build())
 				.build();
-		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
+		final Candidate addOrReplaceResult = candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(productionCandidate)
+				.getCandidate();
 
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
@@ -266,20 +269,24 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		final Candidate candidateWithOutGroupId = repositoryTestHelper.stockCandidate
 				.withType(CandidateType.DEMAND)
-				.withDate(TimeUtil.addMinutes(AFTER_NOW, 1)) // pick a different time from the other candidates
+				.withDate(AFTER_NOW.plus(1, ChronoUnit.MINUTES)) // pick a different time from the other candidates
 				.withGroupId(-1);
 
-		final Candidate result1 = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId);
+		final Candidate result1 = candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId)
+				.getCandidate();
 		// result1 was assigned an id and a groupId
 		assertThat(result1.getId().getRepoId()).isGreaterThan(0);
 		assertThat(result1.getGroupId()).isEqualTo(result1.getId().getRepoId());
 
 		final Candidate candidateWithGroupId = candidateWithOutGroupId
 				.withId(null)
-				.withDate(TimeUtil.addMinutes(AFTER_NOW, 2)) // pick a different time from the other candidates
+				.withDate(AFTER_NOW.plus(2, ChronoUnit.MINUTES)) // pick a different time from the other candidates
 				.withGroupId(result1.getGroupId());
 
-		final Candidate result2 = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidateWithGroupId);
+		final Candidate result2 = candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(candidateWithGroupId)
+				.getCandidate();
 		// result2 also has id & groupId, but its ID is unique whereas its groupId is the same as result1's groupId
 		assertThat(result2.getId()).isNotNull();
 		assertThat(result2.getGroupId()).isNotEqualTo(result2.getId().getRepoId());
@@ -301,10 +308,12 @@ public class CandidateRepositoryWriteServiceTests
 	public void addOrUpdateOverwriteStoredSeqNo_stockCandidate_receives_groupId()
 	{
 		final Candidate candidateWithOutGroupId = repositoryTestHelper.stockCandidate
-				.withDate(TimeUtil.addMinutes(AFTER_NOW, 1)) // pick a different time from the other candidates
+				.withDate(AFTER_NOW.plus(1, ChronoUnit.MINUTES)) // pick a different time from the other candidates
 				.withGroupId(-1);
 
-		final Candidate result1 = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId);
+		final Candidate result1 = candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId)
+				.getCandidate();
 		assertThat(result1.getId().getRepoId()).isGreaterThan(0);
 		assertThat(result1.getGroupId()).isGreaterThan(0);
 
@@ -336,7 +345,9 @@ public class CandidateRepositoryWriteServiceTests
 						.qty(TEN)
 						.build())
 				.build();
-		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(distributionCandidate);
+		final Candidate addOrReplaceResult = candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(distributionCandidate)
+				.getCandidate();
 
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
@@ -368,7 +379,9 @@ public class CandidateRepositoryWriteServiceTests
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 71, TEN))
 				.build();
-		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
+		final Candidate addOrReplaceResult = candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(productionCandidate)
+				.getCandidate();
 
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
@@ -398,7 +411,9 @@ public class CandidateRepositoryWriteServiceTests
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62, TEN))
 				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(33).complete(true).build())
 				.build();
-		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
+		final Candidate addOrReplaceResult = candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(productionCandidate)
+				.getCandidate();
 
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID + productIdOffSet);
 		assertThat(filtered).hasSize(1);
