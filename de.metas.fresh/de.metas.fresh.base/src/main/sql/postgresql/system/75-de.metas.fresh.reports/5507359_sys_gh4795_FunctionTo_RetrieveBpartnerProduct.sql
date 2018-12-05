@@ -28,7 +28,7 @@ RETURNS TABLE(
 $BODY$
 
 SELECT 
-	DISTINCT ON (ProductNo, ProductName)
+	DISTINCT ON (bpp.M_AttributeSetInstance_ID, ProductNo, ProductName)
 	ProductNo, ProductName, C_BPartner_Product_ID
 FROM C_BPartner_Product bpp
 	LEFT JOIN M_AttributeSetInstance_ID_AttributeInstances asi_bpp ON asi_bpp.M_AttributeSetInstance_ID = bpp.M_AttributeSetInstance_ID
@@ -39,7 +39,8 @@ WHERE true
 	/*asi_bpp is null, or its AttributeInstances array is contained in the given p_M_AttributeSetInstance_ID's AttributeInstances array */
 	AND (select asi.AttributeInstances from M_AttributeSetInstance_ID_AttributeInstances asi where asi.M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID)
 		@> COALESCE(asi_bpp.AttributeInstances, ARRAY[]::character varying[]) 
-ORDER BY ProductNo, ProductName, SeqNo
+ORDER BY bpp.M_AttributeSetInstance_ID desc, ProductNo, ProductName, SeqNo
+LIMIT 1
 $BODY$
 LANGUAGE sql STABLE;
 COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric) 

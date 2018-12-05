@@ -1,3 +1,17 @@
+CREATE OR REPLACE VIEW M_AttributeSetInstance_ID_AttributeInstances AS
+SELECT
+  ai.M_AttributeSetInstance_ID,
+  array_agg(
+    ai.M_Attribute_ID || '_' || 
+    coalesce(
+      ai.m_attributevalue_id::character varying, ai.value, ai.valuenumber::character varying, ai.valuedate::character varying, '')
+  ) as AttributeInstances
+FROM M_AttributeInstance ai
+GROUP BY ai.M_AttributeSetInstance_ID;
+COMMENT ON VIEW M_AttributeSetInstance_ID_AttributeInstances 
+IS 'Returns M_AttributeSetInstance_IDs with arrays that represent all M_AttributeInstances of the respective ASI.
+Each array element is a string containing of <M_Attribute_ID>_<Attribute-Instance-Value>';
+
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(
 	IN p_M_Product_id numeric, 
 	IN p_C_BPartner_ID numeric, 
@@ -10,7 +24,7 @@ RETURNS TABLE(
 $BODY$
 
 SELECT 
-	DISTINCT ON (ProductNo, ProductName)
+	DISTINCT ON (bpp.M_AttributeSetInstance_ID, ProductNo, ProductName)
 	ProductNo, ProductName, C_BPartner_Product_ID
 FROM C_BPartner_Product bpp
 	LEFT JOIN M_AttributeSetInstance_ID_AttributeInstances asi_bpp ON asi_bpp.M_AttributeSetInstance_ID = bpp.M_AttributeSetInstance_ID
@@ -21,7 +35,8 @@ WHERE true
 	/*asi_bpp is null, or its AttributeInstances array is contained in the given p_M_AttributeSetInstance_ID's AttributeInstances array */
 	AND (select asi.AttributeInstances from M_AttributeSetInstance_ID_AttributeInstances asi where asi.M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID)
 		@> COALESCE(asi_bpp.AttributeInstances, ARRAY[]::character varying[]) 
-ORDER BY ProductNo, ProductName, SeqNo
+ORDER BY bpp.M_AttributeSetInstance_ID desc, ProductNo, ProductName, SeqNo
+LIMIT 1
 $BODY$
 LANGUAGE sql STABLE;
 COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric) 
