@@ -46,8 +46,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -67,7 +65,6 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostElementRepository;
@@ -79,8 +76,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -213,7 +208,7 @@ public class CopyPriceToStandard extends JavaProcess
 		private final ClientId clientId;
 		private OrgId orgId;
 		private final ProductId productId;
-		private ResourceId resourceId;
+		// private ResourceId resourceId;
 		private AttributeSetInstanceId attributeSetInstanceId;
 		private final CostTypeId costTypeId;
 		private final AcctSchemaId acctSchemaId;
@@ -237,32 +232,12 @@ public class CopyPriceToStandard extends JavaProcess
 			updateForProduct(product, as);
 		}
 
-		public CostDimension(
-				int clientId,
-				int orgId,
-				int productId,
-				int attributeSetInstanceId,
-				int costTypeId,
-				int acctSchemaId,
-				int costElementId)
-		{
-			this.clientId = ClientId.ofRepoId(clientId);
-			this.orgId = OrgId.ofRepoId(orgId);
-			this.productId = ProductId.ofRepoId(productId);
-			this.attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceId);
-			this.costTypeId = CostTypeId.ofRepoIdOrNull(costTypeId);
-			this.acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaId);
-			this.costElementId = CostElementId.ofRepoIdOrNull(costElementId);
-			//
-			updateForProduct(null, null);
-		}
-
 		/**
 		 * Copy Constructor
 		 *
 		 * @param costDimension a <code>CostDimension</code> object
 		 */
-		public CostDimension(final CostDimension costDimension)
+		private CostDimension(final CostDimension costDimension)
 		{
 			this.clientId = costDimension.clientId;
 			this.orgId = costDimension.orgId;
@@ -303,69 +278,13 @@ public class CopyPriceToStandard extends JavaProcess
 				orgId = OrgId.ANY;
 			}
 
-			this.resourceId = ResourceId.ofRepoIdOrNull(product.getS_Resource_ID());
-		}
-
-		public ClientId getClientId()
-		{
-			return clientId;
-		}
-
-		public OrgId getOrgId()
-		{
-			return orgId;
-		}
-
-		public ProductId getProductId()
-		{
-			return productId;
-		}
-
-		public ResourceId getResourceId()
-		{
-			return resourceId;
-		}
-
-		public AttributeSetInstanceId getAttributeSetInstanceId()
-		{
-			return attributeSetInstanceId;
-		}
-
-		public CostTypeId getCostTypeId()
-		{
-			return costTypeId;
-		}
-
-		/**
-		 * @return the c_AcctSchema_ID
-		 */
-		public AcctSchemaId getAcctSchemaId()
-		{
-			return acctSchemaId;
-		}
-
-		public CostElementId getCostElementId()
-		{
-			return costElementId;
+			// this.resourceId = ResourceId.ofRepoIdOrNull(product.getS_Resource_ID());
 		}
 
 		public <T> IQuery<T> toQuery(Class<T> clazz, String trxName)
 		{
 			return toQueryBuilder(clazz, trxName)
 					.create();
-		}
-
-		public <T> IQuery<T> toQuery(final Class<T> clazz, final String whereClause, final Object[] params, final String trxName)
-		{
-			final IQueryBuilder<T> queryBuilder = toQueryBuilder(clazz, trxName);
-
-			if (!Check.isEmpty(whereClause, true))
-			{
-				final IQueryFilter<T> sqlFilter = TypedSqlQueryFilter.of(whereClause, params);
-				queryBuilder.filter(sqlFilter);
-			}
-
-			return queryBuilder.create();
 		}
 
 		public <T> IQueryBuilder<T> toQueryBuilder(final Class<T> clazz, final String trxName)
@@ -402,20 +321,6 @@ public class CopyPriceToStandard extends JavaProcess
 			}
 
 			return queryBuilder;
-		}
-
-		public CostSegment toCostSegment()
-		{
-			final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
-			return CostSegment.builder()
-					.clientId(clientId)
-					.orgId(orgId)
-					.productId(productId)
-					.attributeSetInstanceId(attributeSetInstanceId)
-					.costTypeId(costTypeId)
-					.acctSchemaId(acctSchemaId)
-					.costingLevel(as.getCosting().getCostingLevel())
-					.build();
 		}
 
 		@Override
