@@ -292,7 +292,7 @@ class RawWidget extends Component {
     switch (widgetType) {
       case 'Date':
         if (range) {
-          // Watch out! The datetimerange widget as exception,
+          // TODO: Watch out! The datetimerange widget as exception,
           // is non-controlled input! For further usage, needs
           // upgrade.
           return (
