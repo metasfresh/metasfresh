@@ -116,10 +116,7 @@ class Lookup extends Component {
       widgetData.map((item, index) => {
         const nextIndex = index + 1;
 
-        if (
-          nextIndex < widgetData.length &&
-          widgetData[index].field === prop
-        ) {
+        if (nextIndex < widgetData.length && widgetData[index].field === prop) {
           let nextProp = properties[nextIndex];
 
           // TODO: Looks like this code was never used

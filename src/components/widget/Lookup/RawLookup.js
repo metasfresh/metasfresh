@@ -59,8 +59,10 @@ class RawLookup extends Component {
       localClearing,
       fireDropdownList,
       parentElement,
+      mandatory,
+      placeholder,
     } = this.props;
-    const { shouldBeFocused } = this.state;
+    const { shouldBeFocused, list } = this.state;
 
     if (parentElement && !prevProps.parentElement) {
       // eslint-disable-next-line react/no-find-dom-node
@@ -83,12 +85,23 @@ class RawLookup extends Component {
       });
     }
 
-    defaultValue &&
+    if (
+      defaultValue &&
       (prevProps.defaultValue == null ||
         (prevProps.defaultValue &&
-          prevProps.defaultValue.caption !== defaultValue.caption)) &&
-      handleInputEmptyStatus &&
-      handleInputEmptyStatus(false);
+          prevProps.defaultValue.caption !== defaultValue.caption))
+    ) {
+      handleInputEmptyStatus && handleInputEmptyStatus(false);
+
+      if (!mandatory && list.length && list[list.length - 1].key !== null) {
+        list.push({
+          caption: placeholder,
+          key: null,
+        });
+
+        this.setState({ list });
+      }
+    }
 
     if (filterWidget && lookupEmpty && defaultValue === null) {
       this.inputSearch.value = defaultValue;
@@ -136,7 +149,7 @@ class RawLookup extends Component {
       filterWidget,
       subentity,
     } = this.props;
-
+    let selected = select;
     let mainProp = mainProperty[0];
 
     this.setState({
@@ -147,12 +160,12 @@ class RawLookup extends Component {
       this.handleAddNew();
 
       return;
+    } else if (select.key === null) {
+      selected = null;
     }
 
-    // console.log('handleSelect')
-
     if (filterWidget) {
-      const promise = onChange(mainProp.parameterName, select);
+      const promise = onChange(mainProp.parameterName, selected);
 
       if (promise) {
         promise.then(() => {
@@ -163,11 +176,11 @@ class RawLookup extends Component {
       }
     } else {
       if (subentity === 'quickInput') {
-        onChange(mainProperty[0].field, select, () =>
+        onChange(mainProperty[0].field, selected, () =>
           setNextProperty(mainProp.field)
         );
       } else {
-        const promise = onChange(mainProp.field, select);
+        const promise = onChange(mainProp.field, selected);
 
         if (promise) {
           promise.then(() => {
@@ -221,7 +234,6 @@ class RawLookup extends Component {
   };
 
   handleBlur = mouse => {
-    // console.log('handleBlur')
     this.setState(
       {
         isFocused: false,
@@ -244,8 +256,6 @@ class RawLookup extends Component {
         },
         () => {
           if (!mandatory && mouse) {
-            // console.log('handleFocus: ', mouse)
-
             this.props.onDropdownListToggle(true);
           }
         }
@@ -295,6 +305,14 @@ class RawLookup extends Component {
       this.props.onDropdownListToggle(true);
 
       let typeaheadRequest;
+      const typeaheadParams = {
+        docId: filterWidget ? viewId : dataId,
+        propertyName: filterWidget ? parameterName : mainProperty[0].field,
+        query: inputValue,
+        rowId,
+        tabId,
+      };
+
       if (entity === 'documentView' && !filterWidget) {
         typeaheadRequest = getViewAttributeTypeahead(
           windowType,
@@ -305,26 +323,18 @@ class RawLookup extends Component {
         );
       } else if (viewId && !filterWidget) {
         typeaheadRequest = autocompleteModalRequest({
-          docId: filterWidget ? viewId : dataId,
+          ...typeaheadParams,
           docType: windowType,
           entity: 'documentView',
-          propertyName: filterWidget ? parameterName : mainProperty[0].field,
-          query: inputValue,
           viewId,
-          rowId,
-          tabId,
         });
       } else {
         typeaheadRequest = autocompleteRequest({
-          docId: filterWidget ? viewId : dataId,
+          ...typeaheadParams,
           docType: windowType,
           entity,
-          propertyName: filterWidget ? parameterName : mainProperty[0].field,
-          query: inputValue,
-          rowId,
           subentity,
           subentityId,
-          tabId,
         });
       }
 
@@ -349,14 +359,12 @@ class RawLookup extends Component {
         }
 
         if (!mandatory) {
-          list.unshift({
+          list.push({
             caption: placeholder,
             key: null,
           });
         }
-        newState.list = list;
-
-        console.log('newState: ', newState);
+        newState.list = [...list];
 
         this.setState({ ...newState });
       });
@@ -372,12 +380,19 @@ class RawLookup extends Component {
   };
 
   handleValueChanged = () => {
-    const { defaultValue, filterWidget } = this.props;
+    const { defaultValue, filterWidget, mandatory, placeholder } = this.props;
     const { oldValue, isInputEmpty } = this.state;
 
     if (!filterWidget && !!defaultValue && this.inputSearch) {
-      const init = defaultValue;
-      const inputValue = init.caption;
+      const init = [defaultValue];
+      const inputValue = defaultValue.caption;
+
+      if (!mandatory) {
+        init.push({
+          caption: placeholder,
+          key: null,
+        });
+      }
 
       if (inputValue !== oldValue) {
         this.inputSearch.value = inputValue;
@@ -385,12 +400,12 @@ class RawLookup extends Component {
         this.setState({
           oldValue: inputValue,
           isInputEmpty: false,
-          list: [init],
+          list: init,
         });
       } else if (isInputEmpty) {
         this.setState({
           isInputEmpty: false,
-          list: [init],
+          list: init,
         });
       }
     } else if (oldValue && !defaultValue && this.inputSearch) {
@@ -408,7 +423,6 @@ class RawLookup extends Component {
   };
 
   handleTemporarySelection = selected => {
-    console.log('handleTemporarySelection')
     this.setState({ selected });
   };
 
@@ -477,7 +491,6 @@ class RawLookup extends Component {
                   tabIndex={tabIndex}
                   placeholder={placeholder}
                   onChange={this.handleChange}
-                  _onFocus={this.handleFocus}
                   onClick={() => this.handleFocus(true)}
                 />
               </div>
