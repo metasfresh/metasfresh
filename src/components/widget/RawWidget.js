@@ -115,9 +115,9 @@ export class RawWidget extends Component {
     );
   };
 
-  handleKeyDown = (e, property, value) => {
+  handleKeyDown = (e, property, value, widgetType) => {
     if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && widgetType.search(/text/i) > -1) {
         e.preventDefault();
       }
       return this.handlePatch(property, value);
@@ -288,7 +288,8 @@ export class RawWidget extends Component {
         return handleChange && handleChange(widgetField, e.target.value);
       },
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
-      onKeyDown: e => this.handleKeyDown(e, widgetField, e.target.value),
+      onKeyDown: e =>
+        this.handleKeyDown(e, widgetField, e.target.value, widgetType),
       title: widgetValue,
     };
 
