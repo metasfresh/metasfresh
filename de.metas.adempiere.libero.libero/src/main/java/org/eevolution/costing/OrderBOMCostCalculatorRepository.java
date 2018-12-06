@@ -239,7 +239,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 
 		//
 		return orderCosts
-				.removingCostElements(costElementIds)
+				.removingByProductsAndCostElements(bom.getProductIds(), costElementIds)
 				.addingCosts(newOrderCosts.values());
 	}
 

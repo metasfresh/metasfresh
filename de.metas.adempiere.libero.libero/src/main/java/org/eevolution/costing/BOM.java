@@ -83,7 +83,7 @@ public final class BOM
 			}
 		}
 	}
-	
+
 	public void clearBOMOwnCostPrice(@NonNull final CostElementId costElementId)
 	{
 		getCostPrice().clearOwnCostPrice(costElementId);
@@ -148,5 +148,13 @@ public final class BOM
 				.flatMap(BOMCostPrice::streamRepoIds)
 				.filter(repoId -> repoId > 0)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Set<ProductId> getProductIds()
+	{
+		final ImmutableSet.Builder<ProductId> productIds = ImmutableSet.builder();
+		productIds.add(getProductId());
+		getLines().forEach(bomLine -> productIds.add(bomLine.getComponentId()));
+		return productIds.build();
 	}
 }

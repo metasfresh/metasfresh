@@ -95,11 +95,12 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public PPOrderCosts removingCostElements(final Set<CostElementId> costElementIdsToRemove)
+	public PPOrderCosts removingByProductsAndCostElements(final Set<ProductId> productIds, final Set<CostElementId> costElementIds)
 	{
 		final List<PPOrderCost> newCosts = toList()
 				.stream()
-				.filter(cost -> !costElementIdsToRemove.contains(cost.getCostElementId()))
+				.filter(cost -> !productIds.contains(cost.getProductId())
+						|| !costElementIds.contains(cost.getCostElementId()))
 				.collect(ImmutableList.toImmutableList());
 		return new PPOrderCosts(orderId, newCosts);
 	}

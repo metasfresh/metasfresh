@@ -1,6 +1,7 @@
 package org.eevolution.api.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -21,6 +22,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -38,6 +40,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -226,27 +229,27 @@ final class CreatePPOrderCostsCommand
 		final Set<CostElementId> costElementIds = costElementsRepo.getActiveCostElementIds();
 		if (costElementIds.isEmpty())
 		{
+			// shall not happen!
 			return Stream.empty();
 		}
 
-		final List<PPOrderCost> orderCosts = currentCostsRepository.getByCostSegmentAndCostElements(costSegment, costElementIds)
+		final Map<CostElementId, PPOrderCost> orderCostsByCostElementId = currentCostsRepository.getByCostSegmentAndCostElements(costSegment, costElementIds)
 				.stream()
 				.map(currentCost -> createPPOrderCost(costSegment, currentCost))
-				.collect(ImmutableList.toImmutableList());
+				.collect(GuavaCollectors.toImmutableMapByKey(PPOrderCost::getCostElementId));
 
-		if (orderCosts.isEmpty())
-		{
-			final CostPrice zero = CostPrice.zero(acctSchema.getCurrencyId());
-			return costElementIds.stream()
-					.map(costElementId -> PPOrderCost.builder()
-							.costSegmentAndElement(costSegment.withCostElementId(costElementId))
-							.price(zero)
-							.build());
-		}
-		else
-		{
-			return orderCosts.stream();
-		}
+		//
+		final CostPrice zero = CostPrice.zero(acctSchema.getCurrencyId());
+		final Stream<PPOrderCost> zeroOrderCosts = Sets.difference(costElementIds, orderCostsByCostElementId.keySet())
+				.stream()
+				.map(costElementId -> PPOrderCost.builder()
+						.costSegmentAndElement(costSegment.withCostElementId(costElementId))
+						.price(zero)
+						.build());
+
+		return Stream.concat(
+				orderCostsByCostElementId.values().stream(),
+				zeroOrderCosts);
 	}
 
 	private PPOrderCost createPPOrderCost(final CostSegment costSegment, final CurrentCost currentCost)
