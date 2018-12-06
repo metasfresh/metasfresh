@@ -90,7 +90,9 @@ class Referenced extends Component {
         ].concat(
           item.references.map((ref, refKey) => (
             <div
-              className="subheader-item js-subheader-item"
+              className={`subheader-item js-subheader-item reference_${
+                ref.internalName
+              }`}
               onClick={() => {
                 this.handleReferenceClick(ref.documentType, ref.filter);
               }}
