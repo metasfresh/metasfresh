@@ -241,7 +241,6 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public ProductId getProductIdByResourceId(@NonNull final ResourceId resourceId)
 	{
-
 		final ProductId productId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
