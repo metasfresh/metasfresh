@@ -21,7 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProject;
@@ -30,6 +30,7 @@ import org.compiere.model.MTimeExpenseLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.order.IOrderBL;
@@ -114,7 +115,7 @@ public class ExpenseSOrder extends JavaProcess
 		sql.append(" ORDER BY el.C_BPartner_ID, el.C_Project_ID, el.S_TimeExpense_ID, el.Line");
 
 		//
-		MBPartner oldBPartner = null;
+		I_C_BPartner oldBPartner = null;
 		int old_Project_ID = -1;
 		MTimeExpense te = null;
 		//
@@ -143,7 +144,7 @@ public class ExpenseSOrder extends JavaProcess
 					|| oldBPartner.getC_BPartner_ID() != tel.getC_BPartner_ID())
 				{
 					completeOrder ();
-					oldBPartner = new MBPartner (getCtx(), tel.getC_BPartner_ID(), get_TrxName());
+					oldBPartner = Services.get(IBPartnerDAO.class).getById(tel.getC_BPartner_ID());
 				}
 				//	New Project - New Order
 				if (old_Project_ID != tel.getC_Project_ID())
@@ -177,7 +178,7 @@ public class ExpenseSOrder extends JavaProcess
 	 *	@param tel line
 	 *	@param bp bp
 	 */
-	private void processLine (MTimeExpense te, MTimeExpenseLine tel, MBPartner bp)
+	private void processLine (MTimeExpense te, MTimeExpenseLine tel, I_C_BPartner bp)
 	{
 		if (m_order == null)
 		{

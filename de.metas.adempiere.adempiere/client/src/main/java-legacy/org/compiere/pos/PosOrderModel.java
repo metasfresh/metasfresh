@@ -30,8 +30,6 @@ import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.document.engine.IDocument;
-import de.metas.order.IOrderBL;
-import de.metas.util.Services;
 
 /**
  * Wrapper for standard order
@@ -49,42 +47,6 @@ public class PosOrderModel extends MOrder {
 		super(ctx, C_Order_ID, trxName);
 		m_pos = pos;
 	}
-
-	/**
-	 * Get/create Order
-	 * 
-	 * @return order or null
-	 */
-	public static PosOrderModel createOrder(MPOS pos, MBPartner partner) {
-		
-		PosOrderModel order = new PosOrderModel(Env.getCtx(), 0, null, pos);
-		order.setAD_Org_ID(pos.getAD_Org_ID());
-		order.setIsSOTrx(true);
-		order.setC_POS_ID(pos.getC_POS_ID());
-		if (pos.getC_DocType_ID() != 0)
-			Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, pos.getC_DocType_ID());
-		else
-			Services.get(IOrderBL.class).setDocTypeTargetId(order, MOrder.DocSubType_POS);
-		if (partner == null || partner.get_ID() == 0)
-			partner = pos.getBPartner();
-		if (partner == null || partner.get_ID() == 0) {
-			throw new AdempierePOSException("No BPartner for order");
-		}
-		order.setBPartner(partner);
-		//
-		order.setM_PriceList_ID(pos.getM_PriceList_ID());
-		order.setM_Warehouse_ID(pos.getM_Warehouse_ID());
-		order.setSalesRep_ID(pos.getSalesRep_ID());
-		order.setPaymentRule(MOrder.PAYMENTRULE_Cash);
-		if (!order.save())
-		{
-			order = null;
-			throw new AdempierePOSException("Save order failed");
-		}
-		
-		return order;
-	} //	createOrder
-
 
 	/**
 	 * @author Comunidad de Desarrollo OpenXpertya 

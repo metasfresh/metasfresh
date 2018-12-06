@@ -109,20 +109,20 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 	 * @param bp partner
 	 * @param isSOTrx SO
 	 */
-	public void setBPartner(MBPartner bp, boolean isSOTrx)
+	public void setBPartner(I_C_BPartner bp, boolean isSOTrx)
 	{
 		setC_BPartner_ID(bp.getC_BPartner_ID());
-		MBPartnerLocation[] locations = bp.getLocations(false);
+		List<I_C_BPartner_Location> locations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp);
 		// Location
-		if (locations.length == 1)
-			setC_BPartner_Location_ID(locations[0].getC_BPartner_Location_ID());
+		if (locations.size() == 1)
+			setC_BPartner_Location_ID(locations.get(0).getC_BPartner_Location_ID());
 		else
 		{
-			MBPartnerLocation firstActive = null;
-			MBPartnerLocation firstBillTo = null;
-			for (int i = 0; i < locations.length; i++)
+			I_C_BPartner_Location firstActive = null;
+			I_C_BPartner_Location firstBillTo = null;
+			for (int i = 0; i < locations.size(); i++)
 			{
-				MBPartnerLocation location = locations[i];
+				I_C_BPartner_Location location = locations.get(i);
 				if (!location.isActive())
 				{
 					continue;
@@ -268,7 +268,8 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 			}
 			if (level.isSetCreditStop() || level.isSetPaymentTerm())
 			{
-				MBPartner thisBPartner = MBPartner.get(getCtx(), getC_BPartner_ID());
+				final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+				final I_C_BPartner thisBPartner = bpartnersRepo.getById(getC_BPartner_ID());
 
 				final BPartnerStats stats =bpartnerStatsDAO.getCreateBPartnerStats(thisBPartner);
 
@@ -281,7 +282,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 				{
 					thisBPartner.setC_PaymentTerm_ID(level.getC_PaymentTerm_ID());
 				}
-				thisBPartner.save();
+				bpartnersRepo.save(thisBPartner);
 			}
 		}
 		return true;

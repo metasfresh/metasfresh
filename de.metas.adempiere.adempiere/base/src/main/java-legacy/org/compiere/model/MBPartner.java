@@ -19,7 +19,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -31,7 +30,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.service.BPartnerStats;
@@ -61,103 +59,8 @@ import de.metas.util.Services;
 // metas: synched with rev 10155
 public class MBPartner extends X_C_BPartner
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -3669895599574182217L;
 
-	/**
-	 * Get Empty Template Business Partner
-	 *
-	 * @param ctx
-	 *            context
-	 * @param AD_Client_ID
-	 *            client
-	 * @return Template Business Partner or null
-	 */
-	public static MBPartner getTemplate(final Properties ctx, final int AD_Client_ID)
-	{
-		MBPartner template = getBPartnerCashTrx(ctx, AD_Client_ID);
-		if (template == null)
-		{
-			template = new MBPartner(ctx, 0, null);
-		}
-		// Reset
-		if (template != null)
-		{
-			template.set_ValueNoCheck("C_BPartner_ID", new Integer(0));
-			template.setValue("");
-			template.setName("");
-			template.setName2(null);
-			template.setDUNS("");
-			template.setFirstSale(null);
-			//
-
-			template.setPotentialLifeTimeValue(BigDecimal.ZERO);
-			template.setAcqusitionCost(BigDecimal.ZERO);
-			template.setShareOfCustomer(0);
-			template.setSalesVolume(0);
-			// Reset Created, Updated to current system time ( teo_sarca )
-			final Timestamp ts = new Timestamp(System.currentTimeMillis());
-			template.set_ValueNoCheck("Created", ts);
-			template.set_ValueNoCheck("Updated", ts);
-		}
-		return template;
-	} // getTemplate
-
-	/**
-	 * Get Cash Trx Business Partner
-	 *
-	 * @param ctx
-	 *            context
-	 * @param AD_Client_ID
-	 *            client
-	 * @return Cash Trx Business Partner or null
-	 */
-	public static MBPartner getBPartnerCashTrx(final Properties ctx, final int AD_Client_ID)
-	{
-		MBPartner retValue = null;
-		final String sql = "SELECT * FROM C_BPartner "
-				+ "WHERE C_BPartner_ID IN (SELECT C_BPartnerCashTrx_ID FROM AD_ClientInfo WHERE AD_Client_ID=?)";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Client_ID);
-			final ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				retValue = new MBPartner(ctx, rs, null);
-			}
-			else
-			{
-				s_log.error("Not found for AD_Client_ID="
-						+ AD_Client_ID);
-			}
-			rs.close();
-			pstmt.close();
-			pstmt = null;
-		}
-		catch (final Exception e)
-		{
-			s_log.error(sql, e);
-		}
-		finally
-		{
-			try
-			{
-				if (pstmt != null)
-				{
-					pstmt.close();
-				}
-			}
-			catch (final Exception e)
-			{
-			}
-			pstmt = null;
-		}
-		return retValue;
-	} // getBPartnerCashTrx
 
 	/**
 	 * Get BPartner with Value
@@ -180,111 +83,17 @@ public class MBPartner extends X_C_BPartner
 		return retValue;
 	} // get
 
-	/**
-	 * Get BPartner with Value
-	 *
-	 * @param ctx
-	 *            context
-	 * @param Value
-	 *            value
-	 * @return BPartner or null
-	 */
-	public static MBPartner get(final Properties ctx, final int C_BPartner_ID)
-	{
-		final String whereClause = "C_BPartner_ID=? AND AD_Client_ID=?";
-		final MBPartner retValue = new Query(ctx, MBPartner.Table_Name, whereClause, null).setParameters(
-				new Object[] { C_BPartner_ID, Env.getAD_Client_ID(ctx) })
-				.firstOnly();
-		return retValue;
-	} // get
-
-	/**
-	 * Get Not Invoiced Shipment Value
-	 *
-	 * @param C_BPartner_ID
-	 *            partner
-	 * @return value in accounting currency
-	 */
-	public static BigDecimal getNotInvoicedAmt(final int C_BPartner_ID)
-	{
-		BigDecimal retValue = null;
-		final String sql = "SELECT COALESCE(SUM(COALESCE("
-				+ "currencyBase((ol.QtyDelivered-ol.QtyInvoiced)*ol.PriceActual,o.C_Currency_ID,o.DateOrdered, o.AD_Client_ID,o.AD_Org_ID) ,0)),0) "
-				+ "FROM C_OrderLine ol"
-				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
-				+ "WHERE o.IsSOTrx='Y' AND Bill_BPartner_ID=?";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_BPartner_ID);
-			final ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				retValue = rs.getBigDecimal(1);
-			}
-			rs.close();
-			pstmt.close();
-			pstmt = null;
-		}
-		catch (final Exception e)
-		{
-			s_log.error(sql, e);
-		}
-		try
-		{
-			if (pstmt != null)
-			{
-				pstmt.close();
-			}
-			pstmt = null;
-		}
-		catch (final Exception e)
-		{
-			pstmt = null;
-		}
-		return retValue;
-	} // getNotInvoicedAmt
-
-	/** Static Logger */
-	private static Logger s_log = LogManager.getLogger(MBPartner.class);
-
-	/**************************************************************************
-	 * Constructor for new BPartner from Template
-	 *
-	 * @param ctx
-	 *            context
-	 */
-	public MBPartner(final Properties ctx)
-	{
-		this(ctx, -1, null);
-	} // MBPartner
-
-	/**
-	 * Default Constructor
-	 *
-	 * @param ctx
-	 *            context
-	 * @param rs
-	 *            ResultSet to load from
-	 * @param trxName
-	 *            transaction
-	 */
 	public MBPartner(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	} // MBPartner
+	}
+	
+	public static MBPartner newFromTemplate()
+	{
+		return new MBPartner(Env.getCtx(), -1, ITrx.TRXNAME_ThreadInherited);
+	}
 
-	/**
-	 * Default Constructor
-	 *
-	 * @param ctx
-	 *            context
-	 * @param C_BPartner_ID
-	 *            partner or 0 or -1 (load from template)
-	 * @param trxName
-	 *            transaction
-	 */
+	@Deprecated
 	public MBPartner(final Properties ctx, int C_BPartner_ID, final String trxName)
 	{
 		super(ctx, C_BPartner_ID, trxName);

@@ -24,6 +24,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.service.OrgId;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MBPartner;
@@ -40,6 +41,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
@@ -289,7 +291,7 @@ public class RequisitionPOCreate extends JavaProcess
 	private int 		m_M_Product_ID = 0;
 	private int			m_M_AttributeSetInstance_ID = 0;
 	/** BPartner				*/
-	private MBPartner	m_bpartner = null;
+	private I_C_BPartner m_bpartner = null;
 	
 	/**
 	 * 	Process Line
@@ -345,9 +347,9 @@ public class RequisitionPOCreate extends JavaProcess
 		}
 		
 		//	BPartner
-		if (m_bpartner == null || C_BPartner_ID != m_bpartner.get_ID())
+		if (m_bpartner == null || C_BPartner_ID != m_bpartner.getC_BPartner_ID())
 		{
-			m_bpartner = MBPartner.get(getCtx(), C_BPartner_ID);
+			m_bpartner = Services.get(IBPartnerDAO.class).getById(C_BPartner_ID);
 		}
 		
 		

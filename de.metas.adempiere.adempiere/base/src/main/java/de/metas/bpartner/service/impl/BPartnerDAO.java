@@ -1,8 +1,7 @@
 package de.metas.bpartner.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import lombok.NonNull;
 
 /*
  * #%L
@@ -60,7 +59,6 @@ import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
@@ -86,6 +84,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class BPartnerDAO implements IBPartnerDAO
 {
@@ -135,6 +134,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		final T bpartner = loadOutOfTrx(bpartnerId.getRepoId(), modelClass);
 		return bpartner;
+	}
+
+	@Override
+	public I_C_BPartner getByIdInTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		return load(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override

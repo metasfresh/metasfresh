@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
@@ -973,13 +974,13 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 
 		// No Partner Info - set Template
-		if (getC_BPartner_ID() == 0)
+		if (getC_BPartner_ID() <= 0)
 		{
-			setBPartner(MBPartner.getTemplate(getCtx(), getAD_Client_ID()));
+			throw new FillMandatoryException(I_C_Order.COLUMNNAME_C_BPartner_ID);
 		}
-		if (getC_BPartner_Location_ID() == 0)
+		if (getC_BPartner_Location_ID() <= 0)
 		{
-			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), null));
+			setBPartner(Services.get(IBPartnerDAO.class).getById(getC_BPartner_ID()));
 		}
 		// No Bill - get from Ship
 		if (getBill_BPartner_ID() <= 0)

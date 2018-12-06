@@ -25,6 +25,9 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
@@ -35,6 +38,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -47,6 +51,8 @@ import de.metas.util.Services;
  */
 public class ImportOrder extends JavaProcess
 {
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	
 	/**	Client to be imported to		*/
 	private int				m_AD_Client_ID = 0;
 	/**	Organization to be imported to		*/
@@ -535,36 +541,38 @@ public class ImportOrder extends JavaProcess
 						imp.setName (imp.getBPartnerValue ());
 				}
 				//	BPartner
-				MBPartner bp = MBPartner.get (getCtx(), imp.getBPartnerValue());
+				I_C_BPartner bp = MBPartner.get (getCtx(), imp.getBPartnerValue());
 				if (bp == null)
 				{
-					bp = new MBPartner (getCtx (), -1, get_TrxName());
-					bp.setClientOrg (imp.getAD_Client_ID (), imp.getAD_Org_ID ());
-					bp.setValue (imp.getBPartnerValue ());
+					bp = MBPartner.newFromTemplate();
+					bp.setAD_Org_ID(imp.getAD_Org_ID());
+					bp.setValue (imp.getBPartnerValue());
 					bp.setName (imp.getName ());
-					if (!bp.save ())
-						continue;
+					bpartnersRepo.save(bp);
 				}
 				imp.setC_BPartner_ID (bp.getC_BPartner_ID ());
 
 				//	BP Location
-				MBPartnerLocation bpl = null;
-				MBPartnerLocation[] bpls = bp.getLocations(true);
-				for (int i = 0; bpl == null && i < bpls.length; i++)
+				I_C_BPartner_Location bpl = null;
+				List<I_C_BPartner_Location> bpls = bpartnersRepo.retrieveBPartnerLocations(bp);
+				for (int i = 0; bpl == null && i < bpls.size(); i++)
 				{
-					if (imp.getC_BPartner_Location_ID() == bpls[i].getC_BPartner_Location_ID())
-						bpl = bpls[i];
+					if (imp.getC_BPartner_Location_ID() == bpls.get(i).getC_BPartner_Location_ID())
+						bpl = bpls.get(i);
 					//	Same Location ID
-					else if (imp.getC_Location_ID() == bpls[i].getC_Location_ID())
-						bpl = bpls[i];
+					else if (imp.getC_Location_ID() == bpls.get(i).getC_Location_ID())
+						bpl = bpls.get(i);
 					//	Same Location Info
 					else if (imp.getC_Location_ID() == 0)
 					{
-						MLocation loc = bpl.getLocation(false);
-						if (loc.equals(imp.getC_Country_ID(), imp.getC_Region_ID(),
+						final I_C_Location loc = bpl.getC_Location();
+						if (MLocation.equals(loc,
+								imp.getC_Country_ID(), imp.getC_Region_ID(),
 								imp.getPostal(), "", imp.getCity(),
 								imp.getAddress1(), imp.getAddress2()))
-							bpl = bpls[i];
+						{
+							bpl = bpls.get(i);
+						}
 					}
 				}
 				if (bpl == null)
@@ -583,8 +591,7 @@ public class ImportOrder extends JavaProcess
 					//
 					bpl = new MBPartnerLocation (bp);
 					bpl.setC_Location_ID (imp.getC_Location_ID ());
-					if (!bpl.save ())
-						continue;
+					bpartnersRepo.save(bpl);
 				}
 				imp.setC_Location_ID (bpl.getC_Location_ID ());
 				imp.setBillTo_ID (bpl.getC_BPartner_Location_ID ());
@@ -595,7 +602,7 @@ public class ImportOrder extends JavaProcess
 					|| imp.getEMail () != null
 					|| imp.getPhone () != null)
 				{
-					List<I_AD_User> users = bp.getContacts(true);
+					List<I_AD_User> users = bpartnersRepo.retrieveContacts(bp);
 					I_AD_User user = null;
 					for (int i = 0; user == null && i < users.size();  i++)
 					{

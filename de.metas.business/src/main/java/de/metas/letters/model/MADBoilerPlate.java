@@ -73,7 +73,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.Lookup;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRequest;
@@ -91,6 +90,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
@@ -865,7 +865,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			attributesBuilder.setC_BPartner_ID(C_BPartner_ID);
 
-			final MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(C_BPartner_ID);
 			if (email == null)
 			{
 				final I_AD_User contact = getDefaultContactOrFirstWithValidEMail(bp);
@@ -895,7 +895,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		String AD_Language = Env.getAD_Language(ctx);
 		if (C_BPartner_ID > 0)
 		{
-			final MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(C_BPartner_ID);
 			if (bp != null)
 			{
 				AD_Language = bp.getAD_Language();
@@ -937,13 +937,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return attributesBuilder.build();
 	}
 
-	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final MBPartner bpartner)
+	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final I_C_BPartner bpartner)
 	{
 		final IUserBL userBL = Services.get(IUserBL.class);
 
 		I_AD_User firstContact = null;
 		I_AD_User firstValidContact = null;
-		for (final I_AD_User contact : bpartner.getContacts(false))
+		for (final I_AD_User contact : Services.get(IBPartnerDAO.class).retrieveContacts(bpartner))
 		{
 			if (contact.isDefaultContact())
 			{

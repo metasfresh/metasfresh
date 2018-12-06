@@ -26,8 +26,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  *  Asset Model
@@ -185,7 +187,7 @@ public class MAsset extends X_A_Asset
 		int deliveryCount)
 	{
 		MProduct product = line.getProduct(); 
-		MBPartner partner = shipment.getBPartner();
+		I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(shipment.getC_BPartner_ID());
 		setValueNameDescription(shipment, deliveryCount, product, partner);
 	}	//	setValueNameDescription
 	
@@ -197,7 +199,7 @@ public class MAsset extends X_A_Asset
 	 *	@param partner partner
 	 */
 	public void setValueNameDescription (MInOut shipment,  
-		int deliveryCount, MProduct product, MBPartner partner)
+		int deliveryCount, MProduct product, I_C_BPartner partner)
 	{
 		String documentNo = "_" + shipment.getDocumentNo();
 		if (deliveryCount > 1)

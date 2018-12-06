@@ -46,8 +46,10 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
@@ -62,6 +64,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.order.DeliveryRule;
+import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.util.Check;
@@ -571,8 +574,6 @@ public class MInOut extends X_M_InOut implements IDocument
 	private MInOutLine[] m_lines = null;
 	/** Confirmations */
 	private MInOutConfirm[] m_confirms = null;
-	/** BPartner */
-	private MBPartner m_partner = null;
 
 	/**
 	 * Get Document Status
@@ -858,20 +859,6 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // setProcessed
 
 	/**
-	 * Get BPartner
-	 *
-	 * @return partner
-	 */
-	public MBPartner getBPartner()
-	{
-		if (m_partner == null)
-		{
-			m_partner = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		}
-		return m_partner;
-	} // getPartner
-
-	/**
 	 * Set Document Type
 	 *
 	 * @param DocBaseType doc type MDocType.DOCBASETYPE_
@@ -917,7 +904,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(final MBPartner bp)
+	public void setBPartner(final I_C_BPartner bp)
 	{
 		if (bp == null)
 		{
@@ -927,10 +914,11 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_BPartner_ID(bp.getC_BPartner_ID());
 
 		// Set Locations
-		final MBPartnerLocation[] locs = bp.getLocations(false);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final List<I_C_BPartner_Location> locs = bpartnersRepo.retrieveBPartnerLocations(bp);
 		if (locs != null)
 		{
-			for (final MBPartnerLocation loc : locs)
+			for (final I_C_BPartner_Location loc : locs)
 			{
 				if (loc.isShipTo())
 				{
@@ -938,18 +926,18 @@ public class MInOut extends X_M_InOut implements IDocument
 				}
 			}
 			// set to first if not set
-			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
+			if (getC_BPartner_Location_ID() == 0 && !locs.isEmpty())
 			{
-				setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
+				setC_BPartner_Location_ID(locs.get(0).getC_BPartner_Location_ID());
 			}
 		}
-		if (getC_BPartner_Location_ID() == 0)
+		if (getC_BPartner_Location_ID() <= 0)
 		{
 			log.error("Has no To Address: {}", bp);
 		}
 
 		// Set Contact
-		final List<I_AD_User> contacts = bp.getContacts(false);
+		final List<I_AD_User> contacts = bpartnersRepo.retrieveContacts(bp);
 		if (contacts != null && contacts.size() > 0)
 		{
 			setAD_User_ID(contacts.get(0).getAD_User_ID());
@@ -1287,7 +1275,8 @@ public class MInOut extends X_M_InOut implements IDocument
 					+ ", @SO_CreditLimit@=" + creditLimit);
 		}
 
-		final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(getC_BPartner_ID());
+		final BigDecimal notInvoicedAmt = Services.get(IOrderDAO.class).getNotInvoicedAmt(bpartnerId);
 
 		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
 				.stat(stats)
@@ -2156,14 +2145,15 @@ public class MInOut extends X_M_InOut implements IDocument
 			return null;
 		}
 		// Business Partner needs to be linked to Org
-		final MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		final int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
-		if (counterAD_Org_ID == 0)
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner bp = bpartnersRepo.getById(getC_BPartner_ID());
+		final int counterAD_Org_ID = bp.getAD_OrgBP_ID();
+		if (counterAD_Org_ID <= 0)
 		{
 			return null;
 		}
 
-		final MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, null);
+		final I_C_BPartner counterBP = bpartnersRepo.getById(counterC_BPartner_ID);
 		final I_AD_OrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID, null);
 		log.debug("Counter BP={}", counterBP);
 

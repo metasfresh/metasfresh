@@ -41,7 +41,6 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
-import org.compiere.model.MBPartner;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -348,11 +347,11 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public Language getLanguage(final Properties ctx, final int bpartnerId)
+	public Language getLanguage(final Properties ctx_NOTUSED, final int bpartnerId)
 	{
 		if (bpartnerId > 0)
 		{
-			final MBPartner bp = MBPartner.get(ctx, bpartnerId);
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 			if (null != bp)
 			{
 				final String lang = bp.getAD_Language();

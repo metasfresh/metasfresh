@@ -359,22 +359,35 @@ public class MLocation extends X_C_Location
 	 *	@return true if equals
 	 */
 	public boolean equals (int C_Country_ID, int C_Region_ID, 
-		String Postal, String Postal_Add, String City, String Address1, String Address2)
+			String Postal, String Postal_Add, String City, String Address1, String Address2)
 	{
-		if (C_Country_ID != 0 && getC_Country_ID() != C_Country_ID)
+		return equals(this, C_Country_ID, C_Region_ID, Postal, Postal_Add, City, Address1, Address2);
+	}
+	
+	public static boolean equals (
+			I_C_Location locationRecord,
+			int C_Country_ID,
+			int C_Region_ID,
+			String Postal,
+			String Postal_Add,
+			String City,
+			String Address1,
+			String Address2)
+	{
+		if (C_Country_ID != 0 && locationRecord.getC_Country_ID() != C_Country_ID)
 			return false;
-		if (C_Region_ID != 0 && getC_Region_ID() != C_Region_ID)
+		if (C_Region_ID != 0 && locationRecord.getC_Region_ID() != C_Region_ID)
 			return false;
 		//	must match
-		if (!equalsNull(Postal, getPostal()))
+		if (!equalsNull(Postal, locationRecord.getPostal()))
 			return false;
-		if (!equalsNull(Postal_Add, getPostal_Add()))
+		if (!equalsNull(Postal_Add, locationRecord.getPostal_Add()))
 			return false;
-		if (!equalsNull(City, getCity()))
+		if (!equalsNull(City, locationRecord.getCity()))
 			return false;
-		if (!equalsNull(Address1, getAddress1()))
+		if (!equalsNull(Address1, locationRecord.getAddress1()))
 			return false;
-		if (!equalsNull(Address2, getAddress2()))
+		if (!equalsNull(Address2, locationRecord.getAddress2()))
 			return false;
 		return true;
 	}	//	equals
@@ -385,7 +398,7 @@ public class MLocation extends X_C_Location
 	 *	@param c2 c2
 	 *	@return true if equal (ignore case)
 	 */
-	private boolean equalsNull (String c1, String c2)
+	private static boolean equalsNull (String c1, String c2)
 	{
 		if (c1 == null)
 			c1 = "";
