@@ -34,6 +34,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
@@ -541,7 +543,8 @@ public class MMatchPO extends X_M_MatchPO
 				difference = difference.multiply(getQty());
 				setPriceMatchDifference(difference);
 				// Approval
-				final MBPGroup bpGroup = MBPGroup.getOfBPartner(getCtx(), getC_OrderLine().getC_BPartner_ID());
+				final BPartnerId bpartnerId = BPartnerId.ofRepoId(getC_OrderLine().getC_BPartner_ID());
+				final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getByBPartnerId(bpartnerId);
 				final BigDecimal matchTolerance = bpGroup.getPriceMatchTolerance();
 				if (matchTolerance != null && matchTolerance.signum() != 0)
 				{

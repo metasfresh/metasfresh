@@ -27,12 +27,15 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.logging.LogManager;
@@ -331,7 +334,7 @@ public class MBPartner extends X_C_BPartner
 	private Integer m_primaryC_BPartner_Location_ID = null;
 
 	/** BP Group */
-	private MBPGroup m_group = null;
+	private I_C_BP_Group m_group = null;
 
 	/**
 	 * Load Default BPartner
@@ -445,9 +448,10 @@ public class MBPartner extends X_C_BPartner
 		{
 			;
 		}
-		else {
+		else
+		{
 			return m_locations;
-		//
+			//
 		}
 
 		final List<I_C_BPartner_Location> locations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(this);
@@ -717,17 +721,21 @@ public class MBPartner extends X_C_BPartner
 	 *
 	 * @return group
 	 */
-	public MBPGroup getBPGroup()
+	private I_C_BP_Group getBPGroup()
 	{
 		if (m_group == null)
 		{
-			if (getC_BP_Group_ID() == 0)
+			final IBPGroupDAO bpGroupsRepo = Services.get(IBPGroupDAO.class);
+
+			final BPGroupId bpGroupId = BPGroupId.ofRepoIdOrNull(getC_BP_Group_ID());
+			if (bpGroupId == null)
 			{
-				m_group = MBPGroup.getDefault(getCtx());
+				final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
+				m_group = bpGroupsRepo.getDefaultByClientId(clientId);
 			}
 			else
 			{
-				m_group = MBPGroup.get(getCtx(), getC_BP_Group_ID());
+				m_group = bpGroupsRepo.getById(bpGroupId);
 			}
 		}
 		return m_group;
@@ -739,7 +747,7 @@ public class MBPartner extends X_C_BPartner
 	 * @param group
 	 *            group
 	 */
-	public void setBPGroup(final MBPGroup group)
+	private void setBPGroup(final I_C_BP_Group group)
 	{
 		m_group = group;
 		if (m_group == null)
@@ -839,7 +847,7 @@ public class MBPartner extends X_C_BPartner
 
 		for (final I_AD_User user : Services.get(IBPartnerDAO.class).retrieveContacts(Env.getCtx(), cBPartnerId, ITrx.TRXNAME_None))
 		{
-			if(user.isDefaultContact())
+			if (user.isDefaultContact())
 			{
 				return user.getAD_User_ID();
 			}
@@ -862,7 +870,7 @@ public class MBPartner extends X_C_BPartner
 	{
 		if (newRecord || is_ValueChanged("C_BP_Group_ID"))
 		{
-			final MBPGroup grp = getBPGroup();
+			final I_C_BP_Group grp = getBPGroup();
 			if (grp == null)
 			{
 				throw new AdempiereException("@NotFound@:  @C_BP_Group_ID@");
