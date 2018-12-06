@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Improves the behavior of Text changing confirmation.
   * [#2070](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2070) Number changing in order line grid view
     * Improves the behavior of Number changing confirmation.
+  * [#2086](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2086) Individual Logo shall not have hashsequence added to name
+    * Improves the Logo Handling in Build process. Now not adding a hash anymore to the logo file, which makes it easier to automate individual logos in Build process.
 
 # metasfresh 5.83
 # Features
