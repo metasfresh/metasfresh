@@ -13,7 +13,7 @@ public interface IPPOrderCostBL extends ISingletonService
 	 * 
 	 * These costs will be used for calculating standard costs variances.
 	 */
-	void createStandardCosts(I_PP_Order ppOrder);
+	void createOrderCosts(I_PP_Order ppOrder);
 
 	PPOrderCosts getByOrderId(PPOrderId orderId);
 

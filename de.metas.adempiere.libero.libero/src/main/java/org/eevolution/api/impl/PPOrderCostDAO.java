@@ -2,7 +2,10 @@ package org.eevolution.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -18,6 +21,7 @@ import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Order_Cost;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -78,9 +82,24 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 				.stream()
 				.collect(GuavaCollectors.toHashMapByKey(I_PP_Order_Cost::getPP_Order_Cost_ID));
 
-		orderCosts.forEach(cost -> savePPOrderCost(cost, orderId, existingRecordsById.remove(cost.getRepoId())));
+		//
+		// Delete old records which are no longer needed
+		final Set<Integer> repoIdsToUpdate = orderCosts.toList().stream().map(PPOrderCost::getRepoId).collect(ImmutableSet.toImmutableSet());
+		final List<I_PP_Order_Cost> recordsToDelete = new ArrayList<>();
+		for (final int repoId : ImmutableSet.copyOf(existingRecordsById.keySet()))
+		{
+			if (repoIdsToUpdate.contains(repoId))
+			{
+				continue;
+			}
 
-		InterfaceWrapperHelper.deleteAll(existingRecordsById.values());
+			recordsToDelete.add(existingRecordsById.remove(repoId));
+		}
+		InterfaceWrapperHelper.deleteAll(recordsToDelete);
+
+		//
+		// Create/Update the remaining records
+		orderCosts.forEach(cost -> savePPOrderCost(cost, orderId, existingRecordsById.remove(cost.getRepoId())));
 	}
 
 	private void savePPOrderCost(
@@ -100,7 +119,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		}
 
 		updateRecord(record, cost);
-		
+
 		saveRecord(record);
 		cost.setRepoId(record.getPP_Order_Cost_ID());
 	}

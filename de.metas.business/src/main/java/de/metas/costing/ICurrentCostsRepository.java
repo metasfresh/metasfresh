@@ -52,5 +52,7 @@ public interface ICurrentCostsRepository
 
 	List<CurrentCost> getByCostSegmentAndCostingMethod(CostSegment costSegment, CostingMethod costingMethod);
 
+	List<CurrentCost> getByCostSegmentAndCostElements(CostSegment costSegment, Set<CostElementId> costElementIds);
+
 	void updateCostRecord(CostSegmentAndElement costSegmentAndElement, Consumer<I_M_Cost> updater);
 }

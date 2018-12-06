@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import de.metas.costing.CostElementId;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -58,6 +59,9 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 	{
 		this.orderId = orderId;
 		this.costs = ImmutableList.copyOf(costs);
+
+		// make sure we have only one entry for each cost segment+element
+		Maps.uniqueIndex(costs, PPOrderCost::getCostSegmentAndElement);
 	}
 
 	public ImmutableList<PPOrderCost> toList()
@@ -122,7 +126,7 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 		public boolean test(final PPOrderCost cost)
 		{
 			return (productId == null || productId.equals(cost.getProductId()))
-					|| (costElementIds == null || costElementIds.isEmpty() || costElementIds.contains(cost.getCostElementId()));
+					&& (costElementIds == null || costElementIds.isEmpty() || costElementIds.contains(cost.getCostElementId()));
 		}
 	}
 }

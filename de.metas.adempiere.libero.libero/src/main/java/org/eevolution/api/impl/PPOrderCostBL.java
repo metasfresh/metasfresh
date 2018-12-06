@@ -12,9 +12,9 @@ import lombok.NonNull;
 public class PPOrderCostBL implements IPPOrderCostBL
 {
 	@Override
-	public void createStandardCosts(@NonNull final I_PP_Order ppOrder)
+	public void createOrderCosts(@NonNull final I_PP_Order ppOrder)
 	{
-		new CreatePPOrderStandardCostsCommand(ppOrder)
+		new CreatePPOrderCostsCommand(ppOrder)
 				.execute();
 	}
 

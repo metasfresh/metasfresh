@@ -27,7 +27,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -48,6 +47,7 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -99,7 +99,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public CurrentCost getOrNull(@NonNull CostSegmentAndElement costSegmentAndElement)
+	public CurrentCost getOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
 		if (costRecord == null)
@@ -110,14 +110,14 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		return toCurrentCost(costRecord);
 	}
 
-	private I_M_Cost getCostRecordOrNull(@NonNull CostSegmentAndElement costSegmentAndElement)
+	private I_M_Cost getCostRecordOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		return retrieveCostRecords(costSegmentAndElement)
 				.create()
 				.firstOnly(I_M_Cost.class);
 	}
 
-	private IQueryBuilder<I_M_Cost> retrieveCostRecords(@NonNull CostSegmentAndElement costSegmentAndElement)
+	private IQueryBuilder<I_M_Cost> retrieveCostRecords(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		return retrieveCostRecords(costSegmentAndElement.toCostSegment())
 				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID, costSegmentAndElement.getCostElementId());
@@ -135,7 +135,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public CurrentCost getOrCreate(@NonNull CostSegmentAndElement costSegmentAndElement)
+	public CurrentCost getOrCreate(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
 		if (costRecord != null)
@@ -151,10 +151,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public Optional<AggregatedCostPrice> getAggregatedCostPriceByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getByCostingMethod(costingMethod)
-				.stream()
-				.map(CostElement::getId)
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
@@ -182,16 +179,20 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public ImmutableList<CurrentCost> getByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getByCostingMethod(costingMethod)
-				.stream()
-				.map(CostElement::getId)
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
 			return ImmutableList.of();
 		}
 
+		return getByCostSegmentAndCostElements(costSegment, costElementIds);
+	}
+
+	@Override
+	public ImmutableList<CurrentCost> getByCostSegmentAndCostElements(@NonNull final CostSegment costSegment, @NonNull final Set<CostElementId> costElementIds)
+	{
+		Check.assumeNotEmpty(costElementIds, "costElementIds is not empty");
 		return retrieveCostRecords(costSegment)
 				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
 				.create()

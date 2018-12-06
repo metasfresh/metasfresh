@@ -67,7 +67,7 @@ public final class BOM
 
 	public void rollupCosts()
 	{
-		final BOMCostPrice costPrice = getCostPrice();
+		final BOMCostPrice bomCostPrice = getCostPrice();
 
 		for (final CostElementId costElementId : getCostElementIds())
 		{
@@ -75,13 +75,18 @@ public final class BOM
 			final CostAmount componentsCostPriceWithoutCoProducts = distributeToCoProductBOMLines(componentsCostPrice, costElementId);
 			if (componentsCostPriceWithoutCoProducts != null)
 			{
-				costPrice.setComponentsCostPrice(componentsCostPriceWithoutCoProducts, costElementId);
+				bomCostPrice.setComponentsCostPrice(componentsCostPriceWithoutCoProducts, costElementId);
 			}
 			else
 			{
-				costPrice.clearComponentsCostPrice(costElementId);
+				bomCostPrice.clearComponentsCostPrice(costElementId);
 			}
 		}
+	}
+	
+	public void clearBOMOwnCostPrice(@NonNull final CostElementId costElementId)
+	{
+		getCostPrice().clearOwnCostPrice(costElementId);
 	}
 
 	private Optional<CostAmount> computeComponentsCostPrice(@NonNull final CostElementId costElementId)

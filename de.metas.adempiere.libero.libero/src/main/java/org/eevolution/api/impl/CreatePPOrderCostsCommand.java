@@ -8,12 +8,13 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
-import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.api.PPOrderRoutingActivity;
+import org.eevolution.costing.BOM;
+import org.eevolution.costing.OrderBOMCostCalculatorRepository;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -23,10 +24,13 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.AggregatedCostPrice;
+import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegment.CostSegmentBuilder;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCost;
+import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.IResourceProductService;
@@ -59,15 +63,18 @@ import lombok.NonNull;
  * #L%
  */
 
-final class CreatePPOrderStandardCostsCommand
+final class CreatePPOrderCostsCommand
 {
 	// services
-	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-	private final IPPOrderRoutingRepository orderWorkflowsRepo = Services.get(IPPOrderRoutingRepository.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+	//
+	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IPPOrderRoutingRepository orderRoutingRepo = Services.get(IPPOrderRoutingRepository.class);
+	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
+	//
 	private final ICurrentCostsRepository currentCostsRepository = Adempiere.getBean(ICurrentCostsRepository.class);
+	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
 
 	// parameters
 	private final PPOrderId ppOrderId;
@@ -77,7 +84,7 @@ final class CreatePPOrderStandardCostsCommand
 	private final AttributeSetInstanceId mainProductAsiId;
 	private final AcctSchema acctSchema;
 
-	public CreatePPOrderStandardCostsCommand(@NonNull final I_PP_Order ppOrder)
+	public CreatePPOrderCostsCommand(@NonNull final I_PP_Order ppOrder)
 	{
 		ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		clientId = ClientId.ofRepoId(ppOrder.getAD_Client_ID());
@@ -91,6 +98,47 @@ final class CreatePPOrderStandardCostsCommand
 
 	public PPOrderCosts execute()
 	{
+		PPOrderCosts orderCosts = createNewOrderCosts();
+
+		for (final CostingMethod costingMethod : getCostingMethodsWhichRequiredBOMRollup())
+		{
+			orderCosts = rollupForCostingMethod(orderCosts, costingMethod);
+		}
+
+		orderCostsService.save(orderCosts);
+
+		return orderCosts;
+	}
+
+	private PPOrderCosts rollupForCostingMethod(final PPOrderCosts orderCosts, final CostingMethod costingMethod)
+	{
+		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByCostingMethod(costingMethod);
+		if (costElementIds.isEmpty())
+		{
+			return orderCosts;
+		}
+
+		final OrderBOMCostCalculatorRepository costingBOMRepo = OrderBOMCostCalculatorRepository.builder()
+				.orderId(ppOrderId)
+				.mainProductId(mainProductId)
+				.mainProductAsiId(mainProductAsiId)
+				.clientId(clientId)
+				.orgId(orgId)
+				.acctSchema(acctSchema)
+				.costElementIds(costElementIds)
+				.build();
+
+		final BOM bom = costingBOMRepo.getBOM(orderCosts);
+		bom.rollupCosts();
+
+		// TODO: instead of clearing the BOM's own cost price, we shall rollout the routing costs!
+		costElementIds.forEach(bom::clearBOMOwnCostPrice);
+
+		return costingBOMRepo.changeOrderCostsFromBOM(orderCosts, bom);
+	}
+
+	private PPOrderCosts createNewOrderCosts()
+	{
 		final List<PPOrderCost> orderCostsList = extractCostSegments()
 				.stream()
 				.flatMap(this::createPPOrderCostsAndStream)
@@ -100,9 +148,6 @@ final class CreatePPOrderStandardCostsCommand
 				.orderId(ppOrderId)
 				.costs(orderCostsList)
 				.build();
-
-		ppOrderCostsService.save(orderCosts);
-
 		return orderCosts;
 	}
 
@@ -130,8 +175,7 @@ final class CreatePPOrderStandardCostsCommand
 				.costTypeId(acctSchema.getCosting().getCostTypeId())
 				.productId(productId)
 				.clientId(clientId)
-				.orgId(orgId)
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE);
+				.orgId(orgId);
 	}
 
 	private ImmutableSet<CostSegment> createCostSegmentsForBOMLines()
@@ -154,7 +198,7 @@ final class CreatePPOrderStandardCostsCommand
 
 	private ImmutableSet<CostSegment> createCostSegmentsForWorkflowNodes()
 	{
-		return orderWorkflowsRepo.getByOrderId(ppOrderId)
+		return orderRoutingRepo.getByOrderId(ppOrderId)
 				.getActivities()
 				.stream()
 				.map(this::createCostSegmentForOrderActivityOrNull)
@@ -170,33 +214,53 @@ final class CreatePPOrderStandardCostsCommand
 			return null;
 		}
 
-		final I_M_Product resourceProduct = resourceProductService.getProductByResourceId(resourceId);
-		if (resourceProduct == null)
-		{
-			// shall not happen, but we can skip it for now
-			return null;
-		}
-		final ProductId resourceProductId = ProductId.ofRepoId(resourceProduct.getM_Product_ID());
+		final ProductId resourceProductId = resourceProductService.getProductIdByResourceId(resourceId);
 
 		return prepareCostSegment(resourceProductId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.build();
-
 	}
 
 	private Stream<PPOrderCost> createPPOrderCostsAndStream(final CostSegment costSegment)
 	{
-		final AggregatedCostPrice price = currentCostsRepository.getAggregatedCostPriceByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting)
-				.orElse(null);
-		if (price == null)
+		final Set<CostElementId> costElementIds = costElementsRepo.getActiveCostElementIds();
+		if (costElementIds.isEmpty())
 		{
 			return Stream.empty();
 		}
 
-		return price.getCostElements()
+		final List<PPOrderCost> orderCosts = currentCostsRepository.getByCostSegmentAndCostElements(costSegment, costElementIds)
 				.stream()
-				.map(costElement -> PPOrderCost.builder()
-						.costSegmentAndElement(costSegment.withCostElementId(costElement.getId()))
-						.price(price.getCostPriceForCostElement(costElement))
-						.build());
+				.map(currentCost -> createPPOrderCost(costSegment, currentCost))
+				.collect(ImmutableList.toImmutableList());
+
+		if (orderCosts.isEmpty())
+		{
+			final CostPrice zero = CostPrice.zero(acctSchema.getCurrencyId());
+			return costElementIds.stream()
+					.map(costElementId -> PPOrderCost.builder()
+							.costSegmentAndElement(costSegment.withCostElementId(costElementId))
+							.price(zero)
+							.build());
+		}
+		else
+		{
+			return orderCosts.stream();
+		}
+	}
+
+	private PPOrderCost createPPOrderCost(final CostSegment costSegment, final CurrentCost currentCost)
+	{
+		return PPOrderCost.builder()
+				.costSegmentAndElement(costSegment.withCostElementId(currentCost.getCostElementId()))
+				.price(currentCost.getCostPrice())
+				.build();
+	}
+
+	private Set<CostingMethod> getCostingMethodsWhichRequiredBOMRollup()
+	{
+		return ImmutableSet.of(
+				CostingMethod.AverageInvoice,
+				CostingMethod.AveragePO);
 	}
 }

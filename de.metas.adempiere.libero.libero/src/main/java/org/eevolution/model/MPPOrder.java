@@ -267,7 +267,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Copy cost records from M_Cost to PP_Order_Cost
-		Services.get(IPPOrderCostBL.class).createStandardCosts(this);
+		Services.get(IPPOrderCostBL.class).createOrderCosts(this);
 
 		//
 		// Auto receipt and issue for kit

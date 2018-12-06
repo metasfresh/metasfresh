@@ -50,6 +50,11 @@ public class BOMCostElementPrice
 	@NonNull
 	private CostPrice costPrice;
 
+	public void clearOwnCostPrice()
+	{
+		setCostPrice(getCostPrice().withZeroOwnCostPrice());
+	}
+
 	public void clearComponentsCostPrice()
 	{
 		setCostPrice(getCostPrice().withZeroComponentsCostPrice());

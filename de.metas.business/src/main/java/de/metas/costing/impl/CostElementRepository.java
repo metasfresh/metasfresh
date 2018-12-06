@@ -2,6 +2,7 @@ package de.metas.costing.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.cache.CCache;
@@ -166,12 +168,33 @@ public class CostElementRepository implements ICostElementRepository
 	@Override
 	public List<CostElement> getByCostingMethod(@NonNull final CostingMethod costingMethod)
 	{
-		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+		return streamByCostingMethod(costingMethod)
+				.collect(ImmutableList.toImmutableList());
+	}
 
+	@Override
+	public Set<CostElementId> getActiveCostElementIds()
+	{
+		return getIndexedCostElements()
+				.stream()
+				.map(CostElement::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public Set<CostElementId> getIdsByCostingMethod(@NonNull final CostingMethod costingMethod)
+	{
+		return streamByCostingMethod(costingMethod)
+				.map(CostElement::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private Stream<CostElement> streamByCostingMethod(@NonNull final CostingMethod costingMethod)
+	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
 		return getIndexedCostElements()
 				.streamForClientId(clientId)
-				.filter(ce -> ce.getCostingMethod() == costingMethod)
-				.collect(ImmutableList.toImmutableList());
+				.filter(ce -> ce.getCostingMethod() == costingMethod);
 	}
 
 	private static class IndexedCostElements

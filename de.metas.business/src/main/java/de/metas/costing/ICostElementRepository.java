@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.service.ClientId;
 
@@ -40,4 +41,7 @@ public interface ICostElementRepository
 
 	List<CostElement> getByCostingMethod(CostingMethod costingMethod);
 
+	Set<CostElementId> getActiveCostElementIds();
+
+	Set<CostElementId> getIdsByCostingMethod(CostingMethod costingMethod);
 }

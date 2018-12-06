@@ -69,6 +69,15 @@ public class BOMCostPrice
 		return pricesByElementId.get(costElementId);
 	}
 
+	public void clearOwnCostPrice(@NonNull final CostElementId costElementId)
+	{
+		final BOMCostElementPrice elementCostPrice = getCostElementPriceOrNull(costElementId);
+		if (elementCostPrice != null)
+		{
+			elementCostPrice.clearOwnCostPrice();
+		}
+	}
+
 	public void setComponentsCostPrice(@NonNull final CostAmount costPrice, @NonNull final CostElementId costElementId)
 	{
 		pricesByElementId.computeIfAbsent(costElementId, k -> BOMCostElementPrice.zero(costElementId, costPrice.getCurrencyId()))
