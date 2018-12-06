@@ -282,7 +282,7 @@ import lombok.NonNull;
 	public IPostingRequestBuilder setClientId(@NonNull final ClientId clientId)
 	{
 		assertNotExecuted();
-		Check.assume(!_clientId.isSystem(), "AD_Client_ID is not system");
+		Check.assume(!clientId.isSystem(), "AD_Client_ID is not system");
 		_clientId = clientId;
 		return this;
 	}
