@@ -18,7 +18,9 @@ Here come the actual release notes:
   * [#2064](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2064) Warning: Failed prop type: Invalid prop `logged` of type `string` supplied to `Login`, expected `boolean`
     * Fixes a console error that appeared when redirecting to another window via link directly through login.
   * [#2066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2066) Changes in tabs in grid view not always patched (e.g. description in orderline)
-    * Improves the behavior of Number and Text changing confirmation.
+    * Improves the behavior of Text changing confirmation.
+  * [#2070](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2070) Number changing in order line grid view
+    * Improves the behavior of Number changing confirmation.
 
 # metasfresh 5.83
 # Features
