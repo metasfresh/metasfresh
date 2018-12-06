@@ -79,9 +79,9 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 	@Override
 	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(
-			final Properties ctx, 
-			final BPartnerId Vendor_ID, 
-			final ProductId productId, 
+			final Properties ctx,
+			final BPartnerId Vendor_ID,
+			final ProductId productId,
 			final OrgId orgId)
 	{
 		// the original was using table M_Product_PO instead of C_BPartner_Product
@@ -205,6 +205,49 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 			final OrgId orgId,
 			@CacheTrx final String trxName)
 	{
+		final IQueryBuilder<I_C_BPartner_Product> bPartnerProductAssociationsQueryBuilder = retrieveBPartnerProductAssociationsQueryBuilder(ctx,
+				bpartnerId,
+				productId,
+				orgId,
+				trxName);
+
+		return bPartnerProductAssociationsQueryBuilder
+				.orderBy()
+				.addColumn(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.first(I_C_BPartner_Product.class);
+	}
+
+	@Cached(cacheName = I_C_BPartner_Product.Table_Name + "#By#C_BPartner_ID#M_Product_ID", expireMinutes = 10)
+	@Override
+	public List<I_C_BPartner_Product> retrieveAllBPartnerProductAssociations(
+			@CacheCtx final Properties ctx,
+			final BPartnerId bpartnerId,
+			final ProductId productId,
+			final OrgId orgId,
+			@CacheTrx final String trxName)
+	{
+		final IQueryBuilder<I_C_BPartner_Product> bPartnerProductAssociationsQueryBuilder = retrieveBPartnerProductAssociationsQueryBuilder(ctx,
+				bpartnerId,
+				productId,
+				orgId,
+				trxName);
+
+
+		return bPartnerProductAssociationsQueryBuilder
+				.create()
+				.list(I_C_BPartner_Product.class);
+	}
+
+	@Cached(cacheName = I_C_BPartner_Product.Table_Name + "#By#C_BPartner_ID#M_Product_ID", expireMinutes = 10)
+	public IQueryBuilder<I_C_BPartner_Product> retrieveBPartnerProductAssociationsQueryBuilder(
+			@CacheCtx final Properties ctx,
+			final BPartnerId bpartnerId,
+			final ProductId productId,
+			final OrgId orgId,
+			@CacheTrx final String trxName)
+	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Product.class, ctx, trxName)
 				//
@@ -212,13 +255,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
 				// FRESH-334 support the case when BP PRoduct is for org 0
-				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
-				// order by ord_id desc
-				.orderBy()
-				.addColumn(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
-				.endOrderBy()
-				.create()
-				.first(I_C_BPartner_Product.class);
+				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
 	}
 
 	@Override

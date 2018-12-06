@@ -10,6 +10,33 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.84
+# Features
+
+# Fixes
+
+# metasfresh 5.83
+# Features
+* metasfresh
+  * [#4787](https://github.com/metasfresh/metasfresh/issues/4787) Product Document Note Translation
+  * [#4789](https://github.com/metasfresh/metasfresh/issues/4789) C_BPartner filter for IsActive
+  * [#4795](https://github.com/metasfresh/metasfresh/issues/4795) Product No. of customer also with ASI
+
+* metasfresh-webui-api
+  * [#1111](https://github.com/metasfresh/metasfresh-webui-api/issues/1111) Include internalName in JSONReference
+
+* metasfresh-webui-frontend
+  * [#2083](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2083) cypress pressDoneButton shall fail if the respective record was not saved
+
+# Fixes
+* metasfresh
+  * [#4793](https://github.com/metasfresh/metasfresh/issues/4793) View docs_sales_invoice_details_compensation_subgroup: the invoice detail shall be taken from invoice
+  * [#4797](https://github.com/metasfresh/metasfresh/issues/4797) HU Trace window: filtering by HUTaceType returns no results
+  * [#4802](https://github.com/metasfresh/metasfresh/issues/4802) Required IfExists parameter 'ifBPartnersExist' is not present
+
+* metasfresh-webui-frontend
+  * [#2073](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2073) Failing cypress tests
+
 # metasfresh 5.82
 # Features
 * metasfresh

@@ -1,5 +1,3 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details(IN record_id numeric, IN ad_language Character Varying (6));
-
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details(IN record_id numeric, IN ad_language Character Varying (6))
 
 RETURNS TABLE
@@ -118,3 +116,5 @@ ORDER BY
 $$
 LANGUAGE sql STABLE	
 ;
+
+
