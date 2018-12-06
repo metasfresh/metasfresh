@@ -24,6 +24,9 @@ package org.eevolution.mrp.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,7 +39,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Message;
@@ -62,10 +67,13 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.LiberoConstants;
 import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.X_DD_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
@@ -93,13 +101,12 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import de.metas.util.time.TimeSource;
 
 public class MRPTestHelper
 {
 	//
 	// Context
-	private Timestamp _today = SystemTime.asDayTimestamp();
+	private ZonedDateTime _today = ZonedDateTime.now();
 	public Properties ctx;
 	private String trxName;
 	public final IContextAware contextProvider = new IContextAware()
@@ -125,7 +132,7 @@ public class MRPTestHelper
 
 	//
 	// Services
-	public PlainMRPDAO mrpDAO;
+	private PlainMRPDAO mrpDAO;
 	public IQueryBL queryBL;
 	public PlainDocumentBL docActionBL;
 
@@ -146,6 +153,17 @@ public class MRPTestHelper
 	//
 	public I_C_BP_Group bpGroupDefault;
 	public I_M_Product_Category productCategoryDefault;
+
+	//
+	// Plants & Warehouses
+	public I_S_Resource plant01;
+	public I_S_Resource plant02;
+	public I_M_Warehouse warehouse_plant01;
+	public LocatorId warehouse_plant01_locatorId;
+	public I_M_Warehouse warehouse_plant02;
+	public I_M_Warehouse warehouse_picking01;
+	public I_M_Warehouse warehouse_rawMaterials01;
+	public LocatorId warehouse_rawMaterials01_locatorId;
 
 	public MRPTestHelper()
 	{
@@ -175,7 +193,6 @@ public class MRPTestHelper
 		registerModelValidators();
 
 		createMasterData();
-
 	}
 
 	private void setupContext(final boolean initEnvironment)
@@ -210,14 +227,7 @@ public class MRPTestHelper
 			adOrg01 = InterfaceWrapperHelper.create(ctx, adOrgId, I_AD_Org.class, ITrx.TRXNAME_None);
 		}
 
-		SystemTime.setTimeSource(new TimeSource()
-		{
-			@Override
-			public long millis()
-			{
-				return _today.getTime();
-			}
-		});
+		SystemTime.setTimeSource(() -> _today.toInstant().toEpochMilli());
 	}
 
 	private void setupMRPExecutorService()
@@ -252,6 +262,25 @@ public class MRPTestHelper
 
 		createMRPMessage(ErrorCodes.ERR_DRP_010_InTransitWarehouseNotFound);
 		createMRPMessage(ErrorCodes.ERR_DRP_060_NoSourceOfSupply);
+
+		createMasterData_WarehouseAndPlants();
+	}
+
+	private void createMasterData_WarehouseAndPlants()
+	{
+		this.plant01 = createResource("Plant01", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, resourceType_Plants);
+		this.warehouse_plant01 = createWarehouse("Plant01_Warehouse01", adOrg01);
+		this.warehouse_plant01_locatorId = getDefaultLocatorId(warehouse_plant01);
+
+		this.plant02 = createResource("Plant02", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, resourceType_Plants);
+		this.warehouse_plant02 = createWarehouse("Plant02_Warehouse01", adOrg01);
+
+		this.warehouse_picking01 = createWarehouse("Picking_Warehouse01", adOrg01);
+
+		// Raw Materials Warehouses
+		// NOTE: we are adding them last because of MRP bug regarding how warehouses are iterated and DRP
+		this.warehouse_rawMaterials01 = createWarehouse("RawMaterials_Warehouse01", adOrg01);
+		this.warehouse_rawMaterials01_locatorId = getDefaultLocatorId(warehouse_rawMaterials01);
 	}
 
 	private void registerModelValidators()
@@ -268,12 +297,14 @@ public class MRPTestHelper
 
 	public Timestamp getToday()
 	{
-		return _today;
+		return TimeUtil.asTimestamp(_today);
 	}
 
 	public void setToday(int year, int month, int day)
 	{
-		this._today = TimeUtil.getDay(year, month, day);
+		this._today = LocalDate.of(year, month, day)
+				.atStartOfDay()
+				.atZone(ZoneId.systemDefault());
 	}
 
 	public IMutableMRPContext createMutableMRPContext()
@@ -283,7 +314,7 @@ public class MRPTestHelper
 		mrpContext.setTrxName(ITrx.TRXNAME_None);
 
 		// mrpContext.setPlanner_User_ID(p_Planner_ID);
-		mrpContext.setDate(_today);
+		mrpContext.setDate(getToday());
 		mrpContext.setAD_Client_ID(adClient.getAD_Client_ID());
 
 		return mrpContext;
@@ -364,6 +395,11 @@ public class MRPTestHelper
 		InterfaceWrapperHelper.save(warehouse);
 
 		return warehouse;
+	}
+
+	private static LocatorId getDefaultLocatorId(final I_M_Warehouse warehouse)
+	{
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	public I_C_UOM createUOM(final String name)
@@ -514,7 +550,7 @@ public class MRPTestHelper
 		return mrp;
 	}
 
-	public void createMRPMessage(final String code)
+	private void createMRPMessage(final String code)
 	{
 		final I_AD_Message message = InterfaceWrapperHelper.newInstance(I_AD_Message.class, contextProvider);
 		InterfaceWrapperHelper.setValue(message, "AD_Client_ID", 0);
@@ -588,7 +624,7 @@ public class MRPTestHelper
 				.shipper(shipperDefault);
 	}
 
-	public I_C_DocType createDocType(final String docBaseType)
+	private I_C_DocType createDocType(final String docBaseType)
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
 		docType.setAD_Org_ID(adOrg01.getAD_Org_ID());
@@ -729,4 +765,37 @@ public class MRPTestHelper
 	{
 		Assume.assumeFalse("Skip this test because MRP_POQ_Disabled", LiberoConstants.isMRP_POQ_Disabled());
 	}
+
+	public I_PP_Order createPP_Order(final I_PP_Product_BOM productBOM, final String qtyOrderedStr, final I_C_UOM uom)
+	{
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, contextProvider);
+		ppOrder.setAD_Org(this.adOrg01);
+
+		setCommonProperties(ppOrder);
+
+		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
+		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
+		ppOrder.setAD_Workflow(this.workflow_Standard);
+		ppOrder.setM_Warehouse(this.warehouse_plant01);
+		ppOrder.setS_Resource(this.plant01);
+		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
+		ppOrder.setDatePromised(getToday());
+		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
+		ppOrder.setDocAction(IDocument.ACTION_Complete);
+		ppOrder.setC_UOM_ID(uom.getC_UOM_ID());
+		Services.get(IPPOrderDAO.class).save(ppOrder);
+
+		return ppOrder;
+	}
+
+	private void setCommonProperties(final I_PP_Order ppOrder)
+	{
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+
+		// required to avoid an NPE when building the lightweight PPOrder pojo
+		final Timestamp t1 = SystemTime.asTimestamp();
+		ppOrder.setDateOrdered(t1);
+		ppOrder.setDateStartSchedule(t1);
+	}
+
 }
