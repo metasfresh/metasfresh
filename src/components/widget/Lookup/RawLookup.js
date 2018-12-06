@@ -13,7 +13,7 @@ import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesAction
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
 
-class RawLookup extends Component {
+export class RawLookup extends Component {
   constructor(props) {
     super(props);
 
@@ -29,16 +29,17 @@ class RawLookup extends Component {
       isFocused: false,
       parentElement: undefined,
     };
+
+    this.handleBlur = this.handleBlur.bind(this);
+    this.handleValueChanged = this.handleValueChanged.bind(this);
   }
 
   componentDidMount() {
-    const { selected, defaultValue, initialFocus } = this.props;
+    const { defaultValue, initialFocus } = this.props;
 
     this.handleValueChanged();
 
-    if (selected) {
-      this.inputSearch.value = selected.caption;
-    } else if (defaultValue) {
+    if (defaultValue) {
       this.inputSearch.value = defaultValue.caption;
     }
 
@@ -59,10 +60,8 @@ class RawLookup extends Component {
       localClearing,
       fireDropdownList,
       parentElement,
-      mandatory,
-      placeholder,
     } = this.props;
-    const { shouldBeFocused, list } = this.state;
+    const { shouldBeFocused } = this.state;
 
     if (parentElement && !prevProps.parentElement) {
       // eslint-disable-next-line react/no-find-dom-node
@@ -92,15 +91,6 @@ class RawLookup extends Component {
           prevProps.defaultValue.caption !== defaultValue.caption))
     ) {
       handleInputEmptyStatus && handleInputEmptyStatus(false);
-
-      if (!mandatory && list.length && list[list.length - 1].key !== null) {
-        list.push({
-          caption: placeholder,
-          key: null,
-        });
-
-        this.setState({ list });
-      }
     }
 
     if (filterWidget && lookupEmpty && defaultValue === null) {
@@ -233,7 +223,7 @@ class RawLookup extends Component {
     );
   };
 
-  handleBlur = mouse => {
+  handleBlur(mouse) {
     this.setState(
       {
         isFocused: false,
@@ -242,9 +232,9 @@ class RawLookup extends Component {
         this.props.onDropdownListToggle(false, mouse);
       }
     );
-  };
+  }
 
-  handleFocus = mouse => {
+  handleFocus(mouse) {
     const { mandatory } = this.props;
 
     if (mouse && this.state.isFocused) {
@@ -261,7 +251,7 @@ class RawLookup extends Component {
         }
       );
     }
-  };
+  }
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
     const {
@@ -379,7 +369,7 @@ class RawLookup extends Component {
     }
   };
 
-  handleValueChanged = () => {
+  handleValueChanged() {
     const { defaultValue, filterWidget, mandatory, placeholder } = this.props;
     const { oldValue, isInputEmpty } = this.state;
 
@@ -420,7 +410,7 @@ class RawLookup extends Component {
         });
       }
     }
-  };
+  }
 
   handleTemporarySelection = selected => {
     this.setState({ selected });
