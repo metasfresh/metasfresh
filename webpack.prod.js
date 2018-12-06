@@ -49,10 +49,20 @@ module.exports = {
       },
       {
         test: /\.(jpg|png|svg|eot|woff|woff2|ttf|gif)$/,
+        exclude: /\w*(logo)\w*\.(jpg|png)$/,
         use: {
           loader: 'file-loader',
           options: {
             name: '[path][name].[hash].[ext]',
+          },
+        },
+      },
+      {
+        test: /\w*(logo)\w*\.(jpg|png)$/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            name: '[path][name].[ext]',
           },
         },
       },

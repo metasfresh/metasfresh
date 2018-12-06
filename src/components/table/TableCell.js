@@ -276,15 +276,14 @@ class TableCell extends PureComponent {
             >
               {tdValue}
             </div>
-            {tooltipWidget &&
-              !isEdited && (
-                <WidgetTooltip
-                  widget={tooltipWidget}
-                  data={tooltipData}
-                  isToggled={tooltipToggled}
-                  onToggle={val => this.widgetTooltipToggle(item.field, val)}
-                />
-              )}
+            {tooltipWidget && !isEdited && (
+              <WidgetTooltip
+                widget={tooltipWidget}
+                data={tooltipData}
+                isToggled={tooltipToggled}
+                onToggle={val => this.widgetTooltipToggle(item.field, val)}
+              />
+            )}
           </div>
         )}
       </td>

@@ -308,27 +308,25 @@ class Subheader extends Component {
           </div>
         )}
 
-        {windowType &&
-          query &&
-          query.viewId && (
-            <a
-              className="subheader-item js-subheader-item"
-              href={`${config.API_URL}/documentView/${windowType}/${
-                query.viewId
-              }/export/excel?selectedIds=${selected.join(',')}`}
-              download
-              onClick={this.handleDownloadSelected}
-              style={{
-                opacity: selected.length === 0 ? '0.5' : 1,
-              }}
-            >
-              {counterpart.translate('window.downloadSelected.caption')}
-              {selected.length === 0 &&
-                ` (${counterpart.translate(
-                  'window.downloadSelected.nothingSelected'
-                )})`}
-            </a>
-          )}
+        {windowType && query && query.viewId && (
+          <a
+            className="subheader-item js-subheader-item"
+            href={`${config.API_URL}/documentView/${windowType}/${
+              query.viewId
+            }/export/excel?selectedIds=${selected.join(',')}`}
+            download
+            onClick={this.handleDownloadSelected}
+            style={{
+              opacity: selected.length === 0 ? '0.5' : 1,
+            }}
+          >
+            {counterpart.translate('window.downloadSelected.caption')}
+            {selected.length === 0 &&
+              ` (${counterpart.translate(
+                'window.downloadSelected.nothingSelected'
+              )})`}
+          </a>
+        )}
         {this.renderDocLinks()}
         {editmode !== undefined && (
           <div
