@@ -59,6 +59,7 @@ class Window extends PureComponent {
           const {
             tabid,
             caption,
+            description,
             elements,
             internalName,
             emptyResultText,
@@ -71,6 +72,7 @@ class Window extends PureComponent {
             <Table
               {...{
                 caption,
+                description,
                 rowData,
                 tabid,
                 type,
