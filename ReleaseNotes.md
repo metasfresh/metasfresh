@@ -14,6 +14,9 @@ Here come the actual release notes:
 # Features
 
 # Fixes
+* metasfresh-webui-frontend
+  * [#2064](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2064) Warning: Failed prop type: Invalid prop `logged` of type `string` supplied to `Login`, expected `boolean`
+    * Fixes a console error that appeared when redirecting to another window via link directly through login.
 
 # metasfresh 5.83
 # Features
