@@ -117,14 +117,11 @@ class SelectionAttributes extends Component {
                 )}
               />
             ))}
-          {DLWrapperLayout &&
-            !DLWrapperLayout.length && (
-              <i>
-                {counterpart.translate(
-                  'window.selectionAttributes.callToAction'
-                )}
-              </i>
-            )}
+          {DLWrapperLayout && !DLWrapperLayout.length && (
+            <i>
+              {counterpart.translate('window.selectionAttributes.callToAction')}
+            </i>
+          )}
         </div>
         <div className="focusHandler" tabIndex={1} onFocus={this.selectTable} />
       </div>

@@ -33,7 +33,7 @@ class FiltersItem extends Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.init();
   }
 

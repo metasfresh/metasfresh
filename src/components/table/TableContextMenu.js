@@ -154,14 +154,13 @@ class TableContextMenu extends Component {
           <hr className="context-menu-separator" />
         )}
 
-        {isSelectedOne &&
-          !mainTable && (
-            <div className="context-menu-item" onClick={handleAdvancedEdit}>
-              <i className="meta-icon-edit" />
-              {` ${counterpart.translate('window.table.advancedEdit')}`}
-              <span className="tooltip-inline">{keymap.ADVANCED_EDIT}</span>
-            </div>
-          )}
+        {isSelectedOne && !mainTable && (
+          <div className="context-menu-item" onClick={handleAdvancedEdit}>
+            <i className="meta-icon-edit" />
+            {` ${counterpart.translate('window.table.advancedEdit')}`}
+            <span className="tooltip-inline">{keymap.ADVANCED_EDIT}</span>
+          </div>
+        )}
 
         {mainTable && (
           <div className="context-menu-item" onClick={handleOpenNewTab}>

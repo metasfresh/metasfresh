@@ -465,29 +465,28 @@ class RawLookup extends Component {
               </div>
             </div>
           </div>
-          {isOpen &&
-            !isInputEmpty && (
-              <SelectionDropdown
-                loading={loading}
-                options={list}
-                empty="No results found"
-                forceEmpty={forceEmpty}
-                selected={selected}
-                width={
-                  this.props.forcedWidth
-                    ? this.props.forcedWidth
-                    : this.wrapper && this.wrapper.offsetWidth
-                }
-                height={
-                  this.props.forceHeight
-                    ? this.props.forceHeight - this.wrapper.offsetHeight
-                    : undefined
-                }
-                onChange={this.handleTemporarySelection}
-                onSelect={this.handleSelect}
-                onCancel={this.handleBlur}
-              />
-            )}
+          {isOpen && !isInputEmpty && (
+            <SelectionDropdown
+              loading={loading}
+              options={list}
+              empty="No results found"
+              forceEmpty={forceEmpty}
+              selected={selected}
+              width={
+                this.props.forcedWidth
+                  ? this.props.forcedWidth
+                  : this.wrapper && this.wrapper.offsetWidth
+              }
+              height={
+                this.props.forceHeight
+                  ? this.props.forceHeight - this.wrapper.offsetHeight
+                  : undefined
+              }
+              onChange={this.handleTemporarySelection}
+              onSelect={this.handleSelect}
+              onCancel={this.handleBlur}
+            />
+          )}
         </div>
       </TetherComponent>
     );

@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { getRoutes } from '../routes.js';
 
 class CustomRouter extends PureComponent {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { plugins, store, auth } = this.props;
 
     this.routes = getRoutes(store, auth, plugins);
