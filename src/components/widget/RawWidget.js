@@ -22,7 +22,7 @@ import Link from './Link';
 import List from './List/List';
 import Lookup from './Lookup/Lookup';
 
-class RawWidget extends Component {
+export class RawWidget extends Component {
   constructor(props) {
     super(props);
 
@@ -115,9 +115,12 @@ class RawWidget extends Component {
     );
   };
 
-  handleKeyDown = (e, property, value, widgetType) => {
-    if ((e.key === 'Enter' || e.key === 'Tab') && widgetType !== 'LongText') {
-      this.handlePatch(property, value);
+  handleKeyDown = (e, property, value) => {
+    if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+      }
+      return this.handlePatch(property, value);
     }
   };
 
@@ -250,6 +253,7 @@ class RawWidget extends Component {
       dateFormat,
       initialFocus,
     } = this.props;
+
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
 
@@ -284,8 +288,7 @@ class RawWidget extends Component {
         return handleChange && handleChange(widgetField, e.target.value);
       },
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
-      onKeyDown: e =>
-        this.handleKeyDown(e, widgetField, e.target.value, widgetType),
+      onKeyDown: e => this.handleKeyDown(e, widgetField, e.target.value),
       title: widgetValue,
     };
 
