@@ -522,7 +522,7 @@ class Lookup extends Component {
                       }
                     }}
                     clearable={false}
-                    readonly={disabled || readonly}
+                    readonly={disabled || widgetData[index].readonly}
                     lookupList={true}
                     autoFocus={isCurrentProperty}
                     doNotOpenOnFocus={false}
@@ -531,6 +531,8 @@ class Lookup extends Component {
                     defaultValue={defaultValue ? defaultValue : ''}
                     initialFocus={isFirstProperty ? initialFocus : false}
                     blur={!property ? true : false}
+                    emptyText={placeholder}
+                    mandatory={widgetData[index].mandatory}
                     setNextProperty={this.setNextProperty}
                     disableAutofocus={this.disableAutofocus}
                     enableAutofocus={this.enableAutofocus}
@@ -539,7 +541,6 @@ class Lookup extends Component {
                     {...{
                       dataId,
                       entity,
-                      mandatory,
                       windowType,
                       filterWidget,
                       tabId,
