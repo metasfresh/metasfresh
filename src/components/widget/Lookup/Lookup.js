@@ -567,9 +567,13 @@ class Lookup extends Component {
 Lookup.propTypes = {
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
+  onBlurWidget: PropTypes.func,
   forceFullWidth: PropTypes.bool,
   forceHeight: PropTypes.number,
   widgetData: PropTypes.array,
+  defaultValue: PropTypes.any,
+  selected: PropTypes.any,
+  mandatory: PropTypes.bool,
 };
 
 export default connect()(BarcodeScanner(onClickOutside(Lookup)));
