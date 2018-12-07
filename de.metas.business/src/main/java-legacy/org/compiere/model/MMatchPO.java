@@ -26,12 +26,16 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.bpartner.BPartnerId;
@@ -74,48 +78,22 @@ public class MMatchPO extends X_M_MatchPO
 	 */
 	private static final long serialVersionUID = 7189366329684552916L;
 
-	/**
-	 * Get PO Match with order/invoice
-	 * 
-	 * @param ctx context
-	 * @param C_OrderLine_ID order
-	 * @param C_InvoiceLine_ID invoice
-	 * @param trxName transaction
-	 * @return array of matches
-	 */
-	public static MMatchPO[] get(Properties ctx,
-			int C_OrderLine_ID, int C_InvoiceLine_ID, String trxName)
+	static List<I_M_MatchPO> getByOrderLineAndInvoiceLine(int C_OrderLine_ID, int C_InvoiceLine_ID)
 	{
-		if (C_OrderLine_ID == 0 || C_InvoiceLine_ID == 0)
-			return new MMatchPO[] {};
-		//
-		String sql = "SELECT * FROM M_MatchPO WHERE C_OrderLine_ID=? AND C_InvoiceLine_ID=?";
-		ArrayList<MMatchPO> list = new ArrayList<>();
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		if (C_OrderLine_ID <= 0 || C_InvoiceLine_ID <= 0)
 		{
-			pstmt = DB.prepareStatement(sql, trxName);
-			pstmt.setInt(1, C_OrderLine_ID);
-			pstmt.setInt(2, C_InvoiceLine_ID);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-				list.add(new MMatchPO(ctx, rs, trxName));
+			return ImmutableList.of();
 		}
-		catch (Exception e)
+		else
 		{
-			s_log.error(sql, e);
+			return Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_MatchPO.class)
+					.addEqualsFilter(I_M_MatchPO.COLUMN_C_OrderLine_ID, C_OrderLine_ID)
+					.addEqualsFilter(I_M_MatchPO.COLUMN_C_InvoiceLine_ID, C_InvoiceLine_ID)
+					.create()
+					.listImmutable(I_M_MatchPO.class);
 		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		MMatchPO[] retValue = new MMatchPO[list.size()];
-		list.toArray(retValue);
-		return retValue;
-	}	// get
+	}
 
 	/**
 	 * Get PO Matches of receipt
@@ -125,7 +103,7 @@ public class MMatchPO extends X_M_MatchPO
 	 * @param trxName transaction
 	 * @return array of matches
 	 */
-	public static MMatchPO[] getInOut(Properties ctx,
+	static MMatchPO[] getInOut(Properties ctx,
 			int M_InOut_ID, String trxName)
 	{
 		if (M_InOut_ID == 0)
@@ -224,24 +202,19 @@ public class MMatchPO extends X_M_MatchPO
 	 *            from this parameter value
 	 * @return Match Record; the record is not saved!
 	 */
-	public static MMatchPO create(final MInvoiceLine iLine,
-			final MInOutLine sLine,
+	public static MMatchPO create(
+			final I_C_InvoiceLine iLine,
+			final I_M_InOutLine sLine,
 			final Timestamp dateTrx,
 			final BigDecimal qty)
 	{
-		String trxName = null;
 		int C_OrderLine_ID = 0;
-		Properties ctx = null;
 		if (iLine != null)
 		{
-			trxName = iLine.get_TrxName();
-			ctx = iLine.getCtx();
 			C_OrderLine_ID = iLine.getC_OrderLine_ID();
 		}
 		if (sLine != null)
 		{
-			trxName = sLine.get_TrxName();
-			ctx = sLine.getCtx();
 			C_OrderLine_ID = sLine.getC_OrderLine_ID();
 		}
 
@@ -251,23 +224,23 @@ public class MMatchPO extends X_M_MatchPO
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			pstmt.setInt(1, C_OrderLine_ID);
 			rs = pstmt.executeQuery();
 
 			while (rs.next())
 			{
-				final MMatchPO mpo = new MMatchPO(ctx, rs, trxName);
+				final MMatchPO mpo = new MMatchPO(Env.getCtx(), rs, ITrx.TRXNAME_ThreadInherited);
 				if (qty.compareTo(mpo.getQty()) == 0)
 				{
 					final int mpoASIId = mpo.getM_AttributeSetInstance_ID();
 					if (iLine != null)
 					{
-						if (mpo.getC_InvoiceLine_ID() == 0
+						if (mpo.getC_InvoiceLine_ID() <= 0
 								|| mpo.getC_InvoiceLine_ID() == iLine.getC_InvoiceLine_ID())
 						{
 							mpo.setC_InvoiceLine(iLine);
-							if (iLine.getM_AttributeSetInstance_ID() != 0)
+							if (iLine.getM_AttributeSetInstance_ID() > 0)
 							{
 								if (mpoASIId == 0)
 								{
@@ -288,11 +261,11 @@ public class MMatchPO extends X_M_MatchPO
 					if (sLine != null)
 					{
 						final int sLineId = sLine.getM_InOutLine_ID();
-						if (mpo.getM_InOutLine_ID() == 0
+						if (mpo.getM_InOutLine_ID() <= 0
 								|| mpo.getM_InOutLine_ID() == sLineId)
 						{
 							mpo.setM_InOutLine_ID(sLineId);
-							if (sLine.getM_AttributeSetInstance_ID() != 0)
+							if (sLine.getM_AttributeSetInstance_ID() > 0)
 							{
 								if (mpoASIId == 0)
 								{
@@ -325,7 +298,7 @@ public class MMatchPO extends X_M_MatchPO
 						if (invoiceLine != null && iolId > 0)
 						{
 							invoiceLine.setM_InOutLine_ID(iolId);
-							InterfaceWrapperHelper.save(invoiceLine, trxName); // save in the shipment line's transaction
+							InterfaceWrapperHelper.save(invoiceLine, ITrx.TRXNAME_ThreadInherited); // save in the shipment line's transaction
 
 							if (iLine != null)
 							{
@@ -371,7 +344,7 @@ public class MMatchPO extends X_M_MatchPO
 	}	// create
 
 	/** Static Logger */
-	private static Logger s_log = LogManager.getLogger(MMatchPO.class);
+	private static final Logger s_log = LogManager.getLogger(MMatchPO.class);
 
 	public MMatchPO(Properties ctx, int M_MatchPO_ID, String trxName)
 	{
@@ -382,7 +355,7 @@ public class MMatchPO extends X_M_MatchPO
 			// setDateTrx (new Timestamp(System.currentTimeMillis()));
 			// setM_InOutLine_ID (0);
 			// setM_Product_ID (0);
-			setM_AttributeSetInstance_ID(0);
+			setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 			// setQty (BigDecimal.ZERO);
 			setPosted(false);
 			setProcessed(false);
@@ -402,10 +375,10 @@ public class MMatchPO extends X_M_MatchPO
 	 * @param dateTrx optional date
 	 * @param qty matched quantity
 	 */
-	public MMatchPO(MInOutLine sLine, Timestamp dateTrx, BigDecimal qty)
+	public MMatchPO(I_M_InOutLine sLine, Timestamp dateTrx, BigDecimal qty)
 	{
-		this(sLine.getCtx(), 0, sLine.get_TrxName());
-		setClientOrg(sLine);
+		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
+		setAD_Org_ID(sLine.getAD_Org_ID());
 		setM_InOutLine_ID(sLine.getM_InOutLine_ID());
 		setC_OrderLine_ID(sLine.getC_OrderLine_ID());
 		if (dateTrx != null)
@@ -423,10 +396,10 @@ public class MMatchPO extends X_M_MatchPO
 	 * @param dateTrx optional date
 	 * @param qty matched quantity
 	 */
-	private MMatchPO(MInvoiceLine iLine, Timestamp dateTrx, BigDecimal qty)
+	private MMatchPO(I_C_InvoiceLine iLine, Timestamp dateTrx, BigDecimal qty)
 	{
-		this(iLine.getCtx(), 0, iLine.get_TrxName());
-		setClientOrg(iLine);
+		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
+		setAD_Org_ID(iLine.getAD_Org_ID());
 		setC_InvoiceLine(iLine);
 		if (iLine.getC_OrderLine_ID() != 0)
 			setC_OrderLine_ID(iLine.getC_OrderLine_ID());

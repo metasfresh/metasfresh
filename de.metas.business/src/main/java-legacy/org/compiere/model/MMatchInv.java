@@ -195,7 +195,7 @@ public class MMatchInv extends X_M_MatchInv
 		}
 
 		// Find MatchPO
-		for (final I_M_MatchPO matchPO : MMatchPO.get(getCtx(), C_OrderLine_ID, getC_InvoiceLine_ID(), get_TrxName()))
+		for (final I_M_MatchPO matchPO : MMatchPO.getByOrderLineAndInvoiceLine(C_OrderLine_ID, getC_InvoiceLine_ID()))
 		{
 			if (matchPO.getM_InOutLine_ID() <= 0)
 			{
