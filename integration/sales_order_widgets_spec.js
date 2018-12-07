@@ -77,7 +77,7 @@ describe('Sales order window widgets test', function() {
       cy.get('.ProductAttributes').find('.productattributes-cell').last().dblclick();
 
       cy.get('.form-field-M_AttributeSetInstance_ID').should('exist')
-        .find('button').click();
+        .find('button').click({ force: true });
 
       cy.get('.attributes-dropdown').should('exist');
 
@@ -86,7 +86,7 @@ describe('Sales order window widgets test', function() {
         .click();
 
       cy.get('.input-dropdown-list').should('exist')
-        .find('.input-dropdown-list-option')
+        .find('.input-dropdown-list-option.ignore-react-onclickoutside')
         .contains('Yes')
         .click()
 
@@ -105,14 +105,14 @@ describe('Sales order window widgets test', function() {
       cy.get('.ProductAttributes').find('.productattributes-cell').last().click();
 
       cy.get('.form-field-M_AttributeSetInstance_ID')
-        .find('button').click();
+        .find('button').click({ force: true });
 
       cy.get('.form-field-IsRepackNumberRequired')
         .find('.input-dropdown-container')
         .click();
 
       cy.get('.input-dropdown-list').should('exist')
-        .find('.input-dropdown-list-option')
+        .find('.input-dropdown-list-option.ignore-react-onclickoutside')
         .contains('No')
         .click()
 
