@@ -103,23 +103,6 @@ public class Invoice440RequestConversionServiceTest
 		testWithXmlFile("/public_examples/" + inputXmlFileName);
 	}
 
-	@Test
-	public void ownFile_ATT_1000001()
-	{
-		// jot
-		// reference_number="00 00000 00000 00050 82100 15051"
-		// schlecht
-		// reference_number="00 00000 21002 15589 50100 00016"
-
-		testWithXmlFile("/ATT_1000001.xml");
-	}
-
-	@Test
-	public void ownFile_Input_1000000()
-	{
-		testWithXmlFile("/Input_1000000.xml");
-	}
-
 	private void testWithXmlFile(final String inputXmlFileName)
 	{
 		final InputStream inputStream = createInputStream(inputXmlFileName);
