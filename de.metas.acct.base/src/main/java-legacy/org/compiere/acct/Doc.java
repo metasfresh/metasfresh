@@ -1999,7 +1999,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			// Text
 
 			final StringBuilder text = new StringBuilder(msgBL.getMsg(getCtx(), AD_MessageValue));
-			final String p_Error = e.getDetailMessage();
+			final String p_Error = e.getDetailMessage().translate(Env.getAD_Language(getCtx()));
 			if (!Check.isEmpty(p_Error, true))
 			{
 				text.append(" (").append(p_Error).append(")");
