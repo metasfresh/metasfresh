@@ -4,6 +4,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.util.Env;
 
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
@@ -112,7 +113,8 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 				.setDocument(doc.getAdTableId(), doc.getRecordId())
 				.setForce(enforce)
 				.setPostImmediate(PostImmediate.Yes)
-				.setFailOnError(true) // yes, because we will display a pop-up to user in this case (see below)
+				.setFailOnError(true)
+				.onErrorNotifyUser(Env.getLoggedUserId())
 				.postIt();
 	}
 
