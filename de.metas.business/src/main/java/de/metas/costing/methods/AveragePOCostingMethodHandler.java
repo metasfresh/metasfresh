@@ -30,6 +30,7 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.ICurrencyBL;
+import de.metas.invoice.IMatchInvDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
@@ -152,11 +153,14 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 	private Optional<CostAmount> getPOCostPriceForMatchInv(final int matchInvId)
 	{
-		final I_M_MatchInv matchInv = InterfaceWrapperHelper.load(matchInvId, I_M_MatchInv.class);
+		final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		
+		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
 		return Optional.of(matchInv)
 				.map(I_M_MatchInv::getC_InvoiceLine)
 				.map(I_C_InvoiceLine::getC_OrderLine)
-				.map(Services.get(IOrderLineBL.class)::getCostPrice)
+				.map(orderLineBL::getCostPrice)
 				.map(CostAmount::ofMoney);
 	}
 
