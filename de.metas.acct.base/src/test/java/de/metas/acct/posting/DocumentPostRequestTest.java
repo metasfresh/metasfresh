@@ -1,6 +1,7 @@
 package de.metas.acct.posting;
 
 import org.adempiere.service.ClientId;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,6 +49,7 @@ public class DocumentPostRequestTest
 				.clientId(ClientId.ofRepoId(1000))
 				.force(true)
 				.responseRequired(true)
+				.onErrorNotifyUserId(UserId.METASFRESH)
 				.build());
 	}
 

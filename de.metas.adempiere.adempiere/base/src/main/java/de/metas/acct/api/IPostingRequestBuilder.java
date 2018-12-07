@@ -25,6 +25,7 @@ package de.metas.acct.api;
 import java.util.Properties;
 
 import org.adempiere.service.ClientId;
+import org.adempiere.user.UserId;
 import org.compiere.acct.PostingExecutionException;
 
 import de.metas.adempiere.form.IClientUIInvoker;
@@ -105,6 +106,8 @@ public interface IPostingRequestBuilder
 	 * @param failOnError true if the execution shall fail and the exception shall be propagated
 	 */
 	IPostingRequestBuilder setFailOnError(final boolean failOnError);
+
+	IPostingRequestBuilder onErrorNotifyUser(UserId userId);
 
 	/** Sets if we shall post the document immediate */
 	IPostingRequestBuilder setPostImmediate(final PostImmediate postImmediate);

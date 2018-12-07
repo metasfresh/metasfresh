@@ -35,6 +35,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.acct.Doc;
@@ -52,7 +53,11 @@ import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.document.engine.IDocument;
+import de.metas.event.Topic;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -61,11 +66,14 @@ import lombok.ToString;
 @ToString(of = { "_trxName", "_force", "_clientId", "_documentRef", "_postImmediate", "_postWithoutServer", "_failOnError" })
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder
 {
+	public static final Topic NOTIFICATIONS_TOPIC = Topic.remote("de.metas.acct.UserNotifications");
+
 	// services
 	private static final transient Logger log = LogManager.getLogger(PostingRequestBuilder.class);
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
+	private final transient INotificationBL userNotifications = Services.get(INotificationBL.class);
 
 	// Parameters
 	private Properties _ctx;
@@ -76,6 +84,7 @@ import lombok.ToString;
 	private PostImmediate _postImmediate = PostImmediate.IfConfigured;
 	private boolean _postWithoutServer = false;
 	private boolean _failOnError = DEFAULT_FailOnError;
+	private UserId _onErrorNotifyUserId = null;
 
 	// Status
 	private boolean _executed = false;
@@ -158,6 +167,7 @@ import lombok.ToString;
 				.record(documentRef)
 				.clientId(clientId)
 				.force(force)
+				.onErrorNotifyUserId(getOnErrorNotifyUserId())
 				.build());
 	}
 
@@ -432,6 +442,20 @@ import lombok.ToString;
 		return _failOnError;
 	}
 
+	@Override
+	public IPostingRequestBuilder onErrorNotifyUser(final UserId userId)
+	{
+		assertNotExecuted();
+
+		_onErrorNotifyUserId = userId;
+		return this;
+	}
+
+	private UserId getOnErrorNotifyUserId()
+	{
+		return _onErrorNotifyUserId;
+	}
+
 	private final void setPostedError(final String postedErrorMessage)
 	{
 		final PostingExecutionException postedException = postedErrorMessage != null ? new PostingExecutionException(postedErrorMessage) : null;
@@ -460,21 +484,32 @@ import lombok.ToString;
 	 */
 	private final void postingComplete()
 	{
+		final PostingExecutionException postedException = _postedException;
+
 		//
 		// Set the isPosted flag
-		_posted = _postedException == null;
+		_posted = postedException == null;
+
+		//
+		// Notify user
+		if (getOnErrorNotifyUserId() != null && postedException != null)
+		{
+			final UserNotificationRequest notification = UserNotificationRequest.builder()
+					.topic(NOTIFICATIONS_TOPIC)
+					.recipientUserId(getOnErrorNotifyUserId())
+					.contentPlain(postedException.getLocalizedMessage())
+					.targetAction(TargetRecordAction.of(getDocumentRef()))
+					.build();
+			userNotifications.sendAfterCommit(notification);
+		}
 
 		//
 		// Fail on error if needed
-		if (!isFailOnError())
+		// IMPORTANT: keep it last!
+		if (isFailOnError() && postedException != null)
 		{
-			return;
+			throw postedException;
 		}
-		if (_postedException == null)
-		{
-			return;
-		}
-		throw _postedException;
 	}
 
 	/**

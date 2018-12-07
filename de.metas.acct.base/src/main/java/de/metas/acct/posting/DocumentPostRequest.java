@@ -1,6 +1,7 @@
 package de.metas.acct.posting;
 
 import org.adempiere.service.ClientId;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -46,6 +47,8 @@ public class DocumentPostRequest
 	boolean force;
 	@JsonProperty("responseRequired")
 	boolean responseRequired;
+	@JsonProperty("onErrorNotifyUserId")
+	UserId onErrorNotifyUserId;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
@@ -53,12 +56,14 @@ public class DocumentPostRequest
 			@JsonProperty("record") @NonNull final TableRecordReference record,
 			@JsonProperty("clientId") @NonNull final ClientId clientId,
 			@JsonProperty("force") final boolean force,
-			@JsonProperty("responseRequired") final boolean responseRequired)
+			@JsonProperty("responseRequired") final boolean responseRequired,
+			@JsonProperty("onErrorNotifyUserId") final UserId onErrorNotifyUserId)
 	{
 		this.record = record;
 		this.clientId = clientId;
 		this.force = force;
 		this.responseRequired = responseRequired;
+		this.onErrorNotifyUserId = onErrorNotifyUserId;
 	}
 
 	public DocumentPostRequest withResponseRequired()
