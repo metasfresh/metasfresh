@@ -13,9 +13,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.util.Check;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
