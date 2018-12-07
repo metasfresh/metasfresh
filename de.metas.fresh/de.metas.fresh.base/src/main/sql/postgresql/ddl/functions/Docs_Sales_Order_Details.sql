@@ -62,7 +62,7 @@ SELECT
 	END::character varying AS rate,
 	isPrintTax,
 	ol.description,
-	p.documentnote,
+	ol.M_Product_DocumentNote as documentnote,
 	ol.productdescription,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
