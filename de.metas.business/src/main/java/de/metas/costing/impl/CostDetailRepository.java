@@ -101,36 +101,36 @@ public class CostDetailRepository implements ICostDetailRepository
 
 	private static void updateRecordFromDocumentRef(final I_M_CostDetail record, final CostingDocumentRef documentRef)
 	{
-		final String columnName = documentRef.getCostDetailColumnName();
+		final String tableName = documentRef.getTableName();
 		final int recordId = documentRef.getRecordId();
 		final Boolean soTrx = documentRef.getOutboundTrx();
-		if (CostingDocumentRef.TABLE_NAME_M_MatchInv.equals(columnName))
+		if (CostingDocumentRef.TABLE_NAME_M_MatchInv.equals(tableName))
 		{
 			record.setM_MatchInv_ID(recordId);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_M_MatchPO.equals(columnName))
+		else if (CostingDocumentRef.TABLE_NAME_M_MatchPO.equals(tableName))
 		{
 			record.setM_MatchPO_ID(recordId);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(columnName))
+		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(tableName))
 		{
 			record.setM_InOutLine_ID(recordId);
 			record.setIsSOTrx(soTrx);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(columnName))
+		else if (CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(tableName))
 		{
 			record.setM_InventoryLine_ID(recordId);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(columnName))
+		else if (CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(tableName))
 		{
 			record.setM_MovementLine_ID(recordId);
 			record.setIsSOTrx(soTrx);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(columnName))
+		else if (CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(tableName))
 		{
 			record.setC_ProjectIssue_ID(recordId);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_PP_Cost_Collector.equals(columnName))
+		else if (CostingDocumentRef.TABLE_NAME_PP_Cost_Collector.equals(tableName))
 		{
 			record.setPP_Cost_Collector_ID(recordId);
 		}
