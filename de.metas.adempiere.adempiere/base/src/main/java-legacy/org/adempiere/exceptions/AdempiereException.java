@@ -39,7 +39,6 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /**
@@ -104,15 +103,22 @@ public class AdempiereException extends RuntimeException
 			return "null";
 		}
 
-		String message = throwable.getLocalizedMessage();
-
-		// If throwable message is null or it's very short then it's better to use throwable.toString()
-		if (message == null || message.length() < 4)
+		if(throwable instanceof NullPointerException)
 		{
-			message = throwable.toString();
+			return throwable.toString();
 		}
-
-		return message;
+		else
+		{
+			String message = throwable.getLocalizedMessage();
+	
+			// If throwable message is null or it's very short then it's better to use throwable.toString()
+			if (message == null || message.length() < 4)
+			{
+				message = throwable.toString();
+			}
+	
+			return message;
+		}
 	}
 
 	public static final ITranslatableString extractMessageTrl(final Throwable throwable)
