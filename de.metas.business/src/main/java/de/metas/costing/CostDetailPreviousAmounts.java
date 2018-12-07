@@ -43,8 +43,5 @@ public class CostDetailPreviousAmounts
 	CostPrice costPrice;
 
 	@NonNull
-	CostAmount componentsCostPrice;
-
-	@NonNull
 	Quantity qty;
 }
