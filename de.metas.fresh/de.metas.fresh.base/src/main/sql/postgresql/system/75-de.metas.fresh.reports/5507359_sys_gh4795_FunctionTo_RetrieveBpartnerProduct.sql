@@ -37,8 +37,11 @@ WHERE true
 	AND bpp.C_BPartner_ID = p_C_BPartner_ID
 	
 	/*asi_bpp is null, or its AttributeInstances array is contained in the given p_M_AttributeSetInstance_ID's AttributeInstances array */
-	AND (select asi.AttributeInstances from M_AttributeSetInstance_ID_AttributeInstances asi where asi.M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID)
+	AND (
+	(select asi.AttributeInstances from M_AttributeSetInstance_ID_AttributeInstances asi where asi.M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID)
 		@> COALESCE(asi_bpp.AttributeInstances, ARRAY[]::character varying[]) 
+		OR bpp.M_AttributeSetInstance_ID = 0
+		)
 ORDER BY bpp.M_AttributeSetInstance_ID desc, ProductNo, ProductName, SeqNo
 LIMIT 1
 $BODY$
