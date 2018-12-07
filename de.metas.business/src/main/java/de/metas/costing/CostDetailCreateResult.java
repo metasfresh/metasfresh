@@ -34,20 +34,17 @@ public class CostDetailCreateResult
 	CostElement costElement;
 	CostAmount amt;
 	Quantity qty;
-	CostAmount price;
 
 	@Builder
 	private CostDetailCreateResult(
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
 			@NonNull final CostAmount amt,
-			@NonNull final Quantity qty,
-			@NonNull final CostAmount price)
+			@NonNull final Quantity qty)
 	{
 		this.costSegment = costSegment;
 		this.costElement = costElement;
 		this.amt = amt;
 		this.qty = qty;
-		this.price = price;
 	}
 }

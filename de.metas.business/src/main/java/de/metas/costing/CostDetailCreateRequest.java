@@ -188,7 +188,6 @@ public class CostDetailCreateRequest
 				//
 				.amt(getAmt())
 				.qty(getQty())
-				.price(null) // TODO price
 				//
 				.documentRef(getDocumentRef())
 				.description(getDescription());

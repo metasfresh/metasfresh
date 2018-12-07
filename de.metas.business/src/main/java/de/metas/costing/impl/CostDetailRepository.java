@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -73,7 +72,7 @@ public class CostDetailRepository implements ICostDetailRepository
 	public CostDetail create(@NonNull final CostDetail.CostDetailBuilder costDetailBuilder)
 	{
 		final CostDetail cd = costDetailBuilder.build();
-		Check.assume(cd.getRepoId() < 0, "RepoId shall NOT be set for {}", cd);
+		Check.assume(cd.getRepoId() <= 0, "RepoId shall NOT be set for {}", cd);
 
 		final I_M_CostDetail record = newInstance(I_M_CostDetail.class);
 		Check.assumeEquals(cd.getClientId().getRepoId(), record.getAD_Client_ID(), "AD_Client_ID");
@@ -226,16 +225,6 @@ public class CostDetailRepository implements ICostDetailRepository
 
 		final CostAmount amt = CostAmount.of(record.getAmt(), acctCurrencyId);
 		final Quantity qty = Quantity.of(record.getQty(), productUOM);
-		final CostAmount price;
-		if (qty.isZero())
-		{
-			price = CostAmount.zero(amt.getCurrencyId());
-		}
-		else
-		{
-			final int costingPrecision = acctSchema.getCosting().getCostingPrecision();
-			price = amt.divide(qty, costingPrecision, RoundingMode.HALF_UP);
-		}
 
 		return CostDetail.builder()
 				.repoId(record.getM_CostDetail_ID())
@@ -247,7 +236,6 @@ public class CostDetailRepository implements ICostDetailRepository
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.amt(amt)
 				.qty(qty)
-				.price(price)
 				.changingCosts(record.isChangingCosts())
 				.previousAmounts(CostDetailPreviousAmounts.builder()
 						.costPrice(CostPrice.builder()

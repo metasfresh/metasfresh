@@ -59,8 +59,6 @@ public class CostDetail
 	CostAmount amt;
 	@NonNull
 	Quantity qty;
-	@NonNull
-	CostAmount price;
 
 	boolean changingCosts;
 

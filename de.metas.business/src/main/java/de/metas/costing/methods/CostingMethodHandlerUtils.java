@@ -110,7 +110,6 @@ public class CostingMethodHandlerUtils
 				.costElement(request.getCostElement())
 				.amt(costDetail.getAmt())
 				.qty(costDetail.getQty())
-				.price(costDetail.getPrice())
 				.build();
 	}
 
