@@ -155,7 +155,7 @@ public final class CurrentCost
 		cumulatedQty = cumulatedQty.add(qty);
 	}
 
-	public void adjustCurrentQty(@NonNull final Quantity qtyToAdd)
+	public void addToCurrentQty(@NonNull final Quantity qtyToAdd)
 	{
 		currentQty = currentQty.add(qtyToAdd);
 	}

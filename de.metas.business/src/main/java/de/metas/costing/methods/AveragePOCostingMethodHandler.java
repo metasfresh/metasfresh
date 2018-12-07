@@ -125,7 +125,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
-			currentCosts.adjustCurrentQty(qty);
+			currentCosts.addToCurrentQty(qty);
 		}
 
 		utils.saveCurrentCosts(currentCosts);
@@ -145,7 +145,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		}
 		else
 		{
-			currentCosts.adjustCurrentQty(qty.negate());
+			currentCosts.addToCurrentQty(qty.negate());
 		}
 
 		utils.saveCurrentCosts(currentCosts);
