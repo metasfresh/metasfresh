@@ -1,12 +1,9 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.math.BigInteger;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 
 import de.metas.util.Check;
@@ -134,6 +131,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.XmlVia;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidation;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidationResult;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -226,6 +224,10 @@ public class Invoice440FromCrossVersionModelTool
 
 	private ValidationsType createValidationsType(@NonNull final List<XmlValidation> validations)
 	{
+		if (validations.isEmpty())
+		{
+			return null;
+		}
 		final ValidationsType validationsType = jaxbRequestObjectFactory.createValidationsType();
 		for (final XmlValidation validation : validations)
 		{
@@ -933,6 +935,10 @@ public class Invoice440FromCrossVersionModelTool
 
 	private XtraHospitalType createXtraHospitalType(@NonNull final XmlTreatment treatment)
 	{
+		if (treatment.getXtraAmbulatory() == null && treatment.getXtraStationary() == null)
+		{
+			return null;
+		}
 		final XtraHospitalType xtraHospitalType = jaxbRequestObjectFactory.createXtraHospitalType();
 
 		xtraHospitalType.setAmbulatory(createXtraAmbulatoryType(treatment.getXtraAmbulatory()));
@@ -1223,6 +1229,10 @@ public class Invoice440FromCrossVersionModelTool
 
 	private DocumentsType createDocumentsType(@NonNull final List<XmlDocument> documents)
 	{
+		if (documents.isEmpty())
+		{
+			return null;
+		}
 		final DocumentsType documentsType = jaxbRequestObjectFactory.createDocumentsType();
 		documentsType.setNumber(BigInteger.valueOf(documents.size()));
 
