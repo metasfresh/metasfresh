@@ -35,9 +35,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.Adempiere;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
@@ -58,7 +56,9 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(of = { "_trxName", "_force", "_clientId", "_documentRef", "_postImmediate", "_postWithoutServer", "_failOnError" })
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder
 {
 	// services
@@ -68,7 +68,6 @@ import lombok.NonNull;
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 
 	// Parameters
-	@ToStringBuilder(skip = true)
 	private Properties _ctx;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _force;
@@ -82,12 +81,6 @@ import lombok.NonNull;
 	private boolean _executed = false;
 	private PostingExecutionException _postedException = null;
 	private boolean _posted = false;
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
 
 	@Override
 	public IClientUIInvoker postItOnUI()
