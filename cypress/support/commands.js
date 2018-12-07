@@ -224,7 +224,7 @@ Cypress.Commands.add('openAdvancedEdit', () => {
 });
 
 Cypress.Commands.add('pressAddNewButton', () => {
-  describe('Press a tab\'s add-new-record-button', function() {
+  describe('Press table\'s add-new-record-button', function() {
     const addNewText = Cypress.messages.window.addNew.caption;
     cy.get('.btn')
         .contains(addNewText)
@@ -232,6 +232,18 @@ Cypress.Commands.add('pressAddNewButton', () => {
         .click();
         
     cy.get('.panel-modal').should('exist');
+  })
+});
+
+Cypress.Commands.add('pressBatchEntryButton', () => {
+  describe('Press table\'s batch-entry-record-button', function() {
+    const batchEntryText = Cypress.messages.window.batchEntry.caption;
+    cy.get('.btn')
+        .contains(batchEntryText)
+        .should('exist')
+        .click();
+        
+    cy.get('.quick-input-container').should('exist');
   })
 });
 
