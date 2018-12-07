@@ -12,6 +12,8 @@ Here come the actual release notes:
 
 # metasfresh 5.84
 # Features
+* metasfresh-webui-frontend
+  * [#2082](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2082) Show tab description as tool tip
 
 # Fixes
 * metasfresh-webui-frontend

@@ -1,15 +1,12 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing;
+package de.metas.payment.esr;
 
-import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import org.junit.Test;
 
 /*
  * #%L
- * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
+ * de.metas.payment.esr
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -29,19 +26,14 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class XmlDemand
+public class ESRStringUtilTest
 {
-	@NonNull
-	Long tcDemandId;
 
-	@NonNull
-	String tcToken;
+	@Test
+	public void formatReferenceNumber()
+	{
+		assertThat(ESRStringUtil.formatReferenceNumber("123456200001888888888888885")).isEqualTo("12 34562 00001 88888 88888 88885");
+		assertThat(ESRStringUtil.formatReferenceNumber("12 34562 00001 88888 88888 88885")).isEqualTo("12 34562 00001 88888 88888 88885");
+	}
 
-	@NonNull
-	XMLGregorianCalendar insuranceDemandDate;
-
-	@Nullable
-	String insuranceDemandId;
 }
