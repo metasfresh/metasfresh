@@ -107,8 +107,6 @@ FROM
 		WHERE isActive = 'Y'
 	) pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
 	
-	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
-		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 	-- Get Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom ON il.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM_Trl uomt ON il.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
@@ -192,6 +190,9 @@ GROUP BY x.C_InvoiceLine_ID,	x.shipLocation
 		GROUP BY	att.M_AttributeSetInstance_ID, il.C_InvoiceLine_ID
 	) att ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND il.C_InvoiceLine_ID = att.C_InvoiceLine_ID
 
+	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
+		
 	-- get inoutline - to order by it. The main error i think is that the lines in invoice are not ordered anymore as they used to
 	LEFT OUTER JOIN M_InOutLine miol ON il.M_InOutLine_ID = miol.M_InOutLine_ID AND miol.isActive = 'Y'
 	--ordering gebinde if config exists

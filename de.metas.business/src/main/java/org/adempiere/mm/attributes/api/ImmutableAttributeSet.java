@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -114,6 +115,31 @@ public final class ImmutableAttributeSet implements IAttributeSet
 				.add("valueIds", valueIdsByAttributeKey)
 				.toString();
 	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(valuesByAttributeKey);
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		else if (obj instanceof ImmutableAttributeSet)
+		{
+			ImmutableAttributeSet other = (ImmutableAttributeSet)obj;
+			return Objects.equals(valuesByAttributeKey, other.valuesByAttributeKey);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 
 	public boolean isEmpty()
 	{

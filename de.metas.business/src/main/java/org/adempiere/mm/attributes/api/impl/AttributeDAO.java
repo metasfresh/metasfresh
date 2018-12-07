@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -253,7 +254,7 @@ public class AttributeDAO implements IAttributeDAO
 
 		return attribute.isHighVolume();
 	}
-	
+
 	@Override
 	public List<I_M_AttributeInstance> retrieveAttributeInstances(final AttributeSetInstanceId attributeSetInstanceId)
 	{
@@ -262,7 +263,7 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		I_M_AttributeSetInstance asi = loadOutOfTrx(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+		I_M_AttributeSetInstance asi = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
 		return retrieveAttributeInstances(asi);
 	}
 
@@ -569,6 +570,15 @@ public class AttributeDAO implements IAttributeDAO
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public boolean areAttributeSetsEqual(@NonNull final AttributeSetInstanceId firstASIId, @NonNull final AttributeSetInstanceId secondASIId)
+	{
+		final ImmutableAttributeSet firstAttributeSet = getImmutableAttributeSetById(firstASIId);
+		final ImmutableAttributeSet secondAttributeSet = getImmutableAttributeSetById(secondASIId);
+
+		return firstAttributeSet.equals(secondAttributeSet);
 	}
 
 	@Override
