@@ -294,7 +294,7 @@ public class StorageEngine
 
 	private static void createMA(final I_PP_Cost_Collector cc, final int M_AttributeSetInstance_ID, final BigDecimal MovementQty)
 	{
-		final I_PP_Cost_Collector ma = newInstance(I_PP_Cost_Collector.class);
+		final I_PP_Cost_CollectorMA ma = newInstance(I_PP_Cost_CollectorMA.class);
 		ma.setAD_Org_ID(cc.getAD_Org_ID());
 		ma.setPP_Cost_Collector_ID(cc.getPP_Cost_Collector_ID());
 		ma.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
