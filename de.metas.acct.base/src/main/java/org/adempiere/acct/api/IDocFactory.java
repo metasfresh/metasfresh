@@ -13,19 +13,19 @@ package org.adempiere.acct.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
@@ -61,8 +61,9 @@ public interface IDocFactory extends ISingletonService
 	Doc<?> get(final Properties ctx, IDocMetaInfo docMetaInfo, List<AcctSchema> acctSchemas, ResultSet rs, String trxName);
 
 	/**
-	 * 
 	 * @return a list of all accountable documents (meta data), registered on system
 	 */
 	List<IDocMetaInfo> getDocMetaInfoList();
+
+	Set<Integer> getDocTableIds();
 }

@@ -26,8 +26,8 @@ import java.lang.reflect.Constructor;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
@@ -195,7 +195,7 @@ public class DocFactory implements IDocFactory
 		}
 	}
 
-	private final synchronized Map<Integer, IDocMetaInfo> getDocMetaInfoMap()
+	private final synchronized ImmutableMap<Integer, IDocMetaInfo> getDocMetaInfoMap()
 	{
 		ImmutableMap<Integer, IDocMetaInfo> tableId2docMetaInfo = _tableId2docMetaInfo;
 		if (tableId2docMetaInfo == null)
@@ -209,6 +209,12 @@ public class DocFactory implements IDocFactory
 	public List<IDocMetaInfo> getDocMetaInfoList()
 	{
 		return new ArrayList<>(getDocMetaInfoMap().values());
+	}
+	
+	@Override
+	public Set<Integer> getDocTableIds()
+	{
+		return getDocMetaInfoMap().keySet();
 	}
 
 	/** @return accountable document meta-info for given AD_Table_ID */
