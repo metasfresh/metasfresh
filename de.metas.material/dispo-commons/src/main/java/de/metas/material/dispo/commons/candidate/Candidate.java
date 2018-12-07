@@ -64,8 +64,8 @@ public class Candidate
 	 * Should be {@code null} for stock candidates.
 	 */
 	CandidateBusinessCase businessCase;
-
-	CandidateStatus status;
+//
+//	CandidateStatus status;
 
 	CandidateId id;
 
@@ -181,7 +181,7 @@ public class Candidate
 	private Candidate(final int clientId, final int orgId,
 			@NonNull final CandidateType type,
 			final CandidateBusinessCase businessCase,
-			final CandidateStatus status,
+			//final CandidateStatus status,
 			final CandidateId id,
 			final CandidateId parentId,
 			final int groupId,
@@ -195,7 +195,7 @@ public class Candidate
 		this.orgId = orgId;
 		this.type = type;
 		this.businessCase = businessCase;
-		this.status = status;
+		//this.status = status;
 
 		this.id = Util.coalesce(id, CandidateId.NULL);
 		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");

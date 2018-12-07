@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -173,7 +172,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.build();
 
 		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescriptor())
-				.status(CandidateStatus.doc_completed)
+				//.status(CandidateStatus.doc_completed)
 				.materialDescriptor(materialDescriptorBuilder)
 				.transactionDetail(stockChangeDetail);
 		return candidateBuilder;
@@ -234,13 +233,6 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.warehouseId(event.getWarehouseId());
 	}
 
-	private Instant computeDate(@NonNull final StockChangedEvent event)
-	{
-		final Instant date = Util.coalesceSuppliers(
-				() -> event.getChangeDate(),
-				() -> SystemTime.asInstant());
-		return date;
-	}
 
 	private TransactionDetail createStockChangeDetail(@NonNull final StockChangedEvent event)
 	{
@@ -255,7 +247,16 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.stockId(stockChangeDetails.getStockId())
 				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
 				.transactionId(stockChangeDetails.getTransactionId())
+				.transactionDate(computeDate(event))
 				.complete(true)
 				.build();
+	}
+
+	private Instant computeDate(@NonNull final StockChangedEvent event)
+	{
+		final Instant date = Util.coalesceSuppliers(
+				() -> event.getChangeDate(),
+				() -> SystemTime.asInstant());
+		return date;
 	}
 }

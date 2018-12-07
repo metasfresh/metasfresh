@@ -1,7 +1,5 @@
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
-import lombok.NonNull;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -16,6 +14,7 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -79,10 +78,9 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 		if (existingCandidateOrNull != null)
 		{
 			final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
-			CandidateBuilder builder = existingCandidateOrNull
+			final CandidateBuilder builder = existingCandidateOrNull
 					.toBuilder()
-					// do not change the existing candidate's date, unless we can do it right and also change the date of the candidate's stock-candidate
-					.materialDescriptor(materialDescriptor.withDate(existingCandidateOrNull.getDate()));
+					.materialDescriptor(materialDescriptor);
 			return builder;
 		}
 
@@ -99,6 +97,7 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 				.clientId(eventDescriptor.getClientId())
 				.orgId(eventDescriptor.getOrgId())
 				.type(CandidateType.SUPPLY)
+				.materialDescriptor(event.getMaterialDescriptor())
 				.businessCase(CandidateBusinessCase.PURCHASE);
 	}
 

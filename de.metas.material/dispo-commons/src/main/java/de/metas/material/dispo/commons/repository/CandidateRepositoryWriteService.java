@@ -2,6 +2,7 @@ package de.metas.material.dispo.commons.repository;
 
 import static de.metas.material.dispo.commons.candidate.IdConstants.NULL_REPO_ID;
 import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -36,6 +37,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
@@ -87,7 +89,7 @@ public class CandidateRepositoryWriteService
 	 */
 	public SaveResult addOrUpdateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
 	{
-		return addOrUpdate(candidate, false/*preserveExistingSeqNoAndParentId*/);
+		return addOrUpdate(candidate, false/* preserveExistingSeqNoAndParentId */);
 	}
 
 	/**
@@ -192,7 +194,7 @@ public class CandidateRepositoryWriteService
 
 	private SaveResult addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
 	{
-		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate, false/*includeParentId*/);
+		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate, false/* includeParentId */);
 		return addOrUpdate(query, candidate, preserveExistingSeqNoAndParentId);
 	}
 
@@ -337,7 +339,6 @@ public class CandidateRepositoryWriteService
 				&& (candidateRecordHasNoSeqNo || !preserveExistingSeqNo))
 		{
 			candidateRecord.setSeqNo(candidate.getSeqNo());
-
 		}
 
 		if (candidate.getGroupId() > 0)
@@ -345,9 +346,25 @@ public class CandidateRepositoryWriteService
 			candidateRecord.setMD_Candidate_GroupId(candidate.getGroupId());
 		}
 
-		if (candidate.getStatus() != null)
+		// if (candidate.getStatus() != null)
+		// {
+		// candidateRecord.setMD_Candidate_Status(candidate.getStatus().toString());
+		// }
+
+		final BigDecimal fulfilledQty = candidate
+				.getTransactionDetails()
+				.stream()
+				.map(TransactionDetail::getQuantity)
+				.reduce(ZERO, BigDecimal::add);
+		candidateRecord.setQtyFulfilled(fulfilledQty);
+
+		if (fulfilledQty.compareTo(candidateRecord.getQty()) >= 0)
 		{
-			candidateRecord.setMD_Candidate_Status(candidate.getStatus().toString());
+			candidateRecord.setMD_Candidate_Status(X_MD_Candidate.MD_CANDIDATE_STATUS_Processed);
+		}
+		else
+		{
+			candidateRecord.setMD_Candidate_Status(X_MD_Candidate.MD_CANDIDATE_STATUS_Planned);
 		}
 	}
 
@@ -595,6 +612,7 @@ public class CandidateRepositoryWriteService
 			{
 				detailRecordToUpdate = existingDetail;
 			}
+			detailRecordToUpdate.setTransactionDate(TimeUtil.asTimestamp(transactionDetail.getTransactionDate()));
 			detailRecordToUpdate.setMovementQty(transactionDetail.getQuantity());
 			save(detailRecordToUpdate);
 		}

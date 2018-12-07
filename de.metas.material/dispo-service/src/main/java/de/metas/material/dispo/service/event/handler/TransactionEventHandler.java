@@ -1,8 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -50,6 +49,7 @@ import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -233,7 +233,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)
-				.demandDetailsQuery(demandDetailsQuery) // only search via demand detail ..the product and warehouse will also match, but e.g. the date probably won't!
+				// only search via demand detail ..the product and warehouse will also match, but e.g. the date might not!
+				.demandDetailsQuery(demandDetailsQuery)
 				.build();
 		final Candidate existingCandidate = retrieveBestMatchingCandidateOrNull(query, event);
 
@@ -465,6 +466,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.storageAttributesKey(event.getMaterialDescriptor().getStorageAttributesKey())
 				.attributeSetInstanceId(event.getMaterialDescriptor().getAttributeSetInstanceId())
 				.transactionId(event.getTransactionId())
+				.transactionDate(event.getMaterialDescriptor().getDate())
 				.complete(true)
 				.build();
 		return transactionDetailOfEvent;
@@ -504,7 +506,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	}
 
 	/**
-	 * @return a list with one or two candidates. The list's first item contains the given {@code changedTransactionDetail}.
+	 *
+	 * Returns a list with one or two candidates.
+	 * The list's first item always contains the given {@code changedTransactionDetail}.
+	 * <p>
+	 * If the given {@code changedTransactionDetail}'s attributes match the given candidate's attributes, then the returned list has one item.
+	 * Otherwise it has two items with the first item containing *only* the changedTransactionDetail and the second item being the given {@code candidate}, but without the given {@code changedTransactionDetail}.
 	 */
 	@VisibleForTesting
 	List<Candidate> createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(
@@ -518,17 +525,13 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		if (transactionMatchesCandidate)
 		{
-			final ImmutableList<TransactionDetail> otherTransactionDetails = candidate.getTransactionDetails()
-					.stream()
-					.filter(transactionDetail -> transactionDetail.getTransactionId() != changedTransactionDetail.getTransactionId())
-					.collect(ImmutableList.toImmutableList());
+			final TreeSet<TransactionDetail> newTransactionDetailsSet = extractAllTransactionDetails(candidate, changedTransactionDetail);
 
-			// note: using TreeSet to make sure we don't end up with duplicated transactionDetails
-			final TreeSet<TransactionDetail> newTransactionDetailsSet = new TreeSet<>(Comparator.comparing(TransactionDetail::getTransactionId));
-			newTransactionDetailsSet.addAll(otherTransactionDetails);
-			newTransactionDetailsSet.add(changedTransactionDetail);
+			final Instant firstTransactionDate = extractMinTransactionDate(newTransactionDetailsSet);
 
-			final Candidate withTransactionDetails = candidate.withTransactionDetails(ImmutableList.copyOf(newTransactionDetailsSet));
+			final Candidate withTransactionDetails = candidate
+					.withTransactionDetails(ImmutableList.copyOf(newTransactionDetailsSet))
+					.withDate(firstTransactionDate);
 			final BigDecimal actualQty = withTransactionDetails.computeActualQty();
 			final BigDecimal detailQty = candidate.getDetailQty();
 
@@ -545,7 +548,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.withStorageAttributes(
 							changedTransactionDetail.getStorageAttributesKey(),
 							changedTransactionDetail.getAttributeSetInstanceId())
-					.withQuantity(changedTransactionDetail.getQuantity());
+					.withQuantity(changedTransactionDetail.getQuantity())
+					.withDate(changedTransactionDetail.getTransactionDate());
 
 			final Candidate newCandidate = candidate
 					.toBuilder()
@@ -556,7 +560,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.transactionDetail(changedTransactionDetail)
 					.build();
 
-			// subtract the transaction's Qty from the candidate
+			// subtract the transaction's Qty from the candidate;
+			// because we don't expect that quantity anymore. It just came, but with different attributes.
 			final BigDecimal actualQty = candidate.computeActualQty();
 			final BigDecimal plannedQty = candidate.getDetailQty().subtract(changedTransactionDetail.getQuantity());
 			final BigDecimal updatedQty = actualQty.max(plannedQty);
@@ -565,6 +570,32 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			// return the subtracted-qty-candidate and the copy
 			return ImmutableList.of(newCandidate, updatedCandidate);
 		}
+	}
+
+	private Instant extractMinTransactionDate(@NonNull final TreeSet<TransactionDetail> transactionDetailsSet)
+	{
+		final Instant firstTransactionDate = transactionDetailsSet
+				.stream()
+				.min(Comparator.comparing(TransactionDetail::getTransactionDate))
+				.get() // we know there is at least changedTransactionDetail, so we can call get() witch confidence
+				.getTransactionDate();
+		return firstTransactionDate;
+	}
+
+	private TreeSet<TransactionDetail> extractAllTransactionDetails(
+			@NonNull final Candidate candidate,
+			@NonNull final TransactionDetail changedTransactionDetail)
+	{
+		final ImmutableList<TransactionDetail> otherTransactionDetails = candidate.getTransactionDetails()
+				.stream()
+				.filter(transactionDetail -> transactionDetail.getTransactionId() != changedTransactionDetail.getTransactionId())
+				.collect(ImmutableList.toImmutableList());
+
+		// note: using TreeSet to make sure we don't end up with duplicated transactionDetails
+		final TreeSet<TransactionDetail> newTransactionDetailsSet = new TreeSet<>(Comparator.comparing(TransactionDetail::getTransactionId));
+		newTransactionDetailsSet.addAll(otherTransactionDetails);
+		newTransactionDetailsSet.add(changedTransactionDetail);
+		return newTransactionDetailsSet;
 	}
 
 	/**

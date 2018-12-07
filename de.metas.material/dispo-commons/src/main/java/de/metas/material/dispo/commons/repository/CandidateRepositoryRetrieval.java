@@ -274,6 +274,7 @@ public class CandidateRepositoryRetrieval
 					.transactionId(transactionDetailRecord.getM_Transaction_ID())
 					.resetStockAdPinstanceId(transactionDetailRecord.getAD_PInstance_ResetStock_ID())
 					.stockId(transactionDetailRecord.getMD_Stock_ID())
+					.transactionDate(TimeUtil.asInstant(transactionDetailRecord.getTransactionDate()))
 					.complete(true)
 					.build();
 			result.add(transactionDetail);

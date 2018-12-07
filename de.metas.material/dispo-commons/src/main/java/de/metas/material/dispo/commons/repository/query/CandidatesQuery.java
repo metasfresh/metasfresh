@@ -5,7 +5,6 @@ import java.util.List;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -13,6 +12,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -97,7 +97,7 @@ public final class CandidatesQuery
 				.transactionDetails(candidate.getTransactionDetails())
 				.groupId(candidate.getGroupId())
 				.orgId(candidate.getOrgId())
-				.status(candidate.getStatus())
+				//.status(candidate.getStatus())
 				.businessCase(candidate.getBusinessCase())
 				.type(candidate.getType());
 
@@ -136,7 +136,7 @@ public final class CandidatesQuery
 	 */
 	CandidateBusinessCase businessCase;
 
-	CandidateStatus status;
+	//CandidateStatus status;
 
 	/**
 	 * If the {@code id} is set, the system will ignore any other property of this instance.
@@ -176,6 +176,7 @@ public final class CandidatesQuery
 	DemandDetailsQuery demandDetailsQuery;
 
 	/**
+	 * Note that only the TransactionId, StockAdPinstanceId and Qtys are used for matching; see the code in {@link RepositoryCommons}.
 	 * If multiple transactionDetails are specified here, then a matching candidate needs to have matching transactionDetails for all of them.
 	 */
 	List<TransactionDetail> transactionDetails;
@@ -187,7 +188,7 @@ public final class CandidatesQuery
 			final int orgId,
 			final CandidateType type,
 			final CandidateBusinessCase businessCase,
-			final CandidateStatus status,
+			//final CandidateStatus status,
 			final CandidateId id,
 			final CandidateId parentId,
 			final int groupId,
@@ -206,7 +207,7 @@ public final class CandidatesQuery
 		this.orgId = orgId;
 		this.type = type;
 		this.businessCase = businessCase;
-		this.status = status;
+		//this.status = status;
 		this.id = id == null ? CandidateId.UNSPECIFIED : id;
 		this.parentId = parentId == null ? CandidateId.UNSPECIFIED : parentId;
 		this.groupId = groupId;

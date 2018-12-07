@@ -9,12 +9,12 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.TRANSACTION_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -116,7 +116,7 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setC_BPartner_Customer_ID(BPARTNER_ID);
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
 		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
-		candidateRecord.setQty(BigDecimal.TEN);
+		candidateRecord.setQty(TEN);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		save(candidateRecord);
 
@@ -141,20 +141,22 @@ public class CandiateRepositoryRetrievalTests
 		final Timestamp dateProjected = SystemTime.asTimestamp();
 		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		candidateRecord.setDateProjected(dateProjected);
-		candidateRecord.setQty(BigDecimal.TEN);
+		candidateRecord.setQty(TEN);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		save(candidateRecord);
 
 		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = newInstance(I_MD_Candidate_Transaction_Detail.class);
 		transactionDetailRecord.setMD_Candidate(candidateRecord);
 		transactionDetailRecord.setM_Transaction_ID(30);
-		transactionDetailRecord.setMovementQty(BigDecimal.TEN);
+		transactionDetailRecord.setMovementQty(TEN);
+		transactionDetailRecord.setTransactionDate(TimeUtil.asTimestamp(NOW));
 		save(transactionDetailRecord);
 
 		final I_MD_Candidate_Transaction_Detail transactionDetailRecord2 = newInstance(I_MD_Candidate_Transaction_Detail.class);
 		transactionDetailRecord2.setMD_Candidate(candidateRecord);
 		transactionDetailRecord2.setM_Transaction_ID(31);
-		transactionDetailRecord2.setMovementQty(BigDecimal.ONE);
+		transactionDetailRecord2.setMovementQty(ONE);
+		transactionDetailRecord2.setTransactionDate(TimeUtil.asTimestamp(AFTER_NOW));
 		save(transactionDetailRecord2);
 
 		final Optional<Candidate> result = candidateRepositoryRetrieval.fromCandidateRecord(candidateRecord);
@@ -168,11 +170,13 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(candidate.getTransactionDetails()).anySatisfy(transactionDetail -> {
 			assertThat(transactionDetail.getTransactionId()).isEqualByComparingTo(30);
 			assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("10");
+			assertThat(transactionDetail.getTransactionDate()).isEqualTo(NOW);
 		});
 
 		assertThat(candidate.getTransactionDetails()).anySatisfy(transactionDetail -> {
 			assertThat(transactionDetail.getTransactionId()).isEqualByComparingTo(31);
 			assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("1");
+			assertThat(transactionDetail.getTransactionDate()).isEqualTo(AFTER_NOW);
 		});
 	}
 
@@ -422,7 +426,8 @@ public class CandiateRepositoryRetrievalTests
 		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = newInstance(I_MD_Candidate_Transaction_Detail.class);
 		transactionDetailRecord.setMD_Candidate(record);
 		transactionDetailRecord.setM_Transaction_ID(TRANSACTION_ID);
-		transactionDetailRecord.setMovementQty(BigDecimal.TEN);
+		transactionDetailRecord.setMovementQty(TEN);
+		transactionDetailRecord.setTransactionDate(TimeUtil.asTimestamp(NOW));
 		save(transactionDetailRecord);
 
 		final CandidatesQuery query = CandidatesQuery
@@ -434,8 +439,11 @@ public class CandiateRepositoryRetrievalTests
 		final Candidate expectedCandidate = expectedCandidates.get(0);
 		assertThat(expectedCandidate.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 		assertThat(expectedCandidate.getTransactionDetails()).hasSize(1);
-		assertThat(expectedCandidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
-		assertThat(expectedCandidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("10");
+
+		final TransactionDetail transactionDetail = expectedCandidate.getTransactionDetails().get(0);
+		assertThat(transactionDetail.getTransactionId()).isEqualTo(TRANSACTION_ID);
+		assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("10");
+		assertThat(transactionDetail.getTransactionDate()).isEqualTo(NOW);
 	}
 
 	@Test

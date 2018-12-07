@@ -576,6 +576,7 @@ public class CandidateChangeHandlerTests
 				.transactionDetail(TransactionDetail.builder()
 						.transactionId(50)
 						.quantity(FIFTEEN)
+						.transactionDate(BEFORE_NOW)
 						.complete(true)
 						.build())
 				.build();

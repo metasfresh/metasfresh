@@ -56,11 +56,11 @@ public class StockCandidateService
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	public StockCandidateService(
-			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands)
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService)
 	{
-		this.candidateRepositoryRetrieval = candidateRepository;
-		this.candidateRepositoryWriteService = candidateRepositoryCommands;
+		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
 	}
 
 	/**

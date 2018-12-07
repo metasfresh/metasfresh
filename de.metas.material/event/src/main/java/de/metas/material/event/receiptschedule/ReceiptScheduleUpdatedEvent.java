@@ -72,10 +72,12 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	}
 
 	@Override
-	public void validate()
+	public ReceiptScheduleUpdatedEvent validate()
 	{
 		super.validate();
 		Check.errorIf(reservedQuantityDelta == null, "reservedQuantityDelta may not be null");
 		Check.errorIf(orderedQuantityDelta == null, "orderedQuantityDelta may not be null");
+
+		return this;
 	}
 }

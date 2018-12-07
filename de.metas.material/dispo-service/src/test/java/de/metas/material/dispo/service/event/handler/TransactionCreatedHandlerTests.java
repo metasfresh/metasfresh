@@ -152,6 +152,8 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(TEN).build();
 
+		final Instant date = SystemTime.asInstant();
+
 		final Candidate exisitingCandidate = Candidate.builder()
 				.clientId(10).orgId(20)
 				.type(CandidateType.UNRELATED_INCREASE)
@@ -160,9 +162,15 @@ public class TransactionCreatedHandlerTests
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(ONE)
-						.date(SystemTime.asInstant())
+						.date(date)
 						.build())
-				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(TRANSACTION_ID + 1).complete(true).build())
+				.transactionDetail(TransactionDetail.builder()
+						.quantity(ONE)
+						.storageAttributesKey(AttributesKey.ALL)
+						.transactionId(TRANSACTION_ID + 1)
+						.transactionDate(date)
+						.complete(true)
+						.build())
 				.build();
 
 		// @formatter:off

@@ -1,13 +1,12 @@
 package de.metas.material.dispo.commons.candidate;
 
-import lombok.Builder;
-import lombok.Value;
-
 import java.math.BigDecimal;
-
-import com.google.common.base.Preconditions;
+import java.time.Instant;
 
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -44,6 +43,7 @@ public class TransactionDetail
 				transactionId,
 				-1 /* stockId */,
 				-1 /* resetStockAdPinstanceId */,
+				null, /* transactionDate */
 				false /* complete */);
 	}
 
@@ -52,17 +52,17 @@ public class TransactionDetail
 
 	BigDecimal quantity;
 
-	/** 
-	 * Used in queries if > 0. 
+	/**
+	 * Used in queries if > 0.
 	 */
 	int transactionId;
 
-	/** 
+	/**
 	 * If there was no inventory, but MD_Stock had to be reset from M_HU_Storage.
-	 * Also used in queries if > 0. 
+	 * Also used in queries if > 0.
 	 */
 	int resetStockAdPinstanceId;
-	
+
 	AttributesKey storageAttributesKey;
 
 	int attributeSetInstanceId;
@@ -70,6 +70,7 @@ public class TransactionDetail
 	/** {@code MD_Stock_ID} */
 	int stockId;
 
+	Instant transactionDate;
 
 	@Builder
 	private TransactionDetail(
@@ -79,16 +80,20 @@ public class TransactionDetail
 			final int transactionId,
 			final int stockId,
 			final int resetStockAdPinstanceId,
+			final Instant transactionDate,
 			final boolean complete)
 	{
 		this.complete = complete;
 
-		Preconditions.checkArgument(transactionId > 0 || resetStockAdPinstanceId > 0,
-				"From the given parameters transactionId=%s and resetStockAdPinstanceId=%s, at least one needs to be > 0", transactionId, resetStockAdPinstanceId);
+		Check.assume(transactionId > 0 || resetStockAdPinstanceId > 0,
+				"From the given parameters transactionId={} and resetStockAdPinstanceId={}, at least one needs to be > 0", transactionId, resetStockAdPinstanceId);
 		this.transactionId = transactionId;
 
-		Preconditions.checkArgument(!complete || quantity != null, "The given parameter quantity may not be null because complete=true; transactionId=%s", transactionId);
+		Check.assume(!complete || quantity != null, "The given parameter quantity may not be null because complete=true; transactionId={}; resetStockAdPinstanceId={}", transactionId, resetStockAdPinstanceId);
 		this.quantity = quantity;
+
+		Check.assume(!complete || transactionDate != null, "The given parameter transactionDate may not be null because complete=true; transactionId={}; resetStockAdPinstanceId={}", transactionId, resetStockAdPinstanceId);
+		this.transactionDate = transactionDate;
 
 		this.storageAttributesKey = storageAttributesKey;
 		this.attributeSetInstanceId = attributeSetInstanceId;

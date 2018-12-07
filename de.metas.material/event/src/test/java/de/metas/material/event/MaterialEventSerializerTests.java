@@ -511,6 +511,7 @@ public class MaterialEventSerializerTests
 						.qtyOnHandOld(TEN)
 						.warehouseId(WAREHOUSE_ID)
 						.stockChangeDetails(stockChangeDetails)
+						.changeDate(NOW)
 						.build();
 		stockChangedEvent.validate();
 		assertEventEqualAfterSerializeDeserialize(stockChangedEvent);

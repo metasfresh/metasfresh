@@ -192,7 +192,7 @@ public class M_Transaction_HuDescriptor
 
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 					.warehouseId(transaction.getWarehouseId())
-					.date(transaction.getMovementDate())
+					.date(transaction.getTransactionDate())
 					.productDescriptor(entry.getKey())
 					.customerId(customerId)
 					.quantity(quantity)
