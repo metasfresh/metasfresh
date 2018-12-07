@@ -1,11 +1,12 @@
 package de.metas.ui.web.document.process;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_Fact_Acct;
 
-import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -39,6 +40,7 @@ import de.metas.util.Services;
 public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	private final IPostingService postingService = Services.get(IPostingService.class);
+	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 
 	@Param(parameterName = "IsEnforcePosting", mandatory = true)
 	private boolean enforce;
@@ -67,8 +69,32 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 
 	private DocumentToRepost extractDocumentToRepost(final IViewRow row)
 	{
+		if (I_Fact_Acct.Table_Name.equals(getTableName()))
+		{
+			return extractDocumentToReportFromFactAcctRow(row);
+		}
+		else
+		{
+			return extractDocumentToReportFromRegularRow(row);
+		}
+	}
+
+	private DocumentToRepost extractDocumentToReportFromFactAcctRow(final IViewRow row)
+	{
 		final int adTableId = row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Table_ID, -1);
 		final int recordId = row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_Record_ID, -1);
+		final ClientId adClientId = ClientId.ofRepoId(row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
+		return DocumentToRepost.builder()
+				.adTableId(adTableId)
+				.recordId(recordId)
+				.clientId(adClientId)
+				.build();
+	}
+
+	private DocumentToRepost extractDocumentToReportFromRegularRow(final IViewRow row)
+	{
+		final int adTableId = adTablesRepo.retrieveTableId(getTableName());
+		final int recordId = row.getId().toInt();
 		final ClientId adClientId = ClientId.ofRepoId(row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
 		return DocumentToRepost.builder()
 				.adTableId(adTableId)
@@ -91,7 +117,7 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 	}
 
 	@Override
-	protected void postProcess(boolean success)
+	protected void postProcess(final boolean success)
 	{
 		getView().invalidateSelection();
 	}
