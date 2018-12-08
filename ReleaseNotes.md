@@ -30,23 +30,32 @@ Here come the actual release notes:
 # Features
 * metasfresh
   * [#4787](https://github.com/metasfresh/metasfresh/issues/4787) Product Document Note Translation
+    * New Feature that allows to translate the Document Notes.
   * [#4789](https://github.com/metasfresh/metasfresh/issues/4789) C_BPartner filter for IsActive
+    * New Filter in Business Partner window that allowes to show only active Business Partners.
   * [#4795](https://github.com/metasfresh/metasfresh/issues/4795) Product No. of customer also with ASI
+    * New Feature that makes it possible to define customer Product No. based on Attribute values.
 
 * metasfresh-webui-api
   * [#1111](https://github.com/metasfresh/metasfresh-webui-api/issues/1111) Include internalName in JSONReference
+    * Now the internal Name is delivered by API which can be used in Cpress Tests.
 
 * metasfresh-webui-frontend
-  * [#2083](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2083) cypress pressDoneButton shall fail if the respective record was not saved
+  * [#2083](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2083) Cypress pressDoneButton shall fail if the respective record was not saved
+    * Cypress Test that fails if the record was not saved yet when pressing the Done button.
 
 # Fixes
 * metasfresh
   * [#4793](https://github.com/metasfresh/metasfresh/issues/4793) View docs_sales_invoice_details_compensation_subgroup: the invoice detail shall be taken from invoice
+    * Adjustment of Jasper Invoice Document, now taking further invoice details from invoiceline, instead of orderline.
   * [#4797](https://github.com/metasfresh/metasfresh/issues/4797) HU Trace window: filtering by HUTaceType returns no results
+    * Fixes the filtering in Handling Unit Trace Window, now able to filter the HU Trace Type again.
   * [#4802](https://github.com/metasfresh/metasfresh/issues/4802) Required IfExists parameter 'ifBPartnersExist' is not present
+    * Internal fix for Fix for 'ifBPartnersExist' parm.
 
 * metasfresh-webui-frontend
   * [#2073](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2073) Failing cypress tests
+    * Fixes some failing Cypress Tests.
 
 # metasfresh 5.82
 # Features
