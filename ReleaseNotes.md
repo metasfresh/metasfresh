@@ -10,12 +10,26 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.85
+# Features
+
+# Fixes
+
 # metasfresh 5.84
 # Features
 * metasfresh-webui-frontend
+  * [#2077](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2077) Make references cypress friendly
+  * [#2080](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2080) Support to create C_Location via cypress
   * [#2082](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2082) Show tab description as tool tip
+  * [#2086](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2086) Individual Logo shall not have hashsequence added to name
+  * [#2090](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2090) Update to Node.js 11
 
 # Fixes
+* metasfresh
+  * [#4811](https://github.com/metasfresh/metasfresh/issues/4811) Price using BOM Line's attribute is not calculated correctly
+  * [#4819](https://github.com/metasfresh/metasfresh/issues/4819) Payment allocation posting error for currency gain/loss and discount/writeoff case
+  * [#4821](https://github.com/metasfresh/metasfresh/issues/4821) forum-datenaustausch.ch export XML validation errors
+
 * metasfresh-webui-frontend
   * [#2064](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2064) Warning: Failed prop type: Invalid prop `logged` of type `string` supplied to `Login`, expected `boolean`
     * Fixes a console error that appeared when redirecting to another window via link directly through login.
