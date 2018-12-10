@@ -18,7 +18,6 @@ class OverlayField extends Component {
 
     switch (e.key) {
       case 'Enter':
-        document.activeElement.blur();
         handleSubmit();
         break;
       case 'Escape':
