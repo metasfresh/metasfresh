@@ -1,5 +1,7 @@
 package org.adempiere.invoice.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,12 +12,12 @@ package org.adempiere.invoice.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,13 +50,14 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceId;
 import de.metas.util.Services;
 
 /**
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.
- * 
+ *
  * @author ts
- * 
+ *
  */
 public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
@@ -181,8 +184,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.list();
 
 	}
-	
-	
+
+
 	@Override
 	public Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(final I_C_Invoice invoice)
 	{
@@ -227,7 +230,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return adjustmentCharges.iterator();
 	}
 
-	
+
 	private Iterator<I_C_Invoice> retrieveReferencesForInvoice(final I_C_Invoice invoice)
 	{
 		// services
@@ -241,4 +244,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.iterate(I_C_Invoice.class);
 	}
+
+
+	@Override
+	public org.compiere.model.I_C_Invoice getById(final InvoiceId invoiceId)
+	{
+		return loadOutOfTrx(invoiceId.getRepoId(), org.compiere.model.I_C_Invoice.class);
+	}
+
 }

@@ -40,6 +40,7 @@ import org.compiere.model.MInvoiceLine;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.invoice.InvoiceId;
 import de.metas.util.ISingletonService;
 
 public interface IInvoiceDAO extends ISingletonService
@@ -139,4 +140,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice);
+
+	org.compiere.model.I_C_Invoice getById(InvoiceId invoiceId);
+
 }
