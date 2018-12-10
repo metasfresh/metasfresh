@@ -37,6 +37,15 @@ public class LocationId implements RepoIdAware
 		return new LocationId(repoId);
 	}
 
+	public static LocationId ofRepoIdOrNull(final int repoId)
+	{
+		if (repoId <= 0)
+		{
+			return null;
+		}
+		return new LocationId(repoId);
+	}
+
 	private LocationId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
@@ -47,4 +56,3 @@ public class LocationId implements RepoIdAware
 		return locationId != null ? locationId.getRepoId() : defaultValue;
 	}
 }
-
