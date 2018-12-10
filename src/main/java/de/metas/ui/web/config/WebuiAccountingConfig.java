@@ -5,6 +5,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.adempiere.acct.api.IDocFactory;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -44,8 +45,6 @@ public class WebuiAccountingConfig
 	public void registerRepostProcess()
 	{
 		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
-		final IDocFactory acctDocFactory = Services.get(IDocFactory.class);
-
 		final int repostProcessId = adProcessesRepo.retriveProcessIdByClassIfUnique(WEBUI_Fact_Acct_Repost.class);
 		if (repostProcessId <= 0)
 		{
@@ -53,7 +52,19 @@ public class WebuiAccountingConfig
 			return;
 		}
 
+		//
+		// Link Repost process to all accountable documents
+		final IDocFactory acctDocFactory = Services.get(IDocFactory.class);
 		final Set<Integer> docTableIds = acctDocFactory.getDocTableIds();
 		docTableIds.forEach(docTableId -> adProcessesRepo.registerTableProcess(docTableId, repostProcessId));
+
+		//
+		// Link Repost process to RV_UnPosted view
+		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+		final int rvUnPostTableId = adTablesRepo.retrieveTableId(WEBUI_Fact_Acct_Repost.TABLENAME_RV_UnPosted);
+		if (rvUnPostTableId > 0)
+		{
+			adProcessesRepo.registerTableProcess(rvUnPostTableId, repostProcessId);
+		}
 	}
 }

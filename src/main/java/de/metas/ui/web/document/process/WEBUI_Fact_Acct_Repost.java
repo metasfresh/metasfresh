@@ -43,6 +43,8 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 
+	public static final String TABLENAME_RV_UnPosted = "RV_UnPosted";
+
 	@Param(parameterName = "IsEnforcePosting", mandatory = true)
 	private boolean enforce;
 
@@ -70,17 +72,18 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 
 	private DocumentToRepost extractDocumentToRepost(final IViewRow row)
 	{
-		if (I_Fact_Acct.Table_Name.equals(getTableName()))
+		if (I_Fact_Acct.Table_Name.equals(getTableName())
+				|| TABLENAME_RV_UnPosted.equals(getTableName()))
 		{
-			return extractDocumentToReportFromFactAcctRow(row);
+			return extractDocumentToRepostFromTableAndRecordIdRow(row);
 		}
 		else
 		{
-			return extractDocumentToReportFromRegularRow(row);
+			return extractDocumentToRepostFromRegularRow(row);
 		}
 	}
 
-	private DocumentToRepost extractDocumentToReportFromFactAcctRow(final IViewRow row)
+	private DocumentToRepost extractDocumentToRepostFromTableAndRecordIdRow(final IViewRow row)
 	{
 		final int adTableId = row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Table_ID, -1);
 		final int recordId = row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_Record_ID, -1);
@@ -92,7 +95,7 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 				.build();
 	}
 
-	private DocumentToRepost extractDocumentToReportFromRegularRow(final IViewRow row)
+	private DocumentToRepost extractDocumentToRepostFromRegularRow(final IViewRow row)
 	{
 		final int adTableId = adTablesRepo.retrieveTableId(getTableName());
 		final int recordId = row.getId().toInt();
