@@ -6,18 +6,13 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.compiere.util.Util.coalesce;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 
 import org.compiere.model.X_C_DocType;
@@ -77,6 +72,9 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ServicesType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ZipType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -104,6 +102,10 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 @Conditional(RestApiStartupCondition.class)
 public class XmlToOLCandsService
 {
+	private static final String CURRENCY_CODE = "CHF";
+
+	private static final String UOM_CODE = "MJ";  // minute; HUR would be hour
+
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 
 	private XmlToOLCandsService(@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint)
@@ -618,7 +620,8 @@ public class XmlToOLCandsService
 					.externalId(externalId)
 					.product(product)
 					.price(price)
-					.currencyCode("CHF")
+					.currencyCode(CURRENCY_CODE)
+					.uomCode(UOM_CODE)
 					.discount(ZERO)
 					.qty(quantity);
 
@@ -651,7 +654,7 @@ public class XmlToOLCandsService
 				.code(productCode)
 				.name(productName)
 				.type(Type.SERVICE)
-				.uomCode("HUR")
+				.uomCode(UOM_CODE)
 				.build();
 		return product;
 	}
