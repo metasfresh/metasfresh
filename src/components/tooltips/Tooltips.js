@@ -11,11 +11,14 @@ class Tooltips extends Component {
 
   componentDidMount() {
     const { delay } = this.props;
-    this.timeout = setTimeout(() => {
-      this.setState({
-        opacity: 1,
-      });
-    }, delay ? delay : 1000);
+    this.timeout = setTimeout(
+      () => {
+        this.setState({
+          opacity: 1,
+        });
+      },
+      delay ? delay : 1000
+    );
   }
 
   componentWillUnmount() {

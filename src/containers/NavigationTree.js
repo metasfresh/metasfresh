@@ -339,8 +339,9 @@ class NavigationTree extends Component {
               />
             ))}
 
-          {queriedResults.length === 0 &&
-            query !== '' && <span>There are no results</span>}
+          {queriedResults.length === 0 && query !== '' && (
+            <span>There are no results</span>
+          )}
         </div>
       </div>
     );

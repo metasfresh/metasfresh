@@ -57,7 +57,7 @@ class Tabs extends Component {
           tabIndex={modalVisible ? -1 : tabIndex}
           onKeyDown={e => this.handlePillKeyDown(e, item.key)}
           style={{ maxWidth }}
-          title={item.props.caption}
+          title={item.props.description || item.props.caption}
         >
           <a className={'nav-link ' + (selected === item.key ? 'active' : '')}>
             {item.props.caption}

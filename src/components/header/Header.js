@@ -62,7 +62,7 @@ class Header extends Component {
     this.removeEventListeners();
   }
 
-  componentWillUpdate(nextProps) {
+  UNSAFE_componentWillUpdate(nextProps) {
     const { dropzoneFocused } = this.props;
 
     if (
@@ -597,19 +597,18 @@ class Header extends Component {
           />
         )}
 
-        {showSidelist &&
-          isSideListShow && (
-            <SideList
-              windowType={windowType ? windowType : ''}
-              closeOverlays={this.closeOverlays}
-              closeSideList={this.handleSidelistToggle}
-              isSideListShow={isSideListShow}
-              disableOnClickOutside={!showSidelist}
-              docId={dataId}
-              defaultTab={sideListTab}
-              open
-            />
-          )}
+        {showSidelist && isSideListShow && (
+          <SideList
+            windowType={windowType ? windowType : ''}
+            closeOverlays={this.closeOverlays}
+            closeSideList={this.handleSidelistToggle}
+            isSideListShow={isSideListShow}
+            disableOnClickOutside={!showSidelist}
+            docId={dataId}
+            defaultTab={sideListTab}
+            open
+          />
+        )}
 
         {isEmailOpen && (
           <NewEmail

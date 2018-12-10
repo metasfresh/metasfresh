@@ -160,14 +160,13 @@ class UserDropdown extends Component {
             </div>
           </div>
         )}
-        {tooltipOpen === shortcut &&
-          !open && (
-            <Tooltips
-              name={shortcut}
-              action={counterpart.translate('mainScreen.userMenu.tooltip')}
-              type={''}
-            />
-          )}
+        {tooltipOpen === shortcut && !open && (
+          <Tooltips
+            name={shortcut}
+            action={counterpart.translate('mainScreen.userMenu.tooltip')}
+            type={''}
+          />
+        )}
       </div>
     );
   }

@@ -144,31 +144,15 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
     });
   });
 
-/* TODO: What is this command for ? Looks like a dupe of
- * writeIntoCompositeLookupField
- * Kuba
- */
 Cypress.Commands.add(
-  'writeIntoLookupListField',
-  (fieldName, partialValue, listValue) => {
-    describe('Enter value into lookup list field', function() {
-      cy.get(`.form-field-${fieldName}`)
-        .find('input')
-        .type(partialValue);
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    });
-});
-
-Cypress.Commands.add(
-  'writeIntoCompositeLookupField',
+  'writeIntoLookupField',
   (fieldName, partialValue, listValue) => {
     describe('Enter value into lookup list field', function() {
       cy.get(`#lookup_${fieldName}`)
         .within(($el) => {
           if ($el.find('.lookup-widget-wrapper input').length) {
-            return cy.get('input').type(partialValue);
+            return cy.get('input').clear()
+              .type(partialValue);
           }
 
           return cy.get('.lookup-dropdown').click();
@@ -274,6 +258,12 @@ Cypress.Commands.add('selectTab', (tabName) => {
   });
 });
 
+Cypress.Commands.add('selectReference', (refName) => {
+  describe('Select reference with a certain name', function() {
+    return cy.get(`.reference_${refName}`)
+  });
+});
+
 /*
  * This command allows waiting for the breadcrumb in the header to be visible, which
  * helps make the tests less flaky as even though the page fires load event, some
@@ -308,6 +298,15 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
           cy.get('.header-item').should('contain', breadcrumbs[breadcrumbNumber].caption);
         });
     }
+  });
+});
+
+Cypress.Commands.add('selectSingleTabRow', () => {
+  describe('Select the only row in the currently selected tab', function() {
+    cy.get('.table-flex-wrapper')
+    .find('tbody tr')
+    .should('exist')
+    .click();
   });
 });
 

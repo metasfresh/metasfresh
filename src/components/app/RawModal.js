@@ -40,7 +40,7 @@ class RawModal extends Component {
     this.removeEventListeners();
   }
 
-  componentWillUpdate(props) {
+  UNSAFE_componentWillUpdate(props) {
     if (this.resolve) {
       if (!props.success || props.requests.length === 0) {
         this.resolve(props.success);

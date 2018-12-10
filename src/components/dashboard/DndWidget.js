@@ -77,13 +77,12 @@ export class DndWidget extends Component {
             'dnd-placeholder': placeholder,
           })}
         >
-          {!placeholder &&
-            removeCard && (
-              <i
-                className="meta-icon-trash draggable-icon-remove pointer"
-                onClick={() => removeCard(entity, index, id)}
-              />
-            )}
+          {!placeholder && removeCard && (
+            <i
+              className="meta-icon-trash draggable-icon-remove pointer"
+              onClick={() => removeCard(entity, index, id)}
+            />
+          )}
           {children}
         </div>
       )
