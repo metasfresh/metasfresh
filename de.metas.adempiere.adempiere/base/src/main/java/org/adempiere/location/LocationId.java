@@ -56,5 +56,4 @@ public class LocationId implements RepoIdAware
 	{
 		return locationId != null ? locationId.getRepoId() : defaultValue;
 	}
-
 }
