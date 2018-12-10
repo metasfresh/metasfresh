@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -19,13 +20,14 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailVoidRequest;
+import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
-import de.metas.costing.methods.CostingMethodHandler;
-import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -109,7 +111,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 
 		if (costCollectorType.isMaterialReceiptOrCoProduct())
 		{
-			return Optional.of(createMainProductOrCoProductReceipt(request));
+			return Optional.of(createMainProductOrCoProductReceipt(request, orderId));
 		}
 		if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
@@ -130,10 +132,33 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		}
 	}
 
-	private CostDetailCreateResult createMainProductOrCoProductReceipt(final CostDetailCreateRequest request)
+	private CostDetailCreateResult createMainProductOrCoProductReceipt(final CostDetailCreateRequest request, final PPOrderId orderId)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+
+		CostDetailCreateRequest requestEffective;
+
+		if (!request.isReversal())
+		{
+			final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
+			final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
+
+			final CostPrice price = orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement)
+					.orElseThrow(() -> new AdempiereException("No cost price found for " + costSegmentAndElement + " in " + orderCosts));
+
+			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+
+			requestEffective = request.withAmount(amt);
+		}
+		else
+		{
+			requestEffective = request;
+		}
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
+		currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty());
+
+		return result;
 	}
 
 	private CostDetailCreateResult createComponentIssue(

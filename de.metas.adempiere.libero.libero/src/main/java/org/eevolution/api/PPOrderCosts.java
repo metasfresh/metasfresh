@@ -3,14 +3,19 @@ package org.eevolution.api;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -50,7 +55,7 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 {
 	@Getter
 	private final PPOrderId orderId;
-	private final ImmutableList<PPOrderCost> costs;
+	private final ImmutableMap<CostSegmentAndElement, PPOrderCost> costs;
 
 	@Builder
 	private PPOrderCosts(
@@ -58,21 +63,18 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 			@NonNull final Collection<PPOrderCost> costs)
 	{
 		this.orderId = orderId;
-		this.costs = ImmutableList.copyOf(costs);
-
-		// make sure we have only one entry for each cost segment+element
-		Maps.uniqueIndex(costs, PPOrderCost::getCostSegmentAndElement);
+		this.costs = Maps.uniqueIndex(costs, PPOrderCost::getCostSegmentAndElement);
 	}
 
-	public ImmutableList<PPOrderCost> toList()
+	public ImmutableCollection<PPOrderCost> toCollection()
 	{
-		return costs;
+		return costs.values();
 	}
 
 	@Override
 	public Iterator<PPOrderCost> iterator()
 	{
-		return toList().iterator();
+		return toCollection().iterator();
 	};
 
 	public List<PPOrderCost> getByProductAndCostElements(
@@ -87,9 +89,22 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 				.build());
 	}
 
+	public Optional<CostPrice> getPriceByCostSegmentAndElement(final CostSegmentAndElement costSegmentAndElement)
+	{
+		final PPOrderCost cost = costs.get(costSegmentAndElement);
+		if (cost == null)
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			return Optional.of(cost.getPrice());
+		}
+	}
+
 	private List<PPOrderCost> filterAndList(@NonNull final Predicate<PPOrderCost> filter)
 	{
-		return toList()
+		return toCollection()
 				.stream()
 				.filter(filter)
 				.collect(ImmutableList.toImmutableList());
@@ -97,7 +112,7 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 
 	public PPOrderCosts removingByProductsAndCostElements(final Set<ProductId> productIds, final Set<CostElementId> costElementIds)
 	{
-		final List<PPOrderCost> newCosts = toList()
+		final List<PPOrderCost> newCosts = toCollection()
 				.stream()
 				.filter(cost -> !productIds.contains(cost.getProductId())
 						|| !costElementIds.contains(cost.getCostElementId()))
@@ -108,7 +123,7 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 	public PPOrderCosts addingCosts(final Collection<PPOrderCost> costsToAdd)
 	{
 		final List<PPOrderCost> newCosts = ImmutableList.<PPOrderCost> builder()
-				.addAll(costs)
+				.addAll(toCollection())
 				.addAll(costsToAdd)
 				.build();
 		return new PPOrderCosts(orderId, newCosts);

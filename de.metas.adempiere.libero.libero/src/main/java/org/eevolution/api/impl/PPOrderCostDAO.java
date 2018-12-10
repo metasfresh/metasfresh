@@ -84,7 +84,10 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 
 		//
 		// Delete old records which are no longer needed
-		final Set<Integer> repoIdsToUpdate = orderCosts.toList().stream().map(PPOrderCost::getRepoId).collect(ImmutableSet.toImmutableSet());
+		final Set<Integer> repoIdsToUpdate = orderCosts.toCollection()
+				.stream()
+				.map(PPOrderCost::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 		final List<I_PP_Order_Cost> recordsToDelete = new ArrayList<>();
 		for (final int repoId : ImmutableSet.copyOf(existingRecordsById.keySet()))
 		{
