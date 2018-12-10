@@ -68,23 +68,14 @@ class RawList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      list,
-      mandatory,
-      defaultValue,
-      selected,
-      autoFocus,
-      emptyText,
-      isFocused,
-    } = this.props;
-
+    const { list, mandatory, defaultValue, selected, emptyText } = this.props;
     let dropdownList = this.state.dropdownList;
     let changedValues = {};
 
     if (!is(prevProps.list, list)) {
       dropdownList = List(list);
       if (!mandatory && emptyText) {
-        dropdownList = dropdownList.unshift({
+        dropdownList = dropdownList.push({
           caption: emptyText,
           key: null,
         });
@@ -128,7 +119,7 @@ class RawList extends PureComponent {
           ...changedValues,
         },
         () => {
-          autoFocus && !isFocused && this.dropdown.focus();
+          this.dropdown.focus();
         }
       );
     }
