@@ -12,7 +12,7 @@ import de.metas.jenkins.MvnConf
 final skipDeploymentParamDefaultValue = false;
 
 final String MF_SQL_DEED_DUMP_URL_DEFAULT = 
-	MF_UPSTREAM_BRANCH == 'release' 
+	env.BRANCH_NAME == 'release' 
 		? 'http://www.metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_39.pgdump' 
 		: 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump'
 
