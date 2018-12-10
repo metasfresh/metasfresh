@@ -80,8 +80,6 @@ public final class Fact
 
 		// Fix [ 1884676 ] Fact not setting transaction
 		m_trxName = document.getTrxName();
-
-		log.info("Fact: {}", this);
 	}	// Fact
 
 	// services

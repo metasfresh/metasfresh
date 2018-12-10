@@ -783,11 +783,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		final int updatedCount = DB.executeUpdateEx(sql.toString(), trxName);
-		if (updatedCount == 1)
-		{
-			log.info("Locked: " + get_TableName() + "_ID=" + get_ID());
-		}
-		else
+		if (updatedCount != 1)
 		{
 			final PO po = getPO();
 			final String errmsg = force ? "Cannot Lock - ReSubmit" : "Cannot Lock - ReSubmit or RePost with Force";
