@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1422432546L;
+	private static final long serialVersionUID = 273299024L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -108,16 +108,16 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set AD_User_ExternalId.
-		@param AD_User_ExternalId AD_User_ExternalId	  */
+	/** Set Benutzer ExternalId.
+		@param AD_User_ExternalId Benutzer ExternalId	  */
 	@Override
 	public void setAD_User_ExternalId (java.lang.String AD_User_ExternalId)
 	{
 		set_Value (COLUMNNAME_AD_User_ExternalId, AD_User_ExternalId);
 	}
 
-	/** Get AD_User_ExternalId.
-		@return AD_User_ExternalId	  */
+	/** Get Benutzer ExternalId.
+		@return Benutzer ExternalId	  */
 	@Override
 	public java.lang.String getAD_User_ExternalId () 
 	{
@@ -497,16 +497,16 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set C_BPartner_ExternalId.
-		@param C_BPartner_ExternalId C_BPartner_ExternalId	  */
+	/** Set Geschaftspartner ExternalId.
+		@param C_BPartner_ExternalId Geschaftspartner ExternalId	  */
 	@Override
 	public void setC_BPartner_ExternalId (java.lang.String C_BPartner_ExternalId)
 	{
 		set_Value (COLUMNNAME_C_BPartner_ExternalId, C_BPartner_ExternalId);
 	}
 
-	/** Get C_BPartner_ExternalId.
-		@return C_BPartner_ExternalId	  */
+	/** Get Geschaftspartner ExternalId.
+		@return Geschaftspartner ExternalId	  */
 	@Override
 	public java.lang.String getC_BPartner_ExternalId () 
 	{
@@ -550,16 +550,16 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set C_BPartner_Location_ExternalId.
-		@param C_BPartner_Location_ExternalId C_BPartner_Location_ExternalId	  */
+	/** Set Standort ExternalId.
+		@param C_BPartner_Location_ExternalId Standort ExternalId	  */
 	@Override
 	public void setC_BPartner_Location_ExternalId (java.lang.String C_BPartner_Location_ExternalId)
 	{
 		set_Value (COLUMNNAME_C_BPartner_Location_ExternalId, C_BPartner_Location_ExternalId);
 	}
 
-	/** Get C_BPartner_Location_ExternalId.
-		@return C_BPartner_Location_ExternalId	  */
+	/** Get Standort ExternalId.
+		@return Standort ExternalId	  */
 	@Override
 	public java.lang.String getC_BPartner_Location_ExternalId () 
 	{
@@ -2313,6 +2313,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getTitle () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Title);
+	}
+
+	/** Set URL.
+		@param URL 
+		Full URL address - e.g. http://www.adempiere.org
+	  */
+	@Override
+	public void setURL (java.lang.String URL)
+	{
+		set_Value (COLUMNNAME_URL, URL);
+	}
+
+	/** Get URL.
+		@return Full URL address - e.g. http://www.adempiere.org
+	  */
+	@Override
+	public java.lang.String getURL () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_URL);
 	}
 
 	/** Set Suchschlüssel.
