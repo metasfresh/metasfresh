@@ -95,6 +95,15 @@ public class CostingMethodHandlerUtils
 				.build();
 	}
 
+	public final CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
+	{
+		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
+				.changingCosts(true)
+				.previousAmounts(CostDetailPreviousAmounts.of(previousCosts)));
+
+		return createCostDetailCreateResult(costDetail, request);
+	}
+
 	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
 	{
 		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
@@ -129,15 +138,6 @@ public class CostingMethodHandlerUtils
 				.costElementId(costElementId)
 				.documentRef(request.getDocumentRef())
 				.build();
-	}
-
-	public final CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
-	{
-		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
-				.changingCosts(true)
-				.previousAmounts(CostDetailPreviousAmounts.of(previousCosts)));
-
-		return createCostDetailCreateResult(costDetail, request);
 	}
 
 	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
