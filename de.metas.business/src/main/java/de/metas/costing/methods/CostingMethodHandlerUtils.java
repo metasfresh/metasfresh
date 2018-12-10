@@ -1,9 +1,11 @@
 package de.metas.costing.methods;
 
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
@@ -19,6 +21,11 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.ICurrencyConversionResult;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -48,6 +55,7 @@ import lombok.NonNull;
 public class CostingMethodHandlerUtils
 {
 	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final ICostDetailRepository costDetailsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
@@ -161,4 +169,33 @@ public class CostingMethodHandlerUtils
 		currentCostsRepo.save(currentCost);
 	}
 
+	public CostAmount convertToAcctSchemaCurrency(final CostAmount amt, final CostDetailCreateRequest request)
+	{
+		final AcctSchema acctSchema = acctSchemaRepo.getById(request.getAcctSchemaId());
+		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
+		if (CurrencyId.equals(amt.getCurrencyId(), acctCurrencyId))
+		{
+			return amt;
+		}
+
+		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(request);
+
+		final ICurrencyConversionResult result = currencyBL.convert(
+				conversionCtx,
+				amt.getValue(),
+				amt.getCurrencyId().getRepoId(),
+				acctCurrencyId.getRepoId());
+
+		return CostAmount.of(result.getAmount(), acctCurrencyId);
+	}
+
+	private ICurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
+	{
+		final ICurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+				TimeUtil.asDate(request.getDate()),
+				CurrencyConversionTypeId.toRepoId(request.getCurrencyConversionTypeId()),
+				request.getClientId(),
+				request.getOrgId());
+		return conversionCtx;
+	}
 }

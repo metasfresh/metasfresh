@@ -16,6 +16,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
@@ -115,6 +116,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final AcctSchemaId acctSchemaId = as.getId();
+		final CostingMethod costingMethod = as.getCosting().getCostingMethod();
 
 		if (isReversalLine())
 		{
@@ -124,7 +126,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateDoc()))
 					.build())
-					.getTotalAmount();
+					.getTotalAmount(costingMethod);
 		}
 		else
 		{
@@ -140,7 +142,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 							.date(TimeUtil.asLocalDate(getDateDoc()))
 							.build())
-					.getTotalAmount();
+					.getTotalAmount(costingMethod);
 		}
 	}
 
@@ -149,6 +151,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final AcctSchemaId acctSchemaId = as.getId();
+		final CostingMethod costingMethod = as.getCosting().getCostingMethod();
 
 		if (isReversalLine())
 		{
@@ -158,7 +161,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateAcct()))
 					.build())
-					.getTotalAmount();
+					.getTotalAmount(costingMethod);
 		}
 		else
 		{
@@ -174,7 +177,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 							.date(TimeUtil.asLocalDate(getDateAcct()))
 							.build())
-					.getTotalAmount();
+					.getTotalAmount(costingMethod);
 		}
 	}
 }

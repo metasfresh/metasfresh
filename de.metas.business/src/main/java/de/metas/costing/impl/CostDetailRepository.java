@@ -85,9 +85,13 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setQty(cd.getQty().getAsBigDecimal());
 
 		record.setIsChangingCosts(cd.isChangingCosts());
-		record.setPrev_CurrentCostPrice(cd.getPreviousAmounts().getCostPrice().getOwnCostPrice().getValue());
-		record.setPrev_CurrentCostPriceLL(cd.getPreviousAmounts().getCostPrice().getComponentsCostPrice().getValue());
-		record.setPrev_CurrentQty(cd.getPreviousAmounts().getQty().getAsBigDecimal());
+		final CostDetailPreviousAmounts previousAmounts = cd.getPreviousAmounts();
+		if (previousAmounts != null)
+		{
+			record.setPrev_CurrentCostPrice(previousAmounts.getCostPrice().getOwnCostPrice().getValue());
+			record.setPrev_CurrentCostPriceLL(previousAmounts.getCostPrice().getComponentsCostPrice().getValue());
+			record.setPrev_CurrentQty(previousAmounts.getQty().getAsBigDecimal());
+		}
 
 		updateRecordFromDocumentRef(record, cd.getDocumentRef());
 

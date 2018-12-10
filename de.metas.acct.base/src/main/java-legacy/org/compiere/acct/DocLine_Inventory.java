@@ -13,6 +13,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
 import de.metas.quantity.Quantity;
 
@@ -67,6 +68,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final AcctSchemaId acctSchemaId = as.getId();
+		final CostingMethod costingMethod = as.getCosting().getCostingMethod();
 
 		if (isReversalLine())
 		{
@@ -76,7 +78,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 					.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
 					.date(TimeUtil.asLocalDate(getDateDoc()))
 					.build())
-					.getTotalAmount();
+					.getTotalAmount(costingMethod);
 		}
 		else
 		{
@@ -92,7 +94,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 							.date(TimeUtil.asLocalDate(getDateDoc()))
 							.build())
-					.getTotalAmount();
+					.getTotalAmount(costingMethod);
 		}
 	}
 }

@@ -46,8 +46,6 @@ public final class AggregatedCostAmount
 	@Getter(AccessLevel.NONE)
 	CostSegment costSegment;
 
-	CostAmount totalAmount;
-
 	@Getter(AccessLevel.NONE)
 	ImmutableMap<CostElement, CostAmount> amountsPerElement;
 
@@ -59,11 +57,7 @@ public final class AggregatedCostAmount
 		Check.assumeNotEmpty(amounts, "amounts is not empty");
 
 		this.costSegment = costSegment;
-		this.amountsPerElement = ImmutableMap.copyOf(amounts);
-		totalAmount = amounts.values()
-				.stream()
-				.reduce(CostAmount::add)
-				.get();
+		amountsPerElement = ImmutableMap.copyOf(amounts);
 	}
 
 	public Set<CostElement> getCostElements()
@@ -125,5 +119,15 @@ public final class AggregatedCostAmount
 		amountsPerElement.forEach((costElement, amt) -> amountsNew.put(costElement, amt.divide(divisor, precision, roundingMode)));
 
 		return new AggregatedCostAmount(costSegment, amountsNew);
+	}
+
+	public CostAmount getTotalAmount(final CostingMethod costingMethod)
+	{
+		return getCostElements()
+				.stream()
+				.filter(costElement -> costingMethod.equals(costElement.getCostingMethod()))
+				.map(this::getCostAmountForCostElement)
+				.reduce(CostAmount::add)
+				.orElseThrow(() -> new AdempiereException("No costs found for " + costingMethod + " in " + this));
 	}
 }

@@ -46,6 +46,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
@@ -509,6 +510,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final I_M_MatchInv matchInv = getM_MatchInv();
 
 		final AcctSchemaId acctSchemaId = as.getId();
+		final CostingMethod costingMethod = as.getCosting().getCostingMethod();
 		
 		return costDetailService
 				.createCostDetail(CostDetailCreateRequest.builder()
@@ -524,7 +526,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.date(TimeUtil.asLocalDate(currencyConvCtx.getConversionDate()))
 						.description(getDescription())
 						.build())
-				.getTotalAmount();
+				.getTotalAmount(costingMethod);
 	}
 
 }   // Doc_MatchInv

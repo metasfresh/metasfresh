@@ -62,7 +62,7 @@ public class CostDetail
 
 	boolean changingCosts;
 
-	@NonNull
+	// @NonNull
 	CostDetailPreviousAmounts previousAmounts;
 
 	@NonNull

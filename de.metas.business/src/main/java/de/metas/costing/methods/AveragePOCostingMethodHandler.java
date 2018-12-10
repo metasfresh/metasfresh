@@ -95,7 +95,9 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final int receiptInOutLineId = request.getDocumentRef().getRecordId();
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
+				.map(price -> utils.convertToAcctSchemaCurrency(price, request))
 				.orElseGet(() -> utils.getCurrentCostPrice(request).toCostAmount());
+
 		final CostAmount amt = costPrice.multiply(request.getQty());
 		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
 	}
@@ -155,7 +157,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		
+
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
 		return Optional.of(matchInv)
 				.map(I_M_MatchInv::getC_InvoiceLine)
