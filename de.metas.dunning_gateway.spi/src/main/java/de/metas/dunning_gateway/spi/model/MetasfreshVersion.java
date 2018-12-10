@@ -32,5 +32,6 @@ public class MetasfreshVersion
 	final int major;
 	final int minor;
 
+	/** Not longer than 50 chars, otherwise there will be trouble with some XSDs. */
 	final String fullVersion;
 }

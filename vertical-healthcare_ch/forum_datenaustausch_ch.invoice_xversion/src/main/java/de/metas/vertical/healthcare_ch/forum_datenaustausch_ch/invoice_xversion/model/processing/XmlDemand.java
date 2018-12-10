@@ -1,10 +1,11 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing;
 
+import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.xml.datatype.XMLGregorianCalendar;
 
 /*
  * #%L
@@ -41,6 +42,6 @@ public class XmlDemand
 	@NonNull
 	XMLGregorianCalendar insuranceDemandDate;
 
-	@NonNull
+	@Nullable
 	String insuranceDemandId;
 }

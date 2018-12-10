@@ -18,8 +18,6 @@ package org.compiere;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.IOException;
@@ -67,6 +65,7 @@ import de.metas.util.Check;
 import de.metas.util.DefaultServiceNamePolicy;
 import de.metas.util.Services;
 import de.metas.util.lang.SoftwareVersion;
+import lombok.NonNull;
 
 /**
  * Adempiere Control Class
@@ -402,7 +401,7 @@ public class Adempiere
 	 */
 	public static String getBuildAndDateVersion()
 	{
-		return getBuildVersion() + " @ " + getDateVersion();
+		return getBuildVersion().getFullVersion() + " @ " + getDateVersion();
 	}   // getVersion
 
 	/**
