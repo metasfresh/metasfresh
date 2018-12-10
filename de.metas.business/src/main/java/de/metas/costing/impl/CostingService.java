@@ -292,20 +292,22 @@ public class CostingService implements ICostingService
 		final Set<CostingMethodHandler> costingMethodHandlers = this.costingMethodHandlers.get(costingMethod);
 		if (costingMethodHandlers.isEmpty())
 		{
-			throw new AdempiereException("No " + CostingMethodHandler.class + " found for " + costingMethod);
+			throw new AdempiereException("No " + CostingMethodHandler.class.getName() + " found for " + costingMethod
+					+ ". Available costing methods are: " + this.costingMethodHandlers.keySet());
 		}
 		return costingMethodHandlers;
 	}
 
 	private Set<CostingMethodHandler> getCostingMethodHandlers(final CostingMethod costingMethod, final CostingDocumentRef documentRef)
 	{
-		final Set<CostingMethodHandler> costingMethodHandlers = getCostingMethodHandlers(costingMethod)
+		Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
+		final Set<CostingMethodHandler> costingMethodHandlers = allCostingMethodHandlers
 				.stream()
 				.filter(handler -> isHandledBy(handler, documentRef))
 				.collect(ImmutableSet.toImmutableSet());
 		if (costingMethodHandlers.isEmpty())
 		{
-			throw new AdempiereException("No " + CostingMethodHandler.class + " found for " + costingMethod);
+			throw new AdempiereException("None of following costing helpers could handle " + documentRef + ": " + allCostingMethodHandlers);
 		}
 		return costingMethodHandlers;
 	}
