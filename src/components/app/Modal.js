@@ -2,6 +2,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 
 import { processNewRecord } from '../../actions/GenericActions';
 import {
@@ -375,7 +376,7 @@ class Modal extends Component {
 
     return (
       Object.keys(data).length > 0 && (
-        <div className="screen-freeze js-not-unselect">
+        <div>
           <div className="panel panel-modal panel-modal-primary">
             <div
               className={
