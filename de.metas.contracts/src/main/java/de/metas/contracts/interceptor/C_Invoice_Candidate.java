@@ -158,7 +158,7 @@ public class C_Invoice_Candidate
 			if (invoiceCand.isToClear())
 			{
 				final List<I_C_Invoice_Clearing_Alloc> icas = flatrateDAO.retrieveClearingAllocs(invoiceCand);
-				Check.assume(icas.size() <= 1, invoiceCand + " has max 1 ica");
+				Check.assume(icas.size() <= 1, invoiceCand + " has max 1 C_Invoice_Clearing_Alloc");
 
 				if (!icas.isEmpty() && icas.get(0).getC_Flatrate_DataEntry_ID() > 0)
 				{

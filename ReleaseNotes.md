@@ -10,6 +10,53 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.84
+# Features
+* metasfresh-webui-frontend
+  * [#2082](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2082) Show tab description as tool tip
+
+# Fixes
+* metasfresh-webui-frontend
+  * [#2064](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2064) Warning: Failed prop type: Invalid prop `logged` of type `string` supplied to `Login`, expected `boolean`
+    * Fixes a console error that appeared when redirecting to another window via link directly through login.
+  * [#2066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2066) Changes in tabs in grid view not always patched (e.g. description in orderline)
+    * Improves the behavior of Text changing confirmation.
+  * [#2070](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2070) Number changing in order line grid view
+    * Improves the behavior of Number changing confirmation.
+  * [#2086](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2086) Individual Logo shall not have hashsequence added to name
+    * Improves the Logo Handling in Build process. Now not adding a hash anymore to the logo file, which makes it easier to automate individual logos in Build process.
+
+# metasfresh 5.83
+# Features
+* metasfresh
+  * [#4787](https://github.com/metasfresh/metasfresh/issues/4787) Product Document Note Translation
+    * New Feature that allows to translate the Document Notes.
+  * [#4789](https://github.com/metasfresh/metasfresh/issues/4789) C_BPartner filter for IsActive
+    * New Filter in Business Partner window that allowes to show only active Business Partners.
+  * [#4795](https://github.com/metasfresh/metasfresh/issues/4795) Product No. of customer also with ASI
+    * New Feature that makes it possible to define customer Product No. based on Attribute values.
+
+* metasfresh-webui-api
+  * [#1111](https://github.com/metasfresh/metasfresh-webui-api/issues/1111) Include internalName in JSONReference
+    * Now the internal Name is delivered by API which can be used in Cpress Tests.
+
+* metasfresh-webui-frontend
+  * [#2083](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2083) Cypress pressDoneButton shall fail if the respective record was not saved
+    * Cypress Test that fails if the record was not saved yet when pressing the Done button.
+
+# Fixes
+* metasfresh
+  * [#4793](https://github.com/metasfresh/metasfresh/issues/4793) View docs_sales_invoice_details_compensation_subgroup: the invoice detail shall be taken from invoice
+    * Adjustment of Jasper Invoice Document, now taking further invoice details from invoiceline, instead of orderline.
+  * [#4797](https://github.com/metasfresh/metasfresh/issues/4797) HU Trace window: filtering by HUTaceType returns no results
+    * Fixes the filtering in Handling Unit Trace Window, now able to filter the HU Trace Type again.
+  * [#4802](https://github.com/metasfresh/metasfresh/issues/4802) Required IfExists parameter 'ifBPartnersExist' is not present
+    * Internal fix for Fix for 'ifBPartnersExist' parm.
+
+* metasfresh-webui-frontend
+  * [#2073](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2073) Failing cypress tests
+    * Fixes some failing Cypress Tests.
+
 # metasfresh 5.82
 # Features
 * metasfresh
@@ -20,15 +67,15 @@ Here come the actual release notes:
   * [#4664](https://github.com/metasfresh/metasfresh/issues/4664) New Window "Application Elements"
     * New Window in WebUI that Allows to maintain the Window Element Names and Description in a central place.
   * [#4717](https://github.com/metasfresh/metasfresh/issues/4717) Set Order-Checkup printout receiver via AD_Workflow
-    * Improvement of the Printing Routing. Now receiving printing Infomration for Manufacturing via workflows, instead of warehouse.
+    * Improvement of the Printing Routing. Now receiving printing Information for Manufacturing via workflows, instead of warehouse.
   * [#4737](https://github.com/metasfresh/metasfresh/issues/4737) Fix attribute value lookup for webui
-    * Minor Improvement of the Attribute alue Lookup in WebUI.
+    * Minor Improvement of the Attribute value Lookup in WebUI.
   * [#4745](https://github.com/metasfresh/metasfresh/issues/4745) Allow editing attachment descriptions in BPartner-B2C
     * Feature to Edit attachment descriptions in Businesspartner B2C window in WebUI.
   * [#4756](https://github.com/metasfresh/metasfresh/issues/4756) order-candidates REST-API - option to just lookup, but not create BPartners
     * New Endpoint in Rest API to lookup Business Partners.
   * [#4763](https://github.com/metasfresh/metasfresh/issues/4763) Update material dispo correction from StockChangedEvents
-    * Improvement of the Material Disposition. Now updateing adjustment from Dtock Change Events.
+    * Improvement of the Material Disposition. Now updateing adjustment from Stock Change Events.
   * [#4764](https://github.com/metasfresh/metasfresh/issues/4764) Translation of Greetings in WebUI
     * New Window for Greetings Translation in WebUI.
   * [#4766](https://github.com/metasfresh/metasfresh/issues/4766) C_OrderLine: ProductDescription - don't add qty from BOM if is one
@@ -52,7 +99,7 @@ Here come the actual release notes:
     * Fixes the Configuration of No Invoice in Contracts, now not creating invoices when this option is set.
   * [#4773](https://github.com/metasfresh/metasfresh/issues/4773) google Reflections not working with maven surefire plugin
     * Internal Bugfix for using google reflections with the maven surefire plugin.
-  * [#4775](https://github.com/metasfresh/metasfresh/issues/4775) package order line out of sync when order is reactivated and completed again
+  * [#4775](https://github.com/metasfresh/metasfresh/issues/4775) Package order line out of sync when order is reactivated and completed again
     * Fixes a Bug in Orderline that occurred with out of sync package material lines after reactivating an Order.
   * [#4778](https://github.com/metasfresh/metasfresh/issues/4778) Fix failing tests when running de.metas.fresh all tests suite in eclipse
     * Fixes some failing automated tests.
@@ -65,7 +112,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1997](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1997) Cypress: Product set Documentnote Test fails
-    * Fixes the cypress test on setting Doument Notes.
+    * Fixes the cypress test on setting Document Notes.
   * [#2048](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2048) View: clicking outside of table does not unselect the current selected lines
     * Bugfix for the unselecting of grid selections when clicking outside grid.
   * [#2058](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2058) Cannot close the HU Editor in manufacturing order anymore
@@ -73,7 +120,7 @@ Here come the actual release notes:
   * [#2067](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2067) Dropdown in bpartner field in order sometimes remains displayed after selecting bpartner
     * Fixes a minor Bug that occurred when selecting dropdown entries with mouse. Now closing the dropdown after selecting again.
   * [#2069](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2069) Number Inserting in Order Quick Input
-    * Fixes the Batch Entry in Sales Order, now reacting creating a new line after presssing enter again.
+    * Fixes the Batch Entry in Sales Order, now reacting creating a new line after pressing enter again.
 
 * metasfresh-parent
   * [#25](https://github.com/metasfresh/metasfresh-parent/issues/25) jasper reports are compiled with wrong version

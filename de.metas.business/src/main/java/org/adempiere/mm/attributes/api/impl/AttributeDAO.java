@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -262,7 +263,7 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		I_M_AttributeSetInstance asi = loadOutOfTrx(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+		I_M_AttributeSetInstance asi = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
 		return retrieveAttributeInstances(asi);
 	}
 
