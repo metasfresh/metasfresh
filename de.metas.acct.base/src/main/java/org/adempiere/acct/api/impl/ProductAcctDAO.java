@@ -86,7 +86,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	@Override
 	public I_M_Product_Acct retrieveProductAcctOrNull(final AcctSchema acctSchema, final ProductId productId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(acctSchema);
+		final Properties ctx = Env.getCtx();
 		return retrieveProductAcctOrNull(ctx, acctSchema.getId(), productId);
 	}
 
