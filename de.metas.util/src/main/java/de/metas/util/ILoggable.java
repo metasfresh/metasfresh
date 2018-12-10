@@ -3,6 +3,7 @@ package de.metas.util;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,7 +48,7 @@ public interface ILoggable
 	 * @param level
 	 * @return
 	 */
-	default ILoggable withLogger(final Logger logger, final Level level)
+	default ILoggable withLogger(@NonNull final Logger logger, @NonNull final Level level)
 	{
 		return new LoggableWithLogger(this, logger, level);
 	}

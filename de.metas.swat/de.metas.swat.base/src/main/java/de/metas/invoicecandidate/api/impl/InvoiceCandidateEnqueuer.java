@@ -74,9 +74,7 @@ import lombok.NonNull;
  */
 /* package */class InvoiceCandidateEnqueuer implements IInvoiceCandidateEnqueuer
 {
-	@SuppressWarnings("unused")
 	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE = "InvoiceCandBL_Invoicing_Skipped_QtyToInvoice";
-	@SuppressWarnings("unused")
 	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL = "InvoiceCandBL_Invoicing_Skipped_ApprovalForInvoicing";
 	private static final String MSG_IncompleteGroupsFound_1P = "InvoiceCandEnqueuer_IncompleteGroupsFound";
 
@@ -280,8 +278,8 @@ import lombok.NonNull;
 		if (getInvoicingParams().isOnlyApprovedForInvoicing() && !ic.isApprovalForInvoicing())
 		{
 			// don't log; it's obvious for the user, and currently if won't happen anyways (die to the select's whereclause)
-			// final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			// loggable.addLog(msg);
+			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
+			loggable.addLog(msg);
 			return false;
 		}
 
@@ -300,8 +298,8 @@ import lombok.NonNull;
 		if (ic.getQtyOrdered().signum() != 0 && invoiceCandBL.getQtyToInvoice(ic).signum() == 0)
 		{
 			// don't log; it's obvious for the user and there might be a lot of skippings because of this
-			// final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			// loggable.addLog(msg);
+			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
+			loggable.addLog(msg);
 			return false;
 		}
 

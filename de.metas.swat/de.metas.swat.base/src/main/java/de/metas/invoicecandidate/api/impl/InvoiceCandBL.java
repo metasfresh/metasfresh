@@ -72,6 +72,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -140,6 +141,8 @@ import lombok.NonNull;
  */
 public class InvoiceCandBL implements IInvoiceCandBL
 {
+	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = "InvoiceCandBL_Invoicing_Skipped_IsToClear";
+	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = "InvoiceCandBL_Invoicing_Skipped_IsInDispute";
 	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = "InvoiceCandBL_Invoicing_Skipped_DateToInvoice";
 	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = "InvoiceCandBL_Invoicing_Skipped_Error";
 	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED = "InvoiceCandBL_Invoicing_Skipped_Processed";
@@ -782,11 +785,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		// 04533: ignore already processed candidates
 		// task 08343: if the ic is processed (after the recent update), then skip it (this logic was in the where clause in C_Invoice_Candidate_EnqueueSelection)
+		IMsgBL msgBL = Services.get(IMsgBL.class);
+		Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 		if (ic.isProcessed())
 		{
-			final String msg = Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ic), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			logger.info(msg);
-			// loggable.addLog(msg); don't log to the user, it's already shown to the user via field coloring *before* he/she enqueues, and otherwise usually filtered out by the user anyways
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED, new Object[] { ic.getC_Invoice_Candidate_ID() });
+			loggable.withLogger(logger, Level.INFO).addLog(msg);
 			return true;
 		}
 
@@ -794,29 +798,29 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (ic.isError())
 		{
 			final String msg = new StringBuilder()
-					.append(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ic), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR, new Object[] { ic.getC_Invoice_Candidate_ID() }))
+					.append(msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR, new Object[] { ic.getC_Invoice_Candidate_ID() }))
 					.append(": ")
 					.append(ic.getErrorMsg())
 					.toString();
-
-			logger.debug(msg);
-			// loggable.addLog(msg); don't log to the user, it's already shown to the user via field coloring *before* he/she enqueues
+			loggable.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 
 		if (ic.isToClear())
 		{
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
-			// final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			// loggable.addLog(msg);
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR,
+					new Object[] { ic.getC_Invoice_Candidate_ID() });
+			loggable.addLog(msg);
 			return true;
 		}
 
 		if (ic.isInDispute())
 		{
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
-			// final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			// loggable.addLog(msg);
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE,
+					new Object[] { ic.getC_Invoice_Candidate_ID() });
+			loggable.addLog(msg);
 			return true;
 		}
 
@@ -826,10 +830,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (!ignoreInvoiceSchedule
 				&& (dateToInvoice == null || dateToInvoice.after(getToday())))
 		{
-			final String msg = Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ic), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
 					new Object[] { ic.getC_Invoice_Candidate_ID(), dateToInvoice, getToday() });
-			logger.debug(msg);
-			// loggable.addLog(msg); don't log to the user, it's already shown to the user via field coloring *before* he/she enqueues
+			loggable.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 
