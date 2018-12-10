@@ -1,15 +1,16 @@
 package de.metas.contracts.interceptor;
 
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.impl.BPartnerTimeSpanRepository;
-import lombok.NonNull;
+import de.metas.contracts.invoice.ContractInvoiceService;
+import de.metas.invoice.InvoiceId;
 
 /*
  * #%L
@@ -33,19 +34,35 @@ import lombok.NonNull;
  * #L%
  */
 
-@Interceptor(I_C_BPartner.class)
-@Component("de.metas.contracts.interceptor.C_BPartner")
-public class C_BPartner
+@Interceptor(I_C_Invoice.class)
+@Component("de.metas.contracts.interceptor.C_Invoice")
+public class C_Invoice
 {
+	@Autowired
+	private ContractInvoiceService contractInvoiceService;
 
 	@Autowired
 	private BPartnerTimeSpanRepository bpartnerTimeSpanRepo;
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
-	public void createC_BPartner_TimeSpan(@NonNull final I_C_BPartner bpartner)
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void updateBPartnerTimeSpan(final I_C_Invoice invoice)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
-		bpartnerTimeSpanRepo.createNewBPartnerTimeSpan(bpartnerId);
-	}
+		final InvoiceId invoiceId = de.metas.invoice.InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
+		if (!contractInvoiceService.isContractSalesInvoice(invoiceId))
+		{
+			// nothing to do
+			return;
+		}
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+
+		if(!bpartnerTimeSpanRepo.isNewCustomer(bpartnerId))
+		{
+			// only change bpartners that are already marked as "New Customer"
+			return;
+		}
+
+		contractInvoiceService.updateBPartnerTimeSpan(invoiceId);
+	}
 }
