@@ -1,5 +1,7 @@
 package de.metas.document.archive.api.impl;
 
+import static org.compiere.util.Util.coalesce;
+
 import java.util.List;
 
 /*
@@ -26,12 +28,15 @@ import java.util.List;
 
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Archive;
@@ -45,6 +50,7 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public abstract class AbstractDocOutboundDAO implements IDocOutboundDAO
@@ -60,30 +66,46 @@ public abstract class AbstractDocOutboundDAO implements IDocOutboundDAO
 
 		I_C_Doc_Outbound_Config configSys = null;
 		I_C_Doc_Outbound_Config config = null;
-		for (final I_C_Doc_Outbound_Config c : retrieveAllConfigs())
+		for (final I_C_Doc_Outbound_Config currentConfig : retrieveAllConfigs())
 		{
-			if (c.getAD_Table_ID() == tableId)
+			if (currentConfig.getAD_Table_ID() == tableId)
 			{
-				if (c.getAD_Client_ID() == adClientId)
+				if (currentConfig.getAD_Client_ID() == adClientId)
 				{
-					Check.assume(config == null, "Only one configuration shall exist for tableId '{}' on client '{}' but we found: {}, {}", tableId, adClientId, config, c);
-					config = c;
+					thowExceptionIfNotNull(config, tableId, adClientId, currentConfig);
+					config = currentConfig;
 				}
-				else if (c.getAD_Client_ID() == 0) // system
+				else if (currentConfig.getAD_Client_ID() == 0) // system
 				{
-					Check.assume(configSys == null, "Only one configuration shall exist for tableId '{}' on client '{}' but we found: {}, {}", tableId, 0, configSys, c);
-					configSys = c;
+					thowExceptionIfNotNull(configSys, tableId, adClientId, currentConfig);
+					configSys = currentConfig;
 				}
 			}
 		}
+		return coalesce(config, configSys);
+	}
 
-		return config == null ? configSys : config;
+	private void thowExceptionIfNotNull(
+			@Nullable final I_C_Doc_Outbound_Config alreadyFoundConfig,
+			final int tableId,
+			final int adClientId,
+			@NonNull final I_C_Doc_Outbound_Config currentConfig)
+	{
+		if (alreadyFoundConfig == null)
+		{
+			return;
+		}
+		final String msg = StringUtils.formatMessage(
+				"Only one configuration shall exist for tableId '{}' on client '{}' but we found: {}, {}",
+				tableId, adClientId, alreadyFoundConfig, currentConfig);
+
+		throw new AdempiereException(msg)
+				.markAsUserValidationError(); // this error message is not exactly nice, but we still need to inform the user
 	}
 
 	@Override
-	public final I_C_Doc_Outbound_Config retrieveConfigForModel(final Object model)
+	public final I_C_Doc_Outbound_Config retrieveConfigForModel(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
 

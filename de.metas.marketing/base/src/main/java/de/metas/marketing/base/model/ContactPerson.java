@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.location.LocationId;
 import org.adempiere.user.User;
 import org.adempiere.user.UserId;
 
@@ -93,6 +94,13 @@ public class ContactPerson implements DataRecord
 	@Nullable
 	BPartnerLocationId bpLocationId;
 
+	/**
+	 * If a {@link #bPartnerId} is not-null, then this is always the locationId of the respective {@link #bpLocationId}.
+	 * In that case, if the respective {@link #bpLocationId} is {@code null}, then this is also {@code null}.
+	 */
+	@Nullable
+	LocationId locationId;
+
 	@Nullable
 	BoilerPlateId boilerPlateId;
 
@@ -108,6 +116,4 @@ public class ContactPerson implements DataRecord
 	{
 		return EmailAddress.getActiveOnRemotePlatformOrNull(getAddress());
 	}
-
-
 }
