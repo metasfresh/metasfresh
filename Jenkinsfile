@@ -63,7 +63,7 @@ For docker we currently don not have such an arrangement.''',
 			name: 'MF_METASFRESH_ESB_CAMEL_VERSION'),
 
 		string(defaultValue: MF_SQL_DEED_DUMP_URL_DEFAULT,
-			description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.'
+			description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
 			name: 'MF_SQL_DEED_DUMP_URL')
 
 	]),
