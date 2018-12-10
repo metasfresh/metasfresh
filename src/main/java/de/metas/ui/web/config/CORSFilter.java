@@ -93,7 +93,7 @@ public class CORSFilter implements Filter
 		// see http://stackoverflow.com/questions/23543719/cors-access-control-max-age-is-ignored
 		httpResponse.setHeader("Access-Control-Max-Age", "600");
 
-		httpResponse.setHeader("Access-Control-Allow-Headers", "x-requested-with, Content-Type, Origin");
+		httpResponse.setHeader("Access-Control-Allow-Headers", "x-requested-with, Content-Type, Origin, Accept-Language");
 		httpResponse.setHeader("Access-Control-Allow-Credentials", "true"); // allow cookies
 	}
 
