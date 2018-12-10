@@ -55,18 +55,18 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 	private final PostMaterialEventService materialEventService;
 
-	private final CandidateRepositoryWriteService candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
-	private final AvailableToPromiseRepository stockRepository;
+	private final AvailableToPromiseRepository availableToPromiseRepository;
 
 	public StockUpCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService,
 			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final AvailableToPromiseRepository stockRepository)
+			@NonNull final AvailableToPromiseRepository availableToPromiseRepository)
 	{
-		this.stockRepository = stockRepository;
-		this.candidateRepositoryCommands = candidateRepositoryCommands;
+		this.availableToPromiseRepository = availableToPromiseRepository;
+		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
 		this.candidateRepository = candidateRepository;
 		this.materialEventService = materialEventService;
 	}
@@ -80,11 +80,9 @@ public class StockUpCandiateHandler implements CandidateHandler
 	@Override
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-		Preconditions.checkArgument(candidate.getType() == CandidateType.STOCK_UP,
-				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
-				candidate.getType(), candidate);
+		assertCorrectCandidateType(candidate);
 
-		final SaveResult candidateSaveResult = candidateRepositoryCommands
+		final SaveResult candidateSaveResult = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(candidate);
 		final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
 
@@ -94,7 +92,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 		}
 
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(candidate.getMaterialDescriptor());
-		final BigDecimal projectedQty = stockRepository.retrieveAvailableStockQtySum(query);
+		final BigDecimal projectedQty = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
 		final BigDecimal requiredAdditionalQty = candidateSaveResult
 				.getQtyDelta()
@@ -108,5 +106,20 @@ public class StockUpCandiateHandler implements CandidateHandler
 		}
 
 		return candidateWithQtyDeltaAndId;
+	}
+
+	@Override
+	public void onCandidateDelete(@NonNull final Candidate candidate)
+	{
+		assertCorrectCandidateType(candidate);
+
+		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+	}
+
+	private void assertCorrectCandidateType(@NonNull final Candidate candidate)
+	{
+		Preconditions.checkArgument(candidate.getType() == CandidateType.STOCK_UP,
+				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
+				candidate.getType(), candidate);
 	}
 }

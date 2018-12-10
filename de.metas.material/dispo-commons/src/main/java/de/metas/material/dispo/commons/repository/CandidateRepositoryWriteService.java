@@ -3,7 +3,9 @@ package de.metas.material.dispo.commons.repository;
 import static de.metas.material.dispo.commons.candidate.IdConstants.NULL_REPO_ID;
 import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -628,4 +630,32 @@ public class CandidateRepositoryWriteService
 				.withGroupId(candidateRecord.getMD_Candidate_GroupId())
 				.withSeqNo(candidateRecord.getSeqNo());
 	}
+
+	public DeleteResult deleteCandidatebyId(@NonNull final CandidateId candidateId)
+	{
+		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+		DeleteResult deleteResult = new DeleteResult(candidateId, DateAndSeqNo
+				.builder()
+				.date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
+				.seqNo(candidateRecord.getSeqNo())
+				.build(),
+				candidateRecord.getQty());
+
+		deleteRecord(candidateRecord);
+		return deleteResult;
+	}
+
+	@Value
+	public static class DeleteResult
+	{
+		@NonNull
+		CandidateId candidateId;
+
+		@NonNull
+		DateAndSeqNo previousTime;
+
+		@NonNull
+		BigDecimal previousQty;
+	}
+
 }

@@ -1,5 +1,8 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getId;
+import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -37,6 +40,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -44,6 +49,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class HUAssignmentDAO implements IHUAssignmentDAO
 {
@@ -123,7 +129,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
-	public List<I_M_HU_Assignment> retrieveHUAssignmentsForModel(final Object model)
+	public List<I_M_HU_Assignment> retrieveTopLevelHUAssignmentsForModel(final Object model)
 	{
 		return retrieveHUAssignmentsForModelQuery(model)
 				.create()
@@ -478,5 +484,22 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addNotEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, null)
 				.create()
 				.list(I_M_HU_Assignment.class);
+	}
+
+	@Override
+	public List<HuAssignment> retrieveLowLevelHUAssignmentsForModel(@NonNull final Object model)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, getModelTableId(model))
+				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, getId(model))
+				.orderBy(I_M_HU_Assignment.COLUMN_M_HU_Assignment_ID)
+				.create()
+				.list()
+				.stream()
+				.map(HuAssignment::ofDataRecord)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 	}
 }

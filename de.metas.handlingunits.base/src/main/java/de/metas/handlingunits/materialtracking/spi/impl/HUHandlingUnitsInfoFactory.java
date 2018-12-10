@@ -131,7 +131,7 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		final Map<Integer, I_M_HU_PI> topLevelHUIds = new HashMap<>();
 		for (final I_PP_Cost_Collector costCollector : costCollectors)
 		{
-			final List<I_M_HU_Assignment> huAssignments = Services.get(IHUAssignmentDAO.class).retrieveHUAssignmentsForModel(costCollector);
+			final List<I_M_HU_Assignment> huAssignments = Services.get(IHUAssignmentDAO.class).retrieveTopLevelHUAssignmentsForModel(costCollector);
 			for (final I_M_HU_Assignment huAssignment : huAssignments)
 			{
 				final I_M_HU hu = huAssignment.getM_HU();

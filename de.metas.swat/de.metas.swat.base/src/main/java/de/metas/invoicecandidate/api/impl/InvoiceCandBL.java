@@ -39,6 +39,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -580,7 +582,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return priceActualOverride;
 	}
 
-	private BigDecimal getQtyToInvoice_OverrideOrNull(final I_C_Invoice_Candidate ic)
+	private BigDecimal getQtyToInvoice_OverrideOrNull(@Nullable final I_C_Invoice_Candidate ic)
 	{
 		if (InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
 		{
@@ -656,7 +658,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public BigDecimal getQtyToInvoice(final I_C_Invoice_Candidate ic)
+	public BigDecimal getQtyToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final BigDecimal qtyToInvoiceOverride = getQtyToInvoice_OverrideOrNull(ic);
 		if (qtyToInvoiceOverride != null)

@@ -211,7 +211,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		for (final I_PP_Cost_Collector receiptCollector : existingReceipts)
 		{
 			// Need assignments to take the created HUs
-			final List<I_M_HU_Assignment> assignments = huAssignmentDAO.retrieveHUAssignmentsForModel(receiptCollector);
+			final List<I_M_HU_Assignment> assignments = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(receiptCollector);
 			for (final I_M_HU_Assignment assignment : assignments)
 			{
 				final int huId = assignment.getM_HU_ID();

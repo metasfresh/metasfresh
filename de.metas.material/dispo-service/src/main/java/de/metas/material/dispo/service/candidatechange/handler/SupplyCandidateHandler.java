@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import static java.math.BigDecimal.ZERO;
+
 import java.util.Collection;
 
 import org.springframework.stereotype.Service;
@@ -10,7 +12,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.DeleteResult;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import lombok.NonNull;
 
@@ -119,6 +123,26 @@ public class SupplyCandidateHandler implements CandidateHandler
 				.withParentId(savedStockCandidate.getId());
 	}
 
+	@Override
+	public void onCandidateDelete(@NonNull final Candidate candidate)
+	{
+		assertCorrectCandidateType(candidate);
+
+		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+
+		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidatebyId(candidate.getParentId());
+
+		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
+		final SaveResult applyDeltaRequest = SaveResult.builder()
+				.candidate(candidate
+						.withQuantity(ZERO)
+						.withDate(timeOfDeletedStock.getDate())
+						.withSeqNo(timeOfDeletedStock.getSeqNo()))
+				.previousQty(stockDeleteResult.getPreviousQty())
+				.build();
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(applyDeltaRequest);
+	}
+
 	private void assertCorrectCandidateType(@NonNull final Candidate supplyCandidate)
 	{
 		Preconditions.checkArgument(
@@ -126,4 +150,5 @@ public class SupplyCandidateHandler implements CandidateHandler
 				"Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s",
 				supplyCandidate.getType(), supplyCandidate);
 	}
+
 }

@@ -145,7 +145,7 @@ import lombok.NonNull;
 		// Prepare
 		prepareSelectionForEnqueueing(pinstanceId);
 		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
-		// * the ones which are in our selection, we will update right now (see below)
+		// * the ones which are in our selection, we will updated right now (see below)
 		// * the other ones will be updated later, asynchronously
 
 		//

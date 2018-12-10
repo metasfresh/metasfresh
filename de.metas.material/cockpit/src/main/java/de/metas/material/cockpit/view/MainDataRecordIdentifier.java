@@ -85,7 +85,7 @@ public class MainDataRecordIdentifier
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Cockpit.COLUMN_M_Product_ID, productDescriptor.getProductId())
 				.addEqualsFilter(I_MD_Cockpit.COLUMN_AttributesKey, attributesKey.getAsString())
-				.addEqualsFilter(I_MD_Cockpit.COLUMN_DateGeneral, getDate());
+				.addEqualsFilter(I_MD_Cockpit.COLUMN_DateGeneral, TimeUtil.asTimestamp(getDate()));
 
 		if (getPlantId() > 0)
 		{

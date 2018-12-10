@@ -168,6 +168,13 @@ public class CandidateChangeHandlerTests
 	{
 		return new CandidateHandler()
 		{
+
+			@Override
+			public Collection<CandidateType> getHandeledTypes()
+			{
+				return types;
+			}
+
 			@Override
 			public Candidate onCandidateNewOrChange(Candidate candidate)
 			{
@@ -175,9 +182,9 @@ public class CandidateChangeHandlerTests
 			}
 
 			@Override
-			public Collection<CandidateType> getHandeledTypes()
+			public void onCandidateDelete(Candidate candidate)
 			{
-				return types;
+				throw new UnsupportedOperationException();
 			}
 		};
 	}
