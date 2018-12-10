@@ -557,13 +557,23 @@ class Modal extends Component {
 
   render() {
     const { layout } = this.props;
+    let renderedContent = null;
+
+    if (layout && Object.keys(layout) && Object.keys(layout).length) {
+      if (!layout.layoutType || layout.layoutType === 'panel') {
+        renderedContent = this.renderPanel();
+      } else if (layout.layoutType === 'singleOverlayField') {
+        renderedContent = this.renderOverlay();
+      }
+    }
 
     return (
-      <div>
-        {(!layout.layoutType || layout.layoutType === 'panel') &&
-          this.renderPanel()}
-
-        {layout.layoutType === 'singleOverlayField' && this.renderOverlay()}
+      <div
+        className={classnames('screen-freeze js-not-unselect', {
+          light: layout.layoutType === 'singleOverlayField',
+        })}
+      >
+        {renderedContent}
       </div>
     );
   }
