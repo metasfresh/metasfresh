@@ -8,14 +8,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
@@ -26,13 +24,10 @@ import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICostDetailRepository;
-import de.metas.costing.ICurrentCostsRepository;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
@@ -64,15 +59,10 @@ import lombok.NonNull;
 public class ManufacturingAveragePOCostingMethodHandler implements CostingMethodHandler
 {
 	// services
-	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-	private final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
-	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	//
-	private final ICurrentCostsRepository currentCostsRepo;
-	private final ICostDetailRepository costDetailsRepo;
 	private final CostingMethodHandlerUtils utils;
 
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
@@ -80,12 +70,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			.build();
 
 	public ManufacturingAveragePOCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailRepository costDetailsRepo,
 			@NonNull final CostingMethodHandlerUtils utils)
 	{
-		this.currentCostsRepo = currentCostsRepo;
-		this.costDetailsRepo = costDetailsRepo;
 		this.utils = utils;
 	}
 
@@ -165,9 +151,26 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final PPOrderId orderId)
 	{
-		// TODO Auto-generated method stub
-		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		throw new UnsupportedOperationException();
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+
+		final CostDetailCreateResult result;
+		if (request.isReversal())
+		{
+			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+			currentCosts.addWeightedAverage(request.getAmt(), request.getQty());
+		}
+		else
+		{
+			final CostPrice price = currentCosts.getCostPrice();
+			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+
+			currentCosts.addToCurrentQty(request.getQty());
+		}
+
+		utils.saveCurrentCosts(currentCosts);
+
+		return result;
 	}
 
 	private CostDetailCreateResult createActivityControl(final CostDetailCreateRequest withProductId, final Duration totalDuration)
@@ -179,6 +182,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
+		// TODO
 		throw new UnsupportedOperationException();
 	}
 
