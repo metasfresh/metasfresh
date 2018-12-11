@@ -111,7 +111,8 @@ public class PP_Order extends CalloutEngine
 
 		if (pp.getPP_Product_BOM_ID() > 0)
 		{
-			final I_PP_Product_BOM bom = pp.getPP_Product_BOM();
+			final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+			final I_PP_Product_BOM bom = productBOMsRepo.getById(pp.getPP_Product_BOM_ID());
 			ppOrder.setC_UOM_ID(bom.getC_UOM_ID());
 		}
 

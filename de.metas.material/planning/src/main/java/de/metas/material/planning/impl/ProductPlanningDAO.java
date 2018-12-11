@@ -1,5 +1,7 @@
 package de.metas.material.planning.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -50,11 +52,19 @@ import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ProductPlanningDAO implements IProductPlanningDAO
 {
+	@Override
+	public I_PP_Product_Planning getById(final int ppProductPlanningId)
+	{
+		Check.assumeGreaterThanZero(ppProductPlanningId, "ppProductPlanningId");
+		return loadOutOfTrx(ppProductPlanningId, I_PP_Product_Planning.class);
+	}
+
 	@Override
 	public I_PP_Product_Planning find(@NonNull final ProductPlanningQuery productPlanningQuery)
 	{

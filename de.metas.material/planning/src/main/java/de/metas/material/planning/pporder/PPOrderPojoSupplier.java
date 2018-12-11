@@ -6,12 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
@@ -31,6 +28,7 @@ import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
@@ -246,9 +244,11 @@ public class PPOrderPojoSupplier
 		final Date dateStartSchedule = ppOrder.getDateStartSchedule();
 		final ProductId ppOrderProductId = ProductId.ofRepoId(ppOrder.getProductDescriptor().getProductId());
 
-		final I_PP_Product_BOM productBOM = InterfaceWrapperHelper
-				.create(Env.getCtx(), ppOrder.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None)
-				.getPP_Product_BOM();
+		final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(ppOrder.getProductPlanningId());
+
+		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(productPlanning.getPP_Product_BOM_ID());
 
 		return PPOrderUtil.verifyProductBOMAndReturnIt(ppOrderProductId, dateStartSchedule, productBOM);
 	}

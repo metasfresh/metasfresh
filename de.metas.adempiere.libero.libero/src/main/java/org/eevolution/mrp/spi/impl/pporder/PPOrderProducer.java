@@ -98,8 +98,8 @@ public class PPOrderProducer
 
 		//
 		// BOM & Workflow
-		ppOrderRecord.setPP_Product_BOM(productPlanning.getPP_Product_BOM());
-		ppOrderRecord.setAD_Workflow(productPlanning.getAD_Workflow());
+		ppOrderRecord.setPP_Product_BOM_ID(productPlanning.getPP_Product_BOM_ID());
+		ppOrderRecord.setAD_Workflow_ID(productPlanning.getAD_Workflow_ID());
 
 		//
 		// Dates

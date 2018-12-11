@@ -18,9 +18,12 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -71,6 +74,8 @@ public class PPOrderRequestedEventHandlerTests
 	private I_PP_Product_Planning productPlanning;
 
 	private I_AD_Org org;
+	
+	private I_C_UOM uom;
 
 	private I_M_Product bomMainProduct;
 
@@ -99,10 +104,15 @@ public class PPOrderRequestedEventHandlerTests
 
 		final I_AD_Workflow workflow = newInstance(I_AD_Workflow.class);
 		workflow.setIsValid(true);
+		workflow.setDurationUnit(X_AD_Workflow.DURATIONUNIT_Hour);
 		save(workflow);
+		
+		uom = newInstance(I_C_UOM.class);
+		save(uom);
 
 		bomMainProduct = newInstance(I_M_Product.class);
 		bomMainProduct.setIsVerified(true);
+		bomMainProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		save(bomMainProduct);
 
 		final I_PP_Product_BOM productBom = newInstance(I_PP_Product_BOM.class);
@@ -189,8 +199,12 @@ public class PPOrderRequestedEventHandlerTests
 	{
 		assertThat(ppOrder).isNotNull();
 		assertThat(ppOrder.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
-		assertThat(ppOrder.getM_Product_ID()).isEqualTo(productPlanning.getPP_Product_BOM().getM_Product_ID());
 		assertThat(ppOrder.getPP_Product_BOM_ID()).isEqualTo(productPlanning.getPP_Product_BOM_ID());
+		
+		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ppOrder.getPP_Product_BOM_ID());
+		assertThat(ppOrder.getM_Product_ID()).isEqualTo(productBOM.getM_Product_ID());
+		
 		assertThat(ppOrder.getPP_Product_Planning_ID()).isEqualTo(productPlanning.getPP_Product_Planning_ID());
 		assertThat(ppOrder.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
 		assertThat(ppOrder.getC_BPartner_ID()).isEqualTo(120);
