@@ -1,15 +1,14 @@
 package de.metas.ordercandidate.rest;
 
-import lombok.Builder;
-import lombok.Data;
-
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -33,13 +32,11 @@ import io.swagger.annotations.ApiModelProperty;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder
-@ApiModel(description="Note that given the respective use-case, either one of both properties migh be <code>null</code>, but not both at once.")
+// @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Value
+@ApiModel(description = "Note that given the respective use-case, either one of both properties migh be <code>null</code>, but not both at once.")
 public class JsonBPartner
 {
-	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to <code>C_BPartner.ExternalId</code>. If set, the system will attempt a lookup.\n"
@@ -47,7 +44,6 @@ public class JsonBPartner
 					+ "If <code>null</code>, or not bPartner was found, it will create a new BPartner.")
 	private String externalId;
 
-	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to <code>C_BPartner.Value</code>. If set and <code>externalId<code> is empty, the system will attempt a lookup.\n"
@@ -55,17 +51,30 @@ public class JsonBPartner
 					+ "If <code>null</code>, or not bPartner was found, it will create a new BPartner.")
 	private String code;
 
-	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to <code>C_BPartner.Name</code>.\n"
 					+ "If this is empty, and a BPartner with the given <code>code</code> does not yet exist, then the request will fail.")
 	private String name;
 
-	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to <code>C_BPartner.CompanyName</code>.\n"
 					+ "If set, the the respective <code>C_BPartner</code> record will also have <code>IsCompany='Y'</code>")
 	private String companyName;
+
+	@JsonCreator
+	@Builder
+	private JsonBPartner(
+			@JsonProperty("externalId") @Nullable final String externalId,
+			@JsonProperty("code") @Nullable final String code,
+			@JsonProperty("name") @Nullable final String name,
+			@JsonProperty("companyName") @Nullable final String companyName)
+	{
+		this.externalId = externalId;
+		this.code = code;
+		this.name = name;
+		this.companyName = companyName;
+	}
+
 }

@@ -1,7 +1,14 @@
 package de.metas.ordercandidate.rest;
 
+import static org.compiere.util.Util.coalesce;
+
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.Value;
 
@@ -28,7 +35,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class SyncAdvise
 {
 	public static SyncAdvise createDefaultAdvise()
@@ -70,14 +76,24 @@ public class SyncAdvise
 		}
 	}
 
-	@Default
-	private IfNotExists ifNotExists = IfNotExists.FAIL;
+	IfNotExists ifNotExists;
 
-	@Default
-	private IfExists ifExists = IfExists.DONT_UPDATE;
+	IfExists ifExists;
 
+	@JsonIgnore
 	public boolean isFailIfNotExists()
 	{
 		return IfNotExists.FAIL.equals(ifNotExists);
 	}
+
+	@Builder
+	@JsonCreator
+	public SyncAdvise(
+			@JsonProperty("ifNotExists") @Nullable final IfNotExists ifNotExists,
+			@JsonProperty("ifExists") @Nullable final IfExists ifExists)
+	{
+		this.ifNotExists = coalesce(ifNotExists, IfNotExists.FAIL);
+		this.ifExists = coalesce(ifExists, IfExists.DONT_UPDATE);
+	}
+
 }

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -108,7 +109,7 @@ public class XmlToOLCandsService
 
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 
-	private XmlToOLCandsService(@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint)
+	public XmlToOLCandsService(@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint)
 	{
 		this.orderCandidatesRestEndpoint = orderCandidatesRestEndpoint;
 	}
@@ -207,7 +208,8 @@ public class XmlToOLCandsService
 		private static final long serialVersionUID = 2013021164753485741L;
 	}
 
-	private JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
+	@VisibleForTesting
+	JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
 			@NonNull final RequestType xmlInvoice,
 			@NonNull final SyncAdvise bPartnersSyncAdvise,
 			@NonNull final SyncAdvise productsSyncAdvise)
@@ -558,7 +560,12 @@ public class XmlToOLCandsService
 			final BigDecimal quantity;
 			if (record instanceof RecordTarmedType)
 			{
-				throw new UnsupportedOperationException("Importing RecordTarmedTypes is not yet supported");
+				final RecordTarmedType recordTarmedType = (RecordTarmedType)record;
+
+				externalId = createExternalId(invoiceRecipientBuilder, recordTarmedType.getRecordId());
+				product = createProduct(recordTarmedType.getCode(), recordTarmedType.getName());
+				price = recordTarmedType.getAmount();
+				quantity = ONE;
 			}
 			else if (record instanceof RecordDRGType)
 			{

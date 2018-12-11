@@ -54,11 +54,6 @@ import lombok.NonNull;
 
 public final class MasterdataProvider
 {
-	public static final MasterdataProvider createInstance()
-	{
-		return MasterdataProvider.builder().build();
-	}
-
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
@@ -87,17 +82,16 @@ public final class MasterdataProvider
 		final Properties ctxToUse = Util.coalesceSuppliers(() -> ctx, () -> Env.getCtx());
 
 		this.defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctxToUse)).orElse(OrgId.ANY);
+
 		this.permissionService = Util.coalesce(permissionService, PermissionService.of(ctxToUse));
 		this.bPartnerMasterDataProvider = Util.coalesce(bpartnerMasterDataProvider, BPartnerMasterDataProvider.of(ctxToUse, permissionService));
-		this.productMasterDataProvider = productMasterDataProvider;
+		this.productMasterDataProvider = Util.coalesce(productMasterDataProvider, ProductMasterDataProvider.of(ctxToUse, permissionService));
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
 	{
 		permissionService.assertCanCreateOrUpdateRecord(orgId, I_C_OLCand.class);
 	}
-
-
 
 	public PricingSystemId getPricingSystemIdByValue(final String pricingSystemCode)
 	{
@@ -144,20 +138,9 @@ public final class MasterdataProvider
 			orgRecord = newInstance(I_AD_Org.class);
 		}
 
-		// try
-		// {
 		updateOrgRecord(orgRecord, json);
 		permissionService.assertCanCreateOrUpdate(orgRecord);
 		orgsRepo.save(orgRecord);
-		// }
-		// catch (final PermissionNotGrantedException ex)
-		// {
-		// throw ex;
-		// }
-		// catch (final Exception ex)
-		// {
-		// throw new AdempiereException("Failed creating/updating record for " + json, ex);
-		// }
 
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 		if (json.getBpartner() != null)

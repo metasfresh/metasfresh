@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.Properties;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
@@ -11,6 +13,7 @@ import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
+import org.compiere.util.Util;
 
 import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
 import de.metas.ordercandidate.rest.exceptions.ProductNotFoundException;
@@ -48,11 +51,27 @@ import lombok.NonNull;
 
 public class ProductMasterDataProvider
 {
+	public static ProductMasterDataProvider of(
+			@Nullable final Properties ctx,
+			@Nullable final PermissionService permissionService)
+	{
+		return new ProductMasterDataProvider(
+				Util.coalesceSuppliers(
+						() -> permissionService,
+						() -> PermissionService.of(ctx)));
+	}
+
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBL productsBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	private final ProductCategoryId defaultProductCategoryId = ProductCategoryId.ofRepoId(1000000); // TODO
+	private PermissionService permissionService;
+
+	public ProductMasterDataProvider(@NonNull final PermissionService permissionService)
+	{
+		this.permissionService = permissionService;
+	}
 
 	public ProductId getCreateProductId(
 			@NonNull final JsonProductInfo json,
@@ -103,6 +122,7 @@ public class ProductMasterDataProvider
 		final UomId uomId = uomsRepo.getUomIdByX12DE355(json.getUomCode());
 		productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
 
+		permissionService.assertCanCreateOrUpdate(productRecord);
 		save(productRecord);
 
 		return ProductId.ofRepoId(productRecord.getM_Product_ID());
@@ -129,6 +149,7 @@ public class ProductMasterDataProvider
 			final boolean outOfTrx = IfExists.UPDATE.equals(syncAdvise.getIfExists()) || syncAdvise.getIfNotExists().isCreate();
 			final ProductQuery query = ProductQuery.builder()
 					.value(json.getCode())
+					.orgId(context.getOrgId())
 					.includeAnyOrg(true)
 					.outOfTrx(outOfTrx)
 					.build();
