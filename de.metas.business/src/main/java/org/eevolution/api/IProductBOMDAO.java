@@ -39,18 +39,19 @@ import de.metas.util.ISingletonService;
 
 public interface IProductBOMDAO extends ISingletonService
 {
+	I_PP_Product_BOM getById(int productBomId);
 
 	List<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM);
 
 	List<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM, Date date);
 
+	int retrieveLastLineNo(int ppProductBOMId);
+
 	int retrieveDefaultBOMId(I_M_Product product);
 
 	I_PP_Product_BOM retrieveDefaultBOM(I_M_Product product);
-	
-	int getDefaultProductBOMIdByProductId(ProductId productId);
 
-	I_PP_Product_BOM retrieveBOMById(Properties ctx, int productBomId);
+	int getDefaultProductBOMIdByProductId(ProductId productId);
 
 	boolean hasBOMs(I_M_Product product);
 
@@ -62,4 +63,5 @@ public interface IProductBOMDAO extends ISingletonService
 	{
 		return retrieveBOMsContainingExactProducts(Arrays.asList(productIds));
 	}
+
 }

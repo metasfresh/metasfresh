@@ -51,9 +51,33 @@ public class PP_Product_BOMLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void validate(final I_PP_Product_BOMLine bomLine)
+	public void beforeSave(final I_PP_Product_BOMLine bomLine)
+	{
+		validate(bomLine);
+
+		//
+		// Update Line#
+		if (bomLine.getLine() <= 0)
+		{
+			final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+			final int lastLineNo = productBOMsRepo.retrieveLastLineNo(bomLine.getPP_Product_BOM_ID());
+			bomLine.setLine(lastLineNo + 10);
+		}
+
+	}
+
+	private void validate(final I_PP_Product_BOMLine bomLine)
 	{
 		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+
+		//
+		// For Co/By Products, Qty should be always negative:
+		if (componentType.isCoProduct()
+				&& Services.get(IProductBOMBL.class).getQtyExcludingScrap(bomLine).signum() >= 0)
+		{
+			throw new LiberoException("@Qty@ > 0");
+		}
+
 		if (componentType.isVariant() && Check.isEmpty(bomLine.getVariantGroup()))
 		{
 			throw new LiberoException("@MandatoryVariant@");

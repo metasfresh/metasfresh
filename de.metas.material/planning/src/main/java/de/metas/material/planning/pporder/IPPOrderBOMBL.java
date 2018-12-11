@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.material.event.pporder.PPOrderLine;
@@ -36,8 +35,7 @@ import de.metas.util.ISingletonService;
 
 public interface IPPOrderBOMBL extends ISingletonService
 {
-
-	I_PP_Order_BOM createOrderBOMAndLines(I_PP_Order ppOrder);
+	void createOrderBOMAndLines(I_PP_Order ppOrder);
 
 	void explodePhantom(I_PP_Order_BOMLine orderBOMLine, Quantity qtyOrdered);
 

@@ -24,8 +24,6 @@ package de.metas.material.planning.pporder.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -35,7 +33,6 @@ import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
@@ -46,14 +43,11 @@ import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.logging.LogManager;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -69,104 +63,20 @@ import lombok.NonNull;
 @Service
 public class PPOrderBOMBL implements IPPOrderBOMBL
 {
-	private final static Logger log = LogManager.getLogger(PPOrderBOMBL.class);
-
-	private I_PP_Order_BOM createOrderBOM(final I_PP_Order ppOrder, final I_PP_Product_BOM bom)
-	{
-		final I_PP_Order_BOM orderBOM = InterfaceWrapperHelper.newInstance(I_PP_Order_BOM.class, ppOrder);
-		orderBOM.setAD_Org_ID(ppOrder.getAD_Org_ID());
-		orderBOM.setPP_Order_ID(ppOrder.getPP_Order_ID());
-
-		orderBOM.setBOMType(bom.getBOMType());
-		orderBOM.setBOMUse(bom.getBOMUse());
-		orderBOM.setM_ChangeNotice_ID(bom.getM_ChangeNotice_ID());
-		orderBOM.setHelp(bom.getHelp());
-		orderBOM.setProcessing(bom.isProcessing());
-		orderBOM.setHelp(bom.getHelp());
-		orderBOM.setDescription(bom.getDescription());
-		orderBOM.setM_AttributeSetInstance_ID(bom.getM_AttributeSetInstance_ID());
-		orderBOM.setM_Product_ID(bom.getM_Product_ID());  // the bom's M_Product_ID is also the ppOrder's M_Product_ID (enforced by PPOrderPojoSupplier.retriveAndVerifyBOM())
-		orderBOM.setName(bom.getName());
-		orderBOM.setRevision(bom.getRevision());
-		orderBOM.setValidFrom(bom.getValidFrom());
-		orderBOM.setValidTo(bom.getValidTo());
-		orderBOM.setValue(bom.getValue());
-		orderBOM.setDocumentNo(bom.getDocumentNo());
-		orderBOM.setC_UOM_ID(bom.getC_UOM_ID()); // the bom's C_UOM_ID
-
-		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		orderBOMsRepo.save(orderBOM);
-		return orderBOM;
-	}
-
-	private I_PP_Order_BOMLine createOrderBOMLine(final I_PP_Order_BOM orderBOM, final I_PP_Product_BOMLine bomLine)
-	{
-		final I_PP_Order ppOrder = orderBOM.getPP_Order();
-
-		final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class, ppOrder);
-
-		// Set Defaults
-		orderBOMLine.setDescription("");
-		orderBOMLine.setQtyDelivered(BigDecimal.ZERO);
-		orderBOMLine.setQtyDeliveredActual(BigDecimal.ZERO);
-		orderBOMLine.setQtyUsageVariance(BigDecimal.ZERO);
-		orderBOMLine.setQtyPost(BigDecimal.ZERO);
-		orderBOMLine.setQtyReject(BigDecimal.ZERO);
-		orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
-		orderBOMLine.setQtyReserved(BigDecimal.ZERO);
-		orderBOMLine.setQtyScrap(BigDecimal.ZERO);
-
-		//
-		// Update from PP_Product BOM Line
-		updateOrderBOMLine(orderBOMLine, bomLine);
-
-		//
-		// Set values from PP_Order:
-		orderBOMLine.setAD_Org_ID(orderBOM.getAD_Org_ID());
-		orderBOMLine.setPP_Order(ppOrder);
-		orderBOMLine.setPP_Order_BOM(orderBOM);
-
-		//
-		// Warehouse and Locator
-		updateWarehouseAndLocator(orderBOMLine);
-
-		//
-		// Set Qtys
-		setQtyRequired(orderBOMLine, getQtyOrdered(ppOrder));
-
-		//
-		// Save & return
-		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		ppOrderBOMsRepo.save(orderBOMLine);
-		return orderBOMLine;
-	}
-
-	private Quantity getQtyOrdered(final I_PP_Order ppOrderRecord)
-	{
-		final I_C_UOM mainProductUOM = getMainProductStockingUOM(ppOrderRecord);
-		return Quantity.of(ppOrderRecord.getQtyOrdered(), mainProductUOM);
-	}
-
-	private I_C_UOM getMainProductStockingUOM(final I_PP_Order ppOrder)
-	{
-		final ProductId mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		return Services.get(IProductBL.class).getStockingUOM(mainProductId);
-	}
-
 	@Override
 	public final void updateWarehouseAndLocator(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final I_PP_Order ppOrder = orderBOMLine.getPP_Order();
 		final int adOrgIdNew = ppOrder.getAD_Org_ID();
 		final int warehouseIdNew = ppOrder.getM_Warehouse_ID();
-		final I_M_Locator locatorNew = ppOrder.getM_Locator();
+		final int locatorIdNew = ppOrder.getM_Locator_ID();
 
 		orderBOMLine.setAD_Org_ID(adOrgIdNew);
 		orderBOMLine.setM_Warehouse_ID(warehouseIdNew);
-		orderBOMLine.setM_Locator(locatorNew);
+		orderBOMLine.setM_Locator_ID(locatorIdNew);
 	}
 
-	private final void updateOrderBOMLine(
+	final void updateOrderBOMLine(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final I_PP_Product_BOMLine bomLine)
 	{
@@ -208,39 +118,15 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public I_PP_Order_BOM createOrderBOMAndLines(@NonNull final I_PP_Order ppOrder)
+	public void createOrderBOMAndLines(@NonNull final I_PP_Order ppOrder)
 	{
-		final I_PP_Product_BOM productBOM = PPOrderUtil.verifyProductBOM(
-				ppOrder.getM_Product_ID(),
-				ppOrder.getDateStartSchedule(),
-				ppOrder.getPP_Product_BOM());
-
-		//
-		// Create BOM Head
-		final Timestamp dateStartSchedule = ppOrder.getDateStartSchedule();
-		if (!Services.get(IProductBOMBL.class).isValidFromTo(productBOM, dateStartSchedule))
-		{
-			throw new BOMExpiredException(productBOM, dateStartSchedule);
-		}
-
-		final I_PP_Order_BOM orderBOM = createOrderBOM(ppOrder, productBOM);
-
-		final List<I_PP_Product_BOMLine> productBOMLines = Services.get(IProductBOMDAO.class).retrieveLines(productBOM);
-		for (final I_PP_Product_BOMLine productBOMLine : productBOMLines)
-		{
-			if (!Services.get(IProductBOMBL.class).isValidFromTo(productBOMLine, dateStartSchedule))
-			{
-				log.debug("BOM Line skiped - " + productBOMLine);
-				continue;
-			}
-
-			createOrderBOMLine(orderBOM, productBOMLine);
-		}
-
-		return orderBOM;
+		PPOrderBOMCreateCommand.builder()
+				.ppOrder(ppOrder)
+				.build()
+				.execute();
 	}
 
-	private void setQtyRequired(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyFinishedGood)
+	void setQtyRequired(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyFinishedGood)
 	{
 		final Quantity qtyRequired = calculateQtyRequired(fromRecord(orderBOMLine), qtyFinishedGood.getAsBigDecimal());
 		orderBOMLine.setQtyRequiered(qtyRequired.getAsBigDecimal());

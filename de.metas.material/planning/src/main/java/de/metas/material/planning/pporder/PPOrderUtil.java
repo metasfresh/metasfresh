@@ -18,6 +18,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -203,19 +204,20 @@ public class PPOrderUtil
 	 * @param ppOrderProductBOM the {@code DateStartSchedule} of a given ppOrder
 	 * @return
 	 */
-	public I_PP_Product_BOM verifyProductBOM(
-			@NonNull final Integer ppOrderProductId,
+	public I_PP_Product_BOM verifyProductBOMAndReturnIt(
+			@NonNull final ProductId ppOrderProductId,
 			@NonNull final Date ppOrderStartSchedule,
 			@NonNull final I_PP_Product_BOM ppOrderProductBOM)
 	{
 		// Product from Order should be same as product from BOM - teo_sarca [ 2817870 ]
-		if (ppOrderProductId != ppOrderProductBOM.getM_Product_ID())
+		if (ppOrderProductId.getRepoId() != ppOrderProductBOM.getM_Product_ID())
 		{
 			throw new MrpException("@NotMatch@ @PP_Product_BOM_ID@ , @M_Product_ID@");
 		}
 
 		// Product BOM Configuration should be verified - teo_sarca [ 2817870 ]
-		final I_M_Product product = ppOrderProductBOM.getM_Product();
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final I_M_Product product = productsRepo.getById(ppOrderProductBOM.getM_Product_ID());
 		if (!product.isVerified())
 		{
 			throw new MrpException(

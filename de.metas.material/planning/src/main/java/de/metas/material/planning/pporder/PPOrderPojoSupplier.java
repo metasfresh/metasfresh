@@ -244,12 +244,12 @@ public class PPOrderPojoSupplier
 	private I_PP_Product_BOM retriveAndVerifyBOM(@NonNull final PPOrder ppOrder)
 	{
 		final Date dateStartSchedule = ppOrder.getDateStartSchedule();
-		final Integer ppOrderProductId = ppOrder.getProductDescriptor().getProductId();
+		final ProductId ppOrderProductId = ProductId.ofRepoId(ppOrder.getProductDescriptor().getProductId());
 
 		final I_PP_Product_BOM productBOM = InterfaceWrapperHelper
 				.create(Env.getCtx(), ppOrder.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None)
 				.getPP_Product_BOM();
 
-		return PPOrderUtil.verifyProductBOM(ppOrderProductId, dateStartSchedule, productBOM);
+		return PPOrderUtil.verifyProductBOMAndReturnIt(ppOrderProductId, dateStartSchedule, productBOM);
 	}
 }

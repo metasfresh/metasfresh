@@ -25,9 +25,11 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.MWorkflow;
+import org.eevolution.api.IProductBOMDAO;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Product Data Planning
@@ -182,7 +184,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	@Override
 	public I_PP_Product_BOM getPP_Product_BOM()
 	{
-		return MPPProductBOM.get(getCtx(), getPP_Product_BOM_ID());
+		return Services.get(IProductBOMDAO.class).getById(getPP_Product_BOM_ID());
 	}
 
 	@Override

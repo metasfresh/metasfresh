@@ -11,7 +11,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
-import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
@@ -125,7 +124,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 			return null;
 		}
 
-		final I_PP_Product_BOM bomRecord = productBOMsRepo.retrieveBOMById(Env.getCtx(), productBOMId);
+		final I_PP_Product_BOM bomRecord = productBOMsRepo.getById(productBOMId);
 		if (bomRecord == null)
 		{
 			createNotice(productId, "@NotFound@ @PP_Product_BOM_ID@");

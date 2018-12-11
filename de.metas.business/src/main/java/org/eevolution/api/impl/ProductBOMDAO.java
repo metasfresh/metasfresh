@@ -39,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -154,8 +155,13 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
+	public I_PP_Product_BOM getById(final int productBomId)
+	{
+		return retrieveById(Env.getCtx(), productBomId);
+	}
+
 	@Cached(cacheName = I_PP_Product_BOM.Table_Name + "#by#" + I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
-	public I_PP_Product_BOM retrieveBOMById(@CacheCtx final Properties ctx, final int productBomId)
+	public I_PP_Product_BOM retrieveById(@CacheCtx final Properties ctx, final int productBomId)
 	{
 		if (productBomId <= 0)
 		{
@@ -188,6 +194,16 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.create();
+	}
+
+	@Override
+	public int retrieveLastLineNo(final int ppProductBOMId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Product_BOMLine.class)
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, ppProductBOMId)
+				.create()
+				.maxInt(I_PP_Product_BOMLine.COLUMNNAME_Line);
 	}
 
 	@Override
