@@ -1,13 +1,12 @@
-package org.adempiere.location;
+package de.metas.payment.esr;
 
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.Value;
+import org.junit.Test;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.payment.esr
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,32 +26,14 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class LocationId implements RepoIdAware
+public class ESRStringUtilTest
 {
-	int repoId;
 
-	public static LocationId ofRepoId(final int repoId)
+	@Test
+	public void formatReferenceNumber()
 	{
-		return new LocationId(repoId);
+		assertThat(ESRStringUtil.formatReferenceNumber("123456200001888888888888885")).isEqualTo("12 34562 00001 88888 88888 88885");
+		assertThat(ESRStringUtil.formatReferenceNumber("12 34562 00001 88888 88888 88885")).isEqualTo("12 34562 00001 88888 88888 88885");
 	}
 
-	public static LocationId ofRepoIdOrNull(final int repoId)
-	{
-		if (repoId <= 0)
-		{
-			return null;
-		}
-		return new LocationId(repoId);
-	}
-
-	private LocationId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
-
-	public static int toRepoIdOr(final LocationId locationId, final int defaultValue)
-	{
-		return locationId != null ? locationId.getRepoId() : defaultValue;
-	}
 }

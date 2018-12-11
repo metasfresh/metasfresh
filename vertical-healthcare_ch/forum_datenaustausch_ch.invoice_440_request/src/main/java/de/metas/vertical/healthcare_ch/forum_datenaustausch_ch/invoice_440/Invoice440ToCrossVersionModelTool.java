@@ -1,7 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
@@ -189,6 +187,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidation.XmlValidationBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidationResult;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidationResult.XmlValidationResultBuilder;
+import lombok.NonNull;
 
 /*
  * #%L

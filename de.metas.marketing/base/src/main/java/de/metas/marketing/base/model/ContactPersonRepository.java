@@ -82,11 +82,23 @@ public class ContactPersonRepository
 		contactPersonRecord.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
 		contactPersonRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
 
-		if (contactPerson.getBpLocationId() != null)
+		if (contactPerson.getBPartnerId() != null)
 		{
-			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
-			contactPersonRecord.setC_BPartner_Location_ID(bpLocation.getId().getRepoId());
-			contactPersonRecord.setC_Location_ID(bpLocation.getLocationId().getRepoId());
+			if (contactPerson.getBpLocationId() != null)
+			{
+				final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
+				contactPersonRecord.setC_BPartner_Location_ID(bpLocation.getId().getRepoId());
+				contactPersonRecord.setC_Location_ID(bpLocation.getLocationId().getRepoId());
+			}
+			else
+			{
+				contactPersonRecord.setC_BPartner_Location(null);
+				contactPersonRecord.setC_Location(null);
+			}
+		}
+		else
+		{
+			contactPersonRecord.setC_Location_ID(LocationId.toRepoIdOr(contactPerson.getLocationId(), 0));
 		}
 
 		contactPersonRecord.setName(contactPerson.getName());
@@ -107,7 +119,6 @@ public class ContactPersonRepository
 				deactivatedBool,
 				X_MKTG_ContactPerson.DEACTIVATEDONREMOTEPLATFORM_UNKNOWN);
 		contactPersonRecord.setDeactivatedOnRemotePlatform(deactivatedString);
-
 
 		return contactPersonRecord;
 	}
@@ -149,11 +160,11 @@ public class ContactPersonRepository
 		{
 			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
 			final LocationId locationId = bpLocation.getLocationId();
-			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, locationId.getRepoId());
+			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, locationId);
 		}
 		else
 		{
-			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, null);
+			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, contactPerson.getLocationId());
 		}
 
 		final String emailAddress = contactPerson.getEmailAddessStringOrNull();
@@ -260,12 +271,19 @@ public class ContactPersonRepository
 			builder.address(emailAddress);
 		}
 
-		BPartnerId bpartnerId = null;
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contactPersonRecord.getC_BPartner_ID());
+
 		BPartnerLocationId bpartnerlocationId = null;
+		LocationId locationId = null;
 		if (contactPersonRecord.getC_BPartner_ID() > 0 && contactPersonRecord.getC_BPartner_Location_ID() > 0)
 		{
-			bpartnerId = BPartnerId.ofRepoId(contactPersonRecord.getC_BPartner_ID());
-			bpartnerlocationId = BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(contactPersonRecord.getC_BPartner_ID()), contactPersonRecord.getC_BPartner_Location_ID());
+			bpartnerlocationId = BPartnerLocationId.ofRepoId(bpartnerId, contactPersonRecord.getC_BPartner_Location_ID());
+			locationId = LocationId.ofRepoId(contactPersonRecord.getC_BPartner_Location().getC_Location_ID());
+		}
+		else
+		{
+			bpartnerlocationId = null;
+			locationId = LocationId.ofRepoIdOrNull(contactPersonRecord.getC_Location_ID());
 		}
 
 		return builder
@@ -276,6 +294,7 @@ public class ContactPersonRepository
 				.remoteId(contactPersonRecord.getRemoteRecordId())
 				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
 				.bpLocationId(bpartnerlocationId)
+				.locationId(locationId)
 				.language(Language.getLanguage(contactPersonRecord.getAD_Language()))
 				.build();
 	}

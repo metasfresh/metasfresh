@@ -9,8 +9,6 @@ import org.compiere.util.Env;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.bpartner.BPartnerLocation;
-import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateRepository;
 import de.metas.letters.model.Letter;
@@ -50,7 +48,6 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 		final ContactPersonRepository contactRepo = Adempiere.getBean(ContactPersonRepository.class);
 		final LetterRepository letterRepo = Adempiere.getBean(LetterRepository.class);
 		final LocationRepository locationRepo = Adempiere.getBean(LocationRepository.class);
-		final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
 		final BoilerPlateRepository boilerPlateRepo = Adempiere.getBean(BoilerPlateRepository.class);
 
 		final Set<Integer> campaignContactPersonsIDs = retrieveAllItemIds();
@@ -58,8 +55,15 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 		for (final Integer campaignContactPersonID : campaignContactPersonsIDs)
 		{
 			final ContactPerson contactPerson = contactRepo.getByCampaignContactPersonId(campaignContactPersonID);
-			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
-			final Location location = locationRepo.getByLocationId(bpLocation.getLocationId());
+			if(contactPerson.getLocationId() == null)
+			{
+				Loggables.get().addLog(
+						"contact person with id={} has no location; skipping",
+						contactPerson.getContactPersonId());
+				continue;
+			}
+			
+			final Location location = locationRepo.getByLocationId(contactPerson.getLocationId());
 
 			// create letter
 			String subject = "";
@@ -94,7 +98,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 			final Letter letter = Letter.builder()
 					.boilerPlateId(contactPerson.getBoilerPlateId())
 					.bpartnerId(contactPerson.getBPartnerId())
-					.bpartnerLocationId(bpLocation.getId())
+					.bpartnerLocationId(contactPerson.getBpLocationId())
 					.userId(contactPerson.getUserId())
 					.address(location.getAddress())
 					.adLanguage(Env.getAD_Language())
