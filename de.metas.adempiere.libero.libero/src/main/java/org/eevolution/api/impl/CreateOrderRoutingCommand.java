@@ -98,7 +98,7 @@ final class CreateOrderRoutingCommand
 				continue;
 			}
 
-			final PPOrderRoutingActivity orderActivity = newPPOrderRoutingActivity(activity);
+			final PPOrderRoutingActivity orderActivity = createPPOrderRoutingActivity(activity);
 			orderActivities.add(orderActivity);
 		}
 		orderRoutingBuilder.activities(orderActivities.build());
@@ -146,7 +146,7 @@ final class CreateOrderRoutingCommand
 				.qtyPerBatch(routing.getQtyPerBatch());
 	}
 
-	public PPOrderRoutingActivity newPPOrderRoutingActivity(final PPRoutingActivity activity)
+	public PPOrderRoutingActivity createPPOrderRoutingActivity(final PPRoutingActivity activity)
 	{
 		final TemporalUnit durationUnit = activity.getDurationUnit();
 		final Duration durationPerOneUnit = activity.getDurationPerOneUnit();
