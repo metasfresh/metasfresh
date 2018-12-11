@@ -326,7 +326,7 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public void createOrderWorkflow(@NonNull final I_PP_Order ppOrderRecord)
+	public void createOrderRouting(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		final PPOrderRouting orderRouting = CreateOrderRoutingCommand.builder()
 				.routingId(PPRoutingId.ofRepoId(ppOrderRecord.getAD_Workflow_ID()))

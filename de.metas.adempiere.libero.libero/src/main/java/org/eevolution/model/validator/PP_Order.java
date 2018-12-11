@@ -178,7 +178,7 @@ public class PP_Order
 
 	private void createWorkflowAndBOM(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderBL.class).createOrderWorkflow(ppOrder);
+		Services.get(IPPOrderBL.class).createOrderRouting(ppOrder);
 		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
 	}
 
