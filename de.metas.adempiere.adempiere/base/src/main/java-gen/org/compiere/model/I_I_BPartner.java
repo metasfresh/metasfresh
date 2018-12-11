@@ -123,7 +123,7 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
-	 * Set AD_User_ExternalId.
+	 * Set Benutzer ExternalId.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -132,7 +132,7 @@ public interface I_I_BPartner
 	public void setAD_User_ExternalId (java.lang.String AD_User_ExternalId);
 
 	/**
-	 * Get AD_User_ExternalId.
+	 * Get Benutzer ExternalId.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -556,7 +556,7 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_C_BP_PrintFormat_ID = "C_BP_PrintFormat_ID";
 
 	/**
-	 * Set C_BPartner_ExternalId.
+	 * Set Geschaftspartner ExternalId.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -565,7 +565,7 @@ public interface I_I_BPartner
 	public void setC_BPartner_ExternalId (java.lang.String C_BPartner_ExternalId);
 
 	/**
-	 * Get C_BPartner_ExternalId.
+	 * Get Geschaftspartner ExternalId.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -608,7 +608,7 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set C_BPartner_Location_ExternalId.
+	 * Set Standort ExternalId.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -617,7 +617,7 @@ public interface I_I_BPartner
 	public void setC_BPartner_Location_ExternalId (java.lang.String C_BPartner_Location_ExternalId);
 
 	/**
-	 * Get C_BPartner_Location_ExternalId.
+	 * Get Standort ExternalId.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2629,6 +2629,31 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User>(I_I_BPartner.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set URL.
+	 * Full URL address - e.g. http://www.adempiere.org
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setURL (java.lang.String URL);
+
+	/**
+	 * Get URL.
+	 * Full URL address - e.g. http://www.adempiere.org
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getURL();
+
+    /** Column definition for URL */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_URL = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "URL", null);
+    /** Column name URL */
+    public static final String COLUMNNAME_URL = "URL";
 
 	/**
 	 * Set Suchschlüssel.

@@ -14,6 +14,9 @@ Here come the actual release notes:
 # Features
 
 # Fixes
+* metasfresh-webui-frontend
+  * [#1253](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1253) Problem with composed fields with non-mandatory elements
+    * Adds None Option to Lookup widget dropdowns, that alows o overwrite already set a selection in a non mandatory field.
 
 # metasfresh 5.84
 # Features
