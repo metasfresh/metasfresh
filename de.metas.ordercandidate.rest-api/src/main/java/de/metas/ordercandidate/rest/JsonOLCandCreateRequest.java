@@ -1,13 +1,9 @@
 package de.metas.ordercandidate.rest;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -15,6 +11,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -121,6 +120,7 @@ public final class JsonOLCandCreateRequest
 			allowEmptyValue = true, //
 			value = " This translates to <code>C_UOM.X12DE355</code>.\n"
 					+ "The respective UOM needs to exist in metasfresh and its ID is set as <code>C_OLCand.C_UOM_ID</code>.\n"
+					+ "If not set, then the respective product's UOM is used.\n"
 					+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the <code>product</code>'s UOM")
 	private String uomCode;
 
