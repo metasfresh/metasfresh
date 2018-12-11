@@ -1132,6 +1132,7 @@ final class FactLine extends X_Fact_Acct
 				.append(",Cur=").append(getC_Currency_ID())
 				.append(", DR=").append(getAmtSourceDr()).append("|").append(getAmtAcctDr())
 				.append(", CR=").append(getAmtSourceCr()).append("|").append(getAmtAcctCr())
+				.append(", Record/Line=").append(getRecord_ID()).append(getLine_ID() > 0 ? "/" + getLine_ID() : "")
 				.append("]");
 		return sb.toString();
 	}	// toString
