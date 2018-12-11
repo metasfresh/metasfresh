@@ -9,6 +9,7 @@ import de.metas.acct.api.impl.AcctSchemaPeriodControl;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -35,6 +36,7 @@ import lombok.Value;
 
 @Value
 @Builder
+@ToString(of = { "name", "currencyId", "costing" })
 public class AcctSchema
 {
 	@NonNull
