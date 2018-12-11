@@ -1,7 +1,5 @@
 package de.metas.ordercandidate.rest;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -24,6 +22,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -63,9 +62,10 @@ public class JsonConverters
 
 		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
 
-		final ProductId productId = masterdataProvider.getCreateProductId(request.getProduct(), orgId);
+		final ProductMasterDataProvider productMasterDataProvider = masterdataProvider.getProductMasterDataProvider();
+		final ProductId productId = productMasterDataProvider.getCreateProductId(request.getProduct(), orgId);
+		final UomId uomId = productMasterDataProvider.getProductUOMId(productId, request.getUomCode());
 
-		final UomId uomId = masterdataProvider.getProductUOMId(productId, request.getUomCode());
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
 		final CurrencyId currencyId = masterdataProvider.getCurrencyId(request.getCurrencyCode());

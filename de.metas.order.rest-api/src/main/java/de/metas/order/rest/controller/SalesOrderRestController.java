@@ -1,7 +1,5 @@
 package de.metas.order.rest.controller;
 
-import lombok.NonNull;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -32,6 +30,7 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerQuery;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.order.OrderFactory;
@@ -46,6 +45,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -108,10 +108,17 @@ public class SalesOrderRestController
 			salesOrderFactory.docType(docTypeId);
 		}
 
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.orgId(OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx())))
+				.includeAnyOrg(true)
+				.failIfNotExists(true)
+				.bpartnerValue(request.getShipBPartnerCode())
+				.build();
+
 		final BPartnerId shipBPartnerId = bpartnersRepo
-				.getBPartnerIdByValue(
-						request.getShipBPartnerCode(),
-						OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx())));
+				.retrieveBPartnerIdBy(query)
+				.get()/*bc failIfNotExists(true)*/;
+
 		salesOrderFactory.shipBPartner(shipBPartnerId);
 
 		salesOrderFactory.datePromised(request.getDatePromised());

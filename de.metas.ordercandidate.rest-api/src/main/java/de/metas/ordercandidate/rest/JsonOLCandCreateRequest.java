@@ -200,7 +200,7 @@ public final class JsonOLCandCreateRequest
 	}
 
 	/** Creates an instance with the given {@code syncAdvise} in all bPartners. */
-	public JsonOLCandCreateRequest withBPartnerSyncAdvise(@Nullable final SyncAdvise syncAdvise)
+	public JsonOLCandCreateRequest withBPartnersSyncAdvise(@Nullable final SyncAdvise syncAdvise)
 	{
 		if (syncAdvise == null)
 		{
@@ -231,5 +231,17 @@ public final class JsonOLCandCreateRequest
 			builder.handOverBPartner(handOverBPartner.toBuilder().syncAdvise(syncAdvise).build());
 		}
 		return builder.build();
+	}
+
+	public JsonOLCandCreateRequest withProductsSyncAdvise(@Nullable final SyncAdvise syncAdvise)
+	{
+		if (syncAdvise == null)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.product(getProduct().toBuilder().syncAdvise(syncAdvise).build())
+				.build();
 	}
 }

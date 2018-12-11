@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NonNull;
 
@@ -34,7 +35,7 @@ import lombok.NonNull;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class JsonProductInfo
 {
 
@@ -45,7 +46,7 @@ public class JsonProductInfo
 
 	/** This translates to {@code M_Product.Value}. */
 	@Nullable
-	@ApiModelProperty(value="This translates to <code>M_Product.Value</code>.")
+	@ApiModelProperty(value = "This translates to <code>M_Product.Value</code>.")
 	private String code;
 
 	/**
@@ -65,4 +66,7 @@ public class JsonProductInfo
 	 */
 	@Nullable
 	private String uomCode;
+
+	@Default
+	private SyncAdvise syncAdvise = SyncAdvise.createDefaultAdvise();
 }

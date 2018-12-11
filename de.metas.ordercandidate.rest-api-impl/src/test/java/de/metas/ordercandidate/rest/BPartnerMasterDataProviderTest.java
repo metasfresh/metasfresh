@@ -22,10 +22,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
 import de.metas.ordercandidate.rest.SyncAdvise.IfNotExists;
-import de.metas.ordercandidate.rest.exceptions.BPartnerInfoNotFoundException;
 import mockit.Mocked;
 
 /*
@@ -107,7 +107,7 @@ public class BPartnerMasterDataProviderTest
 		final JsonBPartnerInfo jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
 
 		assertThatThrownBy(() -> bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10)))
-				.isInstanceOf(BPartnerInfoNotFoundException.class)
+				.isInstanceOf(BPartnerIdNotFoundException.class)
 				.hasMessageContaining("Code=jsonBPartner.Code")
 				.hasMessageContaining("GLN=jsonBPartnerLocation.GLN");
 	}

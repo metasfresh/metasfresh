@@ -1,6 +1,6 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import lombok.NonNull;
+import static org.compiere.util.Util.coalesce;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
@@ -13,10 +13,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import de.metas.ordercandidate.rest.JsonAttachment;
 import de.metas.ordercandidate.rest.SyncAdvise;
+import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
+import de.metas.ordercandidate.rest.SyncAdvise.IfNotExists;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.CreateOLCandsRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -61,16 +64,26 @@ public class HealthcareChInvoice440RestController
 
 			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "FAIL") @RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist)
+			@ApiParam(allowEmptyValue = true, defaultValue = "FAIL") @RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist,
+
+			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifProductsExist,
+
+			@ApiParam(allowEmptyValue = true, defaultValue = "FAIL") @RequestParam final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
-		final SyncAdvise syncAdvise = SyncAdvise.builder()
-				.ifExists(ifBPartnersExist)
-				.ifNotExists(ifBPartnersNotExist)
+		final SyncAdvise bPartnerSyncAdvise = SyncAdvise.builder()
+				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
+				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.FAIL))
+				.build();
+
+		final SyncAdvise productSyncAdvise = SyncAdvise.builder()
+				.ifExists(coalesce(ifProductsExist, IfExists.DONT_UPDATE))
+				.ifNotExists(coalesce(ifProductsNotExist, IfNotExists.FAIL))
 				.build();
 
 		final CreateOLCandsRequest createOLCandsRequest = CreateOLCandsRequest.builder()
 				.xmlInvoiceFile(xmlInvoiceFile)
-				.syncAdvise(syncAdvise)
+				.bPartnerSyncAdvise(bPartnerSyncAdvise)
+				.productSyncAdvise(productSyncAdvise)
 				.build();
 
 		final JsonAttachment result = xmlToOLCandsService.createOLCands(createOLCandsRequest);
