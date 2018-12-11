@@ -157,13 +157,13 @@ public class ProductLowLevelCalculatorTest
 
 		helper.newProductBOM()
 				.product(pA)
-				.newBOMLine().product(pB).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).componentType(BOMComponentType.CoProduct).endLine()
+				.newBOMLine().product(pB).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE.negate()).componentType(BOMComponentType.CoProduct).endLine()
 				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 
 		helper.newProductBOM()
 				.product(pB)
-				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).componentType(BOMComponentType.CoProduct).endLine()
+				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE.negate()).componentType(BOMComponentType.CoProduct).endLine()
 				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 
