@@ -5,6 +5,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -14,12 +15,15 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.BOMComponentType;
@@ -32,6 +36,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.validator.PP_Order;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -42,6 +47,8 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -69,12 +76,15 @@ import de.metas.util.time.SystemTime;
 
 public class PPOrderRequestedEventHandlerTests
 {
+	@Rule
+	public final AdempiereTestWatcher watcher = new AdempiereTestWatcher();
+
 	private static final int PPORDER_POJO_GROUPID = 33;
 
 	private I_PP_Product_Planning productPlanning;
 
 	private I_AD_Org org;
-	
+
 	private I_C_UOM uom;
 
 	private I_M_Product bomMainProduct;
@@ -102,11 +112,8 @@ public class PPOrderRequestedEventHandlerTests
 		orderLine.setC_BPartner_ID(120);
 		save(orderLine);
 
-		final I_AD_Workflow workflow = newInstance(I_AD_Workflow.class);
-		workflow.setIsValid(true);
-		workflow.setDurationUnit(X_AD_Workflow.DURATIONUNIT_Hour);
-		save(workflow);
-		
+		final PPRoutingId routingId = createRouting();
+
 		uom = newInstance(I_C_UOM.class);
 		save(uom);
 
@@ -117,11 +124,12 @@ public class PPOrderRequestedEventHandlerTests
 
 		final I_PP_Product_BOM productBom = newInstance(I_PP_Product_BOM.class);
 		productBom.setM_Product_ID(bomMainProduct.getM_Product_ID());
+		productBom.setC_UOM_ID(uom.getC_UOM_ID());
 		save(productBom);
 
 		productPlanning = newInstance(I_PP_Product_Planning.class);
-		productPlanning.setAD_Workflow(workflow);
-		productPlanning.setPP_Product_BOM(productBom);
+		productPlanning.setAD_Workflow_ID(routingId.getRepoId());
+		productPlanning.setPP_Product_BOM_ID(productBom.getPP_Product_BOM_ID());
 		productPlanning.setIsDocComplete(true);
 		save(productPlanning);
 
@@ -139,6 +147,7 @@ public class PPOrderRequestedEventHandlerTests
 		{
 			bomCoProduct = newInstance(I_M_Product.class);
 			bomCoProduct.setIsVerified(true);
+			bomCoProduct.setC_UOM_ID(uom.getC_UOM_ID());
 			save(bomCoProduct);
 
 			bomCoProductLine = newInstance(I_PP_Product_BOMLine.class);
@@ -152,6 +161,7 @@ public class PPOrderRequestedEventHandlerTests
 		{
 			bomComponentProduct = newInstance(I_M_Product.class);
 			bomComponentProduct.setIsVerified(true);
+			bomComponentProduct.setC_UOM_ID(uom.getC_UOM_ID());
 			save(bomComponentProduct);
 
 			bomComponentLine = newInstance(I_PP_Product_BOMLine.class);
@@ -183,6 +193,36 @@ public class PPOrderRequestedEventHandlerTests
 		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler(new PPOrderProducer());
 	}
 
+	private PPRoutingId createRouting()
+	{
+		final I_AD_Workflow routingRecord = newInstance(I_AD_Workflow.class);
+		routingRecord.setValue("dummy");
+		routingRecord.setName("dummy");
+		routingRecord.setIsValid(true);
+		routingRecord.setDurationUnit(X_AD_Workflow.DURATIONUNIT_Hour);
+		save(routingRecord);
+
+		final I_AD_WF_Node activityRecord = newInstance(I_AD_WF_Node.class);
+		activityRecord.setAD_Workflow_ID(routingRecord.getAD_Workflow_ID());
+		activityRecord.setValue("dummy");
+		activityRecord.setName("dummy");
+		activityRecord.setS_Resource_ID(createResource().getRepoId());
+		save(activityRecord);
+
+		routingRecord.setAD_WF_Node_ID(activityRecord.getAD_WF_Node_ID());
+		save(routingRecord);
+
+		return PPRoutingId.ofRepoId(routingRecord.getAD_Workflow_ID());
+	}
+
+	private ResourceId createResource()
+	{
+		final I_S_Resource resource = newInstance(I_S_Resource.class);
+		saveRecord(resource);
+
+		return ResourceId.ofRepoId(resource.getS_Resource_ID());
+	}
+
 	@Test
 	public void testOnlyPPOrder()
 	{
@@ -200,11 +240,11 @@ public class PPOrderRequestedEventHandlerTests
 		assertThat(ppOrder).isNotNull();
 		assertThat(ppOrder.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
 		assertThat(ppOrder.getPP_Product_BOM_ID()).isEqualTo(productPlanning.getPP_Product_BOM_ID());
-		
+
 		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ppOrder.getPP_Product_BOM_ID());
 		assertThat(ppOrder.getM_Product_ID()).isEqualTo(productBOM.getM_Product_ID());
-		
+
 		assertThat(ppOrder.getPP_Product_Planning_ID()).isEqualTo(productPlanning.getPP_Product_Planning_ID());
 		assertThat(ppOrder.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
 		assertThat(ppOrder.getC_BPartner_ID()).isEqualTo(120);
