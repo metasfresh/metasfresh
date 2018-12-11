@@ -35,6 +35,14 @@ export default class SelectionDropdown extends Component {
 
   optionToRef = new Map();
 
+  constructor(props) {
+    super(props);
+
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.scrollIntoView = this.scrollIntoView.bind(this);
+  }
+
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
@@ -67,7 +75,7 @@ export default class SelectionDropdown extends Component {
     return options.get(index);
   }
 
-  scrollIntoView = (element, up) => {
+  scrollIntoView(element, up) {
     const {
       top: topMax,
       bottom: bottomMax,
@@ -77,7 +85,7 @@ export default class SelectionDropdown extends Component {
     if (top < topMax || bottom > bottomMax) {
       element.scrollIntoView(up);
     }
-  };
+  }
 
   navigate = up => {
     this.ignoreMouse = true;
@@ -142,7 +150,7 @@ export default class SelectionDropdown extends Component {
     onChange(selectedNew);
   };
 
-  handleKeyDown = event => {
+  handleKeyDown(event) {
     const { navigate } = this;
     const { selected, onCancel, onSelect } = this.props;
 
@@ -170,11 +178,11 @@ export default class SelectionDropdown extends Component {
           return;
       }
     }
-  };
+  }
 
-  handleKeyUp = () => {
+  handleKeyUp() {
     this.ignoreMouse = false;
-  };
+  }
 
   handleMouseEnter = option => {
     if (this.ignoreMouse) {
