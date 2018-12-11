@@ -41,6 +41,7 @@ import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.uom.UOMUtil;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -49,11 +50,12 @@ public class UOMDAO implements IUOMDAO
 	@Override
 	public I_C_UOM getById(final int uomId)
 	{
+		Check.assumeGreaterThanZero(uomId, "uomId");
 		return loadOutOfTrx(uomId, I_C_UOM.class); // assume it's cached on table level
 	}
 
 	@Override
-	public I_C_UOM getById(final UomId uomId)
+	public I_C_UOM getById(@NonNull final UomId uomId)
 	{
 		return loadOutOfTrx(uomId, I_C_UOM.class); // assume it's cached on table level
 	}
