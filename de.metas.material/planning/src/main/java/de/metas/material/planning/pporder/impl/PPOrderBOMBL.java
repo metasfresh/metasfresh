@@ -121,6 +121,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public void createOrderBOMAndLines(@NonNull final I_PP_Order ppOrder)
 	{
 		PPOrderBOMCreateCommand.builder()
+				.ppOrderBOMsBL(this)
 				.ppOrder(ppOrder)
 				.build()
 				.execute();
