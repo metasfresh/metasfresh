@@ -45,6 +45,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -272,12 +273,12 @@ import lombok.NonNull;
 	private boolean isEligibleForEnqueueing(final I_C_Invoice_Candidate ic)
 	{
 		final ILoggable loggable = getLoggable();
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		//
 		// 07666: If selected, only use the invoices flagged as approved for invoicing
 		if (getInvoicingParams().isOnlyApprovedForInvoicing() && !ic.isApprovalForInvoicing())
 		{
-			// don't log; it's obvious for the user, and currently if won't happen anyways (die to the select's whereclause)
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
 			loggable.addLog(msg);
 			return false;
@@ -297,7 +298,6 @@ import lombok.NonNull;
 		// task 08343: logic moved here from the where clause in C_Invoice_Candidate_EnqueueSelection
 		if (ic.getQtyOrdered().signum() != 0 && invoiceCandBL.getQtyToInvoice(ic).signum() == 0)
 		{
-			// don't log; it's obvious for the user and there might be a lot of skippings because of this
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
 			loggable.addLog(msg);
 			return false;

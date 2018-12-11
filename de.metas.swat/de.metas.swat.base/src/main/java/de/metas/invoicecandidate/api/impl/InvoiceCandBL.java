@@ -785,8 +785,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		// 04533: ignore already processed candidates
 		// task 08343: if the ic is processed (after the recent update), then skip it (this logic was in the where clause in C_Invoice_Candidate_EnqueueSelection)
-		IMsgBL msgBL = Services.get(IMsgBL.class);
-		Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 		if (ic.isProcessed())
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED, new Object[] { ic.getC_Invoice_Candidate_ID() });
