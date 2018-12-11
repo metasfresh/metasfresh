@@ -163,7 +163,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 		final Percent qtyScrap = orderBOMLine.getScrap();
 		final BigDecimal qtyRequiredPlusScrap = productBOMBL.calculateQtyWithScrap(qtyRequired, qtyScrap);
-		return Quantity.of(qtyRequiredPlusScrap, orderBOMLine.getBOMProductUOM());
+		return Quantity.of(qtyRequiredPlusScrap, orderBOMLine.getC_UOM());
 	}
 
 	@Override
@@ -198,15 +198,17 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final Quantity qtyIssued = getQtyIssuedOrReceived(orderBOMLine);
 
 		// Effective qtyToIssue: how much we need to issue (max) - how much we already issued
-		final Quantity qtyToIssueEffective = qtyToIssueTarget.subtract(qtyIssued);
+		final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(ProductId.ofRepoId(orderBOMLine.getM_Product_ID()));
+		final Quantity qtyToIssueEffective = uomConversionService.convertQuantityTo(qtyToIssueTarget, conversionCtx, qtyIssued.getUOM())
+				.subtract(qtyIssued);
 		if (qtyToIssueEffective.signum() <= 0)
 		{
 			return Quantity.zero(uom); // we issued everything that was needed...
 		}
 
 		//
-		final UOMConversionContext conversionCtx = UOMConversionContext.of(ProductId.ofRepoId(orderBOMLine.getM_Product_ID()));
-		return Services.get(IUOMConversionBL.class).convertQuantityTo(qtyToIssueEffective, conversionCtx, uom);
+		return uomConversionService.convertQuantityTo(qtyToIssueEffective, conversionCtx, uom);
 	}
 
 	private interface PPOrderBomLineAware

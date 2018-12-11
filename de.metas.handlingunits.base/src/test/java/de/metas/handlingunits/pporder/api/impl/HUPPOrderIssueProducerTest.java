@@ -38,6 +38,8 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -91,6 +93,9 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -108,6 +113,9 @@ import de.metas.util.time.SystemTime;
 @ActiveProfiles(Profiles.PROFILE_Test)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
+	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	// the bean unused by the code in this class, but needed within the spring context
 	@MockBean
 	private PostMaterialEventService postMaterialEventService;
@@ -158,7 +166,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		uomStuck = createUOM("Stück", 0, 0);
 		uomMillimeter = createUOM("Millimeter", 2, 4);
-		uomRolle = createUOM("Rolle", 2, 4);
+		uomRolle = createUOM("Rolle", 10, 10);
 
 		pSalad = createProduct("Salad", uomStuck); // AB Alicesalat 250g - the big product bom
 		pFolie = createProduct("Folie", uomRolle);
@@ -231,7 +239,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		// => expect to issue until we hit the qty required (calculated based on finished goods receipt) of that component,
 		{
 			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("57200"); // = 200items x 260(mm/item) + 10% scrap [millimeters]
-			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.96"); // = 1.00 - 0.04(57200mm to rolle)
+			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9618666476"); // = 1.00 - 0.04(57200mm to rolle)
 			create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
 		}
 
@@ -250,7 +258,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	{
 		// Assume we are dealing with right precisions
 		Assert.assertEquals("Invalid uom precision: " + uomMillimeter, 2, uomMillimeter.getStdPrecision());
-		Assert.assertEquals("Invalid uom precision: " + uomRolle, 2, uomRolle.getStdPrecision());
+		Assert.assertEquals("Invalid uom precision: " + uomRolle, 10, uomRolle.getStdPrecision());
 		Assert.assertEquals("Invalid uom precision: " + uomStuck, 0, uomStuck.getStdPrecision());
 
 		//
@@ -282,7 +290,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		//
 		// Consider that 20000mm of folie were already issued
 		// => 8600mm (28600-20000) still needs to be issued
-		ppOrderBOMLine_Folie.setQtyDelivered(new BigDecimal("20000"));
+		setBOMLineQtyDelivered(ppOrderBOMLine_Folie, Quantity.of(20000, uomMillimeter));
 		save(ppOrderBOMLine_Folie);
 
 		//
@@ -307,7 +315,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			// 8600mm (28600-20000) still needs to be issued.
 			// 8600mm to role: 8600/1500000 = 0.0057333333333333 => rounded to 2 digits, HALF UP = 0.01role
 			// => 0.99=1.00role - 0.01(28600-20000 mm to rolle)
-			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.99");
+			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9942666638");
 			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("8600");
 			create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
 		}
@@ -439,16 +447,16 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				, new BigDecimal(150) // over receipt
 		);
 		final BigDecimal ppOrderBOMLine_Folie_QtyRequired_Expected = new BigDecimal("28600"); // = 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
-		final List<BigDecimal> ppOrderBOMLine_Folie_QtyIssued_List = Arrays.asList(
-				new BigDecimal("0") // nothing issued
-				, new BigDecimal("20000") // under issued
-				, new BigDecimal("28600") // issued as much as planed
-				, new BigDecimal("40000") // over issued
+		final List<Quantity> ppOrderBOMLine_Folie_QtyIssued_List = Arrays.asList(
+				Quantity.zero(uomMillimeter), // nothing issued
+				Quantity.of(20000, uomMillimeter), // under issued
+				Quantity.of(28600, uomMillimeter), // issued as much as planed
+				Quantity.of(40000, uomMillimeter) // over issued
 		);
 
 		for (final BigDecimal finishedGoods_QtyReceived : finishedGoods_QtyReceived_List)
 		{
-			for (final BigDecimal ppOrderBOMLine_Folie_QtyIssued : ppOrderBOMLine_Folie_QtyIssued_List)
+			for (final Quantity ppOrderBOMLine_Folie_QtyIssued : ppOrderBOMLine_Folie_QtyIssued_List)
 			{
 				//
 				// Create Manufacturing order and validate Order BOM Line
@@ -467,7 +475,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 				//
 				// Set quantity issued
-				ppOrderBOMLine_Folie.setQtyDelivered(ppOrderBOMLine_Folie_QtyIssued);
+				setBOMLineQtyDelivered(ppOrderBOMLine_Folie, ppOrderBOMLine_Folie_QtyIssued);
 				save(ppOrderBOMLine_Folie);
 
 				//
@@ -615,4 +623,12 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		return hu;
 	}
 
+	private void setBOMLineQtyDelivered(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyDelivered)
+	{
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		final I_C_UOM productStockingUOM = productBL.getStockingUOM(productId);
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+		final Quantity qtyDeliveredInStockingUOM = uomConversionService.convertQuantityTo(qtyDelivered, conversionCtx, productStockingUOM);
+		orderBOMLine.setQtyDelivered(qtyDeliveredInStockingUOM.getAsBigDecimal());
+	}
 }
