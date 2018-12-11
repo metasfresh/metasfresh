@@ -419,10 +419,12 @@ public class SqlViewSelectData
 			@NonNull final ViewId viewId,
 			@NonNull final DocumentId rowId)
 	{
-		final String viewSelectionId = viewId.getViewId();
-		final IStringExpression sqlSelectById = getSqlSelectById();
-		final String sql = sqlSelectById.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
-		return SqlAndParams.of(sql, viewSelectionId, rowId.toInt());
+		final String sql = getSqlSelectById().evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
+
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		sqlParams.add(viewId.getViewId());
+		sqlParams.addAll(keyColumnNamesMap.getSqlValuesList(rowId));
+		return SqlAndParams.of(sql, sqlParams);
 	}
 
 	@Builder(builderMethodName = "selectIncludedLines", builderClassName = "SelectIncludedLinesBuilder")
