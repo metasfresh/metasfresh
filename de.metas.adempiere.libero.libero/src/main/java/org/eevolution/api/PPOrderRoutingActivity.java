@@ -168,8 +168,8 @@ public final class PPOrderRoutingActivity
 			return;
 		}
 
-		currentStatus.assertCanChangeTo(PPOrderRoutingActivityStatus.IN_PROGRESS);
-		this.status = PPOrderRoutingActivityStatus.IN_PROGRESS;
+		currentStatus.assertCanChangeTo(newStatus);
+		this.status = newStatus;
 	}
 
 	void reportProgress(final PPOrderActivityProcessReport report)
@@ -209,6 +209,11 @@ public final class PPOrderRoutingActivity
 			logger.warn("Activity already closed - {}", this);
 			return;
 		}
+		else if (getStatus() == PPOrderRoutingActivityStatus.IN_PROGRESS)
+		{
+			completeIt();
+		}
+
 		changeStatusTo(PPOrderRoutingActivityStatus.CLOSED);
 
 		if (getDateFinish() != null)
