@@ -2,8 +2,6 @@ package de.metas.invoicecandidate.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -75,8 +73,10 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AggregationEngine implements IAggregationEngine
 {
@@ -92,10 +92,6 @@ public class AggregationEngine implements IAggregationEngine
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 
-	//
-	// Parameters
-	private ILoggable loggable = NullLoggable.instance;
-
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
@@ -106,13 +102,6 @@ public class AggregationEngine implements IAggregationEngine
 	public String toString()
 	{
 		return ObjectUtils.toString(this);
-	}
-
-	@Override
-	public IAggregationEngine setLoggable(final ILoggable loggable)
-	{
-		this.loggable = loggable == null ? NullLoggable.instance : loggable;
-		return this;
 	}
 
 	@Override
@@ -236,6 +225,7 @@ public class AggregationEngine implements IAggregationEngine
 				headerAndAggregators = new InvoiceHeaderAndLineAggregators(headerAggregationKey, invoiceHeader);
 				key2headerAndAggregators.put(headerAggregationKey, headerAndAggregators);
 
+				final ILoggable loggable = Loggables.get();
 				// task 08451: log why we create a new invoice header
 				if (!NullLoggable.isNull(loggable))
 				{
@@ -394,6 +384,7 @@ public class AggregationEngine implements IAggregationEngine
 		{
 			final IInvoiceHeader invoiceHeader = aggregate(headerAndAggregators);
 
+			final ILoggable loggable = Loggables.get();
 			if (!NullLoggable.isNull(loggable))
 			{
 				loggable.addLog("Aggregated InvoiceHeaderAndLineAggregators=" + headerAndAggregators + "; result IInvoiceHeader=" + invoiceHeader);
