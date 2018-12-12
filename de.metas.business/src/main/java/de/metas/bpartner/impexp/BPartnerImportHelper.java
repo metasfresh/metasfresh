@@ -85,6 +85,13 @@ import de.metas.util.Check;
 		// Type (Vendor, Customer, Employee)
 		setTypeOfBPartner(importRecord, bpartner);
 
+		final String url = importRecord.getURL();
+
+		if(!Check.isEmpty(url))
+		{
+			bpartner.setURL(url);
+		}
+
 		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartner, IImportInterceptor.TIMING_AFTER_IMPORT);
 		save(bpartner);
 		importRecord.setC_BPartner(bpartner);

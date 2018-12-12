@@ -7,8 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -91,11 +89,11 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.NonNull;
 
 public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 {
@@ -122,7 +120,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
-	private ILoggable loggable = NullLoggable.instance; // default, so avoid an NPE
 	private IInvoicingParams _invoicingParams;
 	private IInvoiceGenerateResult _collector;
 
@@ -782,7 +779,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		// Total net amount to invoice checker (08610)
 		final ICNetAmtToInvoiceChecker netAmtToInvoiceChecker = new ICNetAmtToInvoiceChecker();
-		netAmtToInvoiceChecker.setLoggable(loggable);
 
 		// get our service instance to aggregate the invoice candidates
 		final IAggregationEngine aggregationEngine = newAggregationEngine();
@@ -798,7 +794,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			// Skip invoice candidate if we are adviced to do so
 			// TODO: i think this checking is no longer needed because we are doing it when enqueueing
-			if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule, loggable))
+			if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
 			{
 				continue;
 			}
@@ -834,7 +830,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final IAggregationEngine newAggregationEngine()
 	{
 		final IAggregationEngine aggregationEngine = Services.newMultiton(IAggregationEngine.class);
-		aggregationEngine.setLoggable(loggable);
 
 		final IInvoicingParams invoicingParams = getInvoicingParams();
 		if (invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
@@ -929,7 +924,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		{
 			DB.getConstraints().addAllowedTrxNamePrefix("POSave");
 
-			loggable.addLog("Caught exception " + error + " with meesage: " + error.getLocalizedMessage());
+			Loggables.get().addLog("Caught exception " + error + " with meesage: " + error.getLocalizedMessage());
 
 			final List<I_AD_Note> result = new ArrayList<>();
 
@@ -1111,14 +1106,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		return false;
-	}
-
-	@Override
-	public InvoiceCandBLCreateInvoices setLoggable(final ILoggable loggable)
-	{
-		Check.assumeNotNull(loggable, "loggable not null");
-		this.loggable = loggable;
-		return this;
 	}
 
 	@Override
