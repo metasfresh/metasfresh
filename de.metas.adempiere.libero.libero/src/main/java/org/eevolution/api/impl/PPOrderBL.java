@@ -50,10 +50,10 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.WorkingTime;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -267,12 +267,10 @@ public class PPOrderBL implements IPPOrderBL
 	public void updateBOMOrderLinesWarehouseAndLocator(final I_PP_Order ppOrder)
 	{
 		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 		for (final I_PP_Order_BOMLine orderBOMLine : ppOrderBOMsRepo.retrieveOrderBOMLines(ppOrder))
 		{
-			orderBOMLine.setPP_Order(ppOrder); // for caching (to not load the PP_Order again)
-			ppOrderBOMBL.updateWarehouseAndLocator(orderBOMLine);
+			PPOrderUtil.updateBOMLineWarehouseAndLocatorFromOrder(orderBOMLine, ppOrder);
 			ppOrderBOMsRepo.save(orderBOMLine);
 		}
 	}
@@ -301,7 +299,7 @@ public class PPOrderBL implements IPPOrderBL
 
 		ppOrder.setQtyBeforeClose(qtyOrderedOld);
 		setQtyOrdered(ppOrder, qtyDelivered);
-		
+
 		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 		ppOrdersRepo.save(ppOrder);
 	}
@@ -313,7 +311,7 @@ public class PPOrderBL implements IPPOrderBL
 
 		ppOrder.setQtyOrdered(qtyOrderedBeforeClose);
 		ppOrder.setQtyBeforeClose(BigDecimal.ZERO);
-		
+
 		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 		ppOrdersRepo.save(ppOrder);
 	}

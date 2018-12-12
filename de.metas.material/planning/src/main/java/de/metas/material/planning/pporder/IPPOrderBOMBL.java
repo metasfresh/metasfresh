@@ -93,15 +93,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	void addDescription(I_PP_Order_BOMLine orderBOMLine, String description);
 
 	/**
-	 * set Order BOM Line's Warehouse and Locator from {@link I_PP_Order} (manufacturing order header).
-	 *
-	 * NOTE: this method is not saving <code>orderBOMLine</code>.
-	 *
-	 * @param orderBOMLine
-	 */
-	void updateWarehouseAndLocator(I_PP_Order_BOMLine orderBOMLine);
-
-	/**
 	 * Returns the negated value of the given <code>qty</code>.
 	 * <p>
 	 * Note: In case of Co/By-Products, we need to issue negative Qtys

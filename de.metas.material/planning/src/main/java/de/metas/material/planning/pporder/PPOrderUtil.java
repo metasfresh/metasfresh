@@ -10,6 +10,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
+import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
@@ -235,5 +236,12 @@ public class PPOrderUtil
 		}
 
 		return ppOrderProductBOM;
+	}
+	
+	public static void updateBOMLineWarehouseAndLocatorFromOrder(@NonNull final I_PP_Order_BOMLine orderBOMLine, @NonNull final I_PP_Order fromOrder)
+	{
+		orderBOMLine.setAD_Org_ID(fromOrder.getAD_Org_ID());
+		orderBOMLine.setM_Warehouse_ID(fromOrder.getM_Warehouse_ID());
+		orderBOMLine.setM_Locator_ID(fromOrder.getM_Locator_ID());
 	}
 }

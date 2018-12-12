@@ -59,19 +59,6 @@ import lombok.NonNull;
 @Service
 public class PPOrderBOMBL implements IPPOrderBOMBL
 {
-	@Override
-	public final void updateWarehouseAndLocator(final I_PP_Order_BOMLine orderBOMLine)
-	{
-		final I_PP_Order ppOrder = orderBOMLine.getPP_Order();
-		final int adOrgIdNew = ppOrder.getAD_Org_ID();
-		final int warehouseIdNew = ppOrder.getM_Warehouse_ID();
-		final int locatorIdNew = ppOrder.getM_Locator_ID();
-
-		orderBOMLine.setAD_Org_ID(adOrgIdNew);
-		orderBOMLine.setM_Warehouse_ID(warehouseIdNew);
-		orderBOMLine.setM_Locator_ID(locatorIdNew);
-	}
-
 	final void updateOrderBOMLine(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final I_PP_Product_BOMLine bomLine)

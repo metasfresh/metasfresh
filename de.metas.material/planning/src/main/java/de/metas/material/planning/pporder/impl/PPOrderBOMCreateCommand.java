@@ -156,7 +156,7 @@ final class PPOrderBOMCreateCommand
 
 		//
 		// Warehouse and Locator
-		ppOrderBOMsBL.updateWarehouseAndLocator(orderBOMLine);
+		PPOrderUtil.updateBOMLineWarehouseAndLocatorFromOrder(orderBOMLine, ppOrder);
 
 		//
 		// Set Qtys
