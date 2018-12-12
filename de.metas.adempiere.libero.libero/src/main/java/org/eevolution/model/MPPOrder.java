@@ -144,7 +144,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean invalidateIt()
 	{
-		setDocAction(DOCACTION_Prepare);
+		setDocAction(IDocument.ACTION_Prepare);
 		return true;
 	}
 
@@ -180,9 +180,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// New or in Progress/Invalid
-		if (DOCSTATUS_Drafted.equals(getDocStatus())
-				|| DOCSTATUS_InProgress.equals(getDocStatus())
-				|| DOCSTATUS_Invalid.equals(getDocStatus())
+		final String docStatus = getDocStatus();
+		if (IDocument.STATUS_Drafted.equals(docStatus)
+				|| IDocument.STATUS_InProgress.equals(docStatus)
+				|| IDocument.STATUS_Invalid.equals(docStatus)
 				|| getC_DocType_ID() <= 0)
 		{
 			setC_DocType_ID(getC_DocTypeTarget_ID());
@@ -230,7 +231,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public String completeIt()
 	{
 		// Just prepare
-		if (DOCACTION_Prepare.equals(getDocAction()))
+		if (IDocument.ACTION_Prepare.equals(getDocAction()))
 		{
 			setProcessed(false);
 			return IDocument.STATUS_InProgress;
@@ -271,7 +272,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				&& X_PP_Order_BOM.BOMUSE_Manufacturing.equals(ppOrderBOM.getBOMUse()))
 		{
 			PPOrderMakeToKitHelper.complete(this);
-			return DOCSTATUS_Closed;
+			return IDocument.STATUS_Closed;
 		}
 
 		//
@@ -282,7 +283,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Update Document Status
 		// NOTE: we need to have it Processed=Yes before calling triggering AFTER_COMPLETE model validator event
 		setProcessed(true);
-		setDocAction(DOCACTION_Close);
+		setDocAction(IDocument.ACTION_Close);
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 
@@ -344,7 +345,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Update document status and return true
 		setProcessed(true);
-		setDocAction(DOCACTION_None);
+		setDocAction(IDocument.ACTION_None);
 		return true;
 	}
 
@@ -358,7 +359,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Check already closed
 		String docStatus = getDocStatus();
-		if (X_PP_Order.DOCSTATUS_Closed.equals(docStatus))
+		if (IDocument.STATUS_Closed.equals(docStatus))
 		{
 			return true;
 		}
@@ -366,7 +367,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// If DocStatus is not Completed => complete it now
 		// TODO: don't know if this approach is ok, i think we shall throw an exception instead
-		if (!X_PP_Order.DOCSTATUS_Completed.equals(docStatus))
+		if (!IDocument.STATUS_Completed.equals(docStatus))
 		{
 			docStatus = completeIt();
 			setDocStatus(docStatus);
@@ -405,9 +406,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Set Document status.
 		// Do this before firing the AFTER_CLOSE events because the interceptors shall see the DocStatus=CLosed, in case some BLs are depending on that.
-		setDocStatus(DOCSTATUS_Closed);
+		setDocStatus(IDocument.STATUS_Closed);
 		setProcessed(true);
-		setDocAction(DOCACTION_None);
+		setDocAction(IDocument.ACTION_None);
 
 		//
 		// Call Model Validator: AFTER_CLOSE
@@ -455,7 +456,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 
-		setDocAction(DOCACTION_Complete);
+		setDocAction(IDocument.ACTION_Complete);
 		setProcessed(false);
 		return true;
 	} // reActivateIt
