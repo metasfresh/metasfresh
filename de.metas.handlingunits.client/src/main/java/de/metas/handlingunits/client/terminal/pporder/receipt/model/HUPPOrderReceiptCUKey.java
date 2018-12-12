@@ -65,14 +65,14 @@ public class HUPPOrderReceiptCUKey extends CUKey
 		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = getReceiptCostCollectorCandidate();
 		
 		final IPPOrderReceiptHUProducer producer;
-		if (receiptCostCollectorCandidate.getPP_Order_BOMLine() != null)
+		if (receiptCostCollectorCandidate.getOrderBOMLine() != null)
 		{
-			producer = IPPOrderReceiptHUProducer.receiveByOrCoProduct(receiptCostCollectorCandidate.getPP_Order_BOMLine());
+			producer = IPPOrderReceiptHUProducer.receiveByOrCoProduct(receiptCostCollectorCandidate.getOrderBOMLine());
 		}
 
 		else
 		{
-			producer = IPPOrderReceiptHUProducer.receiveMainProduct(receiptCostCollectorCandidate.getPP_Order());
+			producer = IPPOrderReceiptHUProducer.receiveMainProduct(receiptCostCollectorCandidate.getOrder());
 		}
 		
 		return producer;

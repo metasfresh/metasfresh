@@ -2,8 +2,11 @@ package org.eevolution.api;
 
 import java.time.LocalDateTime;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -23,9 +26,9 @@ import lombok.Value;
 @Value
 public class ReceiptCostCollectorCandidate
 {
-	I_PP_Order PP_Order;
+	I_PP_Order order;
 	/** manufacturing order's BOM Line if this is a co/by-product receipt; <code>null</code> otherwise */
-	I_PP_Order_BOMLine PP_Order_BOMLine;
+	I_PP_Order_BOMLine orderBOMLine;
 
 	LocalDateTime movementDate;
 
@@ -38,26 +41,32 @@ public class ReceiptCostCollectorCandidate
 	LocatorId locatorId;
 	AttributeSetInstanceId attributeSetInstanceId;
 
-	@Builder(toBuilder = true)
+	@Builder
 	private ReceiptCostCollectorCandidate(
-			final I_PP_Order PP_Order,
-			final I_PP_Order_BOMLine PP_Order_BOMLine,
-			final LocalDateTime movementDate,
-			final ProductId productId,
+			@NonNull final I_PP_Order order,
+			@Nullable final I_PP_Order_BOMLine orderBOMLine,
+			@Nullable final LocalDateTime movementDate,
+			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyToReceive,
-			final Quantity qtyScrap,
-			final Quantity qtyReject,
-			final LocatorId locatorId,
-			final AttributeSetInstanceId attributeSetInstanceId)
+			@Nullable final Quantity qtyScrap,
+			@Nullable final Quantity qtyReject,
+			@Nullable final LocatorId locatorId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		this.PP_Order = PP_Order;
-		this.PP_Order_BOMLine = PP_Order_BOMLine;
+		this.order = order;
+		this.orderBOMLine = orderBOMLine;
 		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDateTime();
 		this.productId = productId;
 		this.qtyToReceive = qtyToReceive;
 		this.qtyScrap = qtyScrap != null ? qtyScrap : qtyToReceive.toZero();
 		this.qtyReject = qtyReject != null ? qtyReject : qtyToReceive.toZero();
-		this.locatorId = locatorId;
+		this.locatorId = locatorId != null ? locatorId : extractLocatorId(order);
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
+	}
+
+	private static LocatorId extractLocatorId(I_PP_Order order)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
+		return LocatorId.ofRepoId(warehouseId, order.getM_Locator_ID());
 	}
 }

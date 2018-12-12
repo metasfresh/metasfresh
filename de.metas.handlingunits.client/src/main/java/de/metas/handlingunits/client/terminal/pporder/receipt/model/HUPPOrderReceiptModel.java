@@ -119,7 +119,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 
 		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(lutuConfiguration.getC_UOM_ID());
 		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = ReceiptCostCollectorCandidate.builder()
-				.PP_Order(ppOrder)
+				.order(ppOrder)
 				.productId(ProductId.ofRepoId(lutuConfiguration.getM_Product_ID()))
 				.qtyToReceive(Quantity.zero(uom))
 				.build();
@@ -155,8 +155,8 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 
 		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(lutuConfiguration.getC_UOM_ID());
 		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = ReceiptCostCollectorCandidate.builder()
-				.PP_Order(ppOrder)
-				.PP_Order_BOMLine(ppOrderBOMLine)
+				.order(ppOrder)
+				.orderBOMLine(ppOrderBOMLine)
 				.productId(ProductId.ofRepoId(lutuConfiguration.getM_Product_ID()))
 				.qtyToReceive(Quantity.zero(uom))
 				.build();

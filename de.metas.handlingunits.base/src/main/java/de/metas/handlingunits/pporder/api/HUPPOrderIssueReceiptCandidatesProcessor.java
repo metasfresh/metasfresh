@@ -205,8 +205,8 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		// Create material receipt and activate the HU
 		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(candidate.getC_UOM_ID());
 		final ReceiptCostCollectorCandidate costCollectorCandidate = ReceiptCostCollectorCandidate.builder()
-				.PP_Order(candidate.getPP_Order())
-				.PP_Order_BOMLine(candidate.getPP_Order_BOMLine())
+				.order(candidate.getPP_Order())
+				.orderBOMLine(candidate.getPP_Order_BOMLine())
 				.movementDate(TimeUtil.asLocalDateTime(candidate.getMovementDate()))
 				.qtyToReceive(Quantity.of(candidate.getQty(), uom))
 				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))

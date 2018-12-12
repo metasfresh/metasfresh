@@ -166,7 +166,7 @@ public class PPOrderMakeToKitHelper
 
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 		final ReceiptCostCollectorCandidate candidate = ReceiptCostCollectorCandidate.builder()
-				.PP_Order(ppOrder)
+				.order(ppOrder)
 				.movementDate(today)
 				.qtyToReceive(qtyToReceive)
 				.qtyScrap(qtyScrapped)

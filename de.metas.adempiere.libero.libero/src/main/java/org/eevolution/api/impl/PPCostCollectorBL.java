@@ -177,7 +177,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	@Override
 	public I_PP_Cost_Collector createReceipt(final ReceiptCostCollectorCandidate candidate)
 	{
-		final I_PP_Order_BOMLine orderBOMLine = candidate.getPP_Order_BOMLine();
+		final I_PP_Order_BOMLine orderBOMLine = candidate.getOrderBOMLine();
 		if (orderBOMLine == null)
 		{
 			return createFinishedGoodsReceipt(candidate);
@@ -194,7 +194,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		//
 		// Get and validate the BOM Line
-		final I_PP_Order_BOMLine orderBOMLine = candidate.getPP_Order_BOMLine();
+		final I_PP_Order_BOMLine orderBOMLine = candidate.getOrderBOMLine();
 		Check.assumeNotNull(orderBOMLine, LiberoException.class, "orderBOMLine not null");
 		PPOrderUtil.assertReceipt(orderBOMLine);
 
@@ -206,31 +206,27 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			throw new LiberoException("@Invalid@ @M_Product_ID@: " + candidate + "\n Expected: " + orderBOMLine.getM_Product());
 		}
 
-		final Quantity qtyToIssue = ppOrderBOMBL.adjustCoProductQty(candidate.getQtyToReceive());
-		final Quantity qtyScrap = ppOrderBOMBL.adjustCoProductQty(candidate.getQtyScrap());
-		final Quantity qtyReject = ppOrderBOMBL.adjustCoProductQty(candidate.getQtyReject());
 		return createIssue(ComponentIssueCreateRequest.builder()
 				.orderBOMLine(orderBOMLine)
-				.locatorId(getLocatorIdToUse(candidate))
+				.locatorId(candidate.getLocatorId())
 				.attributeSetInstanceId(candidate.getAttributeSetInstanceId())
 				.movementDate(TimeUtil.asLocalDateTime(candidate.getMovementDate()))
-				.qtyIssue(qtyToIssue)
-				.qtyScrap(qtyScrap)
-				.qtyReject(qtyReject)
+				.qtyIssue(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyToReceive()))
+				.qtyScrap(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyScrap()))
+				.qtyReject(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyReject()))
 				.build());
 	}
 
 	private I_PP_Cost_Collector createFinishedGoodsReceipt(final ReceiptCostCollectorCandidate candidate)
 	{
-		final I_PP_Order order = candidate.getPP_Order();
-		Check.assumeNotNull(order, LiberoException.class, "order not null");
+		final I_PP_Order order = candidate.getOrder();
 
 		final Quantity qtyReceived = getQtyReceived(order);
 
 		final Quantity qtyToDeliver = candidate.getQtyToReceive();
 		final Quantity qtyScrap = candidate.getQtyScrap();
 		final Quantity qtyReject = candidate.getQtyReject();
-		final LocalDateTime movementDate = candidate.getMovementDate() != null ? TimeUtil.asLocalDateTime(candidate.getMovementDate()) : SystemTime.asLocalDateTime();
+		final LocalDateTime movementDate = candidate.getMovementDate();
 
 		if (qtyToDeliver.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
 		{
@@ -242,7 +238,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 						+ "\n Expected: " + order.getM_Product_ID());
 			}
 
-			final LocatorId locatorId = getLocatorIdToUse(candidate);
+			final LocatorId locatorId = candidate.getLocatorId();
 			final AttributeSetInstanceId asiId = candidate.getAttributeSetInstanceId();
 
 			return createCollector(
@@ -283,19 +279,6 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(productId);
 		return Quantity.of(ppOrder.getQtyDelivered(), uom);
-	}
-
-	private static final LocatorId getLocatorIdToUse(final ReceiptCostCollectorCandidate candidate)
-	{
-		final LocatorId locatorId = candidate.getLocatorId();
-		if (locatorId != null)
-		{
-			return locatorId;
-		}
-
-		final I_PP_Order ppOrder = candidate.getPP_Order();
-		Check.assumeNotNull(ppOrder, LiberoException.class, "ppOrder not null");
-		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrder.getM_Locator_ID());
 	}
 
 	@Override
