@@ -154,4 +154,15 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 			save(orderBOMLine);
 		}
 	}
+
+	@Override
+	public void markBOMLinesAsNotProcessed(@NonNull final PPOrderId orderId)
+	{
+		for (final I_PP_Order_BOMLine orderBOMLine : retrieveOrderBOMLines(orderId))
+		{
+			orderBOMLine.setProcessed(false);
+			save(orderBOMLine);
+		}
+	}
+
 }

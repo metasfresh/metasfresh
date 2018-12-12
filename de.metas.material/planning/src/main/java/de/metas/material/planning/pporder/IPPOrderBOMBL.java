@@ -106,7 +106,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	BigDecimal adjustCoProductQty(BigDecimal qty);
 
 	Quantity adjustCoProductQty(Quantity qty);
-	
+
 	void addQty(OrderBOMLineQtyChangeRequest request);
 
 	/**
@@ -117,6 +117,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @return qty to issue (in given <code>uom</code>)
 	 */
 	Quantity calculateQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine orderBOMLine, I_C_UOM uom);
+
+	void voidBOMLine(I_PP_Order_BOMLine line);
 
 	void close(I_PP_Order_BOMLine line);
 
@@ -131,4 +133,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @return
 	 */
 	Quantity calculateQtyRequired(PPOrderLine ppOrderLinePojo, BigDecimal qtyFinishedGood);
+
+	boolean isSomethingReportedOnBOMLines(PPOrderId ppOrderId);
 }

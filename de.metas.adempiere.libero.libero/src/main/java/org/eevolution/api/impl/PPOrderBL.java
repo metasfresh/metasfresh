@@ -50,6 +50,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.WorkingTime;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -175,25 +176,27 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public boolean isDelivered(final I_PP_Order ppOrder)
+	public boolean isSomethingProcessed(final I_PP_Order ppOrder)
 	{
-		if (ppOrder.getQtyDelivered().signum() > 0 || ppOrder.getQtyScrap().signum() > 0 || ppOrder.getQtyReject().signum() > 0)
+		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+
+		//
+		// Main product
+		if (ppOrder.getQtyDelivered().signum() != 0 || ppOrder.getQtyScrap().signum() != 0 || ppOrder.getQtyReject().signum() != 0)
 		{
 			return true;
 		}
 
 		//
-		for (final I_PP_Order_BOMLine line : Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder))
+		// BOM
+		final IPPOrderBOMBL orderBOMService = Services.get(IPPOrderBOMBL.class);
+		if (orderBOMService.isSomethingReportedOnBOMLines(orderId))
 		{
-			if (line.getQtyDelivered().signum() > 0)
-			{
-				return true;
-			}
+			return true;
 		}
 
-		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
-
 		//
+		// Routing
 		final IPPOrderRoutingRepository orderRoutingRepo = Services.get(IPPOrderRoutingRepository.class);
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		if (orderRouting.isSomethingProcessed())

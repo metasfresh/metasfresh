@@ -300,25 +300,17 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Make sure there was nothing reported on this manufacturing order
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		if (ppOrderBL.isDelivered(this))
+		if (ppOrderBL.isSomethingProcessed(this))
 		{
 			throw new LiberoException("Cannot void this document because exist transactions"); // TODO: Create Message for Translation
 		}
 
 		//
 		// Set QtyRequired=0 on all BOM Lines
-		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 		final IPPOrderBOMBL orderBOMsService = Services.get(IPPOrderBOMBL.class);
 		for (final I_PP_Order_BOMLine line : getLines())
 		{
-			final BigDecimal qtyRequiredOld = line.getQtyRequiered();
-			if (qtyRequiredOld.signum() != 0)
-			{
-				orderBOMsService.addDescription(line, Services.get(IMsgBL.class).parseTranslation(getCtx(), "@Voided@ @QtyRequiered@ : (" + qtyRequiredOld + ")"));
-				line.setQtyRequiered(BigDecimal.ZERO);
-				line.setProcessed(true);
-				orderBOMsRepo.save(line);
-			}
+			orderBOMsService.voidBOMLine(line);
 		}
 
 		//
@@ -438,21 +430,19 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
-		if (Services.get(IPPOrderBL.class).isDelivered(this))
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		if (ppOrderBL.isSomethingProcessed(this))
 		{
-			throw new LiberoException("Cannot re activate this document because exist transactions"); // TODO: Create Message for Translation
+			throw new LiberoException("Cannot re-activate this document because exist transactions"); // TODO: Create Message for Translation
 		}
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 
 		//
-		// Iterate Order BOM Lines and un-process them
+		// BOM
 		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMsRepo.retrieveOrderBOMLines(this))
-		{
-			orderBOMLine.setProcessed(false);
-			orderBOMsRepo.save(orderBOMLine);
-		}
+		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
+		orderBOMsRepo.markBOMLinesAsNotProcessed(orderId);
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 

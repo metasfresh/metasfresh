@@ -49,4 +49,6 @@ public interface IPPOrderBOMDAO extends ISingletonService
 	void deleteOrderBOMLinesByOrderId(PPOrderId orderId);
 
 	void markBOMLinesAsProcessed(PPOrderId orderId);
+	
+	void markBOMLinesAsNotProcessed(PPOrderId orderId);
 }

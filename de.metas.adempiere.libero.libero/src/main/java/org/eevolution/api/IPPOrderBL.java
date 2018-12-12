@@ -60,7 +60,7 @@ public interface IPPOrderBL extends ISingletonService
 	/**
 	 * @return true if ANY work was delivered for this MO (i.e. Stock Issue, Stock Receipt, Activity Control Report)
 	 */
-	boolean isDelivered(I_PP_Order ppOrder);
+	boolean isSomethingProcessed(I_PP_Order ppOrder);
 
 	/**
 	 * Gets Open Qty (i.e. how much we still need to receive).

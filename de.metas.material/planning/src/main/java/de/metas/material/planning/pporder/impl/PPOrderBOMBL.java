@@ -33,6 +33,7 @@ import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
@@ -45,11 +46,13 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -499,6 +502,21 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
+	public void voidBOMLine(final I_PP_Order_BOMLine line)
+	{
+		final BigDecimal qtyRequiredOld = line.getQtyRequiered();
+		if (qtyRequiredOld.signum() != 0)
+		{
+			addDescription(line, Services.get(IMsgBL.class).parseTranslation(Env.getCtx(), "@Voided@ @QtyRequiered@ : (" + qtyRequiredOld + ")"));
+			line.setQtyRequiered(BigDecimal.ZERO);
+			line.setProcessed(true);
+
+			final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+			orderBOMsRepo.save(line);
+		}
+	}
+
+	@Override
 	public void close(final I_PP_Order_BOMLine line)
 	{
 		final BigDecimal qtyRequired = line.getQtyRequiered();
@@ -523,5 +541,22 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 		ppOrderBOMsRepo.save(line);
+	}
+
+	@Override
+	public boolean isSomethingReportedOnBOMLines(final PPOrderId ppOrderId)
+	{
+		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+
+		return orderBOMsRepo.retrieveOrderBOMLines(ppOrderId)
+				.stream()
+				.anyMatch(this::isSomethingReportedOnBOMLine);
+	}
+
+	private boolean isSomethingReportedOnBOMLine(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		return orderBOMLine.getQtyDelivered().signum() != 0
+				|| orderBOMLine.getQtyScrap().signum() != 0
+				|| orderBOMLine.getQtyReject().signum() != 0;
 	}
 }
