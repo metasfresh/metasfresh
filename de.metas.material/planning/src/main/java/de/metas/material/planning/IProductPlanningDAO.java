@@ -106,4 +106,6 @@ public interface IProductPlanningDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_Warehouse> retrieveWarehousesForPlant(Properties ctx, I_AD_Org org, I_S_Resource plant);
+
+	void save(I_PP_Product_Planning productPlanningRecord);
 }

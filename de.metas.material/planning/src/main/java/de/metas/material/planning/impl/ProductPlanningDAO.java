@@ -1,6 +1,7 @@
 package de.metas.material.planning.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -236,5 +237,11 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.addEqualsFilter(I_M_Warehouse.COLUMN_IsInTransit, false) // skip in transit warehouses
 				.create()
 				.list();
+	}
+
+	@Override
+	public void save(final I_PP_Product_Planning productPlanningRecord)
+	{
+		saveRecord(productPlanningRecord);
 	}
 }

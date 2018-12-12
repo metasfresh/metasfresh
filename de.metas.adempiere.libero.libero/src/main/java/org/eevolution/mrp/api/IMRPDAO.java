@@ -149,4 +149,6 @@ public interface IMRPDAO extends ISingletonService
 	IQueryBuilder<I_PP_MRP_Alloc> retrieveMRPAllocsForDemandQuery(I_PP_MRP mrpDemand);
 
 	void save(I_PP_MRP mrpRecord);
+
+	void save(I_PP_MRP_Alloc alloc);
 }

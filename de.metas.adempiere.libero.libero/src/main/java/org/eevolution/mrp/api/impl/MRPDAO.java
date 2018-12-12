@@ -448,4 +448,10 @@ public class MRPDAO implements IMRPDAO
 	{
 		saveRecord(mrpRecord);
 	}
+	
+	@Override
+	public void save(@NonNull final I_PP_MRP_Alloc mrpAllocRecord)
+	{
+		saveRecord(mrpAllocRecord);
+	}
 }

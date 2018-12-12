@@ -36,7 +36,9 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class PPProductPlanningBuilder
 {
@@ -118,7 +120,7 @@ public class PPProductPlanningBuilder
 
 		//
 		// Save & return
-		InterfaceWrapperHelper.save(productPlanning);
+		Services.get(IProductPlanningDAO.class).save(productPlanning);
 		this._productPlanning = productPlanning;
 		return _productPlanning;
 	}
