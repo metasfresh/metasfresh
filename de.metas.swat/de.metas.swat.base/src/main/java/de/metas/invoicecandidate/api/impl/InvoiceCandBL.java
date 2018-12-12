@@ -130,8 +130,7 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -505,7 +504,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final Properties ctx,
 			final PInstanceId AD_PInstance_ID,
 			final boolean ignoreInvoiceSchedule,
-			final ILoggable loggable,
 			final String trxName)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -514,7 +512,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return generateInvoices()
 				.setContext(ctx, trxName)
 				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule)
-				.setLoggable(loggable)
 				.generateInvoices(candidates);
 	}
 
@@ -533,7 +530,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// If invoice candidate would be skipped when enqueueing to be invoiced then set the NetAmtToInvoice=0 (Mark request)
 		// Reason: if the IC would be skipped we want to have the NetAmtToInvoice=0 because we don't want to affect the overall total that is displayed on window bottom.
 		final boolean ignoreInvoiceSchedule = true; // yes, we ignore the DateToInvoice when checking because that's relative to Today
-		if (isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule, NullLoggable.instance))
+		if (isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
 		{
 			ic.setNetAmtToInvoice(ZERO);
 			ic.setSplitAmt(ZERO);
@@ -781,7 +778,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public boolean isSkipCandidateFromInvoicing(final I_C_Invoice_Candidate ic, final boolean ignoreInvoiceSchedule, final ILoggable loggable)
+	public boolean isSkipCandidateFromInvoicing(final I_C_Invoice_Candidate ic, final boolean ignoreInvoiceSchedule)
 	{
 		// 04533: ignore already processed candidates
 		// task 08343: if the ic is processed (after the recent update), then skip it (this logic was in the where clause in C_Invoice_Candidate_EnqueueSelection)
@@ -790,7 +787,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (ic.isProcessed())
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			loggable.withLogger(logger, Level.INFO).addLog(msg);
+			Loggables.get().withLogger(logger, Level.INFO).addLog(msg);
 			return true;
 		}
 
@@ -802,7 +799,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					.append(": ")
 					.append(ic.getErrorMsg())
 					.toString();
-			loggable.withLogger(logger, Level.DEBUG).addLog(msg);
+			Loggables.get().withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 
@@ -811,7 +808,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
-			loggable.withLogger(logger, Level.DEBUG).addLog(msg);
+			Loggables.get().withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 
@@ -820,7 +817,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
-			loggable.withLogger(logger, Level.DEBUG).addLog(msg);
+			Loggables.get().withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 
@@ -832,7 +829,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
 					new Object[] { ic.getC_Invoice_Candidate_ID(), dateToInvoice, getToday() });
-			loggable.withLogger(logger, Level.DEBUG).addLog(msg);
+			Loggables.get().withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 

@@ -106,7 +106,6 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 					.setNotificationRecipientUserId(workPackage.getCreatedBy()); // Events shall be sent to workpackage creator
 			invoiceCandBL.generateInvoices()
 					.setContext(localCtx, localTrxName)
-					.setLoggable(Loggables.get())
 					.setCollector(createInvoiceResults)
 					.setInvoicingParams(getInvoicingParams())
 					.setIgnoreInvoiceSchedule(true) // we don't need to check for the invoice schedules because ICs where would be skipped here would already be skipped on enqueue time.
@@ -167,7 +166,6 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// from invoice candidates were changed after validation.
 		// If that's the case, an exception shall be thrown.
 		final InvoiceCandidatesChangesChecker icChangesChecker = new InvoiceCandidatesChangesChecker()
-				.setLogger(Loggables.get())
 				.setBeforeChanges(candidates);
 
 		//

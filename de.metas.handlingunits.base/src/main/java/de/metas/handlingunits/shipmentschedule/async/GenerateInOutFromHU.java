@@ -125,7 +125,6 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		final boolean completeShipments = parameters.getParameterAsBool(PARAMETERNAME_IsCompleteShipments);
 		final BillAssociatedInvoiceCandidates invoiceMode = parameters.getParameterAsEnum(PARAMETERNAME_InvoiceMode, BillAssociatedInvoiceCandidates.class, BillAssociatedInvoiceCandidates.NO);
 		HUShippingFacade.builder()
-				.loggable(Loggables.get())
 				.hus(hus)
 				.addToShipperTransportationId(addToShipperTransportationId)
 				.completeShipments(completeShipments)

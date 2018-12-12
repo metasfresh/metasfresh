@@ -60,8 +60,7 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -88,7 +87,7 @@ import lombok.NonNull;
 
 	// Parameters
 	private Properties _ctx = Env.getCtx();
-	private ILoggable _loggable = NullLoggable.instance;
+
 	private boolean _failIfNothingEnqueued;
 	private Boolean _failOnChanges = null;
 	private boolean _failOnInvoiceCandidateError = false; // "false" for backward compatibility
@@ -272,7 +271,6 @@ import lombok.NonNull;
 	 */
 	private boolean isEligibleForEnqueueing(final I_C_Invoice_Candidate ic)
 	{
-		final ILoggable loggable = getLoggable();
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		//
@@ -280,14 +278,14 @@ import lombok.NonNull;
 		if (getInvoicingParams().isOnlyApprovedForInvoicing() && !ic.isApprovalForInvoicing())
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			loggable.addLog(msg);
+			Loggables.get().addLog(msg);
 			return false;
 		}
 
 		//
 		// Check other reasons no to enqueue this ic: Processed, IsError, DateToInvoice.
 		// NOTE: having this line in the middle because we will display only one skip reason and SKIPPED_QTY_TO_INVOICE is usually less informative if the IC was already processed
-		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, getInvoicingParams().isIgnoreInvoiceSchedule(), loggable))
+		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, getInvoicingParams().isIgnoreInvoiceSchedule()))
 		{
 			// NOTE: we are not logging any reason because the method already logged the reason if any.
 			return false;
@@ -299,7 +297,7 @@ import lombok.NonNull;
 		if (ic.getQtyOrdered().signum() != 0 && invoiceCandBL.getQtyToInvoice(ic).signum() == 0)
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			loggable.addLog(msg);
+			Loggables.get().addLog(msg);
 			return false;
 		}
 
@@ -400,18 +398,6 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setLoggable(@NonNull final ILoggable loggable)
-	{
-		this._loggable = loggable;
-		return this;
-	}
-
-	private final ILoggable getLoggable()
-	{
-		return _loggable;
-	}
-
-	@Override
 	public InvoiceCandidateEnqueuer setFailIfNothingEnqueued(final boolean failIfNothingEnqueued)
 	{
 		this._failIfNothingEnqueued = failIfNothingEnqueued;
@@ -465,7 +451,6 @@ import lombok.NonNull;
 		if (isFailOnChanges())
 		{
 			return new InvoiceCandidatesChangesChecker()
-					.setLogger(getLoggable())
 					.setTotalNetAmtToInvoiceChecksum(_totalNetAmtToInvoiceChecksum);
 		}
 		else
