@@ -41,6 +41,8 @@ public interface IProductBOMDAO extends ISingletonService
 {
 	I_PP_Product_BOM getById(int productBomId);
 
+	I_PP_Product_BOMLine getBOMLineById(int productBOMLineId);
+
 	List<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM);
 
 	List<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM, Date date);

@@ -1,5 +1,6 @@
 package org.eevolution.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -185,6 +186,13 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return queryBuilder
 				.create()
 				.match();
+	}
+
+	@Override
+	public I_PP_Product_BOMLine getBOMLineById(int productBOMLineId)
+	{
+		Check.assumeGreaterThanZero(productBOMLineId, "productBOMLineId");
+		return loadOutOfTrx(productBOMLineId, I_PP_Product_BOMLine.class);
 	}
 
 	@Override

@@ -25,7 +25,6 @@ package de.metas.material.planning.pporder.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -34,12 +33,10 @@ import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
@@ -163,7 +160,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 		final Percent qtyScrap = orderBOMLine.getScrap();
 		final BigDecimal qtyRequiredPlusScrap = productBOMBL.calculateQtyWithScrap(qtyRequired, qtyScrap);
-		return Quantity.of(qtyRequiredPlusScrap, orderBOMLine.getC_UOM());
+		return Quantity.of(qtyRequiredPlusScrap, orderBOMLine.getUom());
 	}
 
 	@Override
@@ -211,162 +208,73 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		return uomConversionService.convertQuantityTo(qtyToIssueEffective, conversionCtx, uom);
 	}
 
-	private interface PPOrderBomLineAware
+	@lombok.Value
+	@lombok.Builder
+	private static class PPOrderBomLineAware
 	{
-		ProductId getBOMProductId();
+		@NonNull
+		ProductId bomProductId;
+		@NonNull
+		I_C_UOM bomProductUOM;
 
-		I_C_UOM getBOMProductUOM();
+		@NonNull
+		BOMComponentType componentType;
 
-		BOMComponentType getComponentType();
+		boolean qtyPercentage;
+		@NonNull
+		BigDecimal qtyBOM;
+		@NonNull
+		Percent qtyBatch;
+		@NonNull
+		Percent scrap;
 
-		boolean isQtyPercentage();
-
-		BigDecimal getQtyBOM();
-
-		Percent getQtyBatch();
-
-		I_C_UOM getC_UOM();
-
-		Percent getScrap();
+		I_C_UOM uom;
 	}
 
 	@VisibleForTesting
 	PPOrderBomLineAware fromPojo(@NonNull final PPOrderLine ppOrderBOMLine)
 	{
-		return new PPOrderBomLineAware()
-		{
-			private I_PP_Product_BOM getProductBOM(final PPOrderLine ppOrderBOMLine)
-			{
-				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
-				return productBomLine.getPP_Product_BOM();
-			}
+		final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
-			private I_PP_Product_BOMLine getProductBomLine(@NonNull final PPOrderLine ppOrderBOMLine)
-			{
-				final I_PP_Product_BOMLine productBomLine = InterfaceWrapperHelper.create(Env.getCtx(), ppOrderBOMLine.getProductBomLineId(), I_PP_Product_BOMLine.class, ITrx.TRXNAME_None);
-				return productBomLine;
-			}
+		final I_PP_Product_BOMLine bomLine = bomsRepo.getBOMLineById(ppOrderBOMLine.getProductBomLineId());
+		final I_PP_Product_BOM bom = bomsRepo.getById(bomLine.getPP_Product_BOM_ID());
 
-			@Override
-			public boolean isQtyPercentage()
-			{
-				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
-				return productBomLine.isQtyPercentage();
-			}
-
-			@Override
-			public Percent getScrap()
-			{
-				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
-				return Percent.of(productBomLine.getScrap());
-			}
-
-			@Override
-			public Percent getQtyBatch()
-			{
-				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
-				return Percent.of(productBomLine.getQtyBatch());
-			}
-
-			@Override
-			public BigDecimal getQtyBOM()
-			{
-				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
-				return productBomLine.getQtyBOM();
-			}
-
-			@Override
-			public BOMComponentType getComponentType()
-			{
-				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
-				return BOMComponentType.ofCode(productBomLine.getComponentType());
-			}
-
-			@Override
-			public I_C_UOM getC_UOM()
-			{
-				final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
-				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
-				return uomsRepo.getById(productBomLine.getC_UOM_ID());
-			}
-
-			@Override
-			public ProductId getBOMProductId()
-			{
-				final I_PP_Product_BOM productBOM = getProductBOM(ppOrderBOMLine);
-				return ProductId.ofRepoId(productBOM.getM_Product_ID());
-			}
-
-			@Override
-			public I_C_UOM getBOMProductUOM()
-			{
-				final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
-				final I_PP_Product_BOM productBOM = getProductBOM(ppOrderBOMLine);
-				return uomsRepo.getById(productBOM.getC_UOM_ID());
-			}
-		};
+		return PPOrderBomLineAware.builder()
+				.bomProductId(ProductId.ofRepoId(bom.getM_Product_ID()))
+				.bomProductUOM(uomsRepo.getById(bom.getC_UOM_ID()))
+				.componentType(BOMComponentType.ofCode(bomLine.getComponentType()))
+				//
+				.qtyPercentage(bomLine.isQtyPercentage())
+				.qtyBOM(bomLine.getQtyBOM())
+				.qtyBatch(Percent.of(bomLine.getQtyBatch()))
+				.scrap(Percent.of(bomLine.getScrap()))
+				//
+				.uom(uomsRepo.getById(bomLine.getC_UOM_ID()))
+				//
+				.build();
 	}
 
 	@VisibleForTesting
-	PPOrderBomLineAware fromRecord(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
+	PPOrderBomLineAware fromRecord(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
-		return new PPOrderBomLineAware()
-		{
-			@Override
-			public boolean isQtyPercentage()
-			{
-				return ppOrderBOMLine.isQtyPercentage();
-			}
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
-			@Override
-			public Percent getQtyBatch()
-			{
-				return Percent.of(ppOrderBOMLine.getQtyBatch());
-			}
+		final I_PP_Order order = orderBOMLine.getPP_Order();
 
-			@Override
-			public BigDecimal getQtyBOM()
-			{
-				return ppOrderBOMLine.getQtyBOM();
-			}
-
-			@Override
-			public ProductId getBOMProductId()
-			{
-				final I_PP_Order_BOM orderBOM = ppOrderBOMLine.getPP_Order_BOM();
-				return ProductId.ofRepoId(orderBOM.getM_Product_ID());
-			}
-
-			@Override
-			public I_C_UOM getBOMProductUOM()
-			{
-				final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
-				final I_PP_Order_BOM orderBOM = ppOrderBOMLine.getPP_Order_BOM();
-				return uomsRepo.getById(orderBOM.getC_UOM_ID());
-			}
-
-			@Override
-			public I_C_UOM getC_UOM()
-			{
-				final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-				return uomsRepo.getById(ppOrderBOMLine.getC_UOM_ID());
-			}
-
-			@Override
-			public Percent getScrap()
-			{
-				return Percent.of(ppOrderBOMLine.getScrap());
-			}
-
-			@Override
-			public BOMComponentType getComponentType()
-			{
-				return BOMComponentType.ofCode(ppOrderBOMLine.getComponentType());
-			}
-		};
+		return PPOrderBomLineAware.builder()
+				.bomProductId(ProductId.ofRepoId(order.getM_Product_ID()))
+				.bomProductUOM(uomsRepo.getById(order.getC_UOM_ID()))
+				.componentType(BOMComponentType.ofCode(orderBOMLine.getComponentType()))
+				//
+				.qtyPercentage(orderBOMLine.isQtyPercentage())
+				.qtyBOM(orderBOMLine.getQtyBOM())
+				.qtyBatch(Percent.of(orderBOMLine.getQtyBatch()))
+				.scrap(Percent.of(orderBOMLine.getScrap()))
+				//
+				.uom(uomsRepo.getById(orderBOMLine.getC_UOM_ID()))
+				//
+				.build();
 	}
 
 	/**
@@ -387,10 +295,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			//
 			// We also need to multiply by BOM UOM to BOM Line UOM multiplier
 			// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
-			final ProductId bomProductId = orderBOMLine.getBOMProductId();
-			final I_C_UOM bomUOM = orderBOMLine.getBOMProductUOM();
+			final ProductId bomProductId = orderBOMLine.getBomProductId();
+			final I_C_UOM bomUOM = orderBOMLine.getBomProductUOM();
 
-			final I_C_UOM bomLineUOM = orderBOMLine.getC_UOM();
+			final I_C_UOM bomLineUOM = orderBOMLine.getUom();
 			Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");
 
 			final BigDecimal bomToLineUOMMultiplier = Services.get(IUOMConversionBL.class)
