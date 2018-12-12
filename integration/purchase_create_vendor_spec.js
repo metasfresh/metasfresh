@@ -24,35 +24,17 @@ describe('purchase order Test', function() {
     // TODO: Use proper tab name when rolled out - Kuba
     cy.selectTab('C_BPartner_Location');
     cy.pressAddNewButton();
-    cy.writeIntoStringField('Name', 'Address');
-
-    cy.server()
-    cy.route('POST', '/rest/api/address').as('postAddress')
+    cy.writeIntoStringField('Name', 'Address1');
     
-    // TODO: extract into a command
-    // Kuba: I'm not sure if this wouldn't be too specific for this use case.
-    cy.get('.form-field-C_Location_ID').find('button').click();
-
-    cy.wait('@postAddress').then(xhr => {
-      const requestId = xhr.response.body.id;
-
-      Cypress.emit('emit:addressPatchResolved', requestId);
+    cy.editAddress('C_Location_ID', function a() {
+        cy.writeIntoStringField('City', 'Cologne')
+        cy.writeIntoLookupField('C_Country_ID', 'Deu', 'Deutschland');
+        // cy.get('.panel-modal-header').click();
     });
-
-    cy.on('emit:addressPatchResolved', (requestId) => {
-      cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
-      cy.writeIntoStringField('City', 'Cologne')
-        .writeIntoLookupField('C_Country_ID', 'Deu', 'Deutschland');
-      cy.get('.panel-modal-header').click();
-
-      cy.wait('@completeAddress');
-
-      cy.get('.form-field-Address')
+    cy.get('.form-field-Address')
         .should('contain', 'Cologne');
+    cy.pressDoneButton();  
 
-      cy.pressDoneButton();
-
-      // TODO: Use proper tab name when rolled out - Kuba
       cy.selectTab('AD_User');
       cy.pressAddNewButton();
       cy.writeIntoStringField('Firstname', 'Default');
@@ -68,6 +50,5 @@ describe('purchase order Test', function() {
 
       cy.get('table tbody tr')
         .should('have.length', 2);
-    });
   });
 });
