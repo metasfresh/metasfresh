@@ -57,7 +57,7 @@ public class XmlToOLCandsServiceTest
 	{
 		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
 		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
-		xmlInvoice.getPayload().getInvoice().setRequestId("KV_" + "2009_01:001");
+		xmlInvoice.getPayload().getInvoice().setRequestId("KV_" + "2009_01:001"); // the XML invoice'S ID might have a prepended "KV_" which we return
 		performTest(xmlInvoice);
 	}
 

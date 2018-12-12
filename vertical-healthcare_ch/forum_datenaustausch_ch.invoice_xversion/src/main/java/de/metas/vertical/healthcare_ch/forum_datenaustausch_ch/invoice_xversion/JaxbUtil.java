@@ -1,7 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion;
 
-import lombok.NonNull;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -17,6 +15,8 @@ import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -83,6 +83,7 @@ public class JaxbUtil
 			final XMLStreamWriter xmlStreamWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
 
 			final Marshaller marshaller = jaxbContext.createMarshaller();
+
 			marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, xsdName); // important; finding the correct converter depends on this
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true); // since we are doing XML anyways, we can also expend some tabs and newlines..
 
