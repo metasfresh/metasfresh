@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.service.impl;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,12 +34,8 @@ import java.util.Properties;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-
 import org.compiere.util.DB;
-import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.ITableColumnPath;
 import de.metas.adempiere.model.ITableColumnPathElement;
@@ -48,10 +44,13 @@ import de.metas.adempiere.model.TableColumnPathElement;
 import de.metas.adempiere.model.TableColumnPathException;
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.adempiere.service.ITableColumnPathBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class TableColumnPathBL implements ITableColumnPathBL
 {
@@ -129,10 +128,10 @@ public class TableColumnPathBL implements ITableColumnPathBL
 	{
 		StringBuffer sqlFROM = new StringBuffer();
 		sqlFROM.append("FROM ").append(path.getKeyTableName());
-		for (ITableColumnPathElement e : path.getElements())
+		for (final ITableColumnPathElement e : path.getElements())
 		{
 			String parentColumnSQL = e.getParentColumnSQL();
-			if (Util.isEmpty(parentColumnSQL))
+			if (Check.isEmpty(parentColumnSQL))
 			{
 				parentColumnSQL = e.getParentTableName() + "." + e.getParentColumnName();
 			}

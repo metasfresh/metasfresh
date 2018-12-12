@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedCharacterIterator.Attribute;
 import java.text.AttributedString;
@@ -354,52 +353,6 @@ public class Util
 		}
 		return counter;
 	}	// getCount
-
-	/**
-	 * Is String Empty
-	 *
-	 * @param str string
-	 * @return true if >= 1 char
-	 *
-	 * @deprecated Please use {@link Check#isEmpty(String)}
-	 */
-	@Deprecated
-	public static boolean isEmpty(String str)
-	{
-		return Check.isEmpty(str);
-	}	// isEmpty
-
-	/**
-	 * Is String Empty
-	 *
-	 * @param str string
-	 * @param trimWhitespaces trim whitespaces
-	 * @return true if >= 1 char
-	 *
-	 * @deprecated Please use {@link Check#isEmpty(String, boolean)}
-	 */
-	@Deprecated
-	public static boolean isEmpty(String str, boolean trimWhitespaces)
-	{
-		return Check.isEmpty(str, trimWhitespaces);
-	}	// isEmpty
-
-	/**
-	 *
-	 * @param bd
-	 * @return true if bd is null or bd.signum() is zero
-	 */
-	@Deprecated
-	public static boolean isEmpty(BigDecimal bd)
-	{
-		return Check.isEmpty(bd);
-	}
-
-	@Deprecated
-	public static <T> boolean isEmpty(T[] arr)
-	{
-		return Check.isEmpty(arr);
-	}
 
 	/**************************************************************************
 	 * Find index of search character in str. This ignores content in () and 'texts'

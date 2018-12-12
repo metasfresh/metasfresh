@@ -77,6 +77,7 @@ public class MasterdataProviderTest
 
 		jsonBPartner = JsonBPartner.builder()
 				.name("jsonBPartner.Name")
+				.code("jsonBPartner.Code")
 				.build();
 
 		jsonBPartnerLocation = JsonBPartnerLocation.builder()

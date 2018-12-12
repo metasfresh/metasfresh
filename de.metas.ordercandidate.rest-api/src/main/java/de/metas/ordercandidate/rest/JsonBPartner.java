@@ -75,6 +75,9 @@ public class JsonBPartner
 		this.code = code;
 		this.name = name;
 		this.companyName = companyName;
+
+		// both externalId and code may be empty if this instance belongs to a JsonBPArtnerInfo that has a location with has a GLN.
+		// errorIf(isEmpty(code, true) && isEmpty(externalId, true), "At least one of code and externalId need to be non-empty; name={}; companyName={}", name, companyName);
 	}
 
 }

@@ -1,10 +1,12 @@
 package de.metas.ordercandidate.rest;
 
+import static de.metas.util.Check.isEmpty;
 import static org.compiere.util.Util.coalesce;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 
@@ -51,6 +53,12 @@ public final class JsonBPartnerInfo
 		this.location = location;
 		this.contact = contact;
 		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.createDefaultAdvise());
+
+		Check.errorIf(
+				isEmpty(bpartner.getCode(), true)
+						&& isEmpty(bpartner.getExternalId(), true)
+						&& isEmpty(location.getGln(), true),
+				"At least one of bpartner.code, bpartner.externalId or location.gln needs to be non-empty; this={}", this);
 	}
 
 }
