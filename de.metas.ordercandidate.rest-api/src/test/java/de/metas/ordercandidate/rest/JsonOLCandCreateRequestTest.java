@@ -173,12 +173,12 @@ public class JsonOLCandCreateRequestTest
 
 	private void testSerializeDeserialize(@NonNull final Object obj) throws IOException
 	{
-		System.out.println("object: " + obj);
+		//System.out.println("object: " + obj);
 		final String json = jsonObjectMapper.writeValueAsString(obj);
-		System.out.println("json: " + json);
+		//System.out.println("json: " + json);
 
 		final Object objDeserialized = jsonObjectMapper.readValue(json, obj.getClass());
-		System.out.println("object deserialized: " + objDeserialized);
+		//System.out.println("object deserialized: " + objDeserialized);
 
 		Assert.assertEquals(obj, objDeserialized);
 	}

@@ -78,7 +78,8 @@ public class JsonConverters
 				.orgId(orgId)
 				//
 				.dataSourceInternalName(request.getDataSourceInternalName())
-				.externalId(request.getExternalId())
+				.externalLineId(request.getExternalLineId())
+				.externalHeaderId(request.getExternalHeaderId())
 				//
 				.dataDestInternalName(request.getDataDestInternalName())
 				//
@@ -146,7 +147,8 @@ public class JsonConverters
 		return JsonOLCand.builder()
 				.id(olCand.getId())
 				.poReference(olCand.getPOReference())
-				.externalId(olCand.getExternalId())
+				.externalLineId(olCand.getExternalLineId())
+				.externalHeaderId(olCand.getExternalHeaderId())
 				//
 				.org(masterdataProvider.getJsonOrganizationById(olCand.getAD_Org_ID()))
 				//

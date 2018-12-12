@@ -50,9 +50,15 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
-			value = "This translates to <code>C_OLCand.externalId</code>.\n"
-					+ "<code>externalId</code> and <code>dataSourceInternalName</code> together need to be unique.")
-	String externalId;
+			value = "This translates to <code>C_OLCand.externalLineId</code>.\n"
+					+ "<code>externalLineId</code> and <code>dataSourceInternalName</code> together need to be unique.")
+	String externalLineId;
+
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			value = "This translates to <code>C_OLCand.externalHeaderId</code>.\n"
+					+ "<code>externalHeaderId</code> and <code>dataSourceInternalName</code> together denote the unique group of olCands that were added in one bulk.")
+	String externalHeaderId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
@@ -140,7 +146,7 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
-			value = "External reference (document number) on a remote system. Unique in conjunction with <code>dataSourceInternalName</code>.")
+			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
 	private String poReference;
 
 	@ApiModelProperty( //
@@ -162,7 +168,57 @@ public final class JsonOLCandCreateRequest
 					+ "and <code>docSubType</code> to one of <code>EA</code> (\"Patient\"), <code>GM</code> (\"Gemeinde\" or <code>KV</code> (\"Krankenversicherung\"")
 	private JsonDocTypeInfo invoiceDocType;
 
-
+	@JsonCreator
+	@Builder(toBuilder = true)
+	private JsonOLCandCreateRequest(
+			@JsonProperty("org") final JsonOrganization org,
+			@JsonProperty("externalLineId") final String externalLineId,
+			@JsonProperty("externalHeaderId") final String externalHeaderId,
+			@JsonProperty("dataSourceInternalName") final @NonNull String dataSourceInternalName,
+			@JsonProperty("dataDestInternalName") final @Nullable String dataDestInternalName,
+			@JsonProperty("bpartner") final JsonBPartnerInfo bpartner,
+			@JsonProperty("billBPartner") final JsonBPartnerInfo billBPartner,
+			@JsonProperty("dropShipBPartner") final JsonBPartnerInfo dropShipBPartner,
+			@JsonProperty("handOverBPartner") final JsonBPartnerInfo handOverBPartner,
+			@JsonProperty("dateRequired") final LocalDate dateRequired,
+			@JsonProperty("flatrateConditionsId") final int flatrateConditionsId,
+			@JsonProperty("product") final JsonProductInfo product,
+			@JsonProperty("productDescription") final @Nullable String productDescription,
+			@JsonProperty("qty") final BigDecimal qty,
+			@JsonProperty("uomCode") final @Nullable String uomCode,
+			@JsonProperty("packingMaterialId") final int packingMaterialId,
+			@JsonProperty("pricingSystemCode") final String pricingSystemCode,
+			@JsonProperty("price") final @Nullable BigDecimal price,
+			@JsonProperty("currencyCode") final @Nullable String currencyCode,
+			@JsonProperty("discount") final @Nullable BigDecimal discount,
+			@JsonProperty("poReference") final @NonNull String poReference,
+			@JsonProperty("dateInvoiced") final @Nullable LocalDate dateInvoiced,
+			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType)
+	{
+		this.org = org;
+		this.externalLineId = externalLineId;
+		this.externalHeaderId = externalHeaderId;
+		this.dataSourceInternalName = dataSourceInternalName;
+		this.dataDestInternalName = dataDestInternalName;
+		this.bpartner = bpartner;
+		this.billBPartner = billBPartner;
+		this.dropShipBPartner = dropShipBPartner;
+		this.handOverBPartner = handOverBPartner;
+		this.dateRequired = dateRequired;
+		this.flatrateConditionsId = flatrateConditionsId;
+		this.product = product;
+		this.productDescription = productDescription;
+		this.qty = qty;
+		this.uomCode = uomCode;
+		this.packingMaterialId = packingMaterialId;
+		this.pricingSystemCode = pricingSystemCode;
+		this.price = price;
+		this.currencyCode = currencyCode;
+		this.discount = discount;
+		this.poReference = poReference;
+		this.dateInvoiced = dateInvoiced;
+		this.invoiceDocType = invoiceDocType;
+	}
 
 
 	/**
@@ -172,7 +228,8 @@ public final class JsonOLCandCreateRequest
 	 */
 	public JsonOLCandCreateRequest validate()
 	{
-		Check.assumeNotNull(externalId, "externalId may not be null; this={}", this);
+		Check.assumeNotNull(externalLineId, "externalLineId may not be null; this={}", this);
+		Check.assumeNotNull(externalHeaderId, "externalHeaderId may not be null; this={}", this);
 		Check.assumeNotNull(product, "product may not be null; this={}", this);
 		Check.assumeNotNull(bpartner, "bpartner may not be null; this={}", this);
 
@@ -235,55 +292,5 @@ public final class JsonOLCandCreateRequest
 		return toBuilder()
 				.product(getProduct().toBuilder().syncAdvise(syncAdvise).build())
 				.build();
-	}
-
-	@JsonCreator
-	@Builder(toBuilder = true)
-	private JsonOLCandCreateRequest(
-			@JsonProperty("org") final JsonOrganization org,
-			@JsonProperty("externalId") final String externalId,
-			@JsonProperty("dataSourceInternalName") final @NonNull String dataSourceInternalName,
-			@JsonProperty("dataDestInternalName") final @Nullable String dataDestInternalName,
-			@JsonProperty("bpartner") final @NonNull JsonBPartnerInfo bpartner,
-			@JsonProperty("billBPartner") final JsonBPartnerInfo billBPartner,
-			@JsonProperty("dropShipBPartner") final JsonBPartnerInfo dropShipBPartner,
-			@JsonProperty("handOverBPartner") final JsonBPartnerInfo handOverBPartner,
-			@JsonProperty("dateRequired") final LocalDate dateRequired,
-			@JsonProperty("flatrateConditionsId") final int flatrateConditionsId,
-			@JsonProperty("product") final JsonProductInfo product,
-			@JsonProperty("productDescription") final @Nullable String productDescription,
-			@JsonProperty("qty") final BigDecimal qty,
-			@JsonProperty("uomCode") final @Nullable String uomCode,
-			@JsonProperty("packingMaterialId") final int packingMaterialId,
-			@JsonProperty("pricingSystemCode") final String pricingSystemCode,
-			@JsonProperty("price") final @Nullable BigDecimal price,
-			@JsonProperty("currencyCode") final @Nullable String currencyCode,
-			@JsonProperty("discount") final @Nullable BigDecimal discount,
-			@JsonProperty("poReference") final @NonNull String poReference,
-			@JsonProperty("dateInvoiced") final @Nullable LocalDate dateInvoiced,
-			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType)
-	{
-		this.org = org;
-		this.externalId = externalId;
-		this.dataSourceInternalName = dataSourceInternalName;
-		this.dataDestInternalName = dataDestInternalName;
-		this.bpartner = bpartner;
-		this.billBPartner = billBPartner;
-		this.dropShipBPartner = dropShipBPartner;
-		this.handOverBPartner = handOverBPartner;
-		this.dateRequired = dateRequired;
-		this.flatrateConditionsId = flatrateConditionsId;
-		this.product = product;
-		this.productDescription = productDescription;
-		this.qty = qty;
-		this.uomCode = uomCode;
-		this.packingMaterialId = packingMaterialId;
-		this.pricingSystemCode = pricingSystemCode;
-		this.price = price;
-		this.currencyCode = currencyCode;
-		this.discount = discount;
-		this.poReference = poReference;
-		this.dateInvoiced = dateInvoiced;
-		this.invoiceDocType = invoiceDocType;
 	}
 }

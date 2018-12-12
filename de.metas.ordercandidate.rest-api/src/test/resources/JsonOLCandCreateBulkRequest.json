@@ -1,4 +1,3 @@
-
 {
   "requests" : [ {
     "org" : {
@@ -29,12 +28,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -57,8 +56,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -73,8 +71,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -85,7 +82,7 @@
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -120,12 +117,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -148,8 +145,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -164,8 +160,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -176,7 +171,7 @@
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -211,12 +206,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -239,8 +234,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -255,8 +249,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -267,7 +260,7 @@
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -302,12 +295,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -330,8 +323,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -346,8 +338,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -358,7 +349,7 @@
     "price" : 2527.12,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -393,12 +384,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -421,8 +412,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -437,8 +427,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -449,7 +438,7 @@
     "price" : 95.93,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -484,12 +473,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -512,8 +501,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -528,8 +516,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -540,7 +527,7 @@
     "price" : -306.99,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -575,12 +562,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -603,8 +590,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -619,8 +605,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -631,7 +616,7 @@
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -666,12 +651,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -694,8 +679,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -710,8 +694,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -722,7 +705,7 @@
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -757,12 +740,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -785,8 +768,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -801,8 +783,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -813,7 +794,7 @@
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -848,12 +829,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -876,8 +857,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -892,8 +872,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -904,7 +883,7 @@
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -939,12 +918,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -967,8 +946,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -983,8 +961,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -995,7 +972,7 @@
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1030,12 +1007,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1058,8 +1035,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1074,8 +1050,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1086,7 +1061,7 @@
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1121,12 +1096,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1149,8 +1124,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1165,8 +1139,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1177,7 +1150,7 @@
     "price" : 2.50,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1212,12 +1185,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1240,8 +1213,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1256,8 +1228,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1268,7 +1239,7 @@
     "price" : 20.0,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1303,12 +1274,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1331,8 +1302,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1347,8 +1317,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1359,7 +1328,7 @@
     "price" : 4.0,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1394,12 +1363,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1422,8 +1391,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1438,8 +1406,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1450,7 +1417,7 @@
     "price" : 2.0,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1485,12 +1452,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1513,8 +1480,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1529,8 +1495,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1541,7 +1506,7 @@
     "price" : 1.0,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1576,12 +1541,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1604,8 +1569,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1620,8 +1584,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1632,7 +1595,7 @@
     "price" : 1.10,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1667,12 +1630,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1695,8 +1658,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1711,8 +1673,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1723,7 +1684,7 @@
     "price" : 8.70,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1758,12 +1719,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1786,8 +1747,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1802,8 +1762,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1814,7 +1773,7 @@
     "price" : 29.50,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1849,12 +1808,12 @@
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE",
-          "failIfNotExists" : true
+          "ifExists" : "DONT_UPDATE"
         }
       }
     },
-    "externalId" : "2011234567890_2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
+    "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
     "bpartner" : {
@@ -1877,8 +1836,7 @@
       "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "billBPartner" : null,
@@ -1893,8 +1851,7 @@
       "uomCode" : "MJ",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
-        "ifExists" : "DONT_UPDATE",
-        "failIfNotExists" : true
+        "ifExists" : "DONT_UPDATE"
       }
     },
     "productDescription" : null,
@@ -1905,7 +1862,7 @@
     "price" : 10.0,
     "currencyCode" : "CHF",
     "discount" : 0,
-    "poReference" : "2011234567890_2009_01:001",
+    "poReference" : "2009_01:001",
     "dateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",

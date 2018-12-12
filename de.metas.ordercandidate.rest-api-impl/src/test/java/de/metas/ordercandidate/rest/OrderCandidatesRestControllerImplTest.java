@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
@@ -121,6 +123,16 @@ public class OrderCandidatesRestControllerImplTest
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
 				.createOrderLineCandidates(bulkRequest)
 				.getBody();
-		assertThat(response.getResult()).hasSize(21);
+		final List<JsonOLCand> olCands = response.getResult();
+		assertThat(olCands).hasSize(21);
+		assertThat(olCands).allSatisfy(c -> assertThat(c.getPoReference()).isEqualTo("2009_01:001")); // this is the "invoice-ID as given by the examples file
+		assertThat(olCands).allSatisfy(c -> assertThat(c.getExternalHeaderId()).isEqualTo("2011234567890_2009_01:001"));
+
+		for (int i = 1; i <= olCands.size(); i++)
+		{
+			// the externalLineId is made up of the invoice reference_id, the biller's EAN, the recipient's EAN and the service's (line-)id
+			final JsonOLCand olCand = olCands.get(i - 1);
+			assertThat(olCand.getExternalLineId()).isEqualTo("2009_01:001_EAN-2011234567890_EAN-7634567890000_" + i);
+		}
 	}
 }

@@ -1,7 +1,5 @@
 package de.metas.ordercandidate.api;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -24,6 +22,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -159,7 +158,8 @@ public class OLCandRepository
 			olCandPO.setAD_DataDestination_ID(inputDataDestId);
 		}
 
-		olCandPO.setExternalId(request.getExternalId());
+		olCandPO.setExternalLineId(request.getExternalLineId());
+		olCandPO.setExternalHeaderId(request.getExternalHeaderId());
 
 		InterfaceWrapperHelper.save(olCandPO);
 

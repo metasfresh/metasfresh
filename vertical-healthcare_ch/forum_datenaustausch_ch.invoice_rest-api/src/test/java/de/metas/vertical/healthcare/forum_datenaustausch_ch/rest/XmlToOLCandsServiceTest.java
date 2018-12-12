@@ -3,20 +3,17 @@ package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
+import java.util.List;
 
-import javax.xml.bind.JAXBElement;
-
-import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.metas.ordercandidate.rest.JsonOLCandCreateBulkRequest;
-import de.metas.ordercandidate.rest.JsonOLCandUtil;
+import de.metas.ordercandidate.rest.JsonOLCandCreateRequest;
 import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
 import de.metas.ordercandidate.rest.SyncAdvise;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
+import lombok.NonNull;
 import mockit.Mocked;
 
 /*
@@ -44,24 +41,28 @@ import mockit.Mocked;
 public class XmlToOLCandsServiceTest
 {
 	@Mocked
-	OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
-
-	private ObjectMapper jsonObjectMapper;
-
-	@Before
-	public void init()
-	{
-		jsonObjectMapper = new ObjectMapper();
-		jsonObjectMapper.findAndRegisterModules();
-	}
+	private OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 
 	@Test
 	public void createJsonOLCandCreateBulkRequest()
 	{
 		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
-		final JAXBElement<RequestType> request = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class);
-		final RequestType xmlInvoice = request.getValue();
+		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
 
+		performTest(xmlInvoice);
+	}
+
+	@Test
+	public void createJsonOLCandCreateBulkRequest2()
+	{
+		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
+		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
+		xmlInvoice.getPayload().getInvoice().setRequestId("KV_" + "2009_01:001");
+		performTest(xmlInvoice);
+	}
+
+	private void performTest(@NonNull final RequestType xmlInvoice)
+	{
 		final SyncAdvise bPartnersSyncAdvise = SyncAdvise.createDefaultAdvise();
 		final SyncAdvise productsSyncAdvise = SyncAdvise.createDefaultAdvise();
 
@@ -69,10 +70,24 @@ public class XmlToOLCandsServiceTest
 				.createJsonOLCandCreateBulkRequest(xmlInvoice, bPartnersSyncAdvise, productsSyncAdvise);
 
 		assertThat(result).isNotNull();
-		assertThat(result.getRequests()).hasSize(21); // the XML file has 21 services
-		assertThat(result.getRequests()).allSatisfy(r -> assertThat(r.getProduct().getSyncAdvise()).isSameAs(productsSyncAdvise));
-		assertThat(result.getRequests()).allSatisfy(r -> assertThat(r.getBpartner().getSyncAdvise()).isSameAs(bPartnersSyncAdvise));
+		final List<JsonOLCandCreateRequest> requests = result.getRequests();
 
-		JsonOLCandUtil.printJsonString(result);
+		assertThat(requests).hasSize(21); // the XML file has 21 services
+		assertThat(requests).allSatisfy(r -> assertThat(r.getProduct().getSyncAdvise()).isSameAs(productsSyncAdvise));
+		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getSyncAdvise()).isSameAs(bPartnersSyncAdvise));
+
+		assertThat(requests).allSatisfy(r -> assertThat(r.getExternalHeaderId()).isEqualTo("2011234567890_2009_01:001"));
+		assertThat(requests).allSatisfy(r -> assertThat(r.getPoReference()).isEqualTo("2009_01:001")); // this is the "invoice-ID as given by the examples file
+
+		final List<Object> xmlServices = xmlInvoice.getPayload().getBody().getServices().getRecordTarmedOrRecordDrgOrRecordLab();
+		for (int i = 1; i <= xmlServices.size(); i++)
+		{
+			// the externalLineId is made up of the invoice reference_id, the biller's EAN, the recipient's EAN and the service's (line-)id
+			final JsonOLCandCreateRequest request = requests.get(i - 1);
+			assertThat(request.getExternalLineId()).isEqualTo("2009_01:001_EAN-2011234567890_EAN-7634567890000_" + i);
+		}
+
+		// use this to create a JSON string that can be an input for other tests
+		// JsonOLCandUtil.printJsonString(result);
 	}
 }
