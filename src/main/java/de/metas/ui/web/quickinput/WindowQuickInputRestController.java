@@ -37,11 +37,12 @@ import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.util.Check;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Check;
 import io.swagger.annotations.Api;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -187,7 +188,9 @@ public class WindowQuickInputRestController
 		});
 	}
 
-	private final <R> R forQuickInputReadonly(final QuickInputPath quickInputPath, final Function<QuickInput, R> quickInputProcessor)
+	private final <R> R forQuickInputReadonly(
+			@NonNull final QuickInputPath quickInputPath, 
+			@NonNull final Function<QuickInput, R> quickInputProcessor)
 	{
 		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), rootDocument -> {
 			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForReading())

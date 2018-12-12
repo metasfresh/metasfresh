@@ -10,7 +10,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 
 /*
  * #%L
@@ -66,7 +65,6 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice ex
 		final List<I_M_HU> hus = retrieveEligibleHUs();
 
 		HUShippingFacade.builder()
-				.loggable(Loggables.get())
 				.hus(hus)
 				.addToShipperTransportationId(shipperTransportationId)
 				.completeShipments(true)
