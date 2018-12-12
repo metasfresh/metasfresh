@@ -52,7 +52,6 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -228,6 +227,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		@NonNull
 		Percent scrap;
 
+		@NonNull
 		I_C_UOM uom;
 	}
 
@@ -299,10 +299,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			final I_C_UOM bomUOM = orderBOMLine.getBomProductUOM();
 
 			final I_C_UOM bomLineUOM = orderBOMLine.getUom();
-			Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");
 
-			final BigDecimal bomToLineUOMMultiplier = Services.get(IUOMConversionBL.class)
-					.convertQty(bomProductId, BigDecimal.ONE, bomUOM, bomLineUOM);
+			final IUOMConversionBL uomConverter = Services.get(IUOMConversionBL.class);
+			final BigDecimal bomToLineUOMMultiplier = uomConverter.convertQty(bomProductId, BigDecimal.ONE, bomUOM, bomLineUOM);
 			return percentOfFinishGood.subtractFromBase(bomToLineUOMMultiplier, 8);
 		}
 		else
