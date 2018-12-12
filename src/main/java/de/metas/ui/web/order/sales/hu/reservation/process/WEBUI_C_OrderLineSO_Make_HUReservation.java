@@ -20,6 +20,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.util.Services;
@@ -61,7 +62,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 
 	private static final String PARAMNAME_QTY_TO_RESERVE = "QtyToReserve";
 	@Param(mandatory = true, parameterName = PARAMNAME_QTY_TO_RESERVE)
-	private BigDecimal qtyToReserve;
+	private BigDecimal qtyToReserveBD;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -92,11 +93,12 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(salesOrderLine.getAsiId());
-
+		final Quantity qtyToReserve = Quantity.of(qtyToReserveBD, salesOrderLine.getOrderedQty().getUOM());
+		
 		final HUReservationRequest reservationRequest = HUReservationRequest
 				.builder()
 				.huIds(selectedHuIds)
-				.qtyToReserve(salesOrderLine.getOrderedQty().setQty(qtyToReserve))
+				.qtyToReserve(qtyToReserve)
 				.productId(salesOrderLine.getProductId())
 				.attributeSet(attributeSet)
 				.salesOrderLineId(salesOrderLine.getId().getOrderLineId())
