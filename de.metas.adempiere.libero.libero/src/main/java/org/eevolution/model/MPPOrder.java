@@ -578,7 +578,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		for (final I_PP_Order_BOMLine bomLine : getLines())
 		{
-			ppCostCollectorBL.createUsageVariance(this, bomLine);
+			ppCostCollectorBL.createMaterialUsageVariance(this, bomLine);
 		}
 
 		//

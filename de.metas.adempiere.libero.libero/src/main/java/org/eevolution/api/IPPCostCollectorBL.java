@@ -70,7 +70,7 @@ public interface IPPCostCollectorBL extends ISingletonService
 
 	I_PP_Cost_Collector createActivityControl(ActivityControlCreateRequest request);
 
-	void createUsageVariance(I_PP_Order ppOrder, I_PP_Order_BOMLine line);
+	void createMaterialUsageVariance(I_PP_Order ppOrder, I_PP_Order_BOMLine line);
 
 	void createResourceUsageVariance(I_PP_Order ppOrder, PPOrderRoutingActivity activity);
 

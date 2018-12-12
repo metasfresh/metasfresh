@@ -122,7 +122,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	 */
 	private static CostCollectorType extractCostCollectorTypeToUseForComponentIssue(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		if (orderBOMLine.getQtyBatch().signum() == 0 && orderBOMLine.getQtyBOM().signum() == 0)
+		if (PPOrderUtil.isMethodChangeVariance(orderBOMLine))
 		{
 			return CostCollectorType.MethodChangeVariance;
 		}
@@ -273,7 +273,6 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			order.setDateFinish(TimeUtil.asTimestamp(movementDate));
 		}
 
-		
 		Services.get(IPPOrderDAO.class).save(order);
 
 		return null;
@@ -382,15 +381,15 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public void createUsageVariance(final I_PP_Order ppOrder, final I_PP_Order_BOMLine line)
+	public void createMaterialUsageVariance(final I_PP_Order ppOrder, final I_PP_Order_BOMLine line)
 	{
 		if (PPOrderUtil.isMethodChangeVariance(line))
 		{
 			return;
 		}
-		
+
 		final BOMComponentType componentType = BOMComponentType.ofCode(line.getComponentType());
-		if(componentType.isVariant())
+		if (componentType.isVariant())
 		{
 			return;
 		}
