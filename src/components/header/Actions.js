@@ -207,6 +207,7 @@ class Actions extends Component {
       <div
         key={identifier + key}
         tabIndex={0}
+        id={`headerAction_${item.internalName}`}
         className={
           'subheader-item js-subheader-item' +
           (item.disabled ? ' subheader-item-disabled' : '')

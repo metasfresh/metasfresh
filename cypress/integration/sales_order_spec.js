@@ -66,15 +66,24 @@ describe('New sales order test', function() {
   context('Create a new sales order', function() {
     before(function() {
       cy.get('.header-breadcrumb')
-        .contains('.header-item', caption, { timeout: 10000 })
-        .click();
+        .contains('.header-item', caption, { timeout: 10000 });
 
-      cy.get('.header-breadcrumb')
-        .find('.menu-overlay')
-        .should('exist')
-        .find('.menu-overlay-link')
-        .contains(menuOption)
-        .click();
+      const option = ~~(Math.random() * (2 - 0)) + 0;
+
+      if (option === 0) {
+        cy.get('.header-breadcrumb')
+          .contains('.header-item', caption)
+          .click();
+
+        cy.get('.header-breadcrumb')
+          .find('.menu-overlay')
+          .should('exist')
+          .find('.menu-overlay-link')
+          .contains(menuOption)
+          .click();
+      } else {
+        cy.clickHeaderNav('New');
+      }
 
       cy.get('.header-breadcrumb-sitename').should('contain', '<');
     });
