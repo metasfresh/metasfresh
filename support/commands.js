@@ -350,3 +350,25 @@ Cypress.Commands.add('executeQuickAction', (actionName, active) => {
     return cy.get('.quick-actions-wrapper').click();
   });
 });
+
+Cypress.Commands.add('executeHeaderAction', (actionName) => {
+  const name = actionName.toLowerCase().replace(/\s/g, '');
+
+  describe('Fire header action with a certain name', function() {
+    cy.get('.header-container .btn-header').click();
+    cy.get('.subheader-container').should('exist');
+
+    return cy.get(`#headerAction_${name}`).click();
+  });
+});
+
+Cypress.Commands.add('clickHeaderNav', (navName) => {
+  const name = navName.toLowerCase().replace(/\s/g, '');
+
+  describe('Fire header action with a certain name', function() {
+    cy.get('.header-container .btn-header').click();
+    cy.get('.subheader-container').should('exist');
+
+    return cy.get(`#subheaderNav_${name}`).click();
+  });
+});
