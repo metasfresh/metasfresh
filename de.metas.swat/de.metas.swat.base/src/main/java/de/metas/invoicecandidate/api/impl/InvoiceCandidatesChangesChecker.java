@@ -123,12 +123,8 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		//
 		// Case: we have the old version and the new version
 		// => check if they are equal
-		if (!infoBeforeChange.checkEquals(infoAfterChange))
-		{
-			return true;
-		}
-
-		return false; // no changes
+		final boolean hasChanges = !infoBeforeChange.checkEquals(infoAfterChange);
+		return hasChanges;
 	}
 
 	/**
