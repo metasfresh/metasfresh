@@ -185,7 +185,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	private ImmutableList<I_PP_Order_BOMLine> retrieveIssueOrderBOMLines(final PPOrderId orderId)
 	{
 		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId, I_PP_Order_BOMLine.class)
+		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId)
 				.stream()
 				.filter(line -> PPOrderUtil.isIssue(BOMComponentType.ofCode(line.getComponentType())))
 				.collect(ImmutableList.toImmutableList());

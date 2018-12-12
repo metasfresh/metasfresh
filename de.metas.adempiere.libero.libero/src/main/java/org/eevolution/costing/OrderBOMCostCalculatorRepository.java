@@ -109,7 +109,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 	public BOM getBOM(final PPOrderCosts orderCosts)
 	{
 		Check.assumeEquals(orderCosts.getOrderId(), orderId, "orderId");
-		final ImmutableList<BOMLine> bomLines = orderBOMsRepo.retrieveOrderBOMLines(orderId, I_PP_Order_BOMLine.class)
+		final ImmutableList<BOMLine> bomLines = orderBOMsRepo.retrieveOrderBOMLines(orderId)
 				.stream()
 				.map(orderBOMLineRecord -> toCostingBOMLine(orderBOMLineRecord, orderCosts))
 				.collect(ImmutableList.toImmutableList());

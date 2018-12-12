@@ -183,7 +183,7 @@ final class CreatePPOrderCostsCommand
 
 	private ImmutableSet<CostSegment> createCostSegmentsForBOMLines()
 	{
-		return orderBOMsRepo.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
+		return orderBOMsRepo.retrieveOrderBOMLines(ppOrderId)
 				.stream()
 				.map(this::createCostSegmentForBOMLine)
 				.collect(ImmutableSet.toImmutableSet());

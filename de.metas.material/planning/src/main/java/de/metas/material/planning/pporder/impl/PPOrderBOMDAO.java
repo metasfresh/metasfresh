@@ -54,6 +54,12 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	}
 
 	@Override
+	public List<I_PP_Order_BOMLine> retrieveOrderBOMLines(@NonNull final PPOrderId orderId)
+	{
+		return retrieveOrderBOMLines(orderId, I_PP_Order_BOMLine.class);
+	}
+
+	@Override
 	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(@NonNull final PPOrderId orderId, @NonNull final Class<T> orderBOMLineClass)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -134,7 +140,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public void markBOMLinesAsProcessed(@NonNull final PPOrderId orderId)
 	{
-		for (final I_PP_Order_BOMLine orderBOMLine : retrieveOrderBOMLines(orderId, I_PP_Order_BOMLine.class))
+		for (final I_PP_Order_BOMLine orderBOMLine : retrieveOrderBOMLines(orderId))
 		{
 			orderBOMLine.setProcessed(true);
 			save(orderBOMLine);

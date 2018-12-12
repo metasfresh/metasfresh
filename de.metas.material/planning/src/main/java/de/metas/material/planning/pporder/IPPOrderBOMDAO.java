@@ -29,6 +29,8 @@ public interface IPPOrderBOMDAO extends ISingletonService
 	 */
 	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(I_PP_Order order, Class<T> orderBOMLineClass);
 
+	List<I_PP_Order_BOMLine> retrieveOrderBOMLines(PPOrderId orderId);
+
 	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
 
 	I_PP_Order_BOM getByOrderId(PPOrderId orderId);
@@ -44,6 +46,6 @@ public interface IPPOrderBOMDAO extends ISingletonService
 	void deleteByOrderId(PPOrderId orderId);
 
 	void deleteOrderBOMLinesByOrderId(PPOrderId orderId);
-	
+
 	void markBOMLinesAsProcessed(PPOrderId orderId);
 }
