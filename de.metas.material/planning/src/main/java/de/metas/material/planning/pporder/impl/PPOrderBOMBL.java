@@ -428,8 +428,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		return qty.negate();
 	}
 
-	@Override
-	public void addDescription(final I_PP_Order_BOMLine orderBOMLine, final String description)
+	private static void addDescription(final I_PP_Order_BOMLine orderBOMLine, final String description)
 	{
 		final String desc = orderBOMLine.getDescription();
 		if (desc == null)
@@ -440,7 +439,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		{
 			orderBOMLine.setDescription(desc + " | " + description);
 		}
-	}	// addDescription
+	}
 
 	@Override
 	public void addQty(@NonNull final OrderBOMLineQtyChangeRequest request)

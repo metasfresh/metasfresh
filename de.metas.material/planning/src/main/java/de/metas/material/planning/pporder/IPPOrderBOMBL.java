@@ -89,13 +89,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
-	 * Add to Description
-	 *
-	 * @param description text
-	 */
-	void addDescription(I_PP_Order_BOMLine orderBOMLine, String description);
-
-	/**
 	 * Returns the negated value of the given <code>qty</code>.
 	 * <p>
 	 * Note: In case of Co/By-Products, we need to issue negative Qtys
