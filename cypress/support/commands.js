@@ -310,6 +310,32 @@ Cypress.Commands.add('selectSingleTabRow', () => {
   });
 });
 
+Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
+  describe(`Select ${fieldName}'s address-button and invoke the given function`, function() {
+   
+    cy.server()
+    cy.route('POST', '/rest/api/address').as('postAddress')
+
+    cy.get(`.form-field-${fieldName}`).find('button').click();
+
+    cy.wait('@postAddress').then(xhr => {
+      const requestId = xhr.response.body.id;
+
+      Cypress.emit('emit:addressPatchResolved', requestId);
+    });
+
+    cy.on('emit:addressPatchResolved', (requestId) => {
+
+      cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
+
+      addressFunction();
+      cy.get(`.form-field-C_Location_ID`).click();
+      cy.wait('@completeAddress');
+    });
+
+  });
+});
+
 // This command runs a quick actions. If second parameter is truthy, the default action
 // will be executed.
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
