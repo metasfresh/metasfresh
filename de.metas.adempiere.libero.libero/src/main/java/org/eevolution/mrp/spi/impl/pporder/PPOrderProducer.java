@@ -16,6 +16,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
@@ -58,6 +59,7 @@ public class PPOrderProducer
 			@NonNull final Date dateOrdered)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper
 				.create(Env.getCtx(), ppOrderPojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None);
@@ -141,7 +143,7 @@ public class PPOrderProducer
 		//
 		// Save the manufacturing order
 		// I_PP_Order_BOM and I_PP_Order_BOMLines are created via a model interceptor
-		InterfaceWrapperHelper.save(ppOrderRecord);
+		ppOrdersRepo.save(ppOrderRecord);
 
 		return ppOrderRecord;
 	}

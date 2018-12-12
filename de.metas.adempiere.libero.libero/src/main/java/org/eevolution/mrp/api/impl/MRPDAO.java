@@ -1,5 +1,7 @@
 package org.eevolution.mrp.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -61,6 +63,7 @@ import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class MRPDAO implements IMRPDAO
 {
@@ -440,4 +443,9 @@ public class MRPDAO implements IMRPDAO
 				.addEqualsFilter(I_PP_MRP_Alloc.COLUMN_PP_MRP_Demand_ID, mrpDemand.getPP_MRP_ID());
 	}
 
+	@Override
+	public void save(@NonNull final I_PP_MRP mrpRecord)
+	{
+		saveRecord(mrpRecord);
+	}
 }

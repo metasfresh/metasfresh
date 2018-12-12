@@ -50,6 +50,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -82,6 +83,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final transient IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
 
 	//
 	// Parameters
@@ -261,7 +263,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrder.setIsInDispute(false);
 		ddOrder.setIsInTransit(false);
 
-		InterfaceWrapperHelper.save(ddOrder);
+		ddOrdersRepo.save(ddOrder);
 		return ddOrder;
 	}
 
@@ -312,6 +314,6 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrderline.setDD_AllowPush(networkLine.isDD_AllowPush());
 		ddOrderline.setIsKeepTargetPlant(networkLine.isKeepTargetPlant());
 
-		InterfaceWrapperHelper.save(ddOrderline);
+		ddOrdersRepo.save(ddOrderline);
 	};
 }

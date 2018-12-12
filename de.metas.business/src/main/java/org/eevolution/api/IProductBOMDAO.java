@@ -64,4 +64,5 @@ public interface IProductBOMDAO extends ISingletonService
 		return retrieveBOMsContainingExactProducts(Arrays.asList(productIds));
 	}
 
+	void save(I_PP_Product_BOMLine bomLine);
 }

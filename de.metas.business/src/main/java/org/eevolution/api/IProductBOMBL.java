@@ -49,7 +49,7 @@ public interface IProductBOMBL extends ISingletonService
 	 * @param productId
 	 * @return low level code (LLC)
 	 */
-	int calculateProductLowestLevel(int productId);
+	int calculateProductLowestLevel(ProductId productId);
 
 	IProductLowLevelUpdater updateProductLowLevels();
 

@@ -1,7 +1,5 @@
 package org.eevolution.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,7 +7,6 @@ import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
@@ -17,6 +14,7 @@ import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -31,7 +29,7 @@ import de.metas.util.Services;
 		return new ProductLowLevelCalculator();
 	}
 
-	private final Set<Integer> seenProductIds = new LinkedHashSet<>();
+	private final Set<ProductId> seenProductIds = new LinkedHashSet<>();
 
 	private ProductLowLevelCalculator()
 	{
@@ -40,7 +38,7 @@ import de.metas.util.Services;
 	/**
 	 * Calculate the low level of given product
 	 */
-	public int getLowLevel(final int productId)
+	public int getLowLevel(final ProductId productId)
 	{
 		clearSeenProducts();
 		markProductAsSeen(productId);
@@ -56,12 +54,12 @@ import de.metas.util.Services;
 	 * @param ID BOM
 	 * @return DefaultMutableTreeNode Tree with all parent product
 	 */
-	private DefaultMutableTreeNode createParentProductNode(final int productId)
+	private DefaultMutableTreeNode createParentProductNode(final ProductId productId)
 	{
 		final DefaultMutableTreeNode productNode = new DefaultMutableTreeNode(productId);
 
 		final List<I_PP_Product_BOMLine> productBOMLines = Services.get(IProductBOMDAO.class)
-				.retrieveBOMLinesForProductQuery(Env.getCtx(), productId, ITrx.TRXNAME_ThreadInherited)
+				.retrieveBOMLinesForProductQuery(Env.getCtx(), productId.getRepoId(), ITrx.TRXNAME_ThreadInherited)
 				.list();
 
 		boolean first = true;
@@ -106,17 +104,17 @@ import de.metas.util.Services;
 		}
 
 		// Check Child = Parent error
-		final int productId = bomLine.getM_Product_ID();
-		final int parentProductId = bom.getM_Product_ID();
-		if (productId == parentProductId)
+		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+		final ProductId parentProductId = ProductId.ofRepoId(bom.getM_Product_ID());
+		if (productId.equals(parentProductId))
 		{
-			throw new BOMCycleException(bom, load(productId, I_M_Product.class));
+			throw new BOMCycleException(bom, productId);
 		}
 
 		// Check BOM Loop Error
 		if (!markProductAsSeen(parentProductId))
 		{
-			throw new BOMCycleException(bom, load(parentProductId, I_M_Product.class));
+			throw new BOMCycleException(bom, parentProductId);
 		}
 
 		return createParentProductNode(parentProductId);
@@ -128,7 +126,7 @@ import de.metas.util.Services;
 	}
 
 	/** @return true if not already seen */
-	private boolean markProductAsSeen(final int productId)
+	private boolean markProductAsSeen(final ProductId productId)
 	{
 		return seenProductIds.add(productId);
 	}

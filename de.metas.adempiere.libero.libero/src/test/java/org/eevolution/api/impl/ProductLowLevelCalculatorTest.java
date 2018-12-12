@@ -33,6 +33,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.product.ProductId;
+
 public class ProductLowLevelCalculatorTest
 {
 	private MRPTestHelper helper;
@@ -175,7 +177,7 @@ public class ProductLowLevelCalculatorTest
 	private void assertLLC(final int llcExpected, final I_M_Product product)
 	{
 		final ProductLowLevelCalculator llcCalculator = ProductLowLevelCalculator.newInstance();
-		final int llcActual = llcCalculator.getLowLevel(product.getM_Product_ID());
+		final int llcActual = llcCalculator.getLowLevel(ProductId.ofRepoId(product.getM_Product_ID()));
 		Assert.assertEquals("Invalid LLC for product " + product.getValue(), llcExpected, llcActual);
 	}
 }

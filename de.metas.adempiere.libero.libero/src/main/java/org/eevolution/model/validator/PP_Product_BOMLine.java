@@ -38,6 +38,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -104,7 +105,7 @@ public class PP_Product_BOMLine
 				if (componentType.isVariant() && noAccordinglyVariantGroup(bl))
 				{
 					bl.setVariantGroup(bomLine.getVariantGroup());
-					InterfaceWrapperHelper.save(bl);
+					bomDAO.save(bl);
 				}
 			}
 		}
@@ -130,7 +131,7 @@ public class PP_Product_BOMLine
 	public void updateProductLowestLevelCode(final I_PP_Product_BOMLine bomLine)
 	{
 		final I_M_Product product = bomLine.getM_Product();
-		final int lowLevel = Services.get(IProductBOMBL.class).calculateProductLowestLevel(product.getM_Product_ID());
+		final int lowLevel = Services.get(IProductBOMBL.class).calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
 
 		product.setLowLevel(lowLevel); // update lowlevel
 		InterfaceWrapperHelper.save(product);

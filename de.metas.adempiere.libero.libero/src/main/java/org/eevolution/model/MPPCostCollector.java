@@ -65,6 +65,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityProcessReport;
 import org.eevolution.api.PPOrderRouting;
@@ -74,6 +75,7 @@ import org.eevolution.api.PPOrderRoutingActivityId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -321,7 +323,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
 			orderBOMLine.setDateDelivered(getMovementDate());	// overwrite=last
 			orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-			InterfaceWrapperHelper.save(orderBOMLine);
+			Services.get(IPPOrderBOMDAO.class).save(orderBOMLine);
 		}
 		else if (costCollectorType.isMaterialReceipt())
 		{
@@ -345,7 +347,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			{
 				order.setDateFinish(getDateFinish());
 			}
-			InterfaceWrapperHelper.save(order);
+			
+			Services.get(IPPOrderDAO.class).save(order);
 		}
 		else
 		{
@@ -403,7 +406,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
 		// obomline.setDateDelivered(getMovementDate()); // overwrite=last
 		orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-		InterfaceWrapperHelper.save(orderBOMLine);
+		Services.get(IPPOrderBOMDAO.class).save(orderBOMLine);
 		// costEngine.createUsageVariances(this);
 	}
 
@@ -487,13 +490,13 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		reversal.setPP_Cost_Collector_Parent(parentCostCollectorReversal);
 		reversal.setDocStatus(X_PP_Cost_Collector.DOCSTATUS_Drafted);
 		reversal.setDocAction(X_PP_Cost_Collector.DOCACTION_Complete);
-		InterfaceWrapperHelper.save(reversal);
+		Services.get(IPPCostCollectorDAO.class).save(reversal);
 
 		//
 		// Link the reversal to this cost collector
 		// NOTE: we need to do this right away because the link needs to be accessible right away in case of child cost collector reversal
 		setReversal(reversal);
-		InterfaceWrapperHelper.save(this);
+		Services.get(IPPCostCollectorDAO.class).save(this);
 
 		//
 		// Process reversal and update its status
@@ -501,7 +504,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		reversal.setProcessing(false);
 		reversal.setDocStatus(DOCSTATUS_Reversed);
 		reversal.setDocAction(DOCACTION_None);
-		InterfaceWrapperHelper.save(reversal);
+		Services.get(IPPCostCollectorDAO.class).save(reversal);
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
 

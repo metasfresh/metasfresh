@@ -91,7 +91,7 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
-	public int calculateProductLowestLevel(final int productId)
+	public int calculateProductLowestLevel(final ProductId productId)
 	{
 		return ProductLowLevelCalculator.newInstance().getLowLevel(productId);
 	}

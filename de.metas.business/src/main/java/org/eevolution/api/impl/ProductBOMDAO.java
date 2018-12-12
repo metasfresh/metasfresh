@@ -1,5 +1,7 @@
 package org.eevolution.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -270,5 +272,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 			sql.append("}");
 			return sql.toString();
 		}
+	}
+
+	@Override
+	public void save(@NonNull final I_PP_Product_BOMLine bomLine)
+	{
+		saveRecord(bomLine);
 	}
 }
