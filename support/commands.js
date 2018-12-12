@@ -324,8 +324,9 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
   });
 });
 
-// This command runs a quick actions. If second parameter is truthy, the default action
-// will be executed.
+/*
+ * This command runs a quick actions. If second parameter is truthy, the default action will be executed.
+ */
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {
     if (!active) {
@@ -338,3 +339,4 @@ Cypress.Commands.add('executeQuickAction', (actionName, active) => {
     return cy.get('.quick-actions-wrapper').click();
   });
 });
+
