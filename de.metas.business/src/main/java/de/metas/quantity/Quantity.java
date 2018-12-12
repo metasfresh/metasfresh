@@ -247,19 +247,6 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 * @param qty
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setQty(final BigDecimal qty)
-	{
-		if (this.qty == qty)
-		{
-			return this;
-		}
-		return new Quantity(qty, this.uom, this.sourceQty, this.sourceUom);
-	}
-
-	/**
 	 *
 	 * @return true if quantity value is infinite
 	 */
@@ -291,39 +278,11 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 *
-	 * @param uom
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setUOM(final I_C_UOM uom)
-	{
-		if (this.uom == uom)
-		{
-			return this;
-		}
-		return new Quantity(this.qty, uom, this.sourceQty, this.sourceUom);
-	}
-
-	/**
 	 * @return source quantity; never null
 	 */
 	public BigDecimal getSourceQty()
 	{
 		return sourceQty;
-	}
-
-	/**
-	 *
-	 * @param sourceQty
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setSourceQty(final BigDecimal sourceQty)
-	{
-		if (this.sourceQty == sourceQty)
-		{
-			return this;
-		}
-		return new Quantity(this.qty, this.uom, sourceQty, this.sourceUom);
 	}
 
 	/**
@@ -341,20 +300,6 @@ public final class Quantity implements Comparable<Quantity>
 	public final int getSource_UOM_ID()
 	{
 		return sourceUom.getC_UOM_ID();
-	}
-
-	/**
-	 *
-	 * @param sourceUom
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setSourceUOM(final I_C_UOM sourceUom)
-	{
-		if (this.sourceUom == sourceUom)
-		{
-			return this;
-		}
-		return new Quantity(this.qty, this.uom, this.sourceQty, sourceUom);
 	}
 
 	/**
@@ -407,8 +352,12 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity negate()
 	{
-		return setQty(getQty().negate())
-				.setSourceQty(getSourceQty().negate());
+		if(isZero())
+		{
+			return this;
+		}
+		
+		return new Quantity(qty.negate(), uom, sourceQty.negate(), sourceUom);
 	}
 
 	/**

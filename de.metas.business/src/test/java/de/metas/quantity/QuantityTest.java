@@ -155,6 +155,30 @@ public class QuantityTest
 				.assertExpected("Negated quantity", quantityNegated);
 	}
 
+	@Test
+	public void test_negate_zero()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+		final Quantity qty = Quantity.zero(uom);
+		assertThat(qty.negate()).isSameAs(qty);
+	}
+
+	@Test
+	public void test_zero_static_factory()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+		final Quantity qty = Quantity.zero(uom);
+		assertThat(qty.isZero()).isTrue();
+	}
+
+	@Test
+	public void test_infinite_static_factory()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+		final Quantity qty = Quantity.infinite(uom);
+		assertThat(qty.isInfinite()).isTrue();
+	}
+
 	/**
 	 * Adding a ZERO quantity shall return the original {@link Quantity} object no matter what UOMs are there
 	 */
