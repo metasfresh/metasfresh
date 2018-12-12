@@ -41,6 +41,8 @@ export default class SelectionDropdown extends Component {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
     this.scrollIntoView = this.scrollIntoView.bind(this);
+    this.handleMouseEnter = this.handleMouseEnter.bind(this);
+    this.handleMouseDown = this.handleMouseDown.bind(this);
   }
 
   componentDidMount() {
@@ -184,7 +186,7 @@ export default class SelectionDropdown extends Component {
     this.ignoreMouse = false;
   }
 
-  handleMouseEnter = option => {
+  handleMouseEnter(option) {
     if (this.ignoreMouse) {
       return;
     }
@@ -202,11 +204,11 @@ export default class SelectionDropdown extends Component {
 
     this.ignoreOption = null;
     this.props.onChange(option);
-  };
+  }
 
-  handleMouseDown = option => {
+  handleMouseDown(option) {
     this.props.onSelect(option, true);
-  };
+  }
 
   renderHeader = children => {
     return (
@@ -224,6 +226,7 @@ export default class SelectionDropdown extends Component {
       <div
         ref={ref => this.optionToRef.set(option, ref)}
         key={`${key}${caption}`}
+        data-test-id={`${key}${caption}`}
         className={classnames(
           'input-dropdown-list-option ignore-react-onclickoutside',
           {
