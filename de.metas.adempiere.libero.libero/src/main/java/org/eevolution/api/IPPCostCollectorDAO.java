@@ -67,4 +67,6 @@ public interface IPPCostCollectorDAO extends ISingletonService
 	Duration getTotalSetupTimeReal(PPOrderRoutingActivity activity, CostCollectorType costCollectorType);
 
 	Duration getDurationReal(PPOrderRoutingActivity activity, CostCollectorType costCollectorType);
+
+	void save(I_PP_Cost_Collector cc);
 }

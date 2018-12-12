@@ -34,7 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.MutableBigDecimal;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -120,7 +119,7 @@ public class PP_Cost_Collector
 		// Get cost collector receipt infos.
 		// We will validate the assigned top level HUs against these informations.
 		final ProductId receiptProductId = ProductId.ofRepoId(cc.getM_Product_ID());
-		final I_M_Locator receiptLocator = cc.getM_Locator();
+		final int receiptLocatorId = cc.getM_Locator_ID();
 		final I_C_UOM receiptQtyUOM = cc.getC_UOM();
 		final BigDecimal receiptQty;
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
@@ -143,10 +142,10 @@ public class PP_Cost_Collector
 					for (final I_M_HU hu : hus)
 					{
 						// Make sure the HU is on the same locator where we received it
-						if (hu.getM_Locator_ID() != receiptLocator.getM_Locator_ID())
+						if (hu.getM_Locator_ID() != receiptLocatorId)
 						{
 							throw new HUException("@NotMatched@ @M_Locator_ID@"
-									+ "\n @Expected@: " + receiptLocator
+									+ "\n @Expected@: " + receiptLocatorId
 									+ "\n @Actual@: " + hu.getM_Locator()
 									+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
 						}

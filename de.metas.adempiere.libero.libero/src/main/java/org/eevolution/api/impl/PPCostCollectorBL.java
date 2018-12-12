@@ -46,6 +46,7 @@ import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
@@ -272,7 +273,8 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			order.setDateFinish(TimeUtil.asTimestamp(movementDate));
 		}
 
-		InterfaceWrapperHelper.save(order);
+		
+		Services.get(IPPOrderDAO.class).save(order);
 
 		return null;
 	}
@@ -592,7 +594,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			cc.setC_UOM(null); // we set the BOM Line UOM on beforeSave
 		}
 
-		InterfaceWrapperHelper.saveRecord(cc);
+		Services.get(IPPCostCollectorDAO.class).save(cc);
 
 		//
 		// Process the Cost Collector

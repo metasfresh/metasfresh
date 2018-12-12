@@ -1,6 +1,7 @@
 package org.eevolution.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -152,4 +153,9 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 		return Duration.of(durationInt, activity.getDurationUnit());
 	}
 
+	@Override
+	public void save(@NonNull final I_PP_Cost_Collector cc)
+	{
+		saveRecord(cc);
+	}
 }
