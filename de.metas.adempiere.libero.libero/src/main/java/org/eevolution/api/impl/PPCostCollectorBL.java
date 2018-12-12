@@ -332,10 +332,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	@Override
 	public void updateCostCollectorFromOrder(final I_PP_Cost_Collector cc, final I_PP_Order from)
 	{
-		// final int ppOrderWorkflowId = Services.get(IPPOrderBL.class).getPP_Order_Workflow(order).getPP_Order_Workflow_ID();
-
 		cc.setPP_Order_ID(from.getPP_Order_ID());
-		// cc.setPP_Order_Workflow_ID(ppOrderWorkflowId);
 		cc.setAD_Org_ID(from.getAD_Org_ID());
 		cc.setM_Warehouse_ID(from.getM_Warehouse_ID());
 		cc.setAD_OrgTrx_ID(from.getAD_OrgTrx_ID());
