@@ -130,4 +130,14 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 			InterfaceWrapperHelper.delete(orderBOM);
 		}
 	}
+
+	@Override
+	public void markBOMLinesAsProcessed(@NonNull final PPOrderId orderId)
+	{
+		for (final I_PP_Order_BOMLine orderBOMLine : retrieveOrderBOMLines(orderId, I_PP_Order_BOMLine.class))
+		{
+			orderBOMLine.setProcessed(true);
+			save(orderBOMLine);
+		}
+	}
 }

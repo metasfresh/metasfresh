@@ -251,12 +251,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Mark BOM Lines as processed
 		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		final List<I_PP_Order_BOMLine> orderBOMLines = getLines();
-		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
-		{
-			orderBOMLine.setProcessed(true);
-			orderBOMsRepo.save(orderBOMLine);
-		}
+		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 
 		//
 		// Implicit Approval
@@ -271,8 +266,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Auto receipt and issue for kit
-		final PPOrderId ppOrderId = PPOrderId.ofRepoId(getPP_Order_ID());
-		final I_PP_Order_BOM ppOrderBOM = orderBOMsRepo.getByOrderId(ppOrderId);
+		final I_PP_Order_BOM ppOrderBOM = orderBOMsRepo.getByOrderId(orderId);
 		if (X_PP_Order_BOM.BOMTYPE_Make_To_Kit.equals(ppOrderBOM.getBOMType())
 				&& X_PP_Order_BOM.BOMUSE_Manufacturing.equals(ppOrderBOM.getBOMUse()))
 		{
