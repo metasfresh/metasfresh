@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.StorageEngine;
 import org.adempiere.uom.api.IUOMDAO;
@@ -63,6 +64,7 @@ import org.compiere.model.X_M_Transaction;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
@@ -75,8 +77,8 @@ import org.eevolution.api.PPOrderRoutingActivityId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
@@ -314,16 +316,17 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
-			// Update PP Order Line
-			final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
-			ppOrderBOMBL.addQtyDelivered(orderBOMLine,
-					false, // isVariance
-					getMovementQty());
-			orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(getScrappedQty()));
-			orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
-			orderBOMLine.setDateDelivered(getMovementDate());	// overwrite=last
-			orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-			Services.get(IPPOrderBOMDAO.class).save(orderBOMLine);
+			final I_C_UOM uom = Services.get(IPPCostCollectorBL.class).getStockingUOM(this);
+
+			ppOrderBOMBL.addQty(OrderBOMLineQtyChangeRequest.builder()
+					.orderBOMLineId(orderBOMLineId)
+					.usageVariance(false)
+					.qtyIssuedOrReceivedToAdd(Quantity.of(getMovementQty(), uom))
+					.qtyScrappedToAdd(Quantity.of(getScrappedQty(), uom))
+					.qtyRejectedToAdd(Quantity.of(getQtyReject(), uom))
+					.date(TimeUtil.asLocalDateTime(getMovementDate()))
+					.asiId(AttributeSetInstanceId.ofRepoIdOrNone(getM_AttributeSetInstance_ID()))
+					.build());
 		}
 		else if (costCollectorType.isMaterialReceipt())
 		{
@@ -347,7 +350,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			{
 				order.setDateFinish(getDateFinish());
 			}
-			
+
 			Services.get(IPPOrderDAO.class).save(order);
 		}
 		else
@@ -398,16 +401,17 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 	private void completeIt_MaterialUsageVariance()
 	{
-		final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
-		ppOrderBOMBL.addQtyDelivered(orderBOMLine,
-				true, // isVariance
-				getMovementQty());
-		orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(getScrappedQty()));
-		orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
-		// obomline.setDateDelivered(getMovementDate()); // overwrite=last
-		orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-		Services.get(IPPOrderBOMDAO.class).save(orderBOMLine);
-		// costEngine.createUsageVariances(this);
+		final I_C_UOM uom = Services.get(IPPCostCollectorBL.class).getStockingUOM(this);
+
+		ppOrderBOMBL.addQty(OrderBOMLineQtyChangeRequest.builder()
+				.orderBOMLineId(PPOrderBOMLineId.ofRepoId(getPP_Order_BOMLine_ID()))
+				.usageVariance(true)
+				.qtyIssuedOrReceivedToAdd(Quantity.of(getMovementQty(), uom))
+				.qtyScrappedToAdd(Quantity.of(getScrappedQty(), uom))
+				.qtyRejectedToAdd(Quantity.of(getQtyReject(), uom))
+				.date(TimeUtil.asLocalDateTime(getMovementDate()))
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(getM_AttributeSetInstance_ID()))
+				.build());
 	}
 
 	private void completeIt_ResourceUsageVariance()

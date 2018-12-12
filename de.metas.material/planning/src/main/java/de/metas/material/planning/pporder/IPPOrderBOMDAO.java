@@ -11,6 +11,7 @@ import de.metas.util.ISingletonService;
 
 public interface IPPOrderBOMDAO extends ISingletonService
 {
+	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
 
 	/**
 	 * Retrieve (active) BOM Lines for a specific PP Order

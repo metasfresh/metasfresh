@@ -33,6 +33,7 @@ import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
@@ -48,6 +49,7 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -377,7 +379,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		return qtyToIssue;
 	}
 
-	private Quantity getQtyIssuedOrReceived(final I_PP_Order_BOMLine orderBOMLine)
+	@Override
+	public Quantity getQtyIssuedOrReceived(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final I_C_UOM uom = getStockingUOM(orderBOMLine);
 		return Quantity.of(orderBOMLine.getQtyDelivered(), uom);
@@ -437,36 +440,62 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}	// addDescription
 
 	@Override
-	public void addQtyDelivered(
-			@NonNull final I_PP_Order_BOMLine ppOrderBOMLine,
-			final boolean isUsageVariance,
-			@NonNull final BigDecimal qtyDeliveredToAdd)
+	public void addQty(@NonNull final OrderBOMLineQtyChangeRequest request)
 	{
-		if (qtyDeliveredToAdd.signum() == 0)
-		{
-			return;
-		}
+		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 
-		final BigDecimal qtyDeliveredOld = ppOrderBOMLine.getQtyDelivered();
-		final BigDecimal qtyDeliveredNew = qtyDeliveredOld.add(qtyDeliveredToAdd);
-		ppOrderBOMLine.setQtyDelivered(qtyDeliveredNew);
+		final I_PP_Order_BOMLine orderBOMLine = orderBOMsRepo.getOrderBOMLineById(request.getOrderBOMLineId());
 
 		//
-		// In case the quantity is not coming from a usage variance cost collector, add it to QtyDeliveredActual
-		if (!isUsageVariance)
+		final Quantity qtyDeliveredToAdd = request.getQtyIssuedOrReceivedToAdd();
+		if (!qtyDeliveredToAdd.isZero())
 		{
-			final BigDecimal qtyDeliveredActualOld = ppOrderBOMLine.getQtyDeliveredActual();
-			final BigDecimal qtyDeliveredActualNew = qtyDeliveredActualOld.add(qtyDeliveredToAdd);
-			ppOrderBOMLine.setQtyDeliveredActual(qtyDeliveredActualNew);
+			final BigDecimal qtyDeliveredOld = orderBOMLine.getQtyDelivered();
+			final BigDecimal qtyDeliveredNew = qtyDeliveredOld.add(qtyDeliveredToAdd.getAsBigDecimal());
+			orderBOMLine.setQtyDelivered(qtyDeliveredNew);
+
+			// Set delivered date only if is a real quantity issue/receipt.
+			if (!request.isUsageVariance())
+			{
+				orderBOMLine.setDateDelivered(TimeUtil.asTimestamp(request.getDate()));	// overwrite=last
+			}
+
+			//
+			// In case the quantity is not coming from a usage variance cost collector, add it to QtyDeliveredActual
+			if (!request.isUsageVariance())
+			{
+				final BigDecimal qtyDeliveredActualOld = orderBOMLine.getQtyDeliveredActual();
+				final BigDecimal qtyDeliveredActualNew = qtyDeliveredActualOld.add(qtyDeliveredToAdd.getAsBigDecimal());
+				orderBOMLine.setQtyDeliveredActual(qtyDeliveredActualNew);
+
+			}
+			//
+			// In case the quantity is coming from a usage variance cost collector, increase QtyUsageVariance
+			else
+			{
+				final BigDecimal qtyUsageVarianceOld = orderBOMLine.getQtyUsageVariance();
+				final BigDecimal qtyUsageVarianceNew = qtyUsageVarianceOld.add(qtyDeliveredToAdd.getAsBigDecimal());
+				orderBOMLine.setQtyUsageVariance(qtyUsageVarianceNew);
+			}
+
+			orderBOMLine.setM_AttributeSetInstance_ID(request.getAsiId().getRepoId());
 		}
+
 		//
-		// In case the quantity is coming from a usage variance cost collector, increate QtyUsageVariance
-		else
+		final Quantity qtyScrappedToAdd = request.getQtyScrappedToAdd();
+		if (qtyScrappedToAdd != null && !qtyScrappedToAdd.isZero())
 		{
-			final BigDecimal qtyUsageVarianceOld = ppOrderBOMLine.getQtyUsageVariance();
-			final BigDecimal qtyUsageVarianceNew = qtyUsageVarianceOld.add(qtyDeliveredToAdd);
-			ppOrderBOMLine.setQtyUsageVariance(qtyUsageVarianceNew);
+			orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(qtyScrappedToAdd.getAsBigDecimal()));
 		}
+
+		//
+		final Quantity qtyRejectedToAdd = request.getQtyRejectedToAdd();
+		if (qtyRejectedToAdd != null && !qtyRejectedToAdd.isZero())
+		{
+			orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(qtyRejectedToAdd.getAsBigDecimal()));
+		}
+
+		orderBOMsRepo.save(orderBOMLine);
 	}
 
 	@Override

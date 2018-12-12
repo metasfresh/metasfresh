@@ -41,6 +41,9 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	I_C_UOM getStockingUOM(I_PP_Order_BOMLine orderBOMLine);
 
+	/** @return qty already issued (positive, in case of components) or received (negative, in case of co/by products) */
+	Quantity getQtyIssuedOrReceived(I_PP_Order_BOMLine orderBOMLine);
+
 	/**
 	 * Gets Qty Open (i.e. Qty To Issue).
 	 *
@@ -103,17 +106,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 	BigDecimal adjustCoProductQty(BigDecimal qty);
 
 	Quantity adjustCoProductQty(Quantity qty);
-
-	/**
-	 * Adds given Qtys to {@link I_PP_Order_BOMLine}.
-	 *
-	 * @param ppOrderBOMLine
-	 * @param isUsageVariance true if these quantities are coming from a usage variance cost collector
-	 * @param qtyDeliveredToAdd
-	 */
-	void addQtyDelivered(I_PP_Order_BOMLine ppOrderBOMLine,
-			boolean isUsageVariance,
-			BigDecimal qtyDeliveredToAdd);
+	
+	void addQty(OrderBOMLineQtyChangeRequest request);
 
 	/**
 	 * Calculates how much qty we STILL have to issue to cover proportionally the quantity of finished goods that was already received.

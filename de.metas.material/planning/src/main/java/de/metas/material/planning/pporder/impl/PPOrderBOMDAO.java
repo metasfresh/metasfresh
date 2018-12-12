@@ -1,5 +1,6 @@
 package de.metas.material.planning.pporder.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
@@ -15,12 +16,19 @@ import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class PPOrderBOMDAO implements IPPOrderBOMDAO
 {
+	@Override
+	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
+	{
+		return load(orderBOMLineId, I_PP_Order_BOMLine.class);
+	}
+
 	@Override
 	public I_PP_Order_BOM getByOrderId(@NonNull final PPOrderId orderId)
 	{

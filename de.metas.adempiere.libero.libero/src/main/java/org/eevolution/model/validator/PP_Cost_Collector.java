@@ -34,7 +34,9 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.util.Services;
@@ -77,7 +79,9 @@ public class PP_Cost_Collector
 			// If no UOM, use the UOM from BOMLine
 			if (cc.getC_UOM_ID() <= 0)
 			{
-				cc.setC_UOM_ID(cc.getPP_Order_BOMLine().getC_UOM_ID());
+				final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+				final I_PP_Order_BOMLine orderBOMLine = orderBOMsRepo.getOrderBOMLineById(orderBOMLineId);
+				cc.setC_UOM_ID(orderBOMLine.getC_UOM_ID());
 			}
 			// If Cost Collector UOM differs from BOM Line UOM then throw exception because this conversion is not supported yet
 			if (cc.getC_UOM_ID() != cc.getPP_Order_BOMLine().getC_UOM_ID())
