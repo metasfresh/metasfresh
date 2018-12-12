@@ -119,7 +119,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	 *
 	 * @return Component Issue, Mix Variance or Method Change Variance
 	 */
-	private static CostCollectorType getCostCollectorTypeToUse(final I_PP_Order_BOMLine orderBOMLine)
+	private static CostCollectorType extractCostCollectorTypeToUseForComponentIssue(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		if (orderBOMLine.getQtyBatch().signum() == 0 && orderBOMLine.getQtyBOM().signum() == 0)
 		{
@@ -139,27 +139,31 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	public I_PP_Cost_Collector createIssue(final ComponentIssueCreateRequest request)
 	{
 		final I_PP_Order_BOMLine orderBOMLine = request.getOrderBOMLine();
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		final I_C_UOM bomLineUOM = Services.get(IUOMDAO.class).getById(orderBOMLine.getC_UOM_ID());
+		final CostCollectorType costCollectorType = extractCostCollectorTypeToUseForComponentIssue(orderBOMLine);
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
+		//
 		final I_PP_Order order = orderBOMLine.getPP_Order();
+		final ResourceId plantId = ResourceId.ofRepoId(order.getS_Resource_ID());
 
 		//
 		// Convert our Qtys from their qtyUOM to BOM's UOM
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final I_C_UOM bomUOM = Services.get(IUOMDAO.class).getById(orderBOMLine.getC_UOM_ID());
-		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderBOMLine.getM_Product_ID());
-		final Quantity qtyIssueConv = uomConversionBL.convertQuantityTo(request.getQtyIssue(), conversionCtx, bomUOM);
-		final Quantity qtyScrapConv = uomConversionBL.convertQuantityTo(request.getQtyScrap(), conversionCtx, bomUOM);
-		final Quantity qtyRejectConv = uomConversionBL.convertQuantityTo(request.getQtyReject(), conversionCtx, bomUOM);
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+		final Quantity qtyIssueConv = uomConversionBL.convertQuantityTo(request.getQtyIssue(), conversionCtx, bomLineUOM);
+		final Quantity qtyScrapConv = uomConversionBL.convertQuantityTo(request.getQtyScrap(), conversionCtx, bomLineUOM);
+		final Quantity qtyRejectConv = uomConversionBL.convertQuantityTo(request.getQtyReject(), conversionCtx, bomLineUOM);
 
 		final I_PP_Cost_Collector cc = createCollector(
 				CostCollectorCreateRequest.builder()
-						.costCollectorType(getCostCollectorTypeToUse(orderBOMLine))
+						.costCollectorType(costCollectorType)
 						.order(order)
 						.productId(productId)
 						.locatorId(request.getLocatorId())
 						.attributeSetInstanceId(request.getAttributeSetInstanceId())
-						.resourceId(ResourceId.ofRepoId(order.getS_Resource_ID()))
-						.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))
+						.resourceId(plantId)
+						.ppOrderBOMLineId(orderBOMLineId)
 						.movementDate(request.getMovementDate())
 						.qty(qtyIssueConv)
 						.qtyScrap(qtyScrapConv)
