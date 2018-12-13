@@ -10,8 +10,10 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -20,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.i18n.ITranslatableString;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.RelatedProcessDescriptor;
@@ -39,6 +42,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -301,23 +305,32 @@ public class PPOrderLinesView implements IView
 	{
 		if (I_PP_Order.class.isAssignableFrom(modelClass))
 		{
-			if (ppOrderLineRow.getPP_Order_ID() <= 0)
+			if (ppOrderLineRow.getOrderId() == null)
 			{
 				return Optional.empty();
 			}
-			return Optional.of(load(ppOrderLineRow.getPP_Order_ID(), modelClass));
+			else
+			{
+				final I_PP_Order order = Services.get(IPPOrderDAO.class).getById(ppOrderLineRow.getOrderId());
+				return Optional.of(InterfaceWrapperHelper.create(order, modelClass));
+			}
 		}
-
-		if (I_PP_Order_BOMLine.class.isAssignableFrom(modelClass))
+		else if (I_PP_Order_BOMLine.class.isAssignableFrom(modelClass))
 		{
-			if (ppOrderLineRow.getPP_Order_BOMLine_ID() <= 0)
+			if (ppOrderLineRow.getOrderBOMLineId() == null)
 			{
 				return Optional.empty();
 			}
-			return Optional.of(load(ppOrderLineRow.getPP_Order_BOMLine_ID(), modelClass));
+			else
+			{
+				final I_PP_Order_BOMLine orderBOMLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(ppOrderLineRow.getOrderBOMLineId());
+				return Optional.of(InterfaceWrapperHelper.create(orderBOMLine, modelClass));
+			}
 		}
-
-		return Optional.empty();
+		else
+		{
+			return Optional.empty();
+		}
 	}
 
 	@Override

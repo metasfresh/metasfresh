@@ -156,7 +156,7 @@ class PPOrderLinesLoader
 	{
 		final Comparator<PPOrderLineRow> ppOrderBomLineRowSorter = //
 				Comparator.<PPOrderLineRow> comparingInt(row -> row.isReceipt() ? 0 : 1) // receipt lines first
-						.thenComparing(row -> row.getPP_Order_BOMLine_ID());  // BOM lines order
+						.thenComparing(row -> row.getOrderBOMLineId());  // BOM lines order
 
 		final Function<? super I_PP_Order_BOMLine, ? extends PPOrderLineRow> ppOrderBomLineRowCreator = //
 				ppOrderBOMLine -> createRowForBOMLine(
