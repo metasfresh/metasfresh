@@ -215,7 +215,7 @@ public class Candidate
 	}
 
 	/** we don't call this from the constructor, because some tests don't need a "valid" candidate to get particular aspects. */
-	public void validate()
+	public Candidate validate()
 	{
 		switch (type)
 		{
@@ -256,5 +256,7 @@ public class Candidate
 				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
 				"The given paramters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
 				businessCase, businessCaseDetail, this);
+
+		return this;
 	}
 }

@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.util.Check.fail;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -233,7 +235,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)
-				// only search via demand detail ..the product and warehouse will also match, but e.g. the date might not!
+				// only search via demand detail ..it's precise enough; the product and warehouse will also match, but e.g. the date might not!
 				.demandDetailsQuery(demandDetailsQuery)
 				.build();
 		final Candidate existingCandidate = retrieveBestMatchingCandidateOrNull(query, event);
@@ -462,7 +464,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	{
 		final TransactionDetail transactionDetailOfEvent = TransactionDetail.builder()
 				.complete(true)
-				.quantity(event.getQuantityDelta()) // quantity and storageAttributesKey won't be used in the query, but in the following insert or update
+				.quantity(getQuantityDelta(event)) // quantity and storageAttributesKey won't be used in the query, but in the following insert or update
 				.storageAttributesKey(event.getMaterialDescriptor().getStorageAttributesKey())
 				.attributeSetInstanceId(event.getMaterialDescriptor().getAttributeSetInstanceId())
 				.transactionId(event.getTransactionId())
@@ -470,6 +472,25 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.complete(true)
 				.build();
 		return transactionDetailOfEvent;
+	}
+
+	/**
+	 * For {@link TransactionCreatedEvent} we always return a positive quantity; for {@link TransactionDeletedEvent} always a negative one;
+	 * That because basically in material dispo, we operate with positive quantities, also if the candidate's type is demand, stock-down etc.
+	 */
+	private final BigDecimal getQuantityDelta(@NonNull final AbstractTransactionEvent event)
+	{
+		if (event instanceof TransactionCreatedEvent)
+		{
+			return event.getQuantityDelta().abs();
+		}
+		else if (event instanceof TransactionDeletedEvent)
+		{
+			return event.getQuantityDelta().abs().negate();
+		}
+
+		fail("Unexpected subclass of AbstractTransactionEvent; event={}", event);
+		return null;
 	}
 
 	private List<Candidate> prepareUnrelatedCandidate(@NonNull final AbstractTransactionEvent event)
