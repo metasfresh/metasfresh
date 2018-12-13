@@ -1264,7 +1264,7 @@ class Table extends Component {
           }
         </div>
         {showPagination && (
-          <div>
+          <div onClick={this.handleClickOutside}>
             <TablePagination
               {...{
                 handleChangePage,
