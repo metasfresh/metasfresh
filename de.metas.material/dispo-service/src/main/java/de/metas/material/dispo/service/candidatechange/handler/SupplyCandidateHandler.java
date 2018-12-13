@@ -85,30 +85,22 @@ public class SupplyCandidateHandler implements CandidateHandler
 			return candidateSaveResult.toCandidateWithQtyDelta(); // nothing to do
 		}
 
-		final Candidate stockCandidate;
-
 		final Candidate savedCandidate = candidateSaveResult.getCandidate();
-		final boolean alreadyHasParentStockCandidate = !savedCandidate.getParentId().isNull();
-		if (alreadyHasParentStockCandidate)
-		{
-			stockCandidate = stockCandidateService
-					.createStockCandidate(savedCandidate)
-					.withId(savedCandidate.getParentId());
-		}
-		else
-		{
-			stockCandidate = stockCandidateService
-					.createStockCandidate(savedCandidate);
-		}
+
+		final SaveResult stockCandidate = stockCandidateService
+				.createStockCandidate(savedCandidate)
+				.withCandidateId(savedCandidate.getParentId());
 
 		final Candidate savedStockCandidate = candidateRepositoryWriteService
-				.addOrUpdateOverwriteStoredSeqNo(stockCandidate)
+				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate())
 				.getCandidate();
 
 		final SaveResult deltaToApplyToLaterStockCandiates = SaveResult.builder()
+				//.candidate(stockCandidate.getCandidate())
+				//.previousQty(stockCandidate.getPreviousQty())
+				.candidate(savedCandidate)
 				.previousQty(candidateSaveResult.getPreviousQty())
 				.previousTime(candidateSaveResult.getPreviousTime())
-				.candidate(savedCandidate)
 				.build();
 
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandiates);

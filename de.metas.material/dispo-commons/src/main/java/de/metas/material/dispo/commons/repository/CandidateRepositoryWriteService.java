@@ -192,6 +192,28 @@ public class CandidateRepositoryWriteService
 		{
 			return candidate.withQuantity(getQtyDelta());
 		}
+
+		/** Convenience method that returns a new instance whose included {@link Candidate} has the given id. */
+		public SaveResult withCandidateId(@Nullable final CandidateId candidateId)
+		{
+			return SaveResult
+					.builder()
+					.candidate(candidate.toBuilder().id(candidateId).build())
+					.previousQty(previousQty)
+					.previousTime(previousTime)
+					.build();
+		}
+
+		/** Convenience method that returns a new instance with negated candidate quantity and previousQty */
+		public SaveResult withNegatedQuantity()
+		{
+			return SaveResult
+					.builder()
+					.candidate(candidate.withNegatedQuantity())
+					.previousQty(previousQty == null ? null : previousQty.negate())
+					.previousTime(previousTime)
+					.build();
+		}
 	}
 
 	private SaveResult addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)

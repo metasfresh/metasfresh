@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -98,38 +99,22 @@ public class DemandCandiateHandler implements CandidateHandler
 			return candidateSaveResult.toCandidateWithQtyDelta(); // nothing to do
 		}
 
-		final Candidate stockCandidate;
-
 		final Candidate savedCandidate = candidateSaveResult.getCandidate();
-		final Optional<Candidate> childStockCandidate = candidateRepository.retrieveSingleChild(savedCandidate.getId());
-		if (childStockCandidate.isPresent())
-		{
-			stockCandidate = stockCandidateService
-					.createStockCandidate(savedCandidate.withNegatedQuantity())
-					.withId(childStockCandidate.get().getId());
-		}
-		else
-		{
-			stockCandidate = stockCandidateService
-					.createStockCandidate(savedCandidate.withNegatedQuantity());
-		}
+
+		final Optional<Candidate> preExistingChildStockCandidate = candidateRepository.retrieveSingleChild(savedCandidate.getId());
+		final CandidateId preExistingChildStockId = preExistingChildStockCandidate.isPresent() ? preExistingChildStockCandidate.get().getId() : null;
+
+		final SaveResult stockCandidate = stockCandidateService
+				.createStockCandidate(savedCandidate.withNegatedQuantity())
+				.withCandidateId(preExistingChildStockId);
 
 		final Candidate savedStockCandidate = candidateRepositoryWriteService
-				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.withParentId(savedCandidate.getId()))
+				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
 				.getCandidate();
 
-		final SaveResult deltaToApplyToLaterStockCandiates = SaveResult.builder()
-				.previousQty(candidateSaveResult.getPreviousQty())
-				.previousTime(candidateSaveResult.getPreviousTime())
-				.candidate(savedCandidate)
-				.build();
+		final SaveResult deltaToApplyToLaterStockCandiates = candidateSaveResult.withNegatedQuantity();
 
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandiates);
-
-		// set the stock candidate as child for the demand candidate
-		candidateRepositoryWriteService.updateCandidateById(
-				savedCandidate
-						.withParentId(savedStockCandidate.getId()));
 
 		final Candidate candidateToReturn = candidateSaveResult
 				.toCandidateWithQtyDelta()

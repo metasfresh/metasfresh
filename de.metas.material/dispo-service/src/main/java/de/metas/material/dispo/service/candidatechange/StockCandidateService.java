@@ -78,20 +78,22 @@ public class StockCandidateService
 	 *         <li>groupId of the next younger-candidate (or null if there is none)
 	 *         </ul>
 	 */
-	public Candidate createStockCandidate(@NonNull final Candidate candidate)
+	public SaveResult createStockCandidate(@NonNull final Candidate candidate)
 	{
 		final CandidatesQuery previousStockQuery = createStockQueryUntilDate(candidate);
 		final Candidate previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(previousStockQuery);
 
 		final BigDecimal newQty;
+		final BigDecimal previousQty;
 		if (previousStockOrNull == null)
 		{
 			newQty = candidate.getQuantity();
+			previousQty = null;
 		}
 		else
 		{
-			final BigDecimal previousQuantity = previousStockOrNull.getQuantity();
-			newQty = previousQuantity.add(candidate.getQuantity());
+			previousQty = previousStockOrNull.getQuantity();
+			newQty = previousQty.add(candidate.getQuantity());
 		}
 
 		final MaterialDescriptor materialDescriptor = candidate
@@ -102,7 +104,7 @@ public class StockCandidateService
 				? previousStockOrNull.getGroupId()
 				: 0;
 
-		return Candidate.builder()
+		final Candidate stockCandidate = Candidate.builder()
 				.type(CandidateType.STOCK)
 				.orgId(candidate.getOrgId())
 				.clientId(candidate.getClientId())
@@ -110,6 +112,11 @@ public class StockCandidateService
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())
 				.groupId(groupId)
+				.build();
+
+		return SaveResult.builder()
+				.candidate(stockCandidate)
+				.previousQty(previousQty)
 				.build();
 	}
 

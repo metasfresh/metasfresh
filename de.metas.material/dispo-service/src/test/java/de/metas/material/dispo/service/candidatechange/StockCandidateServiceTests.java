@@ -9,6 +9,7 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -135,8 +136,11 @@ public class StockCandidateServiceTests
 				.materialDescriptor(materialDescr)
 				.build();
 
-		final Candidate newCandidateBefore = stockCandidateService.createStockCandidate(candidate);
-		assertThat(newCandidateBefore.getQuantity()).isEqualByComparingTo(/* 0+1= */"1");
+		// invoke the the method under test
+		final SaveResult result = stockCandidateService.createStockCandidate(candidate);
+
+		assertThat(result.getCandidate().getQuantity()).isEqualByComparingTo(/* 0+1= */ONE);
+		assertThat(result.getPreviousQty()).isNull();
 	}
 
 	/** creates a stock candidate at a certain time and then adds a later one */
@@ -159,8 +163,11 @@ public class StockCandidateServiceTests
 				.materialDescriptor(materialDescr)
 				.build();
 
-		final Candidate newCandidateAfter = stockCandidateService.createStockCandidate(candidate);
-		assertThat(newCandidateAfter.getQuantity()).isEqualByComparingTo(/* 10+1= */"11");
+		// invoke the the method under test
+		final SaveResult result = stockCandidateService.createStockCandidate(candidate);
+
+		assertThat(result.getCandidate().getQuantity()).isEqualByComparingTo(/* 10+1= */"11");
+		assertThat(result.getPreviousQty()).isEqualByComparingTo(TEN);
 	}
 
 	@Test(expected = RuntimeException.class)
@@ -467,9 +474,7 @@ public class StockCandidateServiceTests
 				.parentId(CandidateId.ofRepoId(parentIdSequence++)) // don't update stock candidates, but add new ones.
 				.build();
 
-		final Candidate stockCandidateToPersist = stockCandidateService.createStockCandidate(stockCandidate);
-
-		// final SaveResult appliedSaveResult = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(stockCandidateToPersist);
+		final Candidate stockCandidateToPersist = stockCandidateService.createStockCandidate(stockCandidate).getCandidate();
 
 		final Candidate persistendStockCandidate = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(stockCandidateToPersist)

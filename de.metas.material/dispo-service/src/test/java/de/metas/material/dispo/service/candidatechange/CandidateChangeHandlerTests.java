@@ -325,7 +325,7 @@ public class CandidateChangeHandlerTests
 			@NonNull final Instant date,
 			final int warehouseId)
 	{
-			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.warehouseId(warehouseId)
@@ -548,8 +548,9 @@ public class CandidateChangeHandlerTests
 		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-14"); // -2 - 12
 	}
 
+	/** verifies that "moving" a candidate to an earlier time works */
 	@Test
-	public void onCandidateNewOrChange_demand_then_demand_then_supply_then_trx_after_1st_demand()
+	public void onCandidateNewOrChange_demand_then_demand_then_supply_then_supplyTrx_after_1st_demand()
 	{
 		createAndAddDemandWithQtyAndDemandDetail(THIRTEEN, BEFORE_BEFORE_NOW, 20);
 		createAndAddDemandWithQtyAndDemandDetail(SEVENTEEN, NOW, 30);
@@ -576,13 +577,13 @@ public class CandidateChangeHandlerTests
 			assertThat(allStockCandidates.get(2).getQty()).isEqualByComparingTo("5");// -13-17+35
 		}
 
-		// this is more or less what our transaction-event-handlers do: load an existing candidate, update it and store it
+		// this is more or less what our transaction-event-handlers do: load an existing candidate, update it and store it.
 		// change the time of the supply candidate with AFTER_NOW to BEFORE_NOW
 		final Candidate candidate = supplyCandidate.toBuilder()
 				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
 				.transactionDetail(TransactionDetail.builder()
 						.transactionId(50)
-						.quantity(FIFTEEN)
+						.quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
 						.transactionDate(BEFORE_NOW)
 						.complete(true)
 						.build())
@@ -590,11 +591,13 @@ public class CandidateChangeHandlerTests
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 		{
+			// validate the changed *SUPPLY* candidate
 			final List<I_MD_Candidate> allSupplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
 			assertThat(allSupplyCandidates).hasSize(1);
 			assertThat(allSupplyCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_NOW)); // was moved to the date of the (earliest) transaction
 			assertThat(allSupplyCandidates.get(0).getQty()).isEqualByComparingTo("35");
 
+			// validate the changed *STOCK* candidate
 			final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 			assertThat(allStockCandidates).hasSize(3);
 			assertThat(allStockCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
@@ -606,6 +609,67 @@ public class CandidateChangeHandlerTests
 		}
 	}
 
+	@Test
+	public void onCandidateNewOrChange_supply_then_supply_then_demand_then_demandTrx_after_1st_supply()
+	{
+		createAndAddSupplyWithQtyAndDemandDetail(THIRTEEN, BEFORE_BEFORE_NOW, 20);
+		createAndAddSupplyWithQtyAndDemandDetail(SEVENTEEN, NOW, 30);
+		final Candidate supplyCandidate = createAndAddDemandWithQtyAndDemandDetail(THIRTYFIVE, AFTER_NOW, 40);
+
+		{ // guards prior to the actual test
+			final List<I_MD_Candidate> allDemandCandidates = DispoTestUtils.filter(CandidateType.DEMAND);
+			assertThat(allDemandCandidates).hasSize(1);
+			assertThat(allDemandCandidates.get(0).getMD_Candidate_ID()).isEqualTo(supplyCandidate.getId().getRepoId());
+			assertThat(allDemandCandidates.get(0).getQty()).isEqualByComparingTo("35");
+
+			final List<I_MD_Candidate> allSupplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
+			assertThat(allSupplyCandidates).hasSize(2);
+			assertThat(allSupplyCandidates.get(0).getQty()).isEqualByComparingTo("13");
+			assertThat(allSupplyCandidates.get(1).getQty()).isEqualByComparingTo("17");
+
+			final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
+			assertThat(allStockCandidates).hasSize(3);
+			assertThat(allStockCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
+			assertThat(allStockCandidates.get(0).getQty()).isEqualByComparingTo("13");
+			assertThat(allStockCandidates.get(1).getDateProjected()).isEqualTo(asTimestamp(NOW));
+			assertThat(allStockCandidates.get(1).getQty()).isEqualByComparingTo("30"); // 13+17
+			assertThat(allStockCandidates.get(2).getDateProjected()).isEqualTo(asTimestamp(AFTER_NOW));
+			assertThat(allStockCandidates.get(2).getQty()).isEqualByComparingTo("-5");// 13+17-35
+		}
+
+		// this is more or less what our transaction-event-handlers do: load an existing candidate, update it and store it.
+		// change the time of the supply candidate with AFTER_NOW to BEFORE_NOW
+		final Candidate candidate = supplyCandidate.toBuilder()
+				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
+				.transactionDetail(TransactionDetail.builder()
+						.transactionId(50)
+						.quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
+						.transactionDate(BEFORE_NOW)
+						.complete(true)
+						.build())
+				.build();
+
+		candidateChangeHandler.onCandidateNewOrChange(candidate);
+		{
+			// validate the changed *SUPPLY* candidate
+			// final List<I_MD_Candidate> allSupplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
+			final List<I_MD_Candidate> allDemandCandidates = DispoTestUtils.filter(CandidateType.DEMAND);
+			assertThat(allDemandCandidates).hasSize(1);
+			assertThat(allDemandCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_NOW)); // was moved to the date of the (earliest) transaction
+			assertThat(allDemandCandidates.get(0).getQty()).isEqualByComparingTo("35");
+
+			// validate the changed *STOCK* candidate
+			final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
+			assertThat(allStockCandidates).hasSize(3);
+			assertThat(allStockCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
+			assertThat(allStockCandidates.get(0).getQty()).isEqualByComparingTo("13"); // 13
+			assertThat(allStockCandidates.get(1).getDateProjected()).isEqualTo(asTimestamp(BEFORE_NOW));
+			assertThat(allStockCandidates.get(1).getQty()).isEqualByComparingTo("-22");  // 13-35
+			assertThat(allStockCandidates.get(2).getDateProjected()).isEqualTo(asTimestamp(NOW));
+			assertThat(allStockCandidates.get(2).getQty()).isEqualByComparingTo("-5"); // 13-35+17
+		}
+	}
+
 	private void createAndAddDemandWithQtyAndDemandDetail(
 			@NonNull final BigDecimal qty,
 
@@ -614,7 +678,7 @@ public class CandidateChangeHandlerTests
 		createAndAddDemandWithQtyAndDemandDetail(qty, NOW, shipmentScheduleIdForDemandDetail);
 	}
 
-	private void createAndAddDemandWithQtyAndDemandDetail(
+	private Candidate createAndAddDemandWithQtyAndDemandDetail(
 			@NonNull final BigDecimal qty,
 			@NonNull final Instant date,
 			final int shipmentScheduleIdForDemandDetail)
@@ -639,7 +703,7 @@ public class CandidateChangeHandlerTests
 						0,
 						TEN))
 				.build();
-		candidateChangeHandler.onCandidateNewOrChange(candidate);
+		return candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 
 	private MaterialDescriptor createMaterialDescriptor(

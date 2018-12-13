@@ -80,7 +80,7 @@ public class StockChangedEventHandlerTest
 	 * so the Stock is raised from 0 to 10 which is what the StockChangedEvent said
 	 */
 	@Test
-	public void handleEvent_no_existing_records()
+	public void handleEvent_inventoryUp_no_existing_records()
 	{
 		final StockChangedEvent event = createCommonStockChangedEvent();
 
@@ -114,20 +114,21 @@ public class StockChangedEventHandlerTest
 	 * so the Stock is reduced from 15 to 10 which is what the StockChangedEvent said
 	 */
 	@Test
-	public void handleEvent_existing_record()
+	public void handleEvent_inventoryDown_existing_record()
 	{
 		final StockChangedEvent event = createCommonStockChangedEvent();
+		assertThat(event.getQtyOnHand()).isEqualByComparingTo(TEN); // guard
 
 		// @formatter:off
 		new Expectations()
 		{{
-			final Candidate existingCandidate = Candidate.builder()
+			final Candidate existingStockCandidate = Candidate.builder()
 					.type(CandidateType.STOCK)
 					.clientId(CLIENT_ID)
 					.orgId(ORG_ID)
 					.materialDescriptor(createMaterialDescriptor().withQuantity(FIFTEEN))
 					.build();
-			candidateRepositoryRetrieval.retrieveLatestMatchOrNull((CandidatesQuery)any); result = existingCandidate;
+			candidateRepositoryRetrieval.retrieveLatestMatchOrNull((CandidatesQuery)any); result = existingStockCandidate;
 		}};	// @formatter:on
 
 		// invoke the method under test

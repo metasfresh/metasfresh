@@ -64,8 +64,6 @@ public class Candidate
 	 * Should be {@code null} for stock candidates.
 	 */
 	CandidateBusinessCase businessCase;
-//
-//	CandidateStatus status;
 
 	CandidateId id;
 
