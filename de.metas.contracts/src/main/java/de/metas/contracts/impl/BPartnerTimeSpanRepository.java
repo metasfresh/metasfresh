@@ -68,7 +68,7 @@ public class BPartnerTimeSpanRepository
 	@Autowired
 	private ContractInvoiceService contractInvoiceService;
 
-	public void createNewBPartnerTimeSpan(@NonNull final BPartnerId bpartnerId)
+	public I_C_BPartner_TimeSpan createNewBPartnerTimeSpan(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner_TimeSpan timeSpan = newInstance(I_C_BPartner_TimeSpan.class);
 
@@ -77,18 +77,32 @@ public class BPartnerTimeSpanRepository
 		timeSpan.setC_BPartner_TimeSpan(null);
 
 		save(timeSpan);
+
+		return timeSpan;
 	}
 
 	public void setNewCustomer(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner_TimeSpan bpartnerTimeSpan = retrieveBPartnerTimeSpan(bpartnerId);
+		I_C_BPartner_TimeSpan bpartnerTimeSpan = retrieveBPartnerTimeSpan(bpartnerId);
+
+		if (bpartnerTimeSpan == null)
+		{
+			bpartnerTimeSpan = createNewBPartnerTimeSpan(bpartnerId);
+		}
+
 		bpartnerTimeSpan.setC_BPartner_TimeSpan(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Neukunde);
 		save(bpartnerTimeSpan);
 	}
 
 	public void setRegularCustomer(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner_TimeSpan bpartnerTimeSpan = retrieveBPartnerTimeSpan(bpartnerId);
+		I_C_BPartner_TimeSpan bpartnerTimeSpan = retrieveBPartnerTimeSpan(bpartnerId);
+
+		if (bpartnerTimeSpan == null)
+		{
+			bpartnerTimeSpan = createNewBPartnerTimeSpan(bpartnerId);
+		}
+
 		bpartnerTimeSpan.setC_BPartner_TimeSpan(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Stammkunde);
 		save(bpartnerTimeSpan);
 	}
