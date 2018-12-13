@@ -348,11 +348,6 @@ public class CandidateRepositoryWriteService
 			candidateRecord.setMD_Candidate_GroupId(candidate.getGroupId());
 		}
 
-		// if (candidate.getStatus() != null)
-		// {
-		// candidateRecord.setMD_Candidate_Status(candidate.getStatus().toString());
-		// }
-
 		final BigDecimal fulfilledQty = candidate
 				.getTransactionDetails()
 				.stream()

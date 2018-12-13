@@ -35,6 +35,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -489,17 +490,68 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	@Override
 	public List<HuAssignment> retrieveLowLevelHUAssignmentsForModel(@NonNull final Object model)
 	{
-		return Services.get(IQueryBL.class)
+		final List<I_M_HU_Assignment> huAssignmentRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Assignment.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, getModelTableId(model))
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, getId(model))
-				.orderBy(I_M_HU_Assignment.COLUMN_M_HU_Assignment_ID)
+				.orderBy() // the ordering is crucial; we need to see the most "specific" records first
+				.addColumn(I_M_HU_Assignment.COLUMN_VHU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMN_M_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.endOrderBy()
 				.create()
-				.list()
-				.stream()
-				.map(HuAssignment::ofDataRecord)
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
+				.list();
+
+		final Set<Integer> alreadySeenHuIds = new HashSet<>();
+		final ImmutableList.Builder<HuAssignment> result = ImmutableList.builder();
+		for (final I_M_HU_Assignment huAssignmentRecord : huAssignmentRecords)
+		{
+			// final boolean isDetailRecord = huAssignmentRecord.getM_LU_HU_ID() > 0 || huAssignmentRecord.getM_TU_HU_ID() > 0 || huAssignmentRecord.getVHU_ID() > 0;
+			// boolean canBeAdded = false;
+			if (huAssignmentRecord.getVHU_ID() > 0)
+			{
+				if (alreadySeenHuIds.add(huAssignmentRecord.getVHU_ID()))
+				{
+					result.add(HuAssignment.ofDataRecord(huAssignmentRecord));
+					addIfNotZero(alreadySeenHuIds, huAssignmentRecord.getM_TU_HU_ID());
+					addIfNotZero(alreadySeenHuIds, huAssignmentRecord.getM_LU_HU_ID());
+					continue;
+				}
+			}
+			else if (huAssignmentRecord.getM_TU_HU_ID() > 0)
+			{
+				if (alreadySeenHuIds.add(huAssignmentRecord.getM_TU_HU_ID()))
+				{
+					result.add(HuAssignment.ofDataRecord(huAssignmentRecord));
+					addIfNotZero(alreadySeenHuIds, huAssignmentRecord.getM_LU_HU_ID());
+					continue;
+				}
+			}
+			else if (huAssignmentRecord.getM_LU_HU_ID() > 0)
+			{
+				if (alreadySeenHuIds.add(huAssignmentRecord.getM_LU_HU_ID()))
+				{
+					result.add(HuAssignment.ofDataRecord(huAssignmentRecord));
+					continue;
+				}
+			}
+			else if (alreadySeenHuIds.add(huAssignmentRecord.getM_HU_ID()))
+			{
+				result.add(HuAssignment.ofDataRecord(huAssignmentRecord));
+				continue;
+			}
+		}
+		return result.build();
+	}
+
+	private boolean addIfNotZero(Set<Integer> alreadySeenHuIds, int id)
+	{
+		if (id > 0)
+		{
+			return alreadySeenHuIds.add(id);
+		}
+		return true;
 	}
 }

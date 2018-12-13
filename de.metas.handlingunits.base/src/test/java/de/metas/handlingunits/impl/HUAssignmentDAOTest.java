@@ -72,4 +72,112 @@ public class HUAssignmentDAOTest
 		assertThat(results).hasSize(1);
 		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(vhu.getM_HU_ID());
 	}
+
+	@Test
+	public void retrieveHUAssignmentsForModel_2()
+	{
+		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
+		saveRecord(inoutLine);
+
+		final I_M_HU lu = newInstance(I_M_HU.class);
+		saveRecord(lu);
+
+		final I_M_HU tu = newInstance(I_M_HU.class);
+		saveRecord(tu);
+
+		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
+		assignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		assignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		assignment.setM_HU(lu);
+		assignment.setM_LU_HU(lu);
+		assignment.setM_TU_HU(tu);
+		saveRecord(assignment);
+
+		final I_M_HU_Assignment topLevelAssignment = newInstance(I_M_HU_Assignment.class);
+		topLevelAssignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		topLevelAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		topLevelAssignment.setM_HU(lu);
+		saveRecord(topLevelAssignment);
+
+		final List<HuAssignment> results = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(inoutLine);
+		assertThat(results).hasSize(1);
+		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(tu.getM_HU_ID());
+	}
+
+	@Test
+	public void retrieveHUAssignmentsForModel_3()
+	{
+		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
+		saveRecord(inoutLine);
+
+		final I_M_HU lu = newInstance(I_M_HU.class);
+		saveRecord(lu);
+
+		final I_M_HU tu = newInstance(I_M_HU.class);
+		saveRecord(tu);
+
+		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
+		assignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		assignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		assignment.setM_HU(lu);
+		assignment.setM_LU_HU(lu);
+		assignment.setM_TU_HU(tu);
+		saveRecord(assignment);
+
+		final List<HuAssignment> results = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(inoutLine);
+		assertThat(results).hasSize(1);
+		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(tu.getM_HU_ID());
+	}
+
+	/**
+	 * Three M_HU_Assignments; one "top-level", two with LU, TU and VHU, where only the VHU differs.<br>
+	 * Expectation: we get two HuAssignment
+	 */
+	@Test
+	public void retrieveHUAssignmentsForModel_4()
+	{
+		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
+		saveRecord(inoutLine);
+
+		final I_M_HU lu = newInstance(I_M_HU.class);
+		saveRecord(lu);
+
+		final I_M_HU tu = newInstance(I_M_HU.class);
+		saveRecord(tu);
+
+		final I_M_HU vhu1 = newInstance(I_M_HU.class);
+		saveRecord(vhu1);
+
+		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
+		assignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		assignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		assignment.setM_HU(lu);
+		assignment.setM_LU_HU(lu);
+		assignment.setM_TU_HU(tu);
+		assignment.setVHU(vhu1);
+		saveRecord(assignment);
+
+		final I_M_HU vhu2 = newInstance(I_M_HU.class);
+		saveRecord(vhu2);
+
+		final I_M_HU_Assignment assignment2 = newInstance(I_M_HU_Assignment.class);
+		assignment2.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		assignment2.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		assignment2.setM_HU(lu);
+		assignment2.setM_LU_HU(lu);
+		assignment2.setM_TU_HU(tu);
+		assignment2.setVHU(vhu2);
+		saveRecord(assignment2);
+
+		final I_M_HU_Assignment topLevelAssignment = newInstance(I_M_HU_Assignment.class);
+		topLevelAssignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		topLevelAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		topLevelAssignment.setM_HU(lu);
+		saveRecord(topLevelAssignment);
+
+		final List<HuAssignment> results = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(inoutLine);
+		assertThat(results).hasSize(2);
+		assertThat(results.get(1).getLowestLevelHU().getM_HU_ID()).isEqualTo(vhu1.getM_HU_ID());
+		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(vhu2.getM_HU_ID());
+	}
 }

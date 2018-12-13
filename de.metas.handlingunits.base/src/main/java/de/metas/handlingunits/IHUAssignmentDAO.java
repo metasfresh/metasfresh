@@ -139,14 +139,14 @@ public interface IHUAssignmentDAO extends ISingletonService
 			return hu;
 		}
 
+		HuId lowestLevelHUId;
+
+		ITableRecordReference referencedRecord;
+
 		/**
 		 * The lowest level of an HU assignment record is interesting, because it does not contains different products
 		 */
 		I_M_HU lowestLevelHU;
-
-		HuId lowestLevelHUId;
-
-		ITableRecordReference referencedRecord;
 
 		private HuAssignment(
 				@Nullable final I_M_HU lowestLevelHU,
