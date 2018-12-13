@@ -630,7 +630,8 @@ export function patch(
         dataItem &&
         dataItem.validStatus &&
         !dataItem.validStatus.valid &&
-        property === dataItem.validStatus.fieldName
+        (property === dataItem.validStatus.fieldName ||
+          dataItem.validStatus.fieldName === undefined)
       ) {
         await dispatch(indicatorState('error'));
         await dispatch({ type: PATCH_FAILURE, symbol });
