@@ -56,6 +56,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -368,7 +369,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		private LocalDateTime movementDate = null;
 
 		// Status
-		private final Map<Integer, IssueCandidate> candidatesByOrderBOMLineId = new HashMap<>();
+		private final Map<PPOrderBOMLineId, IssueCandidate> candidatesByOrderBOMLineId = new HashMap<>();
 
 		public IssueCandidatesBuilder setMovementDate(Date movementDate)
 		{
@@ -402,7 +403,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Get/Create Issue Candidate
-			final int ppOrderBOMLineId = ppOrderBOMLine.getPP_Order_BOMLine_ID();
+			final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(ppOrderBOMLine.getPP_Order_BOMLine_ID());
 			final IssueCandidate issueCandidate = candidatesByOrderBOMLineId.computeIfAbsent(ppOrderBOMLineId, k -> new IssueCandidate(ppOrderBOMLine));
 
 			//
