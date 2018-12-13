@@ -134,7 +134,6 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx())
-				.setLoggable(this)
 				.setInvoicingParams(invoicingParams)
 				.setFailIfNothingEnqueued(true) // If no workpackages were created, display error message that no selection was made (07666)
 				.setTotalNetAmtToInvoiceChecksum(totalNetAmtToInvoiceChecksum)
