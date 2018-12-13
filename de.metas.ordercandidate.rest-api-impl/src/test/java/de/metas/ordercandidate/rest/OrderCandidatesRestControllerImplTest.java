@@ -112,7 +112,10 @@ public class OrderCandidatesRestControllerImplTest
 	public void createOrderLineCandidates()
 	{
 		final JsonOLCandCreateBulkRequest bulkRequestFromFile = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
-		assertThat(bulkRequestFromFile.getRequests()).hasSize(21);
+		assertThat(bulkRequestFromFile.getRequests()).hasSize(21); // guards
+		assertThat(bulkRequestFromFile.getRequests()).allSatisfy(r -> assertThat(r.getBpartner().getBpartner().getName()).isEqualTo("Krankenkasse AG"));
+		assertThat(bulkRequestFromFile.getRequests()).allSatisfy(r -> assertThat(r.getBpartner().getBpartner().getExternalId()).isEqualTo("EAN-7634567890000"));
+		assertThat(bulkRequestFromFile.getRequests()).allSatisfy(r -> assertThat(r.getBpartner().getLocation().getGln()).isEqualTo("7634567890000"));
 
 		final SyncAdvise ifNotExistsCreateAdvise = SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).build();
 

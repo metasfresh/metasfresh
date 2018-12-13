@@ -55,9 +55,9 @@ public class JsonOLCandUtil
 			final String json = jsonObjectMapper.writeValueAsString(object);
 			return json;
 		}
-		catch (JsonProcessingException e)
+		catch (final JsonProcessingException e)
 		{
-			throw new RuntimeException("JsonProcessingException", e);
+			throw new JsonOLCandUtilException("JsonProcessingException", e);
 		}
 	}
 
@@ -74,17 +74,27 @@ public class JsonOLCandUtil
 		{
 			return jsonObjectMapper.readValue(inputStream, JsonOLCandCreateBulkRequest.class);
 		}
-		catch (JsonParseException e)
+		catch (final JsonParseException e)
 		{
-			throw new RuntimeException("JsonParseException", e);
+			throw new JsonOLCandUtilException("JsonParseException", e);
 		}
-		catch (JsonMappingException e)
+		catch (final JsonMappingException e)
 		{
-			throw new RuntimeException("JsonMappingException", e);
+			throw new JsonOLCandUtilException("JsonMappingException", e);
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
-			throw new RuntimeException("IOException", e);
+			throw new JsonOLCandUtilException("IOException", e);
+		}
+	}
+
+	public static class JsonOLCandUtilException extends RuntimeException
+	{
+		private static final long serialVersionUID = -626001461757553239L;
+
+		public JsonOLCandUtilException(final String msg, final Throwable cause)
+		{
+			super(msg, cause);
 		}
 	}
 }

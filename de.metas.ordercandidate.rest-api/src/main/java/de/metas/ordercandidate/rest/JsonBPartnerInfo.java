@@ -54,10 +54,11 @@ public final class JsonBPartnerInfo
 		this.contact = contact;
 		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.createDefaultAdvise());
 
-		Check.errorIf(
-				isEmpty(bpartner.getCode(), true)
-						&& isEmpty(bpartner.getExternalId(), true)
-						&& isEmpty(location.getGln(), true),
+		final boolean lokupValuesAreOk = !isEmpty(bpartner.getCode(), true)
+				|| !isEmpty(bpartner.getExternalId(), true)
+				|| !isEmpty(location.getGln(), true);
+		Check.errorUnless(
+				lokupValuesAreOk,
 				"At least one of bpartner.code, bpartner.externalId or location.gln needs to be non-empty; this={}", this);
 	}
 

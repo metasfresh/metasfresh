@@ -365,7 +365,9 @@ public class BPartnerMasterDataProvider
 
 		return JsonBPartner.builder()
 				.code(bpartnerRecord.getValue())
+				.externalId(bpartnerRecord.getExternalId())
 				.name(bpartnerRecord.getName())
+				.companyName(bpartnerRecord.getCompanyName())
 				.build();
 	}
 
@@ -484,10 +486,13 @@ public class BPartnerMasterDataProvider
 
 		return JsonBPartnerLocation.builder()
 				.externalId(bpLocationRecord.getExternalId())
+				.gln(bpLocationRecord.getGLN())
+				.externalId(bpLocationRecord.getExternalId())
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
 				.postal(location.getPostal())
 				.city(location.getCity())
+				.state(location.getRegionName())
 				.countryCode(countryCode)
 				.build();
 	}
