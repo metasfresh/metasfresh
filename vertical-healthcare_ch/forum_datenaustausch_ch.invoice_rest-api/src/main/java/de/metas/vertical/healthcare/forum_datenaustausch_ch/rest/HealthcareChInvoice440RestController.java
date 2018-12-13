@@ -64,20 +64,20 @@ public class HealthcareChInvoice440RestController
 
 			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "FAIL") @RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist,
+			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE") @RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
 			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifProductsExist,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "FAIL") @RequestParam final SyncAdvise.IfNotExists ifProductsNotExist)
+			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE") @RequestParam final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
 		final SyncAdvise bPartnerSyncAdvise = SyncAdvise.builder()
 				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
-				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.FAIL))
+				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.CREATE))
 				.build();
 
 		final SyncAdvise productSyncAdvise = SyncAdvise.builder()
 				.ifExists(coalesce(ifProductsExist, IfExists.DONT_UPDATE))
-				.ifNotExists(coalesce(ifProductsNotExist, IfNotExists.FAIL))
+				.ifNotExists(coalesce(ifProductsNotExist, IfNotExists.CREATE))
 				.build();
 
 		final CreateOLCandsRequest createOLCandsRequest = CreateOLCandsRequest.builder()

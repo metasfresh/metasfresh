@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.rest;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,6 +11,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -135,7 +137,12 @@ public class OrderCandidatesRestControllerImplTest
 		{
 			// the externalLineId is made up of the invoice reference_id, the biller's EAN, the recipient's EAN and the service's (line-)id
 			final JsonOLCand olCand = olCands.get(i - 1);
+			final JsonOLCandCreateRequest request = bulkRequest.getRequests().get(i - 1);
+
 			assertThat(olCand.getExternalLineId()).isEqualTo("2009_01:001_EAN-2011234567890_EAN-7634567890000_" + i);
+			final I_M_Product productRecord = load(olCand.getProductId(), I_M_Product.class);
+			assertThat(productRecord.getValue()).isEqualTo(request.getProduct().getCode());
+			assertThat(productRecord.getC_UOM().getX12DE355()).isEqualTo(request.getProduct().getUomCode());
 		}
 	}
 }
