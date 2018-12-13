@@ -797,7 +797,8 @@ html {
 }
 
 body {
-    height: calc(100% - 62px);
+    /* TODO: No idea what's this supposed to do - Kuba 
+    height: calc(100% - 62px);*/
 }
 
 #root,
