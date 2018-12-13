@@ -1,9 +1,5 @@
 package de.metas.bpartner.service;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -49,6 +45,9 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -313,5 +312,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 		boolean alsoTryRelation;
 	}
+
+	ImmutableSet<BPartnerId> retrieveAllCustomerIDs();
 
 }

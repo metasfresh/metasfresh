@@ -63,6 +63,6 @@ public class C_Invoice
 			return;
 		}
 
-		contractInvoiceService.updateBPartnerTimeSpan(invoiceId);
+		bpartnerTimeSpanRepo.updateTimeSpan(bpartnerId);
 	}
 }

@@ -2,8 +2,6 @@ package de.metas.bpartner.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -60,7 +58,6 @@ import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
@@ -86,6 +83,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class BPartnerDAO implements IBPartnerDAO
 {
@@ -968,5 +966,17 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(bPartnerLocationRecord.getC_BPartner_ID());
 		return Optional.ofNullable(bPartnerId);
+	}
+
+	@Override
+	public ImmutableSet<BPartnerId> retrieveAllCustomerIDs()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
+				.create()
+				.listIds(BPartnerId::ofRepoId);
 	}
 }
