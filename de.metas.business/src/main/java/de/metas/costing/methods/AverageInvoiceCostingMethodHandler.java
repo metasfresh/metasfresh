@@ -74,7 +74,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 
 		currentCosts.addWeightedAverage(request.getAmt(), request.getQty());
 
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
 
 		return result;
 	}
@@ -102,7 +102,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 			currentCosts.addToCurrentQty(qty);
 		}
 
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
 
 		return result;
 	}

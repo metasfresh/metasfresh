@@ -93,7 +93,7 @@ public final class BOM
 	{
 		return getLines()
 				.stream()
-				.filter(BOMLine::isRelevantForBOMCosts)
+				.filter(BOMLine::isInboundBOMCosts)
 				.map(bomLine -> bomLine.getCostAmountOrNull(costElementId))
 				.filter(Predicates.notNull())
 				.reduce(CostAmount::add);
@@ -112,7 +112,7 @@ public final class BOM
 
 			if (bomCostPrice != null && !bomCostPrice.isZero())
 			{
-				final Percent costAllocationPerc = bomLine.getCoProductCostAllocationPerc();
+				final Percent costAllocationPerc = bomLine.getCoProductCostDistributionPercent();
 				final CostAmount coProductCostPrice = bomCostPrice.multiply(costAllocationPerc, 4); // FIXME: hardcoded precision
 
 				bomLine.setComponentsCostPrice(coProductCostPrice, costElementId);

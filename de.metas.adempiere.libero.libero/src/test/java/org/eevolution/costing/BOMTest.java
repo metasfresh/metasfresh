@@ -16,6 +16,7 @@ import de.metas.costing.CostPrice;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.lang.Percent;
 
 /*
  * #%L
@@ -126,6 +127,7 @@ public class BOMTest
 						.componentId(coProductId)
 						.componentType(BOMComponentType.CoProduct)
 						.qty(Quantity.of(-2, uom_Each))
+						.coProductCostDistributionPercent(Percent.of(50))
 						.costPrice(BOMCostPrice.builder()
 								.productId(componentId1)
 								.costElementPrice(BOMCostElementPrice.builder()
@@ -142,7 +144,7 @@ public class BOMTest
 		bom.rollupCosts();
 
 		assertOwnCostPrice(bom, costElementId1, "0");
-		assertComponentsCostPrice(bom, costElementId1, "150.0000"); // (55 + 5) * 5 * (1 / 2))
+		assertComponentsCostPrice(bom, costElementId1, "150.0000"); // (55 + 5) * 5 * 50%)
 	}
 
 }

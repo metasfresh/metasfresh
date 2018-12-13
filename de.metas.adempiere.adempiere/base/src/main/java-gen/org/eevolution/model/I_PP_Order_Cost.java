@@ -98,6 +98,29 @@ public interface I_PP_Order_Cost
     public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
+	 * Set Cost Distribution Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCostDistributionPercent (java.math.BigDecimal CostDistributionPercent);
+
+	/**
+	 * Get Cost Distribution Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getCostDistributionPercent();
+
+    /** Column definition for CostDistributionPercent */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object> COLUMN_CostDistributionPercent = new org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object>(I_PP_Order_Cost.class, "CostDistributionPercent", null);
+    /** Column name CostDistributionPercent */
+    public static final String COLUMNNAME_CostDistributionPercent = "CostDistributionPercent";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -440,6 +463,29 @@ public interface I_PP_Order_Cost
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Post Calculation Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPostCalculationAmt (java.math.BigDecimal PostCalculationAmt);
+
+	/**
+	 * Get Post Calculation Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPostCalculationAmt();
+
+    /** Column definition for PostCalculationAmt */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object> COLUMN_PostCalculationAmt = new org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object>(I_PP_Order_Cost.class, "PostCalculationAmt", null);
+    /** Column name PostCalculationAmt */
+    public static final String COLUMNNAME_PostCalculationAmt = "PostCalculationAmt";
+
+	/**
 	 * Set Manufacturing Order Cost.
 	 *
 	 * <br>Type: ID
@@ -461,6 +507,29 @@ public interface I_PP_Order_Cost
     public static final org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object> COLUMN_PP_Order_Cost_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object>(I_PP_Order_Cost.class, "PP_Order_Cost_ID", null);
     /** Column name PP_Order_Cost_ID */
     public static final String COLUMNNAME_PP_Order_Cost_ID = "PP_Order_Cost_ID";
+
+	/**
+	 * Set Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Order_Cost_TrxType (java.lang.String PP_Order_Cost_TrxType);
+
+	/**
+	 * Get Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPP_Order_Cost_TrxType();
+
+    /** Column definition for PP_Order_Cost_TrxType */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object> COLUMN_PP_Order_Cost_TrxType = new org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object>(I_PP_Order_Cost.class, "PP_Order_Cost_TrxType", null);
+    /** Column name PP_Order_Cost_TrxType */
+    public static final String COLUMNNAME_PP_Order_Cost_TrxType = "PP_Order_Cost_TrxType";
 
 	/**
 	 * Set Produktionsauftrag.

@@ -5,13 +5,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderCost;
+import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.costing.BOM;
@@ -30,6 +34,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegment.CostSegmentBuilder;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
@@ -38,11 +43,15 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -105,7 +114,7 @@ final class CreatePPOrderCostsCommand
 
 		for (final CostingMethod costingMethod : getCostingMethodsWhichRequiredBOMRollup())
 		{
-			orderCosts = rollupForCostingMethod(orderCosts, costingMethod);
+			rollupForCostingMethod(orderCosts, costingMethod);
 		}
 
 		orderCostsService.save(orderCosts);
@@ -113,12 +122,12 @@ final class CreatePPOrderCostsCommand
 		return orderCosts;
 	}
 
-	private PPOrderCosts rollupForCostingMethod(final PPOrderCosts orderCosts, final CostingMethod costingMethod)
+	private void rollupForCostingMethod(final PPOrderCosts orderCosts, final CostingMethod costingMethod)
 	{
 		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByCostingMethod(costingMethod);
 		if (costElementIds.isEmpty())
 		{
-			return orderCosts;
+			return;
 		}
 
 		final OrderBOMCostCalculatorRepository costingBOMRepo = OrderBOMCostCalculatorRepository.builder()
@@ -137,12 +146,12 @@ final class CreatePPOrderCostsCommand
 		// TODO: instead of clearing the BOM's own cost price, we shall rollout the routing costs!
 		costElementIds.forEach(bom::clearBOMOwnCostPrice);
 
-		return costingBOMRepo.changeOrderCostsFromBOM(orderCosts, bom);
+		costingBOMRepo.changeOrderCostsFromBOM(orderCosts, bom);
 	}
 
 	private PPOrderCosts createNewOrderCosts()
 	{
-		final List<PPOrderCost> orderCostsList = extractCostSegments()
+		final List<PPOrderCost> orderCostsList = extractCandidates()
 				.stream()
 				.flatMap(this::createPPOrderCostsAndStream)
 				.collect(ImmutableList.toImmutableList());
@@ -154,19 +163,22 @@ final class CreatePPOrderCostsCommand
 		return orderCosts;
 	}
 
-	private Set<CostSegment> extractCostSegments()
+	private Set<PPOrderCostCandidate> extractCandidates()
 	{
-		return ImmutableSet.<CostSegment> builder()
-				.add(createCostSegmentForMainProduct())
-				.addAll(createCostSegmentsForBOMLines())
-				.addAll(createCostSegmentsForWorkflowNodes())
+		return ImmutableSet.<PPOrderCostCandidate> builder()
+				.add(createCandidateFromMainProduct())
+				.addAll(createCandidatesFromBOMLines())
+				.addAll(createCandidatesFromRouting())
 				.build();
 	}
 
-	private CostSegment createCostSegmentForMainProduct()
+	private PPOrderCostCandidate createCandidateFromMainProduct()
 	{
-		return prepareCostSegment(mainProductId)
-				.attributeSetInstanceId(mainProductAsiId)
+		return PPOrderCostCandidate.builder()
+				.trxType(PPOrderCostTrxType.MainProduct)
+				.costSegment(prepareCostSegment(mainProductId)
+						.attributeSetInstanceId(mainProductAsiId)
+						.build())
 				.build();
 	}
 
@@ -181,25 +193,34 @@ final class CreatePPOrderCostsCommand
 				.orgId(orgId);
 	}
 
-	private ImmutableSet<CostSegment> createCostSegmentsForBOMLines()
+	private ImmutableSet<PPOrderCostCandidate> createCandidatesFromBOMLines()
 	{
 		return orderBOMsRepo.retrieveOrderBOMLines(ppOrderId)
 				.stream()
-				.map(this::createCostSegmentForBOMLine)
+				.map(this::createCandidateFromBOMLine)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private CostSegment createCostSegmentForBOMLine(final I_PP_Order_BOMLine bomLine)
+	private PPOrderCostCandidate createCandidateFromBOMLine(final I_PP_Order_BOMLine bomLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
+		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		final PPOrderCostTrxType trxType = PPOrderCostTrxType.ofBOMComponentType(bomComponentType);
+		final Percent coProductCostDistributionPercent = trxType.isCoProduct()
+				? null // TODO
+				: null;
 
-		return prepareCostSegment(productId)
-				.attributeSetInstanceId(asiId)
+		return PPOrderCostCandidate.builder()
+				.trxType(trxType)
+				.costSegment(prepareCostSegment(productId)
+						.attributeSetInstanceId(asiId)
+						.build())
+				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.build();
 	}
 
-	private ImmutableSet<CostSegment> createCostSegmentsForWorkflowNodes()
+	private ImmutableSet<PPOrderCostCandidate> createCandidatesFromRouting()
 	{
 		return orderRoutingRepo.getByOrderId(ppOrderId)
 				.getActivities()
@@ -209,7 +230,7 @@ final class CreatePPOrderCostsCommand
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private CostSegment createCostSegmentForOrderActivityOrNull(final PPOrderRoutingActivity activity)
+	private PPOrderCostCandidate createCostSegmentForOrderActivityOrNull(final PPOrderRoutingActivity activity)
 	{
 		final ResourceId resourceId = activity.getResourceId();
 		if (resourceId == null)
@@ -219,12 +240,15 @@ final class CreatePPOrderCostsCommand
 
 		final ProductId resourceProductId = resourceProductService.getProductIdByResourceId(resourceId);
 
-		return prepareCostSegment(resourceProductId)
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+		return PPOrderCostCandidate.builder()
+				.trxType(PPOrderCostTrxType.ResourceUtilization)
+				.costSegment(prepareCostSegment(resourceProductId)
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.build())
 				.build();
 	}
 
-	private Stream<PPOrderCost> createPPOrderCostsAndStream(final CostSegment costSegment)
+	private Stream<PPOrderCost> createPPOrderCostsAndStream(final PPOrderCostCandidate candidate)
 	{
 		final Set<CostElementId> costElementIds = costElementsRepo.getActiveCostElementIds();
 		if (costElementIds.isEmpty())
@@ -233,30 +257,43 @@ final class CreatePPOrderCostsCommand
 			return Stream.empty();
 		}
 
-		final Map<CostElementId, PPOrderCost> orderCostsByCostElementId = currentCostsRepository.getByCostSegmentAndCostElements(costSegment, costElementIds)
+		final Map<CostElementId, PPOrderCost> orderCostsByCostElementId = currentCostsRepository.getByCostSegmentAndCostElements(candidate.getCostSegment(), costElementIds)
 				.stream()
-				.map(currentCost -> createPPOrderCost(costSegment, currentCost))
+				.map(currentCost -> createPPOrderCost(candidate, currentCost))
 				.collect(GuavaCollectors.toImmutableMapByKey(PPOrderCost::getCostElementId));
 
 		//
-		final CostPrice zero = CostPrice.zero(acctSchema.getCurrencyId());
+		final CurrencyId currencyId = acctSchema.getCurrencyId();
 		final Stream<PPOrderCost> zeroOrderCosts = Sets.difference(costElementIds, orderCostsByCostElementId.keySet())
 				.stream()
-				.map(costElementId -> PPOrderCost.builder()
-						.costSegmentAndElement(costSegment.withCostElementId(costElementId))
-						.price(zero)
-						.build());
+				.map(costElementId -> createZeroPPOrderCost(candidate, costElementId, currencyId));
 
 		return Stream.concat(
 				orderCostsByCostElementId.values().stream(),
 				zeroOrderCosts);
 	}
 
-	private PPOrderCost createPPOrderCost(final CostSegment costSegment, final CurrentCost currentCost)
+	private static PPOrderCost createPPOrderCost(final PPOrderCostCandidate candidate, final CurrentCost currentCost)
 	{
+		final PPOrderCostTrxType trxType = candidate.getTrxType();
+		final CostSegment costSegment = candidate.getCostSegment();
+
 		return PPOrderCost.builder()
+				.trxType(trxType)
 				.costSegmentAndElement(costSegment.withCostElementId(currentCost.getCostElementId()))
 				.price(currentCost.getCostPrice())
+				.build();
+	}
+
+	private static PPOrderCost createZeroPPOrderCost(final PPOrderCostCandidate candidate, final CostElementId costElementId, final CurrencyId currencyId)
+	{
+		final PPOrderCostTrxType trxType = candidate.getTrxType();
+		final CostSegmentAndElement costSegmentAndElement = candidate.getCostSegment().withCostElementId(costElementId);
+		final CostPrice zeroPrice = CostPrice.zero(currencyId);
+		return PPOrderCost.builder()
+				.trxType(trxType)
+				.costSegmentAndElement(costSegmentAndElement)
+				.price(zeroPrice)
 				.build();
 	}
 
@@ -265,5 +302,17 @@ final class CreatePPOrderCostsCommand
 		return ImmutableSet.of(
 				CostingMethod.AverageInvoice,
 				CostingMethod.AveragePO);
+	}
+
+	@Value
+	@Builder
+	private static class PPOrderCostCandidate
+	{
+		@NonNull
+		CostSegment costSegment;
+		@NonNull
+		PPOrderCostTrxType trxType;
+		@Nullable
+		Percent coProductCostDistributionPercent;
 	}
 }

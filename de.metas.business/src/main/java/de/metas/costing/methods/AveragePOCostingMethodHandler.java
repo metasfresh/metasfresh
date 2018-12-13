@@ -130,7 +130,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			currentCosts.addToCurrentQty(qty);
 		}
 
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
 
 		return result;
 	}
@@ -150,7 +150,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			currentCosts.addToCurrentQty(qty.negate());
 		}
 
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
 	}
 
 	private Optional<CostAmount> getPOCostPriceForMatchInv(final int matchInvId)

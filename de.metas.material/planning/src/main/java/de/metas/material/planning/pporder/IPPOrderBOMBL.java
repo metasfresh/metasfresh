@@ -32,6 +32,7 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.Percent;
 
 public interface IPPOrderBOMBL extends ISingletonService
 {
@@ -87,6 +88,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 */
 	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
+	
+	Percent getCoProductCostDistributionPercent(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
 	 * Returns the negated value of the given <code>qty</code>.

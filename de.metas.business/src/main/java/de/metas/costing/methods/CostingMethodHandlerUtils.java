@@ -164,7 +164,7 @@ public class CostingMethodHandlerUtils
 		return getCurrentCost(request).getCostPrice();
 	}
 
-	public final void saveCurrentCosts(final CurrentCost currentCost)
+	public final void saveCurrentCost(final CurrentCost currentCost)
 	{
 		currentCostsRepo.save(currentCost);
 	}

@@ -1,10 +1,18 @@
 package org.eevolution.api;
 
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
+import de.metas.quantity.Quantity;
+import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -13,7 +21,6 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -37,28 +44,66 @@ import lombok.experimental.Wither;
  * #L%
  */
 
-@Builder
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @Getter
-@EqualsAndHashCode
-@ToString
+@EqualsAndHashCode(doNotUseGetters = true)
+@ToString(doNotUseGetters = true)
 public class PPOrderCost
 {
 	@NonFinal
-	int repoId;
+	PPOrderCostId id;
 
-	@NonNull
+	PPOrderCostTrxType trxType;
+
 	CostSegmentAndElement costSegmentAndElement;
 
-	@NonNull
-	@Wither
 	CostPrice price;
 
-	/** DON'T call it directly. It's called only by API */
-	public void setRepoId(final int repoId)
+	CostAmount accumulatedAmount;
+	BigDecimal accumulatedQty;
+
+	private Percent coProductCostDistributionPercent;
+
+	@NonFinal
+	private CostAmount postCalculationAmount;
+
+	@Builder(toBuilder = true)
+	private PPOrderCost(
+			@Nullable final PPOrderCostId id,
+			@NonNull final PPOrderCostTrxType trxType,
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final CostPrice price,
+			@Nullable final CostAmount accumulatedAmount,
+			@Nullable BigDecimal accumulatedQty,
+			@Nullable Percent coProductCostDistributionPercent,
+			@Nullable CostAmount postCalculationAmount)
 	{
-		Check.assumeGreaterThanZero(repoId, "repoId");
-		this.repoId = repoId;
+		this.id = id;
+		this.trxType = trxType;
+		this.costSegmentAndElement = costSegmentAndElement;
+		this.price = price;
+		this.accumulatedAmount = accumulatedAmount != null ? accumulatedAmount : CostAmount.zero(price.getCurrenyId());
+		this.accumulatedQty = accumulatedQty != null ? accumulatedQty : BigDecimal.ZERO;
+		this.postCalculationAmount = postCalculationAmount != null ? postCalculationAmount : CostAmount.zero(price.getCurrenyId());
+
+		if (trxType.isCoProduct())
+		{
+			this.coProductCostDistributionPercent = coProductCostDistributionPercent;
+			if (coProductCostDistributionPercent == null || coProductCostDistributionPercent.signum() <= 0)
+			{
+				throw new AdempiereException("coProductCostDistributionPercent shall be positive but it was " + coProductCostDistributionPercent);
+			}
+		}
+		else
+		{
+			this.coProductCostDistributionPercent = null;
+		}
+	}
+
+	/** DON'T call it directly. It's called only by API */
+	public void setId(@NonNull final PPOrderCostId id)
+	{
+		this.id = id;
 	}
 
 	public ProductId getProductId()
@@ -70,4 +115,72 @@ public class PPOrderCost
 	{
 		return getCostSegmentAndElement().getCostElementId();
 	}
+
+	public boolean isInboundCost()
+	{
+		return !getTrxType().isOutboundCost();
+	}
+
+	public boolean isMainProduct()
+	{
+		return getTrxType() == PPOrderCostTrxType.MainProduct;
+	}
+
+	public boolean isCoProduct()
+	{
+		return getTrxType().isCoProduct();
+	}
+
+	public boolean isByProduct()
+	{
+		return getTrxType() == PPOrderCostTrxType.ByProduct;
+	}
+
+	public PPOrderCost addingAccumulatedAmountAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
+	{
+		if (amt.isZero() && qty.isZero())
+		{
+			return this;
+		}
+		if (amt.signum() != qty.signum())
+		{
+			throw new AdempiereException("Amount and Quantity shall have the same sign: " + amt + ", " + qty);
+		}
+
+		return toBuilder()
+				.accumulatedAmount(getAccumulatedAmount().add(amt))
+				.accumulatedQty(getAccumulatedQty().add(qty.getAsBigDecimal()))
+				.build();
+	}
+
+	public PPOrderCost subtractingAccumulatedAmountAndQty(final CostAmount amt, final Quantity qty)
+	{
+		return addingAccumulatedAmountAndQty(amt.negate(), qty.negate());
+	}
+
+	public PPOrderCost withPrice(@NonNull final CostPrice newPrice)
+	{
+		if (this.getPrice().equals(newPrice))
+		{
+			return this;
+		}
+
+		return toBuilder().price(newPrice).build();
+	}
+
+	/* package */void setPostCalculationAmount(@NonNull final CostAmount postCalculationAmount)
+	{
+		this.postCalculationAmount = postCalculationAmount;
+	}
+
+	/* package */void setPostCalculationAmountAsAccumulatedAmtr()
+	{
+		setPostCalculationAmount(getAccumulatedAmount());
+	}
+
+	/* package */void setPostCalculationAmountAsZero()
+	{
+		setPostCalculationAmount(getPostCalculationAmount().toZero());
+	}
+
 }

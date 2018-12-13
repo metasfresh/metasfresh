@@ -257,6 +257,21 @@ public final class GuavaCollectors
 		return Collectors.toMap(keyMapper, valueMapper, mergeFunction, HashMap::new);
 	}
 
+	public static <K, V> Collector<V, ?, HashMap<K, V>> toHashMapByKeyFailOnDuplicates(final Function<? super V, ? extends K> keyMapper)
+	{
+		final Function<V, V> valueMapper = value -> value;
+		final BinaryOperator<V> mergeFunction = (valuePrev, valueNow) -> {
+			throw new IllegalStateException("Duplicates not allowed: " + valuePrev + ", " + valueNow);
+		};
+		return Collectors.toMap(keyMapper, valueMapper, mergeFunction, HashMap::new);
+	}
+
+	public static <K, V> Collector<V, ?, HashMap<K, V>> toHashMapByKey(final Function<? super V, ? extends K> keyMapper, final BinaryOperator<V> mergeFunction)
+	{
+		final Function<V, V> valueMapper = value -> value;
+		return Collectors.toMap(keyMapper, valueMapper, mergeFunction, HashMap::new);
+	}
+
 	/**
 	 * Collects to {@link ImmutableMap}.
 	 *

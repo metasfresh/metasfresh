@@ -12,6 +12,8 @@ import org.adempiere.service.OrgId;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPOrderCost;
+import org.eevolution.api.PPOrderCostId;
+import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -143,6 +145,10 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 			throw new AdempiereException("Component type not supported: " + componentType);
 		}
 
+		final Percent coProductCostDistributionPercent = componentType.isCoProduct()
+				? orderBOMBL.getCoProductCostDistributionPercent(orderBOMLineRecord)
+				: null;
+
 		return BOMLine.builder()
 				.componentType(componentType)
 				.componentId(productId)
@@ -150,6 +156,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 				.qty(qty)
 				.scrapPercent(scrapPercent)
 				.costPrice(getProductCostPrice(productId, orderCosts))
+				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.build();
 
 	}
@@ -170,7 +177,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 	private BOMCostElementPrice toBOMCostElementPrice(final PPOrderCost cost)
 	{
 		return BOMCostElementPrice.builder()
-				.repoId(cost.getRepoId())
+				.repoId(PPOrderCostId.toRepoId(cost.getId()))
 				.costElementId(cost.getCostElementId())
 				.costPrice(cost.getPrice())
 				.build();
@@ -180,13 +187,11 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 	public void save(@NonNull final BOM bom)
 	{
 		final PPOrderCosts orderCosts = orderCostBL.getByOrderId(orderId);
-
-		final PPOrderCosts newOrderCosts = changeOrderCostsFromBOM(orderCosts, bom);
-
-		orderCostBL.save(newOrderCosts);
+		changeOrderCostsFromBOM(orderCosts, bom);
+		orderCostBL.save(orderCosts);
 	}
 
-	public PPOrderCosts changeOrderCostsFromBOM(final PPOrderCosts orderCosts, final BOM bom)
+	public void changeOrderCostsFromBOM(final PPOrderCosts orderCosts, final BOM bom)
 	{
 		final LinkedHashMap<CostSegmentAndElement, PPOrderCost> newOrderCosts = new LinkedHashMap<>();
 
@@ -200,6 +205,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 			if (elementOrderCost == null)
 			{
 				elementOrderCost = PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
 						.costSegmentAndElement(costSegmentAndElement)
 						.price(elementCostPrice.getCostPrice())
 						.build();
@@ -216,6 +222,11 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		// BOM Line Product Cost
 		for (final BOMLine bomLine : bom.getLines())
 		{
+			final PPOrderCostTrxType trxType = PPOrderCostTrxType.ofBOMComponentType(bomLine.getComponentType());
+			final Percent coProductCostDistributionPercent = trxType.isCoProduct()
+					? bomLine.getCoProductCostDistributionPercent()
+					: null;
+
 			for (final BOMCostElementPrice elementCostPrice : bomLine.getCostPrice().getElementPrices())
 			{
 				final CostSegmentAndElement costSegmentAndElement = createCostSegmentAndElement(bomLine.getComponentId(), bomLine.getAsiId(), elementCostPrice.getCostElementId());
@@ -224,8 +235,10 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 				if (elementOrderCost == null)
 				{
 					elementOrderCost = PPOrderCost.builder()
+							.trxType(trxType)
 							.costSegmentAndElement(costSegmentAndElement)
 							.price(elementCostPrice.getCostPrice())
+							.coProductCostDistributionPercent(coProductCostDistributionPercent)
 							.build();
 				}
 				else
@@ -238,9 +251,8 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		}
 
 		//
-		return orderCosts
-				.removingByProductsAndCostElements(bom.getProductIds(), costElementIds)
-				.addingCosts(newOrderCosts.values());
+		orderCosts.removeByProductsAndCostElements(bom.getProductIds(), costElementIds);
+		orderCosts.addCosts(newOrderCosts.values());
 	}
 
 	private CostSegmentAndElement createCostSegmentAndElement(

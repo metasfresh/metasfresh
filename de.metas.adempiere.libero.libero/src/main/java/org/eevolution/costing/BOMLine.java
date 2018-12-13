@@ -1,7 +1,8 @@
 package org.eevolution.costing;
 
-import java.math.BigDecimal;
+import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.eevolution.api.BOMComponentType;
 
@@ -10,11 +11,9 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,12 +28,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,32 +41,55 @@ import lombok.Value;
  */
 
 /** BOM line from costing point of view */
-@Builder
 @Value
 public final class BOMLine
 {
-	@NonNull
-	@Getter(AccessLevel.PRIVATE)
 	final BOMComponentType componentType;
 
-	@NonNull
 	final ProductId componentId;
-	@NonNull
-	@Default
-	final AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
+	final AttributeSetInstanceId asiId;
 
-	@NonNull
+	@Getter(AccessLevel.PRIVATE)
 	final Quantity qty;
 
-	@NonNull
-	@Default
-	final Percent scrapPercent = Percent.ZERO;
+	final Percent scrapPercent;
 
-	@NonNull
 	@Getter(AccessLevel.PACKAGE)
 	final BOMCostPrice costPrice;
+	final Percent coProductCostDistributionPercent;
 
-	public boolean isRelevantForBOMCosts()
+	@Builder
+	private BOMLine(
+			@NonNull final BOMComponentType componentType,
+			@NonNull final ProductId componentId,
+			@Nullable final AttributeSetInstanceId asiId,
+			@NonNull final Quantity qty,
+			@Nullable final Percent scrapPercent,
+			@NonNull final BOMCostPrice costPrice,
+			@Nullable final Percent coProductCostDistributionPercent)
+	{
+		this.componentType = componentType;
+		this.componentId = componentId;
+		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
+		this.qty = qty;
+		this.scrapPercent = scrapPercent != null ? scrapPercent : Percent.ZERO;
+		this.costPrice = costPrice;
+
+		if (componentType.isCoProduct())
+		{
+			this.coProductCostDistributionPercent = coProductCostDistributionPercent;
+			if (coProductCostDistributionPercent == null || coProductCostDistributionPercent.signum() <= 0)
+			{
+				throw new AdempiereException("coProductCostDistributionPercent shall be positive for " + this);
+			}
+		}
+		else
+		{
+			this.coProductCostDistributionPercent = null;
+		}
+	}
+
+	public boolean isInboundBOMCosts()
 	{
 		return !isCoProduct() // Skip co-product
 				&& !isVariant(); // Skip variants (06005)
@@ -93,24 +115,6 @@ public final class BOMLine
 		return getQty().add(getScrapPercent());
 	}
 
-	/**
-	 * @return co-product cost allocation percent (i.e. -1/qty)
-	 */
-	public Percent getCoProductCostAllocationPerc()
-	{
-		Check.assume(isCoProduct(), "co-product line: {}", this);
-
-		final Quantity qty = getQty().negate();
-		if (qty.isZero())
-		{
-			return Percent.ZERO;
-		}
-		else
-		{
-			return Percent.of(BigDecimal.ONE, qty.getAsBigDecimal(), 4);
-		}
-	}
-
 	public CostAmount getCostAmountOrNull(final CostElementId costElementId)
 	{
 		final BOMCostElementPrice costPriceHolder = getCostPrice().getCostElementPriceOrNull(costElementId);
@@ -134,7 +138,7 @@ public final class BOMLine
 		return componentCostAmount;
 	}
 
-	void setComponentsCostPrice(@NonNull CostAmount elementCostPrice, @NonNull CostElementId costElementId)
+	void setComponentsCostPrice(@NonNull final CostAmount elementCostPrice, @NonNull final CostElementId costElementId)
 	{
 		getCostPrice().setComponentsCostPrice(elementCostPrice, costElementId);
 	}

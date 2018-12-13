@@ -1,29 +1,33 @@
 package org.eevolution.api;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
-import com.google.common.collect.ImmutableCollection;
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
 
@@ -51,31 +55,27 @@ import lombok.Value;
 
 @ToString
 @EqualsAndHashCode
-public final class PPOrderCosts implements Iterable<PPOrderCost>
+public final class PPOrderCosts
 {
 	@Getter
 	private final PPOrderId orderId;
-	private final ImmutableMap<CostSegmentAndElement, PPOrderCost> costs;
+	private final HashMap<CostSegmentAndElement, PPOrderCost> costs;
 
 	@Builder
 	private PPOrderCosts(
 			@NonNull final PPOrderId orderId,
-			@NonNull final Collection<PPOrderCost> costs)
+			@NonNull @Singular final Collection<PPOrderCost> costs)
 	{
 		this.orderId = orderId;
-		this.costs = Maps.uniqueIndex(costs, PPOrderCost::getCostSegmentAndElement);
+
+		this.costs = costs.stream()
+				.collect(GuavaCollectors.toHashMapByKeyFailOnDuplicates(PPOrderCost::getCostSegmentAndElement));
 	}
 
-	public ImmutableCollection<PPOrderCost> toCollection()
+	public Collection<PPOrderCost> toCollection()
 	{
 		return costs.values();
 	}
-
-	@Override
-	public Iterator<PPOrderCost> iterator()
-	{
-		return toCollection().iterator();
-	};
 
 	public List<PPOrderCost> getByProductAndCostElements(
 			@NonNull final ProductId productId,
@@ -91,6 +91,12 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 
 	public Optional<CostPrice> getPriceByCostSegmentAndElement(final CostSegmentAndElement costSegmentAndElement)
 	{
+		return getByCostSegmentAndElement(costSegmentAndElement)
+				.map(PPOrderCost::getPrice);
+	}
+
+	public Optional<PPOrderCost> getByCostSegmentAndElement(final CostSegmentAndElement costSegmentAndElement)
+	{
 		final PPOrderCost cost = costs.get(costSegmentAndElement);
 		if (cost == null)
 		{
@@ -98,35 +104,63 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 		}
 		else
 		{
-			return Optional.of(cost.getPrice());
+			return Optional.of(cost);
 		}
 	}
 
 	private List<PPOrderCost> filterAndList(@NonNull final Predicate<PPOrderCost> filter)
 	{
-		return toCollection()
+		return costs.values()
 				.stream()
 				.filter(filter)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public PPOrderCosts removingByProductsAndCostElements(final Set<ProductId> productIds, final Set<CostElementId> costElementIds)
+	public void removeByProductsAndCostElements(final Set<ProductId> productIds, final Set<CostElementId> costElementIds)
 	{
-		final List<PPOrderCost> newCosts = toCollection()
-				.stream()
-				.filter(cost -> !productIds.contains(cost.getProductId())
-						|| !costElementIds.contains(cost.getCostElementId()))
-				.collect(ImmutableList.toImmutableList());
-		return new PPOrderCosts(orderId, newCosts);
+		for (final Iterator<PPOrderCost> it = costs.values().iterator(); it.hasNext();)
+		{
+			final PPOrderCost cost = it.next();
+			if (productIds.contains(cost.getProductId())
+					&& costElementIds.contains(cost.getCostElementId()))
+			{
+				it.remove();
+			}
+		}
 	}
 
-	public PPOrderCosts addingCosts(final Collection<PPOrderCost> costsToAdd)
+	public void addCosts(final Collection<PPOrderCost> costsToAdd)
 	{
-		final List<PPOrderCost> newCosts = ImmutableList.<PPOrderCost> builder()
-				.addAll(toCollection())
-				.addAll(costsToAdd)
-				.build();
-		return new PPOrderCosts(orderId, newCosts);
+		for (final PPOrderCost costToAdd : costsToAdd)
+		{
+			costs.merge(costToAdd.getCostSegmentAndElement(), costToAdd, (oldCost, costToAdd2) -> {
+				throw new AdempiereException("Cannot add " + costToAdd2 + " on " + costToAdd2.getCostSegmentAndElement() + " because we alredy have " + oldCost);
+			});
+		}
+	}
+
+	public void accumulateInboundCostAmount(@NonNull final CostSegmentAndElement costSegmentAndElement, @NonNull final CostAmount amt, @NonNull final Quantity qty)
+	{
+		changeExistingCost(costSegmentAndElement, cost -> cost.addingAccumulatedAmountAndQty(amt, qty));
+	}
+
+	public void accumulateOutboundCostAmount(@NonNull final CostSegmentAndElement costSegmentAndElement, @NonNull final CostAmount amt, @NonNull final Quantity qty)
+	{
+		changeExistingCost(costSegmentAndElement, cost -> cost.subtractingAccumulatedAmountAndQty(amt, qty));
+	}
+
+	private void changeExistingCost(@NonNull final CostSegmentAndElement costSegmentAndElement, @NonNull final UnaryOperator<PPOrderCost> mapper)
+	{
+		costs.compute(costSegmentAndElement, (k, cost) -> {
+			if (cost == null)
+			{
+				throw new AdempiereException("No order costs found for " + costSegmentAndElement);
+			}
+			else
+			{
+				return mapper.apply(cost);
+			}
+		});
 	}
 
 	@Value
@@ -134,9 +168,10 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 	private static class PPOrderCostFilter implements Predicate<PPOrderCost>
 	{
 		final ProductId productId;
+
 		@NonNull
-		@Default
-		final Set<CostElementId> costElementIds = ImmutableSet.of();
+		@Singular
+		final ImmutableSet<CostElementId> costElementIds;
 
 		@Override
 		public boolean test(final PPOrderCost cost)
@@ -145,4 +180,70 @@ public final class PPOrderCosts implements Iterable<PPOrderCost>
 					&& (costElementIds == null || costElementIds.isEmpty() || costElementIds.contains(cost.getCostElementId()));
 		}
 	}
+
+	public void updatePostCalculationAmounts(final int precision)
+	{
+		for (final CostElementId costElementId : getCostElementIds())
+		{
+			updatePostCalculationAmountsForCostElement(precision, costElementId);
+		}
+	}
+
+	private void updatePostCalculationAmountsForCostElement(
+			final int precision,
+			final CostElementId costElementId)
+	{
+		final int costingPrecision = 4; // TODO hardcoded
+
+		final List<PPOrderCost> costs = filterAndList(PPOrderCostFilter.builder()
+				.costElementId(costElementId)
+				.build());
+
+		final List<PPOrderCost> inboundCosts = costs.stream()
+				.filter(cost -> cost.isInboundCost())
+				.collect(ImmutableList.toImmutableList());
+
+		final PPOrderCost mainProductCost = costs.stream()
+				.filter(cost -> cost.isMainProduct())
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Single main product cost could not be found in " + costs)));
+
+		final ImmutableList<PPOrderCost> coProductCosts = costs.stream()
+				.filter(cost -> cost.isCoProduct())
+				.collect(ImmutableList.toImmutableList());
+
+		//
+		// Update inbound costs and calculate total inbound costs
+		inboundCosts.forEach(cost -> cost.setPostCalculationAmountAsAccumulatedAmtr());
+		final CostAmount totalInboundCostAmount = inboundCosts.stream()
+				.map(cost -> cost.getPostCalculationAmount())
+				.reduce(CostAmount::add)
+				.orElseThrow(() -> new AdempiereException("No inbound costs found in " + costs));
+
+		//
+		// Update co-product costs and calculate total co-product costs
+		coProductCosts.forEach(cost -> cost.setPostCalculationAmount(totalInboundCostAmount.multiply(cost.getCoProductCostDistributionPercent(), costingPrecision)));
+		final CostAmount totalCoProductsCostAmount = coProductCosts.stream()
+				.map(cost -> cost.getPostCalculationAmount())
+				.reduce(CostAmount::add)
+				.orElseGet(totalInboundCostAmount::toZero);
+
+		//
+		// Update main product cost
+		mainProductCost.setPostCalculationAmount(totalInboundCostAmount.subtract(totalCoProductsCostAmount));
+
+		//
+		// Clear by-product costs
+		costs.stream()
+				.filter(cost -> cost.isByProduct())
+				.forEach(cost -> cost.setPostCalculationAmountAsZero());
+	}
+
+	private Set<CostElementId> getCostElementIds()
+	{
+		return costs.keySet()
+				.stream()
+				.map(CostSegmentAndElement::getCostElementId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }

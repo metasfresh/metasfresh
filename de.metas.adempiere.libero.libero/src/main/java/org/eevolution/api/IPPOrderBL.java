@@ -65,9 +65,13 @@ public interface IPPOrderBL extends ISingletonService
 	/**
 	 * Gets Open Qty (i.e. how much we still need to receive).
 	 *
-	 * @return Open Qty (Ordered - Delivered - Scrap)
+	 * @return Open Qty (Ordered - Received - Scrap)
 	 */
 	Quantity getQtyOpen(I_PP_Order ppOrder);
+
+	Quantity getQtyReceived(I_PP_Order ppOrder);
+
+	Quantity getQtyReceived(PPOrderId ppOrderId);
 
 	Quantity getQtyScrapped(I_PP_Order ppOrder);
 
@@ -116,4 +120,5 @@ public interface IPPOrderBL extends ISingletonService
 	void closeAllActivities(PPOrderId orderId);
 
 	void voidOrderRouting(PPOrderId orderId);
+
 }

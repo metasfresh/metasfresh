@@ -95,7 +95,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 		currentCosts.addToCurrentQty(qty);
 		currentCosts.addCumulatedAmtAndQty(amt, qty);
 
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
 
 		return result;
 	}
@@ -108,7 +108,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		currentCosts.addToCurrentQty(request.getQty());
 
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
 
 		return result;
 	}

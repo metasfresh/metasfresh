@@ -95,44 +95,51 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
 
+		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		final CostDetailCreateResult result;
 		if (costCollectorType.isMaterialReceiptOrCoProduct())
 		{
-			return Optional.of(createMainProductOrCoProductReceipt(request, orderId));
+			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
 		}
-		if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
+		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
-			return Optional.of(createComponentIssue(request, orderId));
+			result = createComponentIssue(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
-
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
-			return Optional.of(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
+			result = createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
 		}
 		else
 		{
-			return Optional.empty();
+			result = null;
 		}
+
+		ppOrderCostsService.save(orderCosts);
+		utils.saveCurrentCost(currentCost);
+
+		return Optional.ofNullable(result);
 	}
 
-	private CostDetailCreateResult createMainProductOrCoProductReceipt(final CostDetailCreateRequest request, final PPOrderId orderId)
+	private CostDetailCreateResult createMainProductOrCoProductReceipt(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CurrentCost currentCost,
+			@NonNull final PPOrderCosts orderCosts)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
 
-		CostDetailCreateRequest requestEffective;
-
+		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
 		{
-			final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
-
 			final CostPrice price = orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement)
 					.orElseThrow(() -> new AdempiereException("No cost price found for " + costSegmentAndElement + " in " + orderCosts));
 
-			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCost.getPrecision());
 
 			requestEffective = request.withAmount(amt);
 		}
@@ -141,18 +148,21 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			requestEffective = request;
 		}
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
-		currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty());
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCost);
+		currentCost.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty());
+
+		// Accumulate to order costs
+		// NOTE: outbound amounts are negative, so we have to negate it here in order to get a positive value
+		orderCosts.accumulateOutboundCostAmount(costSegmentAndElement, requestEffective.getAmt().negate(), requestEffective.getQty().negate());
 
 		return result;
 	}
 
 	private CostDetailCreateResult createComponentIssue(
 			@NonNull final CostDetailCreateRequest request,
-			@NonNull final PPOrderId orderId)
+			@NonNull final CurrentCost currentCosts,
+			@NonNull final PPOrderCosts orderCosts)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
-
 		final CostDetailCreateResult result;
 		if (request.isReversal())
 		{
@@ -168,13 +178,27 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			currentCosts.addToCurrentQty(request.getQty());
 		}
 
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
+
+		// Accumulate to order costs
+		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
+		orderCosts.accumulateInboundCostAmount(costSegmentAndElement, request.getAmt(), request.getQty());
+		ppOrderCostsService.save(orderCosts);
 
 		return result;
 	}
 
-	private CostDetailCreateResult createActivityControl(final CostDetailCreateRequest withProductId, final Duration totalDuration)
+	private CostDetailCreateResult createActivityControl(final CostDetailCreateRequest request, final Duration totalDuration)
 	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	private CostDetailCreateResult createPostCalculationCostAdjustment(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final PPOrderCosts orderCosts)
+	{
+
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
@@ -191,5 +215,4 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	{
 		return Optional.empty();
 	}
-
 }

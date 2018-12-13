@@ -17,6 +17,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.PPOrderCost;
+import org.eevolution.api.PPOrderCostId;
+import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Order_Cost;
 
@@ -32,9 +34,11 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 public class PPOrderCostDAO implements IPPOrderCostDAO
@@ -77,19 +81,19 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 	{
 		final PPOrderId orderId = orderCosts.getOrderId();
 
-		final HashMap<Integer, I_PP_Order_Cost> existingRecordsById = retrieveAllOrderCostsQuery(orderId)
+		final HashMap<PPOrderCostId, I_PP_Order_Cost> existingRecordsById = retrieveAllOrderCostsQuery(orderId)
 				.create()
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(I_PP_Order_Cost::getPP_Order_Cost_ID));
+				.collect(GuavaCollectors.toHashMapByKey(orderCost -> PPOrderCostId.ofRepoId(orderCost.getPP_Order_Cost_ID())));
 
 		//
 		// Delete old records which are no longer needed
-		final Set<Integer> repoIdsToUpdate = orderCosts.toCollection()
+		final Set<PPOrderCostId> repoIdsToUpdate = orderCosts.toCollection()
 				.stream()
-				.map(PPOrderCost::getRepoId)
+				.map(PPOrderCost::getId)
 				.collect(ImmutableSet.toImmutableSet());
 		final List<I_PP_Order_Cost> recordsToDelete = new ArrayList<>();
-		for (final int repoId : ImmutableSet.copyOf(existingRecordsById.keySet()))
+		for (final PPOrderCostId repoId : ImmutableSet.copyOf(existingRecordsById.keySet()))
 		{
 			if (repoIdsToUpdate.contains(repoId))
 			{
@@ -102,7 +106,9 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 
 		//
 		// Create/Update the remaining records
-		orderCosts.forEach(cost -> savePPOrderCost(cost, orderId, existingRecordsById.remove(cost.getRepoId())));
+		orderCosts
+				.toCollection()
+				.forEach(cost -> savePPOrderCost(cost, orderId, existingRecordsById.remove(cost.getId())));
 	}
 
 	private void savePPOrderCost(
@@ -124,12 +130,13 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		updateRecord(record, cost);
 
 		saveRecord(record);
-		cost.setRepoId(record.getPP_Order_Cost_ID());
+		cost.setId(PPOrderCostId.ofRepoId(record.getPP_Order_Cost_ID()));
 	}
 
-	private void updateRecord(@NonNull final I_PP_Order_Cost record, @NonNull final PPOrderCost from)
+	private static void updateRecord(@NonNull final I_PP_Order_Cost record, @NonNull final PPOrderCost from)
 	{
 		record.setIsActive(true);
+		record.setPP_Order_Cost_TrxType(from.getTrxType().getCode());
 
 		final CostSegmentAndElement costSegmentAndElement = from.getCostSegmentAndElement();
 		record.setAD_Org_ID(costSegmentAndElement.getOrgId().getRepoId());
@@ -142,8 +149,18 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		final CostPrice price = from.getPrice();
 		record.setCurrentCostPrice(price.getOwnCostPrice().getValue());
 		record.setCurrentCostPriceLL(price.getComponentsCostPrice().getValue());
-		// ppOrderCost.setCumulatedAmt(cost.getCumulatedAmt()); // TODO: delete it
-		// ppOrderCost.setCumulatedQty(cost.getCumulatedQty()); // TODO: delete it
+
+		record.setCumulatedAmt(from.getAccumulatedAmount().getValue());
+		record.setPostCalculationAmt(from.getPostCalculationAmount().getValue());
+
+		if (from.getTrxType().isCoProduct())
+		{
+			record.setCostDistributionPercent(from.getCoProductCostDistributionPercent().getValueAsBigDecimal());
+		}
+		else
+		{
+			record.setCostDistributionPercent(null);
+		}
 	}
 
 	private PPOrderCost toPPOrderCost(final I_PP_Order_Cost record)
@@ -165,13 +182,23 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.build();
 
+		final PPOrderCostTrxType trxType = PPOrderCostTrxType.ofCode(record.getPP_Order_Cost_TrxType());
+		final Percent coProductCostDistributionPercent = trxType.isCoProduct()
+				? Percent.of(record.getCostDistributionPercent())
+				: null;
+
+		final CurrencyId currencyId = acctSchema.getCurrencyId();
 		return PPOrderCost.builder()
-				.repoId(record.getPP_Order_Cost_ID())
+				.id(PPOrderCostId.ofRepoId(record.getPP_Order_Cost_ID()))
+				.trxType(trxType)
 				.costSegmentAndElement(costSegmentAndElement)
 				.price(CostPrice.builder()
-						.ownCostPrice(CostAmount.of(record.getCurrentCostPrice(), acctSchema.getCurrencyId()))
-						.componentsCostPrice(CostAmount.of(record.getCurrentCostPriceLL(), acctSchema.getCurrencyId()))
+						.ownCostPrice(CostAmount.of(record.getCurrentCostPrice(), currencyId))
+						.componentsCostPrice(CostAmount.of(record.getCurrentCostPriceLL(), currencyId))
 						.build())
+				.accumulatedAmount(CostAmount.of(record.getCumulatedAmt(), currencyId))
+				.postCalculationAmount(CostAmount.of(record.getPostCalculationAmt(), currencyId))
+				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.build();
 	}
 }

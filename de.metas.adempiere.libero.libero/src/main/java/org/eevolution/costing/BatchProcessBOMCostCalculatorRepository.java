@@ -184,13 +184,19 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 
 	private BOMLine toCostingBOMLine(final I_PP_Product_BOMLine bomLineRecord)
 	{
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLineRecord.getComponentType());
 		final ProductId productId = ProductId.ofRepoId(bomLineRecord.getM_Product_ID());
+		final Percent coProductCostDistributionPercent = componentType.isCoProduct()
+				? productBOMBL.getCoProductCostDistributionPercent(bomLineRecord)
+				: null;
+
 		return BOMLine.builder()
-				.componentType(BOMComponentType.ofCode(bomLineRecord.getComponentType()))
+				.componentType(componentType)
 				.componentId(productId)
 				.qty(productBOMBL.getQtyExcludingScrap(bomLineRecord))
 				.scrapPercent(Percent.of(bomLineRecord.getScrap()))
 				.costPrice(getBOMCostPrice(productId))
+				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.build();
 	}
 

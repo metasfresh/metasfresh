@@ -183,6 +183,16 @@ public class ProductBOMBL implements IProductBOMBL
 		return getQty(bomLine, includeScrapQty);
 	}
 
+	@Override
+	public Percent getCoProductCostDistributionPercent(final I_PP_Product_BOMLine bomLine)
+	{
+		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, bomLine);
+
+		final BigDecimal qty = getQtyExcludingScrap(bomLine).getAsBigDecimal().negate();
+		return Percent.of(BigDecimal.ONE, qty, 4);
+	}
+
 	/**
 	 * Return absolute (unified) quantity value. If IsQtyPercentage then QtyBatch / 100 will be returned. Else QtyBOM will be returned.
 	 * 

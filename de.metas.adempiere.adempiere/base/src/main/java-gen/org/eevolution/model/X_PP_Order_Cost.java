@@ -15,7 +15,7 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -896876919L;
+	private static final long serialVersionUID = -502781915L;
 
     /** Standard Constructor */
     public X_PP_Order_Cost (Properties ctx, int PP_Order_Cost_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 			setC_AcctSchema_ID (0);
 			setM_CostType_ID (0);
 			setM_Product_ID (0);
+			setPostCalculationAmt (BigDecimal.ZERO); // 0
 			setPP_Order_Cost_ID (0);
 			setPP_Order_ID (0);
         } */
@@ -81,6 +82,25 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Cost Distribution Percent.
+		@param CostDistributionPercent Cost Distribution Percent	  */
+	@Override
+	public void setCostDistributionPercent (java.math.BigDecimal CostDistributionPercent)
+	{
+		set_Value (COLUMNNAME_CostDistributionPercent, CostDistributionPercent);
+	}
+
+	/** Get Cost Distribution Percent.
+		@return Cost Distribution Percent	  */
+	@Override
+	public java.math.BigDecimal getCostDistributionPercent () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CostDistributionPercent);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Betrag Kumuliert.
@@ -379,6 +399,25 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 		return ii.intValue();
 	}
 
+	/** Set Post Calculation Amount.
+		@param PostCalculationAmt Post Calculation Amount	  */
+	@Override
+	public void setPostCalculationAmt (java.math.BigDecimal PostCalculationAmt)
+	{
+		set_Value (COLUMNNAME_PostCalculationAmt, PostCalculationAmt);
+	}
+
+	/** Get Post Calculation Amount.
+		@return Post Calculation Amount	  */
+	@Override
+	public java.math.BigDecimal getPostCalculationAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PostCalculationAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Manufacturing Order Cost.
 		@param PP_Order_Cost_ID Manufacturing Order Cost	  */
 	@Override
@@ -399,6 +438,38 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * PP_Order_Cost_TrxType AD_Reference_ID=540941
+	 * Reference name: PP_Order_Cost_TrxType
+	 */
+	public static final int PP_ORDER_COST_TRXTYPE_AD_Reference_ID=540941;
+	/** MainProduct = MR */
+	public static final String PP_ORDER_COST_TRXTYPE_MainProduct = "MR";
+	/** MaterialIssue = MI */
+	public static final String PP_ORDER_COST_TRXTYPE_MaterialIssue = "MI";
+	/** ResourceUtilization = RU */
+	public static final String PP_ORDER_COST_TRXTYPE_ResourceUtilization = "RU";
+	/** ByProduct = BY */
+	public static final String PP_ORDER_COST_TRXTYPE_ByProduct = "BY";
+	/** CoProduct = CO */
+	public static final String PP_ORDER_COST_TRXTYPE_CoProduct = "CO";
+	/** Set Transaction Type.
+		@param PP_Order_Cost_TrxType Transaction Type	  */
+	@Override
+	public void setPP_Order_Cost_TrxType (java.lang.String PP_Order_Cost_TrxType)
+	{
+
+		set_Value (COLUMNNAME_PP_Order_Cost_TrxType, PP_Order_Cost_TrxType);
+	}
+
+	/** Get Transaction Type.
+		@return Transaction Type	  */
+	@Override
+	public java.lang.String getPP_Order_Cost_TrxType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_Cost_TrxType);
 	}
 
 	@Override

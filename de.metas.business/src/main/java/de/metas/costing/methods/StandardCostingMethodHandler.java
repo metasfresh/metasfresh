@@ -57,7 +57,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		currentCosts.addToCurrentQty(qty);
 		currentCosts.addCumulatedAmtAndQty(amt, qty);
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
 
 		return result;
 	}
@@ -87,7 +87,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 			currentCosts.addCumulatedAmtAndQty(amt, qty);
 		}
 
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
 
 		return result;
 	}
@@ -106,6 +106,6 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 			currentCosts.addCumulatedAmtAndQty(request.getAmt().negate(), qty.negate());
 		}
 
-		utils.saveCurrentCosts(currentCosts);
+		utils.saveCurrentCost(currentCosts);
 	}
 }

@@ -90,4 +90,6 @@ public interface IProductBOMBL extends ISingletonService
 	Quantity getQtyIncludingScrap(I_PP_Product_BOMLine bomLine);
 
 	Quantity getQtyExcludingScrap(I_PP_Product_BOMLine bomLine);
+
+	Percent getCoProductCostDistributionPercent(I_PP_Product_BOMLine bomLine);
 }

@@ -57,6 +57,7 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -405,6 +406,16 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final I_C_UOM uom = getStockingUOM(orderBOMLine);
 		final Quantity qtyRequired = Quantity.of(orderBOMLine.getQtyRequiered(), uom);
 		return adjustCoProductQty(qtyRequired);
+	}
+
+	@Override
+	public Percent getCoProductCostDistributionPercent(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
+		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, orderBOMLine);
+
+		final BigDecimal qtyRequiredPositive = adjustCoProductQty(orderBOMLine.getQtyRequiered());
+		return Percent.of(BigDecimal.ONE, qtyRequiredPositive, 4);
 	}
 
 	@Override

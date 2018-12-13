@@ -219,10 +219,25 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_C_UOM uom = getMainProductStockingUOM(ppOrder);
 		final BigDecimal qtyOrdered = ppOrder.getQtyOrdered();
-		final BigDecimal qtyDelivered = ppOrder.getQtyDelivered();
+		final BigDecimal qtyReceived = ppOrder.getQtyDelivered();
 		final BigDecimal qtyScrap = ppOrder.getQtyScrap();
-		final BigDecimal qtyToDeliver = qtyOrdered.subtract(qtyDelivered).subtract(qtyScrap);
-		return Quantity.of(qtyToDeliver, uom);
+		final BigDecimal qtyToReceive = qtyOrdered.subtract(qtyReceived).subtract(qtyScrap);
+		return Quantity.of(qtyToReceive, uom);
+	}
+
+	@Override
+	public Quantity getQtyReceived(final I_PP_Order ppOrder)
+	{
+		final I_C_UOM uom = getMainProductStockingUOM(ppOrder);
+		final BigDecimal qtyReceived = ppOrder.getQtyDelivered();
+		return Quantity.of(qtyReceived, uom);
+	}
+
+	@Override
+	public Quantity getQtyReceived(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
+		return getQtyReceived(ppOrder);
 	}
 
 	@Override
