@@ -137,7 +137,7 @@
     "react-autosuggest": "~9.3.2",
     "react-bootstrap-daterangepicker": "~3.4.1",
     "react-datetime": "^2.14.0",
-    "react-debounce-input": "~3.1.0",
+    "react-debounce-input": "~3.2.0",
     "react-deep-force-update": "^2.1.1",
     "react-dnd": "~2.5.4",
     "react-dnd-html5-backend": "~2.5.4",
