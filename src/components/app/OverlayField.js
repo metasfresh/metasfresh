@@ -1,17 +1,23 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import onClickOutside from 'react-onclickoutside';
 
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
 import BarcodeScanner from '../widget/BarcodeScanner/BarcodeScannerWidget';
 
 class OverlayField extends Component {
+  handleClickOutside = () => {
+    const { closeOverlay } = this.props;
+
+    closeOverlay();
+  };
+
   handleKeyDown = e => {
     const { handleSubmit, closeOverlay, onSelectBarcode } = this.props;
 
     switch (e.key) {
       case 'Enter':
-        document.activeElement.blur();
         handleSubmit();
         break;
       case 'Escape':
@@ -140,7 +146,7 @@ class OverlayField extends Component {
 
     return (
       <div
-        className="overlay-field js-not-unselect"
+        className="overlay-field"
         onKeyDown={e => this.handleKeyDown(e)}
         tabIndex={-1}
       >
@@ -152,6 +158,7 @@ class OverlayField extends Component {
 
 OverlayField.propTypes = {
   onChange: PropTypes.func,
+  closeOverlay: PropTypes.func,
 };
 
-export default BarcodeScanner(OverlayField);
+export default BarcodeScanner(onClickOutside(OverlayField));
