@@ -63,7 +63,7 @@ public class PPOrderCostsTest
 	private final ProductId productId3 = ProductId.ofRepoId(3);
 
 	@Test
-	public void test()
+	public void testPostCalculation_SimpleCase()
 	{
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
