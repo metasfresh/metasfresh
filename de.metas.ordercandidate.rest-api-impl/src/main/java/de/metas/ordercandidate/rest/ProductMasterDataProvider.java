@@ -2,7 +2,7 @@ package de.metas.ordercandidate.rest;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Properties;
 
@@ -15,6 +15,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Util;
 
+import de.metas.cache.CCache;
 import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
 import de.metas.ordercandidate.rest.exceptions.ProductNotFoundException;
 import de.metas.product.IProductBL;
@@ -26,6 +27,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -73,17 +75,48 @@ public class ProductMasterDataProvider
 		this.permissionService = permissionService;
 	}
 
-	public ProductId getCreateProductId(
-			@NonNull final JsonProductInfo json,
+	@Value
+	private static class CachingKey
+	{
+		OrgId orgId;
+		JsonProductInfo jsonProductInfo;
+	}
+
+	@Value
+	public static class ProductInfo
+	{
+		ProductId productId;
+		UomId uomId;
+	}
+
+	private final CCache<CachingKey, ProductInfo> productInfoCache = CCache
+			.<CachingKey, ProductInfo> builder()
+			.cacheName(this.getClass().getSimpleName() + "-productInfoCache")
+			.tableName(I_M_Product.Table_Name)
+			.build();
+
+	public ProductInfo getCreateProductInfo(
+			@NonNull final JsonProductInfo jsonProductInfo,
+			@NonNull final OrgId orgId)
+	{
+		final CachingKey key = new CachingKey(orgId, jsonProductInfo);
+		return productInfoCache
+				.getOrLoad(key, () -> getCreateProductInfo0(jsonProductInfo, orgId));
+	}
+
+	private ProductInfo getCreateProductInfo0(
+			@NonNull final JsonProductInfo jsonProductInfo,
 			@NonNull final OrgId orgId)
 	{
 		final Context context = Context.ofOrg(orgId);
-		final ProductId existingProductId = lookupProductIdOrNull(json, context);
+		final ProductId existingProductId = lookupProductIdOrNull(jsonProductInfo, context);
 
-		final IfExists ifExists = json.getSyncAdvise().getIfExists();
+		final IfExists ifExists = jsonProductInfo.getSyncAdvise().getIfExists();
 		if (existingProductId != null && !ifExists.isUpdate())
 		{
-			return existingProductId;
+			return new ProductInfo(
+					existingProductId,
+					getProductUOMId(existingProductId, jsonProductInfo.getUomCode()));
 		}
 
 		final I_M_Product productRecord;
@@ -96,12 +129,12 @@ public class ProductMasterDataProvider
 			// if the product doesn't exist and we got here, then ifNotExsits equals "create"
 			productRecord = newInstance(I_M_Product.class);
 			productRecord.setAD_Org_ID(context.getOrgId().getRepoId());
-			productRecord.setValue(json.getCode());
+			productRecord.setValue(jsonProductInfo.getCode());
 		}
 
-		productRecord.setName(json.getName());
+		productRecord.setName(jsonProductInfo.getName());
 		final String productType;
-		switch (json.getType())
+		switch (jsonProductInfo.getType())
 		{
 			case SERVICE:
 				productType = X_M_Product.PRODUCTTYPE_Service;
@@ -110,7 +143,7 @@ public class ProductMasterDataProvider
 				productType = X_M_Product.PRODUCTTYPE_Item;
 				break;
 			default:
-				Check.fail("Unexpected type={}; jsonProductInfo={}", json.getType(), json);
+				Check.fail("Unexpected type={}; jsonProductInfo={}", jsonProductInfo.getType(), jsonProductInfo);
 				productType = null;
 				break;
 		}
@@ -119,13 +152,15 @@ public class ProductMasterDataProvider
 
 		productRecord.setProductType(productType);
 
-		final UomId uomId = uomsRepo.getUomIdByX12DE355(json.getUomCode());
+		final UomId uomId = uomsRepo.getUomIdByX12DE355(jsonProductInfo.getUomCode());
 		productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
 
 		permissionService.assertCanCreateOrUpdate(productRecord);
-		save(productRecord);
+		saveRecord(productRecord);
 
-		return ProductId.ofRepoId(productRecord.getM_Product_ID());
+		return new ProductInfo(
+				ProductId.ofRepoId(productRecord.getM_Product_ID()),
+				uomId);
 	}
 
 	private ProductId lookupProductIdOrNull(
@@ -146,20 +181,20 @@ public class ProductMasterDataProvider
 		}
 		else
 		{
-			final boolean outOfTrx = IfExists.UPDATE.equals(syncAdvise.getIfExists()) || syncAdvise.getIfNotExists().isCreate();
 			final ProductQuery query = ProductQuery.builder()
 					.value(json.getCode())
 					.orgId(context.getOrgId())
+					.outOfTrx(json.getSyncAdvise().isLoadReadOnly())
 					.includeAnyOrg(true)
-					.outOfTrx(outOfTrx)
+					.outOfTrx(syncAdvise.isLoadReadOnly())
 					.build();
 			existingProductId = productsRepo.retrieveProductIdBy(query);
 		}
 		return existingProductId;
 	}
 
-	public UomId getProductUOMId(
-			@NonNull final ProductId productId,
+	private UomId getProductUOMId(
+			@Nullable final ProductId productId,
 			@Nullable final String uomCode)
 	{
 		if (!Check.isEmpty(uomCode, true))

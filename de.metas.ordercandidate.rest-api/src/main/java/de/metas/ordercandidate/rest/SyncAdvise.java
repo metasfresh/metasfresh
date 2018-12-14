@@ -37,10 +37,11 @@ import lombok.Value;
 @Value
 public class SyncAdvise
 {
-	public static SyncAdvise createDefaultAdvise()
-	{
-		return SyncAdvise.builder().build();
-	}
+	public static final SyncAdvise READ_ONLY = SyncAdvise
+			.builder()
+			.ifNotExists(IfNotExists.FAIL)
+			.ifExists(IfExists.DONT_UPDATE)
+			.build();
 
 	public enum IfNotExists
 	{
@@ -80,15 +81,9 @@ public class SyncAdvise
 
 	IfExists ifExists;
 
-	@JsonIgnore
-	public boolean isFailIfNotExists()
-	{
-		return IfNotExists.FAIL.equals(ifNotExists);
-	}
-
 	@Builder
 	@JsonCreator
-	public SyncAdvise(
+	private SyncAdvise(
 			@JsonProperty("ifNotExists") @Nullable final IfNotExists ifNotExists,
 			@JsonProperty("ifExists") @Nullable final IfExists ifExists)
 	{
@@ -96,4 +91,16 @@ public class SyncAdvise
 		this.ifExists = coalesce(ifExists, IfExists.DONT_UPDATE);
 	}
 
+	@JsonIgnore
+	public boolean isFailIfNotExists()
+	{
+		return IfNotExists.FAIL.equals(ifNotExists);
+	}
+
+	/** If {@code true} then the sync code can attempt to lookup readonlydata. Maybe this info helps with caching. */
+	@JsonIgnore
+	public boolean isLoadReadOnly()
+	{
+		return READ_ONLY.equals(this);
+	}
 }

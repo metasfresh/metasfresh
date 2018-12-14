@@ -1,8 +1,6 @@
-package de.metas.payment.esr.api.impl;
+package de.metas.payment.esr.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import lombok.NonNull;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -16,9 +14,10 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.model.I_C_Bank;
-import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -33,16 +32,16 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class ESRBL_CreateInvoiceReferenceStringTest
+public class InvoiceReferenceNosTest
 {
 
 	private ESRImportBL esrImportBL;
@@ -82,7 +81,9 @@ public class ESRBL_CreateInvoiceReferenceStringTest
 				+ checkdigit;
 
 		// invoke the method under test
-		final String generatedReferenceNo = new ESRBL().createInvoiceReferenceString(invoice, esrBankAccountForPartner);
+		final String generatedReferenceNo = InvoiceReferenceNos
+				.createFor(invoice, esrBankAccountForPartner)
+				.asString();
 
 		assertThat(expectedReferenceNo).isEqualTo(generatedReferenceNo);
 	}
@@ -111,7 +112,9 @@ public class ESRBL_CreateInvoiceReferenceStringTest
 				+ checkdigit;
 
 		// invoke the method under test
-		final String generatedReferenceNo = new ESRBL().createInvoiceReferenceString(invoice, esrBankAccountForPartner);
+		final String generatedReferenceNo = InvoiceReferenceNos
+				.createFor(invoice, esrBankAccountForPartner)
+				.asString();
 
 		assertThat(expectedReferenceNo).isEqualTo(generatedReferenceNo);
 	}
@@ -187,5 +190,4 @@ public class ESRBL_CreateInvoiceReferenceStringTest
 
 		return bpBankAccount;
 	}
-
 }

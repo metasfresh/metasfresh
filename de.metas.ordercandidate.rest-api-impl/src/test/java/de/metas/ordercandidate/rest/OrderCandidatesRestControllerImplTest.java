@@ -125,9 +125,11 @@ public class OrderCandidatesRestControllerImplTest
 				.withBPartnersSyncAdvise(ifNotExistsCreateAdvise)
 				.withProductsSyncAdvise(ifNotExistsCreateAdvise);
 
+		// invoke the method under test
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
 				.createOrderLineCandidates(bulkRequest)
 				.getBody();
+
 		final List<JsonOLCand> olCands = response.getResult();
 		assertThat(olCands).hasSize(21);
 		assertThat(olCands).allSatisfy(c -> assertThat(c.getPoReference()).isEqualTo("2009_01:001")); // this is the "invoice-ID as given by the examples file
@@ -140,6 +142,7 @@ public class OrderCandidatesRestControllerImplTest
 			final JsonOLCandCreateRequest request = bulkRequest.getRequests().get(i - 1);
 
 			assertThat(olCand.getExternalLineId()).isEqualTo("2009_01:001_EAN-2011234567890_EAN-7634567890000_" + i);
+
 			final I_M_Product productRecord = load(olCand.getProductId(), I_M_Product.class);
 			assertThat(productRecord.getValue()).isEqualTo(request.getProduct().getCode());
 			assertThat(productRecord.getC_UOM().getX12DE355()).isEqualTo(request.getProduct().getUomCode());

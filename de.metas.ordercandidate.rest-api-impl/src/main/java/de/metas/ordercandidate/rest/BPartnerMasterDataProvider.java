@@ -29,13 +29,14 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerQuery.BPartnerQueryBuilder;
+import de.metas.cache.CCache;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
-import de.metas.ordercandidate.rest.SyncAdvise.IfNotExists;
 import de.metas.ordercandidate.rest.exceptions.MissingPropertyException;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -113,13 +114,33 @@ public class BPartnerMasterDataProvider
 		return handleBPartnerInfoWithContext(jsonBPartnerInfo, context);
 	}
 
+	@Value
+	private static class CachingKey
+	{
+		OrgId orgId;
+		JsonBPartnerInfo jsonBPartnerInfo;
+	}
+
+	private final CCache<CachingKey, OLCandBPartnerInfo> olCandBPartnerInfoCache = CCache
+			.<CachingKey, OLCandBPartnerInfo> builder()
+			.cacheName(this.getClass().getSimpleName() + "-olCandBPartnerInfoCache")
+			.build();
+
 	private OLCandBPartnerInfo handleBPartnerInfoWithContext(
+			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
+			@NonNull final Context context)
+	{
+		final CachingKey key = new CachingKey(context.getOrgId(), jsonBPartnerInfo);
+		return olCandBPartnerInfoCache.getOrLoad(key, () -> handleBPartnerInfoWithContext0(jsonBPartnerInfo, context));
+	}
+
+	private OLCandBPartnerInfo handleBPartnerInfoWithContext0(
 			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
 			@NonNull final Context context)
 	{
 		final SyncAdvise.IfNotExists ifNotExists = jsonBPartnerInfo.getSyncAdvise().getIfNotExists();
 
-		final OLCandBPartnerInfo bPartnerInfo = lookupBPartnerInfoOrNull(jsonBPartnerInfo, context, ifNotExists);
+		final OLCandBPartnerInfo bPartnerInfo = lookupBPartnerInfoOrNull(jsonBPartnerInfo, context);
 		if (bPartnerInfo == null)
 		{
 			switch (ifNotExists)
@@ -155,13 +176,11 @@ public class BPartnerMasterDataProvider
 
 	private final OLCandBPartnerInfo lookupBPartnerInfoOrNull(
 			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
-			@NonNull final Context context,
-			@NonNull final IfNotExists ifNotExists)
+			@NonNull final Context context)
 	{
 		final BPartnerId bpartnerId = lookupBPartnerIdOrNull(
 				jsonBPartnerInfo,
-				context,
-				ifNotExists);
+				context);
 		if (bpartnerId == null)
 		{
 			return null;
@@ -184,8 +203,7 @@ public class BPartnerMasterDataProvider
 
 	private final BPartnerId lookupBPartnerIdOrNull(
 			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
-			@NonNull final Context context,
-			@NonNull final IfNotExists ifNotExists)
+			@NonNull final Context context)
 	{
 		final JsonBPartner json = jsonBPartnerInfo.getBpartner();
 
@@ -195,10 +213,13 @@ public class BPartnerMasterDataProvider
 			return context.getBpartnerId();
 		}
 
+		final SyncAdvise syncAdvise = jsonBPartnerInfo.getSyncAdvise();
+
 		final BPartnerQueryBuilder query = BPartnerQuery.builder()
 				.orgId(context.getOrgId())
 				.includeAnyOrg(true)
-				.failIfNotExists(ifNotExists.isFail())
+				.outOfTrx(syncAdvise.isLoadReadOnly())
+				.failIfNotExists(syncAdvise.isFailIfNotExists())
 				.externalId(json.getExternalId())
 				.bpartnerValue(json.getCode());
 

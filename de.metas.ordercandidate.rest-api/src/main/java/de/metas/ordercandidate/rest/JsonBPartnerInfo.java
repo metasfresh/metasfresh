@@ -52,7 +52,7 @@ public final class JsonBPartnerInfo
 		this.bpartner = bpartner;
 		this.location = location;
 		this.contact = contact;
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.createDefaultAdvise());
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 
 		final boolean lokupValuesAreOk = !isEmpty(bpartner.getCode(), true)
 				|| !isEmpty(bpartner.getExternalId(), true)

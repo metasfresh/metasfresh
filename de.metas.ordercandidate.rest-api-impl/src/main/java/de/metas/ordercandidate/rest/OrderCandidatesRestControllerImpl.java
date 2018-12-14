@@ -98,12 +98,20 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		bulkRequest.validate();
 
 		final MasterdataProvider masterdataProvider = masterdataProviderFactory.createMasterDataProvider();
-
-		createOrUpdateMasterdata(bulkRequest, masterdataProvider);
-
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 		final JsonOLCandCreateBulkResponse //
-		jsonOLCandCreateBulkResponse = trxManager.call(() -> creatOrdersInTrx(bulkRequest, masterdataProvider));
+		jsonOLCandCreateBulkResponse = trxManager.call(() -> {
+
+			createOrUpdateMasterdata(bulkRequest, masterdataProvider);
+
+			// the required masterdata should be there now; make sure we don't tamper with it from this point onwards
+			final JsonOLCandCreateBulkRequest bulkRequestNoMasterDataChange = bulkRequest
+					.withBPartnersSyncAdvise(SyncAdvise.READ_ONLY)
+					.withProductsSyncAdvise(SyncAdvise.READ_ONLY);
+
+			return creatOrdersInTrx(bulkRequestNoMasterDataChange, masterdataProvider);
+		});
 
 		return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
 	}
@@ -132,11 +140,13 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
 		final BPartnerMasterDataProvider bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
-
 		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
 		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
 		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
 		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
+
+		final ProductMasterDataProvider productMasterDataProvider = masterdataProvider.getProductMasterDataProvider();
+		productMasterDataProvider.getCreateProductInfo(json.getProduct(), orgId);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrdersInTrx(
@@ -190,7 +200,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final OLCandQuery query = OLCandQuery
 				.builder()
 				.inputDataSourceName(dataSourceName)
-				.externalReference(externalReference)
+				.externalHeaderId(externalReference)
 				.build();
 
 		final String fileName = file.getOriginalFilename();

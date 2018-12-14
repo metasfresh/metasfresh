@@ -34,7 +34,7 @@ import lombok.Value;
  * #L%
  */
 
-//@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+// @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class JsonProductInfo
 {
@@ -60,7 +60,6 @@ public class JsonProductInfo
 	 * The respective UOM needs to exist in metasfresh and it's ID is set as <code>M_Product.C_UOM_ID</code>.
 	 * If this is empty, and a product with the given <code>code</code> does not yet exist, then the request will fail.
 	 */
-
 	private String uomCode;
 
 	private SyncAdvise syncAdvise;
@@ -78,8 +77,7 @@ public class JsonProductInfo
 		this.name = name;
 		this.type = type;
 		this.uomCode = uomCode;
-		this.syncAdvise = coalesce(syncAdvise,SyncAdvise.createDefaultAdvise());
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
-
 
 }

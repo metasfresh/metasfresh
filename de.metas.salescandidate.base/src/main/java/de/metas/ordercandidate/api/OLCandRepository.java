@@ -174,9 +174,9 @@ public class OLCandRepository
 				.createQueryBuilder(I_C_OLCand.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (olCandQuery.getExternalReference() != null)
+		if (olCandQuery.getExternalHeaderId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_POReference, olCandQuery.getExternalReference());
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_ExternalHeaderId, olCandQuery.getExternalHeaderId());
 		}
 		if (olCandQuery.getInputDataSourceName() != null)
 		{

@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.UomId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +17,8 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
+import de.metas.ordercandidate.rest.ProductMasterDataProvider.ProductInfo;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -63,8 +62,7 @@ public class JsonConverters
 		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
 
 		final ProductMasterDataProvider productMasterDataProvider = masterdataProvider.getProductMasterDataProvider();
-		final ProductId productId = productMasterDataProvider.getCreateProductId(request.getProduct(), orgId);
-		final UomId uomId = productMasterDataProvider.getProductUOMId(productId, request.getUomCode());
+		final ProductInfo productInfo = productMasterDataProvider.getCreateProductInfo(request.getProduct(), orgId);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
@@ -97,10 +95,10 @@ public class JsonConverters
 
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
-				.productId(productId)
+				.productId(productInfo.getProductId())
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
-				.uomId(uomId)
+				.uomId(productInfo.getUomId())
 				.huPIItemProductId(request.getPackingMaterialId())
 				//
 				.pricingSystemId(pricingSystemId)

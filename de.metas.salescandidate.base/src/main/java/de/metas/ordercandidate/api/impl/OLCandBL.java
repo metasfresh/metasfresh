@@ -1,9 +1,5 @@
 package de.metas.ordercandidate.api.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -29,6 +25,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -77,6 +75,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.NonNull;
 
 public class OLCandBL implements IOLCandBL
 {
@@ -271,7 +270,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (olCandRefs.isEmpty())
 		{
-			throw new AdempiereException("Missing order line candiates for given olCandQuery")
+			throw new AdempiereException("addAttachment - Missing order line candiates for given olCandQuery")
 					.appendParametersToMessage()
 					.setParameter("olCandQuery", olCandQuery);
 		}
