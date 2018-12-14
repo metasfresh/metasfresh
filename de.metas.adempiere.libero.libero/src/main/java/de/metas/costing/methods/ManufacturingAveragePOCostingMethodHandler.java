@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
@@ -62,6 +64,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
+	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
 	private final CostingMethodHandlerUtils utils;
 
@@ -115,15 +118,35 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 
 			result = createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
 		}
+		else if (costCollectorType.isUsageVariance()
+				|| costCollectorType.isMethodChangeVariance()
+				|| costCollectorType.isRateVariance())
+		{
+			// does cost collectors are specific to standard costs,
+			// so we are ignoring them
+			result = null;
+		}
 		else
 		{
 			result = null;
 		}
 
+		//
+		orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
 		ppOrderCostsService.save(orderCosts);
+
+		//
 		utils.saveCurrentCost(currentCost);
 
 		return Optional.ofNullable(result);
+	}
+
+	private int getCostingPrecision(final CostDetailCreateRequest request)
+	{
+		final AcctSchemaId acctSchemaId = request.getAcctSchemaId();
+		return acctSchemasRepo.getById(acctSchemaId)
+				.getCosting()
+				.getCostingPrecision();
 	}
 
 	private CostDetailCreateResult createMainProductOrCoProductReceipt(
@@ -178,27 +201,15 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			currentCosts.addToCurrentQty(request.getQty());
 		}
 
-		utils.saveCurrentCost(currentCosts);
-
 		// Accumulate to order costs
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
 		orderCosts.accumulateInboundCostAmount(costSegmentAndElement, request.getAmt(), request.getQty());
-		ppOrderCostsService.save(orderCosts);
 
 		return result;
 	}
 
 	private CostDetailCreateResult createActivityControl(final CostDetailCreateRequest request, final Duration totalDuration)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
-	}
-
-	private CostDetailCreateResult createPostCalculationCostAdjustment(
-			@NonNull final CostDetailCreateRequest request,
-			@NonNull final PPOrderCosts orderCosts)
-	{
-
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}

@@ -189,7 +189,7 @@ public final class PPOrderCosts
 		}
 	}
 
-	private void updatePostCalculationAmountsForCostElement(
+	public void updatePostCalculationAmountsForCostElement(
 			final int precision,
 			final CostElementId costElementId)
 	{
