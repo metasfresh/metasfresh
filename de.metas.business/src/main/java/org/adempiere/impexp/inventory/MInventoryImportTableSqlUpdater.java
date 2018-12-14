@@ -101,6 +101,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("SET M_Locator_ID=(SELECT MAX(M_Locator_ID) FROM M_Locator l ")
 				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID) ")
 				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL ")
+				.append("AND i.M_Warehouse_ID  = l.M_Warehouse_ID")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -113,11 +114,20 @@ public class MInventoryImportTableSqlUpdater
 				.append("ORDER BY i.DateLastInventory DESC LIMIT 1 ) ") 
 				.append("WHERE 1=1  ");
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		
+		try
+		{
+			DB.commit(true, ITrx.TRXNAME_ThreadInherited);
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException(e);
+		}
 	}
 
 	private void dbCreateLocators()
 	{
-		final List<I_I_Inventory> unmatchedLocator = Services.get(IQueryBL.class).createQueryBuilder(I_I_Inventory.class, ITrx.TRXNAME_ThreadInherited)
+		final List<I_I_Inventory> unmatchedLocator = Services.get(IQueryBL.class).createQueryBuilder(I_I_Inventory.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_I_Inventory.COLUMNNAME_I_IsImported, false)
 				.addNotNull(I_I_Inventory.COLUMN_LocatorValue)
