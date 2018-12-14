@@ -61,6 +61,8 @@ public class PPOrderCostsTest
 	private final ProductId productId1 = ProductId.ofRepoId(1);
 	private final ProductId productId2 = ProductId.ofRepoId(2);
 	private final ProductId productId3 = ProductId.ofRepoId(3);
+	private final ProductId productId4 = ProductId.ofRepoId(4);
+	private final ProductId productId5 = ProductId.ofRepoId(5);
 
 	@Test
 	public void testPostCalculation_SimpleCase()
@@ -84,14 +86,27 @@ public class PPOrderCostsTest
 						.price(CostPrice.zero(currencyId))
 						.coProductCostDistributionPercent(Percent.of(20))
 						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(productId4))
+						.price(CostPrice.zero(currencyId))
+						.coProductCostDistributionPercent(Percent.of(10))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.ByProduct)
+						.costSegmentAndElement(costSegmentAndElement(productId5))
+						.price(CostPrice.zero(currencyId))
+						.build())
 				.build();
 
 		orderCosts.updatePostCalculationAmounts(costingPrecision);
 		orderCosts.toCollection().forEach(System.out::println);
 
-		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("80"));
+		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("70"));
 		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("100"));
 		this.assertThatPostCalculationAmt(orderCosts, productId3).isEqualByComparingTo(new BigDecimal("20"));
+		this.assertThatPostCalculationAmt(orderCosts, productId4).isEqualByComparingTo(new BigDecimal("10"));
+		this.assertThatPostCalculationAmt(orderCosts, productId5).isEqualByComparingTo(new BigDecimal("0"));
 	}
 
 	private CostSegmentAndElement costSegmentAndElement(@NonNull final ProductId productId)
