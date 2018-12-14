@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -72,7 +73,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("	FROM I_Inventory as inv")
 				.append("	JOIN extractLocatorDimensions(inv.locatorvalue) as d on d.locatorvalue=inv.locatorvalue")
 				.append(") AS dimensions ")
-				.append("WHERE I_IsImported<>'Y' ")
+				.append("WHERE I_IsImported<>'Y' AND dimensions.locatorvalue = i.locatorvalue ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -116,7 +117,7 @@ public class MInventoryImportTableSqlUpdater
 
 	private void dbCreateLocators()
 	{
-		final List<I_I_Inventory> unmatchedLocator = Services.get(IQueryBL.class).createQueryBuilder(I_I_Inventory.class)
+		final List<I_I_Inventory> unmatchedLocator = Services.get(IQueryBL.class).createQueryBuilder(I_I_Inventory.class, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_I_Inventory.COLUMNNAME_I_IsImported, false)
 				.addNotNull(I_I_Inventory.COLUMN_LocatorValue)
@@ -127,8 +128,11 @@ public class MInventoryImportTableSqlUpdater
 
 		unmatchedLocator.forEach(importRecord -> {
 			final I_M_Locator locator = getCreateNewMLocator(importRecord);
-			importRecord.setM_Locator(locator);
-			InterfaceWrapperHelper.save(importRecord);
+			if (locator != null)
+			{
+				importRecord.setM_Locator(locator);
+				InterfaceWrapperHelper.save(importRecord);
+			}
 		});
 	}
 
@@ -138,6 +142,10 @@ public class MInventoryImportTableSqlUpdater
 		
 		//
 		//check if exists, because might be created meanwhile
+		if (importRecord.getM_Warehouse_ID() <=0)
+		{
+			return null;
+		}
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(importRecord.getM_Warehouse_ID());
 		final LocatorId locatorId = warehousesRepo.retrieveLocatorIdByValueAndWarehouseId(importRecord.getLocatorValue(), warehouseId);
 		final I_M_Locator locator;
