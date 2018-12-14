@@ -231,17 +231,6 @@ public class MInventoryImportTableSqlUpdater
 			logger.warn("No Product = {}", no);
 		}
 
-		sql = new StringBuilder("UPDATE I_Inventory ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Partner, ' ")
-				.append("WHERE SubProducer_BPartner_ID IS NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		if (no != 0)
-		{
-			logger.warn("No Partners = {}", no);
-		}
-
 		// No QtyCount
 		sql = new StringBuilder("UPDATE I_Inventory ")
 				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No QtyInternalUse, ' ")
