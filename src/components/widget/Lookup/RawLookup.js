@@ -476,6 +476,7 @@ export class RawLookup extends Component {
                   ref={c => (this.inputSearch = c)}
                   type="text"
                   className="input-field js-input-field font-weight-semibold"
+                  autoComplete="new-password"
                   readOnly={readonly}
                   disabled={readonly && !disabled}
                   tabIndex={tabIndex}
