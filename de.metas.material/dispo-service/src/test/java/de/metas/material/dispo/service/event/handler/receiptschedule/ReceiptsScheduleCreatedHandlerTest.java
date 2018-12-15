@@ -64,7 +64,7 @@ public class ReceiptsScheduleCreatedHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();;
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryWriteService);
 		final Collection<CandidateHandler> candidateChangeHandlers = ImmutableList.of(new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService));

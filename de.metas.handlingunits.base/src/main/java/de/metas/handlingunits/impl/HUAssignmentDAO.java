@@ -41,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -490,19 +491,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	@Override
 	public List<HuAssignment> retrieveLowLevelHUAssignmentsForModel(@NonNull final Object model)
 	{
-		final List<I_M_HU_Assignment> huAssignmentRecords = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Assignment.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, getModelTableId(model))
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, getId(model))
-				.orderBy() // the ordering is crucial; we need to see the most "specific" records first
-				.addColumn(I_M_HU_Assignment.COLUMN_VHU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
-				.addColumn(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
-				.addColumn(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
-				.addColumn(I_M_HU_Assignment.COLUMN_M_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
-				.endOrderBy()
-				.create()
-				.list();
+		final List<I_M_HU_Assignment> huAssignmentRecords = retrieveOrderedHUAssignmentRecords(model);
 
 		final Set<Integer> alreadySeenHuIds = new HashSet<>();
 		final ImmutableList.Builder<HuAssignment> result = ImmutableList.builder();
@@ -544,6 +533,25 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 			}
 		}
 		return result.build();
+	}
+
+	@VisibleForTesting
+	List<I_M_HU_Assignment> retrieveOrderedHUAssignmentRecords(@NonNull final Object model)
+	{
+		final List<I_M_HU_Assignment> huAssignmentRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, getModelTableId(model))
+				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, getId(model))
+				.orderBy() // the ordering is crucial; we need to see the most "specific" records first
+			//	.addColumn(I_M_HU_Assignment.COLUMN_VHU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+			//	.addColumn(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+			//	.addColumn(I_M_HU_Assignment.COLUMN_M_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.endOrderBy()
+				.create()
+				.list();
+		return huAssignmentRecords;
 	}
 
 	private boolean addIfNotZero(Set<Integer> alreadySeenHuIds, int id)

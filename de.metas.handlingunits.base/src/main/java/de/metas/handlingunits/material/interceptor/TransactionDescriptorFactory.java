@@ -1,10 +1,12 @@
 package de.metas.handlingunits.material.interceptor;
 
+import static org.compiere.util.TimeUtil.asInstant;
+import static org.compiere.util.TimeUtil.getDay;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 
 import org.compiere.model.I_M_Transaction;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -57,20 +59,27 @@ public class TransactionDescriptorFactory
 	private Instant extractTransactionDate(@NonNull final I_M_Transaction record)
 	{
 		final Timestamp movementDate = record.getMovementDate();
-		final Timestamp movementDateDay = TimeUtil.getDay(movementDate);
+		final Timestamp movementDateDay = getDay(movementDate);
 
-		final Timestamp created = record.getCreated();
-		if (movementDateDay.equals(TimeUtil.getDay(created)))
+		final boolean movementDateContainsTime = !movementDate.equals(movementDateDay);
+		if(movementDateContainsTime)
 		{
-			return TimeUtil.asInstant(created);
+			return asInstant(movementDate);
+		}
+
+		// try to fall back to the M_Transaction's created or update date, to get the actual movement date *and time*.
+		final Timestamp created = record.getCreated();
+		if (movementDateDay.equals(getDay(created)))
+		{
+			return asInstant(created);
 		}
 
 		final Timestamp updated = record.getUpdated();
-		if (movementDateDay.equals(TimeUtil.getDay(updated)))
+		if (movementDateDay.equals(getDay(updated)))
 		{
-			return TimeUtil.asInstant(updated);
+			return asInstant(updated);
 		}
 
-		return TimeUtil.asInstant(movementDate);
+		return asInstant(movementDate);
 	}
 }

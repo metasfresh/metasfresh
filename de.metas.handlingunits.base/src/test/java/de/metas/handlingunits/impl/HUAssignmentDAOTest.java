@@ -1,5 +1,6 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,9 +13,12 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L
@@ -41,20 +45,21 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 public class HUAssignmentDAOTest
 {
 	private HUAssignmentDAO huAssignmentDAO;
+	private I_M_InOutLine inoutLine;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		huAssignmentDAO = new HUAssignmentDAO();
+
+		inoutLine = newInstance(I_M_InOutLine.class);
+		saveRecord(inoutLine);
 	}
 
 	@Test
 	public void retrieveHUAssignmentsForModel()
 	{
-		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
-		saveRecord(inoutLine);
-
 		final I_M_HU tu = newInstance(I_M_HU.class);
 		saveRecord(tu);
 
@@ -62,7 +67,7 @@ public class HUAssignmentDAOTest
 		saveRecord(vhu);
 
 		final I_M_HU_Assignment vhuAssignment = newInstance(I_M_HU_Assignment.class);
-		vhuAssignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		vhuAssignment.setAD_Table_ID(getTableId(I_M_InOutLine.class));
 		vhuAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
 		vhuAssignment.setM_TU_HU(tu);
 		vhuAssignment.setVHU(vhu);
@@ -74,11 +79,35 @@ public class HUAssignmentDAOTest
 	}
 
 	@Test
+	public void retrieveOrderedHUAssignmentRecords_2()
+	{
+		final List<I_M_HU_Assignment> huAssignments = createTopLevelAndTUAssignenments();
+		final ImmutableList<Integer> expectedAssignmentIds = CollectionUtils.extractDistinctElements(huAssignments, I_M_HU_Assignment::getM_HU_Assignment_ID);
+		final int expectedTuId = huAssignments.get(0).getM_TU_HU_ID();
+		// invoke the method under test
+		final List<I_M_HU_Assignment> result = huAssignmentDAO.retrieveOrderedHUAssignmentRecords(inoutLine);
+
+		final ImmutableList<Integer> resultAssignmentIds = CollectionUtils.extractDistinctElements(result, I_M_HU_Assignment::getM_HU_Assignment_ID);
+
+		assertThat(resultAssignmentIds).containsExactlyElementsOf(expectedAssignmentIds);
+	}
+
+	@Test
 	public void retrieveHUAssignmentsForModel_2()
 	{
-		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
-		saveRecord(inoutLine);
+		final List<I_M_HU_Assignment> huAssignments = createTopLevelAndTUAssignenments();
+		final I_M_HU tu = huAssignments.get(0).getM_TU_HU();
 
+		// invoke the method under test
+		final List<HuAssignment> results = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(inoutLine);
+
+		assertThat(results).hasSize(1);
+		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(tu.getM_HU_ID());
+	}
+
+	/** @return assignments in the order expected by {@link HUAssignmentDAO#retrieveOrderedHUAssignmentRecords(Object)}. */
+	private List<I_M_HU_Assignment> createTopLevelAndTUAssignenments()
+	{
 		final I_M_HU lu = newInstance(I_M_HU.class);
 		saveRecord(lu);
 
@@ -86,7 +115,7 @@ public class HUAssignmentDAOTest
 		saveRecord(tu);
 
 		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
-		assignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		assignment.setAD_Table_ID(getTableId(I_M_InOutLine.class));
 		assignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
 		assignment.setM_HU(lu);
 		assignment.setM_LU_HU(lu);
@@ -94,22 +123,17 @@ public class HUAssignmentDAOTest
 		saveRecord(assignment);
 
 		final I_M_HU_Assignment topLevelAssignment = newInstance(I_M_HU_Assignment.class);
-		topLevelAssignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		topLevelAssignment.setAD_Table_ID(getTableId(I_M_InOutLine.class));
 		topLevelAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
 		topLevelAssignment.setM_HU(lu);
 		saveRecord(topLevelAssignment);
 
-		final List<HuAssignment> results = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(inoutLine);
-		assertThat(results).hasSize(1);
-		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(tu.getM_HU_ID());
+		return ImmutableList.of(assignment, topLevelAssignment);
 	}
 
 	@Test
 	public void retrieveHUAssignmentsForModel_3()
 	{
-		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
-		saveRecord(inoutLine);
-
 		final I_M_HU lu = newInstance(I_M_HU.class);
 		saveRecord(lu);
 
@@ -117,7 +141,7 @@ public class HUAssignmentDAOTest
 		saveRecord(tu);
 
 		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
-		assignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		assignment.setAD_Table_ID(getTableId(I_M_InOutLine.class));
 		assignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
 		assignment.setM_HU(lu);
 		assignment.setM_LU_HU(lu);
@@ -136,9 +160,6 @@ public class HUAssignmentDAOTest
 	@Test
 	public void retrieveHUAssignmentsForModel_4()
 	{
-		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
-		saveRecord(inoutLine);
-
 		final I_M_HU lu = newInstance(I_M_HU.class);
 		saveRecord(lu);
 

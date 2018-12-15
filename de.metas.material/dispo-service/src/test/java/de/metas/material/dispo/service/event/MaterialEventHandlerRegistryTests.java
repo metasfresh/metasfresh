@@ -205,14 +205,12 @@ public class MaterialEventHandlerRegistryTests
 
 		// Whenever asked, (by DemandCandidateHandler, in this case), we say that we need more.
 		// This is required to make the DemandCandidateHandler fire a supplyRequiredEvent.
-		new Expectations(CandidateRepositoryRetrieval.class)
-		{
-			{
+		new Expectations(CandidateRepositoryRetrieval.class) // @formatter:off
+		{{
 				availableToPromiseRepository.retrieveAvailableStockQtySum((AvailableToPromiseMultiQuery)any);
 				minTimes = 0;
 				result = new BigDecimal("-10");
-			}
-		}; // @formatter:on
+		}}; // @formatter:on
 
 		materialEventListener.onEvent(shipmentScheduleEvent);
 

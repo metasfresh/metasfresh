@@ -16,9 +16,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.util.TimeUtil.asTimestamp;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -29,7 +26,6 @@ import java.util.Map;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -290,7 +286,7 @@ public class CandidateChangeHandlerTests
 		{
 			final I_MD_Candidate evenLaterCandidateWithDifferentWarehouseAfterChange = DispoTestUtils.filter(CandidateType.STOCK, t4, PRODUCT_ID, OTHER_WAREHOUSE_ID).get(0); // candidateRepository.retrieveExact(evenLaterCandidateWithDifferentWarehouse).get();
 			assertThat(evenLaterCandidateWithDifferentWarehouseAfterChange.getQty()).isEqualByComparingTo("12"); // quantity shall be unchanged, because we changed another warehouse and this one should not have been matched
-			assertThat(evenLaterCandidateWithDifferentWarehouseAfterChange.getMD_Candidate_GroupId(), not(is(earlierCandidate.getGroupId())));
+			assertThat(evenLaterCandidateWithDifferentWarehouseAfterChange.getMD_Candidate_GroupId()).isNotEqualTo(earlierCandidate.getGroupId());
 		}
 	}
 
@@ -309,7 +305,7 @@ public class CandidateChangeHandlerTests
 		stockRecord.setMD_Candidate_Type(CandidateType.STOCK.toString());
 		stockRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
 		stockRecord.setQty(materialDescriptor.getQuantity());
-		stockRecord.setDateProjected(TimeUtil.asTimestamp(dateProjected));
+		stockRecord.setDateProjected(asTimestamp(dateProjected));
 		stockRecord.setM_Product_ID(materialDescriptor.getProductId());
 		stockRecord.setStorageAttributesKey(materialDescriptor.getStorageAttributesKey().getAsString());
 		stockRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());

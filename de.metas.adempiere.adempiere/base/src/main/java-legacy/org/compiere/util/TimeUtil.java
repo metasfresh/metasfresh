@@ -68,7 +68,11 @@ public class TimeUtil
 	 *
 	 * @param time day and time
 	 * @return day with 00:00
+	 *
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	public static Timestamp getDay(final long time)
 	{
 		final long timeToUse = time > 0 ? time : SystemTime.millis();
@@ -104,8 +108,12 @@ public class TimeUtil
 	 *
 	 * @param dayTime day and time
 	 * @return day with 00:00
+	 *
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
-	static public Timestamp getDay(@Nullable final java.util.Date dayTime)
+	@Deprecated
+	static public Timestamp getDay(@Nullable final Date dayTime)
 	{
 		if (dayTime == null)
 		{
@@ -121,7 +129,11 @@ public class TimeUtil
 	 * @param month month 1..12
 	 * @param year year (if two diguts: < 50 is 2000; > 50 is 1900)
 	 * @return timestamp ** not too reliable
+	 *
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getDay(final int year, final int month, final int day)
 	{
 		final int hour = 0;
@@ -130,7 +142,12 @@ public class TimeUtil
 		return getDay(year, month, day, hour, minute, second);
 	}
 
-	static public Timestamp getDay(
+	/**
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 */
+	@Deprecated
+	public static Timestamp getDay(
 			final int year,
 			final int month,
 			final int day,
@@ -180,7 +197,10 @@ public class TimeUtil
 	 *
 	 * @param day day
 	 * @return next day with 00:00
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getNextDay(@Nullable final Timestamp day)
 	{
 		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
@@ -202,7 +222,10 @@ public class TimeUtil
 	 *
 	 * @param day day
 	 * @return next day with 00:00
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getPrevDay(@Nullable final Timestamp day)
 	{
 		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
@@ -224,7 +247,10 @@ public class TimeUtil
 	 *
 	 * @param day day
 	 * @return last day with 00:00
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getMonthLastDay(@Nullable final Timestamp day)
 	{
 		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
@@ -249,7 +275,10 @@ public class TimeUtil
 	 *
 	 * @param day may be <code>null</code>, in which case the current time is used.
 	 * @return 15'th with 00:00
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getMonthMiddleDay(@Nullable final Timestamp day)
 	{
 		final Timestamp dateToUse = day == null ? SystemTime.asDayTimestamp() : day;
@@ -276,7 +305,10 @@ public class TimeUtil
 	 * @param day day part
 	 * @param time time part
 	 * @return day + time.
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	public static Timestamp getDayTime(
 			@NonNull final Date day,
 			@NonNull final Date time)
@@ -1014,7 +1046,7 @@ public class TimeUtil
 	 * @param ts2 p2
 	 * @return max time
 	 */
-	public static <T extends java.util.Date> T max(
+	public static <T extends Date> T max(
 			@Nullable final T ts1,
 			@Nullable final T ts2)
 	{
@@ -1045,7 +1077,7 @@ public class TimeUtil
 	 * @param date2
 	 * @return minimum date or null
 	 */
-	public static <T extends java.util.Date> T min(final T date1, final T date2)
+	public static <T extends Date> T min(final T date1, final T date2)
 	{
 		if (date1 == date2)
 		{
@@ -1282,7 +1314,7 @@ public class TimeUtil
 			return false;
 		}
 
-		return value instanceof java.util.Date
+		return value instanceof Date
 				|| value instanceof Instant
 				|| value instanceof LocalDateTime
 				|| value instanceof LocalDate
