@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -113,7 +114,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, getTrxName());
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			DB.setParameters(pstmt, sqlParams);
 
 			rs = pstmt.executeQuery();
@@ -784,7 +785,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 
 		final List<I_M_MatchInv> matchInvs = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_MatchInv.class, getCtx(), getTrxName())
+				.createQueryBuilder(I_M_MatchInv.class)
 				.addInArrayOrAllFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceLineIds)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)

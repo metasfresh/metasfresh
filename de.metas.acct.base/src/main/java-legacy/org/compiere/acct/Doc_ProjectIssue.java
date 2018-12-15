@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
@@ -121,7 +122,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		Fact fact = new Fact(this, as, Fact.POST_Actual);
 		setC_Currency_ID(as.getCurrencyId());
 
-		MProject project = new MProject(getCtx(), m_issue.getC_Project_ID(), getTrxName());
+		MProject project = new MProject(getCtx(), m_issue.getC_Project_ID(), ITrx.TRXNAME_ThreadInherited);
 		String ProjectCategory = project.getProjectCategory();
 		I_M_Product product = Services.get(IProductDAO.class).getById(m_issue.getM_Product_ID());
 
@@ -189,7 +190,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, getTrxName());
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			pstmt.setInt(1, as.getCurrencyId().getRepoId());
 			pstmt.setInt(2, getAD_Client_ID());
 			pstmt.setInt(3, getAD_Org_ID());
@@ -238,7 +239,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql.toString(), getTrxName());
+			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			pstmt.setInt(1, m_issue.getS_TimeExpenseLine_ID());
 			rs = pstmt.executeQuery();
 			BigDecimal costs;

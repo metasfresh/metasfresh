@@ -249,10 +249,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final AcctSchema acctSchema1 = acctSchemas.get(0); // first account schema
 		Env.setContext(m_ctx, Env.CTXNAME_AD_Client_ID, acctSchema1.getClientId().getRepoId());
 
-		//
-		// DB Transaction
-		this.m_trxName = InterfaceWrapperHelper.getTrxName(p_po);
-
 		// DocStatus
 		{
 			final int index = p_po.get_ColumnIndex("DocStatus");
@@ -274,8 +270,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final List<AcctSchema> acctSchemas;
 	/** Properties */
 	private final Properties m_ctx;
-	/** Transaction Name */
-	private String m_trxName = null;
 	/** The Document */
 	private final PO p_po;
 	/** Document Type */
@@ -381,52 +375,32 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	public final String post(final boolean force, final boolean repost)
 	{
-		final String trxNameInitial = getTrxName();
-
 		//
-		// Lock Document (in parent transaction)
+		// Lock Document
 		try
 		{
-			lock(trxNameInitial, force, repost);
+			lock(force, repost);
 		}
 		catch (final Exception e)
 		{
 			final String errmsg = e.getLocalizedMessage();
-			log.error("Failed to lock: " + errmsg, e);
+			log.error("Failed to lock: {}", this, e);
 			return errmsg;
 		}
 
 		//
 		// Do the actual posting
 		final IMutable<PostingException> error = new Mutable<>(null);
-		final String trxNameOrPrefix;
-		final boolean manageTrx;
-		if (trxManager.isNull(trxNameInitial))
-		{
-			trxNameOrPrefix = "Post_" + get_TableName() + "_" + get_ID();
-			manageTrx = true; // create a new trx
-		}
-		else
-		{
-			trxNameOrPrefix = trxNameInitial;
-			manageTrx = false; // use existing transaction
-		}
-		trxManager.run(trxNameOrPrefix, manageTrx, new TrxRunnable2()
+		trxManager.runInThreadInheritedTrx(new TrxRunnable2()
 		{
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public void run(final String localTrxName_NOTUSED)
 			{
-				//
-				// Set local transaction name
-				setTrxName(localTrxName);
-
-				//
-				// Do the actual posting
 				post0(force, repost);
 			}
 
 			@Override
-			public boolean doCatch(final Throwable e) throws Throwable
+			public boolean doCatch(final Throwable e)
 			{
 				final PostingException postingException = newPostingException(e);
 				error.setValue(postingException);
@@ -444,13 +418,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			@Override
 			public void doFinally()
 			{
-				// restore transaction
-				setTrxName(trxNameInitial);
-
 				//
 				// Unlock (in parent transaction)
 				final PostingException postingException = error.getValue();
-				unlock(trxNameInitial, postingException);
+				unlock(postingException);
 			}
 		});
 
@@ -582,7 +553,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				continue;
 			}
 
-			fact.save(getTrxName());
+			fact.save();
 		}
 
 		//
@@ -739,35 +710,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}   // postLogic
 
 	/**
-	 * Get Trx Name and create Transaction
-	 *
-	 * @return Trx Name
-	 */
-	protected final String getTrxName()
-	{
-		return m_trxName;
-	}	// getTrxName
-
-	private final void setTrxName(final String trxName)
-	{
-		this.m_trxName = trxName;
-
-		// NOTE: we are also updating PO's trxName because there are some retrieval methods which could depend on PO's trxName.
-		// Our am is not to allow changing and saving the PO.
-		if (p_po != null)
-		{
-			p_po.set_TrxName(trxName);
-		}
-	}
-
-	/**
 	 * Lock document
 	 *
 	 * @param force force posting
 	 * @param repost true if is document re-posting; i.e. it will assume the document was not already posted
 	 * @throws AdempiereException in case of failure
 	 */
-	private final void lock(final String trxName, final boolean force, final boolean repost)
+	private final void lock(final boolean force, final boolean repost)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE ");
 		sql.append(get_TableName()).append(" SET Processing='Y' WHERE ")
@@ -782,7 +731,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sql.append(" AND Posted='N'");
 		}
 
-		final int updatedCount = DB.executeUpdateEx(sql.toString(), trxName);
+		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (updatedCount != 1)
 		{
 			final PO po = getPO();
@@ -800,7 +749,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
-	private final void unlock(final String trxName, final PostingException exception)
+	private final void unlock(final PostingException exception)
 	{
 		final String tableName = get_TableName();
 		final String keyColumnName = tableName + "_ID";
@@ -824,7 +773,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		sql.append(" WHERE ").append(keyColumnName).append("=").append(recordId);
-		final int updateCount = DB.executeUpdateEx(sql.toString(), trxName);
+		final int updateCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (updateCount != 1)
 		{
 			throw newPostingException()
@@ -2071,7 +2020,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		{
 			postingService.newPostingRequest()
 					// Post it in same context and transaction as this document is posted
-					.setContext(getCtx(), getTrxName())
+					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setClientId(getClientId())
 					.setDocumentFromModel(document) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing

@@ -11,7 +11,6 @@ import org.adempiere.acct.api.GLDistributionResultLine;
 import org.adempiere.acct.api.GLDistributionResultLine.Sign;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.acct.api.IGLDistributionDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -221,7 +220,7 @@ import lombok.NonNull;
 		final AccountDimension accountDimension = glDistributionLine.getAccountDimension();
 		final MAccount account = MAccount.get(ctx, accountDimension);
 
-		final FactLine factLine = new FactLine(ctx, baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID(), ITrx.TRXNAME_ThreadInherited);
+		final FactLine factLine = new FactLine(ctx, baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
 
 		//
 		// Set Info & Account

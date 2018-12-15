@@ -77,10 +77,7 @@ public final class Fact
 		m_doc = document;
 		this.acctSchema = acctSchema;
 		m_postingType = defaultPostingType;
-
-		// Fix [ 1884676 ] Fact not setting transaction
-		m_trxName = document.getTrxName();
-	}	// Fact
+	}
 
 	// services
 	private static final transient Logger log = LogManager.getLogger(Fact.class);
@@ -89,8 +86,6 @@ public final class Fact
 	private final Doc<?> m_doc;
 	/** Accounting Schema */
 	private final AcctSchema acctSchema;
-	/** Transaction */
-	private String m_trxName = ITrx.TRXNAME_None;
 
 	/** Posting Type */
 	private final String m_postingType;
@@ -338,7 +333,7 @@ public final class Fact
 		log.trace("Diff=" + diff);
 
 		// new line
-		FactLine line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0, get_TrxName());
+		FactLine line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0);
 		line.setDocumentInfo(m_doc, null);
 		line.setPostingType(m_postingType);
 
@@ -489,7 +484,7 @@ public final class Fact
 				if (!difference.isZeroBalance())
 				{
 					// Create Balancing Entry
-					final FactLine line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0, get_TrxName());
+					final FactLine line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0);
 					line.setDocumentInfo(m_doc, null);
 					line.setPostingType(m_postingType);
 					// Amount & Account
@@ -613,7 +608,7 @@ public final class Fact
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 		if (acctSchemaGL.isCurrencyBalancing())
 		{
-			line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0, get_TrxName());
+			line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0);
 			line.setDocumentInfo(m_doc, null);
 			line.setPostingType(m_postingType);
 			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcctId());
@@ -761,10 +756,8 @@ public final class Fact
 	 * @param trxName transaction
 	 * @return true if all lines were saved
 	 */
-	public final void save(final String trxName)
+	public final void save()
 	{
-		m_trxName = trxName;
-
 		factTrxLinesStrategy
 				.createFactTrxLines(m_lines)
 				.forEach(this::save);
@@ -772,18 +765,16 @@ public final class Fact
 
 	private void save(final FactTrxLines factTrxLines)
 	{
-		final String trxName = m_trxName;
-
 		//
 		// Case: 1 debit line, one or more credit lines
 		if (factTrxLines.getType() == FactTrxLinesType.Debit)
 		{
 			final FactLine drLine = factTrxLines.getDebitLine();
-			InterfaceWrapperHelper.save(drLine, trxName);
+			InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
 
 			factTrxLines.forEachCreditLine(crLine -> {
 				crLine.setCounterpart_Fact_Acct_ID(drLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(crLine, trxName);
+				InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
 			});
 
 		}
@@ -792,11 +783,11 @@ public final class Fact
 		else if (factTrxLines.getType() == FactTrxLinesType.Credit)
 		{
 			final FactLine crLine = factTrxLines.getCreditLine();
-			InterfaceWrapperHelper.save(crLine, trxName);
+			InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
 
 			factTrxLines.forEachDebitLine(drLine -> {
 				drLine.setCounterpart_Fact_Acct_ID(crLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(drLine, trxName);
+				InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
 			});
 		}
 		//
@@ -812,18 +803,8 @@ public final class Fact
 
 		//
 		// also save the zero lines, if they are here
-		factTrxLines.forEachZeroLine(zeroLine -> InterfaceWrapperHelper.save(zeroLine, trxName));
+		factTrxLines.forEachZeroLine(zeroLine -> InterfaceWrapperHelper.save(zeroLine, ITrx.TRXNAME_ThreadInherited));
 	}
-
-	/**
-	 * Get Transaction
-	 *
-	 * @return trx
-	 */
-	public final String get_TrxName()
-	{
-		return m_trxName;
-	}	// getTrxName
 
 	public void forEach(final Consumer<FactLine> consumer)
 	{
@@ -995,8 +976,7 @@ public final class Fact
 			final FactLine line = new FactLine(doc.getCtx(),
 					doc.get_Table_ID(), // AD_Table_ID
 					doc.get_ID(), // Record_ID
-					docLine == null ? 0 : docLine.get_ID(), // Line_ID
-					getTrxName());
+					docLine == null ? 0 : docLine.get_ID()); // Line_ID
 
 			// Set Document, Line, Sub Line
 			line.setDocumentInfo(doc, docLine);
@@ -1167,11 +1147,6 @@ public final class Fact
 		private final String getPostingType()
 		{
 			return fact.getPostingType();
-		}
-
-		private final String getTrxName()
-		{
-			return fact.get_TrxName();
 		}
 
 		public FactLineBuilder setQty(BigDecimal qty)

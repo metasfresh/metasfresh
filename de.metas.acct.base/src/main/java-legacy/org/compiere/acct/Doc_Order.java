@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -173,7 +174,7 @@ public class Doc_Order extends Doc<DocLine_Order>
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, getTrxName());
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			DB.setParameters(pstmt, sqlParams);
 
 			rs = pstmt.executeQuery();

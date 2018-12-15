@@ -418,7 +418,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final List<I_M_MatchInv> matchInvs = queryBL
-				.createQueryBuilder(I_M_MatchInv.class, getCtx(), getTrxName())
+				.createQueryBuilder(I_M_MatchInv.class)
 				.addInArrayOrAllFilter(I_M_MatchInv.COLUMN_M_InOutLine_ID, inoutLineIds)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)

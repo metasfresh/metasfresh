@@ -19,6 +19,7 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BankStatementLine;
@@ -115,7 +116,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		{
 			return null;
 		}
-		InterfaceWrapperHelper.setTrxName(_payment, getTrxName());
+		InterfaceWrapperHelper.setTrxName(_payment, ITrx.TRXNAME_ThreadInherited);
 		return _payment;
 	}
 

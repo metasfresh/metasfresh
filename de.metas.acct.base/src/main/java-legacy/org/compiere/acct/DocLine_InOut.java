@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
@@ -70,8 +71,9 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		final OrderLineId orderLineId = getOrderLineId();
 		if (orderLineId != null)
 		{
-			final String sql = "SELECT PP_Cost_Collector_ID  FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
-			return DB.getSQLValueEx(getTrxName(), sql, new Object[] { orderLineId });
+			final String sql = "SELECT " + I_C_OrderLine.COLUMNNAME_PP_Cost_Collector_ID
+					+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
+			return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, new Object[] { orderLineId });
 		}
 
 		return 0;

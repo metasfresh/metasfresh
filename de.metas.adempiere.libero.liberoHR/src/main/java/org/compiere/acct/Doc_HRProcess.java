@@ -190,7 +190,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		}
 		final String sqlAccount = "SELECT " + field + " FROM HR_Concept_Acct"
 				+ " WHERE HR_Concept_ID=? AND C_AcctSchema_ID=?";
-		int Account_ID = DB.getSQLValueEx(getTrxName(), sqlAccount, HR_Concept_ID, acctSchemaId);
+		int Account_ID = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlAccount, HR_Concept_ID, acctSchemaId);
 		return Account_ID;
 	}
 

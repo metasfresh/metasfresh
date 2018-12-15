@@ -144,11 +144,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return m_doc.getCtx();
 	}
 
-	protected final String getTrxName()
-	{
-		return m_doc.getTrxName();
-	}
-
 	protected final ClientId getClientId()
 	{
 		return m_doc.getClientId();
