@@ -38,8 +38,11 @@ Here come the actual release notes:
 # Fixes
 * metasfresh
   * [#4811](https://github.com/metasfresh/metasfresh/issues/4811) Price using BOM Line's attribute is not calculated correctly
+    * Fixes the new BOM Component Attribute Pricec alculation.
   * [#4819](https://github.com/metasfresh/metasfresh/issues/4819) Payment allocation posting error for currency gain/loss and discount/writeoff case
+    * Bugfix for the posting of Payment Allocation cornercase with currency gain/ loss involved.
   * [#4821](https://github.com/metasfresh/metasfresh/issues/4821) forum-datenaustausch.ch export XML validation errors
+    * Fixes the forum-datenaustuasch.ch validation errors.
 
 * metasfresh-webui-frontend
   * [#2064](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2064) Warning: Failed prop type: Invalid prop `logged` of type `string` supplied to `Login`, expected `boolean`
