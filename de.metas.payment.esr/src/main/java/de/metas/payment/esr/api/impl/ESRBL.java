@@ -17,7 +17,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 /*
  * #%L
@@ -59,6 +58,7 @@ import de.metas.payment.esr.document.refid.spi.impl.InvoiceReferenceNoGenerator;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public class ESRBL implements IESRBL
@@ -168,7 +168,7 @@ public class ESRBL implements IESRBL
 				.multiply(Env.ONEHUNDRED)
 				.setScale(0, RoundingMode.HALF_UP)
 				.toString();
-		amountStr = Util.lpadZero(amountStr, 10, "Open amount");
+		amountStr = StringUtils.lpadZero(amountStr, 10, "Open amount");
 
 		renderedCodeStr.append(amountStr);
 

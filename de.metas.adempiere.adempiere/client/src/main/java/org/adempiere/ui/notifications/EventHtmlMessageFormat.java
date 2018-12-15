@@ -2,11 +2,11 @@ package org.adempiere.ui.notifications;
 
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.text.MapFormat;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.util.ADHyperlinkBuilder;
 import de.metas.event.Event;
 import de.metas.event.EventMessageFormatTemplate;
+import de.metas.util.StringUtils;
 
 /**
  * Extension of {@link MapFormat} which produces HTML text.
@@ -49,6 +49,6 @@ final class EventHtmlMessageFormat extends EventMessageFormatTemplate
 			return "";
 		}
 
-		return Util.maskHTML(text);
+		return StringUtils.maskHTML(text);
 	}
 }

@@ -66,22 +66,22 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 import org.jdesktop.swingx.JXTaskPane;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.util.StringUtils;
 
 /**
  * Search Product and return selection
- * 
+ *
  * @author Jorg Janke
  * @version $Id: InfoProduct.java,v 1.4 2006/07/30 00:51:27 jjanke Exp $
- * 
+ *
  * @author Bogdan Ioan, SC ARHIPAC SERVICE SRL <li>FR [ 2012362 ] Info Product: Add Product Category
- * 
+ *
  * @deprecated not used anymore but de.metas.adempiere.gui.search.InfoProduct is used instead
  */
 @Deprecated
@@ -89,7 +89,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		ChangeListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2674502713710863413L;
 
@@ -101,7 +101,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param frame
 	 *            frame
 	 * @param modal
@@ -540,7 +540,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Dynamic Init
-	 * 
+	 *
 	 * @param value
 	 *            value
 	 * @param M_Warehouse_ID
@@ -576,7 +576,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		// dynamic Where Clause
 		if (p_whereClause != null && p_whereClause.length() > 0)
 			where.append(" AND ") // replace fully qualified name with alias
-					.append(Util.replace(p_whereClause, "M_Product.", "p."));
+					.append(StringUtils.replace(p_whereClause, "M_Product.", "p."));
 		//
 		prepareTable(getProductLayout(), s_productFrom, where.toString(),
 				"QtyAvailable DESC, Margin DESC");
@@ -589,7 +589,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Fill Picks with values
-	 * 
+	 *
 	 * @param M_PriceList_ID
 	 *            price list
 	 */
@@ -676,7 +676,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Set Warehouse
-	 * 
+	 *
 	 * @param M_Warehouse_ID
 	 *            warehouse
 	 */
@@ -695,7 +695,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Set PriceList
-	 * 
+	 *
 	 * @param M_PriceList_Version_ID
 	 *            price list
 	 */
@@ -716,7 +716,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Find Price List Version and update context
-	 * 
+	 *
 	 * @param M_PriceList_ID
 	 *            price list
 	 * @return M_PriceList_Version_ID price list version
@@ -724,7 +724,7 @@ public final class InfoProduct extends Info implements ActionListener,
 	private int findPLV(int M_PriceList_ID)
 	{
 		final int p_WindowNo = getWindowNo();
-		
+
 		Timestamp priceDate = null;
 		// Sales Order Date
 		String dateStr = Env.getContext(Env.getCtx(), p_WindowNo, "DateOrdered");
@@ -780,7 +780,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**************************************************************************
 	 * Construct SQL Where Clause and define parameters (setParameters needs to set parameters) Includes first AND
-	 * 
+	 *
 	 * @return SQL WHERE clause
 	 */
 	@Override
@@ -839,7 +839,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Set Parameters for Query (as defined in getSQLWhere)
-	 * 
+	 *
 	 * @param pstmt
 	 *            pstmt
 	 * @param forCount
@@ -944,7 +944,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**************************************************************************
 	 * Action Listner
-	 * 
+	 *
 	 * @param e
 	 *            event
 	 */
@@ -1075,7 +1075,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Has History
-	 * 
+	 *
 	 * @return true (has history)
 	 */
 	@Override
@@ -1105,7 +1105,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Has Zoom
-	 * 
+	 *
 	 * @return (has zoom)
 	 */
 	@Override
@@ -1125,7 +1125,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Has Customize
-	 * 
+	 *
 	 * @return false (no customize)
 	 */
 	@Override
@@ -1171,7 +1171,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Get Product Layout
-	 * 
+	 *
 	 * @return array of Column_Info
 	 */
 	protected Info_Column[] getProductLayout()
@@ -1265,7 +1265,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * System has Unconfirmed records
-	 * 
+	 *
 	 * @return true if unconfirmed
 	 */
 	private boolean isUnconfirmed()
@@ -1285,7 +1285,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Tab Changed
-	 * 
+	 *
 	 * @param e
 	 *            event
 	 */

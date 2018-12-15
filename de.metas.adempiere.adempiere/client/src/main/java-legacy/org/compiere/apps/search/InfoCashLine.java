@@ -38,23 +38,23 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
+import de.metas.util.StringUtils;
 
 /**
  *  Info Payment
  *
  *  @author Jorg Janke
  *  @version  $Id: InfoCashLine.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			<li>FR [ 1976044 ] Info Cash Line: search by Charge
  */
 public class InfoCashLine extends Info
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3315036454469996930L;
 
@@ -163,7 +163,7 @@ public class InfoCashLine extends Info
 	private void statInit() throws Exception
 	{
 		final int p_WindowNo = getWindowNo();
-		
+
 		lName.setLabelFor(fName);
 		fName.setBackground(AdempierePLAF.getInfoBackground());
 		fName.addActionListener(this);
@@ -238,7 +238,7 @@ public class InfoCashLine extends Info
 		//  prepare table
 		StringBuffer where = new StringBuffer("cl.IsActive='Y'");
 		if (p_whereClause.length() > 0)
-			where.append(" AND ").append(Util.replace(p_whereClause, "C_CashLine.", "cl."));
+			where.append(" AND ").append(StringUtils.replace(p_whereClause, "C_CashLine.", "cl."));
 		prepareTable (s_cashLayout,
 			"C_CashLine cl INNER JOIN C_Cash c ON (cl.C_Cash_ID=c.C_Cash_ID)",
 			where.toString(),
@@ -247,7 +247,7 @@ public class InfoCashLine extends Info
 		return true;
 	}	//	initInfo
 
-	
+
 	/**************************************************************************
 	 *	Construct SQL Where Clause and define parameters
 	 *  (setParameters needs to set parameters)

@@ -6,7 +6,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -24,6 +23,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 {
@@ -42,7 +42,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 
 	/** HU */
 	private I_M_HU _hu;
-	
+
 	public HUDisplayNameBuilder(final I_M_HU hu)
 	{
 		// NOTE: for convenience, we are accepting null HU,
@@ -229,7 +229,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		return included_HU_PI.getName();
 	}
 
-	// NOTE: this method can be overridden by extending classes in order to optimize how the HUs are counted. 
+	// NOTE: this method can be overridden by extending classes in order to optimize how the HUs are counted.
 	@Override
 	public int getIncludedHUsCount()
 	{
@@ -240,7 +240,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		// and also because in case of aggregated HUs, we need special handling
 
 		final IncludedHUsCounter includedHUsCounter = new IncludedHUsCounter(hu, false); // countVHUs=false
-		
+
 		final HUIterator huIterator = new HUIterator();
 		huIterator.setListener(includedHUsCounter.toHUIteratorListener());
 		huIterator.setEnableStorageIteration(false);
@@ -251,7 +251,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 
 	protected String escape(final String string)
 	{
-		return Util.maskHTML(string);
+		return StringUtils.maskHTML(string);
 	}
 
 	@Override
@@ -263,7 +263,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 
 	/**
 	 * Counts included HUs (abstract class).
-	 * 
+	 *
 	 * Extending classes shall implement the abstract methods from here, which are some basic operators on <code>HUHolderType</code>.
 	 *
 	 * @param <HUHolderType> class which contains the HU
@@ -288,7 +288,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 			{
 				return IHUIteratorListener.Result.CONTINUE;
 			}
-			
+
 			if (isRootHUKey(currentHUObj))
 			{
 				if (!isAggregatedHU(currentHUObj))

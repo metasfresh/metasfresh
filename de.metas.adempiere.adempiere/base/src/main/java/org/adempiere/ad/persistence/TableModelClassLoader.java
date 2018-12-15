@@ -32,7 +32,6 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -42,6 +41,7 @@ import com.google.common.cache.LoadingCache;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  * Class responsible for loading model classes by given Table Name.
@@ -211,7 +211,7 @@ public class TableModelClassLoader
 		final String modelpackage = getModelPackageForTableName(tableName);
 		if (modelpackage != null)
 		{
-			Class<?> clazz = loadModelClassForClassname(modelpackage + ".M" + Util.replace(tableName, "_", ""));
+			Class<?> clazz = loadModelClassForClassname(modelpackage + ".M" + StringUtils.replace(tableName, "_", ""));
 			if (clazz != null)
 			{
 				return clazz;
@@ -237,7 +237,7 @@ public class TableModelClassLoader
 			 */
 		}
 		// Remove underlines
-		className = Util.replace(className, "_", "");
+		className = StringUtils.replace(className, "_", "");
 
 		// Search packages
 		for (int i = 0; i < s_packages.length; i++)

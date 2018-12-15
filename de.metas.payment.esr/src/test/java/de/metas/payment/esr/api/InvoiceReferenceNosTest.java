@@ -1,5 +1,6 @@
 package de.metas.payment.esr.api;
 
+import static de.metas.util.StringUtils.lpadZero;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,18 +33,17 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class InvoiceReferenceNosTest
 {
-
 	private ESRImportBL esrImportBL;
 
 	@Before
@@ -72,13 +72,14 @@ public class InvoiceReferenceNosTest
 
 		final I_C_Invoice invoice = createInvoice(org, invoicePartner, documentNo, invoiceDocType);
 
-		final int checkdigit = esrImportBL.calculateESRCheckDigit("12345600010000123400001234");
-
-		final String expectedReferenceNo = "1234560" // first 7 digits are the accountNo, rpad 0
+		final String referenceNo = "1234560" // first 7 digits are the accountNo, rpad 0
 				+ "001" // next 3 digits are org value, lpad0
 				+ "00001234" // the next 8 digits are the partner value, lpad 0
-				+ "00001234" // the next 8 digits are the document number, lpad 0
-				+ checkdigit;
+				+ lpadZero(Integer.toString(invoice.getC_Invoice_ID()), 8, "") // the next 8 digits are the document number, lpad 0
+		;
+
+		final int checkdigit = esrImportBL.calculateESRCheckDigit("referenceNo");
+		final String expectedReferenceNo = referenceNo + checkdigit;
 
 		// invoke the method under test
 		final String generatedReferenceNo = InvoiceReferenceNos
@@ -103,13 +104,13 @@ public class InvoiceReferenceNosTest
 
 		final I_C_Invoice invoice = createInvoice(org, invoicePartner, documentNo, invoiceDocType);
 
-		final int checkdigit = esrImportBL.calculateESRCheckDigit("12345670010000123400001234");
-
-		final String expectedReferenceNo = "1234567" // first 7 digits are the accountNo, rpad 0
+		final String referenceNo = "1234567" // first 7 digits are the accountNo, rpad 0
 				+ "001" // next 3 digits are org value, lpad0
 				+ "00001234" // the next 8 digits are the partner value, lpad 0
-				+ "00001234" // the next 8 digits are the document number, lpad 0
-				+ checkdigit;
+				+ lpadZero(Integer.toString(invoice.getC_Invoice_ID()), 8, ""); // the next 8 digits are the invoice-ID, lpad 0
+
+		final int checkdigit = esrImportBL.calculateESRCheckDigit(referenceNo);
+		final String expectedReferenceNo = referenceNo + checkdigit;
 
 		// invoke the method under test
 		final String generatedReferenceNo = InvoiceReferenceNos

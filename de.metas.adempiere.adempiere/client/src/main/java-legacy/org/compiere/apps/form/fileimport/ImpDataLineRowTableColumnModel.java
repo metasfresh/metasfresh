@@ -5,17 +5,17 @@ import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormatRow;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 class ImpDataLineRowTableColumnModel extends TableColumnModel
 {
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	
+
 	private final ImpFormatRow impFormatRow;
 	private final int impFormatRowIdx;
 
@@ -35,7 +35,7 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 		// Name
 		{
 			final String name = impFormatRow.getName();
-			displayName.append("<b>").append(Util.maskHTML(name)).append("</b>");
+			displayName.append("<b>").append(StringUtils.maskHTML(name)).append("</b>");
 		}
 
 		// Data format
@@ -44,7 +44,7 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 			final String dataFormat = impFormatRow.getDataFormat();
 			if (!Check.isEmpty(dataFormat))
 			{
-				displayName.append("<br>").append(Util.maskHTML(dataFormat));
+				displayName.append("<br>").append(StringUtils.maskHTML(dataFormat));
 			}
 		}
 
@@ -53,18 +53,18 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 		{
 			final String decimalPointName = msgBL.translate(Env.getCtx(), I_AD_ImpFormat_Row.COLUMNNAME_DecimalPoint);
 			final String decimalPoint = impFormatRow.getDecimalPoint();
-			displayName.append("<br>").append(Util.maskHTML(decimalPointName)).append(": ").append(Util.maskHTML(decimalPoint));
+			displayName.append("<br>").append(StringUtils.maskHTML(decimalPointName)).append(": ").append(StringUtils.maskHTML(decimalPoint));
 		}
-		
+
 		// Divide by 100
 		if (impFormatRow.isNumber() && impFormatRow.isDivideBy100())
 		{
 			final String divideBy100 = msgBL.translate(Env.getCtx(), I_AD_ImpFormat_Row.COLUMNNAME_DivideBy100);
-			displayName.append("<br>").append(Util.maskHTML(divideBy100));
+			displayName.append("<br>").append(StringUtils.maskHTML(divideBy100));
 		}
-		
+
 		displayName.append("</html>");
-		
+
 		return displayName.toString();
 	}
 

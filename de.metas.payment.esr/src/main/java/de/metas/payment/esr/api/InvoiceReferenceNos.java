@@ -3,7 +3,6 @@ package de.metas.payment.esr.api;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -61,18 +60,18 @@ public class InvoiceReferenceNos
 	{
 		final IBPBankAccountBL bpBankAccountBL = Services.get(IBPBankAccountBL.class);
 
-		final String bankAccount = Util.rpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccountRecord), 7, "BankAccountNo");
+		final String bankAccount = StringUtils.rpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccountRecord), 7, "BankAccountNo");
 
 		final I_AD_Org orgRecord = invoiceRecord.getAD_Org();
-		final String org = Util.lpadZero(StringUtils.trunc(orgRecord.getValue(), 3, TruncateAt.STRING_START), 3, "organization");
+		final String org = StringUtils.lpadZero(StringUtils.trunc(orgRecord.getValue(), 3, TruncateAt.STRING_START), 3, "organization");
 
 		final I_C_BPartner bPartnerRecord = invoiceRecord.getC_BPartner();
 		final String bpartnerId = Integer.toString(bPartnerRecord.getC_BPartner_ID()); // we can only use the digits
-		final String bPartner = Util.lpadZero(StringUtils.trunc(bpartnerId, 8, TruncateAt.STRING_START), 8, "BusinessPartner");
+		final String bPartner = StringUtils.lpadZero(StringUtils.trunc(bpartnerId, 8, TruncateAt.STRING_START), 8, "BusinessPartner");
 
 		// note: we take the invoice-ID because the documentNo might contain non-digit characters
 		final String invoicedId = Integer.toString(invoiceRecord.getC_Invoice_ID());
-		final String invoice = Util.lpadZero(StringUtils.trunc(invoicedId, 8, TruncateAt.STRING_START), 8, "C_Invoice_ID");
+		final String invoice = StringUtils.lpadZero(StringUtils.trunc(invoicedId, 8, TruncateAt.STRING_START), 8, "C_Invoice_ID");
 
 		final int checkDigit = computeCheckDigit(bankAccount, org, bPartner, invoice);
 
