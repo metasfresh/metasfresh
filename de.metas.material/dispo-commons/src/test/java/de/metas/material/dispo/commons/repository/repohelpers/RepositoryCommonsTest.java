@@ -14,13 +14,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
@@ -54,11 +55,23 @@ public class RepositoryCommonsTest
 	@Test
 	public void mkQueryBuilder_with_date()
 	{
-		performDateFilterTest(DateOperator.AT, Operator.EQUAL);
-		performDateFilterTest(DateOperator.AFTER, Operator.GREATER);
-		performDateFilterTest(DateOperator.AT_OR_AFTER, Operator.GREATER_OR_EQUAL);
-		performDateFilterTest(DateOperator.BEFORE_OR_AT, Operator.LESS_OR_EQUAL);
-		performDateFilterTest(DateOperator.BEFORE, Operator.LESS);
+		performDateFilterTest_rangeEnd(
+				DateAndSeqNo.builder().date(NOW).operator(DateAndSeqNo.Operator.EXCLUSIVE).build(),
+				Operator.LESS);
+		performDateFilterTest_rangeEnd(
+				DateAndSeqNo.builder().date(NOW).operator(DateAndSeqNo.Operator.INCLUSIVE).build(),
+				Operator.LESS_OR_EQUAL);
+
+		performDateFilterTest_rangeStart(
+				DateAndSeqNo.builder().date(NOW).operator(DateAndSeqNo.Operator.EXCLUSIVE).build(),
+				Operator.GREATER);
+		performDateFilterTest_rangeStart(
+				DateAndSeqNo.builder().date(NOW).operator(DateAndSeqNo.Operator.INCLUSIVE).build(),
+				Operator.GREATER_OR_EQUAL);
+
+		performDateFilterTest_atTime(
+				DateAndSeqNo.builder().date(NOW).operator(null).build(),
+				Operator.EQUAL);
 	}
 
 	@Test
@@ -68,8 +81,8 @@ public class RepositoryCommonsTest
 				.productId(PRODUCT_ID)
 				.customerId(BPARTNER_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.dateOperator(DateOperator.AT)
-				.date(NOW).build();
+				.atTime(DateAndSeqNo.atTimeNoSeqNo(NOW))
+				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
@@ -80,7 +93,7 @@ public class RepositoryCommonsTest
 
 		assertThat(compositeFilter).hasActiveRecordQueryFilter();
 		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, PRODUCT_ID);
-		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.EQUAL, NOW);
+		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.EQUAL, TimeUtil.asTimestamp(NOW));
 	}
 
 	@Test
@@ -124,8 +137,8 @@ public class RepositoryCommonsTest
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.dateOperator(DateOperator.AT)
-				.date(NOW).build();
+				.atTime(DateAndSeqNo.atTimeNoSeqNo(NOW))
+				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
@@ -137,7 +150,7 @@ public class RepositoryCommonsTest
 
 		assertThat(compositeFilter).hasActiveRecordQueryFilter();
 		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, PRODUCT_ID);
-		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.EQUAL, NOW);
+		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.EQUAL, TimeUtil.asTimestamp(NOW));
 
 		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, 30);
 	}
@@ -182,14 +195,46 @@ public class RepositoryCommonsTest
 		return materialDescriptorQuery;
 	}
 
-	private static void performDateFilterTest(
-			@NonNull final DateOperator dateOperator,
+	private static void performDateFilterTest_rangeEnd(
+			@NonNull final DateAndSeqNo timeRangeEnd,
 			@NonNull final Operator queryOperator)
 	{
-		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder().date(NOW)
-				.dateOperator(dateOperator)
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
+				.builder()
+				.timeRangeEnd(timeRangeEnd)
 				.build();
 
+		perFormDateFilterTest(materialDescriptorQuery, queryOperator);
+	}
+
+	private static void performDateFilterTest_rangeStart(
+			@NonNull final DateAndSeqNo timeRangeStart,
+			@NonNull final Operator queryOperator)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
+				.builder()
+				.timeRangeStart(timeRangeStart)
+				.build();
+
+		perFormDateFilterTest(materialDescriptorQuery, queryOperator);
+	}
+
+	private static void performDateFilterTest_atTime(
+			@NonNull final DateAndSeqNo atTime,
+			@NonNull final Operator queryOperator)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
+				.builder()
+				.atTime(atTime)
+				.build();
+
+		perFormDateFilterTest(materialDescriptorQuery, queryOperator);
+	}
+
+	private static void perFormDateFilterTest(
+			@NonNull final MaterialDescriptorQuery materialDescriptorQuery,
+			@NonNull final Operator expectedQueryOperator)
+	{
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.build();
@@ -200,6 +245,6 @@ public class RepositoryCommonsTest
 		assertThat(filters).hasSize(2);
 
 		assertThat(compositeFilter).hasActiveRecordQueryFilter();
-		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, queryOperator, NOW);
+		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, expectedQueryOperator, TimeUtil.asTimestamp(NOW));
 	}
 }

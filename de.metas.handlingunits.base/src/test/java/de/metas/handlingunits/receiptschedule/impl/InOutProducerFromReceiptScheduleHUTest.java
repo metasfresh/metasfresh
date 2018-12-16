@@ -1,5 +1,7 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
+import static org.compiere.util.TimeUtil.asDate;
+import static org.compiere.util.TimeUtil.getDay;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -37,7 +39,6 @@ import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -378,8 +379,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	{
 		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 
-		final Date lotNumberDate1 = TimeUtil.getDay(2016, 01, 22);
-		final Date lotNumberDate2 = TimeUtil.getDay(2016, 01, 23);
+		final Date lotNumberDate1 = asDate(getDay(2016, 01, 22));
+		final Date lotNumberDate2 = asDate(getDay(2016, 01, 23));
 
 		//
 		// Set attributes:
@@ -388,12 +389,12 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 			{
 				final I_M_HU paloxe = paloxes.get(i);
 				final Date lotNumberDate = i <= 4 ? lotNumberDate1 : lotNumberDate2;
-				final IAttributeStorage as = attributeStorageFactory.getAttributeStorage(paloxe);
-				as.setValue(attr_LotNumberDate, lotNumberDate);
-				as.saveChangesIfNeeded();
+				final IAttributeStorage atributeStorage = attributeStorageFactory.getAttributeStorage(paloxe);
+				atributeStorage.setValue(attr_LotNumberDate, lotNumberDate);
+				atributeStorage.saveChangesIfNeeded();
 				HUAttributeExpectation.newExpectation()
 						.attribute(attr_LotNumberDate).valueDate(lotNumberDate)
-						.assertExpected("precondition: AS for paloxe", as);
+						.assertExpected("precondition: AS for paloxe", atributeStorage);
 			}
 			// FIXME: workaround to make sure our changes are pushed back to database
 			helper.commitThreadInheritedTrx(huContext);

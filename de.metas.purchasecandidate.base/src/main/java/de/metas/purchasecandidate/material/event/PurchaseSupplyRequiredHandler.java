@@ -13,6 +13,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -137,7 +138,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		mrpContext.setM_Product(product);
 		mrpContext.setM_AttributeSetInstance_ID(materialDescr.getAttributeSetInstanceId());
 		mrpContext.setM_Warehouse(warehouse);
-		mrpContext.setDate(materialDescr.getDate());
+		mrpContext.setDate(TimeUtil.asDate(materialDescr.getDate()));
 		mrpContext.setCtx(Env.getCtx());
 		mrpContext.setTrxName(ITrx.TRXNAME_ThreadInherited);
 

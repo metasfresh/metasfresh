@@ -1,7 +1,7 @@
 package de.metas.material.event.pporder;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,8 +45,8 @@ public class PPOrderChangedEvent implements MaterialEvent
 
 	private final EventDescriptor eventDescriptor;
 
-	Date newDatePromised;
-	Date oldDatePromised;
+	Instant newDatePromised;
+	Instant oldDatePromised;
 
 	ProductDescriptor productDescriptor;
 
@@ -69,8 +69,8 @@ public class PPOrderChangedEvent implements MaterialEvent
 	@JsonCreator
 	private PPOrderChangedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("newDatePromised") @NonNull final Date newDatePromised,
-			@JsonProperty("oldDatePromised") @NonNull final Date oldDatePromised,
+			@JsonProperty("newDatePromised") @NonNull final Instant newDatePromised,
+			@JsonProperty("oldDatePromised") @NonNull final Instant oldDatePromised,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("oldQtyRequired") @NonNull final BigDecimal oldQtyRequired,
@@ -108,7 +108,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 
 		ProductDescriptor productDescriptor;
 
-		Date issueOrReceiveDate;
+		Instant issueOrReceiveDate;
 
 		BigDecimal oldQtyRequired;
 
@@ -132,7 +132,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 				@JsonProperty("oldPPOrderLineId") final int oldPPOrderLineId,
 				@JsonProperty("newPPOrderLineId") final int newPPOrderLineId,
 				@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-				@JsonProperty("issueOrReceiveDate") @NonNull final Date issueOrReceiveDate,
+				@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
 				@JsonProperty("oldQtyRequired") @NonNull final BigDecimal oldQtyRequired,
 				@JsonProperty("newQtyRequired") @NonNull final BigDecimal newQtyRequired,
 				@JsonProperty("oldQtyDelivered") @NonNull final BigDecimal oldQtyDelivered,
@@ -168,7 +168,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 		int ppOrderLineId;
 
 		ProductDescriptor productDescriptor;
-		Date issueOrReceiveDate;
+		Instant issueOrReceiveDate;
 		BigDecimal qtyRequired;
 		BigDecimal qtyDelivered;
 
@@ -176,7 +176,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 		private DeletedPPOrderLineDescriptor(
 				@JsonProperty("ppOrderLineId") final int ppOrderLineId,
 				@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-				@JsonProperty("issueOrReceiveDate") @NonNull final Date issueOrReceiveDate,
+				@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
 				@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 				@JsonProperty("qtyDelivered") @NonNull final BigDecimal qtyDelivered)
 		{

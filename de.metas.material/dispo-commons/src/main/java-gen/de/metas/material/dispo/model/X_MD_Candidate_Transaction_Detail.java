@@ -15,7 +15,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1683244131L;
+	private static final long serialVersionUID = -971073169L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Transaction_Detail (Properties ctx, int MD_Candidate_Transaction_Detail_ID, String trxName)
@@ -243,5 +243,21 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Transaktionsdatum.
+		@param TransactionDate Transaktionsdatum	  */
+	@Override
+	public void setTransactionDate (java.sql.Timestamp TransactionDate)
+	{
+		set_Value (COLUMNNAME_TransactionDate, TransactionDate);
+	}
+
+	/** Get Transaktionsdatum.
+		@return Transaktionsdatum	  */
+	@Override
+	public java.sql.Timestamp getTransactionDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_TransactionDate);
 	}
 }

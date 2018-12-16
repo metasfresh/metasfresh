@@ -105,7 +105,7 @@ public class M_Transaction_HuDescriptor
 	{
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final List<HuAssignment> huAssignments = huAssignmentDAO
-				.retrieveHUAssignmentPojosForModel(huReferencedModel);
+				.retrieveLowLevelHUAssignmentsForModel(huReferencedModel);
 
 		final ImmutableList.Builder<HUDescriptor> result = ImmutableList.builder();
 		for (final HuAssignment huAssignment : huAssignments)
@@ -192,7 +192,7 @@ public class M_Transaction_HuDescriptor
 
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 					.warehouseId(transaction.getWarehouseId())
-					.date(transaction.getMovementDate())
+					.date(transaction.getTransactionDate())
 					.productDescriptor(entry.getKey())
 					.customerId(customerId)
 					.quantity(quantity)

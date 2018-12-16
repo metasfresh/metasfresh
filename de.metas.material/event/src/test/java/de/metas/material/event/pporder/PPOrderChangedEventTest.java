@@ -48,7 +48,7 @@ public class PPOrderChangedEventTest
 				.ChangedPPOrderLineDescriptor
 				.builder()
 				.productDescriptor(EventTestHelper.createProductDescriptor())
-				.issueOrReceiveDate(SystemTime.asDate())
+				.issueOrReceiveDate(SystemTime.asInstant())
 				.oldPPOrderLineId(10)
 				.newPPOrderLineId(20);
 	}

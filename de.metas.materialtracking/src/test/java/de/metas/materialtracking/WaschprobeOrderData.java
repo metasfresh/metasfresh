@@ -24,6 +24,7 @@ package de.metas.materialtracking;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -57,7 +58,7 @@ public class WaschprobeOrderData
 {
 	// Data
 
-	public final Timestamp productionDate;
+	public final Date productionDate;
 
 	private WaschprobeStandardMasterData data;
 	public I_M_Material_Tracking materialTracking;
@@ -80,8 +81,9 @@ public class WaschprobeOrderData
 	/** UOM used for Order and Order BOM Lines */
 	public final I_C_UOM uom;
 
-	public WaschprobeOrderData(final WaschprobeStandardMasterData masterData,
-			final Timestamp productionDate)
+	public WaschprobeOrderData(
+			final WaschprobeStandardMasterData masterData,
+			final Date productionDate)
 	{
 		this.data = masterData;
 		this.uom = data.uom;

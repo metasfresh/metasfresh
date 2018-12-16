@@ -11,7 +11,6 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
@@ -65,7 +64,7 @@ public class PPOrderChangedHandlerTest
 
 		// setup a candidate to be updated
 		final Candidate candidatetoUpdate = Candidate.builder()
-				.status(CandidateStatus.doc_closed)
+				//.status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(ProductionDetail.builder()
@@ -86,8 +85,8 @@ public class PPOrderChangedHandlerTest
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.oldDocStatus("CO")
 				.newDocStatus("CO")
-				.oldDatePromised(SystemTime.asTimestamp())
-				.newDatePromised(SystemTime.asTimestamp())
+				.oldDatePromised(SystemTime.asInstant())
+				.newDatePromised(SystemTime.asInstant())
 				.newQtyDelivered(ONE)
 				.newQtyRequired(TEN)
 				.oldQtyDelivered(ONE)
@@ -114,7 +113,6 @@ public class PPOrderChangedHandlerTest
 
 			assertThat(updatedCandidate.getQuantity())
 				.isEqualByComparingTo(BigDecimal.TEN);
-			assertThat(updatedCandidate.getStatus()).isEqualTo(CandidateStatus.doc_completed);
 
 			final ProductionDetail productionDetail = ProductionDetail.castOrNull(updatedCandidate.getBusinessCaseDetail());
 			assertThat(productionDetail).isNotNull();

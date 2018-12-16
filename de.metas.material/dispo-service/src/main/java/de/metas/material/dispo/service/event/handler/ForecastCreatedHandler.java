@@ -1,7 +1,5 @@
 package de.metas.material.dispo.service.event.handler;
 
-import lombok.NonNull;
-
 import java.util.Collection;
 
 import org.springframework.context.annotation.Profile;
@@ -16,11 +14,11 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -67,7 +65,7 @@ public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCrea
 		final Forecast forecast = event.getForecast();
 
 		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescriptor())
-				.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
+				//.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
 				.type(CandidateType.STOCK_UP)
 				.businessCase(CandidateBusinessCase.FORECAST);
 

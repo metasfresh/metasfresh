@@ -6,11 +6,11 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,9 +66,9 @@ public class SupplyProposalEvaluatorTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private final Date t1 = SystemTime.asDate();
-	private final Date t2 = TimeUtil.addMinutes(t1, 10);
-	private final Date t3 = TimeUtil.addMinutes(t1, 20);
+	private final Instant t1 = SystemTime.asInstant();
+	private final Instant t2 = t1.plus(10, ChronoUnit.MINUTES);
+	private final Instant t3 = t1.plus(20, ChronoUnit.MINUTES);
 
 	private static final int SUPPLY_WAREHOUSE_ID = 4;
 
@@ -106,7 +106,7 @@ public class SupplyProposalEvaluatorTests
 		availableToPromiseRepository = new AvailableToPromiseRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandidateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService),
+				new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService),
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
@@ -173,11 +173,6 @@ public class SupplyProposalEvaluatorTests
 		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
 	}
 
-	private DemandDetail createDemandDetail()
-	{
-		return DemandDetail.builder().shipmentScheduleId(EventTestHelper.SHIPMENT_SCHEDULE_ID).build();
-	}
-
 	/**
 	 * Creates a distribution-like supply-demand pair. The supply occurs at {@link #t3}, the corresponding demand (in a different warehouse ofc!) at {@link #t2}.
 	 */
@@ -198,7 +193,9 @@ public class SupplyProposalEvaluatorTests
 				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
 
-		final Candidate supplyCandidateWithId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
+		final Candidate supplyCandidateWithId = candidateRepositoryCommands
+				.addOrUpdateOverwriteStoredSeqNo(supplyCandidate)
+				.getCandidate();
 
 		final MaterialDescriptor demandDescr = MaterialDescriptor.builder()
 				.date(t2)
@@ -273,5 +270,10 @@ public class SupplyProposalEvaluatorTests
 				.demandDetail(createDemandDetail())
 				.build();
 		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal1)).isTrue();
+	}
+
+	private DemandDetail createDemandDetail()
+	{
+		return DemandDetail.builder().shipmentScheduleId(EventTestHelper.SHIPMENT_SCHEDULE_ID).build();
 	}
 }

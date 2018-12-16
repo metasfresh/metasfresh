@@ -1,5 +1,7 @@
 package de.metas.material.planning.pporder;
 
+import static org.compiere.util.TimeUtil.asInstant;
+
 import java.util.List;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -67,7 +69,7 @@ public class PPOrderPojoConverter
 					.productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
 					.qtyRequired(ppOrderLineRecord.getQtyRequiered())
 					.qtyDelivered(ppOrderLineRecord.getQtyDelivered())
-					.issueOrReceiveDate(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule())
+					.issueOrReceiveDate(asInstant(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule()))
 					.receipt(receipt)
 					.build();
 
@@ -83,8 +85,8 @@ public class PPOrderPojoConverter
 		final int groupIdFromPPOrderRequestedEvent = ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord, 0);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
-				.datePromised(ppOrderRecord.getDatePromised())
-				.dateStartSchedule(ppOrderRecord.getDateStartSchedule())
+				.datePromised(asInstant(ppOrderRecord.getDatePromised()))
+				.dateStartSchedule(asInstant(ppOrderRecord.getDateStartSchedule()))
 				.docStatus(ppOrderRecord.getDocStatus())
 				.orgId(ppOrderRecord.getAD_Org_ID())
 				.plantId(ppOrderRecord.getS_Resource_ID())

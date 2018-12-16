@@ -178,8 +178,8 @@ public class PPOrderRequestedEventHandlerTests
 
 		ppOrderPojo = PPOrder.builder()
 				.materialDispoGroupId(PPORDER_POJO_GROUPID)
-				.datePromised(SystemTime.asDate())
-				.dateStartSchedule(SystemTime.asDate())
+				.datePromised(SystemTime.asInstant())
+				.dateStartSchedule(SystemTime.asInstant())
 				.orgId(org.getAD_Org_ID())
 				.plantId(110)
 				.orderLineId(orderLine.getC_OrderLine_ID())
@@ -228,7 +228,7 @@ public class PPOrderRequestedEventHandlerTests
 	{
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
-				.dateOrdered(SystemTime.asDate())
+				.dateOrdered(SystemTime.asInstant())
 				.ppOrder(ppOrderPojo).build();
 
 		final I_PP_Order ppOrder = ppOrderRequestedEventHandler.createProductionOrder(ppOrderRequestedEvent);
@@ -270,7 +270,7 @@ public class PPOrderRequestedEventHandlerTests
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
-				.dateOrdered(SystemTime.asDate())
+				.dateOrdered(SystemTime.asInstant())
 				.ppOrder(ppOrderPojo).build();
 
 		final I_PP_Order ppOrder = ppOrderRequestedEventHandler

@@ -116,7 +116,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(product.getM_Product_ID()))
 				.warehouseId(40)
 				.quantity(TEN)
-				.date(SystemTime.asDate())
+				.date(SystemTime.asInstant())
 				.build();
 	}
 }

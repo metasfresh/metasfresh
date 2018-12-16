@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
@@ -82,7 +83,7 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(line.getProductDescriptor())
-					.date(TimeUtil.getDay(ppOrder.getDatePromised()))
+					.date(TimeUtil.getDay(ppOrder.getDatePromised(), CockpitConstants.TIME_ZONE))
 					.build();
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()

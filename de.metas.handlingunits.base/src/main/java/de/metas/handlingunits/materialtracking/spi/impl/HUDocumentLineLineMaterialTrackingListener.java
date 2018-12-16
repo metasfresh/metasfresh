@@ -77,7 +77,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
-		final List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentsForModel(request.getModel());
+		final List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(request.getModel());
 		for (final I_M_HU_Assignment huAssignment : huAssignmentsForModel)
 		{
 			if (huAssignment.getM_HU_ID() > 0)

@@ -1,7 +1,5 @@
 package de.metas.material.dispo.service.candidatechange;
 
-import lombok.NonNull;
-
 import java.util.Collection;
 import java.util.Map;
 
@@ -15,6 +13,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -57,6 +56,22 @@ public class CandidateChangeService
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
+		candidate.validate();
+
+		final CandidateHandler candidateChangeHandler = getHandlerFor(candidate);
+		return candidateChangeHandler.onCandidateNewOrChange(candidate);
+	}
+
+	public void onCandidateDelete(@NonNull final Candidate candidate)
+	{
+		candidate.validate();
+
+		final CandidateHandler candidateChangeHandler = getHandlerFor(candidate);
+		candidateChangeHandler.onCandidateDelete(candidate);
+	}
+
+	private CandidateHandler getHandlerFor(final Candidate candidate)
+	{
 		final CandidateHandler candidateChangeHandler = type2handler.get(candidate.getType());
 		if (candidateChangeHandler == null)
 		{
@@ -65,9 +80,7 @@ public class CandidateChangeService
 					.setParameter("type", candidate.getType())
 					.setParameter("candidate", candidate);
 		}
-
-		candidate.validate();
-		return candidateChangeHandler.onCandidateNewOrChange(candidate);
+		return candidateChangeHandler;
 	}
 
 	@VisibleForTesting

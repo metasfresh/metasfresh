@@ -33,8 +33,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
+import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -66,8 +68,12 @@ public class TimeUtil
 	 *
 	 * @param time day and time
 	 * @return day with 00:00
+	 *
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
-	static public Timestamp getDay(final long time)
+	@Deprecated
+	public static Timestamp getDay(final long time)
 	{
 		final long timeToUse = time > 0 ? time : SystemTime.millis();
 
@@ -84,12 +90,30 @@ public class TimeUtil
 	}	// getDay
 
 	/**
+	 * @return instant at midnight of the given time zone
+	 */
+	public static Instant getDay(
+			@NonNull final Instant instant,
+			@NonNull final ZoneId timeZone)
+	{
+		return instant
+				.atZone(timeZone)
+				.toLocalDate()
+				.atStartOfDay(timeZone)
+				.toInstant();
+	}
+
+	/**
 	 * Get earliest time of a day (truncate)
 	 *
 	 * @param dayTime day and time
 	 * @return day with 00:00
+	 *
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
-	static public Timestamp getDay(@Nullable final java.util.Date dayTime)
+	@Deprecated
+	static public Timestamp getDay(@Nullable final Date dayTime)
 	{
 		if (dayTime == null)
 		{
@@ -105,7 +129,11 @@ public class TimeUtil
 	 * @param month month 1..12
 	 * @param year year (if two diguts: < 50 is 2000; > 50 is 1900)
 	 * @return timestamp ** not too reliable
+	 *
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getDay(final int year, final int month, final int day)
 	{
 		final int hour = 0;
@@ -114,7 +142,12 @@ public class TimeUtil
 		return getDay(year, month, day, hour, minute, second);
 	}
 
-	static public Timestamp getDay(
+	/**
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 */
+	@Deprecated
+	public static Timestamp getDay(
 			final int year,
 			final int month,
 			final int day,
@@ -164,7 +197,10 @@ public class TimeUtil
 	 *
 	 * @param day day
 	 * @return next day with 00:00
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getNextDay(@Nullable final Timestamp day)
 	{
 		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
@@ -186,7 +222,10 @@ public class TimeUtil
 	 *
 	 * @param day day
 	 * @return next day with 00:00
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getPrevDay(@Nullable final Timestamp day)
 	{
 		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
@@ -208,7 +247,10 @@ public class TimeUtil
 	 *
 	 * @param day day
 	 * @return last day with 00:00
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getMonthLastDay(@Nullable final Timestamp day)
 	{
 		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
@@ -233,7 +275,10 @@ public class TimeUtil
 	 *
 	 * @param day may be <code>null</code>, in which case the current time is used.
 	 * @return 15'th with 00:00
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	static public Timestamp getMonthMiddleDay(@Nullable final Timestamp day)
 	{
 		final Timestamp dateToUse = day == null ? SystemTime.asDayTimestamp() : day;
@@ -260,7 +305,10 @@ public class TimeUtil
 	 * @param day day part
 	 * @param time time part
 	 * @return day + time.
+	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
+	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
+	@Deprecated
 	public static Timestamp getDayTime(
 			@NonNull final Date day,
 			@NonNull final Date time)
@@ -549,6 +597,14 @@ public class TimeUtil
 		return (date2.getTime() - date1.getTime()) / MILLI_TO_HOUR;
 	}
 
+	public static int getDaysBetween(@NonNull Instant start, @NonNull Instant end)
+	{
+		// Thanks to http://mattgreencroft.blogspot.com/2014/12/java-8-time-choosing-right-object.html
+		final LocalDate d1 = LocalDateTime.ofInstant(start, ZoneId.systemDefault()).toLocalDate();
+		final LocalDate d2 = LocalDateTime.ofInstant(end, ZoneId.systemDefault()).toLocalDate();
+		return Period.between(d1, d2).getDays();
+	}
+
 	/**
 	 * Calculate the number of days between start and end.
 	 *
@@ -556,7 +612,7 @@ public class TimeUtil
 	 * @param end end date
 	 * @return number of days (0 = same)
 	 */
-	static public int getDaysBetween(@NonNull Date start, @NonNull Date end)
+	public static int getDaysBetween(@NonNull Date start, @NonNull Date end)
 	{
 		boolean negative = false;
 		if (end.before(start))
@@ -990,7 +1046,9 @@ public class TimeUtil
 	 * @param ts2 p2
 	 * @return max time
 	 */
-	public static <T extends java.util.Date> T max(final T ts1, final T ts2)
+	public static <T extends Date> T max(
+			@Nullable final T ts1,
+			@Nullable final T ts2)
 	{
 		if (ts1 == null)
 		{
@@ -1019,7 +1077,7 @@ public class TimeUtil
 	 * @param date2
 	 * @return minimum date or null
 	 */
-	public static <T extends java.util.Date> T min(final T date1, final T date2)
+	public static <T extends Date> T min(final T date1, final T date2)
 	{
 		if (date1 == date2)
 		{
@@ -1256,13 +1314,20 @@ public class TimeUtil
 			return false;
 		}
 
-		return value instanceof java.util.Date
+		return value instanceof Date
 				|| value instanceof Instant
 				|| value instanceof LocalDateTime
 				|| value instanceof LocalDate
 				|| value instanceof LocalTime
 				|| value instanceof ZonedDateTime
 				|| value instanceof XMLGregorianCalendar;
+	}
+
+	/** @deprecated your method argument is already a {@link Timestamp}; you don't need to call this method. */
+	@Deprecated
+	public static Timestamp asTimestamp(final Timestamp timestamp)
+	{
+		return timestamp;
 	}
 
 	/** @return date as timestamp or null if the date is null */
@@ -1417,6 +1482,12 @@ public class TimeUtil
 		}
 	}
 
+	public static LocalDateTime parseLocalDateTime(@NonNull final String date)
+	{
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		return LocalDateTime.parse(date, formatter);
+	}
+
 	public static Calendar asCalendar(final Date date)
 	{
 		final Calendar calendar = Calendar.getInstance();
@@ -1542,6 +1613,13 @@ public class TimeUtil
 		}
 	}
 
+	/** @deprecated your method argument is already a {@link LocalDateTime}; you don't need to call this method. */
+	@Deprecated
+	public static LocalDateTime asLocalDateTime(final LocalDateTime localDateTime)
+	{
+		return localDateTime;
+	}
+
 	public static LocalDateTime asLocalDateTime(final Object obj)
 	{
 		if (obj == null)
@@ -1588,6 +1666,10 @@ public class TimeUtil
 		{
 			return null;
 		}
+		else if (obj instanceof Timestamp)
+		{
+			return new Date(((Timestamp)obj).getTime());
+		}
 		else if (obj instanceof Date)
 		{
 			return (Date)obj;
@@ -1596,6 +1678,13 @@ public class TimeUtil
 		{
 			return Date.from(asInstant(obj));
 		}
+	}
+
+	/** @deprecated your method argument is already an {@link Instant}; you don't need to call this method. */
+	@Deprecated
+	public static Instant asInstant(@Nullable final Instant instant)
+	{
+		return instant;
 	}
 
 	public static Instant asInstant(@Nullable final Object obj)
@@ -1642,5 +1731,4 @@ public class TimeUtil
 			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Instant.class);
 		}
 	}
-
 }	// TimeUtil

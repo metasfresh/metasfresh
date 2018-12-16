@@ -1,9 +1,11 @@
 package de.metas.material.planning.pporder;
 
+import static org.compiere.util.TimeUtil.asDate;
+
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.mm.attributes.api.AttributesKeys;
@@ -98,7 +100,7 @@ public class PPOrderPojoSupplier
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final I_M_Product product = mrpContext.getM_Product();
 
-		final Timestamp demandDateStartSchedule = TimeUtil.asTimestamp(request.getDemandDate());
+		final Instant demandDateStartSchedule = request.getDemandDate();
 		final Quantity qtyToSupply = request.getQtyToSupply();
 
 		// BOM
@@ -118,9 +120,9 @@ public class PPOrderPojoSupplier
 		//
 		// Calculate duration & Planning dates
 		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply.getAsBigDecimal());
-		final Timestamp dateFinishSchedule = demandDateStartSchedule;
+		final Instant dateFinishSchedule = demandDateStartSchedule;
 
-		final Timestamp dateStartSchedule = TimeUtil.addDays(dateFinishSchedule, -durationDays);
+		final Instant dateStartSchedule = dateFinishSchedule.minus(durationDays, ChronoUnit.DAYS);
 
 		final ProductDescriptor productDescriptor = createPPOrderProductDescriptor(mrpContext);
 
@@ -209,7 +211,7 @@ public class PPOrderPojoSupplier
 		final List<I_PP_Product_BOMLine> productBOMLines = Services.get(IProductBOMDAO.class).retrieveLines(productBOM);
 		for (final I_PP_Product_BOMLine productBomLine : productBOMLines)
 		{
-			if (!productBOMBL.isValidFromTo(productBomLine, ppOrder.getDateStartSchedule()))
+			if (!productBOMBL.isValidFromTo(productBomLine, TimeUtil.asDate(ppOrder.getDateStartSchedule())))
 			{
 				logger.debug("BOM Line skipped - " + productBomLine);
 				continue;
@@ -241,7 +243,7 @@ public class PPOrderPojoSupplier
 
 	private I_PP_Product_BOM retriveAndVerifyBOM(@NonNull final PPOrder ppOrder)
 	{
-		final Date dateStartSchedule = ppOrder.getDateStartSchedule();
+		final Instant dateStartSchedule = ppOrder.getDateStartSchedule();
 		final ProductId ppOrderProductId = ProductId.ofRepoId(ppOrder.getProductDescriptor().getProductId());
 
 		final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
@@ -250,6 +252,6 @@ public class PPOrderPojoSupplier
 		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(productPlanning.getPP_Product_BOM_ID());
 
-		return PPOrderUtil.verifyProductBOMAndReturnIt(ppOrderProductId, dateStartSchedule, productBOM);
+		return PPOrderUtil.verifyProductBOMAndReturnIt(ppOrderProductId, asDate(dateStartSchedule), productBOM);
 	}
 }

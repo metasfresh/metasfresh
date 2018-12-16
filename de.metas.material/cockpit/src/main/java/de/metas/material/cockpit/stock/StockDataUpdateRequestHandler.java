@@ -3,8 +3,6 @@ package de.metas.material.cockpit.stock;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -13,6 +11,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -24,6 +23,7 @@ import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -152,6 +152,7 @@ public class StockDataUpdateRequestHandler
 				.qtyOnHand(qtyOnHandNew)
 				.qtyOnHandOld(qtyOnHandOld)
 				.stockChangeDetails(details)
+				.changeDate(TimeUtil.asInstant(dataRecord.getUpdated()))
 				.build();
 
 		postMaterialEventService.postEventNow(event);

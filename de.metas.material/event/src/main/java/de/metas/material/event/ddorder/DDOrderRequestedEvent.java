@@ -1,6 +1,6 @@
 package de.metas.material.event.ddorder;
 
-import java.util.Date;
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,7 +21,7 @@ public class DDOrderRequestedEvent implements MaterialEvent
 	EventDescriptor eventDescriptor;
 
 	@NonNull
-	Date dateOrdered;
+	Instant dateOrdered;
 
 	@NonNull
 	DDOrder ddOrder;
@@ -30,7 +30,7 @@ public class DDOrderRequestedEvent implements MaterialEvent
 	@Builder
 	private DDOrderRequestedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("dateOrdered") @NonNull final Date dateOrdered,
+			@JsonProperty("dateOrdered") @NonNull final Instant dateOrdered,
 			@JsonProperty("ddOrder") @NonNull final DDOrder ddOrder)
 	{
 		this.eventDescriptor = eventDescriptor;

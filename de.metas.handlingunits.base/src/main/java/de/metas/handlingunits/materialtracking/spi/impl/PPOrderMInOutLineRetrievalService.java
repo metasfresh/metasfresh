@@ -67,7 +67,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 		if (huAssignmentsForModel.isEmpty())
 		{
 			// fallback
-			huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentPojosForModel(issueCostCollector);
+			huAssignmentsForModel = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(issueCostCollector);
 		}
 
 		for (final HuAssignment huAssignment : huAssignmentsForModel)
@@ -108,7 +108,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 				continue;
 			}
 
-			final List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentsForModel(costCollector);
+			final List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(costCollector);
 
 			final Map<Integer, I_M_InOutLine> id2iol = new HashMap<>();
 
