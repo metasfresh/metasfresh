@@ -36,6 +36,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -546,19 +547,14 @@ public final class StringUtils
 	 * @param in input
 	 * @return cleaned string
 	 */
-	public static String removeCRLF(String in)
+	public static String removeCRLF(@Nullable final String in)
 	{
-		final char[] inArray = in.toCharArray();
-		final StringBuffer out = new StringBuffer(inArray.length);
-		for (final char c : inArray)
+		if (in == null)
 		{
-			if (c == '\n' || c == '\r')
-				;
-			else
-				out.append(c);
+			return null;
 		}
-		return out.toString();
-	}	// removeCRLF
+		return in.replaceAll("(\\r|\\n)", "");
+	}
 
 	/**
 	 * Fetch the numbers from a string
@@ -723,7 +719,9 @@ public final class StringUtils
 	 * @param content content
 	 * @param maskCR convert CR into <br>
 	 * @return masked content or null if the <code>content</code> is null
+	 * @deprecated please consider using {@link StringEscapeUtils#escapeHtml4(String)} instead.
 	 */
+	@Deprecated
 	public static String maskHTML(String content, boolean maskCR)
 	{
 		// If the content is null, then return null - teo_sarca [ 1748346 ]
@@ -754,6 +752,7 @@ public final class StringUtils
 				case '\n':
 					if (maskCR)
 						out.append("<br>");
+					break;
 					//
 				default:
 					final int ii = c;
