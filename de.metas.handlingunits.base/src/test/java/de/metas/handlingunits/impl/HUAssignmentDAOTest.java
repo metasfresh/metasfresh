@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Before;
@@ -170,7 +169,7 @@ public class HUAssignmentDAOTest
 		saveRecord(vhu1);
 
 		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
-		assignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		assignment.setAD_Table_ID(getTableId(I_M_InOutLine.class));
 		assignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
 		assignment.setM_HU(lu);
 		assignment.setM_LU_HU(lu);
@@ -182,7 +181,7 @@ public class HUAssignmentDAOTest
 		saveRecord(vhu2);
 
 		final I_M_HU_Assignment assignment2 = newInstance(I_M_HU_Assignment.class);
-		assignment2.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		assignment2.setAD_Table_ID(getTableId(I_M_InOutLine.class));
 		assignment2.setRecord_ID(inoutLine.getM_InOutLine_ID());
 		assignment2.setM_HU(lu);
 		assignment2.setM_LU_HU(lu);
@@ -191,7 +190,7 @@ public class HUAssignmentDAOTest
 		saveRecord(assignment2);
 
 		final I_M_HU_Assignment topLevelAssignment = newInstance(I_M_HU_Assignment.class);
-		topLevelAssignment.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOutLine.class));
+		topLevelAssignment.setAD_Table_ID(getTableId(I_M_InOutLine.class));
 		topLevelAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
 		topLevelAssignment.setM_HU(lu);
 		saveRecord(topLevelAssignment);
