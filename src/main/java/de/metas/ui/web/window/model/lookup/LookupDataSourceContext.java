@@ -287,14 +287,11 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 		try
 		{
-
-			if (value instanceof Date)
+			// note: always use TimeUtil.asDate to make sure that we really get a "Date"-date and not a "Timestamp"-date
+			// goal: avoid trouble with equals()
+			if (value instanceof String)
 			{
-				return (Date)value;
-			}
-			else if (value instanceof String)
-			{
-				return Env.parseTimestamp(value.toString());
+				return TimeUtil.asDate(Env.parseTimestamp(value.toString()));
 			}
 			else
 			{
