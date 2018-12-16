@@ -1,7 +1,5 @@
 package de.metas.material.dispo.service.event.handler.purchasecandidate;
 
-import lombok.NonNull;
-
 import java.util.Collection;
 
 import org.springframework.context.annotation.Profile;
@@ -13,7 +11,6 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
@@ -23,6 +20,7 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -106,7 +104,7 @@ public final class PurchaseCandidateAdvisedHandler
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.clientId(event.getEventDescriptor().getClientId())
 				.orgId(event.getEventDescriptor().getOrgId())
-				.status(CandidateStatus.doc_planned)
+				//.status(CandidateStatus.doc_planned)
 				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)

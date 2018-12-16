@@ -30,10 +30,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -46,6 +49,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * @author Teo Sarca
@@ -479,9 +483,48 @@ public class TimeUtilTest
 		// invoke the method under test
 		final LocalDate result = TimeUtil.asLocalDate(xmlGregorianCalendar);
 
-
 		assertThat(result.getYear()).isEqualTo(2018);
 		assertThat(result.getMonth()).isEqualTo(Month.OCTOBER);
 		assertThat(result.getDayOfMonth()).isEqualTo(4);
+	}
+
+	@Test
+	public void asDate()
+	{
+		final Date nowDate = new Date();
+		final Timestamp nowTimestamp = new Timestamp(nowDate.getTime());
+		assertThat(nowTimestamp).isNotEqualTo(nowDate); // guard, just to make sure that noone magically fixed timestamp
+
+		assertThat(TimeUtil.asDate(nowTimestamp)).isEqualTo(nowDate);
+	}
+
+	@Test
+	public void getDay()
+	{
+		test_getDay("2018-12-05T00:15:00+01:00", "+1", "2018-12-05");
+
+		test_getDay("2018-12-05T23:59:59+01:00", "+1", "2018-12-05");
+
+		test_getDay("2018-12-05T23:59:59+01:00", "+2", "2018-12-06");
+
+		test_getDay("2018-12-05T00:59:59+01:00", "-1", "2018-12-04");
+	}
+
+	private void test_getDay(
+			@NonNull final String zonedDateTime,
+			@NonNull final String targetTimeZone,
+			@NonNull final String expectedDateAtTimeZone)
+	{
+		final Instant input = ZonedDateTime.parse(zonedDateTime).toInstant();
+
+		final ZoneId targetZoneId = ZoneId.of(targetTimeZone);
+
+		final Instant expected = ZonedDateTime
+				.of(
+						LocalDateTime.parse(expectedDateAtTimeZone + "T00:00:00"),
+						targetZoneId)
+				.toInstant();
+
+		assertThat(TimeUtil.getDay(input, targetZoneId)).isEqualTo(expected);
 	}
 }

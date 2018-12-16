@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import org.compiere.util.TimeUtil;
@@ -165,7 +165,7 @@ public class RequestMaterialOrderService
 
 		return PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
-				.dateOrdered(SystemTime.asDate())
+				.dateOrdered(SystemTime.asInstant())
 				.ppOrder(ppOrderBuilder.build())
 				.build();
 	}
@@ -187,8 +187,8 @@ public class RequestMaterialOrderService
 
 		final DDOrderLineBuilder ddOrderLineBuilder = DDOrderLine.builder();
 
-		Date startDate = null;
-		Date endDate = null;
+		Instant startDate = null;
+		Instant endDate = null;
 
 		for (final Candidate groupMember : group)
 		{
@@ -230,7 +230,7 @@ public class RequestMaterialOrderService
 
 		return DDOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
-				.dateOrdered(SystemTime.asDate())
+				.dateOrdered(SystemTime.asInstant())
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder
 								.durationDays(durationDays)

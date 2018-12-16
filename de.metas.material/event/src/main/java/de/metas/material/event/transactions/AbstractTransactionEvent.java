@@ -108,8 +108,10 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.directMovementWarehouse = directMovementWarehouse;
 	}
 
+	/** Never return {@code null}. */
 	public abstract BigDecimal getQuantity();
 
+	/** Never return {@code null}. */
 	public abstract BigDecimal getQuantityDelta();
 
 	@OverridingMethodsMustInvokeSuper

@@ -536,6 +536,31 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_Qty_AvailableToPromise = "Qty_AvailableToPromise";
 
 	/**
+	 * Set Erledigte Menge.
+	 * Summe der bereits eingetretenden Materialbewegungen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyFulfilled (java.math.BigDecimal QtyFulfilled);
+
+	/**
+	 * Get Erledigte Menge.
+	 * Summe der bereits eingetretenden Materialbewegungen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyFulfilled();
+
+    /** Column definition for QtyFulfilled */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_QtyFulfilled = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "QtyFulfilled", null);
+    /** Column name QtyFulfilled */
+    public static final String COLUMNNAME_QtyFulfilled = "QtyFulfilled";
+
+	/**
 	 * Set Menge.
 	 *
 	 * <br>Type: Quantity
@@ -544,7 +569,7 @@ public interface I_MD_Candidate
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setQty_Display (java.math.BigDecimal Qty_Display);
+	public void setQty_Planned_Display (java.math.BigDecimal Qty_Planned_Display);
 
 	/**
 	 * Get Menge.
@@ -555,12 +580,12 @@ public interface I_MD_Candidate
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public java.math.BigDecimal getQty_Display();
+	public java.math.BigDecimal getQty_Planned_Display();
 
-    /** Column definition for Qty_Display */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Display = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Display", null);
-    /** Column name Qty_Display */
-    public static final String COLUMNNAME_Qty_Display = "Qty_Display";
+    /** Column definition for Qty_Planned_Display */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Planned_Display", null);
+    /** Column name Qty_Planned_Display */
+    public static final String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
 
 	/**
 	 * Set Reihenfolge.

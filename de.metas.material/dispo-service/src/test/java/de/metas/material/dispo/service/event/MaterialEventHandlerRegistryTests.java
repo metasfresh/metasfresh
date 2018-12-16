@@ -5,16 +5,15 @@ import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -132,7 +131,6 @@ public class MaterialEventHandlerRegistryTests
 						availableToPromiseRepository,
 						stockCandidateService),
 				new SupplyCandidateHandler(
-						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						stockCandidateService)));
 
@@ -203,14 +201,15 @@ public class MaterialEventHandlerRegistryTests
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getMaterialDescriptor();
 
-		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
+		final Instant shipmentScheduleEventTime = orderedMaterial.getDate();
 
 		// Whenever asked, (by DemandCandidateHandler, in this case), we say that we need more.
 		// This is required to make the DemandCandidateHandler fire a supplyRequiredEvent.
-		new Expectations(CandidateRepositoryRetrieval.class)
+		new Expectations(CandidateRepositoryRetrieval.class) // @formatter:off
 		{{
-			availableToPromiseRepository.retrieveAvailableStockQtySum((AvailableToPromiseMultiQuery)any); minTimes = 0;
-			result = new BigDecimal("-10");
+				availableToPromiseRepository.retrieveAvailableStockQtySum((AvailableToPromiseMultiQuery)any);
+				minTimes = 0;
+				result = new BigDecimal("-10");
 		}}; // @formatter:on
 
 		materialEventListener.onEvent(shipmentScheduleEvent);
@@ -266,13 +265,17 @@ public class MaterialEventHandlerRegistryTests
 		final I_MD_Candidate toWarehouseStock = DispoTestUtils.filter(CandidateType.STOCK, fromWarehouseId).get(0);
 
 		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
-		assertThat(allRecordsBySeqNo).containsExactly(
+		assertThat(allRecordsBySeqNo).containsOnly(
 				toWarehouseDemand,
 				toWarehouseDemandStock,
 				toWarehouseSupplyStock,
 				toWarehouseSupply,
 				fromWarehouseDemand,
 				toWarehouseStock);
+		assertThat(allRecordsBySeqNo).containsSubsequence(
+				toWarehouseDemand,
+				toWarehouseSupply,
+				fromWarehouseDemand);
 
 		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo("10");
 		assertThat(toWarehouseDemandStock.getQty()).isEqualByComparingTo("-10");
@@ -289,8 +292,8 @@ public class MaterialEventHandlerRegistryTests
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 
 		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getMaterialDescriptor();
-		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
-		final Timestamp twoHoursAfterShipmentSched = TimeUtil.addHours(shipmentScheduleEventTime, 2);
+		final Instant shipmentScheduleEventTime = orderedMaterial.getDate();
+		final Instant twoHoursAfterShipmentSched = shipmentScheduleEventTime.plus(2, ChronoUnit.HOURS);
 
 		materialEventListener.onEvent(shipmentScheduleEvent);
 

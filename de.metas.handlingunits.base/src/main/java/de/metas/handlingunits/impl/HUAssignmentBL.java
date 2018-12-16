@@ -361,7 +361,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 		final List<I_M_HU_Assignment> //
-		huAssignmentsForSource = huAssignmentDAO.retrieveHUAssignmentsForModel(sourceModel);
+		huAssignmentsForSource = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(sourceModel);
 
 		for (final I_M_HU_Assignment huAssignment : huAssignmentsForSource)
 		{

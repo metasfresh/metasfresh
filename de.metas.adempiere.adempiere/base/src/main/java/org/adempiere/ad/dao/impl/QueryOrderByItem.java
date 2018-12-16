@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
 import de.metas.util.Check;
+import lombok.NonNull;
 
 @Immutable
 final class QueryOrderByItem
@@ -39,17 +40,16 @@ final class QueryOrderByItem
 	private final Direction direction;
 	private final Nulls nulls;
 
-	public QueryOrderByItem(final String columnName, final Direction direction, final Nulls nulls)
+	public QueryOrderByItem(
+			@NonNull final String columnName,
+			@NonNull final Direction direction,
+			@NonNull final Nulls nulls)
 	{
-		super();
-
 		Check.assumeNotEmpty(columnName, "columnName not empty");
 		this.columnName = columnName;
 
-		Check.assumeNotNull(direction, "direction not null");
 		this.direction = direction;
 
-		Check.assumeNotNull(nulls, "nulls not null");
 		this.nulls = nulls;
 	}
 

@@ -83,16 +83,26 @@ public class ProductDescriptor
 			@JsonProperty("storageAttributesKey") @NonNull final AttributesKey storageAttributesKey,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId)
 	{
-		this.productId = productId;
-		this.storageAttributesKey = storageAttributesKey;
-		this.attributeSetInstanceId = attributeSetInstanceId;
-
 		Preconditions.checkArgument(productId > 0,
 				"Given parameter productId=%s needs to be >0", productId);
 		Preconditions.checkArgument(attributeSetInstanceId >= -1,
 				"Given parameter attributeSetInstanceId needs to >=-1");
 		Preconditions.checkNotNull(storageAttributesKey,
 				"Given storageAttributeKey date needs to not-null");
+
+		this.productId = productId;
+		this.storageAttributesKey = storageAttributesKey;
+		if (AttributesKey.NONE.equals(storageAttributesKey)
+				|| AttributesKey.ALL.equals(storageAttributesKey)
+				|| AttributesKey.OTHER.equals(storageAttributesKey))
+		{
+			// discard the given attribueSetInstanceId if it is not about a "real" ASI.
+			this.attributeSetInstanceId = 0;
+		}
+		else
+		{
+			this.attributeSetInstanceId = attributeSetInstanceId;
+		}
 	}
 
 }

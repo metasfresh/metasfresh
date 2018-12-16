@@ -1,11 +1,11 @@
 package de.metas.material.event;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
@@ -38,9 +38,10 @@ import de.metas.util.time.SystemTime;
 
 public class EventTestHelper
 {
-	public static final Date NOW = SystemTime.asDate();
-	public static final Date BEFORE_NOW = TimeUtil.addMinutes(NOW, -10);
-	public static final Date AFTER_NOW = TimeUtil.addMinutes(NOW, +10);
+	public static final Instant NOW = SystemTime.asInstant();
+	public static final Instant BEFORE_BEFORE_NOW = NOW.minus(20, ChronoUnit.MINUTES);
+	public static final Instant BEFORE_NOW = NOW.minus(10, ChronoUnit.MINUTES);
+	public static final Instant AFTER_NOW =  NOW.plus(10, ChronoUnit.MINUTES);
 
 	/**
 	 * This constant is zero because we don't control the client-id used by {@link POJOWrapper} when it creates a new instance.

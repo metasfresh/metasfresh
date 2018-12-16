@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.compiere.util.TimeUtil.asInstant;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -313,7 +314,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		assertThat(result.getTransactionId()).isEqualTo(transaction.getM_Transaction_ID());
 		assertThat(result.getMaterialDescriptor().getWarehouseId()).isEqualTo(wh.getM_Warehouse_ID());
 		assertThat(result.getMaterialDescriptor().getProductId()).isEqualTo(product.getM_Product_ID());
-		assertThat(result.getMaterialDescriptor().getDate()).isEqualTo(movementDate);
+		assertThat(result.getMaterialDescriptor().getDate()).isEqualTo(asInstant(movementDate));
 	}
 
 	@Test

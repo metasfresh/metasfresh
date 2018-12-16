@@ -5,15 +5,14 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +32,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionCreatedEventBuilder;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
@@ -153,6 +153,8 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(TEN).build();
 
+		final Instant date = SystemTime.asInstant();
+
 		final Candidate exisitingCandidate = Candidate.builder()
 				.clientId(10).orgId(20)
 				.type(CandidateType.UNRELATED_INCREASE)
@@ -161,10 +163,17 @@ public class TransactionCreatedHandlerTests
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(ONE)
-						.date(SystemTime.asTimestamp())
+						.date(date)
 						.build())
-				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(TRANSACTION_ID + 1).complete(true).build())
-				.build();
+				.transactionDetail(TransactionDetail.builder()
+						.quantity(ONE)
+						.storageAttributesKey(AttributesKey.ALL)
+						.transactionId(TRANSACTION_ID + 1)
+						.transactionDate(date)
+						.complete(true)
+						.build())
+				.build()
+				.validate();
 
 		// @formatter:off
 		new Expectations()
@@ -238,7 +247,7 @@ public class TransactionCreatedHandlerTests
 		assertThat(demandDetail).as("created candidate shall have a demand detail").isNotNull();
 		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
-		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("-10");
+		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo(TEN);
 	}
 
 	@Test
@@ -253,7 +262,7 @@ public class TransactionCreatedHandlerTests
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(SIXTY_THREE)
-						.date(SystemTime.asTimestamp())
+						.date(SystemTime.asInstant())
 						.build())
 
 				.businessCase(CandidateBusinessCase.SHIPMENT)
@@ -262,9 +271,8 @@ public class TransactionCreatedHandlerTests
 						-1,
 						-1,
 						SIXTY_FOUR))
-				.build();
-
-		exisitingCandidate.validate();
+				.build()
+				.validate();
 
 		// @formatter:off
 		new Expectations()
@@ -277,6 +285,7 @@ public class TransactionCreatedHandlerTests
 				.transactionId(TRANSACTION_ID)
 				.build();
 
+		// invoke the method under test
 		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(relatedEvent);
 		assertThat(candidates).hasSize(1);
 		final Candidate candidate = candidates.get(0);
@@ -301,7 +310,7 @@ public class TransactionCreatedHandlerTests
 		assertThat(DemandDetail.cast(candidate.getBusinessCaseDetail()).getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
-		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("-10");
+		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo(TEN);
 	}
 
 	private static void assertDemandDetailQuery(final CandidatesQuery query)
@@ -320,7 +329,7 @@ public class TransactionCreatedHandlerTests
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.date(TimeUtil.parseTimestamp("2017-10-15"))
+						.date(Instant.parse("2017-10-15T00:00:00.00Z"))
 						.productDescriptor(createProductDescriptor())
 						.quantity(quantity)
 						.warehouseId(WAREHOUSE_ID)
@@ -336,5 +345,7 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(candidate.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(candidate.getTransactionDetails()).isNotEmpty();
+
+		assertThat(candidate.getTransactionDetails()).allSatisfy(t -> assertThat(t.getQuantity()).isGreaterThan(ZERO));
 	}
 }

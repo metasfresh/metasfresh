@@ -336,7 +336,7 @@ public interface I_M_Transaction
 	 * Set Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -346,7 +346,7 @@ public interface I_M_Transaction
 	 * Get Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

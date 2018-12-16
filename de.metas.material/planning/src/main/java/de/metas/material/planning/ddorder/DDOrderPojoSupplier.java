@@ -2,7 +2,7 @@ package de.metas.material.planning.ddorder;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -121,7 +121,7 @@ public class DDOrderPojoSupplier
 			return ImmutableList.of();
 		}
 
-		final Timestamp supplyDateFinishSchedule = TimeUtil.asTimestamp(request.getDemandDate());
+		final Instant supplyDateFinishSchedule = TimeUtil.asInstant(request.getDemandDate());
 
 		int M_Shipper_ID = -1;
 		// I_DD_Order order = null;
@@ -226,7 +226,7 @@ public class DDOrderPojoSupplier
 					calculateQtyToMove(qtyToSupplyRemaining.getAsBigDecimal(), networkLine.getPercent()),
 					qtyToSupplyRemaining.getUOM());
 
-			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, supplyDateFinishSchedule, request);
+			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, request);
 			ddOrderBuilder.line(ddOrderLine);
 
 			qtyToSupplyRemaining = qtyToSupplyRemaining.subtract(qtyToMove);
@@ -277,7 +277,6 @@ public class DDOrderPojoSupplier
 	private DDOrderLine createDD_OrderLine(
 			@Nullable final I_DD_NetworkDistributionLine networkLine,
 			@NonNull final Quantity qtyToMove,
-			@NonNull final Timestamp supplyDateFinishSchedule,
 			@NonNull final IMaterialRequest request)
 	{
 		final IMaterialPlanningContext mrpContext = request.getMrpContext();

@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2099582141L;
+	private static final long serialVersionUID = 2014206672L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -297,6 +297,10 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public static final String MD_CANDIDATE_STATUS_Doc_completed = "doc_completed";
 	/** doc_closed = doc_closed */
 	public static final String MD_CANDIDATE_STATUS_Doc_closed = "doc_closed";
+	/** planned = planned */
+	public static final String MD_CANDIDATE_STATUS_Planned = "planned";
+	/** processed = processed */
+	public static final String MD_CANDIDATE_STATUS_Processed = "processed";
 	/** Set Status.
 		@param MD_Candidate_Status Status	  */
 	@Override
@@ -525,19 +529,41 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		return bd;
 	}
 
-	/** Set Menge.
-		@param Qty_Display Menge	  */
+	/** Set Erledigte Menge.
+		@param QtyFulfilled 
+		Summe der bereits eingetretenden Materialbewegungen
+	  */
 	@Override
-	public void setQty_Display (java.math.BigDecimal Qty_Display)
+	public void setQtyFulfilled (java.math.BigDecimal QtyFulfilled)
 	{
-		throw new IllegalArgumentException ("Qty_Display is virtual column");	}
+		set_Value (COLUMNNAME_QtyFulfilled, QtyFulfilled);
+	}
+
+	/** Get Erledigte Menge.
+		@return Summe der bereits eingetretenden Materialbewegungen
+	  */
+	@Override
+	public java.math.BigDecimal getQtyFulfilled () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyFulfilled);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge.
+		@param Qty_Planned_Display Menge	  */
+	@Override
+	public void setQty_Planned_Display (java.math.BigDecimal Qty_Planned_Display)
+	{
+		throw new IllegalArgumentException ("Qty_Planned_Display is virtual column");	}
 
 	/** Get Menge.
 		@return Menge	  */
 	@Override
-	public java.math.BigDecimal getQty_Display () 
+	public java.math.BigDecimal getQty_Planned_Display () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Display);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Planned_Display);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

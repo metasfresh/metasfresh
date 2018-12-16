@@ -1,16 +1,13 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.math.BigDecimal;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
@@ -19,13 +16,13 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail.P
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -72,7 +69,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 	{
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 
-		final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
+		//final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderEvent.getSupplyRequiredDescriptor();
 
@@ -96,7 +93,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		final Candidate headerCandidate = builder
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.status(candidateStatus)
+				//.status(candidateStatus)
 				.businessCaseDetail(headerCandidateProductionDetail)
 				.additionalDemandDetail(headerCandidateDemandDetail)
 				.materialDescriptor(headerCandidateMaterialDescriptor)
@@ -129,7 +126,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 			lineCandidateBuilder
 					.type(lineCandidateType)
 					.businessCase(CandidateBusinessCase.PRODUCTION)
-					.status(candidateStatus)
+					//.status(candidateStatus)
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
 					.businessCaseDetail(lineCandidateProductionDetail)
@@ -230,21 +227,21 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		return materialDescriptor;
 	}
 
-	private static CandidateStatus getCandidateStatus(@NonNull final PPOrder ppOrder)
-	{
-		final CandidateStatus candidateStatus;
-		final String docStatus = ppOrder.getDocStatus();
-
-		if (ppOrder.getPpOrderId() <= 0)
-		{
-			candidateStatus = CandidateStatus.doc_planned;
-		}
-		else
-		{
-			candidateStatus = EventUtil.getCandidateStatus(docStatus);
-		}
-		return candidateStatus;
-	}
+//	private static CandidateStatus getCandidateStatus(@NonNull final PPOrder ppOrder)
+//	{
+//		final CandidateStatus candidateStatus;
+//		final String docStatus = ppOrder.getDocStatus();
+//
+//		if (ppOrder.getPpOrderId() <= 0)
+//		{
+//			candidateStatus = CandidateStatus.doc_planned;
+//		}
+//		else
+//		{
+//			candidateStatus = EventUtil.getCandidateStatus(docStatus);
+//		}
+//		return candidateStatus;
+//	}
 
 	private ProductionDetail createProductionDetailForPPOrder(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent,

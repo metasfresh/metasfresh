@@ -1,7 +1,7 @@
 package de.metas.material.event.commons;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -59,13 +59,13 @@ public class MaterialDescriptor extends ProductDescriptor
 	 * The projected date at which we expect this candidate's {@link #getQuantity()}.
 	 */
 	@Getter
-	Date date;
+	Instant date;
 
 	@Builder
 	private MaterialDescriptor(
 			final int warehouseId,
 			final int customerId,
-			final Date date,
+			final Instant date,
 			final ProductDescriptor productDescriptor,
 			final BigDecimal quantity)
 	{
@@ -84,7 +84,7 @@ public class MaterialDescriptor extends ProductDescriptor
 			@JsonProperty("warehouseId") final int warehouseId,
 			@JsonProperty("customerId") final int customerId,
 			@JsonProperty("quantity") final BigDecimal quantity,
-			@JsonProperty("date") final Date date,
+			@JsonProperty("date") final Instant date,
 			@JsonProperty("productId") final int productId,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId,
 			@JsonProperty("storageAttributesKey") final AttributesKey attributesKey)
@@ -122,7 +122,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		return result.asssertMaterialDescriptorComplete();
 	}
 
-	public MaterialDescriptor withDate(@NonNull final Date date)
+	public MaterialDescriptor withDate(@NonNull final Instant date)
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.date(date)

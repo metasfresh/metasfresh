@@ -1,19 +1,16 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
-import lombok.NonNull;
-
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
@@ -22,13 +19,13 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuilder;
 import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -93,7 +90,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			final DDOrderLine ddOrderLine)
 	{
 		final DDOrder ddOrder = ddOrderEvent.getDdOrder();
-		final CandidateStatus candidateStatus = computeCandidateStatus(ddOrder);
+		//final CandidateStatus candidateStatus = computeCandidateStatus(ddOrder);
 
 		//
 		// create the supply candidate
@@ -107,7 +104,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		final Candidate supplyCandidate = createSupplyCandidateBuilder(ddOrderEvent, ddOrderLine)
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
-				.status(candidateStatus)
+				//.status(candidateStatus)
 				.materialDescriptor(supplyMaterialDescriptor)
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
@@ -135,7 +132,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.groupId(groupId)
 				.parentId(supplyCandidateWithId.getId())
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
-				.status(candidateStatus)
+				//.status(candidateStatus)
 				.materialDescriptor(demandMaterialDescriptor)
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
@@ -228,19 +225,19 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 	protected abstract Flag extractIsAdviseEvent(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent);
 
-	private CandidateStatus computeCandidateStatus(@NonNull final DDOrder ddOrder)
-	{
-		final CandidateStatus candidateStatus;
-		if (ddOrder.getDdOrderId() <= 0)
-		{
-			candidateStatus = CandidateStatus.doc_planned;
-		}
-		else
-		{
-			candidateStatus = EventUtil.getCandidateStatus(ddOrder.getDocStatus());
-		}
-		return candidateStatus;
-	}
+//	private CandidateStatus computeCandidateStatus(@NonNull final DDOrder ddOrder)
+//	{
+//		final CandidateStatus candidateStatus;
+//		if (ddOrder.getDdOrderId() <= 0)
+//		{
+//			candidateStatus = CandidateStatus.doc_planned;
+//		}
+//		else
+//		{
+//			candidateStatus = EventUtil.getCandidateStatus(ddOrder.getDocStatus());
+//		}
+//		return candidateStatus;
+//	}
 
 	protected final int computeWarehouseId(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent,
@@ -262,7 +259,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.setParameter("abstractDDOrderEvent", ddOrderEvent);
 	}
 
-	protected final Date computeDate(
+	protected final Instant computeDate(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent,
 			@NonNull final DDOrderLine ddOrderLine,
 			@NonNull final CandidateType candidateType)
@@ -270,9 +267,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		switch (candidateType)
 		{
 			case DEMAND:
-				return TimeUtil.addDaysExact(
-						ddOrderEvent.getDdOrder().getDatePromised(),
-						-ddOrderLine.getDurationDays());
+				final Instant datePromised = ddOrderEvent.getDdOrder().getDatePromised();
+				final int durationDays = ddOrderLine.getDurationDays();
+				return datePromised.minus(durationDays, ChronoUnit.DAYS);
 
 			case SUPPLY:
 				return ddOrderEvent.getDdOrder().getDatePromised();
