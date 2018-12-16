@@ -1,9 +1,5 @@
 package de.metas.ordercandidate.rest;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
@@ -11,6 +7,9 @@ import org.adempiere.service.OrgId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -38,7 +37,7 @@ import de.metas.bpartner.BPartnerLocationId;
 @Builder(toBuilder = true)
 public class Context
 {
-	public static Context ofOrg(final OrgId orgId)
+	public static Context ofOrg(@NonNull final OrgId orgId)
 	{
 		return builder().orgId(orgId).build();
 	}

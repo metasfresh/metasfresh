@@ -1,8 +1,7 @@
-package de.metas.payment.esr.api.impl;
+package de.metas.payment.esr.api;
 
+import static de.metas.util.StringUtils.lpadZero;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import lombok.NonNull;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -16,9 +15,10 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.model.I_C_Bank;
-import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -42,9 +42,8 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class ESRBL_CreateInvoiceReferenceStringTest
+public class InvoiceReferenceNosTest
 {
-
 	private ESRImportBL esrImportBL;
 
 	@Before
@@ -69,20 +68,21 @@ public class ESRBL_CreateInvoiceReferenceStringTest
 		final I_C_BPartner invoicePartner = createPartner("InvoicePartner", "1234");
 
 		final I_C_DocType invoiceDocType = createInvoiceDocType(X_C_DocType.DOCBASETYPE_APInvoice);
-		final String documentNo = "1234";
+		final I_C_Invoice invoice = createInvoice(org, invoicePartner, "1234"/*documentNo*/, invoiceDocType);
 
-		final I_C_Invoice invoice = createInvoice(org, invoicePartner, documentNo, invoiceDocType);
-
-		final int checkdigit = esrImportBL.calculateESRCheckDigit("12345600010000123400001234");
-
-		final String expectedReferenceNo = "1234560" // first 7 digits are the accountNo, rpad 0
+		final String referenceNo = "1234560" // first 7 digits are the accountNo, rpad 0
 				+ "001" // next 3 digits are org value, lpad0
-				+ "00001234" // the next 8 digits are the partner value, lpad 0
-				+ "00001234" // the next 8 digits are the document number, lpad 0
-				+ checkdigit;
+				+ lpadZero(Integer.toString(invoicePartner.getC_BPartner_ID()), 8, "BPartnerHint") // the next 8 digits are the bpartner's ID, lpad 0
+				+ lpadZero(Integer.toString(invoice.getC_Invoice_ID()), 8, "InvoiceHint") // the next 8 digits are the document's ID, lpad 0
+		;
+
+		final int checkdigit = esrImportBL.calculateESRCheckDigit(referenceNo);
+		final String expectedReferenceNo = referenceNo + checkdigit;
 
 		// invoke the method under test
-		final String generatedReferenceNo = new ESRBL().createInvoiceReferenceString(invoice, esrBankAccountForPartner);
+		final String generatedReferenceNo = InvoiceReferenceNos
+				.createFor(invoice, esrBankAccountForPartner)
+				.asString();
 
 		assertThat(expectedReferenceNo).isEqualTo(generatedReferenceNo);
 	}
@@ -102,16 +102,18 @@ public class ESRBL_CreateInvoiceReferenceStringTest
 
 		final I_C_Invoice invoice = createInvoice(org, invoicePartner, documentNo, invoiceDocType);
 
-		final int checkdigit = esrImportBL.calculateESRCheckDigit("12345670010000123400001234");
-
-		final String expectedReferenceNo = "1234567" // first 7 digits are the accountNo, rpad 0
+		final String referenceNo = "1234567" // first 7 digits are the accountNo, rpad 0
 				+ "001" // next 3 digits are org value, lpad0
-				+ "00001234" // the next 8 digits are the partner value, lpad 0
-				+ "00001234" // the next 8 digits are the document number, lpad 0
-				+ checkdigit;
+				+ lpadZero(Integer.toString(invoicePartner.getC_BPartner_ID()), 8, "BPartnerHint") // the next 8 digits are the bpartner's ID, lpad 0
+				+ lpadZero(Integer.toString(invoice.getC_Invoice_ID()), 8, "Invoicehint"); // the next 8 digits are the invoice-ID, lpad 0
+
+		final int checkdigit = esrImportBL.calculateESRCheckDigit(referenceNo);
+		final String expectedReferenceNo = referenceNo + checkdigit;
 
 		// invoke the method under test
-		final String generatedReferenceNo = new ESRBL().createInvoiceReferenceString(invoice, esrBankAccountForPartner);
+		final String generatedReferenceNo = InvoiceReferenceNos
+				.createFor(invoice, esrBankAccountForPartner)
+				.asString();
 
 		assertThat(expectedReferenceNo).isEqualTo(generatedReferenceNo);
 	}
@@ -187,5 +189,4 @@ public class ESRBL_CreateInvoiceReferenceStringTest
 
 		return bpBankAccount;
 	}
-
 }

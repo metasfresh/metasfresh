@@ -37,9 +37,9 @@ import org.compiere.print.MPrintFormatItem;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
-import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
+import de.metas.util.StringUtils;
 
 /**
  *	String Form Print ELement.
@@ -67,7 +67,7 @@ public class StringElement extends PrintElement
 		m_paint = paint;
 		if (translateText)
 		{
-			int count = Util.getCount(inText, '@');
+			int count = StringUtils.getCount(inText, '@');
 			if (count > 0 && count % 2 == 0)
 			{
 				m_originalString = inText;
@@ -81,7 +81,7 @@ public class StringElement extends PrintElement
 		m_string_view = new AttributedString[lines.length];
 		for (int i = 0; i < lines.length; i++)
 		{
-			String line = Util.removeCRLF (lines[i]);
+			String line = StringUtils.removeCRLF (lines[i]);
 			m_string_paper[i] = new AttributedString(line);
 			if (line.length() == 0)
 				continue;
@@ -156,7 +156,7 @@ public class StringElement extends PrintElement
 		m_string_view = new AttributedString[lines.length];
 		for (int i = 0; i < lines.length; i++)
 		{
-			String line = Util.removeCRLF (lines[i]);
+			String line = StringUtils.removeCRLF (lines[i]);
 			m_string_paper[i] = new AttributedString(line);
 			if (line.length() == 0)
 				continue;
@@ -231,7 +231,7 @@ public class StringElement extends PrintElement
 		m_string_paper = new AttributedString[lines.length];
 		for (int i = 0; i < lines.length; i++)
 		{
-			String line = Util.removeCRLF (lines[i]);
+			String line = StringUtils.removeCRLF (lines[i]);
 			m_string_paper[i] = new AttributedString(line);
 			if (line.length() > 0)
 			{

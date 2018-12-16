@@ -1,7 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice;
 
-import lombok.NonNull;
-
 import java.util.Optional;
 
 import org.springframework.context.annotation.Profile;
@@ -18,6 +16,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.Confi
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -88,7 +87,7 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 			Loggables.get().addLog("forum_datenaustausch_ch - There is no export config for the recipiend-id={} of the invoice with id={}", recipientId, invoice.getId());
 			return Optional.empty();
 		}
-		final InvoiceExportClientImpl client = new InvoiceExportClientImpl(crossVersionServiceRegistry, config.getExportXmlVersion());
+		final InvoiceExportClientImpl client = new InvoiceExportClientImpl(crossVersionServiceRegistry, config);
 		if (!client.canExport(invoice))
 		{
 			Loggables.get().addLog("forum_datenaustausch_ch - the export-client {} claims that it can't export the invoice with id={}", client.getClass().getSimpleName(), invoice.getId());

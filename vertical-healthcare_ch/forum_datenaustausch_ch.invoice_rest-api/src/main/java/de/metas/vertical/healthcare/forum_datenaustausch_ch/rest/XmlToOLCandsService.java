@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -108,7 +109,7 @@ public class XmlToOLCandsService
 
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 
-	private XmlToOLCandsService(@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint)
+	public XmlToOLCandsService(@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint)
 	{
 		this.orderCandidatesRestEndpoint = orderCandidatesRestEndpoint;
 	}
@@ -121,15 +122,17 @@ public class XmlToOLCandsService
 
 		final JsonOLCandCreateBulkRequest jsonOLCandCreateBulkRequest = createJsonOLCandCreateBulkRequest(
 				xmlInvoice,
-				createOLCandsRequest.getSyncAdvise());
+				createOLCandsRequest.getBPartnerSyncAdvise(),
+				createOLCandsRequest.getProductSyncAdvise()
+				);
 
 		final ResponseEntity<JsonOLCandCreateBulkResponse> orderCandidates = orderCandidatesRestEndpoint.createOrderLineCandidates(jsonOLCandCreateBulkRequest);
 
-		final String poReference = CollectionUtils.extractSingleElement(
+		final String externalHeaderId = CollectionUtils.extractSingleElement(
 				orderCandidates.getBody().getResult(),
-				JsonOLCand::getPoReference);
+				JsonOLCand::getExternalHeaderId);
 
-		final ResponseEntity<JsonAttachment> result = attachXmlToOLCandidates(xmlInvoiceFile, poReference);
+		final ResponseEntity<JsonAttachment> result = attachXmlToOLCandidates(xmlInvoiceFile, externalHeaderId);
 		return result.getBody();
 	}
 
@@ -138,7 +141,8 @@ public class XmlToOLCandsService
 	public static class CreateOLCandsRequest
 	{
 		MultipartFile xmlInvoiceFile;
-		SyncAdvise syncAdvise;
+		SyncAdvise bPartnerSyncAdvise;
+		SyncAdvise productSyncAdvise;
 	}
 
 	private static RequestType unmarshal(@NonNull final MultipartFile file)
@@ -204,9 +208,11 @@ public class XmlToOLCandsService
 		private static final long serialVersionUID = 2013021164753485741L;
 	}
 
-	private JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
+	@VisibleForTesting
+	JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
 			@NonNull final RequestType xmlInvoice,
-			@NonNull final SyncAdvise syncAdvise)
+			@NonNull final SyncAdvise bPartnersSyncAdvise,
+			@NonNull final SyncAdvise productsSyncAdvise)
 	{
 		final JsonOLCandCreateRequestBuilder requestBuilder = JsonOLCandCreateRequest
 				.builder()
@@ -220,7 +226,8 @@ public class XmlToOLCandsService
 		final ImmutableList<JsonOLCandCreateRequest> requests = requestBuilders
 				.stream()
 				.map(JsonOLCandCreateRequestBuilder::build)
-				.map(r -> r.withBPartnerSyncAdvise(syncAdvise))
+				.map(r -> r.withBPartnersSyncAdvise(bPartnersSyncAdvise))
+				.map(r -> r.withProductsSyncAdvise(productsSyncAdvise))
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonOLCandCreateBulkRequest
@@ -235,24 +242,17 @@ public class XmlToOLCandsService
 	{
 		requestBuilder.poReference(createPOReference(payload));
 
+		requestBuilder.externalHeaderId(createExternalHeaderId(payload));
+
 		insertInoviceIntoBuilder(requestBuilder, payload.getInvoice());
 
 		final ImmutableList<JsonOLCandCreateRequestBuilder> builders = insertBodyIntoBuilders(requestBuilder, payload.getBody());
 		return builders;
 	}
 
-	private String createPOReference(@NonNull final PayloadType payload)
+	private String createExternalHeaderId(@NonNull final PayloadType payload)
 	{
-
-		final InvoiceType invoice = payload.getInvoice();
-
-		String requestIdToUse = Check.assumeNotEmpty(
-				invoice.getRequestId(),
-				InvalidXMLException.class, "payload/invoice/requestId may not be empty");
-		if (requestIdToUse.startsWith("KV_"))
-		{
-			requestIdToUse = requestIdToUse.substring(3);
-		}
+		final String requestIdToUse = createPOReference(payload);
 
 		final BillerAddressType biller;
 
@@ -270,6 +270,20 @@ public class XmlToOLCandsService
 				biller.getEanParty(),
 				InvalidXMLException.class, "payload/invoice/requestId may not be empty");
 		return billerEAN + "_" + requestIdToUse;
+	}
+
+	private String createPOReference(final PayloadType payload)
+	{
+		final InvoiceType invoice = payload.getInvoice();
+
+		String requestIdToUse = Check.assumeNotEmpty(
+				invoice.getRequestId(),
+				InvalidXMLException.class, "payload/invoice/requestId may not be empty");
+		if (requestIdToUse.startsWith("KV_"))
+		{
+			requestIdToUse = requestIdToUse.substring(3);
+		}
+		return requestIdToUse;
 	}
 
 	private void insertInoviceIntoBuilder(
@@ -547,19 +561,24 @@ public class XmlToOLCandsService
 
 		for (final JsonOLCandCreateRequestBuilder invoiceRecipientBuilder : invoiceRecipientBuilders)
 		{
-			final String externalId;
+			final String externalLineId;
 			final JsonProductInfo product;
 			final BigDecimal price;
 			final BigDecimal quantity;
 			if (record instanceof RecordTarmedType)
 			{
-				throw new UnsupportedOperationException("Importing RecordTarmedTypes is not yet supported");
+				final RecordTarmedType recordTarmedType = (RecordTarmedType)record;
+
+				externalLineId = createExternalId(invoiceRecipientBuilder, recordTarmedType.getRecordId());
+				product = createProduct(recordTarmedType.getCode(), recordTarmedType.getName());
+				price = recordTarmedType.getAmount();
+				quantity = ONE;
 			}
 			else if (record instanceof RecordDRGType)
 			{
 				final RecordDRGType recordDRGType = (RecordDRGType)record;
 
-				externalId = createExternalId(invoiceRecipientBuilder, recordDRGType.getRecordId());
+				externalLineId = createExternalId(invoiceRecipientBuilder, recordDRGType.getRecordId());
 				product = createProduct(recordDRGType.getCode(), recordDRGType.getName());
 				price = createPrice(recordDRGType.getUnit(), recordDRGType.getUnitFactor(), recordDRGType.getExternalFactor());
 				quantity = recordDRGType.getQuantity();
@@ -568,7 +587,7 @@ public class XmlToOLCandsService
 			{
 				final RecordLabType recordLabType = (RecordLabType)record;
 
-				externalId = createExternalId(invoiceRecipientBuilder, recordLabType.getRecordId());
+				externalLineId = createExternalId(invoiceRecipientBuilder, recordLabType.getRecordId());
 				product = createProduct(recordLabType.getCode(), recordLabType.getName());
 				price = createPrice(recordLabType.getUnit(), recordLabType.getUnitFactor(), recordLabType.getExternalFactor());
 				quantity = recordLabType.getQuantity();
@@ -577,7 +596,7 @@ public class XmlToOLCandsService
 			{
 				final RecordMigelType recordMigelType = (RecordMigelType)record;
 
-				externalId = createExternalId(invoiceRecipientBuilder, recordMigelType.getRecordId());
+				externalLineId = createExternalId(invoiceRecipientBuilder, recordMigelType.getRecordId());
 				product = createProduct(recordMigelType.getCode(), recordMigelType.getName());
 				price = createPrice(recordMigelType.getUnit(), recordMigelType.getUnitFactor(), recordMigelType.getExternalFactor());
 				quantity = recordMigelType.getQuantity();
@@ -586,7 +605,7 @@ public class XmlToOLCandsService
 			{
 				final RecordParamedType recordParamedOtherType = (RecordParamedType)record;
 
-				externalId = createExternalId(invoiceRecipientBuilder, recordParamedOtherType.getRecordId());
+				externalLineId = createExternalId(invoiceRecipientBuilder, recordParamedOtherType.getRecordId());
 				product = createProduct(recordParamedOtherType.getCode(), recordParamedOtherType.getName());
 				price = createPrice(recordParamedOtherType.getUnit(), recordParamedOtherType.getUnitFactor(), recordParamedOtherType.getExternalFactor());
 				quantity = recordParamedOtherType.getQuantity();
@@ -595,7 +614,7 @@ public class XmlToOLCandsService
 			{
 				final RecordDrugType recordDrugType = (RecordDrugType)record;
 
-				externalId = createExternalId(invoiceRecipientBuilder, recordDrugType.getRecordId());
+				externalLineId = createExternalId(invoiceRecipientBuilder, recordDrugType.getRecordId());
 				product = createProduct(recordDrugType.getCode(), recordDrugType.getName());
 				price = createPrice(recordDrugType.getUnit(), recordDrugType.getUnitFactor(), recordDrugType.getExternalFactor());
 				quantity = recordDrugType.getQuantity();
@@ -604,7 +623,7 @@ public class XmlToOLCandsService
 			{
 				final RecordOtherType recordOtherType = (RecordOtherType)record;
 
-				externalId = createExternalId(invoiceRecipientBuilder, recordOtherType.getRecordId());
+				externalLineId = createExternalId(invoiceRecipientBuilder, recordOtherType.getRecordId());
 				product = createProduct(recordOtherType.getCode(), recordOtherType.getName());
 				price = createPrice(recordOtherType);
 				quantity = recordOtherType.getQuantity();
@@ -617,11 +636,12 @@ public class XmlToOLCandsService
 			}
 			final JsonOLCandCreateRequestBuilder serviceRecordBuilder = copyBuilder(invoiceRecipientBuilder);
 			serviceRecordBuilder
-					.externalId(externalId)
+					.externalLineId(externalLineId)
 					.product(product)
 					.price(price)
 					.currencyCode(CURRENCY_CODE)
-					.uomCode(UOM_CODE)
+					// the UOM shall be taken from the product-masterdata, because we don't really know it from the XML file
+					//.uomCode(UOM_CODE)
 					.discount(ZERO)
 					.qty(quantity);
 

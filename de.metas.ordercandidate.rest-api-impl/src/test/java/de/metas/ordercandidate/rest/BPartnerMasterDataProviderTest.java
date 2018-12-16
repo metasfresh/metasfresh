@@ -22,10 +22,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
 import de.metas.ordercandidate.rest.SyncAdvise.IfNotExists;
-import de.metas.ordercandidate.rest.exceptions.BPartnerInfoNotFoundException;
 import mockit.Mocked;
 
 /*
@@ -107,7 +110,7 @@ public class BPartnerMasterDataProviderTest
 		final JsonBPartnerInfo jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
 
 		assertThatThrownBy(() -> bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10)))
-				.isInstanceOf(BPartnerInfoNotFoundException.class)
+				.isInstanceOf(BPartnerIdNotFoundException.class)
 				.hasMessageContaining("Code=jsonBPartner.Code")
 				.hasMessageContaining("GLN=jsonBPartnerLocation.GLN");
 	}
@@ -241,5 +244,87 @@ public class BPartnerMasterDataProviderTest
 		assertThat(bpartnerContactRecordAfter.getExternalId()).isEqualTo("jsonBPartnerContact.ExternalId");
 		assertThat(bpartnerContactRecordAfter.getEMail()).isEqualTo("jsonBPartnerContact.Email");
 		assertThat(bpartnerContactRecordAfter.getC_BPartner_ID()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+	}
+
+	@Test
+	public void getJsonBPartnerById()
+	{
+		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
+		bPartnerRecord.setName("Name");
+		bPartnerRecord.setValue("Value");
+		bPartnerRecord.setCompanyName("CompanyName");
+		bPartnerRecord.setExternalId("ExternalId");
+		saveRecord(bPartnerRecord);
+
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
+		final JsonBPartner result = bpartnerMasterDataProvider.getJsonBPartnerById(bPartnerId);
+
+		assertThat(result.getName()).isEqualTo("Name");
+		assertThat(result.getCode()).isEqualTo("Value");
+		assertThat(result.getCompanyName()).isEqualTo("CompanyName");
+		assertThat(result.getExternalId()).isEqualTo("ExternalId");
+		assertThat(result.getName()).isEqualTo("Name");
+	}
+
+	@Test
+	public void getJsonBPartnerLocationById()
+	{
+		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
+		saveRecord(bPartnerRecord);
+
+		final I_C_Country countryRecord = newInstance(I_C_Country.class);
+		countryRecord.setCountryCode("CountryCode");
+		saveRecord(countryRecord);
+
+		final I_C_Location locationRecord = newInstance(I_C_Location.class);
+		locationRecord.setC_Country(countryRecord);
+		locationRecord.setAddress1("Address1");
+		locationRecord.setAddress2("Address2");
+		locationRecord.setCity("City");
+		locationRecord.setPostal("Postal");
+		locationRecord.setRegionName("State");
+		saveRecord(locationRecord);
+
+		final I_C_BPartner_Location bPartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
+		bPartnerLocationRecord.setC_BPartner(bPartnerRecord);
+		bPartnerLocationRecord.setC_Location(locationRecord);
+		bPartnerLocationRecord.setExternalId("ExternalId");
+		bPartnerLocationRecord.setGLN("GLN");
+		saveRecord(bPartnerLocationRecord);
+
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerRecord.getC_BPartner_ID(), bPartnerLocationRecord.getC_BPartner_Location_ID());
+		final JsonBPartnerLocation result = bpartnerMasterDataProvider.getJsonBPartnerLocationById(bPartnerLocationId);
+
+		assertThat(result.getAddress1()).isEqualTo("Address1");
+		assertThat(result.getAddress2()).isEqualTo("Address2");
+		assertThat(result.getCity()).isEqualTo("City");
+		assertThat(result.getCountryCode()).isEqualTo("CountryCode");
+		assertThat(result.getExternalId()).isEqualTo("ExternalId");
+		assertThat(result.getGln()).isEqualTo("GLN");
+		assertThat(result.getPostal()).isEqualTo("Postal");
+		assertThat(result.getState()).isEqualTo("State");
+	}
+
+	@Test
+	public void getJsonContactById()
+	{
+		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
+		saveRecord(bPartnerRecord);
+
+		final I_AD_User userRecord = newInstance(I_AD_User.class);
+		userRecord.setC_BPartner(bPartnerRecord);
+		userRecord.setEMail("EMail");
+		userRecord.setName("Name");
+		userRecord.setPhone("Phone");
+		userRecord.setExternalId("ExternalId");
+		saveRecord(userRecord);
+
+		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoId(bPartnerRecord.getC_BPartner_ID(), userRecord.getAD_User_ID());
+		final JsonBPartnerContact result = bpartnerMasterDataProvider.getJsonBPartnerContactById(bPartnerContactId);
+
+		assertThat(result.getEmail()).isEqualTo("EMail");
+		assertThat(result.getExternalId()).isEqualTo("ExternalId");
+		assertThat(result.getName()).isEqualTo("Name");
+		assertThat(result.getPhone()).isEqualTo("Phone");
 	}
 }

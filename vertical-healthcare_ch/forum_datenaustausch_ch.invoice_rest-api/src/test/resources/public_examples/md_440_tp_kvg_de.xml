@@ -16,9 +16,9 @@
 			insurance_demand_date="2013-03-25T00:00:00" />
 	</invoice:processing>
 	<invoice:payload type="invoice" copy="0" storno="0">
-		<invoice:credit request_timestamp="1358434445"
+		<invoice:credit request_timestamp="1358435089"
 			request_date="2013-01-17T00:00:00" request_id="23_45.01" />
-		<invoice:invoice request_timestamp="1364223246"
+		<invoice:invoice request_timestamp="1364223890"
 			request_date="2013-03-20T00:00:00" request_id="2009_01:001" />
 		<invoice:body role="physician" place="practice">
 			<invoice:prolog>
@@ -72,7 +72,7 @@
 					</invoice:company>
 				</invoice:bank>
 			</invoice:esr9>
-			<invoice:tiers_garant payment_period="P35D">
+			<invoice:tiers_payant payment_period="P35D">
 				<invoice:biller ean_party="2011234567890"
 					zsr="H121111" uid_number="CHE108791452">
 					<invoice:company>
@@ -173,7 +173,7 @@
 						</invoice:postal>
 					</invoice:company>
 				</invoice:employer>
-			</invoice:tiers_garant>
+			</invoice:tiers_payant>
 			<invoice:kvg case_id="123456-6789"
 				case_date="2013-03-20T00:00:00" insured_id="123.45.678-012"
 				contract_number="AZ-3.456" />

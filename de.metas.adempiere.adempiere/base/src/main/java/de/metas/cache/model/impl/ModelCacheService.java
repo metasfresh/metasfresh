@@ -92,7 +92,7 @@ public class ModelCacheService implements IModelCacheService
 			}
 			else
 			{
-				// return our diabled cache config
+				// return our disabled cache config
 				return cacheConfigDisabled;
 			}
 		}

@@ -320,7 +320,7 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -331,10 +331,13 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getC_BPartner_Effective_ID();
 
+	@Deprecated
 	public org.compiere.model.I_C_BPartner getC_BPartner_Effective();
 
 	@Deprecated
@@ -438,7 +441,7 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -450,10 +453,13 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getC_BP_Location_Effective_ID();
 
+	@Deprecated
 	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Effective();
 
 	@Deprecated
@@ -820,7 +826,7 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -832,8 +838,10 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.sql.Timestamp getDatePromised_Effective();
 
     /** Column definition for DatePromised_Effective */
@@ -1015,7 +1023,7 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -1026,10 +1034,13 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getDropShip_BPartner_Effective_ID();
 
+	@Deprecated
 	public org.compiere.model.I_C_BPartner getDropShip_BPartner_Effective();
 
 	@Deprecated
@@ -1206,34 +1217,57 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/**
-	 * Set External ID.
+	 * Set External Header ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalId (java.lang.String ExternalId);
+	public void setExternalHeaderId (java.lang.String ExternalHeaderId);
 
 	/**
-	 * Get External ID.
+	 * Get External Header ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalId();
+	public java.lang.String getExternalHeaderId();
 
-    /** Column definition for ExternalId */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "ExternalId", null);
-    /** Column name ExternalId */
-    public static final String COLUMNNAME_ExternalId = "ExternalId";
+    /** Column definition for ExternalHeaderId */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_ExternalHeaderId = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "ExternalHeaderId", null);
+    /** Column name ExternalHeaderId */
+    public static final String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
+
+	/**
+	 * Set External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalLineId (java.lang.String ExternalLineId);
+
+	/**
+	 * Get External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalLineId();
+
+    /** Column definition for ExternalLineId */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_ExternalLineId = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "ExternalLineId", null);
+    /** Column name ExternalLineId */
+    public static final String COLUMNNAME_ExternalLineId = "ExternalLineId";
 
 	/**
 	 * Set Übergabeadresse eff..
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -1244,10 +1278,13 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getHandOver_Location_Effective_ID();
 
+	@Deprecated
 	public org.compiere.model.I_C_BPartner_Location getHandOver_Location_Effective();
 
 	@Deprecated
@@ -1317,7 +1354,7 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -1328,10 +1365,13 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getHandOver_Partner_Effective_ID();
 
+	@Deprecated
 	public org.compiere.model.I_C_BPartner getHandOver_Partner_Effective();
 
 	@Deprecated
@@ -1605,7 +1645,7 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -1616,8 +1656,10 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getM_HU_PI_Item_Product_Effective_ID();
 
     /** Column definition for M_HU_PI_Item_Product_Effective_ID */
@@ -1705,7 +1747,7 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -1716,10 +1758,13 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getM_Product_Effective_ID();
 
+	@Deprecated
 	public org.compiere.model.I_M_Product getM_Product_Effective();
 
 	@Deprecated
@@ -1918,7 +1963,7 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -1929,8 +1974,10 @@ public interface I_C_OLCand
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getPriceDifference();
 
     /** Column definition for PriceDifference */

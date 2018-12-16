@@ -25,11 +25,11 @@ import org.adempiere.exceptions.AdempiereException;
  */
 
 
-public class BPartnerInfoNotFoundException extends AdempiereException
+public class ProductNotFoundException extends AdempiereException
 {
 	private static final long serialVersionUID = -4776977540135879202L;
 
-	public BPartnerInfoNotFoundException(String msg)
+	public ProductNotFoundException(String msg)
 	{
 		super(msg);
 	}

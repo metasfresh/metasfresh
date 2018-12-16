@@ -15,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 493556848L;
+	private static final long serialVersionUID = -1708874798L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -1277,20 +1277,36 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
 	}
 
-	/** Set External ID.
-		@param ExternalId External ID	  */
+	/** Set External Header ID.
+		@param ExternalHeaderId External Header ID	  */
 	@Override
-	public void setExternalId (java.lang.String ExternalId)
+	public void setExternalHeaderId (java.lang.String ExternalHeaderId)
 	{
-		set_Value (COLUMNNAME_ExternalId, ExternalId);
+		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
 	}
 
-	/** Get External ID.
-		@return External ID	  */
+	/** Get External Header ID.
+		@return External Header ID	  */
 	@Override
-	public java.lang.String getExternalId () 
+	public java.lang.String getExternalHeaderId () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalHeaderId);
+	}
+
+	/** Set External Line ID.
+		@param ExternalLineId External Line ID	  */
+	@Override
+	public void setExternalLineId (java.lang.String ExternalLineId)
+	{
+		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+	}
+
+	/** Get External Line ID.
+		@return External Line ID	  */
+	@Override
+	public java.lang.String getExternalLineId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalLineId);
 	}
 
 	@Override

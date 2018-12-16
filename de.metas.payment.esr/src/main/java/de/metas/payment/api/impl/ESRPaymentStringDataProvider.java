@@ -30,7 +30,6 @@ import org.compiere.model.I_C_Currency;
 
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.impl.AbstractPaymentStringDataProvider;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -70,15 +69,10 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 		final IPaymentString paymentString = getPaymentString();
 
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
-		if (Check.isEmpty(paymentString.getBPValue()))
-		{
-			Check.assume(bpartnerId > 0, "If this instance's paymentString has no BPValue, then we assume the bPartnerId to be greater than 0. This={}", this);
-			bpBankAccount.setC_BPartner_ID(bpartnerId);
-		}
-		else
-		{
-			Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(contextProvider.getCtx(), paymentString.getBPValue());
-		}
+
+		Check.assume(bpartnerId > 0, "We assume the bPartnerId to be greater than 0. This={}", this);
+		bpBankAccount.setC_BPartner_ID(bpartnerId);
+
 		// bpBankAccount.setC_Bank_ID(C_Bank_ID); // introduce a standard ESR-Dummy-Bank, or leave it empty
 
 		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(contextProvider.getCtx(), "CHF"); // CHF, because it's ESR
