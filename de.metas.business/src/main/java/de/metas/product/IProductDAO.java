@@ -33,6 +33,10 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
 import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface IProductDAO extends ISingletonService
 {
@@ -69,6 +73,25 @@ public interface IProductDAO extends ISingletonService
 	I_M_Product retrieveProductByValue(String value);
 
 	ProductId retrieveProductIdByValue(String value);
+
+	ProductId retrieveProductIdBy(ProductQuery qury);
+
+	@Value
+	@Builder
+	public static class ProductQuery
+	{
+		@NonNull
+		String value;
+
+		@NonNull
+		OrgId orgId;
+
+		@Default
+		boolean includeAnyOrg = false;
+
+		@Default
+		boolean outOfTrx = false;
+	}
 
 	/** @return product category or null */
 	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);

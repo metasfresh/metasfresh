@@ -105,7 +105,7 @@ public class OrderCreateRequestRabbitMQListener
 					.items(olCands.stream()
 							.map(olCand -> MSV3OrderSyncResponseItem.builder()
 									.olCandId(olCand.getId())
-									.orderPackageItemId(Id.of(olCand.getExternalId()))
+									.orderPackageItemId(Id.of(olCand.getExternalLineId()))
 									.build())
 							.collect(ImmutableList.toImmutableList()))
 					.build();
@@ -135,7 +135,7 @@ public class OrderCreateRequestRabbitMQListener
 				final UomId uomId = productBL.getStockingUOMId(productId);
 				final int huPIItemProductId = -1; // TODO fetch it from item.getPackingMaterialId()
 				olCandRequests.add(OLCandCreateRequest.builder()
-						.externalId(item.getId().getValueAsString())
+						.externalLineId(item.getId().getValueAsString())
 						//
 						.bpartner(toOLCandBPartnerInfo(request.getBpartner()))
 						.poReference(poReference)

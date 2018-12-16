@@ -49,7 +49,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.SecureInterface;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -64,6 +63,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.DefaultServiceNamePolicy;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.SoftwareVersion;
 import lombok.NonNull;
 
@@ -485,14 +485,14 @@ public class Adempiere
 	{
 		String retValue = getSummary();
 		// Registered Trademark
-		retValue = Util.replace(retValue, "\u00AE", "(r)");
+		retValue = StringUtils.replace(retValue, "\u00AE", "(r)");
 		// Trademark
-		retValue = Util.replace(retValue, "\u2122", "(tm)");
+		retValue = StringUtils.replace(retValue, "\u2122", "(tm)");
 		// Copyright
-		retValue = Util.replace(retValue, "\u00A9", "(c)");
+		retValue = StringUtils.replace(retValue, "\u00A9", "(c)");
 		// Cr
-		retValue = Util.replace(retValue, Env.NL, " ");
-		retValue = Util.replace(retValue, "\n", " ");
+		retValue = StringUtils.replace(retValue, Env.NL, " ");
+		retValue = StringUtils.replace(retValue, "\n", " ");
 		return retValue;
 	}	// getSummaryAscii
 

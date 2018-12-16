@@ -32,22 +32,22 @@ import lombok.Value;
 public class OLCandQuery
 {
 	/** ID (e.g. document number), of a source document in a remote system; multiple OLCands can have the same ID */
-	private String externalReference;
+	private String externalHeaderId;
 
 	/** {@link I_AD_InputDataSource#COLUMNNAME_InternalName} of the data source the candidates in question were added with. */
 	private String inputDataSourceName;
 
 	public OLCandQuery(
-			String externalReference,
+			String externalHeaderId,
 			String inputDataSourceName)
 	{
-		if (externalReference != null)
+		if (externalHeaderId != null)
 		{
-			Check.assumeNotEmpty(externalReference, "If externalReference is specified, then it may not be empty");
-			Check.assumeNotEmpty(inputDataSourceName, "If externalReference is specified, then inputDataSourceName may not be empty; externalReference={}", externalReference);
+			Check.assumeNotEmpty(externalHeaderId, "If externalHeaderId is specified, then it may not be empty");
+			Check.assumeNotEmpty(inputDataSourceName, "If externalHeaderId is specified, then inputDataSourceName may not be empty; externalHeaderId={}", externalHeaderId);
 		}
 
-		this.externalReference = externalReference;
+		this.externalHeaderId = externalHeaderId;
 		this.inputDataSourceName = inputDataSourceName;
 	}
 }

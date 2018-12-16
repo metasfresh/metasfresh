@@ -1,12 +1,13 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model;
 
+import javax.annotation.Nullable;
+
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.ProcessingMod;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
 
 /*
  * #%L
@@ -39,7 +40,7 @@ public class XmlRequest
 
 	/** expecting default = production */
 	@NonNull
-	String modus;
+	XmlMode modus;
 
 	long validationStatus;
 
@@ -63,6 +64,7 @@ public class XmlRequest
 		}
 
 		return builder
+				.processing(processing.withMod(requestMod.getProcessingMod()))
 				.payload(payload.withMod(requestMod.getPayloadMod()))
 				.build();
 	}
@@ -72,9 +74,12 @@ public class XmlRequest
 	public static class RequestMod
 	{
 		@Nullable
-		String modus;
+		XmlMode modus;
 
 		@Nullable
 		PayloadMod payloadMod;
+
+		@Nullable
+		ProcessingMod processingMod;
 	}
 }

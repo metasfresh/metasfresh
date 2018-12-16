@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.process;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -49,11 +48,12 @@ import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
  * @author cg
- * 
+ *
  */
 public class UpdateAddresses extends JavaProcess
 {
@@ -184,7 +184,7 @@ public class UpdateAddresses extends JavaProcess
 	private boolean updateAddress0(PO po, String columnName) throws Exception
 	{
 		final String addressOld = po.get_ValueAsString(columnName);
-		if (!Util.isEmpty(addressOld, true))
+		if (!Check.isEmpty(addressOld, true))
 		{
 			return false;
 		}
@@ -196,7 +196,7 @@ public class UpdateAddresses extends JavaProcess
 		{
 			final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(po, I_C_BPartner_Location.class);
 			Services.get(IBPartnerBL.class).setAddress(bpLocation);
-			if (Util.isEmpty(bpLocation.getAddress()))
+			if (Check.isEmpty(bpLocation.getAddress()))
 			{
 				log.warn("Cannot calculate Address for " + bpLocation);
 			}
@@ -265,7 +265,7 @@ public class UpdateAddresses extends JavaProcess
 		{
 			whereClause.append(" AND ( ").append(whereAddresses).append(" )");
 		}
-		
+
 		return new Query(getCtx(), table.getTableName(), whereClause.toString(), get_TrxName())
 				.setClient_ID()
 				.setOnlyActiveRecords(true)

@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.pporder.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -42,6 +41,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * {@link I_PP_Order_BOMLine}'s Key
@@ -154,7 +154,7 @@ import de.metas.util.Services;
 		//
 		// Line(s): Product Name
 		sb.append("<br>").append("x");
-		sb.append("<br>").append(Util.maskHTML(productName));
+		sb.append("<br>").append(StringUtils.maskHTML(productName));
 
 		//
 		// Line: Component Type / Variant Group
@@ -164,14 +164,14 @@ import de.metas.util.Services;
 			final String componentType = orderBOMLine.getComponentType();
 			final String componentTypeName = Services.get(IADReferenceDAO.class)
 					.retrieveListNameTrl(Env.getCtx(), BOMComponentType.AD_REFERENCE_ID, componentType);
-			sb.append(Util.maskHTML(componentTypeName));
+			sb.append(StringUtils.maskHTML(componentTypeName));
 
 			// Variant Group
 			final String variantGroup = orderBOMLine.getVariantGroup();
 			if (!Check.isEmpty(variantGroup, true))
 			{
 				sb.append(", ");
-				sb.append(Util.maskHTML(variantGroup.trim()));
+				sb.append(StringUtils.maskHTML(variantGroup.trim()));
 			}
 		}
 
@@ -182,7 +182,7 @@ import de.metas.util.Services;
 			final I_M_AttributeSetInstance asi = orderBOMLine.getM_AttributeSetInstance();
 
 			sb.append("<br>");
-			sb.append(Util.maskHTML(asi == null ? "" : asi.getDescription()));
+			sb.append(StringUtils.maskHTML(asi == null ? "" : asi.getDescription()));
 		}
 
 		//
@@ -216,12 +216,12 @@ import de.metas.util.Services;
 	{
 		return color;
 	}
-	
+
 	public boolean isForIssuing()
 	{
 		return !coProduct;
 	}
-	
+
 	public boolean isForReceiving()
 	{
 		return coProduct;

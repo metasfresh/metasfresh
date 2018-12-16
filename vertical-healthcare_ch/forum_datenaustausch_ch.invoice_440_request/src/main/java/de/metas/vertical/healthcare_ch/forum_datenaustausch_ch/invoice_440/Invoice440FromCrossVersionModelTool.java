@@ -1,5 +1,7 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
+import static de.metas.util.Check.fail;
+
 import java.math.BigInteger;
 import java.util.List;
 
@@ -7,6 +9,7 @@ import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 
 import de.metas.util.Check;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BalanceType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BfsDataType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
@@ -170,7 +173,7 @@ public class Invoice440FromCrossVersionModelTool
 	public JAXBElement<RequestType> fromCrossVersionModel(@NonNull final XmlRequest xRequest)
 	{
 		final RequestType requestType = jaxbRequestObjectFactory.createRequestType();
-		requestType.setModus(xRequest.getModus());
+		requestType.setModus(asModeAsString(xRequest.getModus()));
 
 		requestType.setLanguage(xRequest.getLanguage());
 		requestType.setValidationStatus(VALIDATION_STATUS_OK); // we create correctly encoded invoices
@@ -180,6 +183,21 @@ public class Invoice440FromCrossVersionModelTool
 		requestType.setPayload(createPayloadType(xRequest.getPayload()));
 
 		return jaxbRequestObjectFactory.createRequest(requestType);
+	}
+
+	private String asModeAsString(@NonNull final XmlMode mode)
+	{
+		switch (mode)
+		{
+			// the strings are hardcoded in the generated jaxb code.
+			case PRODUCTION:
+				return "production";
+			case TEST:
+				return "test";
+			default:
+				fail("Unexpected XmlMode={}", mode);
+				return null;
+		}
 	}
 
 	private ProcessingType createProcessingType(@NonNull final XmlProcessing processing)

@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.pporder.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.model.I_PP_Order;
 
@@ -45,6 +44,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * @author cg
@@ -100,7 +100,7 @@ public class ManufacturingOrderKey extends TerminalKey
 			final String documentNo = order.getDocumentNo();
 			sb.append(documentNo);
 		}
-		
+
 		//
 		// Document Type
 		{
@@ -113,7 +113,7 @@ public class ManufacturingOrderKey extends TerminalKey
 			{
 				final I_C_DocType docTypeTrl = InterfaceWrapperHelper.translate(docType, I_C_DocType.class);
 				sb.append(" - ");
-				sb.append(Util.maskHTML(docTypeTrl.getName()));
+				sb.append(StringUtils.maskHTML(docTypeTrl.getName()));
 			}
 		}
 
@@ -123,7 +123,7 @@ public class ManufacturingOrderKey extends TerminalKey
 			final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
 			final String productName = Services.get(IProductBL.class).getProductName(productId);
 			sb.append("<br>");
-			sb.append(Util.maskHTML(productName));
+			sb.append(StringUtils.maskHTML(productName));
 		}
 
 		//
@@ -146,7 +146,7 @@ public class ManufacturingOrderKey extends TerminalKey
 			final String bpartnerName = partner.getName();
 
 			sb.append("<br>");
-			sb.append(Util.maskHTML(bpartnerName));
+			sb.append(StringUtils.maskHTML(bpartnerName));
 		}
 
 		// Promised Date
@@ -165,7 +165,7 @@ public class ManufacturingOrderKey extends TerminalKey
 			final String preparationDateStr = TimeUtil.formatDate(preparationDate, "dd.MM.yyyy HH:mm");
 
 			sb.append("<br>");
-			sb.append(Util.maskHTML(preparationDateStr));
+			sb.append(StringUtils.maskHTML(preparationDateStr));
 		}
 
 		//
@@ -176,7 +176,7 @@ public class ManufacturingOrderKey extends TerminalKey
 			final String productionDateStr = TimeUtil.formatDate(productionDate, "dd.MM.yyyy HH:mm");
 
 			sb.append("<br>");
-			sb.append(Util.maskHTML(productionDateStr));
+			sb.append(StringUtils.maskHTML(productionDateStr));
 		}
 
 		//
@@ -186,7 +186,7 @@ public class ManufacturingOrderKey extends TerminalKey
 		if (!Check.isEmpty(resourceName, true))
 		{
 			sb.append("<br>");
-			sb.append(Util.maskHTML(resourceName));
+			sb.append(StringUtils.maskHTML(resourceName));
 		}
 
 		//

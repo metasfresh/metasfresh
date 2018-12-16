@@ -78,7 +78,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Util;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -95,6 +94,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /**
@@ -626,7 +626,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 						{
 							th th = new th();
 							tr.addElement(th);
-							th.addElement(Util.maskHTML(item.getPrintName(language)));
+							th.addElement(StringUtils.maskHTML(item.getPrintName(language)));
 						}
 						else
 						{
@@ -645,7 +645,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 									a href = new a("javascript:void(0)");
 									href.setID(pde.getColumnName() + "_" + row + "_a");
 									td.addElement(href);
-									href.addElement(Util.maskHTML(value));
+									href.addElement(StringUtils.maskHTML(value));
 									if (cssPrefix != null)
 										href.setClass(cssPrefix + "-href");
 
@@ -654,7 +654,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 								}
 								else
 								{
-									td.addElement(Util.maskHTML(value));
+									td.addElement(StringUtils.maskHTML(value));
 								}
 								if (cssPrefix != null)
 								{
