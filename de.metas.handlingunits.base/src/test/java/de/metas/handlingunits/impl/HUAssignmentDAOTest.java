@@ -83,7 +83,7 @@ public class HUAssignmentDAOTest
 	{
 		final List<I_M_HU_Assignment> huAssignments = createTopLevelAndTUAssignenments();
 		final ImmutableList<Integer> expectedAssignmentIds = CollectionUtils.extractDistinctElements(huAssignments, I_M_HU_Assignment::getM_HU_Assignment_ID);
-		final int expectedTuId = huAssignments.get(0).getM_TU_HU_ID();
+		//final int expectedTuId = huAssignments.get(0).getM_TU_HU_ID();
 		// invoke the method under test
 		final List<I_M_HU_Assignment> result = huAssignmentDAO.retrieveOrderedHUAssignmentRecords(inoutLine);
 

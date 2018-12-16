@@ -50,6 +50,7 @@ public class ComparableComparator<T extends Comparable> implements Comparator<T>
 		return cmp;
 	}
 
+
 	public static <T extends Comparable> ComparableComparator<T> getInstance(Class<T> clazz)
 	{
 		return getInstance(NULLSFIRST_DEFAULT);

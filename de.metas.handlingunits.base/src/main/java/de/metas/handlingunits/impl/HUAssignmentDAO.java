@@ -35,7 +35,8 @@ import java.util.Set;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -544,10 +545,10 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, getModelTableId(model))
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, getId(model))
 				.orderBy() // the ordering is crucial; we need to see the most "specific" records first
-			//	.addColumn(I_M_HU_Assignment.COLUMN_VHU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
-				.addColumn(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
-			//	.addColumn(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
-			//	.addColumn(I_M_HU_Assignment.COLUMN_M_HU_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMN_VHU_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMN_M_HU_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				.create()
 				.list();
