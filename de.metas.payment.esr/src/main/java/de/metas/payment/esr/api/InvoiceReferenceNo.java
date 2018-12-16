@@ -35,24 +35,24 @@ public class InvoiceReferenceNo
 	String org;
 
 	/** Last 8 digits of the C_BPArtner_ID; lpadded with 0 */
-	String bPartner;
+	String bPartnerHint;
 
 	/** Last 8 digits of the C_Invoice_ID; lpadded with 0 */
-	String invoice;
+	String invoiceHint;
 
 	int checkDigit;
 
 	private InvoiceReferenceNo(
 			@NonNull final String bankAccount,
 			@NonNull final String org,
-			@NonNull final String bPartner,
-			@NonNull final String invoice,
+			@NonNull final String bPartnerHint,
+			@NonNull final String invoiceHint,
 			final int checkDigit)
 	{
 		this.bankAccount = bankAccount;
 		this.org = org;
-		this.bPartner = bPartner;
-		this.invoice = invoice;
+		this.bPartnerHint = bPartnerHint;
+		this.invoiceHint = invoiceHint;
 		this.checkDigit = checkDigit;
 	}
 
@@ -61,8 +61,8 @@ public class InvoiceReferenceNo
 		return new StringBuilder()
 				.append(bankAccount)
 				.append(org)
-				.append(bPartner)
-				.append(invoice)
+				.append(bPartnerHint)
+				.append(invoiceHint)
 				.append(checkDigit)
 				.toString();
 	}

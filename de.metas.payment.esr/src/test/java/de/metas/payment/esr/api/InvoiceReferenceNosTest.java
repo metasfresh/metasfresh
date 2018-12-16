@@ -68,17 +68,15 @@ public class InvoiceReferenceNosTest
 		final I_C_BPartner invoicePartner = createPartner("InvoicePartner", "1234");
 
 		final I_C_DocType invoiceDocType = createInvoiceDocType(X_C_DocType.DOCBASETYPE_APInvoice);
-		final String documentNo = "1234";
-
-		final I_C_Invoice invoice = createInvoice(org, invoicePartner, documentNo, invoiceDocType);
+		final I_C_Invoice invoice = createInvoice(org, invoicePartner, "1234"/*documentNo*/, invoiceDocType);
 
 		final String referenceNo = "1234560" // first 7 digits are the accountNo, rpad 0
 				+ "001" // next 3 digits are org value, lpad0
-				+ "00001234" // the next 8 digits are the partner value, lpad 0
-				+ lpadZero(Integer.toString(invoice.getC_Invoice_ID()), 8, "") // the next 8 digits are the document number, lpad 0
+				+ lpadZero(Integer.toString(invoicePartner.getC_BPartner_ID()), 8, "BPartnerHint") // the next 8 digits are the bpartner's ID, lpad 0
+				+ lpadZero(Integer.toString(invoice.getC_Invoice_ID()), 8, "InvoiceHint") // the next 8 digits are the document's ID, lpad 0
 		;
 
-		final int checkdigit = esrImportBL.calculateESRCheckDigit("referenceNo");
+		final int checkdigit = esrImportBL.calculateESRCheckDigit(referenceNo);
 		final String expectedReferenceNo = referenceNo + checkdigit;
 
 		// invoke the method under test
@@ -106,8 +104,8 @@ public class InvoiceReferenceNosTest
 
 		final String referenceNo = "1234567" // first 7 digits are the accountNo, rpad 0
 				+ "001" // next 3 digits are org value, lpad0
-				+ "00001234" // the next 8 digits are the partner value, lpad 0
-				+ lpadZero(Integer.toString(invoice.getC_Invoice_ID()), 8, ""); // the next 8 digits are the invoice-ID, lpad 0
+				+ lpadZero(Integer.toString(invoicePartner.getC_BPartner_ID()), 8, "BPartnerHint") // the next 8 digits are the bpartner's ID, lpad 0
+				+ lpadZero(Integer.toString(invoice.getC_Invoice_ID()), 8, "Invoicehint"); // the next 8 digits are the invoice-ID, lpad 0
 
 		final int checkdigit = esrImportBL.calculateESRCheckDigit(referenceNo);
 		final String expectedReferenceNo = referenceNo + checkdigit;

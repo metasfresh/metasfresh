@@ -78,8 +78,8 @@ public class InvoiceReferenceNos
 		return InvoiceReferenceNo.builder()
 				.bankAccount(bankAccount)
 				.org(org)
-				.bPartner(bPartner)
-				.invoice(invoice)
+				.bPartnerHint(bPartner)
+				.invoiceHint(invoice)
 				.checkDigit(checkDigit)
 				.build();
 	}
@@ -88,16 +88,16 @@ public class InvoiceReferenceNos
 	{
 		final String bankAccount = referenceString.substring(0, 7);
 		final String org = referenceString.substring(7, 10);
-		final String bPartner = removeLeftZeros(referenceString.substring(10, 18));
-		final String invoice = removeLeftZeros(referenceString.substring(18, 26));
+		final String bPartnerHint = removeLeftZeros(referenceString.substring(10, 18));
+		final String invoiceHint = removeLeftZeros(referenceString.substring(18, 26));
 
-		final int checkDigit = computeCheckDigit(bankAccount, org, bPartner, invoice);
+		final int checkDigit = computeCheckDigit(bankAccount, org, bPartnerHint, invoiceHint);
 
 		return InvoiceReferenceNo.builder()
 				.bankAccount(bankAccount)
 				.org(org)
-				.bPartner(bPartner)
-				.invoice(invoice)
+				.bPartnerHint(bPartnerHint)
+				.invoiceHint(invoiceHint)
 				.checkDigit(checkDigit)
 				.build();
 	}
