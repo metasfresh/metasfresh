@@ -39,7 +39,8 @@ import lombok.Value;
 public class JsonOLCand
 {
 	private int id;
-	private String externalId;
+	private String externalLineId;
+	private String externalHeaderId;
 
 	private String poReference;
 
@@ -47,19 +48,19 @@ public class JsonOLCand
 	private JsonOrganization org;
 
 	private JsonBPartnerInfo bpartner;
-	
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonBPartnerInfo billBPartner;
-	
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonBPartnerInfo dropShipBPartner;
-	
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonBPartnerInfo handOverBPartner;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate datePromised;
-	
+
 	private int flatrateConditionsId;
 
 	private int productId;

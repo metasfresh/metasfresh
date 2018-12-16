@@ -1,6 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.xmlunit.assertj.XmlAssert.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,13 +8,20 @@ import java.io.InputStream;
 
 import javax.xml.transform.stream.StreamSource;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
 
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.ProcessingMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
 
 /*
@@ -87,6 +94,81 @@ public class Invoice440RequestConversionServiceTest
 	}
 
 	@Test
+	public void exampleFile_440_tp_kvg_de_mod_test_additionalVia()
+	{
+		final InputStream inputStream = createInputStream("/public_examples/md_440_tp_kvg_de.xml");
+		assertXmlIsValid(inputStream); // guard
+
+		final XmlRequest xRequest = invoice440RequestConversionService.toCrossVersionRequest(createInputStream("/public_examples/md_440_tp_kvg_de.xml"));
+		assertThat(xRequest.getModus()).isEqualTo(XmlMode.PRODUCTION); // guard
+		assertThat(xRequest.getProcessing().getTransport().getVias().size()).isEqualTo(1); // guard
+
+		final XmlRequest withMod = xRequest
+				.withMod(RequestMod.builder()
+						.modus(XmlMode.TEST)
+						.processingMod(ProcessingMod.builder()
+								.transportMod(TransportMod.builder()
+										.from("1234567890123")
+										.additionalViaEAN("2234567890123")
+										.build())
+								.build())
+						.build());
+
+		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		invoice440RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
+
+		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
+		final String exportXmlString = new String(outputStream.toByteArray());
+		System.out.println(exportXmlString);
+
+		final ImmutableMap<String, String> prefix2Uri = ImmutableMap.of("p", "http://www.forum-datenaustausch.ch/invoice");
+
+		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("/p:request")
+				.element(0)
+				.hasAttribute("modus", "test");
+		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport").hasSize(1).element(0).hasAttribute("from", "1234567890123");
+		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport/p:via").hasSize(2).element(0).hasAttribute("via", "2099999999999").hasAttribute("sequence_id", "1");
+		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport/p:via").hasSize(2).element(1).hasAttribute("via", "2234567890123").hasAttribute("sequence_id", "2");
+	}
+
+	@Test
+	public void exampleFile_440_tp_kvg_de_mod_test_replaceVia()
+	{
+		final InputStream inputStream = createInputStream("/public_examples/md_440_tp_kvg_de.xml");
+		assertXmlIsValid(inputStream); // guard
+
+		final XmlRequest xRequest = invoice440RequestConversionService.toCrossVersionRequest(createInputStream("/public_examples/md_440_tp_kvg_de.xml"));
+		assertThat(xRequest.getModus()).isEqualTo(XmlMode.PRODUCTION); // guard
+		assertThat(xRequest.getProcessing().getTransport().getVias().size()).isEqualTo(1); // guard
+
+		final XmlRequest withMod = xRequest
+				.withMod(RequestMod.builder()
+						.modus(XmlMode.TEST)
+						.processingMod(ProcessingMod.builder()
+								.transportMod(TransportMod.builder()
+										.from("1234567890123")
+										.replacementViaEAN("2234567890123")
+										.build())
+								.build())
+						.build());
+
+		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		invoice440RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
+
+		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
+		final String exportXmlString = new String(outputStream.toByteArray());
+		System.out.println(exportXmlString);
+
+		final ImmutableMap<String, String> prefix2Uri = ImmutableMap.of("p", "http://www.forum-datenaustausch.ch/invoice");
+
+		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("/p:request")
+				.element(0)
+				.hasAttribute("modus", "test");
+		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport").hasSize(1).element(0).hasAttribute("from", "1234567890123");
+		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport/p:via").hasSize(1).element(0).hasAttribute("via", "2234567890123").hasAttribute("sequence_id", "1");
+	}
+
+	@Test
 	public void exampleFile_440_tp_mvg_de()
 	{
 		testWithPublicExampleXmlFile("md_440_tp_mvg_de.xml");
@@ -127,7 +209,7 @@ public class Invoice440RequestConversionServiceTest
 
 		final ValidationResult r = v.validateInstance(new StreamSource(inputStream));
 
-		assertThat(r.getProblems()).isEmpty();
+		Assert.assertTrue(r.isValid());
 	}
 
 	private InputStream createInputStream(final String resourceName)

@@ -22,25 +22,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.compiere.db.Database;
-import org.compiere.util.Util;
+
+import de.metas.util.StringUtils;
 
 /**
  * Convert Oracle SQL to PostgreSQL SQL
- * 
+ *
  * @author Victor Perez, Low Heng Sin, Carlos Ruiz
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			<li>BF [ 1824256 ] Convert sql casts
  */
 public class Convert_PostgreSQL extends Convert_SQL92 {
     private static final String NATIVE_MARKER = "NATIVE_"+Database.DB_POSTGRESQL+"_KEYWORD";
-    
+
 	/**
 	 * Cosntructor
 	 */
 	public Convert_PostgreSQL()
 	{
 		super();
-		
+
 		m_map = ConvertMap_PostgreSQL.getConvertMap();
 	} // Convert
 
@@ -55,7 +56,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 	/**
 	 * Convert single Statements. - remove comments - process
 	 * FUNCTION/TRIGGER/PROCEDURE - process Statement
-	 * 
+	 *
 	 * @param sqlStatement
 	 * @return converted statement
 	 */
@@ -90,15 +91,15 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 //					}
 //				}
 //			}
-//		}		
-		
+//		}
+
 		/** Vector to save previous values of quoted strings **/
 		final List<String> retVars = new ArrayList<String>();
 
 		String statement = replaceQuotedStrings(sqlStatement, retVars);
 		statement = convertWithConvertMap(statement);
 		statement = statement.replace(NATIVE_MARKER, "");
-		
+
 		String cmpString = statement.toUpperCase();
 		boolean isCreate = cmpString.startsWith("CREATE ");
 
@@ -133,7 +134,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 		{
 			statement = recoverQuotedStrings(statement, retVars);
 		}
-		
+
 		return Collections.singletonList(statement);
 	} // convertStatement
 
@@ -164,13 +165,13 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 
 	/***************************************************************************
 	 * Converts Decode and Outer Join.
-	 * 
+	 *
 	 * <pre>
 	 *        DECODE (a, 1, 'one', 2, 'two', 'none')
 	 *         =&gt; CASE WHEN a = 1 THEN 'one' WHEN a = 2 THEN 'two' ELSE 'none' END
-	 *  
+	 *
 	 * </pre>
-	 * 
+	 *
 	 * @param sqlStatement
 	 * @return converted statement
 	 */
@@ -178,14 +179,14 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 		String retValue = sqlStatement;
 
 		// Convert all decode parts
-		int found = retValue.toUpperCase().indexOf("DECODE"); 
+		int found = retValue.toUpperCase().indexOf("DECODE");
 		int fromIndex = 0;
 		while ( found != -1) {
 			retValue = convertDecode(retValue, fromIndex);
 			fromIndex = found + 6;
 			found = retValue.toUpperCase().indexOf("DECODE", fromIndex);
 		}
-		
+
 		// Outer Join Handling -----------------------------------------------
 		int index = retValue.toUpperCase().indexOf("SELECT ");
 		if (index != -1 && retValue.indexOf("(+)", index) != -1)
@@ -193,14 +194,14 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 
 		// Convert datatypes from CAST(.. as datatypes):
 		retValue = convertCast(retValue);
-		
+
 		return retValue;
 	} // convertComplexStatement
-	
+
 	private static final String PATTERN_String = "\'([^']|(''))*\'";
 	private static final String PATTERN_DataType = "([\\w]+)(\\(\\d+\\))?";
 	private static final String PATTERN_CAST_STR =
-						"\\bCAST\\b[\\s]*\\([\\s]*"					// CAST<sp>(<sp>		
+						"\\bCAST\\b[\\s]*\\([\\s]*"					// CAST<sp>(<sp>
 						+"(("+PATTERN_String+")|([^\\s]+))"		//	arg1				1(2,3)
 						+"[\\s]*AS[\\s]*"						//	<sp>AS<sp>
 						+"("+PATTERN_DataType+")"				//	arg2 (datatype)		4
@@ -209,7 +210,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 	private static final int PATTERN_CAST_gidx_arg1 = 1;
 	private static final int PATTERN_CAST_gidx_arg2 = 7;	// datatype w/o length
 
-	
+
 	/**
 	 * Convert datatypes from CAST sentences
 	 * <pre>
@@ -220,8 +221,8 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 	private String convertCast(String sqlStatement)
 	{
 		final Matcher matcher = PATTERN_CAST.matcher(sqlStatement);
-		
-		final ConvertMap convertMap = getConvertMap(); 
+
+		final ConvertMap convertMap = getConvertMap();
 		StringBuffer retValue = new StringBuffer(sqlStatement.length());
 		while (matcher.find())
 		{
@@ -239,14 +240,14 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 
 	/**
 	 * Convert RowNum.
-	 * 
+	 *
 	 * <pre>
 	 *        SELECT Col1 FROM tableA WHERE ROWNUM=1
 	 *        =&gt; SELECT Col1 FROM tableA LIMIT 1
 	 *    Assumptions/Limitations:
 	 *    - RowNum not used in SELECT part
 	 * </pre>
-	 * 
+	 *
 	 * @param sqlStatement
 	 * @return converted statement
 	 */
@@ -254,8 +255,8 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 	private String convertRowNum(String sqlStatement) {
 		// log.info("RowNum<== " + sqlStatement);
 
-        sqlStatement = Pattern.compile("rownum",REGEX_FLAGS).matcher(sqlStatement).replaceAll("ROWNUM"); 
-                
+        sqlStatement = Pattern.compile("rownum",REGEX_FLAGS).matcher(sqlStatement).replaceAll("ROWNUM");
+
 		String retValue = null;
 
 		// find into (select from where)
@@ -383,12 +384,12 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 
 	/***************************************************************************
 	 * Converts Update.
-	 * 
+	 *
 	 * <pre>
-	 *        UPDATE C_Order i SET 
+	 *        UPDATE C_Order i SET
 	 *         =&gt; UPDATE C_Order SET
 	 * </pre>
-	 * 
+	 *
 	 * @param sqlStatement
 	 * @return converted statement
 	 */
@@ -396,7 +397,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 	private String convertUpdate(String sqlStatement) {
 		String targetTable = null;
 		String targetAlias = null;
-		
+
 		String sqlUpper = sqlStatement.toUpperCase();
 		StringBuffer token = new StringBuffer();
 		String previousToken = null;
@@ -404,7 +405,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 		int sqlLength = sqlUpper.length();
 		int cnt = 0;
 		boolean isUpdate = false;
-		
+
 		//get target table and alias
 		while (charIndex < sqlLength)
 		{
@@ -414,7 +415,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 				if (token.length() > 0) {
 					cnt++;
 					if ( cnt == 1)
-						isUpdate = "UPDATE".equalsIgnoreCase(token.toString()); 
+						isUpdate = "UPDATE".equalsIgnoreCase(token.toString());
 					else if (cnt == 2)
 						targetTable = token.toString();
 					else if (cnt == 3)
@@ -436,11 +437,11 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 			}
 			charIndex++;
 		}
-		
+
 		if (isUpdate && targetTable != null && sqlUpper.charAt(charIndex) == '(') {
 			int updateFieldsBegin = charIndex;
 			String updateFields = null;
-			
+
 			String select = "";
 
 			//get the sub query
@@ -480,7 +481,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 								updateFields = updateFields.substring(0, updateFields.lastIndexOf(')'));
 								break;
 							}
-							
+
 						}
 						if (")=(".equals(currentToken))
 						{
@@ -609,9 +610,9 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 				{
 					if (joinFieldsBegin == 0)
 					{
-						if (token.length() == 0 && 
-							( "SELECT".equalsIgnoreCase(previousToken) || 
-							  (previousToken != null && previousToken.toUpperCase().endsWith("SELECT")))) 
+						if (token.length() == 0 &&
+							( "SELECT".equalsIgnoreCase(previousToken) ||
+							  (previousToken != null && previousToken.toUpperCase().endsWith("SELECT"))))
 							joinFieldsBegin = i;
 					}
 					else if (c == '(')
@@ -623,26 +624,26 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 			}
 			if (joinFromClause == null) joinFromClause = subQuery.substring(joinFromClauseStart).trim();
 			if (joinAlias == null) joinAlias = joinTable;
-			
+
 			//construct update clause
 			StringBuffer Update = new StringBuffer("UPDATE ");
 			Update.append(targetTable);
 			if (!targetAlias.equals(targetTable))
 				Update.append(" " + targetAlias);
-			
+
 			Update.append(" SET ");
-			
+
 			int f = updateFields.length();
 			int fj = joinFields.length();
 			String updateField = null;
 			String joinField = null;
-			
+
 			boolean useSubQuery = false;
 			if (useAggregateFunction(joinFields))
 				useSubQuery = true;
 
 			while (f > 0) {
-				f = Util.findIndexOf(updateFields, ',');
+				f = StringUtils.findIndexOf(updateFields, ',');
 				if (f < 0) {
 					updateField = updateFields;
 					joinField = joinFields.trim();
@@ -677,20 +678,20 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 						Update.append(" WHERE ");
 						subWhere = addAliasToIdentifier(subWhere, joinAlias);
 						Update.append(subWhere.trim());
-						
+
 						if (mainWhere != null)
 							mainWhere = " AND " + mainWhere;
-	
+
 						else
 							mainWhere = "";
-	
+
 						mainWhere = addAliasToIdentifier(mainWhere, targetAlias);
 						Update.append(mainWhere);
 					}
 				} else {
 
 					updateField = updateFields.substring(0, f);
-					fj = Util.findIndexOf(joinFields, ',');
+					fj = StringUtils.findIndexOf(joinFields, ',');
 					// fieldsjoin.indexOf(',');
 
 					joinField = fj > 0 ? joinFields.substring(0, fj).trim() : joinFields.trim();
@@ -729,13 +730,13 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 		return sqlStatement;
 
 	} // convertDecode
-	
+
 	/**
 	 * Check if one of the field is using standard sql aggregate function
 	 * @param fields
 	 * @return boolean
 	 */
-	private boolean useAggregateFunction(String fields) 
+	private boolean useAggregateFunction(String fields)
 	{
 		String fieldsUpper = fields.toUpperCase();
 		int size = fieldsUpper.length();
@@ -754,7 +755,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 			}
 			else
 			{
-				if (isOperator(ch)) 
+				if (isOperator(ch))
 				{
 					if (buffer.length() > 0)
 					{
@@ -772,13 +773,13 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 						{
 							return true;
 						}
-					}					
+					}
 				}
 				else
 					buffer.append(ch);
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -791,12 +792,12 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 	private String addAliasToIdentifier(String where, String alias)
 	{
 		String sqlkey = "AND,OR,FROM,WHERE,JOIN,BY,GROUP,IN,INTO,SELECT,NOT,SET,UPDATE,DELETE,HAVING,IS,NULL,EXISTS,BETWEEN,LIKE,INNER,OUTER";
-		
+
 		StringTokenizer st = new StringTokenizer(where);
 		String result = "";
 		String token = "";
 		int o = -1;
-		while (true) 
+		while (true)
 		{
 			token = st.nextToken();
 			String test = token.startsWith("(") ? token.substring(1) : token;
@@ -806,7 +807,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 				//skip subquery, non identifier and fully qualified identifier
 				if (o != -1)
 					result = result + " " + token;
-				else 
+				else
 				{
 					result = result + " ";
 					StringBuffer t = new StringBuffer();
@@ -834,7 +835,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 					}
 					if (t.length() > 0)
 					{
-						if ("SELECT".equalsIgnoreCase(t.toString().toUpperCase())) 
+						if ("SELECT".equalsIgnoreCase(t.toString().toUpperCase()))
 						{
 							o = 0;
 							result = result + t.toString();
@@ -846,7 +847,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 							result = result + t.toString();
 					}
 				}
-				
+
 				if (o != -1) {
 					for (int i = 0; i < token.length(); i++) {
 						char c = token.charAt(i);
@@ -868,7 +869,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Check if token is a valid sql identifier
 	 * @param token
@@ -885,20 +886,20 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 		}
 		if (token.startsWith("'") && token.endsWith("'"))
 			return false;
-		else 
+		else
 		{
 			try {
 				new BigDecimal(token);
 				return false;
 			} catch (NumberFormatException e) {}
 		}
-		
+
 		if (isSQLFunctions(token))
 			return false;
-		
+
 		return true;
 	}
-	
+
 	private boolean isSQLFunctions(String token)
 	{
 		if (token.equalsIgnoreCase("current_timestamp"))
@@ -913,15 +914,15 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 			return true;
 		return false;
 	}
-	
+
 	// begin vpj-cd e-evolution 08/02/2005
 	/***************************************************************************
 	 * convertAlias - for compatibility with 8.1
-	 * 
+	 *
 	 * @param sqlStatement
 	 * @return converted statementf
 	 */
-	private String convertAlias(String sqlStatement) {     
+	private String convertAlias(String sqlStatement) {
 		String[] tokens = sqlStatement.split("\\s");
 		String table = null;
 		String alias = null;
@@ -930,10 +931,10 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 			table = tokens[1];
 			alias = tokens[2];
 		} else if ("INSERT".equalsIgnoreCase(tokens[0])) {
-			if ("VALUES".equalsIgnoreCase(tokens[3]) || 
-				"SELECT".equalsIgnoreCase(tokens[3])) 
+			if ("VALUES".equalsIgnoreCase(tokens[3]) ||
+				"SELECT".equalsIgnoreCase(tokens[3]))
 				return sqlStatement;
-			if (tokens[2].indexOf('(') > 0) 
+			if (tokens[2].indexOf('(') > 0)
 				return sqlStatement;
 			else if ((tokens[3].indexOf('(') < 0) ||
 					tokens[3].indexOf('(') > 0) {
@@ -947,7 +948,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 			if ("WHERE".equalsIgnoreCase(tokens[3])) return sqlStatement;
 			table = tokens[2];
 			alias = tokens[3];
-		} 
+		}
 		if (table != null && alias != null ) {
 			if (alias.indexOf('(') > 0) alias = alias.substring(0, alias.indexOf('('));
 			String converted = sqlStatement.replaceFirst("\\s"+alias+"\\s", " ");
@@ -967,7 +968,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 		} else {
 			return sqlStatement;
 		}
-	} // 
+	} //
 	// end vpj-cd e-evolution 02/24/2005 PostgreSQL
 
 	// begin vpj-cd 08/02/2005
@@ -1020,8 +1021,8 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 				// begin_col + "en column:" + end_col );
 				// System.out.println(" type " + sqlStatement.substring(end_col
 				// + 1));
-				String rest = sqlStatement.substring(end_col + 1); 
-				
+				String rest = sqlStatement.substring(end_col + 1);
+
 				if (action.equals(" ADD ")) {
 					if (rest.toUpperCase().indexOf(" DEFAULT ") != -1) {
 						String beforeDefault = rest.substring(0, rest.toUpperCase().indexOf(" DEFAULT "));
@@ -1074,12 +1075,12 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 				} else if (action.equals(" MODIFY "))
 				{
 					rest = rest.trim();
-					if (rest.toUpperCase().startsWith("NOT ") || rest.toUpperCase().startsWith("NULL ") 
+					if (rest.toUpperCase().startsWith("NOT ") || rest.toUpperCase().startsWith("NULL ")
 							|| rest.toUpperCase().equals("NULL") || rest.toUpperCase().equals("NOT NULL"))
 					{
 						type = null;
 					}
-					else 
+					else
 					{
 						int typeEnd = rest.indexOf(' ');
 						type = typeEnd > 0 ? rest.substring(0, typeEnd).trim() : rest;
@@ -1108,12 +1109,12 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 						defaultvalue = defaultvalue.trim();
 						if(defaultvalue.startsWith("'") && defaultvalue.endsWith("'"))
 							defaultvalue = defaultvalue.substring(1, defaultvalue.length() - 1);
-						
+
 						if (rest != null && rest.toUpperCase().indexOf("NOT NULL") >= 0)
 							nullclause = "NOT NULL";
 						else if (rest != null && rest.toUpperCase().indexOf("NULL") >= 0)
 							nullclause = "NULL";
-							
+
 						// return DDL;
 					}
 					else if ( rest != null && rest.toUpperCase().indexOf("NOT NULL") >= 0 ) {
@@ -1125,9 +1126,9 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 							rest = rest.substring(idx);
 						}
 						rest = rest.substring("NOT NULL".length());
-						
+
 						nullclause = "NOT NULL";
-						
+
 					}
 					else if ( rest != null && rest.toUpperCase().indexOf("NULL") >= 0) {
 						// metas: 03306: It seems that the data type contains more then one words
@@ -1138,10 +1139,10 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 							rest = rest.substring(idx);
 						}
 						rest = rest.substring("NULL".length());
-						
+
 						nullclause = "NULL";
 					}
-					
+
 					// metas: 03306: It seems that the data type contains more then one words
 					if (rest.length() > 0)
 					{
@@ -1168,7 +1169,7 @@ public class Convert_PostgreSQL extends Convert_SQL92 {
 						DDL = DDL + "'" + defaultvalue + "'";
 					else
 						DDL = DDL + "null";
-					DDL = DDL + ")";					
+					DDL = DDL + ")";
 				}
 				return DDL;
 			}

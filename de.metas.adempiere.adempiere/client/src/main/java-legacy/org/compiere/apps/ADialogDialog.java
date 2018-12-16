@@ -28,11 +28,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 import javax.swing.Icon;
 import javax.swing.JMenu;
@@ -52,10 +47,13 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextPane;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * Dialog Windows
@@ -66,7 +64,7 @@ import org.compiere.util.Util;
 public final class ADialogDialog extends CDialog implements ActionListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5670261006862936363L;
 
@@ -123,7 +121,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 		init();
 	}
-	
+
 	public void showCenterScreen()
 	{
 		AEnv.showCenterWindow(getOwner(), this);
@@ -135,7 +133,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 	private void init()
 	{
 		assertUIOutOfTransaction();
-		
+
 		try
 		{
 			jbInit();
@@ -175,7 +173,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	/**
 	 * Sets message and messageType to be displayed.
-	 * 
+	 *
 	 * @param message
 	 * @param messageType
 	 */
@@ -194,7 +192,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	/**
 	 * Window Events - requestFocus
-	 * 
+	 *
 	 * @param e
 	 */
 	@Override
@@ -245,7 +243,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	/**
 	 * Static Constructor
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -288,14 +286,14 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	/**
 	 * Convert to HTML and Calculate Size
-	 * 
+	 *
 	 * @param message message
 	 */
 	private void setInfoMessage(final String message)
 	{
 		final StringBuilder sb = new StringBuilder(message.length() + 20);
 		sb.append("<b>");
-		String html = Util.maskHTML(message);
+		String html = StringUtils.maskHTML(message);
 		char[] chars = html.toCharArray();
 		boolean first = true;
 		int paras = 0;
@@ -335,7 +333,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	/**************************************************************************
 	 * Set Info
-	 * 
+	 *
 	 * @param messageType
 	 */
 	private void setInfoIcon(int messageType)
@@ -369,7 +367,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	/**************************************************************************
 	 * ActionListener
-	 * 
+	 *
 	 * @param e
 	 */
 	@Override
@@ -405,7 +403,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	/**
 	 * Get Return Code
-	 * 
+	 *
 	 * @return return code ({@link #A_OK}, {@link #A_CANCEL}, {@link #A_CLOSE})
 	 */
 	public int getReturnCode()
@@ -415,10 +413,10 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	/**
 	 * Sets initial answer (i.e. button that will be preselected by default).
-	 * 
+	 *
 	 * Please note that this is not the default answer that will be returned by {@link #getReturnCode()} if user does nothing (i.e. closes the window).
 	 * It is just the preselectated button.
-	 * 
+	 *
 	 * @param initialAnswer {@link #A_OK}, {@link #A_CANCEL}.
 	 */
 	public void setInitialAnswer(final int initialAnswer)

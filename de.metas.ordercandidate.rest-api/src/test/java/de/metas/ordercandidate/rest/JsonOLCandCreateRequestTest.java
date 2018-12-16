@@ -45,6 +45,84 @@ public class JsonOLCandCreateRequestTest
 	}
 
 	@Test
+	public void test_JsonProduct() throws Exception
+	{
+		final JsonProductInfo product = JsonProductInfo.builder()
+				.code("code")
+				.type(JsonProductInfo.Type.ITEM)
+				.build();
+		testSerializeDeserialize(product);
+	}
+
+	@Test
+	public void test_JsonBPartner() throws Exception
+	{
+		final JsonBPartner pPartner = JsonBPartner.builder()
+				.code("bp1")
+				.name("bp1 name")
+				.build();
+		testSerializeDeserialize(pPartner);
+	}
+
+	@Test
+	public void test_JsonBPartnerLocation() throws Exception
+	{
+		final JsonBPartnerLocation bPartnerLocation = JsonBPartnerLocation.builder()
+				.address1("address1")
+				.address2("address2")
+				.postal("12345")
+				.city("city")
+				.countryCode("DE")
+				.build();
+		testSerializeDeserialize(bPartnerLocation);
+	}
+
+	@Test
+	public void test_JsonBPartnerContact() throws Exception
+	{
+		final JsonBPartnerContact contact = JsonBPartnerContact.builder()
+				.name("john doe")
+				.email("john@doe.com")
+				.phone("+123456789")
+				.build();
+		testSerializeDeserialize(contact);
+	}
+
+	@Test
+	public void test_JsonBPartnerInfo() throws Exception
+	{
+		final JsonBPartnerInfo bPartnerInfo = JsonBPartnerInfo.builder()
+				.bpartner(JsonBPartner.builder()
+						.code("bp1")
+						.name("bp1 name")
+						.build())
+				.location(JsonBPartnerLocation.builder()
+						.address1("address1")
+						.address2("address2")
+						.postal("12345")
+						.city("city")
+						.countryCode("DE")
+						.build())
+				.contact(JsonBPartnerContact.builder()
+						.name("john doe")
+						.email("john@doe.com")
+						.phone("+123456789")
+						.build())
+				.build();
+		testSerializeDeserialize(bPartnerInfo);
+	}
+
+	@Test
+	public void test_JsonDocTypeInfo() throws Exception
+	{
+		final JsonDocTypeInfo docType = JsonDocTypeInfo.builder()
+				.docBaseType("docBaseType")
+				.docSubType("docSubType")
+				.build();
+		testSerializeDeserialize(docType);
+	}
+
+	@Test
 	public void test_JsonOLCandCreateRequest() throws Exception
 	{
 		testSerializeDeserialize(createDummyJsonOLCandCreateRequest());
@@ -86,14 +164,21 @@ public class JsonOLCandCreateRequestTest
 				.build();
 	}
 
+	@Test
+	public void test_realJson() throws IOException
+	{
+		final JsonOLCandCreateBulkRequest bulkRequest = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
+		testSerializeDeserialize(bulkRequest);
+	}
+
 	private void testSerializeDeserialize(@NonNull final Object obj) throws IOException
 	{
-		System.out.println("object: " + obj);
+		//System.out.println("object: " + obj);
 		final String json = jsonObjectMapper.writeValueAsString(obj);
-		System.out.println("json: " + json);
+		//System.out.println("json: " + json);
 
 		final Object objDeserialized = jsonObjectMapper.readValue(json, obj.getClass());
-		System.out.println("object deserialized: " + objDeserialized);
+		//System.out.println("object deserialized: " + objDeserialized);
 
 		Assert.assertEquals(obj, objDeserialized);
 	}

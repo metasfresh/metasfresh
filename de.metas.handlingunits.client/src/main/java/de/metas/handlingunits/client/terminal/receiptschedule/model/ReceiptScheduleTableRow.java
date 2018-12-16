@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.receiptschedule.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -48,6 +47,7 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 {
@@ -135,12 +135,12 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 			productNameAndASI.append("<html>");
 
 			final String productName = getM_Product().getName();
-			productNameAndASI.append(Util.maskHTML(productName));
+			productNameAndASI.append(StringUtils.maskHTML(productName));
 
 			final String asiDescription = getASIDescription();
 			if (!Check.isEmpty(asiDescription, true))
 			{
-				productNameAndASI.append("<br><i>").append(Util.maskHTML(asiDescription)).append("</i>");
+				productNameAndASI.append("<br><i>").append(StringUtils.maskHTML(asiDescription)).append("</i>");
 			}
 
 			productNameAndASI.append("</html>");

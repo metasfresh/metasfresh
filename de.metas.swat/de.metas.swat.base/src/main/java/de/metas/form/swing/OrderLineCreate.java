@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.form.swing;
 
@@ -13,12 +13,12 @@ package de.metas.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,18 +67,18 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * @author Teo Sarca, teo.sarca@gmail.com
- * 
+ *
  */
 public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 4930221599499941808L;
 
@@ -214,10 +214,10 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 				+ I_AD_Val_Rule.COLUMNNAME_AD_Val_Rule_ID + "=?",
 				AD_Val_Rule_ID);
 		StringBuffer sb = new StringBuffer();
-		if (!Util.isEmpty(code, true)) {
+		if (!Check.isEmpty(code, true)) {
 			sb.append("(").append(code).append(")");
 		}
-		if (!Util.isEmpty(whereClause, true)) {
+		if (!Check.isEmpty(whereClause, true)) {
 			if (sb.length() > 0)
 				sb.append(" AND ");
 			sb.append("(").append(whereClause).append(")");

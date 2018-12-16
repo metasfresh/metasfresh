@@ -1,11 +1,7 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion;
 
-import lombok.NonNull;
-
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
 import javax.xml.bind.JAXBContext;
@@ -14,9 +10,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -79,16 +74,20 @@ public class JaxbUtil
 		{
 			final JAXBContext jaxbContext = JAXBContext.newInstance(jaxbType.getPackage().getName());
 
-			final Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
-			final XMLStreamWriter xmlStreamWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
-
 			final Marshaller marshaller = jaxbContext.createMarshaller();
-			marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, xsdName); // important; finding the correct converter depends on this
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true); // since we are doing XML anyways, we can also expend some tabs and newlines..
 
-			marshaller.marshal(jaxbElement, xmlStreamWriter);
+			marshaller.setProperty(Marshaller.JAXB_ENCODING, StandardCharsets.UTF_8.name());
+			marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, xsdName); // important; for us, finding the correct converter depends on the schema location
+
+			// we want the XML header to have " (just like all the rest of the XML) and not '
+			// background: some systems that shall be able to work with our XML have issues with the single quote in the XML header
+			// https://stackoverflow.com/questions/18451870/altering-the-xml-header-produced-by-the-jaxb-marshaller/32892565
+			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true); // let the marshaler *not* provide stupid single-quote header
+			marshaller.setProperty("com.sun.xml.internal.bind.xmlHeaders", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // let the marshaller provide our header
+
+			marshaller.marshal(jaxbElement, outputStream);
 		}
-		catch (JAXBException | XMLStreamException | FactoryConfigurationError e)
+		catch (JAXBException | FactoryConfigurationError e)
 		{
 			throw new RuntimeException(e);
 		}

@@ -27,14 +27,14 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 
 
 /**
  *	Alert Rule Model
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MAlertRule.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
@@ -63,10 +63,10 @@ public class MAlertRule extends X_AD_AlertRule
 	{
 		super(ctx, rs, trxName);
 	}	//	MAlertRule
-	
+
 	/** Alert */
 	private MAlert m_parent = null;
-	
+
 	/**
 	 * Get parent
 	 * @return parent alert
@@ -76,7 +76,7 @@ public class MAlertRule extends X_AD_AlertRule
 			m_parent = new MAlert(getCtx(), getAD_Alert_ID(), get_TrxName());
 		return m_parent;
 	}
-	
+
 	/**
 	 * Set parent alert.
 	 * NOTE: is not setting AD_Alert_ID
@@ -85,7 +85,7 @@ public class MAlertRule extends X_AD_AlertRule
 	public void setParent(MAlert alert) {
 		m_parent = alert;
 	}
-	
+
 	/**
 	 *	Get Sql
 	 *	@return sql
@@ -96,7 +96,7 @@ public class MAlertRule extends X_AD_AlertRule
 	{
 		return getSql(false);
 	}
-	
+
 	/**
 	 * Get Sql
 	 * @param applySecurity apply role/client security
@@ -132,7 +132,7 @@ public class MAlertRule extends X_AD_AlertRule
 			finalSQL += " " + getOtherClause();
 		return finalSQL;
 	}	//	getSql
-	
+
 	/**
 	 * Create Report File
 	 * @param extension file extension
@@ -140,7 +140,7 @@ public class MAlertRule extends X_AD_AlertRule
 	 */
 	public File createReportFile(String extension)
 	{
-		if (Util.isEmpty(extension))
+		if (Check.isEmpty(extension))
 		{
 			throw new IllegalArgumentException("Parameter extension cannot be empty");
 		}
@@ -169,7 +169,7 @@ public class MAlertRule extends X_AD_AlertRule
 		}
 		return file;
 	}
-	
+
 	/**
 	 * 	Before Save
 	 *	@param newRecord new
@@ -184,14 +184,14 @@ public class MAlertRule extends X_AD_AlertRule
 			setErrorMsg(null);
 		return true;
 	}	//	beforeSave
-	
+
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success) {
 		if (!success)
 			return false;
 		return updateParent();
 	}
-	
+
 	@Override
 	protected boolean afterDelete(boolean success) {
 		if (!success)
@@ -232,5 +232,5 @@ public class MAlertRule extends X_AD_AlertRule
 		sb.append ("]");
 		return sb.toString ();
 	}	//	toString
-	
+
 }	//	MAlertRule

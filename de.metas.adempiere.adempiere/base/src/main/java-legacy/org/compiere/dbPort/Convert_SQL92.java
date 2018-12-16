@@ -16,10 +16,11 @@ package org.compiere.dbPort;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
 
 /***
  * Convert from oracle syntax to sql 92 standard
@@ -27,10 +28,10 @@ import org.compiere.util.Util;
  *
  */
 public abstract class Convert_SQL92 extends Convert {
-	
+
 	/**	Logger	*/
 	private static Logger	log	= LogManager.getLogger(Convert_SQL92.class);
-	
+
 	/**************************************************************************
 	 *  Convert Outer Join.
 	 *  Converting joins can ve very complex when multiple tables/keys are involved.
@@ -55,14 +56,14 @@ public abstract class Convert_SQL92 extends Convert {
 	{
 		boolean trace = false;
 		//
-		int fromIndex = Util.findIndexOf (sqlStatement.toUpperCase(), " FROM ");
-		int whereIndex = Util.findIndexOf(sqlStatement.toUpperCase(), " WHERE ");
+		int fromIndex = StringUtils.findIndexOf (sqlStatement.toUpperCase(), " FROM ");
+		int whereIndex = StringUtils.findIndexOf(sqlStatement.toUpperCase(), " WHERE ");
 		//begin vpj-cd e-evolution 03/14/2005 PostgreSQL
 		//int endWhereIndex = Util.findIndexOf(sqlStatement.toUpperCase(), " GRPUP BY ");
-		int endWhereIndex = Util.findIndexOf(sqlStatement.toUpperCase(), " GROUP BY ");
+		int endWhereIndex = StringUtils.findIndexOf(sqlStatement.toUpperCase(), " GROUP BY ");
         //end vpj-cd e-evolution 03/14/2005	PostgreSQL
 		if (endWhereIndex == -1)
-			endWhereIndex = Util.findIndexOf(sqlStatement.toUpperCase(), " ORDER BY ");
+			endWhereIndex = StringUtils.findIndexOf(sqlStatement.toUpperCase(), " ORDER BY ");
 		if (endWhereIndex == -1)
 			endWhereIndex = sqlStatement.length();
 		//
@@ -191,10 +192,10 @@ public abstract class Convert_SQL92 extends Convert {
 		StringBuffer newFrom = new StringBuffer ();
 		for (int i = 0; i < joins.size(); i++)
 		{
-			Join first = new Join ((String)joins.get(i));
-			first.setMainTable((String)fromLookup.get(first.getMainAlias()));
+			Join first = new Join (joins.get(i));
+			first.setMainTable(fromLookup.get(first.getMainAlias()));
 			fromAlias.remove(first.getMainAlias());     //  remove from list
-			first.setJoinTable((String)fromLookup.get(first.getJoinAlias()));
+			first.setJoinTable(fromLookup.get(first.getJoinAlias()));
 			fromAlias.remove(first.getJoinAlias());     //  remove from list
 			if (trace)
 				log.info("-First: " + first);
@@ -210,9 +211,9 @@ public abstract class Convert_SQL92 extends Convert {
 			//  keep it open - check for other key comparisons
 			for (int j = i+1; j < joins.size(); j++)
 			{
-				Join second = new Join ((String)joins.get(j));
-				second.setMainTable((String)fromLookup.get(second.getMainAlias()));
-				second.setJoinTable((String)fromLookup.get(second.getJoinAlias()));
+				Join second = new Join (joins.get(j));
+				second.setMainTable(fromLookup.get(second.getMainAlias()));
+				second.setJoinTable(fromLookup.get(second.getJoinAlias()));
 				if ((first.getMainTable().equals(second.getMainTable())
 						&& first.getJoinTable().equals(second.getJoinTable()))
 					|| second.isConditionOf(first) )
@@ -225,9 +226,9 @@ public abstract class Convert_SQL92 extends Convert {
 					//----
 					for (int k = i+1; k < joins.size(); k++)
 					{
-						Join third = new Join ((String)joins.get(k));
-						third.setMainTable((String)fromLookup.get(third.getMainAlias()));
-						third.setJoinTable((String)fromLookup.get(third.getJoinAlias()));
+						Join third = new Join (joins.get(k));
+						third.setMainTable(fromLookup.get(third.getMainAlias()));
+						third.setJoinTable(fromLookup.get(third.getJoinAlias()));
 						if (third.isConditionOf(second))
 						{
 							if (trace)
@@ -247,9 +248,9 @@ public abstract class Convert_SQL92 extends Convert {
 			//  check dependency on first table
 			for (int j = i+1; j < joins.size(); j++)
 			{
-				Join second = new Join ((String)joins.get(j));
-				second.setMainTable((String)fromLookup.get(second.getMainAlias()));
-				second.setJoinTable((String)fromLookup.get(second.getJoinAlias()));
+				Join second = new Join (joins.get(j));
+				second.setMainTable(fromLookup.get(second.getMainAlias()));
+				second.setJoinTable(fromLookup.get(second.getJoinAlias()));
 				if (first.getMainTable().equals(second.getMainTable()))
 				{
 					if (trace)
@@ -269,9 +270,9 @@ public abstract class Convert_SQL92 extends Convert {
 					//----
 					for (int k = i+1; k < joins.size(); k++)
 					{
-						Join third = new Join ((String)joins.get(k));
-						third.setMainTable((String)fromLookup.get(third.getMainAlias()));
-						third.setJoinTable((String)fromLookup.get(third.getJoinAlias()));
+						Join third = new Join (joins.get(k));
+						third.setMainTable(fromLookup.get(third.getMainAlias()));
+						third.setJoinTable(fromLookup.get(third.getJoinAlias()));
 						if (second.getJoinTable().equals(third.getMainTable()))
 						{
 							if (trace)
@@ -320,7 +321,7 @@ public abstract class Convert_SQL92 extends Convert {
 			log.info("OuterJoin==> " + retValue.toString());
 		return retValue.toString();
 	}   //  convertOuterJoin
-	
+
 	/**************************************************************************
 	 *  Converts Decode.
 	 *  <pre>
@@ -338,11 +339,11 @@ public abstract class Convert_SQL92 extends Convert {
 
 		int index = statement.toUpperCase().indexOf("DECODE", fromIndex);
 		if (index <= 0) return sqlStatement;
-		
+
 		char previousChar = statement.charAt(index - 1);
 		if (!(Character.isWhitespace(previousChar) || isOperator(previousChar)))
 			return sqlStatement;
-		
+
 		String firstPart = statement.substring(0,index);
 
 		//  find the opening (
@@ -356,17 +357,17 @@ public abstract class Convert_SQL92 extends Convert {
 			if (c == '(') break;
 			return sqlStatement;
 		}
-		
+
 		statement = statement.substring(index+1);
 
 		//  find the expression "a" - find first , ignoring ()
-		index = Util.findIndexOf (statement, ',');
+		index = StringUtils.findIndexOf (statement, ',');
 		String expression = statement.substring(0, index).trim();
 	//	log.info("Expression=" + expression);
 
 		//  Pairs "1, 'one',"
 		statement = statement.substring(index+1);
-		index = Util.findIndexOf (statement, ',');
+		index = StringUtils.findIndexOf (statement, ',');
 		while (index != -1)
 		{
 			String first = statement.substring(0, index);
@@ -377,7 +378,7 @@ public abstract class Convert_SQL92 extends Convert {
 			boolean error = false;
 			if (cc == ',')
 			{
-				index = Util.findIndexOf (statement, ',',')');
+				index = StringUtils.findIndexOf (statement, ',',')');
 				if (index == -1)
 					error = true;
 				else
@@ -387,7 +388,7 @@ public abstract class Convert_SQL92 extends Convert {
 						.append(" THEN ").append(second.trim());
 		//			log.info(">>" + sb.toString());
 					statement = statement.substring(index+1);
-					index = Util.findIndexOf (statement, ',',')');
+					index = StringUtils.findIndexOf (statement, ',',')');
 				}
 			}
 			else if (cc == ')')
@@ -413,15 +414,15 @@ public abstract class Convert_SQL92 extends Convert {
 	//	log.info("DECODE==> " + sb.toString());
 		return sb.toString();
 	}	//  convertDecode
-	
+
 	/***************************************************************************
 	 * Converts Delete.
-	 * 
+	 *
 	 * <pre>
-	 *        DELETE C_Order i WHERE  
-	 *         =&gt; DELETE FROM C_Order WHERE  
+	 *        DELETE C_Order i WHERE
+	 *         =&gt; DELETE FROM C_Order WHERE
 	 * </pre>
-	 * 
+	 *
 	 * @param sqlStatement
 	 * @return converted statement
 	 */
@@ -435,7 +436,7 @@ public abstract class Convert_SQL92 extends Convert {
 
 		return sqlStatement;
 	} // convertDelete
-	
+
 	/**
 	 * Is character a valid sql operator
 	 * @param c
