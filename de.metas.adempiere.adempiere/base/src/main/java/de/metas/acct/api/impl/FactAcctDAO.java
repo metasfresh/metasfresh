@@ -32,6 +32,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.util.Env;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
@@ -53,15 +54,13 @@ public class FactAcctDAO implements IFactAcctDAO
 
 		return countDeleted;
 	}
-	
+
 	@Override
 	public int deleteForDocumentModel(@NonNull final Object documentObj)
 	{
-		Properties ctx = InterfaceWrapperHelper.getCtx(documentObj);
-		int adTableId = InterfaceWrapperHelper.getModelTableId(documentObj);
-		int recordId = InterfaceWrapperHelper.getId(documentObj);
-		String trxName = InterfaceWrapperHelper.getTrxName(documentObj);
-		final int countDeleted = retrieveQueryForDocument(ctx, adTableId, recordId, trxName)
+		final int adTableId = InterfaceWrapperHelper.getModelTableId(documentObj);
+		final int recordId = InterfaceWrapperHelper.getId(documentObj);
+		final int countDeleted = retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
 				.create()
 				.deleteDirectly();
 
