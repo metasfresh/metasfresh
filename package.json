@@ -8,7 +8,7 @@
     "start": "node server.js",
     "storybook": "node .storybook/findStories && start-storybook -p 6006",
     "stylelint": "stylelint 'src/assets/**/*.css'",
-    "test:watch": "jest --watch",
+    "test:watch": "jest --watch --verbose false",
     "test": "jest",
     "cypress:open": "cypress open"
   },

@@ -298,7 +298,7 @@ export class RawWidget extends Component {
     switch (widgetType) {
       case 'Date':
         if (range) {
-          // Watch out! The datetimerange widget as exception,
+          // TODO: Watch out! The datetimerange widget as exception,
           // is non-controlled input! For further usage, needs
           // upgrade.
           return (
@@ -469,7 +469,7 @@ export class RawWidget extends Component {
             dataId={dataId}
             properties={fields}
             windowType={windowType}
-            defaultValue={widgetData}
+            widgetData={widgetData}
             placeholder={fields[0].emptyText}
             readonly={readonly}
             mandatory={widgetData[0].mandatory}

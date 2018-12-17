@@ -310,8 +310,35 @@ Cypress.Commands.add('selectSingleTabRow', () => {
   });
 });
 
-// This command runs a quick actions. If second parameter is truthy, the default action
-// will be executed.
+Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
+  describe(`Select ${fieldName}'s address-button and invoke the given function`, function() {
+   
+    cy.server()
+    cy.route('POST', '/rest/api/address').as('postAddress')
+
+    cy.get(`.form-field-${fieldName}`).find('button').click();
+
+    cy.wait('@postAddress').then(xhr => {
+      const requestId = xhr.response.body.id;
+
+      Cypress.emit('emit:addressPatchResolved', requestId);
+    });
+
+    cy.on('emit:addressPatchResolved', (requestId) => {
+
+      cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
+
+      addressFunction();
+      cy.get(`.form-field-C_Location_ID`).click();
+      cy.wait('@completeAddress');
+    });
+
+  });
+});
+
+/*
+ * This command runs a quick actions. If second parameter is truthy, the default action will be executed.
+ */
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {
     if (!active) {
@@ -322,5 +349,27 @@ Cypress.Commands.add('executeQuickAction', (actionName, active) => {
     }
 
     return cy.get('.quick-actions-wrapper').click();
+  });
+});
+
+Cypress.Commands.add('executeHeaderAction', (actionName) => {
+  const name = actionName.toLowerCase().replace(/\s/g, '');
+
+  describe('Fire header action with a certain name', function() {
+    cy.get('.header-container .btn-header').click();
+    cy.get('.subheader-container').should('exist');
+
+    return cy.get(`#headerAction_${name}`).click();
+  });
+});
+
+Cypress.Commands.add('clickHeaderNav', (navName) => {
+  const name = navName.toLowerCase().replace(/\s/g, '');
+
+  describe('Fire header action with a certain name', function() {
+    cy.get('.header-container .btn-header').click();
+    cy.get('.subheader-container').should('exist');
+
+    return cy.get(`#subheaderNav_${name}`).click();
   });
 });

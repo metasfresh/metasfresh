@@ -1,39 +1,3 @@
-.overlay-field {
-    background: rgba(255,255,255,0.8);
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow-y: scroll;
-
-    @media (min-width: $breakpoint-md){
-        overflow-y: auto;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-    }
-
-    input {
-        text-align: center;
-        font-size: 60px;
-    }
-
-    .form-control-label {
-        font-size: 30px;
-        text-align: center;
-    }
-}
-
 .barcode-scanner-widget {
     display: flex;
     flex-direction: column;
