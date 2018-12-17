@@ -54,23 +54,6 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<module>assemblies</module>
 	</modules>
 
-<!-- 
-	<repositories>
-
-		<repository>
-			<id>metasfresh-repo</id>
-			<name>metasfresh maven repository (master branch)</name>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
-			</releases>
-			<url>https://repo.metasfresh.com/content/groups/mvn-master/</url>
-		</repository>
-
-	</repositories>
- -->
-
 	<pluginRepositories>
 		<!-- our main repo is also our plugin repo; also see https://maven.apache.org/pom.html#Plugin_Repositories -->
 		<!-- see https://github.com/metasfresh/metasfresh-parent/issues/3 -->
