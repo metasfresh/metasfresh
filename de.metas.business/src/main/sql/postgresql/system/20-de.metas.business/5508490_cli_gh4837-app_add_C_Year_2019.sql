@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION public.add_year_2019_if_not_exists()
     RETURNS VOID
     LANGUAGE 'plpgsql'
-    STABLE 
+    VOLATILE 
 AS $BODY$
 DECLARE
     v_year_exists BOOLEAN;
