@@ -3,29 +3,31 @@ package de.metas.material.dispo.commons.repository.repohelpers;
 import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
 import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.IQuery;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -61,7 +63,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class RepositoryCommons
 {
-
 	/**
 	 * Turns the given segment into the "where part" of a big query builder. Does not specify the ordering.
 	 */
@@ -211,34 +212,85 @@ public class RepositoryCommons
 			@NonNull final MaterialDescriptorQuery materialDescriptorQuery,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		if (materialDescriptorQuery.getDate() == null)
+		boolean atLeastOneFilterAdded = false;
+
+		final DateAndSeqNo atTime = materialDescriptorQuery.getAtTime();
+		if (atTime != null)
 		{
-			return false;
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, TimeUtil.asTimestamp(atTime.getDate()));
+			if (atTime.getSeqNo() > 0)
+			{
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_SeqNo, atTime.getSeqNo());
+			}
+			atLeastOneFilterAdded = true;
 		}
-		final DateOperator dateOperator = Preconditions.checkNotNull(materialDescriptorQuery.getDateOperator(),
-				"As the given parameter query spefifies a date, it also needs to have a not-null dateOperator; query=%s", materialDescriptorQuery);
-		switch (dateOperator)
+		final DateAndSeqNo timeRangeStart = materialDescriptorQuery.getTimeRangeStart();
+		if (timeRangeStart != null)
 		{
-			case BEFORE:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS, materialDescriptorQuery.getDate());
-				break;
-			case BEFORE_OR_AT:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, materialDescriptorQuery.getDate());
-				break;
-			case AT:
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescriptorQuery.getDate());
-				break;
-			case AT_OR_AFTER:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, materialDescriptorQuery.getDate());
-				break;
-			case AFTER:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, materialDescriptorQuery.getDate());
-				break;
-			default:
-				Check.errorIf(true, "segment has a unexpected dateOperator {}; segment={}", materialDescriptorQuery.getDateOperator(), materialDescriptorQuery);
-				break;
+			switch (timeRangeStart.getOperator())
+			{
+				case INCLUSIVE:
+					addDateAndSeqNoToBuilder(builder, Operator.GREATER_OR_EQUAL, timeRangeStart);
+					break;
+				case EXCLUSIVE:
+					addDateAndSeqNoToBuilder(builder, Operator.GREATER, timeRangeStart);
+					break;
+				default:
+					Check.fail("timeRangeStart has a unexpected dateOperator {}; query={}", timeRangeStart.getOperator(), materialDescriptorQuery);
+					break;
+			}
+			atLeastOneFilterAdded = true;
 		}
-		return true;
+
+		final DateAndSeqNo timeRangeEnd = materialDescriptorQuery.getTimeRangeEnd();
+		if (timeRangeEnd != null)
+		{
+			switch (timeRangeEnd.getOperator())
+			{
+				case INCLUSIVE:
+					addDateAndSeqNoToBuilder(builder, Operator.LESS_OR_EQUAL, timeRangeEnd);
+					break;
+				case EXCLUSIVE:
+					addDateAndSeqNoToBuilder(builder, Operator.LESS, timeRangeEnd);
+					break;
+				default:
+					Check.fail("timeRangeEnd has a unexpected dateOperator {}; query={}", timeRangeEnd.getOperator(), materialDescriptorQuery);
+					break;
+			}
+			atLeastOneFilterAdded = true;
+		}
+
+		return atLeastOneFilterAdded;
+	}
+
+	private void addDateAndSeqNoToBuilder(
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder,
+			@NonNull final Operator operator,
+			@NonNull final DateAndSeqNo timeRangeItem)
+	{
+		final Timestamp timestamp = TimeUtil.asTimestamp(timeRangeItem.getDate());
+
+		if (timeRangeItem.getSeqNo() > 0)
+		{
+			// e.g. creates a filter such as "( date <= .. OR ( date = .. AND seqNo <= .. ) )"
+			final IQueryBL queryBL = Services.get(IQueryBL.class);
+			final ICompositeQueryFilter<I_MD_Candidate> orFilter = queryBL
+					.createCompositeQueryFilter(I_MD_Candidate.class)
+					.setJoinOr();
+
+			orFilter.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, operator, timestamp);
+
+			final ICompositeQueryFilter<I_MD_Candidate> andSubFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class);
+			andSubFilter.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, timestamp);
+			andSubFilter.addCompareFilter(I_MD_Candidate.COLUMN_SeqNo, operator, timeRangeItem.getSeqNo());
+			orFilter.addFilter(andSubFilter);
+
+			builder.filter(orFilter);
+		}
+		else
+		{
+			builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, operator, timestamp);
+		}
 	}
 
 	/**

@@ -1,11 +1,14 @@
 package de.metas.ordercandidate.rest;
 
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Data;
+import static de.metas.util.Check.isEmpty;
+import static org.compiere.util.Util.coalesce;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -29,15 +32,34 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder(toBuilder = true)
+@Value
 public final class JsonBPartnerInfo
 {
-	private JsonBPartner bpartner;
-	private JsonBPartnerLocation location;
-	private JsonBPartnerContact contact;
+	JsonBPartner bpartner;
+	JsonBPartnerLocation location;
+	JsonBPartnerContact contact;
 
-	@Default
-	private SyncAdvise syncAdvise = SyncAdvise.createDefaultAdvise();
+	SyncAdvise syncAdvise;
+
+	@Builder(toBuilder = true)
+	@JsonCreator
+	private JsonBPartnerInfo(
+			@JsonProperty("bpartner") final JsonBPartner bpartner,
+			@JsonProperty("location") final JsonBPartnerLocation location,
+			@JsonProperty("contact") final JsonBPartnerContact contact,
+			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
+	{
+		this.bpartner = bpartner;
+		this.location = location;
+		this.contact = contact;
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+
+		final boolean lokupValuesAreOk = !isEmpty(bpartner.getCode(), true)
+				|| !isEmpty(bpartner.getExternalId(), true)
+				|| !isEmpty(location.getGln(), true);
+		Check.errorUnless(
+				lokupValuesAreOk,
+				"At least one of bpartner.code, bpartner.externalId or location.gln needs to be non-empty; this={}", this);
+	}
+
 }

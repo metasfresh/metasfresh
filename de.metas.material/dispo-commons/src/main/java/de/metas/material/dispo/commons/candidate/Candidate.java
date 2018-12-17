@@ -1,14 +1,7 @@
 package de.metas.material.dispo.commons.candidate;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-import lombok.experimental.Wither;
-
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import org.compiere.util.Util;
@@ -18,6 +11,12 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -66,8 +65,6 @@ public class Candidate
 	 */
 	CandidateBusinessCase businessCase;
 
-	CandidateStatus status;
-
 	CandidateId id;
 
 	/**
@@ -115,7 +112,7 @@ public class Candidate
 		return withMaterialDescriptor(materialDescriptor.withQuantity(quantity));
 	}
 
-	public Candidate withDate(@NonNull final Date date)
+	public Candidate withDate(@NonNull final Instant date)
 	{
 		return withMaterialDescriptor(materialDescriptor.withDate(date));
 	}
@@ -142,7 +139,7 @@ public class Candidate
 		return id.getRepoId();
 	}
 
-	public Date getDate()
+	public Instant getDate()
 	{
 		return materialDescriptor.getDate();
 	}
@@ -182,7 +179,7 @@ public class Candidate
 	private Candidate(final int clientId, final int orgId,
 			@NonNull final CandidateType type,
 			final CandidateBusinessCase businessCase,
-			final CandidateStatus status,
+			//final CandidateStatus status,
 			final CandidateId id,
 			final CandidateId parentId,
 			final int groupId,
@@ -196,7 +193,7 @@ public class Candidate
 		this.orgId = orgId;
 		this.type = type;
 		this.businessCase = businessCase;
-		this.status = status;
+		//this.status = status;
 
 		this.id = Util.coalesce(id, CandidateId.NULL);
 		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
@@ -216,7 +213,7 @@ public class Candidate
 	}
 
 	/** we don't call this from the constructor, because some tests don't need a "valid" candidate to get particular aspects. */
-	public void validate()
+	public Candidate validate()
 	{
 		switch (type)
 		{
@@ -257,5 +254,7 @@ public class Candidate
 				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
 				"The given paramters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
 				businessCase, businessCaseDetail, this);
+
+		return this;
 	}
 }

@@ -4,6 +4,9 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.util.TimeUtil.asInstant;
+
+import java.sql.Timestamp;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_InOutLine;
@@ -11,6 +14,8 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Transaction;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -53,6 +58,8 @@ public class TransactionDescriptorFactoryTest
 	@Test
 	public void ofRecord()
 	{
+		final Timestamp movementDate = SystemTime.asTimestamp();
+
 		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
 		save(inoutLine);
 
@@ -60,6 +67,7 @@ public class TransactionDescriptorFactoryTest
 		transactionRecord.setM_InOutLine(inoutLine);
 		transactionRecord.setMovementQty(TEN.negate());
 		transactionRecord.setM_Locator(locator);
+		transactionRecord.setMovementDate(movementDate);
 		save(transactionRecord);
 
 		// invoke the method under test
@@ -67,6 +75,7 @@ public class TransactionDescriptorFactoryTest
 
 		assertThat(result.getMovementQty()).isEqualByComparingTo("-10");
 		assertThat(result.getInoutLineId()).isEqualTo(inoutLine.getM_InOutLine_ID());
+		assertThat(result.getTransactionDate()).isEqualTo(asInstant(movementDate));
 	}
 
 }

@@ -164,7 +164,7 @@ public final class AvailableToPromiseResultGroup
 		final ArrayKey computeKey = request.computeKey();
 
 		final DateAndSeqNo oldTimeAndSeqNo = includedRequestKeys.get(computeKey);
-		final DateAndSeqNo latest = request.getDateAndSeqNo().latest(oldTimeAndSeqNo);
+		final DateAndSeqNo latest = request.getDateAndSeqNo().max(oldTimeAndSeqNo);
 
 		includedRequestKeys.put(computeKey, latest);
 	}

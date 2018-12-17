@@ -5,15 +5,15 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -43,27 +43,29 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder(toBuilder = true)
+@Value
 public final class JsonOLCandCreateRequest
 {
-	private JsonOrganization org;
+	JsonOrganization org;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
-			value = "This translates to <code>C_OLCand.externalId</code>.\n"
-					+ "<code>externalId</code> and <code>dataSourceInternalName</code> together need to be unique.")
-	private String externalId;
+			value = "This translates to <code>C_OLCand.externalLineId</code>.\n"
+					+ "<code>externalLineId</code> and <code>dataSourceInternalName</code> together need to be unique.")
+	String externalLineId;
 
-	@NonNull
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			value = "This translates to <code>C_OLCand.externalHeaderId</code>.\n"
+					+ "<code>externalHeaderId</code> and <code>dataSourceInternalName</code> together denote the unique group of olCands that were added in one bulk.")
+	String externalHeaderId;
+
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "Internal name of the <code>AD_InputDataSource</code> record that tells where this OLCand came from.")
-	private String dataSourceInternalName;
+	String dataSourceInternalName;
 
-	@Nullable
-	@ApiModelProperty( //
+		@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "Internal name of the <code>AD_InputDataSource</code> record that tells what shall be happen with this OLCand.")
 	private String dataDestInternalName;
@@ -110,12 +112,10 @@ public final class JsonOLCandCreateRequest
 			value = "This translates to <code>C_OLCand.M_Product_ID</code>.")
 	private JsonProductInfo product;
 
-	@Nullable
 	private String productDescription;
 
 	private BigDecimal qty;
 
-	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = " This translates to <code>C_UOM.X12DE355</code>.\n"
@@ -128,31 +128,27 @@ public final class JsonOLCandCreateRequest
 
 	private String pricingSystemCode;
 
-	@Nullable
+
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.")
 	private BigDecimal price;
 
-	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "If a (manual) <code>price</code> is provided, then also a currencyCode needs be given.")
 	private String currencyCode; // shall come from pricingSystem/priceList
 
-	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) discount.")
 	private BigDecimal discount;
 
-	@NonNull
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
-			value = "External reference (document number) on a remote system. Unique in conjunction with <code>dataSourceInternalName</code>.")
+			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
 	private String poReference;
 
-	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "Can be set if the invoice's document date is already known from the external system and shall be forwarded to the invoice candidate.\n"
@@ -161,7 +157,6 @@ public final class JsonOLCandCreateRequest
 					+ "Otherwise, this property will be ignored.")
 	private LocalDate dateInvoiced;
 
-	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "Can be set if the invoice's document type is already known from the external system and shall be forwarded to the invoice candidate.\\n\""
@@ -173,6 +168,59 @@ public final class JsonOLCandCreateRequest
 					+ "and <code>docSubType</code> to one of <code>EA</code> (\"Patient\"), <code>GM</code> (\"Gemeinde\" or <code>KV</code> (\"Krankenversicherung\"")
 	private JsonDocTypeInfo invoiceDocType;
 
+	@JsonCreator
+	@Builder(toBuilder = true)
+	private JsonOLCandCreateRequest(
+			@JsonProperty("org") final JsonOrganization org,
+			@JsonProperty("externalLineId") final String externalLineId,
+			@JsonProperty("externalHeaderId") final String externalHeaderId,
+			@JsonProperty("dataSourceInternalName") final @NonNull String dataSourceInternalName,
+			@JsonProperty("dataDestInternalName") final @Nullable String dataDestInternalName,
+			@JsonProperty("bpartner") final JsonBPartnerInfo bpartner,
+			@JsonProperty("billBPartner") final JsonBPartnerInfo billBPartner,
+			@JsonProperty("dropShipBPartner") final JsonBPartnerInfo dropShipBPartner,
+			@JsonProperty("handOverBPartner") final JsonBPartnerInfo handOverBPartner,
+			@JsonProperty("dateRequired") final LocalDate dateRequired,
+			@JsonProperty("flatrateConditionsId") final int flatrateConditionsId,
+			@JsonProperty("product") final JsonProductInfo product,
+			@JsonProperty("productDescription") final @Nullable String productDescription,
+			@JsonProperty("qty") final BigDecimal qty,
+			@JsonProperty("uomCode") final @Nullable String uomCode,
+			@JsonProperty("packingMaterialId") final int packingMaterialId,
+			@JsonProperty("pricingSystemCode") final String pricingSystemCode,
+			@JsonProperty("price") final @Nullable BigDecimal price,
+			@JsonProperty("currencyCode") final @Nullable String currencyCode,
+			@JsonProperty("discount") final @Nullable BigDecimal discount,
+			@JsonProperty("poReference") final @NonNull String poReference,
+			@JsonProperty("dateInvoiced") final @Nullable LocalDate dateInvoiced,
+			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType)
+	{
+		this.org = org;
+		this.externalLineId = externalLineId;
+		this.externalHeaderId = externalHeaderId;
+		this.dataSourceInternalName = dataSourceInternalName;
+		this.dataDestInternalName = dataDestInternalName;
+		this.bpartner = bpartner;
+		this.billBPartner = billBPartner;
+		this.dropShipBPartner = dropShipBPartner;
+		this.handOverBPartner = handOverBPartner;
+		this.dateRequired = dateRequired;
+		this.flatrateConditionsId = flatrateConditionsId;
+		this.product = product;
+		this.productDescription = productDescription;
+		this.qty = qty;
+		this.uomCode = uomCode;
+		this.packingMaterialId = packingMaterialId;
+		this.pricingSystemCode = pricingSystemCode;
+		this.price = price;
+		this.currencyCode = currencyCode;
+		this.discount = discount;
+		this.poReference = poReference;
+		this.dateInvoiced = dateInvoiced;
+		this.invoiceDocType = invoiceDocType;
+	}
+
+
 	/**
 	 * Since we want to use {@code ..build().toBuilder()} to get copies if the builder,
 	 * we have a number of mandatory fields which are not annotated with {@link NonNull}.
@@ -180,7 +228,8 @@ public final class JsonOLCandCreateRequest
 	 */
 	public JsonOLCandCreateRequest validate()
 	{
-		Check.assumeNotNull(externalId, "externalId may not be null; this={}", this);
+		Check.assumeNotNull(externalLineId, "externalLineId may not be null; this={}", this);
+		Check.assumeNotNull(externalHeaderId, "externalHeaderId may not be null; this={}", this);
 		Check.assumeNotNull(product, "product may not be null; this={}", this);
 		Check.assumeNotNull(bpartner, "bpartner may not be null; this={}", this);
 
@@ -200,7 +249,7 @@ public final class JsonOLCandCreateRequest
 	}
 
 	/** Creates an instance with the given {@code syncAdvise} in all bPartners. */
-	public JsonOLCandCreateRequest withBPartnerSyncAdvise(@Nullable final SyncAdvise syncAdvise)
+	public JsonOLCandCreateRequest withBPartnersSyncAdvise(@Nullable final SyncAdvise syncAdvise)
 	{
 		if (syncAdvise == null)
 		{
@@ -231,5 +280,17 @@ public final class JsonOLCandCreateRequest
 			builder.handOverBPartner(handOverBPartner.toBuilder().syncAdvise(syncAdvise).build());
 		}
 		return builder.build();
+	}
+
+	public JsonOLCandCreateRequest withProductsSyncAdvise(@Nullable final SyncAdvise syncAdvise)
+	{
+		if (syncAdvise == null)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.product(getProduct().toBuilder().syncAdvise(syncAdvise).build())
+				.build();
 	}
 }

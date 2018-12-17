@@ -2,8 +2,6 @@ package de.metas.adempiere.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -32,6 +30,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -39,7 +39,6 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Greeting;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Location;
@@ -50,6 +49,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 public class AddressBuilder
 {
@@ -166,7 +166,7 @@ public class AddressBuilder
 		// variables in brackets already parsed
 		replaceAddrToken(location, isLocalAddress, inStr, outStr, bPartnerBlock, userBlock, false);
 
-		final String retValue = Util.replace(outStr.toString().trim(), "\\n", "\n");
+		final String retValue = StringUtils.replace(outStr.toString().trim(), "\\n", "\n");
 		return retValue;
 	}
 
@@ -218,7 +218,7 @@ public class AddressBuilder
 					// add text without begining empty space if we have new line
 					else if (outStr.lastIndexOf("\n") == outStr.length() - 1 && text.trim().length() != 0)
 					{
-						outStr.append(Util.cleanBeginWhitespace(text));
+						outStr.append(StringUtils.cleanBeginWhitespace(text));
 					}
 				}
 			}
@@ -421,7 +421,7 @@ public class AddressBuilder
 		if (withBrackets)
 		{
 			// if variables are empty, don't put prefix
-			if (Util.cleanWhitespace(outStr.toString()).length() == 0)
+			if (StringUtils.cleanWhitespace(outStr.toString()).length() == 0)
 			{
 				outStr = new StringBuilder();
 				return;
@@ -573,7 +573,7 @@ public class AddressBuilder
 					// add text without beginning empty space if we have new line
 					else if (outStr.lastIndexOf("\n") == outStr.length() - 1 && text.trim().length() != 0)
 					{
-						outStr.append(Util.cleanBeginWhitespace(text));
+						outStr.append(StringUtils.cleanBeginWhitespace(text));
 					}
 				}
 			}
@@ -631,7 +631,7 @@ public class AddressBuilder
 		if (withBrackets)
 		{
 			// if variables are empty, don't put prefix
-			if (Util.cleanWhitespace(outStr.toString()).length() == 0)
+			if (StringUtils.cleanWhitespace(outStr.toString()).length() == 0)
 			{
 				outStr = new StringBuilder();
 				return;

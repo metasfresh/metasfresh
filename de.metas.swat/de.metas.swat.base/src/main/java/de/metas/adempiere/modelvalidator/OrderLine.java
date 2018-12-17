@@ -9,7 +9,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 /*
  * #%L
@@ -43,6 +42,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.impl.OrderLineBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -113,7 +113,7 @@ public class OrderLine implements ModelValidator
 		final MOrder orderPO = (MOrder)ol.getC_Order();
 
 		final String dontUpdateOrder = Env.getContext(po.getCtx(), OrderFastInput.OL_DONT_UPDATE_ORDER + orderPO.get_ID());
-		if (Util.isEmpty(dontUpdateOrder) || !"Y".equals(dontUpdateOrder))
+		if (Check.isEmpty(dontUpdateOrder) || !"Y".equals(dontUpdateOrder))
 		{
 			final boolean newOrDelete = type == TYPE_AFTER_NEW || type == TYPE_AFTER_DELETE;
 			final boolean linesAmtChanged = po.is_ValueChanged(I_C_OrderLine.COLUMNNAME_LineNetAmt);

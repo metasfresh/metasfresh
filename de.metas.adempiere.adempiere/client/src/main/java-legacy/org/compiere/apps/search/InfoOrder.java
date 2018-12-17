@@ -38,9 +38,9 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
+import de.metas.util.StringUtils;
 
 /**
  *  Info Order
@@ -51,7 +51,7 @@ import de.metas.i18n.Msg;
 public class InfoOrder extends Info
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2246871771555208114L;
 
@@ -148,7 +148,7 @@ public class InfoOrder extends Info
 	private void statInit() throws Exception
 	{
 		final int p_WindowNo = getWindowNo();
-		
+
 		lDocumentNo.setLabelFor(fDocumentNo);
 		fDocumentNo.setBackground(AdempierePLAF.getInfoBackground());
 		fDocumentNo.addActionListener(this);
@@ -224,7 +224,7 @@ public class InfoOrder extends Info
 		//  prepare table
 		StringBuffer where = new StringBuffer("o.IsActive='Y'");
 		if (p_whereClause.length() > 0)
-			where.append(" AND ").append(Util.replace(p_whereClause, "C_Order.", "o."));
+			where.append(" AND ").append(StringUtils.replace(p_whereClause, "C_Order.", "o."));
 		prepareTable(s_invoiceLayout,
 			" C_Order o",
 			where.toString(),
@@ -233,7 +233,7 @@ public class InfoOrder extends Info
 		return true;
 	}	//	initInfo
 
-	
+
 	/**************************************************************************
 	 *	Construct SQL Where Clause and define parameters.
 	 *  (setParameters needs to set parameters)
@@ -355,7 +355,7 @@ public class InfoOrder extends Info
 		log.debug("String=" + s);
 		return s;
 	}   //  getSQLText
-	
+
 
 	/**
 	 *	Zoom
@@ -383,5 +383,5 @@ public class InfoOrder extends Info
 	{
 		return true;
 	}	//	hasZoom
-	
+
 }   //  InfoOrder

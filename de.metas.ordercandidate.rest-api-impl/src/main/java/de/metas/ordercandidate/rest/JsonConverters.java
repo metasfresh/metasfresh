@@ -1,12 +1,9 @@
 package de.metas.ordercandidate.rest;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.UomId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +17,11 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
+import de.metas.ordercandidate.rest.ProductMasterDataProvider.ProductInfo;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -63,9 +61,9 @@ public class JsonConverters
 
 		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
 
-		final ProductId productId = masterdataProvider.getCreateProductId(request.getProduct(), orgId);
+		final ProductMasterDataProvider productMasterDataProvider = masterdataProvider.getProductMasterDataProvider();
+		final ProductInfo productInfo = productMasterDataProvider.getCreateProductInfo(request.getProduct(), orgId);
 
-		final UomId uomId = masterdataProvider.getProductUOMId(productId, request.getUomCode());
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
 		final CurrencyId currencyId = masterdataProvider.getCurrencyId(request.getCurrencyCode());
@@ -78,7 +76,8 @@ public class JsonConverters
 				.orgId(orgId)
 				//
 				.dataSourceInternalName(request.getDataSourceInternalName())
-				.externalId(request.getExternalId())
+				.externalLineId(request.getExternalLineId())
+				.externalHeaderId(request.getExternalHeaderId())
 				//
 				.dataDestInternalName(request.getDataDestInternalName())
 				//
@@ -96,10 +95,10 @@ public class JsonConverters
 
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
-				.productId(productId)
+				.productId(productInfo.getProductId())
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
-				.uomId(uomId)
+				.uomId(productInfo.getUomId())
 				.huPIItemProductId(request.getPackingMaterialId())
 				//
 				.pricingSystemId(pricingSystemId)
@@ -146,7 +145,8 @@ public class JsonConverters
 		return JsonOLCand.builder()
 				.id(olCand.getId())
 				.poReference(olCand.getPOReference())
-				.externalId(olCand.getExternalId())
+				.externalLineId(olCand.getExternalLineId())
+				.externalHeaderId(olCand.getExternalHeaderId())
 				//
 				.org(masterdataProvider.getJsonOrganizationById(olCand.getAD_Org_ID()))
 				//

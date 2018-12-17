@@ -39,30 +39,30 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
+import de.metas.util.StringUtils;
 
 /**
  *  Info Invoice
  *
  *  @author Jorg Janke
  *  @version  $Id: InfoInvoice.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			FR [ 1926882 ] Info Invoice: display Due Date
  */
 public class InfoInvoice extends Info
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2119484421367033632L;
 
 	/**
 	 *  Detail Protected Constructor<br>
-	 *  metas kh: 00135: Changed to public to be able to use InfoInvoice 
-	 *  for choosing Invoices in Payment Allocation Form  
+	 *  metas kh: 00135: Changed to public to be able to use InfoInvoice
+	 *  for choosing Invoices in Payment Allocation Form
 	 *
 	 *  @param frame parent frame
 	 *  @param modal modal
@@ -162,7 +162,7 @@ public class InfoInvoice extends Info
 	private void statInit() throws Exception
 	{
 		final int p_WindowNo = getWindowNo();
-		
+
 		lDocumentNo.setLabelFor(fDocumentNo);
 		fDocumentNo.setBackground(AdempierePLAF.getInfoBackground());
 		fDocumentNo.addActionListener(this);
@@ -247,7 +247,7 @@ public class InfoInvoice extends Info
 		//  prepare table
 		StringBuffer where = new StringBuffer("i.IsActive='Y'");
 		if (p_whereClause.length() > 0)
-			where.append(" AND ").append(Util.replace(p_whereClause, "C_Invoice.", "i."));
+			where.append(" AND ").append(StringUtils.replace(p_whereClause, "C_Invoice.", "i."));
 		prepareTable(s_invoiceLayout,
 			" C_Invoice_v i",   //  corrected for CM
 			where.toString(),
@@ -257,7 +257,7 @@ public class InfoInvoice extends Info
 		return true;
 	}	//	initInfo
 
-	
+
 	/**************************************************************************
 	 *	Construct SQL Where Clause and define parameters.
 	 *  (setParameters needs to set parameters)
@@ -391,7 +391,7 @@ public class InfoInvoice extends Info
 		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
-	
+
 	/**
 	 *	Zoom
 	 */
@@ -443,6 +443,6 @@ public class InfoInvoice extends Info
 		else
 			Env.setContext(Env.getCtx(), p_WindowNo, Env.TAB_INFO, "C_InvoicePaySchedule_ID", String.valueOf(C_InvoicePaySchedule_ID));
 	}	//	saveSelectionDetail
-	
-	
+
+
 }   //  InfoInvoice

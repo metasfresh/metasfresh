@@ -6,6 +6,7 @@ import static de.metas.document.engine.IDocument.STATUS_Completed;
 import java.util.Collection;
 import java.util.Date;
 
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
 import org.springframework.context.annotation.Profile;
@@ -85,7 +86,7 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 	I_PP_Order createProductionOrder(@NonNull final PPOrderRequestedEvent ppOrderRequestedEvent)
 	{
 		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
-		final Date dateOrdered = ppOrderRequestedEvent.getDateOrdered();
+		final Date dateOrdered = TimeUtil.asDate(ppOrderRequestedEvent.getDateOrdered());
 
 		final I_PP_Order ppOrderRecord = ppOrderProducer.createPPOrder(ppOrder, dateOrdered);
 

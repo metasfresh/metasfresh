@@ -47,7 +47,6 @@ import de.metas.util.Services;
 @UtilityClass
 /* package */ final class AvailableToPromiseSqlHelper
 {
-	@VisibleForTesting
 	public IQuery<I_MD_Candidate_ATP_QueryResult> createDBQueryForStockQuery(@NonNull final AvailableToPromiseQuery query)
 	{
 		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> queryBuilder = createDBQueryForStockQueryBuilder(query);

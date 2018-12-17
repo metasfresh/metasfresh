@@ -152,7 +152,7 @@ public class MaterialEventSerializerTests
 	private DDOrder createDdOrder(final int ddOrderId)
 	{
 		return DDOrder.builder()
-				.datePromised(SystemTime.asDayDate())
+				.datePromised(SystemTime.asInstant())
 				.ddOrderId(ddOrderId)
 				.docStatus("IP")
 				.materialDispoGroupId(35)
@@ -258,7 +258,7 @@ public class MaterialEventSerializerTests
 		final PPOrderChangedEvent event = PPOrderChangedEvent.builder()
 				.productDescriptor(createProductDescriptor())
 				.newDatePromised(NOW)
-				.oldDatePromised(SystemTime.asDate())
+				.oldDatePromised(SystemTime.asInstant())
 				.ppOrderId(10)
 				.oldDocStatus("CO")
 				.newDocStatus("CL")
@@ -511,6 +511,7 @@ public class MaterialEventSerializerTests
 						.qtyOnHandOld(TEN)
 						.warehouseId(WAREHOUSE_ID)
 						.stockChangeDetails(stockChangeDetails)
+						.changeDate(NOW)
 						.build();
 		stockChangedEvent.validate();
 		assertEventEqualAfterSerializeDeserialize(stockChangedEvent);

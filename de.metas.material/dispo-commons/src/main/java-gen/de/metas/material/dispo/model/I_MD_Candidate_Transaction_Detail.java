@@ -311,6 +311,29 @@ public interface I_MD_Candidate_Transaction_Detail
     public static final String COLUMNNAME_M_Transaction_ID = "M_Transaction_ID";
 
 	/**
+	 * Set Transaktionsdatum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTransactionDate (java.sql.Timestamp TransactionDate);
+
+	/**
+	 * Get Transaktionsdatum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getTransactionDate();
+
+    /** Column definition for TransactionDate */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object> COLUMN_TransactionDate = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object>(I_MD_Candidate_Transaction_Detail.class, "TransactionDate", null);
+    /** Column name TransactionDate */
+    public static final String COLUMNNAME_TransactionDate = "TransactionDate";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

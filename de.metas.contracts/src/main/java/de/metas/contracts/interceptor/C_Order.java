@@ -186,7 +186,7 @@ public class C_Order
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void updateBPartnerTImeSpan(final I_C_Order order)
+	public void updateBPartnerTimeSpan(final I_C_Order order)
 	{
 
 		if (!order.isSOTrx())

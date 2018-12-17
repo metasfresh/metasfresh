@@ -11,7 +11,6 @@ import org.junit.Test;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -49,12 +48,12 @@ public class SupplyRequiredEventCreatorTest
 				.id(CandidateId.ofRepoId(10))
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.status(CandidateStatus.doc_closed)
+				//.status(CandidateStatus.doc_closed)
 				.groupId(40)
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
-						.date(SystemTime.asTimestamp())
+						.date(SystemTime.asInstant())
 						.quantity(BigDecimal.TEN)
 						.warehouseId(WAREHOUSE_ID)
 						.build())

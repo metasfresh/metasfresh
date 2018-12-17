@@ -10,12 +10,12 @@ package de.metas.callcenter.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +48,6 @@ import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -61,19 +60,20 @@ import de.metas.callcenter.model.I_R_RequestUpdate;
 import de.metas.callcenter.model.MRGroupProspect;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
- * 
+ *
  * @author Teo Sarca, teo.sarca@gmail.com
  *
  */
 public class CallCenterModel
 {
 	public static final int R_Group_AllBundles = -2;
-	
+
 	private final Logger log = LogManager.getLogger(getClass());
-	
+
 	private Properties m_ctx;
 	private int m_windowNo;
 	private Lookup m_bundlesLookup;
@@ -84,7 +84,7 @@ public class CallCenterModel
 	private int m_R_Group_ID = -1;
 	private boolean m_isShowOnlyDue = false;
 	private boolean m_isShowOnlyOpen = false;
-	
+
     ColumnInfo[] s_requestsTableLayout = new ColumnInfo[]{
     		new ColumnInfo(Msg.translate(Env.getCtx(), "Name"), "Name", String.class),
     		new ColumnInfo(Msg.translate(Env.getCtx(), "Contact"), "Contact", String.class),
@@ -97,17 +97,17 @@ public class CallCenterModel
 		m_ctx = ctx;
 		m_windowNo = windowNo;
 	}
-	
+
 	public Properties getCtx()
 	{
 		return m_ctx;
 	}
-	
+
 	public int getWindowNo()
 	{
 		return m_windowNo;
 	}
-	
+
 	public Lookup getBundlesLookup()
 	{
 		if (m_bundlesLookup != null)
@@ -140,14 +140,14 @@ public class CallCenterModel
 		//
 		return m_bundlesLookup;
 	}
-	
+
 	public int getAD_Window_ID()
 	{
 		return MSysConfig.getIntValue("de.metas.callcenter.form.CallCenterModel.AD_Window_ID",
-				540013, //Request Group Selected Prospects (internal) 
+				540013, //Request Group Selected Prospects (internal)
 				Env.getAD_Client_ID(m_ctx));
 	}
-	
+
 	public GridTab getContactsGridTab()
 	{
 		if (m_mTab != null)
@@ -155,7 +155,7 @@ public class CallCenterModel
 		m_mTab = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), I_RV_R_Group_Prospect.Table_ID, true);
 		return m_mTab;
 	}
-	
+
 	public GridTab getRequestUpdatesGridTab()
 	{
 		if (m_mTabRequestUpdates != null)
@@ -163,7 +163,7 @@ public class CallCenterModel
 		m_mTabRequestUpdates = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), I_R_RequestUpdate.Table_ID, true);
 		return m_mTabRequestUpdates;
 	}
-	
+
 	public GridTab getOtherRequestsGridTab()
 	{
 		if (m_mTabOtherRequests != null)
@@ -171,7 +171,7 @@ public class CallCenterModel
 		m_mTabOtherRequests = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), InterfaceWrapperHelper.getTableId(I_R_Request.class), true);
 		return m_mTabOtherRequests;
 	}
-	
+
 	public GridTab getContactInterestGridTab()
 	{
 		if (m_mTabInterestArea != null)
@@ -179,7 +179,7 @@ public class CallCenterModel
 		m_mTabInterestArea = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), I_R_ContactInterest.Table_ID, true);
 		return m_mTabInterestArea;
 	}
-	
+
 	public I_RV_R_Group_Prospect getRV_R_Group_Prospect(boolean refresh)
 	{
 		if (refresh)
@@ -187,14 +187,14 @@ public class CallCenterModel
 		I_RV_R_Group_Prospect contact = InterfaceWrapperHelper.create(m_mTab, I_RV_R_Group_Prospect.class);
 		return contact;
 	}
-	
+
 	public boolean isContactSelected()
 	{
 		GridTab tab = getContactsGridTab();
 		boolean selected = tab != null && tab.getCurrentRow() >= 0;
 		return selected;
 	}
-	
+
 	public void query(int R_Group_ID, boolean isShowOnlyDue, boolean isShowOnlyOpen)
 	{
 		m_R_Group_ID = R_Group_ID;
@@ -220,7 +220,7 @@ public class CallCenterModel
 		//m_mTab.dataRefresh();
 		queryDetails();
 	}
-	
+
 	public void queryDetails()
 	{
 		final I_RV_R_Group_Prospect contact = getRV_R_Group_Prospect(true);
@@ -279,12 +279,12 @@ public class CallCenterModel
 			m_mTabInterestArea.query(false);
 		}
 	}
-	
+
 	public String getBundleInfo(int R_Group_ID)
 	{
 		if (R_Group_ID <= 0)
 			return "";
-		
+
 		final String sql = "SELECT rs.Value, count(*), rs.SeqNo"
 			+" FROM R_Group_Prospect rgp"
 			+" LEFT OUTER JOIN R_Request rq ON (rq.R_Request_ID=rgp.R_Request_ID)"
@@ -346,12 +346,12 @@ public class CallCenterModel
 		//
 		return info.toString();
 	}
-	
+
 	public int getLoggedUser_ID()
 	{
 		return Env.getAD_User_ID(m_ctx);
 	}
-	
+
 	public int getDefault_RequestType_ID()
 	{
 		int AD_Client_ID = Env.getAD_Client_ID(m_ctx);
@@ -366,19 +366,19 @@ public class CallCenterModel
 		if (m_Default_R_RequestType_ID <= 0)
 		{
 			log.warn("No Call Center Default request type defined."
-					+" Please open the Request Type window and check Default for Call Center."); 
+					+" Please open the Request Type window and check Default for Call Center.");
 		}
 		return m_Default_R_RequestType_ID;
 	}
 	private int m_Default_R_RequestType_ID = -1;
-	
+
 	public int getRequest_Window_ID()
 	{
 		if (s_Request_Window_ID > 0)
 		{
 			return s_Request_Window_ID;
 		}
-		
+
 		s_Request_Window_ID = DB.getSQLValueEx(null,
 				"SELECT tt.AD_Window_ID FROM AD_Tab tt"
 				+" WHERE tt.AD_Table_ID=? AND tt.TabLevel=? AND tt.EntityType=?"
@@ -391,7 +391,7 @@ public class CallCenterModel
 		return s_Request_Window_ID;
 	}
 	private int s_Request_Window_ID = -1;
-	
+
 	protected void lockContact(I_RV_R_Group_Prospect contact)
 	{
 		MRGroupProspect gp = MRGroupProspect.get(Env.getCtx(), contact, null);
@@ -405,7 +405,7 @@ public class CallCenterModel
 		gp.saveEx();
 		getContactsGridTab().dataRefresh();
 	}
-	
+
 	protected void unlockContact(I_RV_R_Group_Prospect contact)
 	{
 		MRGroupProspect gp = MRGroupProspect.get(Env.getCtx(), contact, null);
@@ -421,7 +421,7 @@ public class CallCenterModel
 		gp.saveEx();
 		getContactsGridTab().dataRefresh();
 	}
-	
+
 	public void setRequestDefaults(I_R_Request request, I_RV_R_Group_Prospect contact)
 	{
 		request.setAD_Org_ID(contact.getAD_Org_ID());
@@ -432,20 +432,20 @@ public class CallCenterModel
 		//
 		MGroup group = MGroup.get(Env.getCtx(), contact.getR_Group_ID());
 		String summary = group.getDescription();
-		if (Util.isEmpty(summary))
+		if (Check.isEmpty(summary))
 			summary = group.getHelp();
-		if (Util.isEmpty(summary))
+		if (Check.isEmpty(summary))
 			summary = group.getName();
 		request.setSummary(summary);
 		request.setR_RequestType_ID(getDefault_RequestType_ID());
 		request.setR_Category_ID(group.get_ValueAsInt(BundleUtil.R_Group_R_Category_ID));
 	}
-	
+
 	public void setContactPhoneNo(de.metas.callcenter.model.I_R_Request request, ContactPhoneNo phoneNo)
 	{
 		if (phoneNo == null)
 			return;
-		if (!Util.isEmpty(phoneNo.getPhoneNo()))
+		if (!Check.isEmpty(phoneNo.getPhoneNo()))
 		{
 			request.setCCM_PhoneActual(phoneNo.getPhoneNo());
 			if (phoneNo.getAD_User_ID() > 0)
@@ -454,7 +454,7 @@ public class CallCenterModel
 			}
 		}
 	}
-	
+
 	public static String toString(I_RV_R_Group_Prospect c)
 	{
 		if (c == null)
@@ -466,7 +466,7 @@ public class CallCenterModel
 		.append("]");
 		return sb.toString();
 	}
-	
+
 	public List<ContactPhoneNo> getContactPhoneNumbers()
 	{
 		final I_RV_R_Group_Prospect prospect = getRV_R_Group_Prospect(false);
@@ -475,9 +475,9 @@ public class CallCenterModel
 			return list;
 		for (final I_AD_User contact : Services.get(IBPartnerDAO.class).retrieveContacts(prospect.getC_BPartner()))
 		{
-			if (!Util.isEmpty(contact.getPhone(), true))
+			if (!Check.isEmpty(contact.getPhone(), true))
 				list.add(new ContactPhoneNo(contact.getPhone(), contact.getName(), contact.getAD_User_ID()));
-			if (!Util.isEmpty(contact.getPhone2(), true))
+			if (!Check.isEmpty(contact.getPhone2(), true))
 				list.add(new ContactPhoneNo(contact.getPhone2(), contact.getName(), contact.getAD_User_ID()));
 		}
 		return list;

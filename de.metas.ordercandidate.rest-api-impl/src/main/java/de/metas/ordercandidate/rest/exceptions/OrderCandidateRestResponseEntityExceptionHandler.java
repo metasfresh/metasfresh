@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import de.metas.bpartner.service.BPartnerIdNotFoundException;
+
 /*
  * #%L
  * de.metas.ordercandidate.rest-api-impl
@@ -34,8 +36,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class OrderCandidateRestResponseEntityExceptionHandler
 {
-	@ExceptionHandler(BPartnerInfoNotFoundException.class)
-	public ResponseEntity<String> handleBPartnerInfoNotFoundException(@NonNull final BPartnerInfoNotFoundException e)
+	@ExceptionHandler(BPartnerIdNotFoundException.class)
+	public ResponseEntity<String> handleBPartnerInfoNotFoundException(@NonNull final BPartnerIdNotFoundException e)
 	{
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 	}

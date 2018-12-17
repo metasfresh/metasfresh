@@ -1,7 +1,7 @@
 package de.metas.material.event.procurement;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,7 +47,7 @@ public class PurchaseOfferDeletedEvent extends AbstractPurchaseOfferEvent
 	public PurchaseOfferDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
-			@JsonProperty("date") final Date date,
+			@JsonProperty("date") final Instant date,
 			@JsonProperty("qty") final BigDecimal qty,
 			@JsonProperty("procurementCandidateId") final int procurementCandidateId)
 	{

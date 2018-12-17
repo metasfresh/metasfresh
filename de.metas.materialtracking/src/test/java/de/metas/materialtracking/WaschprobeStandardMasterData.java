@@ -1,5 +1,8 @@
 package de.metas.materialtracking;
 
+import static org.compiere.util.TimeUtil.asTimestamp;
+import static org.compiere.util.TimeUtil.getDay;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -24,6 +27,7 @@ package de.metas.materialtracking;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,7 +43,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.junit.Assert;
@@ -108,7 +111,7 @@ public class WaschprobeStandardMasterData
 
 	private void createMasterData()
 	{
-		this.materialReceiptDate = TimeUtil.getDay(2015, 12, 06);
+		this.materialReceiptDate = asTimestamp(getDay(2015, 12, 06));
 
 		//
 		// Create data from HardCodedQualityBasedConfig
@@ -196,10 +199,10 @@ public class WaschprobeStandardMasterData
 	public I_PP_Order createPP_Order(final I_M_Product product,
 			final BigDecimal qtyDelivered,
 			final I_C_UOM uom,
-			final Timestamp productionDate)
+			final Date productionDate)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, context);
-		ppOrder.setDateDelivered(productionDate);
+		ppOrder.setDateDelivered(asTimestamp(productionDate));
 		ppOrder.setM_Product(product);
 		ppOrder.setC_UOM(uom);
 		ppOrder.setQtyDelivered(qtyDelivered);

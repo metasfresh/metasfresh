@@ -1,6 +1,6 @@
 package de.metas.material.planning.event;
 
-import java.util.Date;
+import java.time.Instant;
 
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
@@ -47,5 +47,5 @@ public class MaterialRequest implements IMaterialRequest
 
 	IMaterialPlanningContext  mrpContext;
 
-	Date demandDate;
+	Instant demandDate;
 }
