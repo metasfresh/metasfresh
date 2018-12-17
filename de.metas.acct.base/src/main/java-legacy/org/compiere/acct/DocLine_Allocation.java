@@ -40,6 +40,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -512,7 +513,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 					invoice.getDateAcct(),
-					invoice.getC_ConversionType_ID(),
+					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 					invoice.getAD_Client_ID(),
 					invoice.getAD_Org_ID());
 		}
@@ -531,7 +532,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			{
 				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 						payment.getDateAcct(),
-						payment.getC_ConversionType_ID(),
+						CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()),
 						payment.getAD_Client_ID(),
 						payment.getAD_Org_ID());
 			}
@@ -540,7 +541,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				final I_C_Cash cashJournal = cashLine.getC_Cash();
 				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 						cashJournal.getDateAcct(),
-						-1, // C_ConversionType_ID - default
+						(CurrencyConversionTypeId)null, // C_ConversionType_ID - default
 						cashLine.getAD_Client_ID(),
 						cashLine.getAD_Org_ID());
 			}

@@ -47,7 +47,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.ClientId;
@@ -68,8 +67,8 @@ import org.compiere.util.Ini;
 import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
@@ -951,7 +950,6 @@ public final class AEnv
 	{
 		Services.get(IPostingService.class)
 				.newPostingRequest()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
 				.setClientId(ClientId.ofRepoId(AD_Client_ID))
 				.setDocument(AD_Table_ID, Record_ID)
 				.setForce(force)

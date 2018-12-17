@@ -8,8 +8,8 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.POInfo;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;
@@ -17,6 +17,7 @@ import de.metas.process.Param;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -59,11 +60,11 @@ public class Documents_FactAcct_Creation_For_Posted extends JavaProcess
 
 		if (p_Date != null)
 		{
-			startTime = TimeUtil.getDay(p_Date);
+			startTime = TimeUtil.truncToDay(p_Date);
 		}
 		else
 		{
-			startTime = TimeUtil.getPrevDay(new Timestamp(System.currentTimeMillis()));
+			startTime = SystemTime.asDayTimestamp();
 		}
 
 		// list all the documents that are marked as posted but have no fact accounts.
@@ -100,8 +101,6 @@ public class Documents_FactAcct_Creation_For_Posted extends JavaProcess
 					documentNo);
 
 			postingService.newPostingRequest()
-					// Post it in same context and transaction as the process
-					.setContext(getCtx(), getTrxName())
 					.setClientId(ClientId.ofRepoId(getAD_Client_ID()))
 					.setDocument(document) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing

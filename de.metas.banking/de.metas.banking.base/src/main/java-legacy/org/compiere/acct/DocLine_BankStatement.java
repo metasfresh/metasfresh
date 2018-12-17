@@ -25,6 +25,7 @@ import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MPeriod;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -36,6 +37,7 @@ import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Services;
 
 /**
@@ -83,7 +85,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 		//
 		// Period
-		final MPeriod period = MPeriod.get(getCtx(), line.getDateAcct(), line.getAD_Org_ID());
+		final MPeriod period = MPeriod.get(Env.getCtx(), line.getDateAcct(), line.getAD_Org_ID());
 		if (period != null && period.isOpen(Doc.DOCTYPE_BankStatement, line.getDateAcct(), line.getAD_Org_ID()))
 		{
 			setC_Period_ID(period.getC_Period_ID());
@@ -205,11 +207,11 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	private final ICurrencyConversionContext getCurrencyConversionCtx(final ConversionType type)
 	{
-		final int conversionTypeId = currencyDAO.retrieveConversionType(getCtx(), type).getC_ConversionType_ID();
+		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(type);
 		return getCurrencyConversionCtx(conversionTypeId);
 	}
 
-	private final ICurrencyConversionContext getCurrencyConversionCtx(final int conversionTypeId)
+	private final ICurrencyConversionContext getCurrencyConversionCtx(final CurrencyConversionTypeId conversionTypeId)
 	{
 		return currencyConversionBL.createCurrencyConversionContext(
 				TimeUtil.asDate(getDateAcct()),

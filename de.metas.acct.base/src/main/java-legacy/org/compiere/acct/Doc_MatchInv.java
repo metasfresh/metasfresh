@@ -32,6 +32,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MTax;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -130,7 +131,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			final int C_Tax_ID = _invoiceLine.getC_Tax_ID();
 			if (taxIncluded && C_Tax_ID > 0)
 			{
-				final MTax tax = MTax.get(getCtx(), C_Tax_ID);
+				final MTax tax = MTax.get(Env.getCtx(), C_Tax_ID);
 				if (!tax.isZeroTax())
 				{
 					final int taxPrecision = getStdPrecision();
@@ -438,7 +439,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			Check.assumeNotNull(invoice, "invoice not null");
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 					invoice.getDateAcct(),
-					invoice.getC_ConversionType_ID(),
+					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 					invoice.getAD_Client_ID(),
 					invoice.getAD_Org_ID());
 		}

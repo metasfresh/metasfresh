@@ -24,7 +24,6 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyConversionResult;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -193,7 +192,7 @@ public class CostingMethodHandlerUtils
 	{
 		final ICurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
 				TimeUtil.asDate(request.getDate()),
-				CurrencyConversionTypeId.toRepoId(request.getCurrencyConversionTypeId()),
+				request.getCurrencyConversionTypeId(),
 				request.getClientId(),
 				request.getOrgId());
 		return conversionCtx;

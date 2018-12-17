@@ -123,7 +123,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
-			return Optional.of(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
+			return Optional.ofNullable(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
 		}
 		else if (costCollectorType.isUsageVariance())
 		{

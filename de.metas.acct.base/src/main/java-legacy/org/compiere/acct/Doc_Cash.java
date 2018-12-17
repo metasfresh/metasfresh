@@ -25,6 +25,7 @@ import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.MCash;
 import org.compiere.model.MCashBook;
+import org.compiere.util.Env;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.money.CurrencyId;
@@ -64,7 +65,7 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 		setAmount(Doc.AMTTYPE_Gross, cash.getStatementDifference());
 
 		// Set CashBook Org & Currency
-		MCashBook cb = MCashBook.get(getCtx(), cash.getC_CashBook_ID());
+		MCashBook cb = MCashBook.get(Env.getCtx(), cash.getC_CashBook_ID());
 		setC_CashBook_ID(cb.getC_CashBook_ID());
 		setC_Currency_ID(CurrencyId.ofRepoId(cb.getC_Currency_ID()));
 

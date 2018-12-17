@@ -31,6 +31,7 @@ import org.compiere.model.I_C_OrderTax;
 import org.compiere.model.MTax;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -121,7 +122,7 @@ public class Doc_Order extends Doc<DocLine_Order>
 			final int C_Tax_ID = docLine.getC_Tax_ID();
 			if (docLine.isTaxIncluded() && C_Tax_ID > 0)
 			{
-				final MTax tax = MTax.get(getCtx(), C_Tax_ID);
+				final MTax tax = MTax.get(Env.getCtx(), C_Tax_ID);
 				if (!tax.isZeroTax())
 				{
 					final BigDecimal lineNetAmtTax = taxBL.calculateTax(tax, lineNetAmt, true, getStdPrecision());
@@ -190,7 +191,7 @@ public class Doc_Order extends Doc<DocLine_Order>
 				boolean salesTax = DisplayType.toBoolean(rs.getString(6));
 				final boolean taxIncluded = DisplayType.toBoolean(rs.getString(7));
 				//
-				final DocTax taxLine = new DocTax(getCtx(),
+				final DocTax taxLine = new DocTax(Env.getCtx(),
 						C_Tax_ID, name, rate,
 						taxBaseAmt, amount, salesTax, taxIncluded);
 				list.add(taxLine);

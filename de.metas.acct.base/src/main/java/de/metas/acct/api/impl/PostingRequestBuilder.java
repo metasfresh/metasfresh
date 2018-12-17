@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IDocFactory;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,11 +35,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.user.UserId;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.I_AD_Client;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.Profiles;
@@ -63,7 +64,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 
-@ToString(of = { "_trxName", "_force", "_clientId", "_documentRef", "_postImmediate", "_postWithoutServer", "_failOnError" })
+@ToString(of = { "_force", "_clientId", "_documentRef", "_postImmediate", "_postWithoutServer", "_failOnError" })
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder
 {
 	public static final Topic NOTIFICATIONS_TOPIC = Topic.remote("de.metas.acct.UserNotifications");
@@ -76,8 +77,6 @@ import lombok.ToString;
 	private final transient INotificationBL userNotifications = Services.get(INotificationBL.class);
 
 	// Parameters
-	private Properties _ctx;
-	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _force;
 	private ClientId _clientId = null;
 	private TableRecordReference _documentRef = null;
@@ -182,28 +181,29 @@ import lombok.ToString;
 
 		final IDocFactory docFactory = Services.get(IDocFactory.class);
 
-		final Properties ctx = getCtx();
 		final ClientId clientId = getClientId();
 		final TableRecordReference documentRef = getDocumentRef();
 		final boolean force = isForce();
 
-		try
+		final Properties ctx = Env.newTemporaryCtx();
+		Env.setAD_Client_ID(ctx, clientId);
+
+		try (final IAutoCloseable c = Env.switchContext(ctx))
 		{
 			final List<AcctSchema> ass = Services.get(IAcctSchemaDAO.class).getAllByClient(clientId);
 
-			final Doc<?> doc = docFactory.getOrNull(ctx, ass, documentRef);
+			final Doc<?> doc = docFactory.getOrNull(ass, documentRef);
 			if (doc == null)
 			{
 				throw new PostingExecutionException("No accountable document found: " + this);
 			}
 
 			final boolean repost = true;
-			final String error = doc.post(force, repost);
-			setPostedError(error);
+			doc.post(force, repost);
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			setPostedError(e);
+			setPostedError(ex);
 		}
 
 		postingComplete();
@@ -245,26 +245,6 @@ import lombok.ToString;
 	public PostingExecutionException getPostedException()
 	{
 		return _postedException;
-	}
-
-	@Override
-	public IPostingRequestBuilder setContext(final Properties ctx, final String trxName)
-	{
-		assertNotExecuted();
-		_ctx = ctx;
-		_trxName = trxName;
-		return this;
-	}
-
-	private final Properties getCtx()
-	{
-		Check.assumeNotNull(_ctx, "_ctx is set");
-		return _ctx;
-	}
-
-	private final String getTrxName()
-	{
-		return _trxName;
 	}
 
 	@Override
@@ -343,13 +323,10 @@ import lombok.ToString;
 	{
 		assertNotExecuted();
 
-		Properties ctx = InterfaceWrapperHelper.getCtx(documentObj);
-		String trxName = InterfaceWrapperHelper.getTrxName(documentObj);
 		final Optional<Integer> adClientIdOpt = InterfaceWrapperHelper.getValue(documentObj, "AD_Client_ID");
 		final ClientId clientId = ClientId.ofRepoId(adClientIdOpt.get());
 		final TableRecordReference documentRef = TableRecordReference.of(documentObj);
 
-		setContext(ctx, trxName);
 		setClientId(clientId);
 		setDocumentRef(documentRef);
 	}
@@ -357,7 +334,6 @@ import lombok.ToString;
 	@Override
 	public IPostingRequestBuilder setDocument(@NonNull final IDocument document)
 	{
-		setContext(document.getCtx(), document.get_TrxName());
 		setClientId(ClientId.ofRepoId(document.getAD_Client_ID()));
 		setDocumentRef(document.toTableRecordReference());
 
@@ -521,26 +497,9 @@ import lombok.ToString;
 	 */
 	private final void postAfterTrxCommit(@NonNull final Runnable postRunnable)
 	{
-		final String trxName = getTrxName();
-
-		//
-		// Case: we are running in a transaction.
-		if (!trxManager.isNull(trxName))
-		{
-			trxManager.getTrxListenerManager(trxName)
-					.newEventListener(TrxEventTiming.AFTER_COMMIT)
-					.invokeMethodJustOnce(false) // invoking the method on *every* commit, because that's how it was and I can't check now if it's really needed
-					.registerHandlingMethod(innerTrx -> postRunnable.run());
-
-			// TODO figure out what shall be the posting status in this case,
-			// or how shall be tell the caller that we don't know the status because the posting will be done async,
-			// when the transaction will be completed
-		}
-		//
-		// Case: we are running out of transaction
-		else
-		{
-			postRunnable.run();
-		}
+		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoking the method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> postRunnable.run());
 	}
 }

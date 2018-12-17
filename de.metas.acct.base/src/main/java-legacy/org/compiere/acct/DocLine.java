@@ -19,7 +19,6 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.function.IntFunction;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -53,6 +52,7 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
@@ -117,7 +117,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private final LocationId locationFromId = null;
 	private final LocationId locationToId = null;
 	private Optional<CurrencyId> _currencyId;
-	private int m_C_ConversionType_ID = -1;
+	private Optional<CurrencyConversionTypeId> currencyConversionTypeIdHolder;
 	private int m_C_Period_ID = -1;
 	/** C_Tax_ID (override) */
 	private Integer m_C_Tax_ID = null;
@@ -138,11 +138,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			p_po.setAD_Org_ID(m_doc.getOrgId().getRepoId());
 		}
 	}	// DocLine
-
-	protected final Properties getCtx()
-	{
-		return m_doc.getCtx();
-	}
 
 	protected final ClientId getClientId()
 	{
@@ -181,26 +176,25 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return _currencyId.orElse(null);
 	}
 
-	public final int getC_ConversionType_ID()
+	public final CurrencyConversionTypeId getCurrencyConversionTypeId()
 	{
-		if (m_C_ConversionType_ID == -1)
+		Optional<CurrencyConversionTypeId> currencyConversionTypeIdHolder = this.currencyConversionTypeIdHolder;
+		if (currencyConversionTypeIdHolder == null)
 		{
-			m_C_ConversionType_ID = getValue("C_ConversionType_ID");
-			if (m_C_ConversionType_ID <= 0)
+			CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(getValue("C_ConversionType_ID"));
+			if (currencyConversionTypeId == null)
 			{
-				m_C_ConversionType_ID = m_doc.getC_ConversionType_ID();
+				currencyConversionTypeId = m_doc.getCurrencyConversionTypeId();
 			}
-			if(m_C_ConversionType_ID < 0)
-			{
-				m_C_ConversionType_ID = 0;
-			}
+
+			currencyConversionTypeIdHolder = this.currencyConversionTypeIdHolder = Optional.ofNullable(currencyConversionTypeId);
 		}
-		return m_C_ConversionType_ID;
+		return currencyConversionTypeIdHolder.orElse(null);
 	}
 
 	protected final void setC_ConversionType_ID(final int C_ConversionType_ID)
 	{
-		m_C_ConversionType_ID = C_ConversionType_ID;
+		currencyConversionTypeIdHolder = CurrencyConversionTypeId.optionalOfRepoId(C_ConversionType_ID);
 	}
 
 	/**
@@ -437,7 +431,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
 		}
 
-		return accountDAO.getById(getCtx(), validCombinationId);
+		return accountDAO.getById(validCombinationId);
 	}
 
 	/**
@@ -456,7 +450,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			throw newPostingException().setAcctSchema(as).setDetailMessage("No Default Account for account type: " + acctType);
 		}
 
-		return accountDAO.getById(getCtx(), validCombinationId);
+		return accountDAO.getById(validCombinationId);
 	}
 
 	/**

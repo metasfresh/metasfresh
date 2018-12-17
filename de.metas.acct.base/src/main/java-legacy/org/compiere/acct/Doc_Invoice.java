@@ -41,6 +41,7 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -130,7 +131,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final boolean salesTax = DisplayType.toBoolean(rs.getString(6));
 				final boolean taxIncluded = DisplayType.toBoolean(rs.getString(7));
 				//
-				final DocTax taxLine = new DocTax(getCtx(),
+				final DocTax taxLine = new DocTax(
+						Env.getCtx(),
 						C_Tax_ID, taxName, rate,
 						taxBaseAmt, taxAmt, salesTax, taxIncluded);
 				docTaxes.add(taxLine);

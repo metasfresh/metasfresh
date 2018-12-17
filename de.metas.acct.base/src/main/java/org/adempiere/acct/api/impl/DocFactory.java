@@ -23,10 +23,8 @@ package org.adempiere.acct.api.impl;
  */
 
 import java.lang.reflect.Constructor;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.acct.api.IDocFactory;
@@ -43,6 +41,7 @@ import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.PO;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -144,8 +143,10 @@ public class DocFactory implements IDocFactory
 	}
 
 	@Override
-	public Doc<?> getOrNull(final Properties ctx, final List<AcctSchema> acctSchemas, @NonNull final TableRecordReference documentRef)
+	public Doc<?> getOrNull(final List<AcctSchema> acctSchemas, @NonNull final TableRecordReference documentRef)
 	{
+		Check.assumeNotEmpty(acctSchemas, "acctSchemas is not empty");
+
 		final int adTableId = documentRef.getAD_Table_ID();
 		final int recordId = documentRef.getRecord_ID();
 
@@ -158,10 +159,10 @@ public class DocFactory implements IDocFactory
 		}
 
 		final String tableName = docMetaInfo.getTableName();
-		final PO documentModel = TableModelLoader.instance.getPO(ctx, tableName, recordId, ITrx.TRXNAME_None);
+		final PO documentModel = TableModelLoader.instance.getPO(Env.getCtx(), tableName, recordId, ITrx.TRXNAME_ThreadInherited);
 		if (documentModel == null)
 		{
-			logger.error("Not Found: " + tableName + "_ID=" + recordId + " (Processed=Y)");
+			logger.error("Not Found: {}_ID={} (Processed=Y)", tableName, recordId);
 			return null;
 		}
 
@@ -170,29 +171,6 @@ public class DocFactory implements IDocFactory
 				.setDocumentModel(documentModel)
 				.setAcctSchemas(acctSchemas)
 				.build();
-	}
-
-	@Override
-	public final Doc<?> get(final Properties ctx, final IDocMetaInfo docMetaInfo, final List<AcctSchema> acctSchemas, final ResultSet rs, final String trxName)
-	{
-		Check.assumeNotNull(docMetaInfo, "docMetaInfo not null");
-
-		try
-		{
-
-			final String tableName = docMetaInfo.getTableName();
-			final PO documentModel = TableModelLoader.instance.getPO(ctx, tableName, rs, trxName);
-
-			return new DocBuilder()
-					.setDocMetaInfo(docMetaInfo)
-					.setAcctSchemas(acctSchemas)
-					.setDocumentModel(documentModel)
-					.build();
-		}
-		catch (final Exception e)
-		{
-			throw PostingExecutionException.wrapIfNeeded(e);
-		}
 	}
 
 	private final synchronized ImmutableMap<Integer, IDocMetaInfo> getDocMetaInfoMap()
@@ -210,7 +188,7 @@ public class DocFactory implements IDocFactory
 	{
 		return new ArrayList<>(getDocMetaInfoMap().values());
 	}
-	
+
 	@Override
 	public Set<Integer> getDocTableIds()
 	{

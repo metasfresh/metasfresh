@@ -11,6 +11,7 @@ import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 
@@ -82,7 +83,7 @@ public interface ICurrencyDAO extends ISingletonService
 	 */
 	int getStdPrecision(Properties ctx, int C_Currency_ID);
 
-	default int getStdPrecision(int C_Currency_ID)
+	default int getStdPrecision(final int C_Currency_ID)
 	{
 		return getStdPrecision(Env.getCtx(), C_Currency_ID);
 	}
@@ -96,10 +97,13 @@ public interface ICurrencyDAO extends ISingletonService
 	 */
 	I_C_ConversionType retrieveDefaultConversionType(Properties ctx, int adClientId, int adOrgId, Date date);
 
-	/**
-	 * @return conversion type of given {@link ConversionType}; never returns null
-	 */
-	I_C_ConversionType retrieveConversionType(Properties ctx, ConversionType type);
+	default CurrencyConversionTypeId getDefaultConversionTypeId(final int adClientId, final int adOrgId, final Date date)
+	{
+		final I_C_ConversionType defaultConversionType = retrieveDefaultConversionType(Env.getCtx(), adClientId, adOrgId, date);
+		return defaultConversionType != null ? CurrencyConversionTypeId.ofRepoId(defaultConversionType.getC_ConversionType_ID()) : null;
+	}
+
+	CurrencyConversionTypeId getConversionTypeId(ConversionType type);
 
 	BigDecimal retrieveRateOrNull(ICurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
 }

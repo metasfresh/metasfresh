@@ -333,7 +333,7 @@ public final class Fact
 		log.trace("Diff=" + diff);
 
 		// new line
-		FactLine line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0);
+		FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID(), 0);
 		line.setDocumentInfo(m_doc, null);
 		line.setPostingType(m_postingType);
 
@@ -484,7 +484,7 @@ public final class Fact
 				if (!difference.isZeroBalance())
 				{
 					// Create Balancing Entry
-					final FactLine line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0);
+					final FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID(), 0);
 					line.setDocumentInfo(m_doc, null);
 					line.setPostingType(m_postingType);
 					// Amount & Account
@@ -608,7 +608,7 @@ public final class Fact
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 		if (acctSchemaGL.isCurrencyBalancing())
 		{
-			line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0);
+			line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID(), 0);
 			line.setDocumentInfo(m_doc, null);
 			line.setPostingType(m_postingType);
 			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcctId());
@@ -973,7 +973,7 @@ public final class Fact
 			//
 			final Doc<?> doc = getDoc();
 			final DocLine<?> docLine = getDocLine();
-			final FactLine line = new FactLine(doc.getCtx(),
+			final FactLine line = new FactLine(
 					doc.get_Table_ID(), // AD_Table_ID
 					doc.get_ID(), // Record_ID
 					docLine == null ? 0 : docLine.get_ID()); // Line_ID

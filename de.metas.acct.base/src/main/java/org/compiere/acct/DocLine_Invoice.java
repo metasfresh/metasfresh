@@ -32,6 +32,7 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MTax;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.invoice.IMatchInvDAO;
@@ -69,7 +70,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		final int C_Tax_ID = getC_Tax_ID();
 		if (isTaxIncluded() && C_Tax_ID > 0)
 		{
-			final MTax tax = MTax.get(getCtx(), C_Tax_ID);
+			final MTax tax = MTax.get(Env.getCtx(), C_Tax_ID);
 			if (!tax.isZeroTax())
 			{
 				final int taxPrecision = doc.getStdPrecision();

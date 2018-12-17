@@ -17,6 +17,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -27,10 +28,12 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -65,6 +68,10 @@ import lombok.NonNull;
 @Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
+	private final CCache<ConversionType, CurrencyConversionTypeId> conversionTypeIdsByType = CCache.<ConversionType, CurrencyConversionTypeId>builder()
+			.tableName(I_C_ConversionType.Table_Name)
+			.build();
+
 	@Override
 	public I_C_Currency getById(@NonNull final CurrencyId currencyId)
 	{
@@ -155,18 +162,26 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_C_ConversionType.Table_Name + "#by#" + I_C_ConversionType.COLUMNNAME_Value)
-	public I_C_ConversionType retrieveConversionType(@CacheCtx final Properties ctx, final ConversionType type)
+	public CurrencyConversionTypeId getConversionTypeId(@NonNull final ConversionType type)
 	{
-		Check.assumeNotNull(type, "type not null");
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_ConversionType.class, ctx, ITrx.TRXNAME_None)
+		return conversionTypeIdsByType.getOrLoad(type, this::retrieveConversionTypeId);
+	}
+
+	private CurrencyConversionTypeId retrieveConversionTypeId(@NonNull final ConversionType type)
+	{
+		final CurrencyConversionTypeId conversionTypeId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_ConversionType.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
 				.addEqualsFilter(I_C_ConversionType.COLUMN_Value, type.getCode())
 				//
 				.create()
-				.firstOnlyNotNull(I_C_ConversionType.class);
+				.firstIdOnly(CurrencyConversionTypeId::ofRepoIdOrNull);
+		if (conversionTypeId == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_ConversionType_ID@: " + type);
+		}
+
+		return conversionTypeId;
 	}
 
 	/**

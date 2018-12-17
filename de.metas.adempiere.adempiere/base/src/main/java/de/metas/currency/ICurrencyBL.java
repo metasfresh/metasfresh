@@ -32,6 +32,7 @@ import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Currency;
 
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -43,13 +44,11 @@ import lombok.NonNull;
  */
 public interface ICurrencyBL extends ISingletonService
 {
-	int DEFAULT_ConversionType_ID = 0;
-
-	ICurrencyConversionContext createCurrencyConversionContext(Date ConvDate, int ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
+	ICurrencyConversionContext createCurrencyConversionContext(Date ConvDate, CurrencyConversionTypeId ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
 
 	default ICurrencyConversionContext createCurrencyConversionContext(
 			final Date ConvDate,
-			final int ConversionType_ID,
+			final CurrencyConversionTypeId ConversionType_ID,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
 	{

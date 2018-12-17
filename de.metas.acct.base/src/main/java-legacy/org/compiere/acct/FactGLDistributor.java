@@ -16,6 +16,7 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.MAccount;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -215,12 +216,11 @@ import lombok.NonNull;
 
 		final Doc<?> doc = baseLine.getDoc();
 		final DocLine<?> docLine = baseLine.getDocLine();
-		final Properties ctx = doc.getCtx();
 
 		final AccountDimension accountDimension = glDistributionLine.getAccountDimension();
-		final MAccount account = MAccount.get(ctx, accountDimension);
+		final MAccount account = MAccount.get(Env.getCtx(), accountDimension);
 
-		final FactLine factLine = new FactLine(ctx, baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
+		final FactLine factLine = new FactLine(baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
 
 		//
 		// Set Info & Account

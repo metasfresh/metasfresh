@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.location.LocationId;
@@ -37,6 +36,7 @@ import org.compiere.model.MFactAcct;
 import org.compiere.model.MRevenueRecognitionPlan;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AccountId;
@@ -53,6 +53,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -95,9 +96,9 @@ final class FactLine extends X_Fact_Acct
 	 * @param Line_ID - Optional line id
 	 * @param trxName transaction
 	 */
-	FactLine(final Properties ctx, final int AD_Table_ID, final int Record_ID, final int Line_ID)
+	FactLine(final int AD_Table_ID, final int Record_ID, final int Line_ID)
 	{
-		super(ctx, 0, ITrx.TRXNAME_ThreadInherited);
+		super(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
 		setAD_Client_ID(0);							// do not derive
 		setAD_Org_ID(0);							// do not derive
 		//
@@ -130,7 +131,7 @@ final class FactLine extends X_Fact_Acct
 	 */
 	public FactLine reverse(final String description)
 	{
-		final FactLine reversal = new FactLine(getCtx(), getAD_Table_ID(), getRecord_ID(), getLine_ID());
+		final FactLine reversal = new FactLine(getAD_Table_ID(), getRecord_ID(), getLine_ID());
 		reversal.setClientOrg(this);	// needs to be set explicitly
 		reversal.setDocumentInfo(m_doc, m_docLine);
 		reversal.setAccount(acctSchema, m_acct);
@@ -151,7 +152,7 @@ final class FactLine extends X_Fact_Acct
 	 */
 	public FactLine accrue(final String description)
 	{
-		final FactLine accrual = new FactLine(getCtx(), getAD_Table_ID(), getRecord_ID(), getLine_ID());
+		final FactLine accrual = new FactLine(getAD_Table_ID(), getRecord_ID(), getLine_ID());
 		accrual.setClientOrg(this);	// needs to be set explicitly
 		accrual.setDocumentInfo(m_doc, m_docLine);
 		accrual.setAccount(acctSchema, m_acct);
@@ -1083,17 +1084,17 @@ final class FactLine extends X_Fact_Acct
 		}
 
 		// Get Conversion Type from Line or Header
-		int C_ConversionType_ID = ICurrencyBL.DEFAULT_ConversionType_ID;
+		CurrencyConversionTypeId conversionTypeId = null;
 		OrgId orgId = OrgId.ANY;
 		if (m_docLine != null)			// get from line
 		{
-			C_ConversionType_ID = m_docLine.getC_ConversionType_ID();
+			conversionTypeId = m_docLine.getCurrencyConversionTypeId();
 			orgId = m_docLine.getOrgId();
 		}
-		if (C_ConversionType_ID <= 0)	// get from header
+		if (conversionTypeId == null)	// get from header
 		{
 			Check.assumeNotNull(m_doc, "m_doc not null");
-			C_ConversionType_ID = m_doc.getC_ConversionType_ID();
+			conversionTypeId = m_doc.getCurrencyConversionTypeId();
 			if (orgId == null || orgId.isAny())
 			{
 				orgId = m_doc.getOrgId();
@@ -1103,7 +1104,7 @@ final class FactLine extends X_Fact_Acct
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				getDateAcct(),
-				C_ConversionType_ID,
+				conversionTypeId,
 				m_doc.getClientId(),
 				orgId);
 		return conversionCtx;

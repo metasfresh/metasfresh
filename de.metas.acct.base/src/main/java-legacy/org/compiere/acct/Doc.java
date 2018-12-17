@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.IntFunction;
 
-import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,8 +41,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
 import org.adempiere.user.UserId;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -60,6 +57,8 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
@@ -69,6 +68,7 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
@@ -78,6 +78,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -85,6 +86,7 @@ import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 /**
  * Posting Document Root.
@@ -158,7 +160,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	protected final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	protected final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-	private final IDocFactory docFactory;
 
 	/** AR Invoices - ARI */
 	public static final String DOCTYPE_ARInvoice = X_C_DocType.DOCBASETYPE_ARInvoice;
@@ -220,21 +221,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param docBuilder construction parameters
 	 * @param defaultDocBaseType suggested DocBaseType to be used
 	 */
-	/* package */ Doc(final IDocBuilder docBuilder, final String defaultDocBaseType)
+	/* package */ Doc(@NonNull final IDocBuilder docBuilder, final String defaultDocBaseType)
 	{
-		super();
-
-		Check.assumeNotNull(docBuilder, "docBuilder not null");
-
-		//
-		// Document Factory
-		this.docFactory = docBuilder.getDocFactory();
-		Check.assumeNotNull(docFactory, "docFactory not null");
-
 		//
 		// Accounting schemas
 		Check.assumeNotEmpty(docBuilder.getAcctSchemas(), "ass not empty");
-		acctSchemas = docBuilder.getAcctSchemas();
+		acctSchemas = ImmutableList.copyOf(docBuilder.getAcctSchemas());
 
 		//
 		// Document model
@@ -242,12 +234,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		p_po = InterfaceWrapperHelper.getPO(documentModel);
 		Check.assumeNotNull(p_po, "p_po not null");
 
-		//
-		// Setup a new context
-		final Properties ctx = InterfaceWrapperHelper.getCtx(p_po);
-		this.m_ctx = Env.deriveCtx(ctx);
-		final AcctSchema acctSchema1 = acctSchemas.get(0); // first account schema
-		Env.setContext(m_ctx, Env.CTXNAME_AD_Client_ID, acctSchema1.getClientId().getRepoId());
+		// IMPORTANT: to make sure events like FactAcctListenersService.fireAfterUnpost will use the thread inherited trx
+		p_po.set_TrxName(ITrx.TRXNAME_ThreadInherited);
 
 		// DocStatus
 		{
@@ -266,10 +254,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		setDocumentType(defaultDocBaseType);
 	}   // Doc
 
-	/** Accounting Schema Array */
-	private final List<AcctSchema> acctSchemas;
-	/** Properties */
-	private final Properties m_ctx;
+	/** Accounting Schemas */
+	private final ImmutableList<AcctSchema> acctSchemas;
 	/** The Document */
 	private final PO p_po;
 	/** Document Type */
@@ -307,11 +293,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	/** Contained Doc Lines */
 	private List<DocLineType> docLines;
-
-	protected final Properties getCtx()
-	{
-		return m_ctx;
-	}
 
 	protected final String get_TableName()
 	{
@@ -373,7 +354,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param repost if true ignore that already posted
 	 * @return null if posted error otherwise
 	 */
-	public final String post(final boolean force, final boolean repost)
+	public final void post(final boolean force, final boolean repost)
 	{
 		//
 		// Lock Document
@@ -381,18 +362,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		{
 			lock(force, repost);
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			final String errmsg = e.getLocalizedMessage();
-			log.error("Failed to lock: {}", this, e);
-			return errmsg;
+			throw newPostingException(ex);
 		}
 
 		//
 		// Do the actual posting
-		final IMutable<PostingException> error = new Mutable<>(null);
 		trxManager.runInThreadInheritedTrx(new TrxRunnable2()
 		{
+			PostingException postingException;
+
 			@Override
 			public void run(final String localTrxName_NOTUSED)
 			{
@@ -403,7 +383,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			public boolean doCatch(final Throwable e)
 			{
 				final PostingException postingException = newPostingException(e);
-				error.setValue(postingException);
 
 				final boolean createNote = sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR, false, getAD_Client_ID(), getAD_Org_ID());
 				if (createNote)
@@ -412,7 +391,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				}
 				LoggingHelper.log(log, postingException.getLogLevel(), postingException.getLocalizedMessage(), postingException);
 
-				return true; // rollack, but don't throw the error
+				throw postingException;
 			}
 
 			@Override
@@ -420,16 +399,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			{
 				//
 				// Unlock (in parent transaction)
-				final PostingException postingException = error.getValue();
 				unlock(postingException);
 			}
 		});
-
-		//
-		// Return the error message or null (backward compatibility)
-		final PostingException postingException = error.getValue();
-		final String errorMsg = postingException == null ? null : postingException.getLocalizedMessage();
-		return errorMsg;
 	}
 
 	private final void post0(final boolean force, final boolean repost)
@@ -976,7 +948,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 			final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 					TimeUtil.asDate(getDateAcct()),
-					getC_ConversionType_ID(),
+					getCurrencyConversionTypeId(),
 					getAD_Client_ID(),
 					getAD_Org_ID());
 			try
@@ -1006,11 +978,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final int periodId = getValueAsIntOrZero("C_Period_ID");
 		if (periodId > 0)
 		{
-			m_period = MPeriod.get(getCtx(), periodId);
+			m_period = MPeriod.get(Env.getCtx(), periodId);
 		}
 		if (m_period == null)
 		{
-			m_period = MPeriod.get(getCtx(), TimeUtil.asTimestamp(getDateAcct()), getAD_Org_ID());
+			m_period = MPeriod.get(Env.getCtx(), TimeUtil.asTimestamp(getDateAcct()), getAD_Org_ID());
 		}
 
 		// Is Period Open?
@@ -1414,17 +1386,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return null;
 		}
 
-		return accountDAO.getById(getCtx(), accountId);
+		return accountDAO.getById(accountId);
 	}	// getAccount
 
 	protected final MAccount getRealizedGainAcct(final AcctSchema as)
 	{
-		return accountDAO.getById(getCtx(), as.getDefaultAccounts().getRealizedGainAcctId());
+		return accountDAO.getById(as.getDefaultAccounts().getRealizedGainAcctId());
 	}
 
 	protected final MAccount getRealizedLossAcct(final AcctSchema as)
 	{
-		return accountDAO.getById(getCtx(), as.getDefaultAccounts().getRealizedLossAcctId());
+		return accountDAO.getById(as.getDefaultAccounts().getRealizedLossAcctId());
 	}
 
 	@Override
@@ -1519,10 +1491,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_MultiCurrency = mc;
 	}
 
-	public final int getC_ConversionType_ID()
+	public final CurrencyConversionTypeId getCurrencyConversionTypeId()
 	{
-		final int conversionTypeId = getValueAsIntOrZero("C_ConversionType_ID");
-		return conversionTypeId > 0 ? conversionTypeId : ICurrencyBL.DEFAULT_ConversionType_ID;
+		return CurrencyConversionTypeId.ofRepoIdOrNull(getValueAsIntOrZero("C_ConversionType_ID"));
 	}
 
 	protected final int getStdPrecision()
@@ -1538,7 +1509,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return ICurrencyDAO.DEFAULT_PRECISION;
 		}
 
-		_currencyPrecision = currencyDAO.getStdPrecision(getCtx(), currencyId.getRepoId());
+		_currencyPrecision = currencyDAO.getStdPrecision(Env.getCtx(), currencyId.getRepoId());
 		return _currencyPrecision;
 	}
 
@@ -1664,7 +1635,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 		if (bpBankAccount == null || bpBankAccount.getC_BP_BankAccount_ID() != bpBankAccountId)
 		{
-			bpBankAccount = InterfaceWrapperHelper.create(getCtx(), bpBankAccountId, I_C_BP_BankAccount.class, ITrx.TRXNAME_None);
+			bpBankAccount = Services.get(IBPBankAccountDAO.class).getById(bpBankAccountId);
 		}
 		return bpBankAccount;
 	}
@@ -1925,63 +1896,56 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return postingException;
 	}
 
-	private final void createErrorNote(final PostingException e)
+	private final void createErrorNote(final PostingException ex)
 	{
 		DB.saveConstraints();
 		try
 		{
 			DB.getConstraints().setOnlyAllowedTrxNamePrefixes(false).incMaxTrx(1);
 
-			// Insert Note
-			final PostingStatus postingStatus = e.getPostingStatus(PostingStatus.Error);
+			final PostingStatus postingStatus = ex.getPostingStatus(PostingStatus.Error);
 			final String AD_MessageValue = postingStatus.getAD_Message();
 			final PO po = getPO();
 			final int AD_User_ID = po.getUpdatedBy();
-			final MNote note = new MNote(getCtx(), AD_MessageValue, AD_User_ID, getAD_Client_ID(), getAD_Org_ID(), ITrx.TRXNAME_None);
-			note.setRecord(po.get_Table_ID(), po.get_ID());
-			// Reference
-			note.setReference(toString());	// Document
-			// Text
+			final Properties ctx = Env.getCtx();
+			final String adLanguage = Env.getAD_Language(ctx);
 
-			final StringBuilder text = new StringBuilder(msgBL.getMsg(getCtx(), AD_MessageValue));
-			final String p_Error = e.getDetailMessage().translate(Env.getAD_Language(getCtx()));
+			final MNote note = new MNote(ctx, AD_MessageValue, AD_User_ID, getAD_Client_ID(), getAD_Org_ID(), ITrx.TRXNAME_None);
+			note.setRecord(po.get_Table_ID(), po.get_ID());
+			note.setReference(toString());	// Document
+
+			final StringBuilder text = new StringBuilder(msgBL.getMsg(ctx, AD_MessageValue));
+			final String p_Error = ex.getDetailMessage().translate(adLanguage);
 			if (!Check.isEmpty(p_Error, true))
 			{
 				text.append(" (").append(p_Error).append(")");
 			}
 
-			final String cn = getClass().getName();
-			text.append(" - ").append(cn.substring(cn.lastIndexOf('.')));
+			text.append(" - ").append(getClass().getSimpleName());
 			final boolean loaded = getDocLines() != null;
 			if (loaded)
 			{
 				text.append(" (").append(getDocumentType())
 						.append(" - DocumentNo=").append(getDocumentNo())
-						.append(", DateAcct=").append(getDateAcct().toString().substring(0, 10))
+						.append(", DateAcct=").append(getDateAcct())
 						.append(", Amount=").append(getAmount())
 						.append(", Sta=").append(postingStatus)
 						.append(" - PeriodOpen=").append(isPeriodOpen())
-						.append(", Balanced=").append(isBalanced());
+						.append(", Balanced=").append(isBalanced())
+						.append(")");
 			}
 			note.setTextMsg(text.toString());
 			note.save();
 			// p_Error = Text.toString();
 		}
-		catch (final Exception ex)
+		catch (final Exception noteEx)
 		{
-			log.warn("Failed to create the error note. Skipped", ex);
+			log.warn("Failed to create the error note. Skipped", noteEx);
 		}
 		finally
 		{
 			DB.restoreConstraints();
 		}
-	}
-
-	/** @return factory which created this document */
-	public final IDocFactory getDocFactory()
-	{
-		Check.assumeNotNull(docFactory, "docFactory is set");
-		return this.docFactory;
 	}
 
 	/**
@@ -2019,8 +1983,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		for (final Object document : documentModels)
 		{
 			postingService.newPostingRequest()
-					// Post it in same context and transaction as this document is posted
-					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setClientId(getClientId())
 					.setDocumentFromModel(document) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing

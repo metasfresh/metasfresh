@@ -29,6 +29,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MInOut;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -445,7 +446,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final CurrencyId currencyId = costs.getCurrencyId();
-		final int precision = currencyDAO.getStdPrecision(getCtx(), currencyId.getRepoId());
+		final int precision = currencyDAO.getStdPrecision(Env.getCtx(), currencyId.getRepoId());
 		final BigDecimal value = costs.getValue().setScale(precision, RoundingMode.HALF_UP);
 		return value;
 	}

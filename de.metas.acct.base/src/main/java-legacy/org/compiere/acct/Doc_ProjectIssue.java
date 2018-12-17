@@ -28,6 +28,7 @@ import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MProject;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -122,7 +123,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		Fact fact = new Fact(this, as, Fact.POST_Actual);
 		setC_Currency_ID(as.getCurrencyId());
 
-		MProject project = new MProject(getCtx(), m_issue.getC_Project_ID(), ITrx.TRXNAME_ThreadInherited);
+		MProject project = new MProject(Env.getCtx(), m_issue.getC_Project_ID(), ITrx.TRXNAME_ThreadInherited);
 		String ProjectCategory = project.getProjectCategory();
 		I_M_Product product = Services.get(IProductDAO.class).getById(m_issue.getM_Product_ID());
 

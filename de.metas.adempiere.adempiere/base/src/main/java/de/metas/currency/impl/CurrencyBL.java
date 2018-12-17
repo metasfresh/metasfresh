@@ -42,6 +42,7 @@ import de.metas.currency.ICurrencyConversionResult;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -90,7 +91,11 @@ public class CurrencyBL implements ICurrencyBL
 			final Timestamp ConvDate, final int C_ConversionType_ID,
 			final int AD_Client_ID, final int AD_Org_ID)
 	{
-		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(
+				ConvDate,
+				CurrencyConversionTypeId.ofRepoIdOrNull(C_ConversionType_ID),
+				AD_Client_ID,
+				AD_Org_ID);
 		final ICurrencyConversionResult conversionResult = convert(conversionCtx, Amt, CurFrom_ID, CurTo_ID);
 		if (conversionResult == null)
 		{
@@ -155,8 +160,11 @@ public class CurrencyBL implements ICurrencyBL
 			final int AD_Client_ID, final int AD_Org_ID)
 	{
 		final Timestamp ConvDate = null;
-		final int C_ConversionType_ID = DEFAULT_ConversionType_ID;
-		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(
+				ConvDate,
+				(CurrencyConversionTypeId)null, // C_ConversionType_ID,
+				AD_Client_ID,
+				AD_Org_ID);
 		final ICurrencyConversionResult conversionResult = convert(conversionCtx, Amt, CurFrom_ID, CurTo_ID);
 		if (conversionResult == null)
 		{
@@ -168,14 +176,18 @@ public class CurrencyBL implements ICurrencyBL
 	@Override
 	public final BigDecimal getRate(final int CurFrom_ID, final int CurTo_ID, final Timestamp ConvDate, final int ConversionType_ID, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(ConvDate, ConversionType_ID, AD_Client_ID, AD_Org_ID);
+		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(
+				ConvDate,
+				CurrencyConversionTypeId.ofRepoIdOrNull(ConversionType_ID),
+				AD_Client_ID,
+				AD_Org_ID);
 		return getRate(conversionCtx, CurFrom_ID, CurTo_ID);
 	}
 
 	@Override
 	public final ICurrencyConversionContext createCurrencyConversionContext(
 			final Date ConvDate,
-			final int ConversionType_ID,
+			final CurrencyConversionTypeId currencyConversionTypeId,
 			final int AD_Client_ID,
 			final int AD_Org_ID)
 	{
@@ -186,9 +198,9 @@ public class CurrencyBL implements ICurrencyBL
 		final Date convDateToUse = ConvDate != null ? ConvDate : SystemTime.asDate();
 
 		// Conversion Type
-		if (ConversionType_ID > 0)
+		if (currencyConversionTypeId != null)
 		{
-			conversionCtx.setC_ConversionType_ID(ConversionType_ID);
+			conversionCtx.setC_ConversionType_ID(currencyConversionTypeId.getRepoId());
 		}
 		else
 		{
@@ -207,8 +219,7 @@ public class CurrencyBL implements ICurrencyBL
 	{
 		// Find C_ConversionType_ID
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-		final I_C_ConversionType conversionTypeDef = currencyDAO.retrieveConversionType(Env.getCtx(), ConversionType.Spot);
-		final int conversionTypeId = conversionTypeDef.getC_ConversionType_ID();
+		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(ConversionType.Spot);
 
 		return createCurrencyConversionContext(ConvDate, conversionTypeId, AD_Client_ID, AD_Org_ID);
 	}

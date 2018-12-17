@@ -112,9 +112,6 @@ public interface IPostingRequestBuilder
 	/** Sets if we shall post the document immediate */
 	IPostingRequestBuilder setPostImmediate(final PostImmediate postImmediate);
 
-	/** Sets the processing context */
-	IPostingRequestBuilder setContext(final Properties ctx, final String trxName);
-
 	/** Sets the processing context's AD_Client_ID to be used */
 	IPostingRequestBuilder setClientId(ClientId clientId);
 

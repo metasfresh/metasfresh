@@ -48,6 +48,7 @@ import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -182,7 +183,7 @@ public class BankStatementBL implements IBankStatementBL
 
 				final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 						bsl.getDateAcct(), // ConvDate,
-						inv.getC_ConversionType_ID(), // ConversionType_ID,
+						CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID()), // ConversionType_ID,
 						bsl.getAD_Client_ID(), // AD_Client_ID
 						bsl.getAD_Org_ID() // AD_Org_ID
 						);
