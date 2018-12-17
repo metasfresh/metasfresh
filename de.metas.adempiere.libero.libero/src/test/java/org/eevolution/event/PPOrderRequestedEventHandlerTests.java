@@ -155,6 +155,7 @@ public class PPOrderRequestedEventHandlerTests
 			bomCoProductLine.setPP_Product_BOM(productBom);
 			bomCoProductLine.setM_Product(bomCoProduct);
 			bomCoProductLine.setDescription("supposed to become the co-product line");
+			bomCoProductLine.setC_UOM_ID(uom.getC_UOM_ID());
 			save(bomCoProductLine);
 		}
 		final I_PP_Product_BOMLine bomComponentLine;
@@ -169,6 +170,7 @@ public class PPOrderRequestedEventHandlerTests
 			bomComponentLine.setPP_Product_BOM(productBom);
 			bomComponentLine.setM_Product(bomComponentProduct);
 			bomComponentLine.setDescription("supposed to become the component line");
+			bomComponentLine.setC_UOM_ID(uom.getC_UOM_ID());
 			save(bomComponentLine);
 		}
 
