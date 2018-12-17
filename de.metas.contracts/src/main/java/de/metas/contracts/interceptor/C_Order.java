@@ -67,12 +67,6 @@ public class C_Order
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
 
-
-	private final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
-
-
-	private final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
-
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
 			ifColumnsChanged = I_C_Order.COLUMNNAME_DateOrdered)
@@ -188,6 +182,10 @@ public class C_Order
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateBPartnerTimeSpan(final I_C_Order order)
 	{
+
+		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
+
+		final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
 
 		if (!order.isSOTrx())
 		{

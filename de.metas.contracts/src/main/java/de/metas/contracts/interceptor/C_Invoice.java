@@ -36,13 +36,10 @@ import de.metas.invoice.InvoiceId;
 @Component("de.metas.contracts.interceptor.C_Invoice")
 public class C_Invoice
 {
-
-
-	private final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
-
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateBPartnerTimeSpan(final I_C_Invoice invoice)
 	{
+		final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
 		final InvoiceId invoiceId = de.metas.invoice.InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
 		bpartnerTimeSpanRepo.updateTimeSpanOnInvoiceComplete(invoiceId);
