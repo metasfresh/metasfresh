@@ -1762,8 +1762,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				{
 					// MatchPO is created also from MInOut when Invoice exists before Shipment
 					final BigDecimal matchQty = line.getQtyInvoiced();
-					final MMatchPO po = MMatchPO.create(line, null, getDateInvoiced(), matchQty);
-					po.saveEx(get_TrxName());
+					MMatchPO.create(line, null, getDateInvoiced(), matchQty);
 					matchPO++;
 				}
 			}

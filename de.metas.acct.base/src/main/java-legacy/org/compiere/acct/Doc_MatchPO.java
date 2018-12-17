@@ -111,7 +111,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		if (docLine.getReceipt_InOutLine_ID() <= 0)
 		{
 			throw newPostingException()
-					.setPreserveDocumentPostedStatus()
+					// .setPreserveDocumentPostedStatus() // no need to repost. It will be re-enqueued when the receipt line is set
 					.setDetailMessage("Shall be posted again when receipt line is set");
 		}
 

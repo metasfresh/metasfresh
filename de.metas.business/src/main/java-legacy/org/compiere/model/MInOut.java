@@ -1659,11 +1659,11 @@ public class MInOut extends X_M_InOut implements IDocument
 					{
 						log.debug("PO Matching");
 						// Ship - PO
-						final MMatchPO po = MMatchPO.create(null, sLine, getMovementDate(), qtyMoved);
-						InterfaceWrapperHelper.save(po, get_TrxName());
+						MMatchPO.create(null, sLine, getMovementDate(), qtyMoved);
 
 						// Update PO with ASI
-						if (oLine != null && oLine.getM_AttributeSetInstance_ID() == 0
+						if (oLine != null 
+								&& oLine.getM_AttributeSetInstance_ID() <= 0
 								&& sLine.getMovementQty().compareTo(oLine.getQtyOrdered()) == 0)  // just if full match [
 						// 1876965 ]
 						{
@@ -1680,8 +1680,7 @@ public class MInOut extends X_M_InOut implements IDocument
 							// Invoice is created before Shipment
 							log.debug("PO(Inv) Matching");
 							// Ship - Invoice
-							final MMatchPO po = MMatchPO.create(iLine, sLine, getMovementDate(), qtyMoved);
-							InterfaceWrapperHelper.save(po, get_TrxName());
+							final I_M_MatchPO po = MMatchPO.create(iLine, sLine, getMovementDate(), qtyMoved);
 
 							// Update PO with ASI
 							oLine = new MOrderLine(getCtx(), po.getC_OrderLine_ID(), get_TrxName());

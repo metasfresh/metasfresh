@@ -16,20 +16,24 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -38,6 +42,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.costing.CostingDocumentRef;
@@ -45,21 +51,23 @@ import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * Match PO Model.
  * = Created when processing Shipment or Order
  * - Updates Order (delivered, invoiced)
  * - Creates PPV acct
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MMatchPO.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
- * 
+ *
  * @author Bayu Cahya, Sistematika
  *         <li>BF [ 2240484 ] Re MatchingPO, MMatchPO doesn't contains Invoice info
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  *         <li>BF [ 2314749 ] MatchPO not considering currency PriceMatchDifference
  *
@@ -74,11 +82,11 @@ import de.metas.util.time.SystemTime;
 public class MMatchPO extends X_M_MatchPO
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 7189366329684552916L;
 
-	static List<I_M_MatchPO> getByOrderLineAndInvoiceLine(int C_OrderLine_ID, int C_InvoiceLine_ID)
+	static List<I_M_MatchPO> getByOrderLineAndInvoiceLine(final int C_OrderLine_ID, final int C_InvoiceLine_ID)
 	{
 		if (C_OrderLine_ID <= 0 || C_InvoiceLine_ID <= 0)
 		{
@@ -97,22 +105,24 @@ public class MMatchPO extends X_M_MatchPO
 
 	/**
 	 * Get PO Matches of receipt
-	 * 
+	 *
 	 * @param ctx context
 	 * @param M_InOut_ID receipt
 	 * @param trxName transaction
 	 * @return array of matches
 	 */
-	static MMatchPO[] getInOut(Properties ctx,
-			int M_InOut_ID, String trxName)
+	static MMatchPO[] getInOut(final Properties ctx,
+			final int M_InOut_ID, final String trxName)
 	{
 		if (M_InOut_ID == 0)
+		{
 			return new MMatchPO[] {};
+		}
 		//
-		String sql = "SELECT * FROM M_MatchPO m"
+		final String sql = "SELECT * FROM M_MatchPO m"
 				+ " INNER JOIN M_InOutLine l ON (m.M_InOutLine_ID=l.M_InOutLine_ID) "
 				+ "WHERE l.M_InOut_ID=?";
-		ArrayList<MMatchPO> list = new ArrayList<>();
+		final ArrayList<MMatchPO> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -121,11 +131,13 @@ public class MMatchPO extends X_M_MatchPO
 			pstmt.setInt(1, M_InOut_ID);
 			rs = pstmt.executeQuery();
 			while (rs.next())
+			{
 				list.add(new MMatchPO(ctx, rs, trxName));
+			}
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			s_log.error(sql, e);
+			logger.error(sql, e);
 		}
 		finally
 		{
@@ -133,29 +145,31 @@ public class MMatchPO extends X_M_MatchPO
 			rs = null;
 			pstmt = null;
 		}
-		MMatchPO[] retValue = new MMatchPO[list.size()];
+		final MMatchPO[] retValue = new MMatchPO[list.size()];
 		list.toArray(retValue);
 		return retValue;
 	}	// getInOut
 
 	/**
 	 * Get PO Matches of Invoice
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_Invoice_ID invoice
 	 * @param trxName transaction
 	 * @return array of matches
 	 */
-	public static MMatchPO[] getInvoice(Properties ctx,
-			int C_Invoice_ID, String trxName)
+	public static MMatchPO[] getInvoice(final Properties ctx,
+			final int C_Invoice_ID, final String trxName)
 	{
 		if (C_Invoice_ID == 0)
+		{
 			return new MMatchPO[] {};
+		}
 		//
-		String sql = "SELECT * FROM M_MatchPO mi"
+		final String sql = "SELECT * FROM M_MatchPO mi"
 				+ " INNER JOIN C_InvoiceLine il ON (mi.C_InvoiceLine_ID=il.C_InvoiceLine_ID) "
 				+ "WHERE il.C_Invoice_ID=?";
-		ArrayList<MMatchPO> list = new ArrayList<>();
+		final ArrayList<MMatchPO> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -164,11 +178,13 @@ public class MMatchPO extends X_M_MatchPO
 			pstmt.setInt(1, C_Invoice_ID);
 			rs = pstmt.executeQuery();
 			while (rs.next())
+			{
 				list.add(new MMatchPO(ctx, rs, trxName));
+			}
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			s_log.error(sql, e);
+			logger.error(sql, e);
 		}
 		finally
 		{
@@ -176,7 +192,7 @@ public class MMatchPO extends X_M_MatchPO
 			rs = null;
 			pstmt = null;
 		}
-		MMatchPO[] retValue = new MMatchPO[list.size()];
+		final MMatchPO[] retValue = new MMatchPO[list.size()];
 		list.toArray(retValue);
 		return retValue;
 	}	// getInvoice
@@ -196,139 +212,121 @@ public class MMatchPO extends X_M_MatchPO
 	 * The iLine takes precendence.
 	 *
 	 * @param iLine invoice line optional; but not that one of this an <code>sLine</code> are required
-	 * @param sLine receipt line optional; but not that one of this an <code>iLine</code> are required
+	 * @param receiptLine receipt line optional; but not that one of this an <code>iLine</code> are required
 	 * @param dateTrx date used only if a new MMatchPO is created
 	 * @param qty qty filter parameter: an existing record that references the <code>C_OrderLine_ID</code> of the given <code>iLine</code> or <code>sLine</code> will be ignored, if it's qty differs
 	 *            from this parameter value
 	 * @return Match Record; the record is not saved!
 	 */
-	public static MMatchPO create(
+	public static I_M_MatchPO create(
 			final I_C_InvoiceLine iLine,
-			final I_M_InOutLine sLine,
+			final I_M_InOutLine receiptLine,
 			final Timestamp dateTrx,
 			final BigDecimal qty)
 	{
-		int C_OrderLine_ID = 0;
+		OrderLineId orderLineId = null;
 		if (iLine != null)
 		{
-			C_OrderLine_ID = iLine.getC_OrderLine_ID();
+			orderLineId = OrderLineId.ofRepoIdOrNull(iLine.getC_OrderLine_ID());
 		}
-		if (sLine != null)
+		if (receiptLine != null)
 		{
-			C_OrderLine_ID = sLine.getC_OrderLine_ID();
+			orderLineId = OrderLineId.ofRepoIdOrNull(receiptLine.getC_OrderLine_ID());
 		}
 
-		MMatchPO retValue = null;
-		String sql = "SELECT * FROM M_MatchPO WHERE C_OrderLine_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setInt(1, C_OrderLine_ID);
-			rs = pstmt.executeQuery();
+		I_M_MatchPO retValue = null;
 
-			while (rs.next())
+		final List<I_M_MatchPO> existingMatchPOs = getByOrderLineId(orderLineId);
+		for (final I_M_MatchPO mpo : existingMatchPOs)
+		{
+			if (qty.compareTo(mpo.getQty()) == 0)
 			{
-				final MMatchPO mpo = new MMatchPO(Env.getCtx(), rs, ITrx.TRXNAME_ThreadInherited);
-				if (qty.compareTo(mpo.getQty()) == 0)
+				final int mpoASIId = mpo.getM_AttributeSetInstance_ID();
+				if (iLine != null)
 				{
-					final int mpoASIId = mpo.getM_AttributeSetInstance_ID();
-					if (iLine != null)
+					if (mpo.getC_InvoiceLine_ID() <= 0
+							|| mpo.getC_InvoiceLine_ID() == iLine.getC_InvoiceLine_ID())
 					{
-						if (mpo.getC_InvoiceLine_ID() <= 0
-								|| mpo.getC_InvoiceLine_ID() == iLine.getC_InvoiceLine_ID())
+						mpo.setC_InvoiceLine(iLine);
+						if (iLine.getM_AttributeSetInstance_ID() > 0)
 						{
-							mpo.setC_InvoiceLine(iLine);
-							if (iLine.getM_AttributeSetInstance_ID() > 0)
+							if (mpoASIId <= 0)
 							{
-								if (mpoASIId == 0)
-								{
-									mpo.setM_AttributeSetInstance_ID(iLine.getM_AttributeSetInstance_ID());
-								}
-								else if (sLine != null // 07742: Try ASI matching only if given receipt line was not null
-										&& mpoASIId != sLine.getM_AttributeSetInstance_ID())
-								{
-									continue;
-								}
+								mpo.setM_AttributeSetInstance_ID(iLine.getM_AttributeSetInstance_ID());
 							}
-						}
-						else
-						{
-							continue;
-						}
-					}
-					if (sLine != null)
-					{
-						final int sLineId = sLine.getM_InOutLine_ID();
-						if (mpo.getM_InOutLine_ID() <= 0
-								|| mpo.getM_InOutLine_ID() == sLineId)
-						{
-							mpo.setM_InOutLine_ID(sLineId);
-							if (sLine.getM_AttributeSetInstance_ID() > 0)
+							else if (receiptLine != null // 07742: Try ASI matching only if given receipt line was not null
+									&& mpoASIId != receiptLine.getM_AttributeSetInstance_ID())
 							{
-								if (mpoASIId == 0)
-								{
-									mpo.setM_AttributeSetInstance_ID(sLine.getM_AttributeSetInstance_ID());
-								}
-								else if (iLine != null // 07742: Try ASI matching only if given receipt line was not null
-										&& mpoASIId != iLine.getM_AttributeSetInstance_ID())
-								{
-									continue;
-								}
-							}
-						}
-						else
-						{
-							continue;
-						}
-					}
-
-					//
-					// 07742: Set the invoice line's receipt line ID from the mpo if matching could be found
-					if (mpo != null)
-					{
-						int iolId = mpo.getM_InOutLine_ID(); // default is the MPO's receipt line
-						if (sLine != null)
-						{
-							iolId = sLine.getM_InOutLine_ID(); // if receipt line is given, use it's IOL
-						}
-
-						I_C_InvoiceLine invoiceLine = mpo.getC_InvoiceLine();
-						if (invoiceLine != null && iolId > 0)
-						{
-							invoiceLine.setM_InOutLine_ID(iolId);
-							InterfaceWrapperHelper.save(invoiceLine, ITrx.TRXNAME_ThreadInherited); // save in the shipment line's transaction
-
-							if (iLine != null)
-							{
-								InterfaceWrapperHelper.refresh(iLine); // if invoiceLine is also matched, refresh it so that the PO is on the same update level as the MatchPO's
+								continue;
 							}
 						}
 					}
-
-					retValue = mpo;
-					break;
+					else
+					{
+						continue;
+					}
 				}
+				if (receiptLine != null)
+				{
+					final int receiptLineId = receiptLine.getM_InOutLine_ID();
+					if (mpo.getM_InOutLine_ID() <= 0
+							|| mpo.getM_InOutLine_ID() == receiptLineId)
+					{
+						mpo.setM_InOutLine_ID(receiptLineId);
+						if (receiptLine.getM_AttributeSetInstance_ID() > 0)
+						{
+							if (mpoASIId == 0)
+							{
+								mpo.setM_AttributeSetInstance_ID(receiptLine.getM_AttributeSetInstance_ID());
+							}
+							else if (iLine != null // 07742: Try ASI matching only if given receipt line was not null
+									&& mpoASIId != iLine.getM_AttributeSetInstance_ID())
+							{
+								continue;
+							}
+						}
+					}
+					else
+					{
+						continue;
+					}
+				}
+
+				//
+				// 07742: Set the invoice line's receipt line ID from the mpo if matching could be found
+				if (mpo != null)
+				{
+					int receiptLineId = mpo.getM_InOutLine_ID(); // default is the MPO's receipt line
+					if (receiptLine != null)
+					{
+						receiptLineId = receiptLine.getM_InOutLine_ID(); // if receipt line is given, use it's IOL
+					}
+
+					final I_C_InvoiceLine invoiceLine = mpo.getC_InvoiceLine();
+					if (invoiceLine != null && receiptLineId > 0)
+					{
+						invoiceLine.setM_InOutLine_ID(receiptLineId);
+						InterfaceWrapperHelper.save(invoiceLine, ITrx.TRXNAME_ThreadInherited); // save in the shipment line's transaction
+
+						if (iLine != null)
+						{
+							InterfaceWrapperHelper.refresh(iLine); // if invoiceLine is also matched, refresh it so that the PO is on the same update level as the MatchPO's
+						}
+					}
+				}
+
+				retValue = mpo;
+				break;
 			}
 		}
-		catch (final SQLException ex)
-		{
-			throw new DBException(ex, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
 
+		//
 		// Create New
 		if (retValue == null)
 		{
-			if (sLine != null)
+			if (receiptLine != null)
 			{
-				retValue = new MMatchPO(sLine, dateTrx, qty);
+				retValue = new MMatchPO(receiptLine, dateTrx, qty);
 				if (iLine != null)
 				{
 					retValue.setC_InvoiceLine(iLine);
@@ -340,13 +338,66 @@ public class MMatchPO extends X_M_MatchPO
 			}
 		}
 
+		//
+		if (retValue != null)
+		{
+			saveRecord(retValue);
+		}
+
+		//
+		// Post eligible MatchPOs
+		{
+			final HashSet<Integer> matchPOIdsToPost = new HashSet<>();
+			existingMatchPOs.stream()
+					.filter(matchPO -> matchPO.getM_InOutLine_ID() > 0)
+					.forEach(matchPO -> matchPOIdsToPost.add(matchPO.getM_MatchPO_ID()));
+			if (retValue != null && retValue.getM_InOutLine_ID() > 0)
+			{
+				matchPOIdsToPost.add(retValue.getM_MatchPO_ID());
+			}
+			enqueToPost(matchPOIdsToPost);
+		}
+
 		return retValue;
 	}	// create
 
-	/** Static Logger */
-	private static final Logger s_log = LogManager.getLogger(MMatchPO.class);
+	private static List<I_M_MatchPO> getByOrderLineId(final OrderLineId orderLineId)
+	{
+		if (orderLineId == null)
+		{
+			return ImmutableList.of();
+		}
 
-	public MMatchPO(Properties ctx, int M_MatchPO_ID, String trxName)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_MatchPO.class)
+				.addEqualsFilter(I_M_MatchPO.COLUMN_C_OrderLine_ID, orderLineId)
+				.orderBy(I_M_MatchPO.COLUMN_C_OrderLine_ID)
+				.create()
+				.list();
+	}
+
+	private static void enqueToPost(@NonNull final Set<Integer> matchPOIds)
+	{
+		if (matchPOIds.isEmpty())
+		{
+			return;
+		}
+
+		final IPostingService postingService = Services.get(IPostingService.class);
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID());
+
+		matchPOIds.forEach(matchPOId -> postingService.newPostingRequest()
+				.setClientId(clientId)
+				.setDocumentRef(TableRecordReference.of(I_M_MatchPO.Table_Name, matchPOId)) // the document to be posted
+				.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
+				.setPostImmediate(PostImmediate.No) // no, just enqueue it
+				.setForce(false) // don't force it
+				.postIt());
+	}
+
+	private static final Logger logger = LogManager.getLogger(MMatchPO.class);
+
+	public MMatchPO(final Properties ctx, final int M_MatchPO_ID, final String trxName)
 	{
 		super(ctx, M_MatchPO_ID, trxName);
 		if (is_new())
@@ -361,50 +412,42 @@ public class MMatchPO extends X_M_MatchPO
 			setProcessed(false);
 			setProcessing(false);
 		}
-	}	// MMatchPO
+	}
 
-	public MMatchPO(Properties ctx, ResultSet rs, String trxName)
+	public MMatchPO(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MMatchPO
+	}
 
-	/**
-	 * Shipment Line Constructor
-	 * 
-	 * @param sLine shipment line
-	 * @param dateTrx optional date
-	 * @param qty matched quantity
-	 */
-	public MMatchPO(I_M_InOutLine sLine, Timestamp dateTrx, BigDecimal qty)
+	private MMatchPO(final I_M_InOutLine sLine, final Timestamp dateTrx, final BigDecimal qty)
 	{
 		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
 		setAD_Org_ID(sLine.getAD_Org_ID());
 		setM_InOutLine_ID(sLine.getM_InOutLine_ID());
 		setC_OrderLine_ID(sLine.getC_OrderLine_ID());
 		if (dateTrx != null)
+		{
 			setDateTrx(dateTrx);
+		}
 		setM_Product_ID(sLine.getM_Product_ID());
 		setM_AttributeSetInstance_ID(sLine.getM_AttributeSetInstance_ID());
 		setQty(qty);
 		setProcessed(true);		// auto
 	}	// MMatchPO
 
-	/**
-	 * Invoice Line Constructor
-	 * 
-	 * @param iLine invoice line
-	 * @param dateTrx optional date
-	 * @param qty matched quantity
-	 */
-	private MMatchPO(I_C_InvoiceLine iLine, Timestamp dateTrx, BigDecimal qty)
+	private MMatchPO(final I_C_InvoiceLine iLine, final Timestamp dateTrx, final BigDecimal qty)
 	{
 		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
 		setAD_Org_ID(iLine.getAD_Org_ID());
 		setC_InvoiceLine(iLine);
 		if (iLine.getC_OrderLine_ID() != 0)
+		{
 			setC_OrderLine_ID(iLine.getC_OrderLine_ID());
+		}
 		if (dateTrx != null)
+		{
 			setDateTrx(dateTrx);
+		}
 		setM_Product_ID(iLine.getM_Product_ID());
 		setM_AttributeSetInstance_ID(iLine.getM_AttributeSetInstance_ID());
 		setQty(qty);
@@ -413,18 +456,18 @@ public class MMatchPO extends X_M_MatchPO
 
 	/**
 	 * Get PriceActual from Invoice and convert it to Order Currency
-	 * 
+	 *
 	 * @return Price Actual in Order Currency
 	 */
 	private BigDecimal getInvoicePriceActual()
 	{
 		final I_C_InvoiceLine iLine = getC_InvoiceLine();
 		final I_C_Invoice invoice = iLine.getC_Invoice();
-		I_C_Order order = getC_OrderLine().getC_Order();
+		final I_C_Order order = getC_OrderLine().getC_Order();
 
 		BigDecimal priceActual = iLine.getPriceActual();
-		int invoiceCurrency_ID = invoice.getC_Currency_ID();
-		int orderCurrency_ID = order.getC_Currency_ID();
+		final int invoiceCurrency_ID = invoice.getC_Currency_ID();
+		final int orderCurrency_ID = order.getC_Currency_ID();
 		if (invoiceCurrency_ID != orderCurrency_ID)
 		{
 			priceActual = Services.get(ICurrencyBL.class).convert(getCtx(), priceActual, invoiceCurrency_ID, orderCurrency_ID,
@@ -525,8 +568,8 @@ public class MMatchPO extends X_M_MatchPO
 					BigDecimal maxTolerance = poAmt.multiply(matchTolerance);
 					maxTolerance = maxTolerance.abs().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
 					difference = difference.abs();
-					boolean ok = difference.compareTo(maxTolerance) <= 0;
-					log.info("Difference=" + getPriceMatchDifference() + ", Max=" + maxTolerance + " => " + ok);
+					final boolean ok = difference.compareTo(maxTolerance) <= 0;
+					logger.info("Difference=" + getPriceMatchDifference() + ", Max=" + maxTolerance + " => " + ok);
 					setIsApproved(ok);
 				}
 			}
@@ -540,16 +583,8 @@ public class MMatchPO extends X_M_MatchPO
 		return true;
 	}	// beforeSave
 
-	/**
-	 * After Save.
-	 * Set Order Qty Delivered/Invoiced
-	 * 
-	 * @param newRecord new
-	 * @param success success
-	 * @return success
-	 */
 	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
+	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		if (!success)
 		{
@@ -611,7 +646,7 @@ public class MMatchPO extends X_M_MatchPO
 
 	/**
 	 * Get the later Date Acct from invoice or shipment
-	 * 
+	 *
 	 * @return date or null
 	 */
 	private Timestamp getNewerDateAcct()
@@ -621,7 +656,7 @@ public class MMatchPO extends X_M_MatchPO
 
 		if (getC_InvoiceLine_ID() > 0)
 		{
-			String sql = "SELECT i.DateAcct "
+			final String sql = "SELECT i.DateAcct "
 					+ "FROM C_InvoiceLine il"
 					+ " INNER JOIN C_Invoice i ON (i.C_Invoice_ID=il.C_Invoice_ID) "
 					+ "WHERE C_InvoiceLine_ID=?";
@@ -630,7 +665,7 @@ public class MMatchPO extends X_M_MatchPO
 		//
 		if (getM_InOutLine_ID() > 0)
 		{
-			String sql = "SELECT io.DateAcct "
+			final String sql = "SELECT io.DateAcct "
 					+ "FROM M_InOutLine iol"
 					+ " INNER JOIN M_InOut io ON (io.M_InOut_ID=iol.M_InOut_ID) "
 					+ "WHERE iol.M_InOutLine_ID=?";
@@ -639,11 +674,17 @@ public class MMatchPO extends X_M_MatchPO
 		//
 		// Assuming that order date is always earlier
 		if (invoiceDate == null)
+		{
 			return shipDate;
+		}
 		if (shipDate == null)
+		{
 			return invoiceDate;
+		}
 		if (invoiceDate.after(shipDate))
+		{
 			return invoiceDate;
+		}
 		return shipDate;
 	}	// getNewerDateAcct
 
@@ -652,23 +693,17 @@ public class MMatchPO extends X_M_MatchPO
 	{
 		if (isPosted())
 		{
-			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), MDocType.DOCBASETYPE_MatchPO, getAD_Org_ID());
+			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), X_C_DocType.DOCBASETYPE_MatchPO, getAD_Org_ID());
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);
 		}
 
-		deleteMatchPOCostDetail();
+		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+		costDetailService.voidAndDeleteForDocument(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()));
 
 		return true;
 	}
 
-	/**
-	 * After Delete.
-	 * Set Order Qty Delivered/Invoiced
-	 * 
-	 * @param success success
-	 * @return success
-	 */
 	@Override
 	protected boolean afterDelete(final boolean success)
 	{
@@ -699,96 +734,13 @@ public class MMatchPO extends X_M_MatchPO
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("MMatchPO[");
-		sb.append(getM_MatchPO_ID())
+		return new StringBuilder("MMatchPO[")
+				.append(getM_MatchPO_ID())
 				.append(",Qty=").append(getQty())
 				.append(",C_OrderLine_ID=").append(getC_OrderLine_ID())
 				.append(",M_InOutLine_ID=").append(getM_InOutLine_ID())
 				.append(",C_InvoiceLine_ID=").append(getC_InvoiceLine_ID())
-				.append("]");
-		return sb.toString();
-	}
-
-	/**
-	 * Consolidate MPO entries.
-	 * (data conversion issue)
-	 * 
-	 * @param ctx context
-	 */
-	public static void consolidate(Properties ctx)
-	{
-		String sql = "SELECT * FROM M_MatchPO po "
-				+ "WHERE EXISTS (SELECT 1 FROM M_MatchPO x "
-				+ "WHERE po.C_OrderLine_ID=x.C_OrderLine_ID AND po.Qty=x.Qty "
-				+ "GROUP BY C_OrderLine_ID, Qty "
-				+ "HAVING COUNT(*) = 2) "
-				+ " AND AD_Client_ID=?"
-				+ "ORDER BY C_OrderLine_ID, M_InOutLine_ID";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		int success = 0;
-		int errors = 0;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, Env.getAD_Client_ID(ctx));
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				MMatchPO po1 = new MMatchPO(ctx, rs, null);
-				if (rs.next())
-				{
-					MMatchPO po2 = new MMatchPO(ctx, rs, null);
-					if (po1.getM_InOutLine_ID() != 0 && po1.getC_InvoiceLine_ID() == 0
-							&& po2.getM_InOutLine_ID() == 0 && po2.getC_InvoiceLine_ID() != 0)
-					{
-						String s1 = "UPDATE M_MatchPO SET C_InvoiceLine_ID="
-								+ po2.getC_InvoiceLine_ID()
-								+ " WHERE M_MatchPO_ID=" + po1.getM_MatchPO_ID();
-						int no1 = DB.executeUpdate(s1, null);
-						if (no1 != 1)
-						{
-							errors++;
-							s_log.warn("Not updated M_MatchPO_ID=" + po1.getM_MatchPO_ID());
-							continue;
-						}
-						//
-						String s2 = "DELETE FROM Fact_Acct WHERE AD_Table_ID=473 AND Record_ID=?";
-						int no2 = DB.executeUpdate(s2, po2.getM_MatchPO_ID(), null);
-						String s3 = "DELETE FROM M_MatchPO WHERE M_MatchPO_ID=?";
-						int no3 = DB.executeUpdate(s3, po2.getM_MatchPO_ID(), null);
-						if (no2 == 0 && no3 == 1)
-							success++;
-						else
-						{
-							s_log.warn("M_MatchPO_ID=" + po2.getM_MatchPO_ID()
-									+ " - Deleted=" + no2 + ", Acct=" + no3);
-							errors++;
-						}
-					}
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			s_log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		if (errors == 0 && success == 0)
-			;
-		else
-			s_log.info("Success #" + success + " - Error #" + errors);
-	}	// consolidate
-
-	// AZ Goodwill
-	private void deleteMatchPOCostDetail()
-	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-		costDetailService.voidAndDeleteForDocument(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()));
+				.append("]")
+				.toString();
 	}
 }	// MMatchPO
