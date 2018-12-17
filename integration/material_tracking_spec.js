@@ -18,8 +18,8 @@ describe('material tracking test', function() {
         cy.writeIntoStringField('ValidFrom','01/11/2018{enter}');
         cy.writeIntoStringField('ValidTo','01/11/2019{enter}');
 
-        cy.writeIntoLookupField('M_Product_Scrap_ID','P002749','P002749_Erdbesatz');
-        cy.writeIntoLookupField('C_UOM_Scrap_ID', 'Kilo', 'Kilogramm');
+        cy.writeIntoLookupListField('M_Product_Scrap_ID','P002749','P002749_Erdbesatz');
+        cy.selectInListField('C_UOM_Scrap_ID', 'Kilogramm');
 
         cy.writeIntoLookupField('M_Product_ProcessingFee_ID', 'P002750', 'P002750_Futterkarotten');
 
@@ -35,7 +35,7 @@ describe('material tracking test', function() {
         cy.writeIntoLookupField('M_Product_ID', 'Convenience', 'Convenience Salat 250g_P002737');
         cy.writeIntoLookupField('C_BPartner_ID', 'Test Liefer', 'Test Lieferant 1_G0002');
 
-        cy.writeIntoLookupField('M_QualityInsp_LagerKonf_Version_ID', lagerKonfName, lagerKonfName);
+        cy.selectInListField('M_QualityInsp_LagerKonf_Version_ID', lagerKonfName);
     });
 
 });
