@@ -12,8 +12,27 @@ Here come the actual release notes:
 
 # metasfresh 5.85
 # Features
+* metasfresh
+  * [#4809](https://github.com/metasfresh/metasfresh/pull/4809) Make contact persons's location editable under circumstances
+  * [#4823](https://github.com/metasfresh/metasfresh/issues/4823) CSV import BP URL
+  * [#4825](https://github.com/metasfresh/metasfresh/issues/4825) invoice and async improvements
+  * [#4828](https://github.com/metasfresh/metasfresh/issues/4828) Extend OLCand REST API to allow not to create products on the fly
+  * [#4832](https://github.com/metasfresh/metasfresh/issues/4832) Extend Datenaustausch-Config and XML modding
+
+* metasfresh-webui-frontend
+  * [#2097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2097) Lookup and Dropdown: Empty list entry for non mandatory
+  * [#2098](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2098) extract the edit-location code into a command
 
 # Fixes
+* metasfresh
+  * [#4679](https://github.com/metasfresh/metasfresh/issues/4679) Solve print info UI performance problem
+  * [#4805](https://github.com/metasfresh/metasfresh/issues/4805) ATP not correct after partial material receipt
+  * [#4827](https://github.com/metasfresh/metasfresh/issues/4827) Forward C_OLCand POReference to C_Invoice_Candidate
+  * [#4829](https://github.com/metasfresh/metasfresh/issues/4829) Add UQ index for InternalName and Price systme in Price list
+
+* metasfresh-webui-api
+  * [#1114](https://github.com/metasfresh/metasfresh-webui-api/issues/1114) webui frontend does nothing in latest chrome
+
 * metasfresh-webui-frontend
   * [#1253](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1253) Problem with composed fields with non-mandatory elements
     * Adds None Option to Lookup widget dropdowns, that alows o overwrite already set a selection in a non mandatory field.
