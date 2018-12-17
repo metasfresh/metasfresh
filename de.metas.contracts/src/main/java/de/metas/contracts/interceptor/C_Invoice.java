@@ -2,9 +2,9 @@ package de.metas.contracts.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
@@ -38,11 +38,10 @@ import de.metas.invoice.InvoiceId;
 @Component("de.metas.contracts.interceptor.C_Invoice")
 public class C_Invoice
 {
-	@Autowired
-	private ContractInvoiceService contractInvoiceService;
 
-	@Autowired
-	private BPartnerTimeSpanRepository bpartnerTimeSpanRepo;
+	private final ContractInvoiceService contractInvoiceService = Adempiere.getBean(ContractInvoiceService.class);
+
+	private final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateBPartnerTimeSpan(final I_C_Invoice invoice)
@@ -57,7 +56,7 @@ public class C_Invoice
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 
-		if(!bpartnerTimeSpanRepo.isNewCustomer(bpartnerId))
+		if (!bpartnerTimeSpanRepo.isNewCustomer(bpartnerId))
 		{
 			// only change bpartners that are already marked as "New Customer"
 			return;

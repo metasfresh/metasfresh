@@ -7,6 +7,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_TimeSpan;
 import org.compiere.model.ModelValidator;
 
@@ -33,7 +34,6 @@ import org.compiere.model.ModelValidator;
  */
 
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -67,11 +67,11 @@ public class C_Order
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
 
-	@Autowired
-	private ContractOrderService contractOrderService;
 
-	@Autowired
-	private BPartnerTimeSpanRepository bpartnerTimeSpanRepo;
+	private final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
+
+
+	private final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
 
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
