@@ -102,7 +102,7 @@ import_dump()
 	curl -o $OUTPUT_FILE $url_seed_dump
 	
 	echo "Populating database with initital seed... "
-	pg_restore -Fc -U "$db_user" -d "$db_password" $OUTPUT_FILE
+	pg_restore -Fc --username "$db_user" --dbname "$db_password" $OUTPUT_FILE
 	echo "=========="
 	echo " ...done!"
 	echo "=========="	

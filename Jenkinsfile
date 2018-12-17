@@ -11,6 +11,11 @@ import de.metas.jenkins.MvnConf
 // always offer deployment, because there might be different tasks/branches to roll out
 final skipDeploymentParamDefaultValue = false;
 
+final String MF_SQL_DEED_DUMP_URL_DEFAULT = 
+	env.BRANCH_NAME == 'release' 
+		? 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_39.pgdump' 
+		: 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump'
+
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
@@ -55,7 +60,12 @@ For docker we currently don not have such an arrangement.''',
 
 		string(defaultValue: '',
 			description: 'Version of the metasfresh-esb (camel) bundles to include in the distribution. Leave empty and this build will use the latest.',
-			name: 'MF_METASFRESH_ESB_CAMEL_VERSION')
+			name: 'MF_METASFRESH_ESB_CAMEL_VERSION'),
+
+		string(defaultValue: MF_SQL_DEED_DUMP_URL_DEFAULT,
+			description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
+			name: 'MF_SQL_DEED_DUMP_URL')
+
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
@@ -219,7 +229,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <p>
 <h3>Deploy</h3>
 <ul>
-	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the tar.gz to a host of your choice.</li>
+	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the <b>tar.gz to a host of your choice</b>.</li>
 	${releaseLinkWithText}
 </ul>
 <p>
@@ -246,14 +256,14 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		dockerBuildAndPush(appDockerConf)
 
 		// report
-		final String dockerBaseImageRepo = 'metasfresh-report-dev'
-		final String dockerBaseImageTag = misc.mkDockerTag("${params.MF_METASFRESH_REPORT_DOCKER_BASE_IMAGE_VERSION}")
-		final String additionalBuildArgs = "--build-arg BASE_IMAGE_REPO=${dockerBaseImageRepo} --build-arg BASE_IMAGE_VERSION=${dockerBaseImageTag}"
+		final String reportDockerBaseImageRepo = 'metasfresh-report-dev'
+		final String reportDockerBaseImageTag = misc.mkDockerTag("${params.MF_METASFRESH_REPORT_DOCKER_BASE_IMAGE_VERSION}")
+		final String reportAdditionalBuildArgs = "--build-arg BASE_IMAGE_REPO=${reportDockerBaseImageRepo} --build-arg BASE_IMAGE_VERSION=${reportDockerBaseImageTag}"
 
 		final DockerConf reportDockerConf = appDockerConf
 						.withArtifactName('metasfresh-dist-report')
 						.withWorkDir('dist/target/docker/report')
-						.withAdditionalBuildArgs(additionalBuildArgs)
+						.withAdditionalBuildArgs(reportAdditionalBuildArgs)
 		dockerBuildAndPush(reportDockerConf)				
 
 		// postgres DB init container
@@ -268,17 +278,16 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 
 	stage('Test SQL-Migration (docker)')
 	{
-		if(params.MF_SKIP_SQL_MIGRATION_TEST)
+		if(params.MF_SQL_DEED_DUMP_URL)
 		{
-			echo "We skip applying the migration scripts because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+			// run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
+			sh "docker run --rm -e \"URL_SEED_DUMP=${params.MF_SQL_DEED_DUMP_URL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\" ${dbInitDockerImageName}"
+			sh "docker rmi ${dbInitDockerImageName}"
 		}
 		else
 		{
-			// run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
-			sh "docker run --rm -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\" ${dbInitDockerImageName}"
-			sh "docker rmi ${dbInitDockerImageName}"
+			echo "We skip applying the migration scripts because params.MF_SQL_DEED_DUMP_URL was not set"
 		}
 	}
 } // node
-
 } // timestamps
