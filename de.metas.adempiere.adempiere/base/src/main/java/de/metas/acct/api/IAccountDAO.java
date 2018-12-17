@@ -40,6 +40,11 @@ public interface IAccountDAO extends ISingletonService
 
 	MAccount getById(Properties ctx, AccountId accountId);
 
+	default MAccount getById(final AccountId accountId)
+	{
+		return getById(Env.getCtx(), accountId);
+	}
+
 	/**
 	 * @param ctx
 	 * @param dimension
