@@ -70,7 +70,7 @@ import lombok.ToString;
 	public static final Topic NOTIFICATIONS_TOPIC = Topic.remote("de.metas.acct.UserNotifications");
 
 	// services
-	private static final transient Logger log = LogManager.getLogger(PostingRequestBuilder.class);
+	private static final transient Logger logger = LogManager.getLogger(PostingRequestBuilder.class);
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -159,7 +159,7 @@ import lombok.ToString;
 		final TableRecordReference documentRef = getDocumentRef();
 		final boolean force = isForce();
 
-		log.debug("Posting on server: {}", PostingRequestBuilder.this);
+		logger.debug("Posting on server: {}", PostingRequestBuilder.this);
 
 		final DocumentPostingBusService postingBusService = Adempiere.getBean(DocumentPostingBusService.class);
 		postingBusService.postRequest(DocumentPostRequest.builder()
@@ -177,7 +177,7 @@ import lombok.ToString;
 	 */
 	private final void postIt_Directly()
 	{
-		log.debug("Posting directly: {}", this);
+		logger.debug("Posting directly: {}", this);
 
 		final IDocFactory docFactory = Services.get(IDocFactory.class);
 
