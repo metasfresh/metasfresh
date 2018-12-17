@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.user.UserId;
-import org.compiere.acct.PostingExecutionException;
 
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.document.engine.IDocument;
@@ -82,18 +81,6 @@ public interface IPostingRequestBuilder
 	 * Post the document (i.e. execute this request).
 	 */
 	IPostingRequestBuilder postIt();
-
-	/** @return true if document was posted */
-	boolean isPosted();
-
-	/** @return true if document was tried to be posted but an error was uncounted */
-	boolean isError();
-
-	/** @return posting exception or <code>null</code> if there was no error */
-	PostingExecutionException getPostedException();
-
-	/** @return posting error message or <code>null</code> if there was no error */
-	String getPostedErrorMessage();
 
 	/**
 	 * Sets what do to in case an error is encounted while posting.

@@ -88,7 +88,6 @@ import lombok.ToString;
 	// Status
 	private boolean _executed = false;
 	private PostingExecutionException _postedException = null;
-	private boolean _posted = false;
 
 	@Override
 	public IClientUIInvoker postItOnUI()
@@ -159,7 +158,7 @@ import lombok.ToString;
 		final TableRecordReference documentRef = getDocumentRef();
 		final boolean force = isForce();
 
-		logger.debug("Posting on server: {}", PostingRequestBuilder.this);
+		logger.debug("Enqueueing to be posted on server server: {}", PostingRequestBuilder.this);
 
 		final DocumentPostingBusService postingBusService = Adempiere.getBean(DocumentPostingBusService.class);
 		postingBusService.postRequest(DocumentPostRequest.builder()
@@ -223,31 +222,6 @@ import lombok.ToString;
 	}
 
 	@Override
-	public boolean isPosted()
-	{
-		return _posted
-				&& _postedException == null;
-	}
-
-	@Override
-	public boolean isError()
-	{
-		return _postedException != null;
-	}
-
-	@Override
-	public String getPostedErrorMessage()
-	{
-		return _postedException == null ? null : _postedException.getLocalizedMessage();
-	}
-
-	@Override
-	public PostingExecutionException getPostedException()
-	{
-		return _postedException;
-	}
-
-	@Override
 	public IPostingRequestBuilder setForce(final boolean force)
 	{
 		assertNotExecuted();
@@ -274,11 +248,6 @@ import lombok.ToString;
 	{
 		Check.assumeNotNull(_clientId, "AD_Client_ID is set");
 		return _clientId;
-	}
-
-	private final I_AD_Client getAD_Client()
-	{
-		return clientDAO.getById(getClientId().getRepoId());
 	}
 
 	@Override
@@ -380,7 +349,7 @@ import lombok.ToString;
 
 			//
 			// Check if PostImmediate is allowed by AD_Client configuration
-			final I_AD_Client client = getAD_Client();
+			final I_AD_Client client = clientDAO.getById(getClientId().getRepoId());
 			final boolean allowPosting = client.isPostImmediate();
 			return allowPosting;
 		}
@@ -399,7 +368,7 @@ import lombok.ToString;
 			return true;
 		}
 
-		// Post without server if we are running the accouting service/server
+		// Post without server if we are running the accounting service/server
 		return Profiles.isProfileActive(Profiles.PROFILE_AccountingService);
 	}
 
@@ -447,7 +416,6 @@ import lombok.ToString;
 		else
 		{
 			_postedException = PostingExecutionException.wrapIfNeeded(postedException);
-			_posted = false;
 		}
 	}
 
@@ -461,10 +429,6 @@ import lombok.ToString;
 	private final void postingComplete()
 	{
 		final PostingExecutionException postedException = _postedException;
-
-		//
-		// Set the isPosted flag
-		_posted = postedException == null;
 
 		//
 		// Notify user
