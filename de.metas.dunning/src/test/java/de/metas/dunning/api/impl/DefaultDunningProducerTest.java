@@ -33,7 +33,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningProducer;
@@ -44,6 +50,12 @@ import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {
+		StartupListener.class,
+		ShutdownListener.class,
+		DunningDocDocumentHandlerProvider.class
+})
 public class DefaultDunningProducerTest extends DunningTestBase
 {
 	private I_C_DunningLevel dunningLevel1;
