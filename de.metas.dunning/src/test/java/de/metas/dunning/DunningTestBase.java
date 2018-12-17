@@ -277,7 +277,7 @@ public class DunningTestBase
 		level.setDaysBetweenDunning(DaysBetweenDunning);
 		level.setDaysAfterDue(BigDecimal.valueOf(DaysAfterDue));
 		level.setInterestPercent(BigDecimal.valueOf(InterestPercent));
-		level.setFeeAmt(Env.ZERO);
+		level.setFeeAmt(BigDecimal.ZERO);
 		level.setIsWriteOff(false);
 
 		dao.save(level);
