@@ -7,9 +7,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.impl.BPartnerTimeSpanRepository;
-import de.metas.contracts.invoice.ContractInvoiceService;
 import de.metas.invoice.InvoiceId;
 
 /*
@@ -39,7 +37,6 @@ import de.metas.invoice.InvoiceId;
 public class C_Invoice
 {
 
-	private final ContractInvoiceService contractInvoiceService = Adempiere.getBean(ContractInvoiceService.class);
 
 	private final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
 
@@ -48,20 +45,7 @@ public class C_Invoice
 	{
 		final InvoiceId invoiceId = de.metas.invoice.InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
-		if (!contractInvoiceService.isContractSalesInvoice(invoiceId))
-		{
-			// nothing to do
-			return;
-		}
+		bpartnerTimeSpanRepo.updateTimeSpanOnInvoiceComplete(invoiceId);
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-
-		if (!bpartnerTimeSpanRepo.isNewCustomer(bpartnerId))
-		{
-			// only change bpartners that are already marked as "New Customer"
-			return;
-		}
-
-		bpartnerTimeSpanRepo.updateTimeSpan(bpartnerId);
 	}
 }

@@ -218,4 +218,24 @@ public class BPartnerTimeSpanRepository
 		return currentDate.minusMonths(bpTimeSpanThreshold).isAfter(contractEndLocalDate);
 
 	}
+
+	public void updateTimeSpanOnInvoiceComplete(final InvoiceId invoiceId)
+	{
+		if (!contractInvoiceService.isContractSalesInvoice(invoiceId))
+		{
+			// nothing to do
+			return;
+		}
+
+		final I_C_Invoice invoice = invoiceDAO.getById(invoiceId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+
+		if (!isNewCustomer(bpartnerId))
+		{
+			// only change bpartners that are already marked as "New Customer"
+			return;
+		}
+
+		updateTimeSpan(bpartnerId);
+	}
 }
