@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.user.UserId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.document.engine.IDocument;
@@ -125,6 +126,8 @@ public interface IPostingRequestBuilder
 	 */
 	IPostingRequestBuilder setDocument(final int adTableId, final int recordId);
 
+	IPostingRequestBuilder setDocumentRef(TableRecordReference documentRef);
+
 	/**
 	 * Sets if we shall do Force posting.
 	 * 
@@ -147,4 +150,5 @@ public interface IPostingRequestBuilder
 	 * WARNING: please handle this option with case, and use it only if you know what are you doing.
 	 */
 	IPostingRequestBuilder setPostWithoutServer();
+
 }

@@ -257,10 +257,12 @@ import lombok.ToString;
 		return this;
 	}
 
-	private final void setDocumentRef(final TableRecordReference documentRef)
+	@Override
+	public IPostingRequestBuilder setDocumentRef(@NonNull final TableRecordReference documentRef)
 	{
 		assertNotExecuted();
 		_documentRef = documentRef;
+		return this;
 	}
 
 	private final TableRecordReference getDocumentRef()
