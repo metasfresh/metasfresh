@@ -80,10 +80,11 @@ import lombok.ToString;
 	private boolean _force;
 	private ClientId _clientId = null;
 	private TableRecordReference _documentRef = null;
-	private PostImmediate _postImmediate = PostImmediate.IfConfigured;
-	private boolean _postWithoutServer = false;
 	private boolean _failOnError = DEFAULT_FailOnError;
 	private UserId _onErrorNotifyUserId = null;
+	//
+	private PostImmediate _postImmediate = PostImmediate.IfConfigured;
+	private boolean _postWithoutServer = false;
 
 	// Status
 	private boolean _executed = false;
