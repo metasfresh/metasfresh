@@ -241,6 +241,7 @@ class MenuOverlayItem extends Component {
 
 MenuOverlayItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  inputElement: PropTypes.any,
 };
 
 export default connect()(MenuOverlayItem);
