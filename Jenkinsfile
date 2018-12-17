@@ -13,7 +13,7 @@ final skipDeploymentParamDefaultValue = false;
 
 final String MF_SQL_DEED_DUMP_URL_DEFAULT = 
 	env.BRANCH_NAME == 'release' 
-		? 'http://www.metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_39.pgdump' 
+		? 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_39.pgdump' 
 		: 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
