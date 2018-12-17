@@ -89,9 +89,9 @@ describe('New sales order test', function() {
     });
 
     it('Fill Business Partner', function() {
-      cy.writeIntoLookupField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
-      cy.writeIntoLookupField('C_BPartner_Location_ID', 'Testadresse 3', 'Testadresse 3');
-      cy.writeIntoLookupField('AD_User_ID', 'Test', 'Test');
+      cy.writeIntoLookupListField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
+      cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Testadresse 3', 'Testadresse 3');
+      cy.writeIntoLookupListField('AD_User_ID', 'Test', 'Test');
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
     });

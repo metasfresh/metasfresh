@@ -21,19 +21,19 @@ describe('material tracking test', function() {
         cy.writeIntoLookupListField('M_Product_Scrap_ID','P002749','P002749_Erdbesatz');
         cy.selectInListField('C_UOM_Scrap_ID', 'Kilogramm');
 
-        cy.writeIntoLookupField('M_Product_ProcessingFee_ID', 'P002750', 'P002750_Futterkarotten');
+        cy.writeIntoLookupListField('M_Product_ProcessingFee_ID', 'P002750', 'P002750_Futterkarotten');
 
-        cy.writeIntoLookupField('M_Product_Witholding_ID', 'P002751', 'P002751_Akonto (Einbehalt)');
+        cy.writeIntoLookupListField('M_Product_Witholding_ID', 'P002751', 'P002751_Akonto (Einbehalt)');
 
-        cy.writeIntoLookupField('M_Product_RegularPPOrder_ID', 'P002752', 'P002752_Produkt für Auslagerung');
+        cy.writeIntoLookupListField('M_Product_RegularPPOrder_ID', 'P002752', 'P002752_Produkt für Auslagerung');
         cy.pressDoneButton();
         
         cy.visit('/window/540226/NEW');
 
         cy.writeIntoStringField('Lot', lot);
 
-        cy.writeIntoLookupField('M_Product_ID', 'Convenience', 'Convenience Salat 250g_P002737');
-        cy.writeIntoLookupField('C_BPartner_ID', 'Test Liefer', 'Test Lieferant 1_G0002');
+        cy.writeIntoLookupListField('M_Product_ID', 'Convenience', 'Convenience Salat 250g_P002737');
+        cy.writeIntoLookupListField('C_BPartner_ID', 'Test Liefer', 'Test Lieferant 1_G0002');
 
         cy.selectInListField('M_QualityInsp_LagerKonf_Version_ID', lagerKonfName);
     });
