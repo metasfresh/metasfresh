@@ -63,5 +63,5 @@ it('Serial letter', function() {
     cy.pressDoneButton();
 
     // needs https://github.com/metasfresh/metasfresh-webui-frontend/issues/1978#issuecomment-445274540
-    // cy.executeProcess('C_Letter_CreateFrom_MKTG_ContactPerson');
+    cy.executeHeaderAction('C_Letter_CreateFrom_MKTG_ContactPerson');
 });

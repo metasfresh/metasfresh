@@ -34,9 +34,9 @@ function createAndCompleteConditions(conditionsName, transitionName)
 {
         cy.visit('/window/540113/NEW');
         cy.writeIntoStringField('Name', conditionsName);
-        cy.writeIntoLookupListField('Type_Conditions', 'A', 'Abonnement');
-        cy.writeIntoLookupListField('OnFlatrateTermExtend', 'Co', 'Copy prices');
-        cy.writeIntoLookupListField('C_Flatrate_Transition_ID', transitionName, transitionName);
+        cy.selectInListField('Type_Conditions', 'A', 'Abonnement');
+        cy.selectInListField('OnFlatrateTermExtend', 'Co', 'Copy prices');
+        cy.selectInListField('C_Flatrate_Transition_ID', transitionName, transitionName);
 
         cy.processDocument('Complete', 'Completed');
 }
