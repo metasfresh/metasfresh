@@ -23,6 +23,8 @@ package de.metas.dunning.api.impl;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.Date;
 import java.util.List;
 
@@ -59,7 +61,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 	@Test
 	public void test_OneDocumentForEachCandidate()
 	{
-		final Date candidateDunningDate = TimeUtil.getDay(2013, 01, 01);
+		final LocalDate candidateDunningDate = LocalDate.of(2013, Month.JANUARY, 1);
 
 		// NOTE: if we are using null execution DunningDate, the DunningDate from candidate shall be used
 		// final Date executionDunningDate = TimeUtil.getDay(2013, 02, 01);
@@ -81,7 +83,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 		assertDunningDocValid(context, candidate2);
 	}
 
-	private I_C_Dunning_Candidate createCandidate(final Date dunningDate, final I_C_DunningLevel dunningLevel)
+	private I_C_Dunning_Candidate createCandidate(final LocalDate dunningDate, final I_C_DunningLevel dunningLevel)
 	{
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
 		candidate.setAD_Org_ID(1);
