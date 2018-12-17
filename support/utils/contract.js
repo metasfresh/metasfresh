@@ -54,7 +54,7 @@ function createPercentConfig(refundMode, minQty, percent)
     cy.selectInListField('RefundMode', refundMode);
     cy.selectInListField('RefundBase', 'P'/*percent*/); 
 
-    cy.writeIntoLookupField('M_Product_ID', 'P002737', 'Convenience Salat 250g_P002737');
+    cy.writeIntoLookupListField('M_Product_ID', 'P002737', 'Convenience Salat 250g_P002737');
     cy.writeIntoStringField('MinQty', `{selectall}{backspace}${minQty}`);
     cy.writeIntoStringField('RefundPercent', `{selectall}{backspace}${percent}`);
     cy.selectInListField('C_InvoiceSchedule_ID', 'jä', 'jährlich');
@@ -87,7 +87,7 @@ function createAmountConfig(refundMode, minQty, amount)
     cy.selectInListField('RefundMode', refundMode);
     cy.selectInListField('RefundBase', 'B'/*Betrag/amount*/); 
 
-    cy.writeIntoLookupField('M_Product_ID', 'P002737', 'Convenience Salat 250g_P002737');
+    cy.writeIntoLookupListField('M_Product_ID', 'P002737', 'Convenience Salat 250g_P002737');
     cy.writeIntoStringField('MinQty', `{selectall}{backspace}${minQty}`);
     cy.writeIntoStringField('RefundAmt', `{selectall}{backspace}${amount}`);
     cy.selectInListField('C_InvoiceSchedule_ID', 'jä', 'jährlich');

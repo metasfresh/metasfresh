@@ -23,9 +23,9 @@ describe('purchase order Test', function() {
 
             cy.visit('/window/181/NEW');
             
-            cy.writeIntoLookupField('C_BPartner_ID', vendorValue, vendorValue);
+            cy.writeIntoLookupListField('C_BPartner_ID', vendorValue, vendorValue);
             // AD_User should be pre-filled with 'default contact';
-            cy.writeIntoLookupField('AD_User_ID', contactLastName, contactLastName);
+            cy.writeIntoLookupListField('AD_User_ID', contactLastName, contactLastName);
             
             cy.writeIntoStringField('POReference', poReference);
             cy.clickOnCheckBox('IsDropShip');

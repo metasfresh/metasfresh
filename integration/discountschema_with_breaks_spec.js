@@ -12,7 +12,7 @@ describe('New subscription flatrate conditions Test', function() {
             cy.visit('/window/233/NEW');
 
             cy.writeIntoStringField('Name', `${discountschemaName}`);
-            cy.writeIntoLookupField('DiscountType', 'B', 'Breaks');
+            cy.writeIntoLookupListField('DiscountType', 'B', 'Breaks');
 
             // making this work is the primary goal of this issue; might need another command to be created
             cy.writeIntoStringField('ValidFrom', '01/01/2018{enter}');
@@ -28,7 +28,7 @@ describe('New subscription flatrate conditions Test', function() {
 
 function addBreakRecord(productValue, breakValue, breakDiscount) {
     cy.pressAddNewButton();
-    cy.writeIntoLookupField('M_Product_ID', productValue, productValue);
+    cy.writeIntoLookupListField('M_Product_ID', productValue, productValue);
     cy.writeIntoStringField('BreakValue', breakValue);
     cy.writeIntoStringField('BreakDiscount', breakDiscount);
     cy.get('.items-row-2 > .btn').click();
