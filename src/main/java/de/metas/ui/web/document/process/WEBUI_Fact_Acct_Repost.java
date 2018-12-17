@@ -1,7 +1,6 @@
 package de.metas.ui.web.document.process;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
@@ -111,7 +110,6 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 	{
 		postingService
 				.newPostingRequest()
-				.setContext(getCtx(), ITrx.TRXNAME_None)
 				.setClientId(doc.getClientId())
 				.setDocument(doc.getAdTableId(), doc.getRecordId())
 				.setForce(enforce)
