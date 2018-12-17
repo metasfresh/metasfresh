@@ -145,7 +145,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
   });
 
 Cypress.Commands.add(
-  'writeIntoLookupField',
+  'writeIntoLookupListField',
   (fieldName, partialValue, listValue) => {
     describe('Enter value into lookup list field', function() {
       cy.get(`#lookup_${fieldName}`)
