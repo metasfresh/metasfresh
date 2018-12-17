@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -19,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -51,17 +53,35 @@ public class PPOrderLineRowTest
 {
 	@Mocked
 	private IViewRowAttributesProvider viewRowAttributesProvider;
+	private I_C_UOM uom;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		uom = newInstance(I_C_UOM.class);
+		uom.setUOMSymbol("Ea");
+		save(uom);
+	}
+
+	private ProductId createProduct(final String name)
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setValue(name);
+		product.setName(name);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		save(product);
+
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
 	@Test
 	public void canBuildForPPOrder()
 	{
 		final I_PP_Order ppOrder = newInstance(I_PP_Order.class);
+		ppOrder.setM_Product_ID(createProduct("main").getRepoId());
+		ppOrder.setC_UOM_ID(uom.getC_UOM_ID());
 		save(ppOrder);
 
 		final PPOrderLineRow result = PPOrderLineRow.builderForPPOrder()
@@ -127,9 +147,8 @@ public class PPOrderLineRowTest
 	@Test
 	public void canBuildForIssuedOrReceivedHU()
 	{
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
-		uom.setUOMSymbol("UOMSymbol");
 		final I_PP_Order_Qty ppOrderQty = newInstance(I_PP_Order_Qty.class);
+		ppOrderQty.setPP_Order_ID(1); // dummy
 		ppOrderQty.setM_HU_ID(10);
 
 		final PPOrderLineRow result = PPOrderLineRow.builderForIssuedOrReceivedHU()
