@@ -520,7 +520,7 @@ public class OrderLineBL implements IOrderLineBL
 			return qtyEntered;
 		}
 
-		final int qtyUOMId = qtyEntered.getUOM().getC_UOM_ID();
+		final int qtyUOMId = qtyEntered.getUOMId();
 		if (qtyUOMId == priceUOM.getC_UOM_ID())
 		{
 			return qtyEntered;

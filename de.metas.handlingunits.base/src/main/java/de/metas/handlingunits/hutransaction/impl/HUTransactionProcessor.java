@@ -120,7 +120,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		trxLine.setDateTrx(TimeUtil.asTimestamp(trxLineCandidate.getDate()));
 		trxLine.setM_Product_ID(trxLineCandidate.getProductId().getRepoId());
 		trxLine.setQty(trxLineCandidate.getQuantity().getAsBigDecimal());
-		trxLine.setC_UOM(trxLineCandidate.getQuantity().getUOM());
+		trxLine.setC_UOM_ID(trxLineCandidate.getQuantity().getUOMId());
 		trxLine.setM_HU(hu);
 		trxLine.setM_HU_Item(huItem);
 
