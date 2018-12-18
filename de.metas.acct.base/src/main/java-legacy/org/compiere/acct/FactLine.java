@@ -1583,7 +1583,7 @@ final class FactLine extends X_Fact_Acct
 	public void setQty(@NonNull final Quantity quantity)
 	{
 		setQty(quantity.getAsBigDecimal());
-		setC_UOM(quantity.getUOM());
+		setC_UOM_ID(quantity.getUOMId());
 	}
 
 	public AcctSchemaId getAcctSchemaId()
