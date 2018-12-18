@@ -64,6 +64,8 @@ import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.order.DeliveryRule;
+import de.metas.order.IMatchPOBL;
+import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
@@ -1659,10 +1661,10 @@ public class MInOut extends X_M_InOut implements IDocument
 					{
 						log.debug("PO Matching");
 						// Ship - PO
-						MMatchPO.create(null, sLine, getMovementDate(), qtyMoved);
+						Services.get(IMatchPOBL.class).create(null, sLine, getMovementDate(), qtyMoved);
 
 						// Update PO with ASI
-						if (oLine != null 
+						if (oLine != null
 								&& oLine.getM_AttributeSetInstance_ID() <= 0
 								&& sLine.getMovementQty().compareTo(oLine.getQtyOrdered()) == 0)  // just if full match [
 						// 1876965 ]
@@ -1680,7 +1682,7 @@ public class MInOut extends X_M_InOut implements IDocument
 							// Invoice is created before Shipment
 							log.debug("PO(Inv) Matching");
 							// Ship - Invoice
-							final I_M_MatchPO po = MMatchPO.create(iLine, sLine, getMovementDate(), qtyMoved);
+							final I_M_MatchPO po = Services.get(IMatchPOBL.class).create(iLine, sLine, getMovementDate(), qtyMoved);
 
 							// Update PO with ASI
 							oLine = new MOrderLine(getCtx(), po.getC_OrderLine_ID(), get_TrxName());
@@ -2455,7 +2457,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			return; // nothing to do
 		}
 
-		for (final I_M_MatchPO matchPO : MMatchPO.getInOut(getCtx(), getM_InOut_ID(), get_TrxName()))
+		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(getM_InOut_ID()))
 		{
 			if (matchPO.getC_InvoiceLine_ID() <= 0)
 			{
@@ -2464,7 +2466,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 			else
 			{
-				matchPO.setM_InOutLine(null);
+				matchPO.setM_InOutLine_ID(-1);
 				InterfaceWrapperHelper.save(matchPO);
 			}
 		}

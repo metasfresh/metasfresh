@@ -27,6 +27,8 @@ import org.compiere.util.DB;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.order.IMatchPODAO;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -115,11 +117,6 @@ public class MMatchInv extends X_M_MatchInv
 		return success;
 	}	// afterSave
 
-	/**
-	 * Get the later Date Acct from invoice or shipment
-	 *
-	 * @return date or null
-	 */
 	private Timestamp getNewerDateAcct()
 	{
 		String sql = "SELECT i.DateAcct "
@@ -179,23 +176,15 @@ public class MMatchInv extends X_M_MatchInv
 
 	private void clearInvoiceLineFromMatchPOs()
 	{
-		// Get Order and decrease invoices
-		final I_C_InvoiceLine iLine = getC_InvoiceLine();
-		int C_OrderLine_ID = iLine.getC_OrderLine_ID();
-		if (C_OrderLine_ID <= 0)
-		{
-			final I_M_InOutLine ioLine = getM_InOutLine();
-			C_OrderLine_ID = ioLine.getC_OrderLine_ID();
-		}
-
-		// No Order Found
-		if (C_OrderLine_ID <= 0)
+		final OrderLineId orderLineId = getOrderLineIdOrNull();
+		if (orderLineId == null)
 		{
 			return;
 		}
 
 		// Find MatchPO
-		for (final I_M_MatchPO matchPO : MMatchPO.getByOrderLineAndInvoiceLine(C_OrderLine_ID, getC_InvoiceLine_ID()))
+		final IMatchPODAO matchPOsRepo = Services.get(IMatchPODAO.class);
+		for (final I_M_MatchPO matchPO : matchPOsRepo.getByOrderLineAndInvoiceLine(orderLineId, getC_InvoiceLine_ID()))
 		{
 			if (matchPO.getM_InOutLine_ID() <= 0)
 			{
@@ -204,10 +193,22 @@ public class MMatchInv extends X_M_MatchInv
 			}
 			else
 			{
-				matchPO.setC_InvoiceLine(null);
+				matchPO.setC_InvoiceLine_ID(-1);
 				InterfaceWrapperHelper.save(matchPO);
 			}
 		}
+	}
+
+	private OrderLineId getOrderLineIdOrNull()
+	{
+		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
+		OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceLine.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			final I_M_InOutLine ioLine = getM_InOutLine();
+			orderLineId = OrderLineId.ofRepoIdOrNull(ioLine.getC_OrderLine_ID());
+		}
+		return orderLineId;
 	}
 
 	private void deleteMatchInvCostDetail()

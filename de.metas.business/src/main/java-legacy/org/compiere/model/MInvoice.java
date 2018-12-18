@@ -66,7 +66,10 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
+import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.order.IMatchPOBL;
+import de.metas.order.IMatchPODAO;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
@@ -1762,7 +1765,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				{
 					// MatchPO is created also from MInOut when Invoice exists before Shipment
 					final BigDecimal matchQty = line.getQtyInvoiced();
-					MMatchPO.create(line, null, getDateInvoiced(), matchQty);
+					Services.get(IMatchPOBL.class).create(line, null, getDateInvoiced(), matchQty);
 					matchPO++;
 				}
 			}
@@ -2167,17 +2170,16 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			// for (int i = 0; i < mInv.length; i++)
 			// mInv[i].delete(true);
 
-			final MMatchPO[] mPO = MMatchPO.getInvoice(getCtx(), getC_Invoice_ID(), get_TrxName());
-			for (final MMatchPO element : mPO)
+			for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByInvoiceId(InvoiceId.ofRepoId(getC_Invoice_ID())))
 			{
-				if (element.getM_InOutLine_ID() == 0)
+				if (matchPO.getM_InOutLine_ID() <= 0)
 				{
-					element.delete(true);
+					InterfaceWrapperHelper.delete(matchPO);
 				}
 				else
 				{
-					element.setC_InvoiceLine(null);
-					element.saveEx(get_TrxName()); // metas: tsa: always use saveEx
+					matchPO.setC_InvoiceLine_ID(-1);
+					InterfaceWrapperHelper.save(matchPO);
 				}
 			}
 		}
