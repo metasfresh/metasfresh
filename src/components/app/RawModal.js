@@ -150,6 +150,10 @@ class RawModal extends Component {
 
     const { scrolled, isTooltipShow } = this.state;
 
+    if (!children) {
+      return null;
+    }
+
     return (
       <div className="screen-freeze raw-modal">
         <div className="panel panel-modal panel-modal-primary">

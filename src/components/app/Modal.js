@@ -567,6 +567,10 @@ class Modal extends Component {
       }
     }
 
+    if (!Object.keys(layout).length) {
+      return null;
+    }
+
     return (
       <div
         className={classnames('screen-freeze js-not-unselect', {
