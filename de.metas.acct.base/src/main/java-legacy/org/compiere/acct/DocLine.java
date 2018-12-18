@@ -715,9 +715,9 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 				() -> m_doc.getC_BPartner_Location_ID());
 	}
 
-	public final int getAD_OrgTrx_ID()
+	public final OrgId getOrgTrxId()
 	{
-		return getValue("AD_OrgTrx_ID");
+		return getValueAsIdOrNull("AD_OrgTrx_ID", OrgId::ofRepoIdOrNull);
 	}
 
 	/**
@@ -781,6 +781,26 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	public final int getUser2_ID()
 	{
 		return getValue("User2_ID");
+	}
+
+	private final <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index < 0)
+		{
+			return null;
+		}
+
+		final Object valueObj = po.get_Value(index);
+		final Integer valueInt = NumberUtils.asInteger(valueObj, null);
+		if (valueInt == null)
+		{
+			return null;
+		}
+
+		final T id = idOrNullMapper.apply(valueInt);
+		return id;
 	}
 
 	private final <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)

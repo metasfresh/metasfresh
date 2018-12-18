@@ -562,11 +562,11 @@ final class FactLine extends X_Fact_Acct
 		// Trx Org
 		if (m_docLine != null)
 		{
-			setAD_OrgTrx_ID(m_docLine.getAD_OrgTrx_ID());
+			setAD_OrgTrx_ID(m_docLine.getOrgTrxId());
 		}
 		if (getAD_OrgTrx_ID() <= 0)
 		{
-			setAD_OrgTrx_ID(m_doc.getAD_OrgTrx_ID());
+			setAD_OrgTrx_ID(m_doc.getOrgTrxId());
 		}
 
 		// Project
@@ -1241,12 +1241,12 @@ final class FactLine extends X_Fact_Acct
 				// From Sales Rep of Document -> Sales Region
 				{
 					final UserId salesRepId = m_doc.getSalesRepId();
-					if(salesRepId != null)
+					if (salesRepId != null)
 					{
 						sql = "SELECT COALESCE(MAX(C_SalesRegion_ID),0) FROM C_SalesRegion WHERE SalesRep_ID=?";
 						setC_SalesRegion_ID(DB.getSQLValue(null, sql, salesRepId));
 					}
-					
+
 					if (super.getC_SalesRegion_ID() != 0)		// save in VO
 					{
 						m_doc.setBP_C_SalesRegion_ID(super.getC_SalesRegion_ID());
@@ -1636,6 +1636,11 @@ final class FactLine extends X_Fact_Acct
 	public void setAD_Org_ID(final OrgId orgId)
 	{
 		super.setAD_Org_ID(OrgId.toRepoId(orgId));
+	}
+
+	public void setAD_OrgTrx_ID(final OrgId orgTrxId)
+	{
+		super.setAD_OrgTrx_ID(OrgId.toRepoId(orgTrxId));
 	}
 
 	public void setM_Product_ID(final ProductId productId)

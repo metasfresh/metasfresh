@@ -1733,9 +1733,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIdOrNull("M_Product_ID", ProductId::ofRepoIdOrNull);
 	}
 
-	public final int getAD_OrgTrx_ID()
+	public final OrgId getOrgTrxId()
 	{
-		return getValueAsIntOrZero("AD_OrgTrx_ID");
+		return getValueAsIdOrNull("AD_OrgTrx_ID", OrgId::ofRepoIdOrNull);
 	}
 
 	public final LocationId getLocationFromId()
