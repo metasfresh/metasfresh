@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.location.LocationId;
@@ -34,7 +36,6 @@ import org.compiere.model.I_C_RevenueRecognition_Plan;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.MAccount;
-import org.compiere.model.MFactAcct;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -1454,119 +1455,94 @@ final class FactLine extends X_Fact_Acct
 	 * @param multiplier targetQty/documentQty
 	 * @return true if success
 	 */
-	public boolean updateReverseLine(final int AD_Table_ID, final int Record_ID, final int Line_ID,
+	public boolean updateReverseLine(
+			final int AD_Table_ID,
+			final int Record_ID,
+			final int Line_ID,
 			final BigDecimal multiplier)
 	{
-		boolean success = false;
-
-		String sql = "SELECT * "
-				+ "FROM Fact_Acct "
-				+ "WHERE C_AcctSchema_ID=? AND AD_Table_ID=? AND Record_ID=?"
-				+ " AND Line_ID=? AND Account_ID=?";
-		// MZ Goodwill
-		// for Inventory Move
+		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, getC_AcctSchema_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, AD_Table_ID)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, Record_ID)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, Line_ID)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_Account_ID, m_acct.getAccount_ID());
 		if (I_M_Movement.Table_ID == AD_Table_ID)
 		{
-			sql += " AND M_Locator_ID=?";
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMN_M_Locator_ID, getM_Locator_ID());
 		}
-		// end MZ
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+
+		final I_Fact_Acct fact = queryBuilder.create().firstOnly(I_Fact_Acct.class);
+		if (fact != null)
 		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, getC_AcctSchema_ID());
-			pstmt.setInt(2, AD_Table_ID);
-			pstmt.setInt(3, Record_ID);
-			pstmt.setInt(4, Line_ID);
-			pstmt.setInt(5, m_acct.getAccount_ID());
-			// MZ Goodwill
-			// for Inventory Move
-			if (I_M_Movement.Table_ID == AD_Table_ID)
+			final CurrencyId currencyId = CurrencyId.ofRepoId(fact.getC_Currency_ID());
+			// Accounted Amounts - reverse
+			final BigDecimal dr = fact.getAmtAcctDr();
+			final BigDecimal cr = fact.getAmtAcctCr();
+			// setAmtAcctDr (cr.multiply(multiplier));
+			// setAmtAcctCr (dr.multiply(multiplier));
+			setAmtAcct(
+					currencyId,
+					cr.multiply(multiplier),
+					dr.multiply(multiplier));
+			//
+			// Bayu Sistematika - Source Amounts
+			// Fixing source amounts
+			final BigDecimal drSourceAmt = fact.getAmtSourceDr();
+			final BigDecimal crSourceAmt = fact.getAmtSourceCr();
+			setAmtSource(
+					currencyId,
+					crSourceAmt.multiply(multiplier),
+					drSourceAmt.multiply(multiplier));
+			// end Bayu Sistematika
+			//
+			log.debug(new StringBuilder("(Table=").append(AD_Table_ID)
+					.append(",Record_ID=").append(Record_ID)
+					.append(",Line=").append(Record_ID)
+					.append(", Account=").append(m_acct)
+					.append(",dr=").append(dr).append(",cr=").append(cr)
+					.append(") - DR=").append(getAmtSourceDr()).append("|").append(getAmtAcctDr())
+					.append(", CR=").append(getAmtSourceCr()).append("|").append(getAmtAcctCr())
+					.toString());
+			// Dimensions
+			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
+			setC_Project_ID(fact.getC_Project_ID());
+			setC_Activity_ID(fact.getC_Activity_ID());
+			setC_Campaign_ID(fact.getC_Campaign_ID());
+			setC_SalesRegion_ID(fact.getC_SalesRegion_ID());
+			setC_LocFrom_ID(fact.getC_LocFrom_ID());
+			setC_LocTo_ID(fact.getC_LocTo_ID());
+			setM_Product_ID(fact.getM_Product_ID());
+			setM_Locator_ID(fact.getM_Locator_ID());
+			setUser1_ID(fact.getUser1_ID());
+			setUser2_ID(fact.getUser2_ID());
+			setC_UOM_ID(fact.getC_UOM_ID());
+			setC_Tax_ID(fact.getC_Tax_ID());
+			// Org for cross charge
+			setAD_Org_ID(fact.getAD_Org_ID());
+
+			return true; // success
+		}
+		else
+		{
+			//
+			// Log the warning only if log level is info.
+			// NOTE: we changed the level from WARNING to INFO because it seems this turned to be a common case,
+			// since we are eagerly posting the MatchInv when Invoice/InOut was posted.
+			// (and MatchInv needs to have the Invoice and InOut posted before)
+			if (log.isInfoEnabled())
 			{
-				pstmt.setInt(6, getM_Locator_ID());
-			}
-			// end MZ
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				final I_Fact_Acct fact = new MFactAcct(getCtx(), rs, get_TrxName());
-				final CurrencyId currencyId = CurrencyId.ofRepoId(fact.getC_Currency_ID());
-				// Accounted Amounts - reverse
-				final BigDecimal dr = fact.getAmtAcctDr();
-				final BigDecimal cr = fact.getAmtAcctCr();
-				// setAmtAcctDr (cr.multiply(multiplier));
-				// setAmtAcctCr (dr.multiply(multiplier));
-				setAmtAcct(
-						currencyId,
-						cr.multiply(multiplier),
-						dr.multiply(multiplier));
-				//
-				// Bayu Sistematika - Source Amounts
-				// Fixing source amounts
-				final BigDecimal drSourceAmt = fact.getAmtSourceDr();
-				final BigDecimal crSourceAmt = fact.getAmtSourceCr();
-				setAmtSource(
-						currencyId,
-						crSourceAmt.multiply(multiplier),
-						drSourceAmt.multiply(multiplier));
-				// end Bayu Sistematika
-				//
-				success = true;
-				log.debug(new StringBuilder("(Table=").append(AD_Table_ID)
+				log.info(new StringBuilder("Not Found (try later) ")
+						.append(",C_AcctSchema_ID=").append(getC_AcctSchema_ID())
+						.append(", AD_Table_ID=").append(AD_Table_ID)
 						.append(",Record_ID=").append(Record_ID)
-						.append(",Line=").append(Record_ID)
-						.append(", Account=").append(m_acct)
-						.append(",dr=").append(dr).append(",cr=").append(cr)
-						.append(") - DR=").append(getAmtSourceDr()).append("|").append(getAmtAcctDr())
-						.append(", CR=").append(getAmtSourceCr()).append("|").append(getAmtAcctCr())
-						.toString());
-				// Dimensions
-				setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
-				setC_Project_ID(fact.getC_Project_ID());
-				setC_Activity_ID(fact.getC_Activity_ID());
-				setC_Campaign_ID(fact.getC_Campaign_ID());
-				setC_SalesRegion_ID(fact.getC_SalesRegion_ID());
-				setC_LocFrom_ID(fact.getC_LocFrom_ID());
-				setC_LocTo_ID(fact.getC_LocTo_ID());
-				setM_Product_ID(fact.getM_Product_ID());
-				setM_Locator_ID(fact.getM_Locator_ID());
-				setUser1_ID(fact.getUser1_ID());
-				setUser2_ID(fact.getUser2_ID());
-				setC_UOM_ID(fact.getC_UOM_ID());
-				setC_Tax_ID(fact.getC_Tax_ID());
-				// Org for cross charge
-				setAD_Org_ID(fact.getAD_Org_ID());
+						.append(",Line_ID=").append(Line_ID)
+						.append(", Account_ID=").append(m_acct.getAccount_ID()).toString());
 			}
-			else
-			{
-				//
-				// Log the warning only if log level is info.
-				// NOTE: we changed the level from WARNING to INFO because it seems this turned to be a common case,
-				// since we are eagerly posting the MatchInv when Invoice/InOut was posted.
-				// (and MatchInv needs to have the Invoice and InOut posted before)
-				if (log.isInfoEnabled())
-				{
-					log.info(new StringBuilder("Not Found (try later) ")
-							.append(",C_AcctSchema_ID=").append(getC_AcctSchema_ID())
-							.append(", AD_Table_ID=").append(AD_Table_ID)
-							.append(",Record_ID=").append(Record_ID)
-							.append(",Line_ID=").append(Line_ID)
-							.append(", Account_ID=").append(m_acct.getAccount_ID()).toString());
-				}
-			}
+
+			return false; // not updated
 		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		return success;
 	}   // updateReverseLine
 
 	private final void setVATCodeIfApplies()

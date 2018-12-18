@@ -30,7 +30,7 @@ import org.adempiere.service.OrgId;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
-import org.compiere.model.MFactAcct;
+import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -91,13 +91,13 @@ public final class Fact
 	private final String m_postingType;
 
 	/** Actual Balance Type */
-	public static final String POST_Actual = MFactAcct.POSTINGTYPE_Actual;
+	public static final String POST_Actual = X_Fact_Acct.POSTINGTYPE_Actual;
 	/** Budget Balance Type */
-	public static final String POST_Budget = MFactAcct.POSTINGTYPE_Budget;
+	public static final String POST_Budget = X_Fact_Acct.POSTINGTYPE_Budget;
 	/** Encumbrance Posting */
-	public static final String POST_Commitment = MFactAcct.POSTINGTYPE_Commitment;
+	public static final String POST_Commitment = X_Fact_Acct.POSTINGTYPE_Commitment;
 	/** Encumbrance Posting */
-	public static final String POST_Reservation = MFactAcct.POSTINGTYPE_Reservation;
+	public static final String POST_Reservation = X_Fact_Acct.POSTINGTYPE_Reservation;
 
 	/** Is Converted */
 	private boolean m_converted = false;
