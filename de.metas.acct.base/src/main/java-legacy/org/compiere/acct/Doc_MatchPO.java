@@ -56,12 +56,6 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	/** pseudo line */
 	private DocLine_MatchPO docLine;
 
-	// private int m_C_OrderLine_ID = 0;
-	// private I_C_OrderLine m_oLine = null;
-	// //
-	// private int m_M_InOutLine_ID = 0;
-	// private I_M_InOutLine m_ioLine = null;
-
 	/** Shall we create accounting facts? (08555) */
 	private boolean noFactRecords = false;
 
@@ -81,16 +75,11 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		this.noFactRecords = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_NoFactRecords, DEFAULT_NoFactRecords);
 	}
 
-	/**************************************************************************
-	 * Get Source Currency Balance - subtracts line and tax amounts from total - no rounding
-	 * 
-	 * @return Zero - always balanced
-	 */
 	@Override
 	public BigDecimal getBalance()
 	{
 		return BigDecimal.ZERO;
-	}   // getBalance
+	}
 
 	/**
 	 * Create Facts (the accounting logic) for
