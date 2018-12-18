@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,4 +45,9 @@ public class CostDetailPreviousAmounts
 
 	@NonNull
 	Quantity qty;
+
+	public CurrencyId getCurrencyId()
+	{
+		return getCostPrice().getCurrenyId();
+	}
 }

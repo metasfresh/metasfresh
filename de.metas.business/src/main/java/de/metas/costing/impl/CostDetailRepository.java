@@ -14,6 +14,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
 import org.slf4j.Logger;
@@ -21,9 +22,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailPreviousAmounts;
@@ -34,7 +33,6 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -82,7 +80,10 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setM_Product_ID(cd.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(cd.getAttributeSetInstanceId().getRepoId());
 		record.setAmt(cd.getAmt().getValue());
+		record.setC_Currency_ID(cd.getAmt().getCurrencyId().getRepoId());
+
 		record.setQty(cd.getQty().getAsBigDecimal());
+		record.setC_UOM_ID(cd.getQty().getUOMId());
 
 		record.setIsChangingCosts(cd.isChangingCosts());
 		final CostDetailPreviousAmounts previousAmounts = cd.getPreviousAmounts();
@@ -218,16 +219,13 @@ public class CostDetailRepository implements ICostDetailRepository
 
 	private CostDetail toCostDetail(final I_M_CostDetail record)
 	{
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
-		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
-		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(productId);
+		final I_C_UOM productUOM = Services.get(IUOMDAO.class).getById(record.getC_UOM_ID());
 
-		final CostAmount amt = CostAmount.of(record.getAmt(), acctCurrencyId);
+		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
+		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId);
 		final Quantity qty = Quantity.of(record.getQty(), productUOM);
 
 		return CostDetail.builder()
@@ -243,8 +241,8 @@ public class CostDetailRepository implements ICostDetailRepository
 				.changingCosts(record.isChangingCosts())
 				.previousAmounts(CostDetailPreviousAmounts.builder()
 						.costPrice(CostPrice.builder()
-								.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), acctCurrencyId))
-								.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), acctCurrencyId))
+								.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), currencyId))
+								.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), currencyId))
 								.build())
 						.qty(Quantity.of(record.getPrev_CurrentQty(), productUOM))
 						.build())
