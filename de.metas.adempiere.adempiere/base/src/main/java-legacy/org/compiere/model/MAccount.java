@@ -144,7 +144,7 @@ public class MAccount extends X_C_ValidCombination
 		newAccount.setUserElement1_ID(dimension.getUserElement1_ID());
 		newAccount.setUserElement2_ID(dimension.getUserElement2_ID());
 		InterfaceWrapperHelper.save(newAccount);
-		s_log.debug("New: {}", newAccount);
+		logger.debug("New: {}", newAccount);
 		return newAccount;
 	}	// get
 
@@ -224,49 +224,29 @@ public class MAccount extends X_C_ValidCombination
 		}
 	}	// updateValueDescription
 
-	/** Logger */
-	private static final transient Logger s_log = LogManager.getLogger(MAccount.class);
+	private static final transient Logger logger = LogManager.getLogger(MAccount.class);
 
-	/**************************************************************************
-	 * Default constructor
-	 * 
-	 * @param ctx context
-	 * @param C_ValidCombination_ID combination
-	 * @param trxName transaction
-	 */
 	public MAccount(Properties ctx, int C_ValidCombination_ID, String trxName)
 	{
 		super(ctx, C_ValidCombination_ID, trxName);
-		if (C_ValidCombination_ID == 0)
+		if (is_new())
 		{
 			// setAccount_ID (0);
 			// setC_AcctSchema_ID (0);
 			setIsFullyQualified(false);
 		}
-	}   // MAccount
+	}
 
-	/**
-	 * Load constructor
-	 * 
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MAccount(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}   // MAccount
+	}
 
-	/**
-	 * Parent Constructor
-	 *
-	 * @param as account schema
-	 */
-	private MAccount(@NonNull final AcctSchema as)
+	private MAccount(@NonNull final AcctSchema acctSchema)
 	{
 		this(Env.getCtx(), 0, ITrx.TRXNAME_None);
-		setClientOrg(as.getClientId().getRepoId(), as.getOrgId().getRepoId());
-		setC_AcctSchema_ID(as.getId().getRepoId());
+		setClientOrg(acctSchema.getClientId().getRepoId(), acctSchema.getOrgId().getRepoId());
+		setC_AcctSchema_ID(acctSchema.getId().getRepoId());
 	}	// Account
 
 	@Override
@@ -275,8 +255,7 @@ public class MAccount extends X_C_ValidCombination
 		final StringBuilder sb = new StringBuilder("MAccount=[");
 		sb.append(getC_ValidCombination_ID());
 		if (getCombination() != null)
-			sb.append(",")
-					.append(getCombination());
+			sb.append(",").append(getCombination());
 		else
 		{
 			// .append(",Client=").append(getAD_Client_ID())
@@ -315,57 +294,36 @@ public class MAccount extends X_C_ValidCombination
 		}
 		sb.append("]");
 		return sb.toString();
-	}	// toString
+	}
 
-	/**
-	 * Get Account Type
-	 *
-	 * @return Account Type of Account Element
-	 * @see I_C_ElementValue#getAccountType()
-	 */
 	private final String getAccountType()
 	{
 		final I_C_ElementValue elementValue = getAccount();
 		if (elementValue == null)
 		{
-			log.error("No ElementValue for Account_ID=" + getAccount_ID());
+			logger.error("No ElementValue for Account_ID={}", getAccount_ID());
 			return "";
 		}
 		return elementValue.getAccountType();
-	}	// getAccountType
+	}
 
-	/**
-	 * Is this a Balance Sheet Account
-	 * 
-	 * @return boolean
-	 */
 	public boolean isBalanceSheet()
 	{
 		String accountType = getAccountType();
 		return (X_C_ElementValue.ACCOUNTTYPE_Asset.equals(accountType)
 				|| X_C_ElementValue.ACCOUNTTYPE_Liability.equals(accountType)
 				|| X_C_ElementValue.ACCOUNTTYPE_OwnerSEquity.equals(accountType));
-	}	// isBalanceSheet
+	}
 
-	/**
-	 * Is this an Activa Account
-	 * 
-	 * @return boolean
-	 */
 	public boolean isActiva()
 	{
 		return X_C_ElementValue.ACCOUNTTYPE_Asset.equals(getAccountType());
-	}	// isActive
+	}
 
-	/**
-	 * Is this a Passiva Account
-	 * 
-	 * @return boolean
-	 */
 	public boolean isPassiva()
 	{
 		String accountType = getAccountType();
 		return (X_C_ElementValue.ACCOUNTTYPE_Liability.equals(accountType)
 				|| X_C_ElementValue.ACCOUNTTYPE_OwnerSEquity.equals(accountType));
-	}	// isPassiva
-}	// Account
+	}
+}
