@@ -26,6 +26,7 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
 import de.metas.util.Services;
 
 /**
@@ -109,7 +110,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	public ArrayList<Fact> createFacts(final AcctSchema as)
 	{
 		// create Fact Header
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		final int AD_Org_ID = getBank_Org_ID();		// Bank Account Org
 
 		// Cash Transfer

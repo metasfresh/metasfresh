@@ -25,6 +25,7 @@ import org.compiere.model.I_M_Movement;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingMethod;
@@ -98,7 +99,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		setC_Currency_ID(as.getCurrencyId());
 
 		getDocLines().forEach(line -> createFactsForMovementLine(fact, line));

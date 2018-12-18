@@ -34,6 +34,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.inout.IInOutBL;
@@ -181,7 +182,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_SalesShipment(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		getDocLines().forEach(line -> createFacts_SalesShipmentLine(fact, line));
 		return ImmutableList.of(fact);
 	}
@@ -230,7 +231,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_SalesReturn(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		getDocLines().forEach(line -> createFacts_SalesReturnLine(fact, line));
 
 		return ImmutableList.of(fact);
@@ -280,7 +281,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		getDocLines().forEach(line -> createFacts_PurchasingReceiptLine(fact, line));
 
 		return ImmutableList.of(fact);
@@ -330,7 +331,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_PurchasingReturn(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		getDocLines().forEach(line -> createFacts_PurchasingReturnLine(fact, line));
 
 		return ImmutableList.of(fact);

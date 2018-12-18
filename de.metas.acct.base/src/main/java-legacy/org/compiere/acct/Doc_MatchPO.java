@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingMethod;
@@ -140,7 +141,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		//
 		// create Fact Header
 		final List<Fact> facts = new ArrayList<>();
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		facts.add(fact);
 		setC_Currency_ID(as.getCurrencyId());
 

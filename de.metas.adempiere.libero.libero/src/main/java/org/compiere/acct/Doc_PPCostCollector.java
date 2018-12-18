@@ -50,10 +50,11 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
-import de.metas.costing.AggregatedCostAmount;
 import de.metas.util.Services;
 
 /**
@@ -220,7 +221,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 */
 	protected Fact createFacts_MaterialReceipt(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 
 		final DocLine_CostCollector docLine = getLine();
 		final BigDecimal qtyReceived = getMovementQty();
@@ -266,7 +267,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 */
 	private Fact createFacts_ComponentIssue(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		final boolean isFloorStock = isFloorStock();
 
 		final DocLine_CostCollector docLine = getLine();
@@ -295,7 +296,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 */
 	private Fact createFacts_ActivityControl(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 
 		final DocLine_CostCollector docLine = getLine();
 		final BigDecimal qtyMoved = getMovementQty();
@@ -322,7 +323,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 */
 	private Fact createFacts_Variance(final AcctSchema as, final ProductAcctType varianceAcctType)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 
 		final DocLine_CostCollector docLine = getLine();
 		final MAccount debit = docLine.getAccount(varianceAcctType, as);

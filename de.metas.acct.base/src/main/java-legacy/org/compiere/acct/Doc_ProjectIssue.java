@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.logging.LogManager;
@@ -120,7 +121,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	public List<Fact> createFacts(final AcctSchema as)
 	{
 		// create Fact Header
-		Fact fact = new Fact(this, as, Fact.POST_Actual);
+		Fact fact = new Fact(this, as, PostingType.Actual);
 		setC_Currency_ID(as.getCurrencyId());
 
 		MProject project = new MProject(Env.getCtx(), m_issue.getC_Project_ID(), ITrx.TRXNAME_ThreadInherited);

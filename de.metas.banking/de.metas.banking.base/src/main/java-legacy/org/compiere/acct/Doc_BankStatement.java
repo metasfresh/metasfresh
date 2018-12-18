@@ -27,6 +27,7 @@ import org.compiere.model.MAccount;
 import org.compiere.util.Util;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
@@ -131,7 +132,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		final OrgId bankOrgId = getBankOrgId();	// Bank Account Organization
 
 		// Lines

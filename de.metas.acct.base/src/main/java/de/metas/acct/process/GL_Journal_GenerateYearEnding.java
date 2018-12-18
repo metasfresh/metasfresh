@@ -17,7 +17,6 @@ import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.X_C_ElementValue;
-import org.compiere.model.X_Fact_Acct;
 import org.compiere.model.X_GL_JournalBatch;
 import org.compiere.util.TimeUtil;
 
@@ -26,6 +25,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.PostingType;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -203,7 +203,7 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Client_ID, getAD_Client_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Org_ID, p_GL_JournalBatch.getAD_Org_ID())
 				.addBetweenFilter(I_Fact_Acct.COLUMN_DateAcct, p_DateFrom, p_DateTo)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, X_Fact_Acct.POSTINGTYPE_Actual)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, PostingType.Actual.getCode())
 				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, acctSchema.getId())
 				.addInSubQueryFilter(I_Fact_Acct.COLUMN_Account_ID, I_C_ElementValue.COLUMN_C_ElementValue_ID, expenseAndRevenueAccountsQuery)
 				//

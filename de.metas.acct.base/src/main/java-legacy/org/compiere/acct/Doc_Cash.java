@@ -28,6 +28,7 @@ import org.compiere.model.MCashBook;
 import org.compiere.util.Env;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
 import de.metas.money.CurrencyId;
 
 /**
@@ -141,7 +142,7 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 		}
 
 		// create Fact Header
-		Fact fact = new Fact(this, as, Fact.POST_Actual);
+		Fact fact = new Fact(this, as, PostingType.Actual);
 
 		// Header posting amt as Invoices and Transfer could be differenet currency
 		// CashAsset Total

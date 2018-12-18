@@ -48,6 +48,7 @@ import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
@@ -90,14 +91,15 @@ final class FactLine extends X_Fact_Acct
 	 */
 	private static final long serialVersionUID = 1287219868802190295L;
 
+	FactLine(final int AD_Table_ID, final int Record_ID)
+	{
+		this(AD_Table_ID, Record_ID, 0);
+	}
+
 	/**
-	 * Constructor
-	 *
-	 * @param ctx context
 	 * @param AD_Table_ID - Table of Document Source
 	 * @param Record_ID - Record of document
 	 * @param Line_ID - Optional line id
-	 * @param trxName transaction
 	 */
 	FactLine(final int AD_Table_ID, final int Record_ID, final int Line_ID)
 	{
@@ -1617,6 +1619,11 @@ final class FactLine extends X_Fact_Acct
 	public void setC_BPartner_ID(final BPartnerId bpartnerId)
 	{
 		super.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+	}
+
+	public void setPostingType(@NonNull final PostingType postingType)
+	{
+		super.setPostingType(postingType.getCode());
 	}
 
 }	// FactLine

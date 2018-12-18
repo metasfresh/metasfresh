@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -31,6 +31,7 @@ import org.compiere.model.X_GL_JournalLine;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.PostingType;
 import de.metas.util.Services;
 
 /**
@@ -62,15 +63,14 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		super(docBuilder);
 	}	// Doc_GL_Journal
 
-	/** Posting Type */
-	private String m_PostingType = null;
+	private PostingType postingType = null;
 	private AcctSchemaId acctSchemaId;
 
 	@Override
 	protected void loadDocumentDetails()
 	{
 		final I_GL_Journal journal = getModel(I_GL_Journal.class);
-		m_PostingType = journal.getPostingType();
+		postingType = PostingType.ofCode(journal.getPostingType());
 		acctSchemaId = AcctSchemaId.ofRepoId(journal.getC_AcctSchema_ID());
 
 		setDocLines(loadLines(journal));
@@ -268,7 +268,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		}
 
 		// create Fact Header
-		final Fact fact = new Fact(this, as, m_PostingType);
+		final Fact fact = new Fact(this, as, postingType);
 
 		// GLJ
 		if (getDocumentType().equals(DOCTYPE_GLJournal))

@@ -30,7 +30,6 @@ import org.adempiere.service.OrgId;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
-import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -42,6 +41,7 @@ import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.PostingType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
@@ -68,15 +68,16 @@ public final class Fact
 	 *
 	 * @param document pointer to document
 	 * @param acctSchema Account Schema to create accounts
-	 * @param defaultPostingType the default Posting type (actual,..) for this posting
+	 * @param postingType the default Posting type (actual,..) for this posting
 	 */
-	public Fact(@NonNull final Doc<?> document, @NonNull final AcctSchema acctSchema, @NonNull final String defaultPostingType)
+	public Fact(
+			@NonNull final Doc<?> document,
+			@NonNull final AcctSchema acctSchema,
+			@NonNull final PostingType postingType)
 	{
-		Check.assumeNotEmpty(defaultPostingType, "defaultPostingType not empty");
-
 		m_doc = document;
 		this.acctSchema = acctSchema;
-		m_postingType = defaultPostingType;
+		this.postingType = postingType;
 	}
 
 	// services
@@ -88,16 +89,7 @@ public final class Fact
 	private final AcctSchema acctSchema;
 
 	/** Posting Type */
-	private final String m_postingType;
-
-	/** Actual Balance Type */
-	public static final String POST_Actual = X_Fact_Acct.POSTINGTYPE_Actual;
-	/** Budget Balance Type */
-	public static final String POST_Budget = X_Fact_Acct.POSTINGTYPE_Budget;
-	/** Encumbrance Posting */
-	public static final String POST_Commitment = X_Fact_Acct.POSTINGTYPE_Commitment;
-	/** Encumbrance Posting */
-	public static final String POST_Reservation = X_Fact_Acct.POSTINGTYPE_Reservation;
+	private final PostingType postingType;
 
 	/** Is Converted */
 	private boolean m_converted = false;
@@ -234,17 +226,6 @@ public final class Fact
 	}   // createLine
 
 	/**
-	 * Is Posting Type
-	 *
-	 * @param PostingType - see POST_*
-	 * @return true if document is posting type
-	 */
-	public boolean isPostingType(String PostingType)
-	{
-		return m_postingType.equals(PostingType);
-	}   // isPostingType
-
-	/**
 	 * Is converted
 	 *
 	 * @return true if converted
@@ -274,9 +255,9 @@ public final class Fact
 		return getAcctSchema().getSchemaElements();
 	}
 
-	public final String getPostingType()
+	public final PostingType getPostingType()
 	{
-		return m_postingType;
+		return postingType;
 	}
 
 	/**************************************************************************
@@ -333,9 +314,9 @@ public final class Fact
 		log.trace("Diff=" + diff);
 
 		// new line
-		FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID(), 0);
+		FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 		line.setDocumentInfo(m_doc, null);
-		line.setPostingType(m_postingType);
+		line.setPostingType(getPostingType());
 
 		// Account
 		line.setAccount(acctSchema, acctSchemaGL.getSuspenseBalancingAcctId());
@@ -486,7 +467,7 @@ public final class Fact
 					// Create Balancing Entry
 					final FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID(), 0);
 					line.setDocumentInfo(m_doc, null);
-					line.setPostingType(m_postingType);
+					line.setPostingType(getPostingType());
 					// Amount & Account
 					final AcctSchema acctSchema = getAcctSchema();
 					final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
@@ -608,9 +589,9 @@ public final class Fact
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 		if (acctSchemaGL.isCurrencyBalancing())
 		{
-			line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID(), 0);
+			line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 			line.setDocumentInfo(m_doc, null);
-			line.setPostingType(m_postingType);
+			line.setPostingType(getPostingType());
 			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcctId());
 
 			// Amount
@@ -731,9 +712,9 @@ public final class Fact
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder("Fact[");
-		sb.append(m_doc.toString());
+		sb.append(m_doc);
 		sb.append(",").append(getAcctSchema());
-		sb.append(",PostType=").append(m_postingType);
+		sb.append(",PostType=").append(getPostingType());
 		sb.append("]");
 		return sb.toString();
 	}	// toString
@@ -1144,7 +1125,7 @@ public final class Fact
 			return fact.getAcctSchema();
 		}
 
-		private final String getPostingType()
+		private final PostingType getPostingType()
 		{
 			return fact.getPostingType();
 		}

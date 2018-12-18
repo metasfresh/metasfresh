@@ -46,6 +46,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.ICurrencyConversionContext;
@@ -306,7 +307,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 	private Fact createEmptyFact(final AcctSchema as)
 	{
-		return new Fact(this, as, Fact.POST_Actual);
+		return new Fact(this, as, PostingType.Actual);
 	}
 
 	/**
@@ -1073,7 +1074,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, line.getC_Invoice_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, as.getId())
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, null) // header lines like tax or total
-				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, Fact.POST_Actual)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, PostingType.Actual.getCode())
 				.orderBy()
 				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID)
 				.endOrderBy()
@@ -1385,7 +1386,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 	private Fact createEmptyFact(final AcctSchema as)
 	{
-		return new Fact(doc, as, Fact.POST_Actual);
+		return new Fact(doc, as, PostingType.Actual);
 	}
 
 	/**

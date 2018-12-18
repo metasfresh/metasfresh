@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.util.Services;
 
@@ -321,7 +322,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	private List<Fact> createFacts_SalesInvoice(final AcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
-		final Fact fact = new Fact(this, as, Fact.POST_Actual)
+		final Fact fact = new Fact(this, as, PostingType.Actual)
 				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 		facts.add(fact);
 
@@ -430,7 +431,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	private List<Fact> createFacts_SalesCreditMemo(final AcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		facts.add(fact);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
@@ -537,7 +538,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	private List<Fact> createFacts_PurchaseInvoice(final AcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		facts.add(fact);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
@@ -657,7 +658,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	private List<Fact> createFacts_PurchaseCreditMemo(final AcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		facts.add(fact);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);

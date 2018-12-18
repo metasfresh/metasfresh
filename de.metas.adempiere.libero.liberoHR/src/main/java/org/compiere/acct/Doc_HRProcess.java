@@ -35,6 +35,7 @@ import org.eevolution.model.X_HR_Concept_Acct;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.PostingType;
 import de.metas.util.Services;
 
 /**
@@ -103,7 +104,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 	@Override
 	public ArrayList<Fact> createFacts(AcctSchema as)
 	{
-		Fact fact = new Fact(this, as, Fact.POST_Actual);
+		Fact fact = new Fact(this, as, PostingType.Actual);
 		String sql = "SELECT m.HR_Concept_id, MAX(c.Name), SUM(m.Amount), MAX(c.AccountSign), MAX(CA.IsBalancing), e.AD_Org_ID, d.C_Activity_ID" // 1,2,3,4,5,6,7
 				+ " FROM HR_Movement m"
 				+ " INNER JOIN HR_Concept_Acct ca ON (ca.HR_Concept_ID=m.HR_Concept_ID AND ca.IsActive = 'Y')"

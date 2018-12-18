@@ -25,6 +25,7 @@ import org.compiere.model.MAccount;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.inventory.IInventoryDAO;
@@ -98,7 +99,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		getDocLines().forEach(line -> createFactsForInventoryLine(fact, line));
 
 		return ImmutableList.of(fact);
