@@ -187,7 +187,6 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		}
 
 		final I_C_OrderLine orderLine = docLine.getOrderLine();
-		factLine.setC_UOM_ID(orderLine.getPrice_UOM_ID());
 		factLine.setC_BPartner_ID(orderLine.getC_BPartner_ID());
 		factLine.setC_Activity_ID(orderLine.getC_Activity_ID());
 		factLine.setC_Campaign_ID(orderLine.getC_Campaign_ID());
