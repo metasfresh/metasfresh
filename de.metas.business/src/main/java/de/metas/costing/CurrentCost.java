@@ -41,7 +41,6 @@ public final class CurrentCost
 {
 	private final int id;
 
-	// private final CostSegment costSegment;
 	private final CostElement costElement;
 
 	@Getter(AccessLevel.PRIVATE)
@@ -57,7 +56,6 @@ public final class CurrentCost
 	@Builder
 	private CurrentCost(
 			final int id,
-			// @NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
 			@NonNull final CurrencyId currencyId,
 			final int precision,
@@ -72,7 +70,6 @@ public final class CurrentCost
 		Check.assume(precision >= 0, "precision >= 0");
 
 		this.id = id;
-		// this.costSegment = costSegment;
 		this.costElement = costElement;
 
 		this.currencyId = currencyId;
@@ -90,7 +87,6 @@ public final class CurrentCost
 	private CurrentCost(@NonNull final CurrentCost from)
 	{
 		this.id = from.id;
-		// this.costSegment = from.costSegment;
 		this.costElement = from.costElement;
 
 		this.currencyId = from.currencyId;
@@ -139,7 +135,7 @@ public final class CurrentCost
 		final Quantity newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
-			final CostAmount ownCostPrice = newAmt.divide(newQty.getAsBigDecimal(), precision, RoundingMode.HALF_UP);
+			final CostAmount ownCostPrice = newAmt.divide(newQty.getAsBigDecimal(), getPrecision(), RoundingMode.HALF_UP);
 			this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
 		}
 		currentQty = newQty;

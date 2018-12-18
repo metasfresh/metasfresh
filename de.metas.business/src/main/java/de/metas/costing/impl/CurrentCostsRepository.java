@@ -15,6 +15,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
@@ -45,7 +46,7 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
+import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -240,32 +241,30 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		InterfaceWrapperHelper.save(costRecord);
 	}
 
-	private CurrentCost toCurrentCost(final I_M_Cost costRecord)
+	private CurrentCost toCurrentCost(final I_M_Cost record)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-		final ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
-		final I_C_UOM uom = productBL.getStockingUOM(productId);
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(record.getC_UOM_ID());
 
-		// final CostSegment costSegment = extractCostSegment(costRecord);
-
-		final CostElementId costElementId = CostElementId.ofRepoId(costRecord.getM_CostElement_ID());
+		final CostElementId costElementId = CostElementId.ofRepoId(record.getM_CostElement_ID());
 		final CostElement costElement = costElementRepo.getById(costElementId);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRecord.getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
 		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final int costingPrecision = acctSchema.getCosting().getCostingPrecision();
+
+		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 
 		return CurrentCost.builder()
-				.id(costRecord.getM_Cost_ID())
-				// .costSegment(costSegment)
+				.id(record.getM_Cost_ID())
 				.costElement(costElement)
-				.currencyId(acctSchema.getCurrencyId())
-				.precision(acctSchema.getCosting().getCostingPrecision())
+				.currencyId(currencyId)
+				.precision(costingPrecision)
 				.uom(uom)
-				.ownCostPrice(costRecord.getCurrentCostPrice())
-				.componentsCostPrice(costRecord.getCurrentCostPriceLL())
-				.currentQty(costRecord.getCurrentQty())
-				.cumulatedAmt(costRecord.getCumulatedAmt())
-				.cumulatedQty(costRecord.getCumulatedQty())
+				.ownCostPrice(record.getCurrentCostPrice())
+				.componentsCostPrice(record.getCurrentCostPriceLL())
+				.currentQty(record.getCurrentQty())
+				.cumulatedAmt(record.getCumulatedAmt())
+				.cumulatedQty(record.getCumulatedQty())
 				.build();
 	}
 
