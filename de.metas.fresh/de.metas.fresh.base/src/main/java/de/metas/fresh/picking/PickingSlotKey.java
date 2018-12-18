@@ -13,12 +13,12 @@ package de.metas.fresh.picking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -58,6 +57,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * Picking Slot Terminal Key
@@ -318,9 +318,9 @@ public class PickingSlotKey extends TerminalKey
 
 	/**
 	 * Checks if this picking slot has an open Handling Unit and it's storage is NOT empty.
-	 * 
+	 *
 	 * If there is no open HUs on this picking slot, this method returns false.
-	 * 
+	 *
 	 * @return true if this picking slot has an open HU which is NOT empty.
 	 */
 	public boolean hasOpenNotEmptyHU()
@@ -349,10 +349,10 @@ public class PickingSlotKey extends TerminalKey
 
 	/**
 	 * Gets total capacity of the HU which is currently open this picking slot.
-	 * 
+	 *
 	 * @param product
 	 * @param uom
-	 * 
+	 *
 	 * @return
 	 *         <ul>
 	 *         <li>total capacity definition
@@ -403,7 +403,7 @@ public class PickingSlotKey extends TerminalKey
 			final String warehouseName = truncatedString(pickingSlot.getM_Warehouse().getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
-					.append(Util.maskHTML(warehouseName))
+					.append(StringUtils.maskHTML(warehouseName))
 					.append("</font>");
 		}
 
@@ -412,7 +412,7 @@ public class PickingSlotKey extends TerminalKey
 			final String bpName = truncatedString(pickingSlot.getC_BPartner().getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
-					.append(Util.maskHTML(bpName))
+					.append(StringUtils.maskHTML(bpName))
 					.append("</font>");
 		}
 
@@ -471,7 +471,7 @@ public class PickingSlotKey extends TerminalKey
 
 			final String piName = handlingUnitsBL.getEffectivePIVersion(hu).getM_HU_PI().getName();
 			sb.append("<font size=\"3\">")
-					.append(Util.maskHTML(piName))
+					.append(StringUtils.maskHTML(piName))
 					.append("</font>");
 
 			final String huValue = hu.getValue();

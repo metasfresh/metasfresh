@@ -12,26 +12,56 @@ Here come the actual release notes:
 
 # metasfresh 5.85
 # Features
+* metasfresh
+  * [#4809](https://github.com/metasfresh/metasfresh/pull/4809) Make contact persons's location editable under circumstances
+  * [#4823](https://github.com/metasfresh/metasfresh/issues/4823) CSV import BP URL
+  * [#4825](https://github.com/metasfresh/metasfresh/issues/4825) invoice and async improvements
+  * [#4828](https://github.com/metasfresh/metasfresh/issues/4828) Extend OLCand REST API to allow not to create products on the fly
+  * [#4832](https://github.com/metasfresh/metasfresh/issues/4832) Extend Datenaustausch-Config and XML modding
+
+* metasfresh-webui-frontend
+  * [#2097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2097) Lookup and Dropdown: Empty list entry for non mandatory
+  * [#2098](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2098) extract the edit-location code into a command
 
 # Fixes
+* metasfresh
+  * [#4679](https://github.com/metasfresh/metasfresh/issues/4679) Solve print info UI performance problem
+  * [#4805](https://github.com/metasfresh/metasfresh/issues/4805) ATP not correct after partial material receipt
+  * [#4827](https://github.com/metasfresh/metasfresh/issues/4827) Forward C_OLCand POReference to C_Invoice_Candidate
+  * [#4829](https://github.com/metasfresh/metasfresh/issues/4829) Add UQ index for InternalName and Price systme in Price list
+
+* metasfresh-webui-api
+  * [#1114](https://github.com/metasfresh/metasfresh-webui-api/issues/1114) webui frontend does nothing in latest chrome
+
 * metasfresh-webui-frontend
   * [#1253](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1253) Problem with composed fields with non-mandatory elements
     * Adds None Option to Lookup widget dropdowns, that alows o overwrite already set a selection in a non mandatory field.
-
+  * [#2047](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2047) Run QR code action: sometimes ESC does not work
+  * [#2103](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2103) Chrome feature overwrites country selection in Lookup
+  * [#2109](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2109) Chrome not recognized properly
+  
 # metasfresh 5.84
 # Features
 * metasfresh-webui-frontend
   * [#2077](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2077) Make references cypress friendly
+    * Now returning the internal name via API to make references more cypress friendly-
   * [#2080](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2080) Support to create C_Location via cypress
+    * Improvement that allows to creates Locations via Cypress Tests.
   * [#2082](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2082) Show tab description as tool tip
+    * New Feature that now shows Tab Descriptions as tooltip when hovering.
   * [#2086](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2086) Individual Logo shall not have hashsequence added to name
+    * Removes the hash sequence from individual Logo Name, now allowing to replace the metasfresh Logo automatically via CI Build.
   * [#2090](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2090) Update to Node.js 11
+    * Updates frontend to Node.js 11.
 
 # Fixes
 * metasfresh
   * [#4811](https://github.com/metasfresh/metasfresh/issues/4811) Price using BOM Line's attribute is not calculated correctly
+    * Fixes the new BOM Component Attribute Pricec alculation.
   * [#4819](https://github.com/metasfresh/metasfresh/issues/4819) Payment allocation posting error for currency gain/loss and discount/writeoff case
+    * Bugfix for the posting of Payment Allocation cornercase with currency gain/ loss involved.
   * [#4821](https://github.com/metasfresh/metasfresh/issues/4821) forum-datenaustausch.ch export XML validation errors
+    * Fixes the forum-datenaustuasch.ch validation errors.
 
 * metasfresh-webui-frontend
   * [#2064](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2064) Warning: Failed prop type: Invalid prop `logged` of type `string` supplied to `Login`, expected `boolean`

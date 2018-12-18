@@ -82,8 +82,11 @@ public class AvailableToPromiseRepository
 
 		final List<I_MD_Candidate_ATP_QueryResult> atpRecords = dbQuery.list()
 				.stream()
+				// records with dedicated bPartnerId first
+				// latest date first
+				// biggest seqNo first
 				.sorted(Comparator
-						.comparing(compareByWhetherRecordHasBPartnerId) // note that true > false
+						.comparing(compareByWhetherRecordHasBPartnerId)
 						.thenComparing(I_MD_Candidate_ATP_QueryResult::getDateProjected)
 						.thenComparing(I_MD_Candidate_ATP_QueryResult::getSeqNo) // if dateProjected is equal, then SeqNo makes the difference
 						.reversed())
@@ -143,7 +146,7 @@ public class AvailableToPromiseRepository
 				.warehouseId(stockRecord.getM_Warehouse_ID())
 				.storageAttributesKey(AttributesKey.ofString(stockRecord.getStorageAttributesKey()))
 				.qty(stockRecord.getQty())
-				.date(TimeUtil.asLocalDateTime(stockRecord.getDateProjected()))
+				.date(TimeUtil.asInstant(stockRecord.getDateProjected()))
 				.seqNo(stockRecord.getSeqNo())
 				.build();
 	}

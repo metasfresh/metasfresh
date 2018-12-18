@@ -13,7 +13,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
@@ -31,7 +30,7 @@ import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -460,7 +459,7 @@ public class ESRDataLoaderUtil
 
 		final StringBuilder sb = new StringBuilder();
 		sb.append(renderenNoComponents[0]);
-		sb.append(Util.lpadZero(renderenNoComponents[1], 6, "middle section of " + renderedPostAccountNo));
+		sb.append(StringUtils.lpadZero(renderenNoComponents[1], 6, "middle section of " + renderedPostAccountNo));
 		sb.append(renderenNoComponents[2]);
 
 		return sb.toString();

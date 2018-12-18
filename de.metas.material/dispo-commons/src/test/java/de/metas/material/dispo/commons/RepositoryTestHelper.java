@@ -9,17 +9,18 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo.Operator;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import mockit.Expectations;
@@ -69,7 +70,8 @@ public class RepositoryTestHelper
 								.clientId(CLIENT_ID)
 								.orgId(ORG_ID)
 								.materialDescriptor(materialDescriptorOfStockCandidate)
-								.build());
+								.build())
+				.getCandidate();
 
 		final MaterialDescriptor laterMaterialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
@@ -85,16 +87,19 @@ public class RepositoryTestHelper
 								.clientId(CLIENT_ID)
 								.orgId(ORG_ID)
 								.materialDescriptor(laterMaterialDescriptor)
-								.build());
+								.build())
+				.getCandidate();
 	}
 
-	public CandidatesQuery mkQueryForStockUntilDate(@NonNull final Date date)
+	public CandidatesQuery mkQueryForStockUntilDate(@NonNull final Instant date)
 	{
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(WAREHOUSE_ID)
-				.date(date)
-				.dateOperator(DateOperator.BEFORE_OR_AT)
+				.timeRangeEnd(DateAndSeqNo.builder()
+						.date(date)
+						.operator(Operator.INCLUSIVE)
+						.build())
 				.build();
 
 		return CandidatesQuery.builder()
@@ -103,13 +108,15 @@ public class RepositoryTestHelper
 				.build();
 	}
 
-	public CandidatesQuery mkQueryForStockFromDate(final Date date)
+	public CandidatesQuery mkQueryForStockFromDate(final Instant date)
 	{
 		final MaterialDescriptorQuery materialDescriptiorQuery = MaterialDescriptorQuery.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(WAREHOUSE_ID)
-				.date(date)
-				.dateOperator(DateOperator.AT_OR_AFTER)
+				.timeRangeStart(DateAndSeqNo.builder()
+						.date(date)
+						.operator(Operator.INCLUSIVE)
+						.build())
 				.build();
 
 		return CandidatesQuery.builder()

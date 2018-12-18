@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BalanceType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BfsDataType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
@@ -232,13 +233,21 @@ public class Invoice440ToCrossVersionModelTool
 			@NonNull final RequestType requestType,
 			@NonNull final XmlRequestBuilder xRequest)
 	{
+		final XmlMode mode = extractXmlMode(requestType);
+
 		xRequest.language(requestType.getLanguage())
-				.modus(requestType.getModus())
+				.modus(mode)
 				.validationStatus(requestType.getValidationStatus());
 
 		xRequest.processing(createXmlProcessing(requestType.getProcessing()));
 
 		xRequest.payload(createXmlPayload(requestType.getPayload()));
+	}
+
+	private XmlMode extractXmlMode(final RequestType requestType)
+	{
+		// the string is hardcoded in the generated jaxb code.
+		return "production".equals(requestType.getModus()) ? XmlMode.PRODUCTION : XmlMode.TEST;
 	}
 
 	private XmlProcessing createXmlProcessing(@NonNull final ProcessingType processingType)

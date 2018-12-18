@@ -7,6 +7,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -49,16 +50,16 @@ public class DD_OrderFireMaterialEvent
 		events.forEach(event -> materialEventService.postEventAfterNextCommit(event));
 	}
 
-	private DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrder)
+	private DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrderRecord)
 	{
 		final DDOrderBuilder ddOrderPojoBuilder = DDOrder.builder()
-				.datePromised(ddOrder.getDatePromised())
-				.ddOrderId(ddOrder.getDD_Order_ID())
-				.docStatus(ddOrder.getDocStatus())
-				.orgId(ddOrder.getAD_Org_ID())
-				.plantId(ddOrder.getPP_Plant_ID())
-				.productPlanningId(ddOrder.getPP_Product_Planning_ID())
-				.shipperId(ddOrder.getM_Shipper_ID());
+				.datePromised(TimeUtil.asInstant(ddOrderRecord.getDatePromised()))
+				.ddOrderId(ddOrderRecord.getDD_Order_ID())
+				.docStatus(ddOrderRecord.getDocStatus())
+				.orgId(ddOrderRecord.getAD_Org_ID())
+				.plantId(ddOrderRecord.getPP_Plant_ID())
+				.productPlanningId(ddOrderRecord.getPP_Product_Planning_ID())
+				.shipperId(ddOrderRecord.getM_Shipper_ID());
 		return ddOrderPojoBuilder;
 	}
 

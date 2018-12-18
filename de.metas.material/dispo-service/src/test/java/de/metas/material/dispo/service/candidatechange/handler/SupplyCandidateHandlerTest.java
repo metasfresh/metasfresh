@@ -8,6 +8,7 @@ import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -85,7 +86,7 @@ public class SupplyCandidateHandlerTest
 				candidateRepository,
 				candidateRepositoryWriteService);
 
-		supplyCandiateHandler = new SupplyCandidateHandler(candidateRepository, candidateRepositoryWriteService, stockCandidateService);
+		supplyCandiateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 	}
 
 	@Test
@@ -116,7 +117,9 @@ public class SupplyCandidateHandlerTest
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(qty);
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(qty); // ..because there was no older record, the "delta" we provided is the current quantity
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
-		assertThat(supplyRecord.getSeqNo() - 1).isEqualTo(stockRecord.getSeqNo()); // when we sort by SeqNo, the stock needs to be first
+
+		// note that now, the stock record shall have the same SeqNo as it's "actual" record
+		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 	}
 
 	@Test
@@ -151,7 +154,8 @@ public class SupplyCandidateHandlerTest
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(qty); // ..because there was no older record, the "delta" we provided is the current quantity
 			assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
 
-			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
+			// note that now, the stock record shall have the same SeqNo as it's "actual" record
+			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 		};
 
 		doTest.accept(candidatee); // 1st invocation
@@ -190,11 +194,12 @@ public class SupplyCandidateHandlerTest
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(exptectedQty); // ..because there was no older record, the "delta" we provided is the current quantity
 			assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
 
-			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
+			// note that now, the stock record shall have the same SeqNo as it's "actual" record
+			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 		};
 
-		doTest.accept(candidatee, qty); // 1st invocation
-		doTest.accept(candidatee.withQuantity(qty.add(BigDecimal.ONE)), qty.add(BigDecimal.ONE)); // 2nd invocation, same candidate
+		doTest.accept(candidatee, qty/*exptectedQty*/); // 1st invocation
+		doTest.accept(candidatee.withQuantity(qty.add(ONE)), qty.add(ONE)/*exptectedQty*/); // 2nd invocation, same candidate
 	}
 
 	/**
@@ -245,7 +250,8 @@ public class SupplyCandidateHandlerTest
 		assertThat(supplyRecord.getMD_Candidate_BusinessCase()).isEqualTo(CandidateBusinessCase.PRODUCTION.toString());
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(ELEVEN.add(TWENTY_THREE));
 
-		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
+		// note that now, the stock record shall have the same SeqNo as it's "actual" record
+		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 	}
 
 	@Test
@@ -315,7 +321,7 @@ public class SupplyCandidateHandlerTest
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
-						.date(SystemTime.asTimestamp())
+						.date(SystemTime.asInstant())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(BigDecimal.TEN)
 						.build())

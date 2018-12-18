@@ -16,6 +16,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
@@ -136,11 +137,13 @@ public class DDOrderAdvisedHandler
 
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
 
+		final DateAndSeqNo atTime = DateAndSeqNo.atTimeNoSeqNo(computeDate(ddOrderEvent, ddOrderLine, candidateType));
+
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(ddOrderLine.getProductDescriptor().getProductId())
 				.storageAttributesKey(ddOrderLine.getProductDescriptor().getStorageAttributesKey())
 				.warehouseId(computeWarehouseId(ddOrderEvent, candidateType))
-				.date(computeDate(ddOrderEvent, ddOrderLine, candidateType))
+				.atTime(atTime)
 				.build();
 
 		final DDOrder ddOrder = ddOrderAdvisedEvent.getDdOrder();

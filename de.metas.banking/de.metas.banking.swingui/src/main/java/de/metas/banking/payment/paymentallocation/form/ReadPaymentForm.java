@@ -56,6 +56,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.LoggerLoggable;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.StatusBar;
 import org.compiere.apps.form.FormFrame;
@@ -93,6 +94,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.form.CreateInvoiceCandidateDialog;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -524,13 +526,16 @@ final class ReadPaymentForm
 				final boolean storeInvoicesInResult = true;
 				final IInvoiceGenerateResult existingResult = invoiceCandBL.createInvoiceGenerateResult(storeInvoicesInResult);
 
-				final IInvoiceGenerateResult result = invoiceCandBL.generateInvoices()
-						.setContext(ctx, localTrxName)
-						.setLoggable(LoggerLoggable.of(logger, Level.INFO))
-						.setIgnoreInvoiceSchedule(true) // ignoring the schedule because we assume that the iterator will only contain appropriate candidates.
-						.setCollector(existingResult)
-						.setInvoicingParams(invoicingParams)
-						.generateInvoices(candidates.iterator());
+				final IInvoiceGenerateResult result;
+				try (final IAutoCloseable temporarySetLoggable = Loggables.temporarySetLoggable(LoggerLoggable.of(logger, Level.INFO)))
+				{
+					result = invoiceCandBL.generateInvoices()
+							.setContext(ctx, localTrxName)
+							.setIgnoreInvoiceSchedule(true) // ignoring the schedule because we assume that the iterator will only contain appropriate candidates.
+							.setCollector(existingResult)
+							.setInvoicingParams(invoicingParams)
+							.generateInvoices(candidates.iterator());
+				}
 				//
 				// Create payment requests for each given invoice out of the payment request template
 				for (final I_C_Invoice invoice : result.getC_Invoices())
@@ -746,7 +751,7 @@ final class ReadPaymentForm
 
 	/**
 	 * task 09643
-	 * 
+	 *
 	 * @returns the latest accounting date of all selected invoice candidates.
 	 */
 	@Override

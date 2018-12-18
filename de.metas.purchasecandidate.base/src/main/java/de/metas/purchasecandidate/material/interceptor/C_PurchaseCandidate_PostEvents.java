@@ -6,6 +6,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -148,7 +149,7 @@ public class C_PurchaseCandidate_PostEvents
 						productId);
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.date(purchaseCandidateRecord.getPurchaseDatePromised())
+				.date(TimeUtil.asInstant(purchaseCandidateRecord.getPurchaseDatePromised()))
 				.warehouseId(purchaseCandidateRecord.getM_WarehousePO_ID())
 				.productDescriptor(productDescriptor)
 				// .customerId() we don't have a customer

@@ -546,11 +546,6 @@ public class MOrderLine extends X_C_OrderLine
 			return new AdempiereException("@CannotChangeWarehouse@ @QtyInvoiced@=" + getQtyInvoiced())
 					.throwOrLogSevere(throwEx, log);
 		}
-		if (getQtyReserved().signum() != 0)
-		{
-			return new AdempiereException("@CannotChangeWarehouse@ @QtyReserved@=" + getQtyReserved())
-					.throwOrLogSevere(throwEx, log);
-		}
 		// We can change
 		return true;
 	}	// canChangeWarehouse

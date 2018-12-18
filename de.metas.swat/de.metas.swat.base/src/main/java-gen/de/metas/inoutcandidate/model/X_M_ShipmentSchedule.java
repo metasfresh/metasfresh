@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1674008725L;
+	private static final long serialVersionUID = 1186727079L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -259,43 +259,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
-	}
-
-	/** Set Standort abw..
-		@param C_BP_Location_Override_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
-	}
-
-	/** Get Standort abw..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Override_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
@@ -435,6 +398,43 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getC_BPartner_Vendor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Vendor_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
+	}
+
+	/** Set Standort abw..
+		@param C_BP_Location_Override_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
+	{
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
+	}
+
+	/** Get Standort abw..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -683,25 +683,25 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DeliveryDate_Override);
 	}
 
-//	/** 
-//	 * DeliveryRule AD_Reference_ID=151
-//	 * Reference name: C_Order DeliveryRule
-//	 */
-//	public static final int DELIVERYRULE_AD_Reference_ID=151;
-//	/** AfterReceipt = R */
-//	public static final String DELIVERYRULE_AfterReceipt = "R";
-//	/** Availability = A */
-//	public static final String DELIVERYRULE_Availability = "A";
-//	/** CompleteLine = L */
-//	public static final String DELIVERYRULE_CompleteLine = "L";
-//	/** CompleteOrder = O */
-//	public static final String DELIVERYRULE_CompleteOrder = "O";
-//	/** Force = F */
-//	public static final String DELIVERYRULE_Force = "F";
-//	/** Manual = M */
-//	public static final String DELIVERYRULE_Manual = "M";
-//	/** MitNaechsterAbolieferung = S */
-//	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
+	/** 
+	 * DeliveryRule AD_Reference_ID=151
+	 * Reference name: C_Order DeliveryRule
+	 */
+	public static final int DELIVERYRULE_AD_Reference_ID=151;
+	/** AfterReceipt = R */
+	public static final String DELIVERYRULE_AfterReceipt = "R";
+	/** Availability = A */
+	public static final String DELIVERYRULE_Availability = "A";
+	/** CompleteLine = L */
+	public static final String DELIVERYRULE_CompleteLine = "L";
+	/** CompleteOrder = O */
+	public static final String DELIVERYRULE_CompleteOrder = "O";
+	/** Force = F */
+	public static final String DELIVERYRULE_Force = "F";
+	/** Manual = M */
+	public static final String DELIVERYRULE_Manual = "M";
+	/** MitNaechsterAbolieferung = S */
+	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
 		Definiert die zeitliche Steuerung von Lieferungen
@@ -722,23 +722,23 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return (java.lang.String)get_Value(COLUMNNAME_DeliveryRule);
 	}
 
-//	/** 
-//	 * DeliveryRule_Override AD_Reference_ID=540009
-//	 * Reference name: M_ShipmentSchedule DeliveryRule
-//	 */
-//	public static final int DELIVERYRULE_OVERRIDE_AD_Reference_ID=540009;
-//	/** Verfügbarkeit = A */
-//	public static final String DELIVERYRULE_OVERRIDE_Verfuegbarkeit = "A";
-//	/** Erzwungen = F */
-//	public static final String DELIVERYRULE_OVERRIDE_Erzwungen = "F";
-//	/** Position komplett = L */
-//	public static final String DELIVERYRULE_OVERRIDE_PositionKomplett = "L";
-//	/** Manuell = M */
-//	public static final String DELIVERYRULE_OVERRIDE_Manuell = "M";
-//	/** After Receipt = R */
-//	public static final String DELIVERYRULE_OVERRIDE_AfterReceipt = "R";
-//	/** Mit nächster Abolieferung = S */
-//	public static final String DELIVERYRULE_OVERRIDE_MitNaechsterAbolieferung = "S";
+	/** 
+	 * DeliveryRule_Override AD_Reference_ID=540009
+	 * Reference name: M_ShipmentSchedule DeliveryRule
+	 */
+	public static final int DELIVERYRULE_OVERRIDE_AD_Reference_ID=540009;
+	/** Verfügbarkeit = A */
+	public static final String DELIVERYRULE_OVERRIDE_Verfuegbarkeit = "A";
+	/** Erzwungen = F */
+	public static final String DELIVERYRULE_OVERRIDE_Erzwungen = "F";
+	/** Position komplett = L */
+	public static final String DELIVERYRULE_OVERRIDE_PositionKomplett = "L";
+	/** Manuell = M */
+	public static final String DELIVERYRULE_OVERRIDE_Manuell = "M";
+	/** After Receipt = R */
+	public static final String DELIVERYRULE_OVERRIDE_AfterReceipt = "R";
+	/** Mit nächster Abolieferung = S */
+	public static final String DELIVERYRULE_OVERRIDE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart abw..
 		@param DeliveryRule_Override Lieferart abw.	  */
 	@Override
@@ -846,10 +846,10 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_HoldingFee = "HF";
 	/** Subscription = SU */
 	public static final String DOCSUBTYPE_Subscription = "SU";
-	/** NB - Mengendifferenz = AQ */
-	public static final String DOCSUBTYPE_NB_Mengendifferenz = "AQ";
-	/** NB - Preisdifferenz = AP */
-	public static final String DOCSUBTYPE_NB_Preisdifferenz = "AP";
+	/** AQ = AQ */
+	public static final String DOCSUBTYPE_AQ = "AQ";
+	/** AP = AP */
+	public static final String DOCSUBTYPE_AP = "AP";
 	/** GS - Lieferdifferenz = CQ */
 	public static final String DOCSUBTYPE_GS_Lieferdifferenz = "CQ";
 	/** GS - Preisdifferenz = CR */
@@ -878,6 +878,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_Rueckverguetungsrechnung = "RI";
 	/** Rückvergütungsgutschrift = RC */
 	public static final String DOCSUBTYPE_Rueckverguetungsgutschrift = "RC";
+	/** Healthcare_CH-GM = GM */
+	public static final String DOCSUBTYPE_Healthcare_CH_GM = "GM";
+	/** Healthcare_CH-EA = EA */
+	public static final String DOCSUBTYPE_Healthcare_CH_EA = "EA";
+	/** Healthcare_CH-KV = KV */
+	public static final String DOCSUBTYPE_Healthcare_CH_KV = "KV";
 	/** Set Doc Sub Type.
 		@param DocSubType 
 		Document Sub Type

@@ -1,7 +1,7 @@
 package de.metas.material.dispo.commons.repository.atp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import org.compiere.util.Util.ArrayKey;
 
@@ -25,15 +25,14 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 @Value
 public final class AddToResultGroupRequest
@@ -43,7 +42,7 @@ public final class AddToResultGroupRequest
 	AttributesKey storageAttributesKey;
 	int bpartnerId;
 	BigDecimal qty;
-	LocalDateTime date;
+	Instant date;
 	int seqNo; // needed to disambiguated requests with the same date
 
 	@Builder
@@ -53,7 +52,7 @@ public final class AddToResultGroupRequest
 			@NonNull final AttributesKey storageAttributesKey,
 			final int bpartnerId,
 			@NonNull final BigDecimal qty,
-			@NonNull final LocalDateTime date,
+			@NonNull final Instant date,
 			final int seqNo)
 	{
 		this.warehouseId = Check.assumeGreaterThanZero(warehouseId, "warehouseId");
@@ -74,6 +73,10 @@ public final class AddToResultGroupRequest
 
 	public DateAndSeqNo getDateAndSeqNo()
 	{
-		return new DateAndSeqNo(date, seqNo);
+		return DateAndSeqNo
+				.builder()
+				.date(date)
+				.seqNo(seqNo)
+				.build();
 	}
 }

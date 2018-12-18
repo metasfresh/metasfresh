@@ -422,7 +422,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout);
 			for (final I_M_InOutLine inoutLine : inoutLines)
 			{
-				final List<I_M_HU_Assignment> huAssignments = huAssignmentDAO.retrieveHUAssignmentsForModel(inoutLine);
+				final List<I_M_HU_Assignment> huAssignments = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(inoutLine);
 				for (final I_M_HU_Assignment huAssignment : huAssignments)
 				{
 					final int huId = huAssignment.getM_HU_ID();
