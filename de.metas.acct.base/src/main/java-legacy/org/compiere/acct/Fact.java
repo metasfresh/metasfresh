@@ -465,7 +465,7 @@ public final class Fact
 				if (!difference.isZeroBalance())
 				{
 					// Create Balancing Entry
-					final FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID(), 0);
+					final FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 					line.setDocumentInfo(m_doc, null);
 					line.setPostingType(getPostingType());
 					// Amount & Account
