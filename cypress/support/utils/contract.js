@@ -5,22 +5,22 @@ export function createAndCompleteTransition(transitionName, extensionType, nextC
         const one = '{selectall}{backspace}1';
         cy.visit('/window/540120/NEW');
         cy.writeIntoStringField('Name', transitionName);
-        cy.writeIntoLookupListField('C_Calendar_Contract_ID', 'Buch', 'Buchf');
+        cy.selectInListField('C_Calendar_Contract_ID', 'Buch', 'Buchf');
         cy.writeIntoStringField('TermDuration', one); // note: there seems to be some bug somewhere, just '1' dos not work
-        cy.writeIntoLookupListField('TermDurationUnit', 'J', 'Jahr');
+        cy.selectInListField('TermDurationUnit', 'J', 'Jahr');
         cy.writeIntoStringField('TermOfNotice', one);
-        cy.writeIntoLookupListField('TermOfNoticeUnit', 'Mo', 'Monat');
+        cy.selectInListField('TermOfNoticeUnit', 'Mo', 'Monat');
         cy.writeIntoStringField('DeliveryInterval', one);
-        cy.writeIntoLookupListField('DeliveryIntervalUnit', 'Mo', 'Monat');
+        cy.selectInListField('DeliveryIntervalUnit', 'Mo', 'Monat');
         if (extensionType) {
             cy.selectInListField('ExtensionType', 'Extend contract for all periods');
         }
         if (nextConditionsName) {
-            cy.writeIntoLookupListField('C_Flatrate_Conditions_Next_ID', nextConditionsName, nextConditionsName);
+            cy.selectInListField('C_Flatrate_Conditions_Next_ID', nextConditionsName, nextConditionsName);
         }
         cy.pressAddNewButton();
         cy.writeIntoStringField('DeadLine', '0');
-        cy.writeIntoLookupListField('DeadLineUnit', 'T', 'Tag');
+        cy.selectInListField('DeadLineUnit', 'T', 'Tag');
         cy.selectInListField('Action', 'Statuswechsel');
         cy.selectInListField('ContractStatus', 'Gekündigt');
         cy.pressDoneButton();
@@ -36,8 +36,8 @@ export function createAndCompleteRefundPercentConditions(conditionsName, transit
 
         cy.visit('/window/540113/NEW');
         cy.writeIntoStringField('Name', conditionsName);
-        cy.writeIntoLookupListField('Type_Conditions', conditionsType, conditionsType);
-        cy.writeIntoLookupListField('C_Flatrate_Transition_ID', transitionName, transitionName);
+        cy.selectInListField('Type_Conditions', conditionsType, conditionsType);
+        cy.selectInListField('C_Flatrate_Transition_ID', transitionName, transitionName);
 
         cy.selectTab('C_Flatrate_RefundConfig');
 
@@ -57,7 +57,7 @@ function createPercentConfig(refundMode, minQty, percent)
     cy.writeIntoLookupListField('M_Product_ID', 'P002737', 'Convenience Salat 250g_P002737');
     cy.writeIntoStringField('MinQty', `{selectall}{backspace}${minQty}`);
     cy.writeIntoStringField('RefundPercent', `{selectall}{backspace}${percent}`);
-    cy.writeIntoLookupListField('C_InvoiceSchedule_ID', 'jä', 'jährlich');
+    cy.selectInListField('C_InvoiceSchedule_ID', 'jä', 'jährlich');
     cy.pressDoneButton();
 }
 
@@ -69,8 +69,8 @@ export function createAndCompleteRefundAmountConditions(conditionsName, transiti
 
         cy.visit('/window/540113/NEW');
         cy.writeIntoStringField('Name', conditionsName);
-        cy.writeIntoLookupListField('Type_Conditions', conditionsType, conditionsType);
-        cy.writeIntoLookupListField('C_Flatrate_Transition_ID', transitionName, transitionName);
+        cy.selectInListField('Type_Conditions', conditionsType, conditionsType);
+        cy.selectInListField('C_Flatrate_Transition_ID', transitionName, transitionName);
 
         cy.selectTab('C_Flatrate_RefundConfig');
 
@@ -90,6 +90,6 @@ function createAmountConfig(refundMode, minQty, amount)
     cy.writeIntoLookupListField('M_Product_ID', 'P002737', 'Convenience Salat 250g_P002737');
     cy.writeIntoStringField('MinQty', `{selectall}{backspace}${minQty}`);
     cy.writeIntoStringField('RefundAmt', `{selectall}{backspace}${amount}`);
-    cy.writeIntoLookupListField('C_InvoiceSchedule_ID', 'jä', 'jährlich');
+    cy.selectInListField('C_InvoiceSchedule_ID', 'jä', 'jährlich');
     cy.pressDoneButton();
 }

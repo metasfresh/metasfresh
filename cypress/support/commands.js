@@ -145,7 +145,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
   });
 
 Cypress.Commands.add(
-  'writeIntoLookupField',
+  'writeIntoLookupListField',
   (fieldName, partialValue, listValue) => {
     describe('Enter value into lookup list field', function() {
       cy.get(`#lookup_${fieldName}`)
@@ -337,7 +337,7 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
 });
 
 /*
- * This command runs a quick actions. If second parameter is truthy, the default action will be executed.
+ * This command runs a quick actions. If the second parameter is truthy, the default action will be executed.
  */
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {

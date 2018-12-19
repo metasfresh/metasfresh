@@ -17,12 +17,12 @@ it('Serial letter', function() {
 //    describe('Create print format and doc outbound log', function() {
             cy.visit('/window/240/NEW');
             cy.writeIntoStringField('Name', printFormatName);
-            cy.writeIntoLookupField('AD_Table_ID', 'Letter', 'Letter');
-            cy.writeIntoLookupField('JasperProcess_ID', 'Serial Letter', 'Serial Letter');
+            cy.writeIntoLookupListField('AD_Table_ID', 'Letter', 'Letter');
+            cy.writeIntoLookupListField('JasperProcess_ID', 'Serial Letter', 'Serial Letter');
 
             cy.visit('/window/540173/NEW');
-            cy.writeIntoLookupField('AD_Table_ID', 'Letter', 'Letter');
-            cy.writeIntoLookupField('AD_PrintFormat_ID', printFormatName, printFormatName);
+            cy.writeIntoLookupListField('AD_Table_ID', 'Letter', 'Letter');
+            cy.writeIntoLookupListField('AD_PrintFormat_ID', printFormatName, printFormatName);
             cy.clickOnCheckBox('IsCreatePrintJob');
             cy.wait(500);
 //    });
@@ -44,24 +44,24 @@ it('Serial letter', function() {
     // create contact person
     cy.visit('/window/540435/NEW');
     cy.writeIntoStringField('Name', marketingContactName);
-    cy.writeIntoLookupField('MKTG_Platform_ID', marketingPlatformName, marketingPlatformName);
+    cy.writeIntoLookupListField('MKTG_Platform_ID', marketingPlatformName, marketingPlatformName);
     cy.editAddress('C_Location_ID', function () {
         cy.writeIntoStringField('City', 'Cologne')
-        cy.writeIntoLookupField('C_Country_ID', 'Deu', 'Deutschland');
+        cy.writeIntoLookupListField('C_Country_ID', 'Deu', 'Deutschland');
     });
     
     // create marketing campaign
     cy.visit('/window/540434/NEW');
     cy.writeIntoStringField('Name', marketingCampaignName);
-    cy.writeIntoLookupField('MKTG_Platform_ID', marketingPlatformName, marketingPlatformName);
-    cy.writeIntoLookupField('AD_BoilerPlate_ID', boilerPlateName, boilerPlateName);
+    cy.writeIntoLookupListField('MKTG_Platform_ID', marketingPlatformName, marketingPlatformName);
+    cy.writeIntoLookupListField('AD_BoilerPlate_ID', boilerPlateName, boilerPlateName);
 
     // add contact person to campaign
     cy.selectTab('MKTG_Campaign_ContactPerson');
     cy.pressAddNewButton();
-    cy.writeIntoLookupField('MKTG_ContactPerson_ID', marketingContactName, marketingContactName);
+    cy.writeIntoLookupListField('MKTG_ContactPerson_ID', marketingContactName, marketingContactName);
     cy.pressDoneButton();
 
     // needs https://github.com/metasfresh/metasfresh-webui-frontend/issues/1978#issuecomment-445274540
-    // cy.executeProcess('C_Letter_CreateFrom_MKTG_ContactPerson');
+    cy.executeHeaderAction('C_Letter_CreateFrom_MKTG_ContactPerson');
 });

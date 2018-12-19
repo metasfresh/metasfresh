@@ -28,7 +28,7 @@ describe('purchase order Test', function() {
     
     cy.editAddress('C_Location_ID', function a() {
         cy.writeIntoStringField('City', 'Cologne')
-        cy.writeIntoLookupField('C_Country_ID', 'Deu', 'Deutschland');
+        cy.writeIntoLookupListField('C_Country_ID', 'Deu', 'Deutschland');
         // cy.get('.panel-modal-header').click();
     });
     cy.get('.form-field-Address')
