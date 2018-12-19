@@ -34,8 +34,8 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ConversionType;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Services;
@@ -214,7 +214,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	private final CurrencyConversionContext getCurrencyConversionCtx(final CurrencyConversionTypeId conversionTypeId)
 	{
 		return currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asDate(getDateAcct()),
+				getDateAcct(),
 				conversionTypeId,
 				getClientId(),
 				getOrgId());

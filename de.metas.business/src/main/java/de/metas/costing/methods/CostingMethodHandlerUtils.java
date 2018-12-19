@@ -1,6 +1,5 @@
 package de.metas.costing.methods;
 
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import de.metas.acct.api.AcctSchema;
@@ -21,9 +20,9 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -190,11 +189,10 @@ public class CostingMethodHandlerUtils
 
 	private CurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
-		final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-				TimeUtil.asDate(request.getDate()),
+		return currencyBL.createCurrencyConversionContext(
+				request.getDate(),
 				request.getCurrencyConversionTypeId(),
 				request.getClientId(),
 				request.getOrgId());
-		return conversionCtx;
 	}
 }

@@ -53,10 +53,10 @@ import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.CurrencyRate;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
@@ -1107,12 +1107,11 @@ final class FactLine extends X_Fact_Acct
 		}
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				getDateAcct(),
+		return currencyConversionBL.createCurrencyConversionContext(
+				TimeUtil.asLocalDate(getDateAcct()),
 				conversionTypeId,
 				m_doc.getClientId(),
 				orgId);
-		return conversionCtx;
 	}
 
 	/**

@@ -24,12 +24,14 @@ package de.metas.currency;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Currency;
+import org.compiere.util.TimeUtil;
 
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
@@ -48,12 +50,12 @@ public interface ICurrencyBL extends ISingletonService
 	CurrencyConversionContext createCurrencyConversionContext(Date ConvDate, CurrencyConversionTypeId ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
 
 	default CurrencyConversionContext createCurrencyConversionContext(
-			final Date ConvDate,
+			final LocalDate ConvDate,
 			final CurrencyConversionTypeId ConversionType_ID,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
 	{
-		return createCurrencyConversionContext(ConvDate, ConversionType_ID, clientId.getRepoId(), orgId.getRepoId());
+		return createCurrencyConversionContext(TimeUtil.asDate(ConvDate), ConversionType_ID, clientId.getRepoId(), orgId.getRepoId());
 	}
 
 	CurrencyConversionContext createCurrencyConversionContext(Date ConvDate, ConversionType conversionType, int AD_Client_ID, int AD_Org_ID);
