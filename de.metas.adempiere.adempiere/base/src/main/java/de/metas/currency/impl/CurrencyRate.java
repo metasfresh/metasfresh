@@ -24,51 +24,41 @@ package de.metas.currency.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Date;
-
-import org.adempiere.util.lang.ObjectUtils;
+import java.time.LocalDate;
 
 import de.metas.currency.ICurrencyRate;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
 
+@ToString
 public final class CurrencyRate implements ICurrencyRate
 {
 	private final BigDecimal conversionRate;
 	private final int fromCurrencyId;
 	private final int toCurrencyId;
-	private final int conversionTypeId;
-	private final Date conversionDate;
+	private final CurrencyConversionTypeId conversionTypeId;
+	private final LocalDate conversionDate;
 	private final int currencyPrecision;
 
-	public CurrencyRate(final BigDecimal conversionRate,
-			final int fromCurrencyId, final int toCurrencyId,
+	public CurrencyRate(
+			@NonNull final BigDecimal conversionRate,
+			final int fromCurrencyId,
+			final int toCurrencyId,
 			final int currencyPrecision,
-			final int conversionTypeId,
-			final Date conversionDate)
+			@NonNull final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final LocalDate conversionDate)
 	{
-		super();
-
-		Check.assumeNotNull(conversionRate, "conversionRate not null");
-		this.conversionRate = conversionRate;
-
 		Check.assume(fromCurrencyId > 0, "fromCurrencyId > 0");
-		this.fromCurrencyId = fromCurrencyId;
 		Check.assume(toCurrencyId > 0, "toCurrencyId > 0");
+
+		this.conversionRate = conversionRate;
+		this.fromCurrencyId = fromCurrencyId;
 		this.toCurrencyId = toCurrencyId;
-
-		Check.assume(conversionTypeId > 0, "conversionTypeId > 0");
 		this.conversionTypeId = conversionTypeId;
-
-		Check.assumeNotNull(conversionDate, "conversionDate not null");
 		this.conversionDate = conversionDate;
-
 		this.currencyPrecision = currencyPrecision;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	@Override
@@ -78,10 +68,8 @@ public final class CurrencyRate implements ICurrencyRate
 	}
 
 	@Override
-	public final BigDecimal convertAmount(final BigDecimal amount, final int precision)
+	public final BigDecimal convertAmount(@NonNull final BigDecimal amount, final int precision)
 	{
-		Check.assumeNotNull(amount, "amount not null");
-
 		final BigDecimal rate = getConversionRate();
 		BigDecimal amountConv = rate.multiply(amount);
 
@@ -112,13 +100,13 @@ public final class CurrencyRate implements ICurrencyRate
 	}
 
 	@Override
-	public int getC_ConversionType_ID()
+	public CurrencyConversionTypeId getConversionTypeId()
 	{
 		return conversionTypeId;
 	}
 
 	@Override
-	public Date getConversionDate()
+	public LocalDate getConversionDate()
 	{
 		return conversionDate;
 	}

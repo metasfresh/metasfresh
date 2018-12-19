@@ -23,7 +23,9 @@ package de.metas.currency;
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
+
+import de.metas.money.CurrencyConversionTypeId;
 
 /**
  * Currency rate, together with all informations (currency from/to, conversion type etc).
@@ -41,9 +43,9 @@ public interface ICurrencyRate
 
 	int getTo_Currency_ID();
 
-	int getC_ConversionType_ID();
+	CurrencyConversionTypeId getConversionTypeId();
 
-	Date getConversionDate();
+	LocalDate getConversionDate();
 
 	BigDecimal convertAmount(BigDecimal amount);
 

@@ -6,6 +6,7 @@ package de.metas.currency.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ConversionType;
@@ -68,7 +71,7 @@ import lombok.NonNull;
 @Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
-	private final CCache<ConversionType, CurrencyConversionTypeId> conversionTypeIdsByType = CCache.<ConversionType, CurrencyConversionTypeId>builder()
+	private final CCache<ConversionType, CurrencyConversionTypeId> conversionTypeIdsByType = CCache.<ConversionType, CurrencyConversionTypeId> builder()
 			.tableName(I_C_ConversionType.Table_Name)
 			.build();
 
@@ -193,8 +196,8 @@ public class CurrencyDAO implements ICurrencyDAO
 	protected final IQueryBuilder<I_C_Conversion_Rate> retrieveRateQuery(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
 	{
 		final Properties ctx = Env.getCtx();
-		final int conversionTypeId = conversionCtx.getC_ConversionType_ID();
-		final Date conversionDate = conversionCtx.getConversionDate();
+		final CurrencyConversionTypeId conversionTypeId = conversionCtx.getConversionTypeId();
+		final LocalDate conversionDate = conversionCtx.getConversionDate();
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Conversion_Rate.class, ctx, ITrx.TRXNAME_None)
@@ -203,8 +206,8 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_ConversionType_ID, conversionTypeId)
 				.addCompareFilter(I_C_Conversion_Rate.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, conversionDate)
 				.addCompareFilter(I_C_Conversion_Rate.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, conversionDate)
-				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Client_ID, 0, conversionCtx.getAD_Client_ID())
-				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Org_ID, 0, conversionCtx.getAD_Org_ID())
+				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Client_ID, ClientId.SYSTEM, conversionCtx.getClientId())
+				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Org_ID, OrgId.ANY, conversionCtx.getOrgId())
 				//
 				.orderBy()
 				.addColumn(I_C_Conversion_Rate.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last)

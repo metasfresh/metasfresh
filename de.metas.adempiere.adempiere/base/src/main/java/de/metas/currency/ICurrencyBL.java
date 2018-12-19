@@ -115,7 +115,7 @@ public interface ICurrencyBL extends ISingletonService
 	 */
 	BigDecimal convert(Properties ctx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID, int AD_Client_ID, int AD_Org_ID);
 
-	ICurrencyConversionResult convert(CurrencyConversionContext conversionCtx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID);
+	CurrencyConversionResult convert(CurrencyConversionContext conversionCtx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID);
 
 	/**
 	 * Get Currency Conversion Rate

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyConversionResult;
+import de.metas.currency.CurrencyConversionResult;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.util.Check;
@@ -71,7 +71,7 @@ public class MoneyService
 						Env.getAD_Client_ID(),
 						Env.getAD_Org_ID(Env.getCtx()));
 
-		final ICurrencyConversionResult conversionResult = currencyBL.convert(
+		final CurrencyConversionResult conversionResult = currencyBL.convert(
 				currencyConversionContext,
 				money.getValue(),
 				money.getCurrencyId().getRepoId(),

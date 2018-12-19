@@ -24,6 +24,7 @@ package de.metas.currency.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Properties;
 
@@ -32,14 +33,15 @@ import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.currency.ConversionType;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext.CurrencyConversionContextBuilder;
+import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyConversionResult;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
@@ -48,6 +50,7 @@ import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 public class CurrencyBL implements ICurrencyBL
 {
@@ -97,7 +100,7 @@ public class CurrencyBL implements ICurrencyBL
 				CurrencyConversionTypeId.ofRepoIdOrNull(C_ConversionType_ID),
 				AD_Client_ID,
 				AD_Org_ID);
-		final ICurrencyConversionResult conversionResult = convert(conversionCtx, Amt, CurFrom_ID, CurTo_ID);
+		final CurrencyConversionResult conversionResult = convert(conversionCtx, Amt, CurFrom_ID, CurTo_ID);
 		if (conversionResult == null)
 		{
 			return null;
@@ -106,7 +109,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public final ICurrencyConversionResult convert(final CurrencyConversionContext conversionCtx,
+	public final CurrencyConversionResult convert(final CurrencyConversionContext conversionCtx,
 			final BigDecimal amt,
 			final int CurFrom_ID,
 			final int CurTo_ID)
@@ -115,8 +118,8 @@ public class CurrencyBL implements ICurrencyBL
 
 		final CurrencyConversionResult result = createCurrencyConversionResult(conversionCtx);
 		result.setSourceAmount(amt);
-		result.setSource_Currency_ID(CurFrom_ID);
-		result.setC_Currency_ID(CurTo_ID);
+		result.setSourceCurrencyId(CurrencyId.ofRepoId(CurFrom_ID));
+		result.setCurrencyId(CurrencyId.ofRepoId(CurTo_ID));
 
 		if (amt.signum() == 0)
 		{
@@ -166,7 +169,7 @@ public class CurrencyBL implements ICurrencyBL
 				(CurrencyConversionTypeId)null, // C_ConversionType_ID,
 				AD_Client_ID,
 				AD_Org_ID);
-		final ICurrencyConversionResult conversionResult = convert(conversionCtx, Amt, CurFrom_ID, CurTo_ID);
+		final CurrencyConversionResult conversionResult = convert(conversionCtx, Amt, CurFrom_ID, CurTo_ID);
 		if (conversionResult == null)
 		{
 			return null;
@@ -187,30 +190,30 @@ public class CurrencyBL implements ICurrencyBL
 
 	@Override
 	public final CurrencyConversionContext createCurrencyConversionContext(
-			final Date ConvDate,
+			final Date convDate,
 			final CurrencyConversionTypeId currencyConversionTypeId,
 			final int AD_Client_ID,
 			final int AD_Org_ID)
 	{
-		final CurrencyConversionContext.Builder conversionCtx = CurrencyConversionContext.builder();
-		conversionCtx.setAD_Client_ID(AD_Client_ID);
-		conversionCtx.setAD_Org_ID(AD_Org_ID);
+		CurrencyConversionContextBuilder conversionCtx = CurrencyConversionContext.builder();
+		conversionCtx.clientId(ClientId.ofRepoId(AD_Client_ID));
+		conversionCtx.orgId(OrgId.ofRepoId(AD_Org_ID));
 
-		final Date convDateToUse = ConvDate != null ? ConvDate : SystemTime.asDate();
+		final LocalDate convDateToUse = convDate != null ? TimeUtil.asLocalDate(convDate) : SystemTime.asLocalDate();
 
 		// Conversion Type
 		if (currencyConversionTypeId != null)
 		{
-			conversionCtx.setC_ConversionType_ID(currencyConversionTypeId.getRepoId());
+			conversionCtx.conversionTypeId(currencyConversionTypeId);
 		}
 		else
 		{
-			final int defaultConversionTypeId = retrieveDefaultConversionTypeId(convDateToUse, AD_Client_ID, AD_Org_ID);
-			conversionCtx.setC_ConversionType_ID(defaultConversionTypeId);
+			final CurrencyConversionTypeId defaultConversionTypeId = retrieveDefaultConversionTypeId(convDateToUse, AD_Client_ID, AD_Org_ID);
+			conversionCtx.conversionTypeId(defaultConversionTypeId);
 		}
 
 		// Conversion Date
-		conversionCtx.setConversionDate(convDateToUse);
+		conversionCtx.conversionDate(convDateToUse);
 
 		return conversionCtx.build();
 	}
@@ -225,12 +228,12 @@ public class CurrencyBL implements ICurrencyBL
 		return createCurrencyConversionContext(ConvDate, conversionTypeId, AD_Client_ID, AD_Org_ID);
 	}
 
-	protected int retrieveDefaultConversionTypeId(final Date date, final int adClientId, final int adOrgId)
+	protected CurrencyConversionTypeId retrieveDefaultConversionTypeId(final LocalDate date, final int adClientId, final int adOrgId)
 	{
 		final Properties ctx = Env.getCtx();
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-		final I_C_ConversionType conversionType = currencyDAO.retrieveDefaultConversionType(ctx, adClientId, adOrgId, date);
-		return conversionType.getC_ConversionType_ID();
+		final I_C_ConversionType conversionType = currencyDAO.retrieveDefaultConversionType(ctx, adClientId, adOrgId, TimeUtil.asDate(date));
+		return CurrencyConversionTypeId.ofRepoId(conversionType.getC_ConversionType_ID());
 	}
 
 	@Override
@@ -244,10 +247,8 @@ public class CurrencyBL implements ICurrencyBL
 	public ICurrencyRate getCurrencyRateOrNull(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
 	{
 		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
-		final int conversionTypeId = conversionCtx.getC_ConversionType_ID();
-		Check.assume(conversionTypeId > 0, "C_ConversionType_ID is set in {}", conversionCtx);
-		final Date conversionDate = conversionCtx.getConversionDate();
-		Check.assumeNotNull(conversionDate, "C_ConversionType_ID is set in {}", conversionCtx);
+		final CurrencyConversionTypeId conversionTypeId = conversionCtx.getConversionTypeId();
+		final LocalDate conversionDate = conversionCtx.getConversionDate();
 
 		final int currencyPrecision = getCurrencyPrecision(CurTo_ID);
 
@@ -276,15 +277,13 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyRate;
 	}
 
-	private final CurrencyConversionResult createCurrencyConversionResult(final CurrencyConversionContext conversionCtx)
+	private final CurrencyConversionResult createCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
 	{
-		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
-
 		final CurrencyConversionResult result = new CurrencyConversionResult();
-		result.setAD_Client_ID(conversionCtx.getAD_Client_ID());
-		result.setAD_Org_ID(conversionCtx.getAD_Org_ID());
+		result.setClientId(conversionCtx.getClientId());
+		result.setOrgId(conversionCtx.getOrgId());
 		result.setConversionDate(conversionCtx.getConversionDate());
-		result.setC_ConversionType_ID(conversionCtx.getC_ConversionType_ID());
+		result.setConversionTypeId(conversionCtx.getConversionTypeId());
 		return result;
 	}
 

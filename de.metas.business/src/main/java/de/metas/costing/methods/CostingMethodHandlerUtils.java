@@ -23,7 +23,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyConversionResult;
+import de.metas.currency.CurrencyConversionResult;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -179,7 +179,7 @@ public class CostingMethodHandlerUtils
 
 		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(request);
 
-		final ICurrencyConversionResult result = currencyBL.convert(
+		final CurrencyConversionResult result = currencyBL.convert(
 				conversionCtx,
 				amt.getValue(),
 				amt.getCurrencyId().getRepoId(),

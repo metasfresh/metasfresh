@@ -13,17 +13,24 @@ package de.metas.currency;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
+
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import lombok.Data;
 
 /**
  * The result of a currency conversion.
@@ -31,29 +38,19 @@ import java.util.Date;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface ICurrencyConversionResult
+@Data
+public class CurrencyConversionResult
 {
-	int getAD_Client_ID();
+	private BigDecimal amount;
+	private CurrencyId currencyId;
 
-	int getAD_Org_ID();
+	private BigDecimal sourceAmount;
+	private CurrencyId sourceCurrencyId;
 
-	int getC_ConversionType_ID();
+	private BigDecimal conversionRate;
 
-	Date getConversionDate();
-
-	/**
-	 * @return source amount (in {@link #getSource_Currency_ID()})
-	 */
-	BigDecimal getSourceAmount();
-
-	/**
-	 * @return converted amount (in {@link #getC_Currency_ID()})
-	 */
-	BigDecimal getAmount();
-
-	int getC_Currency_ID();
-
-	int getSource_Currency_ID();
-
-	BigDecimal getConversionRate();
+	private LocalDate conversionDate;
+	private CurrencyConversionTypeId conversionTypeId;
+	private ClientId clientId;
+	private OrgId orgId;
 }

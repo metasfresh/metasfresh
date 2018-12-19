@@ -33,7 +33,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -50,8 +49,8 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -152,7 +151,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	{
 		return getModel(I_M_MatchInv.class);
 	}
-	
+
 	private Quantity getQty()
 	{
 		return docLine.getQty();
@@ -513,7 +512,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final AcctSchemaId acctSchemaId = as.getId();
 		final CostingMethod costingMethod = as.getCosting().getCostingMethod();
-		
+
 		return costDetailService
 				.createCostDetail(CostDetailCreateRequest.builder()
 						.acctSchemaId(acctSchemaId)
@@ -524,8 +523,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
 						.qty(matchQty)
 						.amt(CostAmount.of(matchAmt, currentId))
-						.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(currencyConvCtx.getC_ConversionType_ID()))
-						.date(TimeUtil.asLocalDate(currencyConvCtx.getConversionDate()))
+						.currencyConversionTypeId(currencyConvCtx.getConversionTypeId())
+						.date(currencyConvCtx.getConversionDate())
 						.description(getDescription())
 						.build())
 				.getTotalAmount(costingMethod);
