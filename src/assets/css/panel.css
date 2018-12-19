@@ -7,19 +7,28 @@
     /*outline:none;*/
 }
 
+.panel-modal {
+    max-width: 100%;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
 .tablet, .mobile {
-    .panel-modal {
+    .modal-content-wrapper {
         max-width: 100%;
         height: 100%;
+        width: 100%;
         overflow: hidden;
     }
 }
 
 /*@media only screen and (min-width: $breakpoint-md){*/
 .desktop {
-    .panel-modal {
+    .modal-content-wrapper {
         max-width: 90%;
         height: 90vh;
+        width: 90%;
     }
 }
 /*}*/

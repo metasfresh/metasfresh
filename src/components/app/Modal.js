@@ -376,7 +376,7 @@ class Modal extends Component {
 
     return (
       Object.keys(data).length > 0 && (
-        <div>
+        <div className="modal-content-wrapper">
           <div className="panel panel-modal panel-modal-primary">
             <div
               className={
