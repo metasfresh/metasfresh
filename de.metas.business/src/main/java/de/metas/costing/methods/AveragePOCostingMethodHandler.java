@@ -95,11 +95,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final int receiptInOutLineId = request.getDocumentRef().getRecordId();
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
-				.map(price -> utils.convertToAcctSchemaCurrency(price, request))
 				.orElseGet(() -> utils.getCurrentCostPrice(request).toCostAmount());
-
 		final CostAmount amt = costPrice.multiply(request.getQty());
-		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
+		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(amt, request);
+
+		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amtConv));
 	}
 
 	@Override
