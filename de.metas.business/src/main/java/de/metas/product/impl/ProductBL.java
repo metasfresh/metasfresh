@@ -95,7 +95,8 @@ public final class ProductBL implements IProductBL
 	@Override
 	public I_C_UOM getStockingUOM(final int productId)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		// we don't know if the product of productId was already committed, so we can't load it out-of-trx
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 		return Check.assumeNotNull(getStockingUOM(product), "The uom for productId={} may not be null", productId);
 	}
 

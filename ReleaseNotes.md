@@ -18,6 +18,7 @@ Here come the actual release notes:
   * [#4825](https://github.com/metasfresh/metasfresh/issues/4825) invoice and async improvements
   * [#4828](https://github.com/metasfresh/metasfresh/issues/4828) Extend OLCand REST API to allow not to create products on the fly
   * [#4832](https://github.com/metasfresh/metasfresh/issues/4832) Extend Datenaustausch-Config and XML modding
+  * [#4837](https://github.com/metasfresh/metasfresh/issues/4837) Add fiscal year 2019 to our standard calendar
 
 * metasfresh-webui-frontend
   * [#2097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2097) Lookup and Dropdown: Empty list entry for non mandatory
