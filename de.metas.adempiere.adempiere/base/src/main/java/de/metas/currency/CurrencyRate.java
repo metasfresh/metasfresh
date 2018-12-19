@@ -1,4 +1,4 @@
-package de.metas.currency.impl;
+package de.metas.currency;
 
 /*
  * #%L
@@ -26,32 +26,33 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
-import de.metas.currency.ICurrencyRate;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Value;
 
-@ToString
-public final class CurrencyRate implements ICurrencyRate
+@Value
+public final class CurrencyRate
 {
-	private final BigDecimal conversionRate;
-	private final int fromCurrencyId;
-	private final int toCurrencyId;
-	private final CurrencyConversionTypeId conversionTypeId;
-	private final LocalDate conversionDate;
-	private final int currencyPrecision;
+	BigDecimal conversionRate;
+	CurrencyId fromCurrencyId;
+	CurrencyId toCurrencyId;
+	CurrencyConversionTypeId conversionTypeId;
+	LocalDate conversionDate;
+	int currencyPrecision;
 
-	public CurrencyRate(
+	@Builder
+	private CurrencyRate(
 			@NonNull final BigDecimal conversionRate,
-			final int fromCurrencyId,
-			final int toCurrencyId,
+			@NonNull final CurrencyId fromCurrencyId,
+			@NonNull final CurrencyId toCurrencyId,
 			final int currencyPrecision,
 			@NonNull final CurrencyConversionTypeId conversionTypeId,
 			@NonNull final LocalDate conversionDate)
 	{
-		Check.assume(fromCurrencyId > 0, "fromCurrencyId > 0");
-		Check.assume(toCurrencyId > 0, "toCurrencyId > 0");
+		Check.assumeGreaterOrEqualToZero(currencyPrecision, "currencyPrecision");
 
 		this.conversionRate = conversionRate;
 		this.fromCurrencyId = fromCurrencyId;
@@ -61,13 +62,11 @@ public final class CurrencyRate implements ICurrencyRate
 		this.currencyPrecision = currencyPrecision;
 	}
 
-	@Override
 	public final BigDecimal convertAmount(final BigDecimal amount)
 	{
 		return convertAmount(amount, getCurrencyPrecision());
 	}
 
-	@Override
 	public final BigDecimal convertAmount(@NonNull final BigDecimal amount, final int precision)
 	{
 		final BigDecimal rate = getConversionRate();
@@ -79,40 +78,5 @@ public final class CurrencyRate implements ICurrencyRate
 		}
 
 		return amountConv;
-	}
-
-	@Override
-	public BigDecimal getConversionRate()
-	{
-		return conversionRate;
-	}
-
-	@Override
-	public int getFrom_Currency_ID()
-	{
-		return fromCurrencyId;
-	}
-
-	@Override
-	public int getTo_Currency_ID()
-	{
-		return toCurrencyId;
-	}
-
-	@Override
-	public CurrencyConversionTypeId getConversionTypeId()
-	{
-		return conversionTypeId;
-	}
-
-	@Override
-	public LocalDate getConversionDate()
-	{
-		return conversionDate;
-	}
-
-	private int getCurrencyPrecision()
-	{
-		return currencyPrecision;
 	}
 }

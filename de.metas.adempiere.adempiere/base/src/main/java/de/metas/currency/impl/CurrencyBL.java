@@ -41,9 +41,10 @@ import de.metas.currency.ConversionType;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionContext.CurrencyConversionContextBuilder;
 import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.CurrencyConversionResult.CurrencyConversionResultBuilder;
+import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.currency.ICurrencyRate;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -109,53 +110,56 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public final CurrencyConversionResult convert(final CurrencyConversionContext conversionCtx,
-			final BigDecimal amt,
-			final int CurFrom_ID,
-			final int CurTo_ID)
+	public final CurrencyConversionResult convert(
+			@NonNull final CurrencyConversionContext conversionCtx,
+			@NonNull final BigDecimal amt,
+			final int currencyFromRepoId,
+			final int currencyToRepoId)
 	{
-		Check.assumeNotNull(amt, "Amt not null");
+		final CurrencyId currencyFromId = CurrencyId.ofRepoId(currencyFromRepoId);
+		final CurrencyId currencyToId = CurrencyId.ofRepoId(currencyToRepoId);
 
-		final CurrencyConversionResult result = createCurrencyConversionResult(conversionCtx);
-		result.setSourceAmount(amt);
-		result.setSourceCurrencyId(CurrencyId.ofRepoId(CurFrom_ID));
-		result.setCurrencyId(CurrencyId.ofRepoId(CurTo_ID));
-
+		final BigDecimal amtConv;
+		final BigDecimal conversionRateBD;
 		if (amt.signum() == 0)
 		{
-			result.setAmount(amt);
-			result.setConversionRate(null); // N/A
-			return result;
+			amtConv = BigDecimal.ZERO;
+			conversionRateBD = null; // N/A
 		}
-
 		// Same Currency
-		if (CurFrom_ID == CurTo_ID)
+		else if (CurrencyId.equals(currencyFromId, currencyToId))
 		{
-			result.setAmount(amt);
-			result.setConversionRate(BigDecimal.ONE);
-			return result;
+			amtConv = amt;
+			conversionRateBD = BigDecimal.ONE;
+		}
+		else
+		{
+			final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
+			if (currencyRate == null)
+			{
+				// TODO: evaluate if we can throw an exception here
+				return null;
+			}
+
+			conversionRateBD = currencyRate.getConversionRate();
+
+			//
+			// Calculate the converted amount
+			amtConv = currencyRate.convertAmount(amt);
 		}
 
-		// Get Rate
-		final ICurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, CurFrom_ID, CurTo_ID);
-		if (currencyRate == null)
-		{
-			// TODO: evaluate if we can throw an exception here
-			return null;
-		}
-		result.setConversionRate(currencyRate.getConversionRate());
-
-		//
-		// Calculate the converted amount
-		final BigDecimal amountConv = currencyRate.convertAmount(amt);
-		result.setAmount(amountConv);
-
-		return result;
+		return prepareCurrencyConversionResult(conversionCtx)
+				.sourceAmount(amt)
+				.sourceCurrencyId(currencyFromId)
+				.amount(amtConv)
+				.currencyId(currencyToId)
+				.conversionRateOrNull(conversionRateBD)
+				.build();
 	}	// convert
 
-	protected int getCurrencyPrecision(final int currencyId)
+	protected int getCurrencyPrecision(final CurrencyId currencyId)
 	{
-		return Services.get(ICurrencyDAO.class).getStdPrecision(Env.getCtx(), currencyId);
+		return Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
 	}
 
 	@Override
@@ -239,37 +243,53 @@ public class CurrencyBL implements ICurrencyBL
 	@Override
 	public BigDecimal getRate(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
 	{
-		final ICurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, CurFrom_ID, CurTo_ID);
+		final CurrencyRate currencyRate = getCurrencyRateOrNull(
+				conversionCtx,
+				CurrencyId.ofRepoId(CurFrom_ID),
+				CurrencyId.ofRepoId(CurTo_ID));
 		return currencyRate == null ? null : currencyRate.getConversionRate();
 	}
 
 	@Override
-	public ICurrencyRate getCurrencyRateOrNull(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
+	public CurrencyRate getCurrencyRateOrNull(
+			@NonNull final CurrencyConversionContext conversionCtx,
+			@NonNull final CurrencyId currencyFromId,
+			@NonNull final CurrencyId currencyToId)
 	{
-		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
 		final CurrencyConversionTypeId conversionTypeId = conversionCtx.getConversionTypeId();
 		final LocalDate conversionDate = conversionCtx.getConversionDate();
+		final int currencyPrecision = getCurrencyPrecision(currencyToId);
 
-		final int currencyPrecision = getCurrencyPrecision(CurTo_ID);
-
-		if (CurFrom_ID == CurTo_ID)
+		final BigDecimal conversionRate;
+		if (currencyFromId.equals(currencyToId))
 		{
-			final BigDecimal conversionRate = BigDecimal.ONE;
-			return new CurrencyRate(conversionRate, CurFrom_ID, CurTo_ID, currencyPrecision, conversionTypeId, conversionDate);
+			conversionRate = BigDecimal.ONE;
+		}
+		else
+		{
+			conversionRate = Services.get(ICurrencyDAO.class).retrieveRateOrNull(conversionCtx, currencyFromId.getRepoId(), currencyToId.getRepoId());
+			if (conversionRate == null)
+			{
+				return null;
+			}
 		}
 
-		final BigDecimal rate = Services.get(ICurrencyDAO.class).retrieveRateOrNull(conversionCtx, CurFrom_ID, CurTo_ID);
-		if (rate == null)
-		{
-			return null;
-		}
-		return new CurrencyRate(rate, CurFrom_ID, CurTo_ID, currencyPrecision, conversionTypeId, conversionDate);
+		return CurrencyRate.builder()
+				.conversionRate(conversionRate)
+				.fromCurrencyId(currencyFromId)
+				.toCurrencyId(currencyToId)
+				.currencyPrecision(currencyPrecision)
+				.conversionTypeId(conversionTypeId)
+				.conversionDate(conversionDate)
+				.build();
 	}
 
 	@Override
-	public ICurrencyRate getCurrencyRate(final CurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
+	public CurrencyRate getCurrencyRate(final CurrencyConversionContext conversionCtx, final int currencyFromRepoId, final int currencyToRepoId)
 	{
-		final ICurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
+		final CurrencyId currencyFromId = CurrencyId.ofRepoId(currencyFromRepoId);
+		final CurrencyId currencyToId = CurrencyId.ofRepoId(currencyToRepoId);
+		final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
 		if (currencyRate == null)
 		{
 			throw new NoCurrencyRateFoundException(conversionCtx, currencyFromId, currencyToId);
@@ -277,14 +297,13 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyRate;
 	}
 
-	private final CurrencyConversionResult createCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
+	private static final CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
 	{
-		final CurrencyConversionResult result = new CurrencyConversionResult();
-		result.setClientId(conversionCtx.getClientId());
-		result.setOrgId(conversionCtx.getOrgId());
-		result.setConversionDate(conversionCtx.getConversionDate());
-		result.setConversionTypeId(conversionCtx.getConversionTypeId());
-		return result;
+		return CurrencyConversionResult.builder()
+				.clientId(conversionCtx.getClientId())
+				.orgId(conversionCtx.getOrgId())
+				.conversionDate(conversionCtx.getConversionDate())
+				.conversionTypeId(conversionCtx.getConversionTypeId());
 	}
 
 }

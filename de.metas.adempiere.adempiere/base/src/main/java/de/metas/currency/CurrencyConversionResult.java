@@ -25,12 +25,16 @@ package de.metas.currency;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import lombok.Data;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * The result of a currency conversion.
@@ -38,19 +42,30 @@ import lombok.Data;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Data
+@Value
+@Builder
 public class CurrencyConversionResult
 {
+	@NonNull
 	private BigDecimal amount;
+	@NonNull
 	private CurrencyId currencyId;
 
+	@NonNull
 	private BigDecimal sourceAmount;
+	@NonNull
 	private CurrencyId sourceCurrencyId;
 
-	private BigDecimal conversionRate;
+	// NOTE: it might be null when sourceAmount is ZERO and API decided to not fetch the conversionRate because it's pointless
+	@Nullable
+	private BigDecimal conversionRateOrNull;
 
+	@NonNull
 	private LocalDate conversionDate;
+	@NonNull
 	private CurrencyConversionTypeId conversionTypeId;
+	@NonNull
 	private ClientId clientId;
+	@NonNull
 	private OrgId orgId;
 }

@@ -32,7 +32,7 @@ public class CurrencyConversionContext
 
 		return MoreObjects.toStringHelper(this)
 				.add("date", conversionDate)
-				.add("conversionTypeId", conversionTypeId)
+				.add("conversionTypeId", conversionTypeId.getRepoId())
 				.toString();
 	}
 }

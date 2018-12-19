@@ -33,6 +33,7 @@ import org.compiere.model.I_C_Currency;
 
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -132,7 +133,7 @@ public interface ICurrencyBL extends ISingletonService
 
 	BigDecimal getRate(CurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
 
-	ICurrencyRate getCurrencyRateOrNull(CurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
+	CurrencyRate getCurrencyRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 
 	/**
 	 *
@@ -142,5 +143,5 @@ public interface ICurrencyBL extends ISingletonService
 	 * @return currency rate; never returns null
 	 * @throws NoCurrencyRateFoundException
 	 */
-	ICurrencyRate getCurrencyRate(CurrencyConversionContext conversionCtx, int currencyFromId, int currencyToId);
+	CurrencyRate getCurrencyRate(CurrencyConversionContext conversionCtx, int currencyFromId, int currencyToId);
 }

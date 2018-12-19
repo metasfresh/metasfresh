@@ -47,7 +47,7 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyRate;
+import de.metas.currency.CurrencyRate;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
@@ -176,7 +176,7 @@ public class CostingService implements ICostingService
 				request.getCurrencyConversionTypeId(),
 				request.getClientId().getRepoId(),
 				request.getOrgId().getRepoId());
-		final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getAmt().getCurrencyId().getRepoId(), acctCurrencyId.getRepoId());
+		final CurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getAmt().getCurrencyId().getRepoId(), acctCurrencyId.getRepoId());
 		final BigDecimal amtConv = rate.convertAmount(request.getAmt().getValue(), as.getCosting().getCostingPrecision());
 
 		return request.withAmount(CostAmount.of(amtConv, acctCurrencyId));

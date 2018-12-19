@@ -14,6 +14,7 @@ import org.compiere.util.Env;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -86,6 +87,11 @@ public interface ICurrencyDAO extends ISingletonService
 	default int getStdPrecision(final int C_Currency_ID)
 	{
 		return getStdPrecision(Env.getCtx(), C_Currency_ID);
+	}
+
+	default int getStdPrecision(@NonNull final CurrencyId currencyId)
+	{
+		return getStdPrecision(Env.getCtx(), currencyId.getRepoId());
 	}
 
 	/**
