@@ -1,6 +1,6 @@
 package org.adempiere.invoice.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -52,6 +52,7 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.
@@ -247,9 +248,9 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 
 	@Override
-	public org.compiere.model.I_C_Invoice getById(final InvoiceId invoiceId)
+	public org.compiere.model.I_C_Invoice getByIdInTrx(@NonNull final InvoiceId invoiceId)
 	{
-		return loadOutOfTrx(invoiceId.getRepoId(), org.compiere.model.I_C_Invoice.class);
+		return load(invoiceId.getRepoId(), org.compiere.model.I_C_Invoice.class);
 	}
 
 }

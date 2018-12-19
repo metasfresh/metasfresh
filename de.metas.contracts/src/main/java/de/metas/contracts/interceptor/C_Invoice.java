@@ -40,7 +40,7 @@ public class C_Invoice
 	public void updateBPartnerTimeSpan(final I_C_Invoice invoice)
 	{
 		final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
-		final InvoiceId invoiceId = de.metas.invoice.InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
 		bpartnerTimeSpanRepo.updateTimeSpanOnInvoiceComplete(invoiceId);
 

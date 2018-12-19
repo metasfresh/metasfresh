@@ -141,6 +141,6 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice);
 
-	org.compiere.model.I_C_Invoice getById(InvoiceId invoiceId);
+	org.compiere.model.I_C_Invoice getByIdInTrx(InvoiceId invoiceId);
 
 }

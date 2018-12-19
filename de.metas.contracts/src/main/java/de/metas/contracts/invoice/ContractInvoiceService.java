@@ -50,7 +50,7 @@ public class ContractInvoiceService
 
 	public boolean isContractSalesInvoice(@NonNull final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoice = invoiceDAO.getById(invoiceId);
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		if (!invoice.isSOTrx())
 		{
@@ -77,7 +77,7 @@ public class ContractInvoiceService
 
 	public InvoiceId retrievePredecessorSalesContractInvoiceId(final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoice = invoiceDAO.getById(invoiceId);
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		final Optional<InvoiceId> predecessorInvoice = queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID())
@@ -89,7 +89,7 @@ public class ContractInvoiceService
 				.filter(olderInvoiceId -> isContractSalesInvoice(olderInvoiceId))
 				.findFirst();
 
-		return predecessorInvoice.get();
+		return predecessorInvoice.isPresent() ? predecessorInvoice.get() : null;
 	}
 
 	public InvoiceId retrieveLastSalesContractInvoiceId(final BPartnerId bPartnerId)

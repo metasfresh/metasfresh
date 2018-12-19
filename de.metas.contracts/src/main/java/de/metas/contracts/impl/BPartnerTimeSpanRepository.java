@@ -15,6 +15,7 @@ import org.compiere.model.I_C_BPartner_TimeSpan;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_C_BPartner_TimeSpan;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -164,7 +165,7 @@ public class BPartnerTimeSpanRepository
 			return;
 		}
 
-		final Timestamp contractEndDate = latestFlatrateTermForBPartnerId.getMasterEndDate();
+		final Timestamp contractEndDate = Util.coalesce(latestFlatrateTermForBPartnerId.getMasterEndDate(), latestFlatrateTermForBPartnerId.getEndDate());
 
 		if (dateExceedsThreshold(contractEndDate, SystemTime.asTimestamp()))
 		{
@@ -189,8 +190,8 @@ public class BPartnerTimeSpanRepository
 			}
 			else
 			{
-				final I_C_Invoice predecessorInvoice = invoiceDAO.getById(predecessorSalesContractInvoiceId);
-				final I_C_Invoice lastInvoice = invoiceDAO.getById(lastSalesContractInvoiceId);
+				final I_C_Invoice predecessorInvoice = invoiceDAO.getByIdInTrx(predecessorSalesContractInvoiceId);
+				final I_C_Invoice lastInvoice = invoiceDAO.getByIdInTrx(lastSalesContractInvoiceId);
 
 				final Timestamp predecessorInvoiceDate = predecessorInvoice.getDateInvoiced();
 				final Timestamp lastInvoiceDate = lastInvoice.getDateInvoiced();
@@ -227,7 +228,7 @@ public class BPartnerTimeSpanRepository
 			return;
 		}
 
-		final I_C_Invoice invoice = invoiceDAO.getById(invoiceId);
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 
 		if (!isNewCustomer(bpartnerId))
