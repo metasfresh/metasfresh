@@ -10,6 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.86
+# Features
+
+# Fixes
+* metasfresh-webui-frontend
+  * [#2075](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2075) Deselecting lines does not work when clicking everywhere outside of table
+    * Improvement of the deselection Handling of Grid Table Rows. Now it's possible to deseclect by clicking any areas outside table.
+  * [#2104](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2104) Show error msg when pricelist is not saved bc of UQ index missing for InternalName and Price system in Price list
+    * Shows an error now, when Pricelist Name is not unique.
+
 # metasfresh 5.85
 # Features
 * metasfresh
@@ -45,7 +55,7 @@ Here come the actual release notes:
 # Features
 * metasfresh-webui-frontend
   * [#2077](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2077) Make references cypress friendly
-    * Now returning the internal name via API to make references more cypress friendly-
+    * Now returning the internal name via API to make references more cypress friendly.
   * [#2080](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2080) Support to create C_Location via cypress
     * Improvement that allows to creates Locations via Cypress Tests.
   * [#2082](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2082) Show tab description as tool tip
@@ -58,7 +68,7 @@ Here come the actual release notes:
 # Fixes
 * metasfresh
   * [#4811](https://github.com/metasfresh/metasfresh/issues/4811) Price using BOM Line's attribute is not calculated correctly
-    * Fixes the new BOM Component Attribute Pricec alculation.
+    * Fixes the new BOM Component Attribute Price calculation.
   * [#4819](https://github.com/metasfresh/metasfresh/issues/4819) Payment allocation posting error for currency gain/loss and discount/writeoff case
     * Bugfix for the posting of Payment Allocation cornercase with currency gain/ loss involved.
   * [#4821](https://github.com/metasfresh/metasfresh/issues/4821) forum-datenaustausch.ch export XML validation errors
