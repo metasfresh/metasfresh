@@ -36,9 +36,9 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
+import de.metas.util.StringUtils;
 
 
 /**
@@ -50,7 +50,7 @@ import de.metas.i18n.Msg;
 public class InfoInOut extends Info
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2066307179999903184L;
 
@@ -140,7 +140,7 @@ public class InfoInOut extends Info
 	private void statInit() throws Exception
 	{
 		final int p_WindowNo = getWindowNo();
-		
+
 		lDocumentNo.setLabelFor(fDocumentNo);
 		fDocumentNo.setBackground(AdempierePLAF.getInfoBackground());
 		fDocumentNo.addActionListener(this);
@@ -206,7 +206,7 @@ public class InfoInOut extends Info
 		//  prepare table
 		StringBuffer where = new StringBuffer("i.IsActive='Y'");
 		if (p_whereClause.length() > 0)
-			where.append(" AND ").append(Util.replace(p_whereClause, "M_InOut.", "i."));
+			where.append(" AND ").append(StringUtils.replace(p_whereClause, "M_InOut.", "i."));
 		prepareTable(s_invoiceLayout,
 			" M_InOut i",
 			where.toString(),

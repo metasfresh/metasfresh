@@ -1,9 +1,10 @@
 package de.metas.material.dispo.commons.candidate;
 
+import javax.annotation.Nullable;
+
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.Value;
@@ -55,6 +56,15 @@ public class CandidateId implements RepoIdAware
 	public static CandidateId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new CandidateId(repoId) : null;
+	}
+
+	public static boolean isNull(@Nullable final CandidateId id)
+	{
+		if(id==null)
+		{
+			return true;
+		}
+		return id.isNull();
 	}
 
 	private CandidateId(final int repoId)

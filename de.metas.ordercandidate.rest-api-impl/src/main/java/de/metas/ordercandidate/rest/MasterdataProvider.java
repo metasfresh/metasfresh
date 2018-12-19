@@ -1,27 +1,17 @@
 package de.metas.ordercandidate.rest;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -34,12 +24,11 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.rest.exceptions.MissingPropertyException;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -65,14 +54,6 @@ import de.metas.util.Services;
 
 public final class MasterdataProvider
 {
-	public static final MasterdataProvider createInstance()
-	{
-		return MasterdataProvider.builder().build();
-	}
-
-	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final IProductBL productsBL = Services.get(IProductBL.class);
-	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
@@ -81,8 +62,6 @@ public final class MasterdataProvider
 
 	private final OrgId defaultOrgId;
 
-	private final ProductCategoryId defaultProductCategoryId = ProductCategoryId.ofRepoId(1000000); // TODO
-
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
 	private final PermissionService permissionService;
@@ -90,101 +69,28 @@ public final class MasterdataProvider
 	@Getter
 	private final BPartnerMasterDataProvider bPartnerMasterDataProvider;
 
+	@Getter
+	private final ProductMasterDataProvider productMasterDataProvider;
+
 	@Builder
 	private MasterdataProvider(
 			@Nullable final Properties ctx,
 			@Nullable final PermissionService permissionService,
-			@Nullable final BPartnerMasterDataProvider bpartnerMasterDataProvider)
+			@Nullable final BPartnerMasterDataProvider bpartnerMasterDataProvider,
+			@Nullable final ProductMasterDataProvider productMasterDataProvider)
 	{
 		final Properties ctxToUse = Util.coalesceSuppliers(() -> ctx, () -> Env.getCtx());
 
 		this.defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctxToUse)).orElse(OrgId.ANY);
+
 		this.permissionService = Util.coalesce(permissionService, PermissionService.of(ctxToUse));
 		this.bPartnerMasterDataProvider = Util.coalesce(bpartnerMasterDataProvider, BPartnerMasterDataProvider.of(ctxToUse, permissionService));
+		this.productMasterDataProvider = Util.coalesce(productMasterDataProvider, ProductMasterDataProvider.of(ctxToUse, permissionService));
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
 	{
 		permissionService.assertCanCreateOrUpdateRecord(orgId, I_C_OLCand.class);
-	}
-
-	public ProductId getCreateProductId(@NonNull final JsonProductInfo json, final OrgId orgId)
-	{
-		Context context = Context.ofOrg(orgId);
-		final ProductId existingProductId;
-		if (Check.isEmpty(json.getCode(), true))
-		{
-			existingProductId = null;
-		}
-		else
-		{
-			existingProductId = productsRepo.retrieveProductIdByValue(json.getCode());
-
-		}
-
-		final I_M_Product productRecord;
-		if (existingProductId != null)
-		{
-			productRecord = productsRepo.retrieveProductByValue(json.getCode());
-		}
-		else
-		{
-			productRecord = newInstanceOutOfTrx(I_M_Product.class);
-			productRecord.setAD_Org_ID(context.getOrgId().getRepoId());
-			productRecord.setValue(json.getCode());
-		}
-
-		// try
-		// {
-		productRecord.setName(json.getName());
-		final String productType;
-		switch (json.getType())
-		{
-			case SERVICE:
-				productType = X_M_Product.PRODUCTTYPE_Service;
-				break;
-			case ITEM:
-				productType = X_M_Product.PRODUCTTYPE_Item;
-				break;
-			default:
-				Check.fail("Unexpected type={}; jsonProductInfo={}", json.getType(), json);
-				productType = null;
-				break;
-		}
-
-		productRecord.setM_Product_Category_ID(defaultProductCategoryId.getRepoId());
-
-		productRecord.setProductType(productType);
-
-		final UomId uomId = uomsRepo.getUomIdByX12DE355(json.getUomCode());
-		productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
-
-		save(productRecord);
-		// }
-		// catch (final PermissionNotGrantedException ex)
-		// {
-		// throw ex;
-		// }
-		// catch (final Exception ex)
-		// {
-		// throw new AdempiereException("Failed creating/updating record for " + json, ex);
-		// }
-
-		return ProductId.ofRepoId(productRecord.getM_Product_ID());
-	}
-
-	public UomId getProductUOMId(
-			@NonNull final ProductId productId,
-			@Nullable final String uomCode)
-	{
-		if (!Check.isEmpty(uomCode, true))
-		{
-			return uomsRepo.getUomIdByX12DE355(uomCode);
-		}
-		else
-		{
-			return productsBL.getStockingUOMId(productId);
-		}
 	}
 
 	public PricingSystemId getPricingSystemIdByValue(final String pricingSystemCode)
@@ -232,20 +138,9 @@ public final class MasterdataProvider
 			orgRecord = newInstance(I_AD_Org.class);
 		}
 
-		// try
-		// {
 		updateOrgRecord(orgRecord, json);
 		permissionService.assertCanCreateOrUpdate(orgRecord);
 		orgsRepo.save(orgRecord);
-		// }
-		// catch (final PermissionNotGrantedException ex)
-		// {
-		// throw ex;
-		// }
-		// catch (final Exception ex)
-		// {
-		// throw new AdempiereException("Failed creating/updating record for " + json, ex);
-		// }
 
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 		if (json.getBpartner() != null)

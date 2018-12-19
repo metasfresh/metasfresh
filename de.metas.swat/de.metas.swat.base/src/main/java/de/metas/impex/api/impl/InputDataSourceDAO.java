@@ -24,11 +24,11 @@ package de.metas.impex.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.Query;
 import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
@@ -36,6 +36,7 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.InputDataSourceCreateRequest;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class InputDataSourceDAO implements IInputDataSourceDAO
@@ -70,13 +71,14 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 			final String internalName,
 			final @CacheTrx String trxName)
 	{
-		final String whereClause = I_AD_InputDataSource.COLUMNNAME_InternalName + " = ?";
 
-		final I_AD_InputDataSource result = new Query(ctx, I_AD_InputDataSource.Table_Name, whereClause, trxName)
-				.setParameters(internalName)
-				.setApplyAccessFilter(true)
-				.setOnlyActiveRecords(true)
+		final I_AD_InputDataSource result = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_InputDataSource.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_InternalName, internalName)
+				.create()
 				.firstOnly(I_AD_InputDataSource.class);
+
 		return result;
 	}
 

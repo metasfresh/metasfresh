@@ -1,7 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.dunning;
 
-import lombok.NonNull;
-
 import java.util.Optional;
 
 import org.springframework.context.annotation.Profile;
@@ -19,6 +17,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.Confi
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -98,7 +97,7 @@ public class DunningExportClientFactoryImpl implements DunningExportClientFactor
 			Loggables.get().addLog("forum_datenaustausch_ch - There is no export config for the recipiend-id={} of the invoice with id={}", recipientId, dunning.getId());
 			return Optional.empty();
 		}
-		final DunningExportClientImpl client = new DunningExportClientImpl(crossVersionServiceRegistry, config.getExportXmlVersion());
+		final DunningExportClientImpl client = new DunningExportClientImpl(crossVersionServiceRegistry, config);
 		if (!client.canExport(dunning))
 		{
 			Loggables.get().addLog("forum_datenaustausch_ch - the export-client {} claims that it can't export the dunning with id={}", client.getClass().getSimpleName(), dunning.getId());

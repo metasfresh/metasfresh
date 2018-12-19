@@ -1,7 +1,7 @@
 package de.metas.handlingunits.material.interceptor;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import org.compiere.model.I_M_Transaction;
@@ -50,7 +50,7 @@ public class TransactionDescriptor
 	int inoutLineId;
 	int movementLineId;
 	int inventoryLineId;
-	Date movementDate;
+	Instant transactionDate;
 	BigDecimal movementQty;
 	String movementType;
 
@@ -62,7 +62,7 @@ public class TransactionDescriptor
 			int productId,
 			int transactionId,
 			int warehouseId,
-			Date movementDate,
+			Instant transactionDate,
 			BigDecimal movementQty,
 			int costCollectorId,
 			int inoutLineId,
@@ -75,7 +75,7 @@ public class TransactionDescriptor
 		this.productId = productId;
 		this.transactionId = transactionId;
 		this.warehouseId = warehouseId;
-		this.movementDate = movementDate;
+		this.transactionDate = transactionDate;
 		this.movementQty = movementQty;
 		this.costCollectorId = costCollectorId;
 		this.inoutLineId = inoutLineId;

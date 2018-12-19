@@ -1,6 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.dunning;
 
-import lombok.NonNull;
+import static de.metas.util.Check.assumeNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,14 +27,17 @@ import de.metas.dunning_gateway.spi.model.DunningExportResult;
 import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.dunning_gateway.spi.model.MetasfreshVersion;
 import de.metas.dunning_gateway.spi.model.Money;
+import de.metas.util.Check;
 import de.metas.util.xml.XmlIntrospectionUtil;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.Types.RequestType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.ProcessingMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody.BodyMod;
@@ -42,6 +45,8 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.BalanceMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog.PrologMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.prolog.XmlSoftware.SoftwareMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.TransportMod;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -69,13 +74,19 @@ public class DunningExportClientImpl implements DunningExportClient
 {
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
 	private final CrossVersionRequestConverter<?> exportConverter;
+	private final XmlMode exportFileMode;
+	private final String exportFileFromEAN;
+	private final String exportFileViaEAN;
 
 	public DunningExportClientImpl(
 			@NonNull final CrossVersionServiceRegistry crossVersionServiceRegistry,
-			@NonNull final XmlVersion exportVersion)
+			@NonNull final ExportConfig exportConfig)
 	{
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
-		exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportVersion);
+		this.exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportConfig.getXmlVersion());
+		this.exportFileMode = assumeNotNull(exportConfig.getMode(), "The given exportConfig needs to have a non-null mode; exportconfig={}", exportConfig);
+		this.exportFileFromEAN = exportConfig.getFromEAN();
+		this.exportFileViaEAN = exportConfig.getViaEAN();
 	}
 
 	@Override
@@ -155,12 +166,32 @@ public class DunningExportClientImpl implements DunningExportClient
 			@NonNull final XmlRequest xRequest,
 			@NonNull final DunningToExport dunning)
 	{
-		final RequestMod requestMod = RequestMod
-				.builder()
+		final RequestMod requestMod = RequestMod.builder()
+				.modus(exportFileMode)
+				.processingMod(createProcessingMod())
 				.payloadMod(createPayloadMod(dunning, xRequest.getPayload()))
 				.build();
 
 		return xRequest.withMod(requestMod);
+	}
+
+	private ProcessingMod createProcessingMod()
+	{
+		return ProcessingMod.builder()
+				.transportMod(createTransportMod())
+				.build();
+	}
+
+	private TransportMod createTransportMod()
+	{
+		if (Check.isEmpty(exportFileFromEAN, true))
+		{
+			return null;
+		}
+		return TransportMod.builder()
+				.from(exportFileFromEAN)
+				.replacementViaEAN(exportFileViaEAN)
+				.build();
 	}
 
 	private PayloadMod createPayloadMod(

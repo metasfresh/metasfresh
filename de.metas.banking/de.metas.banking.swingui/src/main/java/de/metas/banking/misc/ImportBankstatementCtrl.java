@@ -10,12 +10,12 @@ package de.metas.banking.misc;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,9 +49,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MPaymentTerm;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.util.Check;
 import de.schaeffer.compiere.mt940.Bankstatement;
 import de.schaeffer.compiere.mt940.BankstatementLine;
 
@@ -120,7 +120,7 @@ public class ImportBankstatementCtrl {
 	/**
 	 * Creates List of objectarrays[2]: object[0] = MT940-Bankstatementline
 	 * object[1] = Invoices, that seem to fit for object[0]
-	 * 
+	 *
 	 * @return
 	 */
 	private List<Object[]> findFittingLines(final Bankstatement statement,
@@ -273,7 +273,7 @@ public class ImportBankstatementCtrl {
 
 		// Ist die Rechnungsnummer vorhanden?
 		final String trxReason = line.getVerwendungszweck();
-		if (Util.isEmpty(trxReason)) {
+		if (Check.isEmpty(trxReason)) {
 			// nothing to match
 			return false;
 		}
@@ -499,7 +499,7 @@ public class ImportBankstatementCtrl {
 	public class MatchablePO implements Comparable<MatchablePO> {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 131207185558136160L;
 

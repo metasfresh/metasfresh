@@ -1,17 +1,17 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlDemand;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.TransportMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidation;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-
-import java.util.List;
-
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlDemand;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidation;
 
 /*
  * #%L
@@ -36,7 +36,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class XmlProcessing
 {
 	/** expecting default = false */
@@ -55,4 +55,25 @@ public class XmlProcessing
 
 	@Nullable
 	XmlDemand demand;
+
+	public XmlProcessing withMod(@Nullable final ProcessingMod processingMod)
+	{
+		if (processingMod == null)
+		{
+			return this;
+		}
+
+		final XmlProcessingBuilder builder = toBuilder();
+		return builder
+				.transport(transport.withMod(processingMod.getTransportMod()))
+				.build();
+	}
+
+	@Value
+	@Builder
+	public static class ProcessingMod
+	{
+		@Nullable
+		TransportMod transportMod;
+	}
 }

@@ -1,7 +1,7 @@
 package de.metas.material.event.stockestimate;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
@@ -42,7 +42,7 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 
 	private final ProductDescriptor productDescriptor;
 
-	private final Date date;
+	private final Instant date;
 
 	private final int plantId;
 
@@ -52,7 +52,7 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 	public AbstractStockEstimateEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final ProductDescriptor productDescriptor,
-			@NonNull final Date date,
+			@NonNull final Instant date,
 			final int plantId,
 			@NonNull final BigDecimal quantity)
 	{

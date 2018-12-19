@@ -128,7 +128,7 @@ public class DDOrderProducer
 		ddOrderRecord.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrderRecord.setDocAction(X_DD_Order.DOCACTION_Complete);
 		ddOrderRecord.setDateOrdered(new Timestamp(dateOrdered.getTime()));
-		ddOrderRecord.setDatePromised(new Timestamp(pojo.getDatePromised().getTime()));
+		ddOrderRecord.setDatePromised(TimeUtil.asTimestamp(pojo.getDatePromised()));
 		ddOrderRecord.setM_Shipper_ID(pojo.getShipperId());
 		ddOrderRecord.setIsInDispute(false);
 		ddOrderRecord.setIsInTransit(false);

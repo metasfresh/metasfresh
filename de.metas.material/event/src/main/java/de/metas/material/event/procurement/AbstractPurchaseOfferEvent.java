@@ -1,7 +1,7 @@
 package de.metas.material.event.procurement;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
@@ -45,7 +45,7 @@ public abstract class AbstractPurchaseOfferEvent implements MaterialEvent
 	private final ProductDescriptor productDescriptor;
 
 	@NonNull
-	private final Date date;
+	private final Instant date;
 
 	@NonNull
 	private final BigDecimal qty;
@@ -55,7 +55,7 @@ public abstract class AbstractPurchaseOfferEvent implements MaterialEvent
 	public AbstractPurchaseOfferEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final ProductDescriptor productDescriptor,
-			@NonNull final Date date,
+			@NonNull final Instant date,
 			@NonNull final BigDecimal qty,
 			final int procurementCandidateId)
 	{

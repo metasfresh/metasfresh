@@ -70,6 +70,12 @@ public final class SystemTime
 		return new Timestamp(millis());
 	}
 
+
+	public static Instant asInstant()
+	{
+		return Instant.ofEpochMilli(millis());
+	}
+
 	public static LocalDateTime asLocalDateTime()
 	{
 		return Instant.ofEpochMilli(millis())

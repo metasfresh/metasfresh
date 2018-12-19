@@ -134,7 +134,7 @@ public class ShipmentScheduleCreatedHandlerTests
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
 		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
 
-		assertThat(demandRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() - 1); // the demand record shall be displayed first
+		assertThat(demandRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("10");

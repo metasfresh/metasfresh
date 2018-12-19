@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.Adempiere;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
@@ -11,8 +12,8 @@ import org.springframework.stereotype.Service;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
-import de.metas.util.Services;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -65,7 +66,7 @@ public class PPOrderPojoConverter
 					.productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
 					.qtyRequired(ppOrderLineRecord.getQtyRequiered())
 					.qtyDelivered(ppOrderLineRecord.getQtyDelivered())
-					.issueOrReceiveDate(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule())
+					.issueOrReceiveDate(TimeUtil.asInstant(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule()))
 					.receipt(receipt)
 					.build();
 
@@ -81,8 +82,8 @@ public class PPOrderPojoConverter
 		final int groupIdFromPPOrderRequestedEvent = ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord, 0);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
-				.datePromised(ppOrderRecord.getDatePromised())
-				.dateStartSchedule(ppOrderRecord.getDateStartSchedule())
+				.datePromised(TimeUtil.asInstant(ppOrderRecord.getDatePromised()))
+				.dateStartSchedule(TimeUtil.asInstant(ppOrderRecord.getDateStartSchedule()))
 				.docStatus(ppOrderRecord.getDocStatus())
 				.orgId(ppOrderRecord.getAD_Org_ID())
 				.plantId(ppOrderRecord.getS_Resource_ID())

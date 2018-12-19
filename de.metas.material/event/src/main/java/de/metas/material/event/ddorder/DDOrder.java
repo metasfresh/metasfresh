@@ -2,7 +2,7 @@ package de.metas.material.event.ddorder;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import org.compiere.model.I_S_Resource;
@@ -54,7 +54,7 @@ final public class DDOrder
 
 	int productPlanningId;
 
-	Date datePromised;
+	Instant datePromised;
 
 	int shipperId;
 
@@ -77,7 +77,7 @@ final public class DDOrder
 			@JsonProperty("orgId") final int orgId,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
-			@JsonProperty("datePromised") @NonNull final Date datePromised,
+			@JsonProperty("datePromised") @NonNull final Instant datePromised,
 			@JsonProperty("shipperId") final int shipperId,
 			@JsonProperty("lines") final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,

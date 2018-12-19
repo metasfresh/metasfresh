@@ -1,6 +1,7 @@
 package de.metas.material.dispo.commons.repository.atp;
 
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
+import static de.metas.material.event.EventTestHelper.BEFORE_BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
@@ -11,8 +12,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -57,7 +57,6 @@ public class AvailableToPromiseRepositoryTest
 {
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 
-	public static final Date BEFORE_BEFORE_NOW = TimeUtil.addMinutes(BEFORE_NOW, -10);
 
 	public static final BigDecimal TWENTY = new BigDecimal("20");
 	public static final BigDecimal THIRTY = new BigDecimal("30");
@@ -273,7 +272,7 @@ public class AvailableToPromiseRepositoryTest
 
 	private I_MD_Candidate_ATP_QueryResult createStockRecordWithBPartner(
 			final int bPartnerId,
-			final Date dateProjected)
+			final Instant dateProjected)
 	{
 		final int productId = PRODUCT_ID;
 		final AttributesKey storgateAttributesKey = STORAGE_ATTRIBUTES_KEY;
@@ -284,7 +283,7 @@ public class AvailableToPromiseRepositoryTest
 	private I_MD_Candidate_ATP_QueryResult createStockRecordWithProduct(
 			final int productId,
 			final AttributesKey storgateAttributesKey,
-			final Date dateProjected)
+			final Instant dateProjected)
 	{
 		final int bPartnerId = -1;
 
@@ -295,11 +294,11 @@ public class AvailableToPromiseRepositoryTest
 			final int bPartnerId,
 			final int productId,
 			final AttributesKey storgateAttributesKey,
-			final Date dateProjected)
+			final Instant dateProjected)
 	{
 		// set only the values we need
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
-		candidateRecord.setDateProjected(new Timestamp(dateProjected.getTime()));
+		candidateRecord.setDateProjected(TimeUtil.asTimestamp(dateProjected));
 		candidateRecord.setIsActive(true);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
 		candidateRecord.setSeqNo(seqNoCounter);
@@ -309,7 +308,7 @@ public class AvailableToPromiseRepositoryTest
 		viewRecord.setM_Product_ID(productId);
 		viewRecord.setM_Warehouse_ID(WAREHOUSE_ID);
 		viewRecord.setC_BPartner_Customer_ID(bPartnerId);
-		viewRecord.setDateProjected(new Timestamp(dateProjected.getTime()));
+		viewRecord.setDateProjected(TimeUtil.asTimestamp(dateProjected));
 		viewRecord.setStorageAttributesKey(storgateAttributesKey.getAsString());
 		viewRecord.setQty(BigDecimal.TEN);
 		viewRecord.setSeqNo(seqNoCounter);

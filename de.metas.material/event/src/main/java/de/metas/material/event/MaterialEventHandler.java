@@ -28,7 +28,7 @@ import de.metas.util.Loggables;
  */
 
 /**
- * Implementors if this interface are registered to {@link MaterialEventHandlerRegistry}.
+ * Implementors of this interface are registered to {@link MaterialEventHandlerRegistry}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

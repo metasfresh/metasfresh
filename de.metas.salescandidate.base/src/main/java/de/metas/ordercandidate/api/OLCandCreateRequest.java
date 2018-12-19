@@ -14,7 +14,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,44 +43,47 @@ import lombok.Value;
 @Value
 public class OLCandCreateRequest
 {
-	private String externalId;
+	String externalLineId;
 
-	private String dataSourceInternalName;
-	private String dataDestInternalName;
+	String externalHeaderId;
 
-	private OrgId orgId;
+	String dataSourceInternalName;
+	String dataDestInternalName;
 
-	private OLCandBPartnerInfo bpartner;
-	private OLCandBPartnerInfo billBPartner;
-	private OLCandBPartnerInfo dropShipBPartner;
-	private OLCandBPartnerInfo handOverBPartner;
+	OrgId orgId;
 
-	private String poReference;
+	OLCandBPartnerInfo bpartner;
+	OLCandBPartnerInfo billBPartner;
+	OLCandBPartnerInfo dropShipBPartner;
+	OLCandBPartnerInfo handOverBPartner;
 
-	private LocalDate dateRequired;
+	String poReference;
 
-	private LocalDate dateInvoiced;
-	private DocTypeId docTypeInvoiceId;
+	LocalDate dateRequired;
 
-	private int flatrateConditionsId;
+	LocalDate dateInvoiced;
+	DocTypeId docTypeInvoiceId;
 
-	private ProductId productId;
-	private String productDescription;
-	private BigDecimal qty;
-	private UomId uomId;
-	private int huPIItemProductId;
+	int flatrateConditionsId;
 
-	private PricingSystemId pricingSystemId;
-	private BigDecimal price;
-	private CurrencyId currencyId; // mandatory if price is provided
-	private Percent discount;
+	ProductId productId;
+	String productDescription;
+	BigDecimal qty;
+	UomId uomId;
+	int huPIItemProductId;
+
+	PricingSystemId pricingSystemId;
+	BigDecimal price;
+	CurrencyId currencyId; // mandatory if price is provided
+	Percent discount;
 
 	@Builder
 	private OLCandCreateRequest(
-			@Nullable final String externalId,
+			@Nullable final String externalLineId,
+			@Nullable final String externalHeaderId,
 			final OrgId orgId,
-			@NonNull final  String dataSourceInternalName,
-			@Nullable final  String dataDestInternalName,
+			@NonNull final String dataSourceInternalName,
+			@Nullable final String dataDestInternalName,
 			@NonNull final OLCandBPartnerInfo bpartner,
 			final OLCandBPartnerInfo billBPartner,
 			final OLCandBPartnerInfo dropShipBPartner,
@@ -108,7 +110,9 @@ public class OLCandCreateRequest
 		// Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
 		Check.assumeNotEmpty(adInputDataSourceInternalName, "adInputDataSourceInternalName is not empty");
 
-		this.externalId = externalId;
+		this.externalLineId = externalLineId;
+		this.externalHeaderId = externalHeaderId;
+
 		this.orgId = orgId;
 
 		this.dataDestInternalName = dataDestInternalName;

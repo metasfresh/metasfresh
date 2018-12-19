@@ -26,18 +26,18 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  *	Location (Address)
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MLocation.java,v 1.3 2006/07/30 00:54:54 jjanke Exp $
- *  
+ *
  *  @author Michael Judd (Akuna Ltd)
  * 				<li>BF [ 2695078 ] Country is not translated on invoice
  * 				<li>FR [2794312 ] Location AutoComplete - check if allow cities out of list
@@ -45,7 +45,7 @@ import de.metas.util.Check;
 public class MLocation extends X_C_Location
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1326655776792201217L;
 
@@ -63,7 +63,7 @@ public class MLocation extends X_C_Location
 		{
 			return null;
 		}
-		
+
 		// NOTE: we are relying that the C_Location is cached
 		// see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService)
 		final PO location = TableModelLoader.instance.getPO(ctx, I_C_Location.Table_Name, C_Location_ID, trxName);
@@ -110,7 +110,7 @@ public class MLocation extends X_C_Location
 	/**	Static Logger				*/
 	private static Logger	s_log = LogManager.getLogger(MLocation.class);
 
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -125,7 +125,7 @@ public class MLocation extends X_C_Location
 			MCountry defaultCountry = MCountry.getDefault(getCtx());
 			setCountry(defaultCountry);
 			MRegion defaultRegion = MRegion.getDefault(getCtx());
-			if (defaultRegion != null 
+			if (defaultRegion != null
 				&& defaultRegion.getC_Country_ID() == defaultCountry.getC_Country_ID())
 				setRegion(defaultRegion);
 		}
@@ -172,7 +172,7 @@ public class MLocation extends X_C_Location
 
 	private MCountry m_c = null;
 	private 	MRegion			m_r = null;
-	
+
 	/**
 	 * 	Set Country
 	 *	@param country
@@ -217,7 +217,7 @@ public class MLocation extends X_C_Location
 		}
 		return m_c;
 	}	//	getCountry
-	
+
 	/**
 	 * 	Get Country Name
 	 *	@return	Country Name
@@ -226,7 +226,7 @@ public class MLocation extends X_C_Location
 	{
 		return getCountry().getName();
 	}	//	getCountryName
-	
+
 	/**
 	 * 	Get Country Line
 	 * 	@param local if true only foreign country is returned
@@ -234,7 +234,7 @@ public class MLocation extends X_C_Location
 	 */
 	public String getCountry (boolean local)
 	{
-		if (local 
+		if (local
 				&& getC_Country_ID() == MCountry.getDefault(getCtx()).getC_Country_ID())
 			return null;
 		return getCountryName();
@@ -246,14 +246,14 @@ public class MLocation extends X_C_Location
 	 */
 	public String getCountry (boolean local, String language)
 	{
-		if (local 
+		if (local
 				&& getC_Country_ID() == MCountry.getDefault(getCtx()).getC_Country_ID())
 			return null;
 		MCountry mc = getCountry();
 		return mc.getTrlName(language);
-	
+
 	}	//	getCountry
-	
+
 	/**
 	 * 	Set Region
 	 *	@param region
@@ -299,7 +299,7 @@ public class MLocation extends X_C_Location
 		else
 			setRegion (MRegion.get(getCtx(), C_Region_ID));
 	}	//	setC_Region_ID
-	
+
 	/**
 	 * 	Get Region
 	 *	@return region
@@ -314,7 +314,7 @@ public class MLocation extends X_C_Location
 			m_r = MRegion.get(getCtx(), getC_Region_ID());
 		return m_r;
 	}	//	getRegion
-	
+
 	/**
 	 * 	Get (local) Region Name
 	 *	@return	region Name or ""
@@ -332,7 +332,7 @@ public class MLocation extends X_C_Location
 	 */
 	public String getRegionName (boolean getFromRegion)
 	{
-		if (getFromRegion && getCountry().isHasRegion() 
+		if (getFromRegion && getCountry().isHasRegion()
 			&& getRegion() != null)
 		{
 			super.setRegionName("");	//	avoid duplicates
@@ -345,7 +345,7 @@ public class MLocation extends X_C_Location
 		return regionName;
 	}	//	getRegionName
 
-	
+
 	/**
 	 * 	Compares to current record
 	 *	@param C_Country_ID if 0 ignored
@@ -357,7 +357,7 @@ public class MLocation extends X_C_Location
 	 *	@param Address2 match address 2
 	 *	@return true if equals
 	 */
-	public boolean equals (int C_Country_ID, int C_Region_ID, 
+	public boolean equals (int C_Country_ID, int C_Region_ID,
 		String Postal, String Postal_Add, String City, String Address1, String Address2)
 	{
 		if (C_Country_ID != 0 && getC_Country_ID() != C_Country_ID)
@@ -377,7 +377,7 @@ public class MLocation extends X_C_Location
 			return false;
 		return true;
 	}	//	equals
-	
+
 	/**
 	 * 	Equals if "" or Null
 	 *	@param c1 c1
@@ -392,7 +392,7 @@ public class MLocation extends X_C_Location
 			c2 = "";
 		return c1.equalsIgnoreCase(c2);
 	}	//	equalsNull
-	
+
 	/**
 	 * 	Equals
 	 * 	@param cmp comparator
@@ -420,7 +420,7 @@ public class MLocation extends X_C_Location
 		return getCountry().isAddressLinesReverse();
 	}	//	isAddressLinesReverse
 
-	
+
 	/**
 	 * 	Get formatted City Region Postal line
 	 * 	@return City, Region Postal
@@ -429,7 +429,7 @@ public class MLocation extends X_C_Location
 	{
 		return parseCRP(getCountry());
 	}	//	getCityRegionPostal
-	
+
 	/**
 	 *	Parse according City/Postal/Region according to displaySequence.
 	 *	@C@ - City		@R@ - Region	@P@ - Postal  @A@ - PostalAdd
@@ -509,13 +509,13 @@ public class MLocation extends X_C_Location
 			&& super.getRegionName() != null && super.getRegionName().length() > 0)
 			outStr.append(" ").append(super.getRegionName());
 
-		String retValue = Util.replace(outStr.toString(), "\\n", "\n");
+		String retValue = StringUtils.replace(outStr.toString(), "\\n", "\n");
 		retValue = retValue.trim(); // metas
 		log.trace("parseCRP - " + c.getDisplaySequence() + " -> " +  retValue);
 		return retValue;
 	}	//	parseContext
 
-	
+
 	/**************************************************************************
 	 *	Return printable String representation
 	 *  @return String
@@ -638,10 +638,10 @@ public class MLocation extends X_C_Location
 		{
 			throw new AdempiereException("@CityNotFound@");
 		}
-		
+
 		return true;
 	}	//	beforeSave
-	
+
 	/**
 	 * 	After Save
 	 *	@param newRecord new
@@ -653,12 +653,12 @@ public class MLocation extends X_C_Location
 	{
 		//	Value/Name change in Account
 		if (!newRecord
-			&& ("Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom)) 
+			&& ("Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom))
 				|| "Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_LocationTo)))
 			&& (is_ValueChanged("Postal") || is_ValueChanged("City"))
 			)
-			MAccount.updateValueDescription(getCtx(), 
-				"(C_LocFrom_ID=" + getC_Location_ID() 
+			MAccount.updateValueDescription(getCtx(),
+				"(C_LocFrom_ID=" + getC_Location_ID()
 				+ " OR C_LocTo_ID=" + getC_Location_ID() + ")", get_TrxName());
 		return success;
 	}	//	afterSave

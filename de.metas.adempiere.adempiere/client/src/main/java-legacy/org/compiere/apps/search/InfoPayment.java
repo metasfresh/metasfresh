@@ -38,9 +38,9 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
+import de.metas.util.StringUtils;
 
 /**
  *  Info Payment
@@ -51,7 +51,7 @@ import de.metas.i18n.Msg;
 public class InfoPayment extends Info
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2917241055484901704L;
 
@@ -157,7 +157,7 @@ public class InfoPayment extends Info
 	private void statInit() throws Exception
 	{
 		final int p_WindowNo = getWindowNo();
-		
+
 		lDocumentNo.setLabelFor(fDocumentNo);
 		fDocumentNo.setBackground(AdempierePLAF.getInfoBackground());
 		fDocumentNo.addActionListener(this);
@@ -223,7 +223,7 @@ public class InfoPayment extends Info
 		//  prepare table
 		StringBuffer where = new StringBuffer("p.IsActive='Y'");
 		if (p_whereClause.length() > 0)
-			where.append(" AND ").append(Util.replace(p_whereClause, "C_Payment.", "p."));
+			where.append(" AND ").append(StringUtils.replace(p_whereClause, "C_Payment.", "p."));
 		prepareTable(s_paymentLayout,
 			" C_Payment_v p",
 			where.toString(),
@@ -233,7 +233,7 @@ public class InfoPayment extends Info
 		return true;
 	}	//	initInfo
 
-	
+
 	/**************************************************************************
 	 *	Construct SQL Where Clause and define parameters
 	 *  (setParameters needs to set parameters)
@@ -347,7 +347,7 @@ public class InfoPayment extends Info
 		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
-	
+
 	/**
 	 *	Zoom
 	 */
@@ -374,5 +374,5 @@ public class InfoPayment extends Info
 	{
 		return true;
 	}	//	hasZoom
-	
+
 }   //  InfoPayment

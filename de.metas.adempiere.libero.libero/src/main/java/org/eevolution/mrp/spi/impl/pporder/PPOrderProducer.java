@@ -15,6 +15,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -95,7 +96,6 @@ public class PPOrderProducer
 		ppOrderRecord.setM_Product_ID(productDescriptor.getProductId());
 		ppOrderRecord.setM_AttributeSetInstance_ID(productDescriptor.getAttributeSetInstanceId());
 
-
 		//
 		// BOM & Workflow
 		ppOrderRecord.setPP_Product_BOM(productPlanning.getPP_Product_BOM());
@@ -105,14 +105,13 @@ public class PPOrderProducer
 		// Dates
 		ppOrderRecord.setDateOrdered(new Timestamp(dateOrdered.getTime()));
 
-		final Timestamp dateFinishSchedule = new Timestamp(ppOrderPojo.getDatePromised().getTime());
+		final Timestamp dateFinishSchedule = TimeUtil.asTimestamp(ppOrderPojo.getDatePromised());
 		ppOrderRecord.setDatePromised(dateFinishSchedule);
 		ppOrderRecord.setDateFinishSchedule(dateFinishSchedule);
 		ppOrderRecord.setPreparationDate(dateFinishSchedule);
 
-		final Timestamp dateStartSchedule = new Timestamp(ppOrderPojo.getDateStartSchedule().getTime());
+		final Timestamp dateStartSchedule = TimeUtil.asTimestamp(ppOrderPojo.getDateStartSchedule());
 		ppOrderRecord.setDateStartSchedule(dateStartSchedule);
-
 
 		// Qtys
 		ppOrderBL.setQtyOrdered(ppOrderRecord, ppOrderPojo.getQtyRequired());

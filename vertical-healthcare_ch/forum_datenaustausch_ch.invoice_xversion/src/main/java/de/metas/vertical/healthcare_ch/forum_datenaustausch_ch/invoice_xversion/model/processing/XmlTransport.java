@@ -1,11 +1,14 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing;
 
+import java.util.Comparator;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-
-import java.util.List;
 
 /*
  * #%L
@@ -30,7 +33,7 @@ import java.util.List;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class XmlTransport
 {
 	@NonNull
@@ -51,5 +54,74 @@ public class XmlTransport
 
 		@NonNull
 		Integer sequenceId;
+	}
+
+	public XmlTransport withMod(@Nullable final TransportMod transportMod)
+	{
+		if (transportMod == null)
+		{
+			return this;
+		}
+
+		final XmlTransportBuilder builder = toBuilder();
+		if (transportMod.getFrom() != null)
+		{
+			builder.from(transportMod.getFrom());
+		}
+
+		final List<String> replacementViaEANs = transportMod.getReplacementViaEANs();
+		if (replacementViaEANs != null && !replacementViaEANs.isEmpty())
+		{
+			builder.clearVias();
+			int currentMaxSeqNo = 0;
+
+			for (final String replacementViaEAN : replacementViaEANs)
+			{
+				currentMaxSeqNo += 1;
+				final XmlVia xmlVia = XmlVia.builder()
+						.via(replacementViaEAN)
+						.sequenceId(currentMaxSeqNo)
+						.build();
+				builder.via(xmlVia);
+			}
+		}
+
+		final List<String> additionalViaEANs = transportMod.getAdditionalViaEANs();
+		if (additionalViaEANs != null)
+		{
+			int currentMaxSeqNo = getVias()
+					.stream()
+					.map(XmlVia::getSequenceId) // is never null
+					.max(Comparator.naturalOrder())
+					.orElse(0);
+
+			for (final String additionalViaEAN : additionalViaEANs)
+			{
+				currentMaxSeqNo += 1;
+				final XmlVia xmlVia = XmlVia.builder()
+						.via(additionalViaEAN)
+						.sequenceId(currentMaxSeqNo)
+						.build();
+				builder.via(xmlVia);
+			}
+		}
+
+		return builder
+				.build();
+	}
+
+	@Value
+	@Builder
+	public static class TransportMod
+	{
+		@Nullable
+		String from;
+
+		/** {@code null} or an empty list both mean "don't replace" */
+		@Singular
+		List<String> replacementViaEANs;
+
+		@Singular
+		List<String> additionalViaEANs;
 	}
 }

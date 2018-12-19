@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
@@ -75,7 +76,7 @@ public class AbstractPurchaseOfferEventHandler
 	{
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(purchaseOfferedEvent.getProductDescriptor())
-				.date(TimeUtil.getDay(purchaseOfferedEvent.getDate()))
+				.date(TimeUtil.getDay(purchaseOfferedEvent.getDate(), CockpitConstants.TIME_ZONE))
 				.build();
 
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()

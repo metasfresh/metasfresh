@@ -1,7 +1,5 @@
 package org.adempiere.ad.dao.impl;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -59,6 +57,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class POJOQuery<T> extends AbstractTypedQuery<T>
 {
@@ -240,7 +239,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		final POJOLookupMap db = POJOLookupMap.get();
 		final String tableName = getTableNameToUse(clazz);
 
-		final List<T> result = db.getRecords(tableName, modelClass, filters, getOrderByComparator(modelClass), trxName);
+		final List<T> result = db.getRecords(
+				tableName,
+				modelClass,
+				filters,
+				getOrderByComparator(modelClass),
+				trxName);
 		Check.assumeNotNull(result, "Return value of POJOLookupMap.getRecords is *never* null");
 
 		final boolean readOnly = isReadOnlyRecords();

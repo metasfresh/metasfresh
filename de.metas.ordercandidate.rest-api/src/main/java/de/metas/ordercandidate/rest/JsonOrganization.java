@@ -1,10 +1,10 @@
 package de.metas.ordercandidate.rest;
 
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,13 +28,25 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder(toBuilder = true)
+@Value
 public class JsonOrganization
 {
 	String code;
 	String name;
 
 	JsonBPartnerInfo bpartner;
+
+	@JsonCreator
+	@Builder(toBuilder = true)
+	private JsonOrganization(
+			@JsonProperty("code") final String code,
+			@JsonProperty("name") final String name,
+			@JsonProperty("bpartner") final JsonBPartnerInfo bpartner)
+	{
+		this.code = code;
+		this.name = name;
+		this.bpartner = bpartner;
+	}
+
+
 }

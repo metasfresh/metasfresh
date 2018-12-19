@@ -57,7 +57,7 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	@Builder
 	@JsonCreator
 	public ReceiptScheduleCreatedEvent(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("orderLineDescriptor") @NonNull final OrderLineDescriptor orderLineDescriptor,
 			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
@@ -89,10 +89,11 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	}
 
 	@Override
-	public void validate()
+	public ReceiptScheduleCreatedEvent validate()
 	{
 		super.validate();
 		orderLineDescriptor.validate();
+		return this;
 	}
 
 }

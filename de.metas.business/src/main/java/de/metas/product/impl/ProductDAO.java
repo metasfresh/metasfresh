@@ -31,12 +31,14 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
@@ -96,6 +98,45 @@ public class ProductDAO implements IProductDAO
 				.addOnlyContextClient(ctx)
 				.create()
 				.firstIdOnly();
+		return ProductId.ofRepoIdOrNull(productRepoId);
+	}
+
+	@Override
+	public ProductId retrieveProductIdBy(@NonNull final ProductQuery query)
+	{
+
+		final IQueryBuilder<I_M_Product> queryBuilder;
+		if (query.isOutOfTrx())
+		{
+			queryBuilder = Services
+					.get(IQueryBL.class)
+					.createQueryBuilderOutOfTrx(I_M_Product.class)
+					.setOption(IQuery.OPTION_ReturnReadOnlyRecords, true);
+		}
+		else
+		{
+			queryBuilder = Services
+					.get(IQueryBL.class)
+					.createQueryBuilder(I_M_Product.class);
+		}
+
+		if (query.isIncludeAnyOrg())
+		{
+			queryBuilder
+					.addInArrayFilter(I_M_Product.COLUMN_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+					.orderByDescending(I_M_Product.COLUMN_AD_Org_ID);
+		}
+		else
+		{
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, query.getOrgId());
+		}
+
+		final int productRepoId = queryBuilder
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue())
+				.create()
+				.firstId();
+
 		return ProductId.ofRepoIdOrNull(productRepoId);
 	}
 

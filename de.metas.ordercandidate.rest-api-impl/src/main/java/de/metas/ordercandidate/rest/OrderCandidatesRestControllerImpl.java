@@ -1,16 +1,13 @@
 package de.metas.ordercandidate.rest;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.io.IOException;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -35,6 +32,7 @@ import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -65,10 +63,22 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 {
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
-	@Autowired
 	private JsonConverters jsonConverters;
-	@Autowired
+
 	private OLCandRepository olCandRepo;
+
+	private MasterdataProviderFactory masterdataProviderFactory;
+
+	public OrderCandidatesRestControllerImpl(
+			@NonNull final MasterdataProviderFactory masterdataProviderFactory,
+			@NonNull final JsonConverters jsonConverters,
+			@NonNull final OLCandRepository olCandRepo)
+	{
+		this.masterdataProviderFactory = masterdataProviderFactory;
+		this.jsonConverters = jsonConverters;
+		this.olCandRepo = olCandRepo;
+
+	}
 
 	@PostMapping
 	@Override
@@ -87,13 +97,19 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	{
 		bulkRequest.validate();
 
-		final MasterdataProvider masterdataProvider = MasterdataProvider.createInstance();
-
-		createOrUpdateMasterdata(bulkRequest, masterdataProvider);
-
+		final MasterdataProvider masterdataProvider = masterdataProviderFactory.createMasterDataProvider();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 		final JsonOLCandCreateBulkResponse //
-		jsonOLCandCreateBulkResponse = trxManager.call(() -> creatOrdersInTrx(bulkRequest, masterdataProvider));
+		jsonOLCandCreateBulkResponse = trxManager.call(() -> {
+
+			createOrUpdateMasterdata(bulkRequest, masterdataProvider);
+
+			// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.;
+			// invoke creatOrdersInTrx with the same unchanged bulkRequest, because the requests bpartner and product instances are
+			// (at least currently) part of the respective caching keys.
+			return creatOrdersInTrx(bulkRequest, masterdataProvider);
+		});
 
 		return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
 	}
@@ -122,11 +138,13 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
 		final BPartnerMasterDataProvider bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
-
 		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
 		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
 		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
 		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
+
+		final ProductMasterDataProvider productMasterDataProvider = masterdataProvider.getProductMasterDataProvider();
+		productMasterDataProvider.getCreateProductInfo(json.getProduct(), orgId);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrdersInTrx(
@@ -180,7 +198,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final OLCandQuery query = OLCandQuery
 				.builder()
 				.inputDataSourceName(dataSourceName)
-				.externalReference(externalReference)
+				.externalHeaderId(externalReference)
 				.build();
 
 		final String fileName = file.getOriginalFilename();
