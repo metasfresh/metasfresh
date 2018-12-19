@@ -222,7 +222,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 
 		final Map<Integer, CurrentCost> existingCostsById = currentCostsRepo.getByIds(costRepoIds)
 				.stream()
-				.collect(GuavaCollectors.toImmutableMapByKey(CurrentCost::getId));
+				.collect(GuavaCollectors.toImmutableMapByKey(CurrentCost::getRepoId));
 
 		bom.streamCostPrices()
 				.forEach(bomCostPrice -> save(bomCostPrice, existingCostsById));
@@ -246,14 +246,14 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 
 			existingCost.setCostPrice(elementPrice.getCostPrice());
 			currentCostsRepo.save(existingCost);
-			elementPrice.setRepoId(existingCost.getId());
+			elementPrice.setRepoId(existingCost.getRepoId());
 		}
 	}
 
 	private BOMCostElementPrice toBOMCostElementPrice(final CurrentCost currentCost)
 	{
 		return BOMCostElementPrice.builder()
-				.repoId(currentCost.getId())
+				.repoId(currentCost.getRepoId())
 				.costElementId(currentCost.getCostElementId())
 				.costPrice(currentCost.getCostPrice())
 				.build();

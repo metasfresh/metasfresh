@@ -4,15 +4,17 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -37,15 +39,19 @@ import lombok.NonNull;
  */
 
 @Getter
+@ToString
 public final class CurrentCost
 {
-	private final int id;
+	@Setter
+	private int repoId;
 
+	private final CostSegment costSegment;
 	private final CostElement costElement;
 
-	@Getter(AccessLevel.PRIVATE)
 	private final CurrencyId currencyId;
 	private final int precision;
+
+	private final UomId uomId;
 
 	private CostPrice costPrice;
 	private Quantity currentQty;
@@ -55,7 +61,8 @@ public final class CurrentCost
 
 	@Builder
 	private CurrentCost(
-			final int id,
+			final int repoId,
+			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
 			@NonNull final CurrencyId currencyId,
 			final int precision,
@@ -66,14 +73,17 @@ public final class CurrentCost
 			final BigDecimal cumulatedAmt,
 			final BigDecimal cumulatedQty)
 	{
-		Check.assume(id > 0, "id > 0");
 		Check.assume(precision >= 0, "precision >= 0");
 
-		this.id = id;
+		this.repoId = repoId > 0 ? repoId : 0;
+
+		this.costSegment = costSegment;
 		this.costElement = costElement;
 
 		this.currencyId = currencyId;
 		this.precision = precision;
+
+		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 
 		this.costPrice = CostPrice.builder()
 				.ownCostPrice(ownCostPrice != null ? CostAmount.of(ownCostPrice, currencyId) : CostAmount.zero(currencyId))
@@ -86,11 +96,15 @@ public final class CurrentCost
 
 	private CurrentCost(@NonNull final CurrentCost from)
 	{
-		this.id = from.id;
+		this.repoId = from.repoId;
+
 		this.costElement = from.costElement;
+		this.costSegment = from.costSegment;
 
 		this.currencyId = from.currencyId;
 		this.precision = from.precision;
+
+		this.uomId = from.uomId;
 
 		this.costPrice = from.costPrice;
 		this.currentQty = from.currentQty;

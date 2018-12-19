@@ -2,7 +2,6 @@ package de.metas.costing.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -47,6 +46,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -113,18 +113,18 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 	private I_M_Cost getCostRecordOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		return retrieveCostRecords(costSegmentAndElement)
+		return queryCostRecords(costSegmentAndElement)
 				.create()
 				.firstOnly(I_M_Cost.class);
 	}
 
-	private IQueryBuilder<I_M_Cost> retrieveCostRecords(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	private IQueryBuilder<I_M_Cost> queryCostRecords(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		return retrieveCostRecords(costSegmentAndElement.toCostSegment())
+		return queryCostRecords(costSegmentAndElement.toCostSegment())
 				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID, costSegmentAndElement.getCostElementId());
 	}
 
-	private IQueryBuilder<I_M_Cost> retrieveCostRecords(@NonNull final CostSegment costSegment)
+	private IQueryBuilder<I_M_Cost> queryCostRecords(@NonNull final CostSegment costSegment)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Cost.class)
@@ -138,10 +138,10 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public CurrentCost getOrCreate(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
-		if (costRecord != null)
+		final CurrentCost currentCost = getOrNull(costSegmentAndElement);
+		if (currentCost != null)
 		{
-			return toCurrentCost(costRecord);
+			return currentCost;
 		}
 		else
 		{
@@ -159,7 +159,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return Optional.empty();
 		}
 
-		final ImmutableMap<CostElement, CostPrice> costPrices = retrieveCostRecords(costSegment)
+		final ImmutableMap<CostElement, CostPrice> costPrices = queryCostRecords(costSegment)
 				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
 				.create()
 				.stream(I_M_Cost.class)
@@ -194,7 +194,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	public ImmutableList<CurrentCost> getByCostSegmentAndCostElements(@NonNull final CostSegment costSegment, @NonNull final Set<CostElementId> costElementIds)
 	{
 		Check.assumeNotEmpty(costElementIds, "costElementIds is not empty");
-		return retrieveCostRecords(costSegment)
+		return queryCostRecords(costSegment)
 				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
 				.create()
 				.stream(I_M_Cost.class)
@@ -205,25 +205,24 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public CurrentCost create(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		final I_M_Cost costRecord = InterfaceWrapperHelper.newInstance(I_M_Cost.class);
-		costRecord.setAD_Org_ID(costSegmentAndElement.getOrgId().getRepoId());
-		costRecord.setC_AcctSchema_ID(costSegmentAndElement.getAcctSchemaId().getRepoId());
-		costRecord.setM_CostType_ID(costSegmentAndElement.getCostTypeId().getRepoId());
-		costRecord.setM_Product_ID(costSegmentAndElement.getProductId().getRepoId());
-		costRecord.setM_AttributeSetInstance_ID(costSegmentAndElement.getAttributeSetInstanceId().getRepoId());
-		costRecord.setM_CostElement_ID(costSegmentAndElement.getCostElementId().getRepoId());
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 
-		costRecord.setCurrentCostPrice(BigDecimal.ZERO);
-		costRecord.setCurrentCostPriceLL(BigDecimal.ZERO);
-		costRecord.setFutureCostPrice(BigDecimal.ZERO);
-		costRecord.setFutureCostPriceLL(BigDecimal.ZERO);
-		costRecord.setCurrentQty(BigDecimal.ZERO);
-		costRecord.setCumulatedAmt(BigDecimal.ZERO);
-		costRecord.setCumulatedQty(BigDecimal.ZERO);
+		final CostElement costElement = costElementRepo.getById(costSegmentAndElement.getCostElementId());
+		final AcctSchema acctSchema = acctSchemasRepo.getById(costSegmentAndElement.getAcctSchemaId());
+		final I_C_UOM uom = productBL.getStockingUOM(costSegmentAndElement.getProductId());
 
-		InterfaceWrapperHelper.saveRecord(costRecord);
+		final CurrentCost currentCost = CurrentCost.builder()
+				.costSegment(costSegmentAndElement.toCostSegment())
+				.costElement(costElement)
+				.currencyId(acctSchema.getCurrencyId())
+				.precision(acctSchema.getCosting().getCostingPrecision())
+				.uom(uom)
+				.build();
 
-		return toCurrentCost(costRecord);
+		save(currentCost);
+
+		return currentCost;
 	}
 
 	@Override
@@ -235,27 +234,41 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public void save(@NonNull final CurrentCost currentCost)
 	{
-		final I_M_Cost costRecord = InterfaceWrapperHelper.load(currentCost.getId(), I_M_Cost.class);
+		final I_M_Cost costRecord;
+		if (currentCost.getRepoId() > 0)
+		{
+			costRecord = InterfaceWrapperHelper.load(currentCost.getRepoId(), I_M_Cost.class);
+		}
+		else
+		{
+			costRecord = InterfaceWrapperHelper.newInstance(I_M_Cost.class);
+		}
+
 		updateCostRecord(costRecord, currentCost);
 		// costRecord.setProcessed(true); // FIXME Processed is a virtual column ?!?! wtf?!
 		InterfaceWrapperHelper.save(costRecord);
+
+		currentCost.setRepoId(costRecord.getM_Cost_ID());
 	}
 
 	private CurrentCost toCurrentCost(final I_M_Cost record)
 	{
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(record.getC_UOM_ID());
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+
+		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
 		final CostElementId costElementId = CostElementId.ofRepoId(record.getM_CostElement_ID());
 		final CostElement costElement = costElementRepo.getById(costElementId);
 
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
-		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
 		final int costingPrecision = acctSchema.getCosting().getCostingPrecision();
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 
 		return CurrentCost.builder()
-				.id(record.getM_Cost_ID())
+				.repoId(record.getM_Cost_ID())
 				.costElement(costElement)
 				.currencyId(currencyId)
 				.precision(costingPrecision)
@@ -270,6 +283,17 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 	private void updateCostRecord(final I_M_Cost cost, final CurrentCost from)
 	{
+		final CostSegment costSegment = from.getCostSegment();
+		cost.setAD_Org_ID(costSegment.getOrgId().getRepoId());
+		cost.setC_AcctSchema_ID(costSegment.getAcctSchemaId().getRepoId());
+		cost.setM_CostType_ID(costSegment.getCostTypeId().getRepoId());
+		cost.setM_Product_ID(costSegment.getProductId().getRepoId());
+		cost.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId().getRepoId());
+		cost.setM_CostElement_ID(from.getCostElementId().getRepoId());
+
+		cost.setC_Currency_ID(from.getCurrencyId().getRepoId());
+		cost.setC_UOM_ID(from.getUomId().getRepoId());
+
 		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().getValue());
 		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().getValue());
 		cost.setCurrentQty(from.getCurrentQty().getAsBigDecimal());
