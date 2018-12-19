@@ -130,7 +130,9 @@ public class ProductDAO implements IProductDAO
 
 		if (query.isIncludeAnyOrg())
 		{
-			queryBuilder.addInArrayFilter(I_M_Product.COLUMN_AD_Org_ID, query.getOrgId(), OrgId.ANY);
+			queryBuilder
+					.addInArrayFilter(I_M_Product.COLUMN_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+					.orderByDescending(I_M_Product.COLUMN_AD_Org_ID);
 		}
 		else
 		{
@@ -141,7 +143,7 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue())
 				.create()
-				.firstIdOnly();
+				.firstId();
 
 		return ProductId.ofRepoIdOrNull(productRepoId);
 	}

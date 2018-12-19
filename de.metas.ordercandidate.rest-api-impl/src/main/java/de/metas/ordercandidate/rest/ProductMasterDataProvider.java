@@ -172,11 +172,6 @@ public class ProductMasterDataProvider
 		final ProductId existingProductId;
 		if (Check.isEmpty(json.getCode(), true))
 		{
-			if (syncAdvise.getIfNotExists().isFail())
-			{
-				final String msg = StringUtils.formatMessage("Found no existing product; Searched via value={} and orgId in ({}, 0)", json.getClass(), context.getOrgId());
-				throw new ProductNotFoundException(msg);
-			}
 			existingProductId = null;
 		}
 		else
@@ -189,6 +184,11 @@ public class ProductMasterDataProvider
 					.outOfTrx(syncAdvise.isLoadReadOnly())
 					.build();
 			existingProductId = productsRepo.retrieveProductIdBy(query);
+		}
+		if (existingProductId == null && syncAdvise.getIfNotExists().isFail())
+		{
+			final String msg = StringUtils.formatMessage("Found no existing product; Searched via value={} and orgId in ({}, 0)", json.getClass(), context.getOrgId());
+			throw new ProductNotFoundException(msg);
 		}
 		return existingProductId;
 	}

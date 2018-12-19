@@ -74,7 +74,7 @@ public interface IProductDAO extends ISingletonService
 
 	ProductId retrieveProductIdByValue(String value);
 
-	ProductId retrieveProductIdBy(ProductQuery qury);
+	ProductId retrieveProductIdBy(ProductQuery query);
 
 	@Value
 	@Builder

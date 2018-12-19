@@ -8,6 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Base64;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -110,10 +112,10 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			@NonNull final ExportConfig exportConfig)
 	{
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
-		this.exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportConfig.getXmlVersion());
-		this.exportFileMode = assumeNotNull(exportConfig.getMode(), "The given exportConfig needs to have a non-null mode; exportconfig={}", exportConfig);
-		this.exportFileFromEAN = exportConfig.getFromEAN();
-		this.exportFileViaEAN = exportConfig.getViaEAN();
+		exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportConfig.getXmlVersion());
+		exportFileMode = assumeNotNull(exportConfig.getMode(), "The given exportConfig needs to have a non-null mode; exportconfig={}", exportConfig);
+		exportFileFromEAN = exportConfig.getFromEAN();
+		exportFileViaEAN = exportConfig.getViaEAN();
 	}
 
 	@Override
@@ -271,7 +273,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				.prologMod(createPrologMod(invoice.getMetasfreshVersion()))
 				.balanceMod(createBalanceMod(invoice))
 				.esr(createXmlEsr(invoice.getCustomInvoicePayload()))
-				.serviceModsWithSelectors(createServiceModsWithSelectors(invoice, xBody))
+				.serviceModsWithSelectors(createServiceModsWithSelectors(invoice, xBody.getServices()))
 				.documents(createDocuments(invoice.getInvoiceAttachments())) // replaces possible existing documents
 				.build();
 	}
@@ -416,11 +418,10 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 	private List<ServiceModWithSelector> createServiceModsWithSelectors(
 			@NonNull final InvoiceToExport invoice,
-			@NonNull final XmlBody xBody)
+			@NonNull final List<XmlService> xServices)
 	{
 		final ImmutableList.Builder<ServiceModWithSelector> serviceMods = ImmutableList.builder();
 
-		final List<XmlService> xServices = xBody.getServices();
 		final ImmutableMap<Integer, XmlService> //
 		recordId2xService = Maps.uniqueIndex(xServices, XmlService::getRecordId);
 
@@ -430,7 +431,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			final List<String> externalIdSegments = Splitter
 					.on("_")
 					.splitToList(externalId);
-			Check.assume(!externalIdSegments.isEmpty(), "Every line of an exportable invoice needs to have an externalId; invoiceLine={}, invoice={}", invoiceLine, invoice);
+			Check.assume(!externalIdSegments.isEmpty(), "Every invoiceLine of an exportable invoice needs to have an externalId; invoiceLine={}, invoice={}", invoiceLine, invoice);
 
 			final String recordIdStr = externalIdSegments.get(externalIdSegments.size() - 1);
 			final int recordId = Integer.parseInt(recordIdStr);
@@ -463,8 +464,8 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			{
 				externalFactorMod = invoiceLineAmount
 						.setScale(invoiceLineAmount.scale() + 10)
-						.multiply(xServiceExternalFactor)
-						.divide(xServiceAmount);
+						.multiply(xServiceExternalFactor, MathContext.UNLIMITED)
+						.divide(xServiceAmount, RoundingMode.HALF_UP);
 			}
 			serviceMod.externalFactor(externalFactorMod);
 			serviceMods.add(serviceMod.build());
