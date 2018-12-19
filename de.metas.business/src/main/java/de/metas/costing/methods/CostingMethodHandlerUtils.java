@@ -176,7 +176,8 @@ public class CostingMethodHandlerUtils
 			return amt;
 		}
 
-		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(request);
+		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(request)
+				.withPrecision(acctSchema.getCosting().getCostingPrecision());
 
 		final CurrencyConversionResult result = currencyBL.convert(
 				conversionCtx,

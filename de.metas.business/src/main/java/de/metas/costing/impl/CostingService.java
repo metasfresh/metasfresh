@@ -1,6 +1,5 @@
 package de.metas.costing.impl;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,7 +9,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -45,9 +43,9 @@ import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.methods.CostingMethodHandler;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyRate;
+import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
@@ -157,14 +155,14 @@ public class CostingService implements ICostingService
 
 	private CostDetailCreateRequest convertToAcctSchemaCurrency(final CostDetailCreateRequest request)
 	{
-		if (request.getAmt().signum() == 0)
+		if (request.getAmt().isZero())
 		{
 			return request;
 		}
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-		final AcctSchema as = acctSchemasRepo.getById(request.getAcctSchemaId());
-		final CurrencyId acctCurrencyId = as.getCurrencyId();
+		final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
+		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 		if (request.getAmt().getCurrencyId().equals(acctCurrencyId))
 		{
 			return request;
@@ -172,14 +170,19 @@ public class CostingService implements ICostingService
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asTimestamp(request.getDate()),
+				request.getDate(),
 				request.getCurrencyConversionTypeId(),
-				request.getClientId().getRepoId(),
-				request.getOrgId().getRepoId());
-		final CurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getAmt().getCurrencyId().getRepoId(), acctCurrencyId.getRepoId());
-		final BigDecimal amtConv = rate.convertAmount(request.getAmt().getValue(), as.getCosting().getCostingPrecision());
+				request.getClientId(),
+				request.getOrgId())
+				.withPrecision(acctSchema.getCosting().getCostingPrecision());
 
-		return request.withAmount(CostAmount.of(amtConv, acctCurrencyId));
+		final CurrencyConversionResult amtConversionResult = currencyConversionBL.convert(
+				conversionCtx,
+				request.getAmt().getValue(),
+				request.getAmt().getCurrencyId().getRepoId(),
+				acctCurrencyId.getRepoId());
+
+		return request.withAmount(CostAmount.of(amtConversionResult.getAmount(), acctCurrencyId));
 	}
 
 	@Override
