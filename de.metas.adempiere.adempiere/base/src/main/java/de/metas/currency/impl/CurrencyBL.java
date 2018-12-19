@@ -158,7 +158,7 @@ public class CurrencyBL implements ICurrencyBL
 				.build();
 	}	// convert
 
-	protected CurrencyPrecision getCurrencyPrecision(final CurrencyId currencyId)
+	private CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
 	{
 		return Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
 	}
@@ -251,15 +251,13 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyRate == null ? null : currencyRate.getConversionRate();
 	}
 
-	@Override
-	public CurrencyRate getCurrencyRateOrNull(
+	private CurrencyRate getCurrencyRateOrNull(
 			@NonNull final CurrencyConversionContext conversionCtx,
 			@NonNull final CurrencyId currencyFromId,
 			@NonNull final CurrencyId currencyToId)
 	{
 		final CurrencyConversionTypeId conversionTypeId = conversionCtx.getConversionTypeId();
 		final LocalDate conversionDate = conversionCtx.getConversionDate();
-		final CurrencyPrecision currencyPrecision = getCurrencyPrecision(currencyToId);
 
 		final BigDecimal conversionRate;
 		if (currencyFromId.equals(currencyToId))
@@ -274,6 +272,9 @@ public class CurrencyBL implements ICurrencyBL
 				return null;
 			}
 		}
+
+		final CurrencyPrecision currencyPrecision = conversionCtx.getPrecision()
+				.orElseGet(() -> getStdPrecision(currencyToId));
 
 		return CurrencyRate.builder()
 				.conversionRate(conversionRate)

@@ -75,7 +75,7 @@ public class CostDetailCreateRequest
 			@Nullable final CostElement costElement,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
-			final CurrencyConversionTypeId currencyConversionTypeId,
+			@Nullable final CurrencyConversionTypeId currencyConversionTypeId,
 			@NonNull final LocalDate date,
 			@Nullable final String description)
 	{

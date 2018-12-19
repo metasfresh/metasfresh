@@ -3,6 +3,9 @@ package de.metas.currency;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -34,6 +37,7 @@ import lombok.ToString;
 @ToString
 public final class CurrencyPrecision
 {
+	@JsonCreator
 	public static CurrencyPrecision ofInt(final int precision)
 	{
 		if (precision >= 0 && precision < cachedValues.length)
@@ -82,6 +86,7 @@ public final class CurrencyPrecision
 		}
 	}
 
+	@JsonValue
 	public int toInt()
 	{
 		return precision;

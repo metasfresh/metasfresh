@@ -35,7 +35,6 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -134,8 +133,6 @@ public interface ICurrencyBL extends ISingletonService
 	BigDecimal getRate(int CurFrom_ID, int CurTo_ID, Timestamp ConvDate, int ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
 
 	BigDecimal getRate(CurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
-
-	CurrencyRate getCurrencyRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 
 	/**
 	 *
