@@ -17,6 +17,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#2075](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2075) Deselecting lines does not work when clicking everywhere outside of table
     * Improvement of the deselection Handling of Grid Table Rows. Now it's possible to deseclect by clicking any areas outside table.
+  * [#2104](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2104) Show error msg when pricelist is not saved bc of UQ index missing for InternalName and Price system in Price list
+    * Shows an error now, when Pricelist Name is not unique.
 
 # metasfresh 5.85
 # Features
