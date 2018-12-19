@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Shows an error now, when Pricelist Name is not unique.
   * [#2111](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2111) Additional Dropdown in menu search in latest Chrome
     * Removes the Google Chrome Search result proposal.
+  * [#2117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2117) Barcode scanner looks bad in filters
+    * Improvement of the Barcode Scanner Look&Fell in Filter Menu entry.
 
 # metasfresh 5.85
 # Features
