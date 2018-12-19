@@ -1095,6 +1095,7 @@ td.pulse-off input {
     right: 0;
     top: 100%;
     min-width: 100px;
+    overflow-y: scroll;
 
     margin-top: .2rem;
     padding: .3rem;
