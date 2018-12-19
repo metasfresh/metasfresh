@@ -105,5 +105,5 @@ public interface ICurrencyDAO extends ISingletonService
 
 	CurrencyConversionTypeId getConversionTypeId(ConversionType type);
 
-	BigDecimal retrieveRateOrNull(ICurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
+	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
 }

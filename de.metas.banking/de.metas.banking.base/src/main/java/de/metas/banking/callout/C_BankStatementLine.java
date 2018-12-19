@@ -33,7 +33,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyRate;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -172,7 +172,7 @@ public class C_BankStatementLine
 		final int trxAmtCurrencyId = bsl.getC_Currency_ID();
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		final ICurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
+		final CurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				bsl.getValutaDate(),
 				ConversionType.Spot,
 				bsl.getAD_Client_ID(),

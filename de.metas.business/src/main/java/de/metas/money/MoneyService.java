@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyConversionResult;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -64,7 +64,7 @@ public class MoneyService
 
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
-		final ICurrencyConversionContext currencyConversionContext = currencyBL
+		final CurrencyConversionContext currencyConversionContext = currencyBL
 				.createCurrencyConversionContext(
 						SystemTime.asDate(),
 						ConversionType.Spot,

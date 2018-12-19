@@ -44,9 +44,9 @@ import lombok.NonNull;
  */
 public interface ICurrencyBL extends ISingletonService
 {
-	ICurrencyConversionContext createCurrencyConversionContext(Date ConvDate, CurrencyConversionTypeId ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
+	CurrencyConversionContext createCurrencyConversionContext(Date ConvDate, CurrencyConversionTypeId ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
 
-	default ICurrencyConversionContext createCurrencyConversionContext(
+	default CurrencyConversionContext createCurrencyConversionContext(
 			final Date ConvDate,
 			final CurrencyConversionTypeId ConversionType_ID,
 			@NonNull final ClientId clientId,
@@ -55,7 +55,7 @@ public interface ICurrencyBL extends ISingletonService
 		return createCurrencyConversionContext(ConvDate, ConversionType_ID, clientId.getRepoId(), orgId.getRepoId());
 	}
 
-	ICurrencyConversionContext createCurrencyConversionContext(Date ConvDate, ConversionType conversionType, int AD_Client_ID, int AD_Org_ID);
+	CurrencyConversionContext createCurrencyConversionContext(Date ConvDate, ConversionType conversionType, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Gets base currency of AD_Client and AD_Org which are set in context.
@@ -115,7 +115,7 @@ public interface ICurrencyBL extends ISingletonService
 	 */
 	BigDecimal convert(Properties ctx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID, int AD_Client_ID, int AD_Org_ID);
 
-	ICurrencyConversionResult convert(ICurrencyConversionContext conversionCtx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID);
+	ICurrencyConversionResult convert(CurrencyConversionContext conversionCtx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID);
 
 	/**
 	 * Get Currency Conversion Rate
@@ -130,9 +130,9 @@ public interface ICurrencyBL extends ISingletonService
 	 */
 	BigDecimal getRate(int CurFrom_ID, int CurTo_ID, Timestamp ConvDate, int ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
 
-	BigDecimal getRate(ICurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
+	BigDecimal getRate(CurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
 
-	ICurrencyRate getCurrencyRateOrNull(ICurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
+	ICurrencyRate getCurrencyRateOrNull(CurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
 
 	/**
 	 *
@@ -142,5 +142,5 @@ public interface ICurrencyBL extends ISingletonService
 	 * @return currency rate; never returns null
 	 * @throws NoCurrencyRateFoundException
 	 */
-	ICurrencyRate getCurrencyRate(ICurrencyConversionContext conversionCtx, int currencyFromId, int currencyToId);
+	ICurrencyRate getCurrencyRate(CurrencyConversionContext conversionCtx, int currencyFromId, int currencyToId);
 }

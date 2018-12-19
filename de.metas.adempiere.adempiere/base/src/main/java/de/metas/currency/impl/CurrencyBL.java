@@ -36,8 +36,9 @@ import org.compiere.util.Env;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.currency.ConversionType;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyConversionResult;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
@@ -91,7 +92,7 @@ public class CurrencyBL implements ICurrencyBL
 			final Timestamp ConvDate, final int C_ConversionType_ID,
 			final int AD_Client_ID, final int AD_Org_ID)
 	{
-		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(
+		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(
 				ConvDate,
 				CurrencyConversionTypeId.ofRepoIdOrNull(C_ConversionType_ID),
 				AD_Client_ID,
@@ -105,7 +106,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public final ICurrencyConversionResult convert(final ICurrencyConversionContext conversionCtx,
+	public final ICurrencyConversionResult convert(final CurrencyConversionContext conversionCtx,
 			final BigDecimal amt,
 			final int CurFrom_ID,
 			final int CurTo_ID)
@@ -160,7 +161,7 @@ public class CurrencyBL implements ICurrencyBL
 			final int AD_Client_ID, final int AD_Org_ID)
 	{
 		final Timestamp ConvDate = null;
-		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(
+		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(
 				ConvDate,
 				(CurrencyConversionTypeId)null, // C_ConversionType_ID,
 				AD_Client_ID,
@@ -176,7 +177,7 @@ public class CurrencyBL implements ICurrencyBL
 	@Override
 	public final BigDecimal getRate(final int CurFrom_ID, final int CurTo_ID, final Timestamp ConvDate, final int ConversionType_ID, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(
+		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(
 				ConvDate,
 				CurrencyConversionTypeId.ofRepoIdOrNull(ConversionType_ID),
 				AD_Client_ID,
@@ -185,7 +186,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public final ICurrencyConversionContext createCurrencyConversionContext(
+	public final CurrencyConversionContext createCurrencyConversionContext(
 			final Date ConvDate,
 			final CurrencyConversionTypeId currencyConversionTypeId,
 			final int AD_Client_ID,
@@ -215,7 +216,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public final ICurrencyConversionContext createCurrencyConversionContext(final Date ConvDate, final ConversionType conversionType, final int AD_Client_ID, final int AD_Org_ID)
+	public final CurrencyConversionContext createCurrencyConversionContext(final Date ConvDate, final ConversionType conversionType, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		// Find C_ConversionType_ID
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
@@ -233,14 +234,14 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public BigDecimal getRate(final ICurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
+	public BigDecimal getRate(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
 	{
 		final ICurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, CurFrom_ID, CurTo_ID);
 		return currencyRate == null ? null : currencyRate.getConversionRate();
 	}
 
 	@Override
-	public ICurrencyRate getCurrencyRateOrNull(final ICurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
+	public ICurrencyRate getCurrencyRateOrNull(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
 	{
 		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
 		final int conversionTypeId = conversionCtx.getC_ConversionType_ID();
@@ -265,7 +266,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public ICurrencyRate getCurrencyRate(final ICurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
+	public ICurrencyRate getCurrencyRate(final CurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
 	{
 		final ICurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
 		if (currencyRate == null)
@@ -275,7 +276,7 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyRate;
 	}
 
-	private final CurrencyConversionResult createCurrencyConversionResult(final ICurrencyConversionContext conversionCtx)
+	private final CurrencyConversionResult createCurrencyConversionResult(final CurrencyConversionContext conversionCtx)
 	{
 		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
 

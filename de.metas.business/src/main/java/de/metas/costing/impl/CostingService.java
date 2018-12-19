@@ -46,7 +46,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyRate;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -171,7 +171,7 @@ public class CostingService implements ICostingService
 		}
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				TimeUtil.asTimestamp(request.getDate()),
 				request.getCurrencyConversionTypeId(),
 				request.getClientId().getRepoId(),

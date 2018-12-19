@@ -46,7 +46,7 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Check;
@@ -181,7 +181,7 @@ public class BankStatementBL implements IBankStatementBL
 				Check.assume(refLine.getC_Invoice_ID() > 0, "@NotFound@ @C_Invoice_ID@");
 				final I_C_Invoice inv = refLine.getC_Invoice();
 
-				final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+				final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 						bsl.getDateAcct(), // ConvDate,
 						CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID()), // ConversionType_ID,
 						bsl.getAD_Client_ID(), // AD_Client_ID

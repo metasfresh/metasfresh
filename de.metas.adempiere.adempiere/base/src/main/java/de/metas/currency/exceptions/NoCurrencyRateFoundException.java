@@ -24,7 +24,7 @@ package de.metas.currency.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 
 /**
  * Exception thrown when there was no currency rate found.
@@ -39,12 +39,12 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	 */
 	private static final long serialVersionUID = -5532453717919181505L;
 
-	public NoCurrencyRateFoundException(final ICurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
+	public NoCurrencyRateFoundException(final CurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
 	{
 		super(buildMsg(conversionCtx, currencyFromId, currencyToId));
 	}
 
-	private static String buildMsg(final ICurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
+	private static String buildMsg(final CurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
 	{
 		return "@NotFound@ @C_Conversion_Rate_ID@"
 				+ "\n @Context@: " + conversionCtx

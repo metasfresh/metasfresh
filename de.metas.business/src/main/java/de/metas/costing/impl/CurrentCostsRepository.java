@@ -255,6 +255,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	{
 		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
@@ -267,8 +268,21 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchema);
+		final CostSegment costSegment = CostSegment.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(acctSchemaId)
+				.costTypeId(acctSchema.getCosting().getCostTypeId())
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.build();
+
 		return CurrentCost.builder()
 				.repoId(record.getM_Cost_ID())
+				.costSegment(costSegment)
 				.costElement(costElement)
 				.currencyId(currencyId)
 				.precision(costingPrecision)

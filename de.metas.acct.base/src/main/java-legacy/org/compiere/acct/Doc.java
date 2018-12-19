@@ -71,7 +71,7 @@ import de.metas.acct.api.IPostingService;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
@@ -946,7 +946,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				continue;
 			}
 
-			final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+			final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 					TimeUtil.asDate(getDateAcct()),
 					getCurrencyConversionTypeId(),
 					getAD_Client_ID(),

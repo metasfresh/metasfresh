@@ -35,7 +35,7 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Services;
@@ -200,18 +200,18 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	/**
 	 * @return the currency conversion used for bank transfer (i.e. Spot)
 	 */
-	public ICurrencyConversionContext getBankTransferCurrencyConversionCtx()
+	public CurrencyConversionContext getBankTransferCurrencyConversionCtx()
 	{
 		return getCurrencyConversionCtx(ConversionType.Spot);
 	}
 
-	private final ICurrencyConversionContext getCurrencyConversionCtx(final ConversionType type)
+	private final CurrencyConversionContext getCurrencyConversionCtx(final ConversionType type)
 	{
 		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(type);
 		return getCurrencyConversionCtx(conversionTypeId);
 	}
 
-	private final ICurrencyConversionContext getCurrencyConversionCtx(final CurrencyConversionTypeId conversionTypeId)
+	private final CurrencyConversionContext getCurrencyConversionCtx(final CurrencyConversionTypeId conversionTypeId)
 	{
 		return currencyConversionBL.createCurrencyConversionContext(
 				TimeUtil.asDate(getDateAcct()),

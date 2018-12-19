@@ -55,7 +55,7 @@ import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -278,7 +278,7 @@ public class PaymentBL implements IPaymentBL
 					return; // no error message when no invoice is selected
 				}
 
-				final ICurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(ConvDate, conversionTypeId, AD_Client_ID, AD_Org_ID);
+				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(ConvDate, conversionTypeId, AD_Client_ID, AD_Org_ID);
 				throw new NoCurrencyRateFoundException(conversionCtx, C_Currency_Invoice_ID, C_Currency_ID);
 			}
 

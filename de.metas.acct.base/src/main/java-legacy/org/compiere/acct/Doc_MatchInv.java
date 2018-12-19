@@ -51,7 +51,7 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -95,7 +95,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	private CurrencyId invoiceCurrencyId;
 	/** Invoice line net amount, excluding taxes, in invoice's currency */
 	private BigDecimal invoiceLineNetAmt = null;
-	private ICurrencyConversionContext invoiceCurrencyConversionCtx;
+	private CurrencyConversionContext invoiceCurrencyConversionCtx;
 	private boolean isCreditMemoInvoice;
 
 	/** Material Receipt */
@@ -431,7 +431,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return getReceiptLine().getMovementQty();
 	}
 
-	public final ICurrencyConversionContext getInvoiceCurrencyConversionCtx()
+	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
 	{
 		if (invoiceCurrencyConversionCtx == null)
 		{
@@ -502,7 +502,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final BigDecimal matchAmt = getInvoiceLineMatchedAmt();
 		final CurrencyId currentId = getInvoiceCurrencyId();
-		final ICurrencyConversionContext currencyConvCtx = getInvoiceCurrencyConversionCtx();
+		final CurrencyConversionContext currencyConvCtx = getInvoiceCurrencyConversionCtx();
 
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		final I_M_InOut receipt = receiptLine.getM_InOut();

@@ -15,7 +15,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ConversionType;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 
 /*
@@ -106,7 +107,7 @@ public class PlainCurrencyDAO extends CurrencyDAO
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 		final Date date = TimeUtil.getDay(1970, 1, 1);
 		final I_C_ConversionType conversionType = retrieveDefaultConversionType(ctx, adClientId, adOrgId, date);
-		final ICurrencyConversionContext conversionCtx = CurrencyConversionContext.builder()
+		final CurrencyConversionContext conversionCtx = CurrencyConversionContext.builder()
 				.setAD_Client_ID(adClientId)
 				.setAD_Org_ID(adOrgId)
 				.setC_ConversionType_ID(conversionType.getC_ConversionType_ID())

@@ -1,4 +1,4 @@
-package de.metas.currency.impl;
+package de.metas.currency;
 
 /*
  * #%L
@@ -13,11 +13,11 @@ package de.metas.currency.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,10 +29,9 @@ import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.currency.ICurrencyConversionContext;
 import de.metas.util.Check;
 
-public final class CurrencyConversionContext implements ICurrencyConversionContext
+public final class CurrencyConversionContext
 {
 	public static final Builder builder()
 	{
@@ -50,13 +49,13 @@ public final class CurrencyConversionContext implements ICurrencyConversionConte
 
 		Check.assumeNotNull(builder.conversionDate, "builder.conversionDate not null");
 		this.conversionDate = (Date)builder.conversionDate.clone();
-		
+
 		Check.assume(builder.conversionTypeId != null && builder.conversionTypeId > 0, "valid conversionTypeId but it was {}", builder.conversionTypeId);
 		this.conversionTypeId = builder.conversionTypeId;
 
 		Check.assumeNotNull(builder.adClientId, "builder.adClientId not null");
 		this.adClientId = builder.adClientId;
-		
+
 		Check.assumeNotNull(builder.adOrgId, "builder.adOrgId not null");
 		this.adOrgId = builder.adOrgId;
 	}
@@ -71,12 +70,12 @@ public final class CurrencyConversionContext implements ICurrencyConversionConte
 				.add("AD_Org_ID", adOrgId)
 				.toString();
 	}
-	
-	@Override
+
+	/** @return a summary, user friendly, string representation */
 	public String getSummary()
 	{
 		// NOTE: keep it short because we want to append it to Fact_Acct.Description
-		
+
 		final DateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
 		return MoreObjects.toStringHelper(this)
 				.add("Date", dateFormat.format(conversionDate))
@@ -84,25 +83,21 @@ public final class CurrencyConversionContext implements ICurrencyConversionConte
 				.toString();
 	}
 
-	@Override
 	public Date getConversionDate()
 	{
 		return (Date)conversionDate.clone();
 	}
 
-	@Override
 	public int getC_ConversionType_ID()
 	{
 		return conversionTypeId;
 	}
 
-	@Override
 	public int getAD_Client_ID()
 	{
 		return adClientId;
 	}
 
-	@Override
 	public int getAD_Org_ID()
 	{
 		return adOrgId;
@@ -119,7 +114,7 @@ public final class CurrencyConversionContext implements ICurrencyConversionConte
 		{
 			super();
 		}
-		
+
 		public CurrencyConversionContext build()
 		{
 			return new CurrencyConversionContext(this);

@@ -54,7 +54,7 @@ import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
 import de.metas.money.CurrencyConversionTypeId;
@@ -126,7 +126,7 @@ final class FactLine extends X_Fact_Acct
 	private Doc<?> m_doc = null;
 	/** Document Line */
 	private DocLine<?> m_docLine = null;
-	private ICurrencyConversionContext currencyConversionCtx = null;
+	private CurrencyConversionContext currencyConversionCtx = null;
 
 	/**
 	 * Create Reversal (negate DR/CR) of the line
@@ -1064,7 +1064,7 @@ final class FactLine extends X_Fact_Acct
 		else
 		{
 			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-			final ICurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
+			final CurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
 			final ICurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, currencyId.getRepoId(), acctCurrencyId.getRepoId());
 			final BigDecimal amtAcctDr = currencyRate.convertAmount(getAmtSourceDr());
 			final BigDecimal amtAcctCr = currencyRate.convertAmount(getAmtSourceCr());
@@ -1075,12 +1075,12 @@ final class FactLine extends X_Fact_Acct
 		}
 	}	// convert
 
-	public void setCurrencyConversionCtx(final ICurrencyConversionContext currencyConversionCtx)
+	public void setCurrencyConversionCtx(final CurrencyConversionContext currencyConversionCtx)
 	{
 		this.currencyConversionCtx = currencyConversionCtx;
 	}
 
-	private final ICurrencyConversionContext getCurrencyConversionCtx()
+	private final CurrencyConversionContext getCurrencyConversionCtx()
 	{
 		// Use preset currency conversion context, if any
 		if (currencyConversionCtx != null)
@@ -1107,7 +1107,7 @@ final class FactLine extends X_Fact_Acct
 		}
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				getDateAcct(),
 				conversionTypeId,
 				m_doc.getClientId(),

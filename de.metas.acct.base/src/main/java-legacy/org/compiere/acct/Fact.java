@@ -43,7 +43,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.product.acct.api.ActivityId;
@@ -902,7 +902,7 @@ public final class Fact
 		private MAccount account = null;
 
 		private CurrencyId currencyId;
-		private ICurrencyConversionContext currencyConversionCtx;
+		private CurrencyConversionContext currencyConversionCtx;
 		private BigDecimal amtSourceDr;
 		private BigDecimal amtSourceCr;
 
@@ -1008,7 +1008,7 @@ public final class Fact
 
 			//
 			// Currency convert
-			final ICurrencyConversionContext currencyConversionCtx = getCurrencyConversionCtx();
+			final CurrencyConversionContext currencyConversionCtx = getCurrencyConversionCtx();
 			if (currencyConversionCtx != null)
 			{
 				line.setCurrencyConversionCtx(currencyConversionCtx);
@@ -1192,14 +1192,14 @@ public final class Fact
 			return currencyId;
 		}
 
-		public FactLineBuilder setCurrencyConversionCtx(ICurrencyConversionContext currencyConversionCtx)
+		public FactLineBuilder setCurrencyConversionCtx(CurrencyConversionContext currencyConversionCtx)
 		{
 			assertNotBuild();
 			this.currencyConversionCtx = currencyConversionCtx;
 			return this;
 		}
 
-		private final ICurrencyConversionContext getCurrencyConversionCtx()
+		private final CurrencyConversionContext getCurrencyConversionCtx()
 		{
 			return currencyConversionCtx;
 		}

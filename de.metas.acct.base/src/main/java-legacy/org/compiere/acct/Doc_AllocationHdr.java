@@ -49,7 +49,7 @@ import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -782,7 +782,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		//
 		// Determine which currency conversion we shall use
-		final ICurrencyConversionContext invoiceCurrencyConversionCtx;
+		final CurrencyConversionContext invoiceCurrencyConversionCtx;
 		if (line.getInvoiceC_Currency_ID() == as.getCurrencyId().getRepoId())
 		{
 			// use default context because the invoice is in accounting currency, so we shall have no currency gain/loss

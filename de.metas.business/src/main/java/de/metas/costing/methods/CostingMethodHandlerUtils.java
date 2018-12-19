@@ -22,7 +22,7 @@ import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyConversionResult;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
@@ -177,7 +177,7 @@ public class CostingMethodHandlerUtils
 			return amt;
 		}
 
-		final ICurrencyConversionContext conversionCtx = createCurrencyConversionContext(request);
+		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(request);
 
 		final ICurrencyConversionResult result = currencyBL.convert(
 				conversionCtx,
@@ -188,9 +188,9 @@ public class CostingMethodHandlerUtils
 		return CostAmount.of(result.getAmount(), acctCurrencyId);
 	}
 
-	private ICurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
+	private CurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
-		final ICurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+		final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
 				TimeUtil.asDate(request.getDate()),
 				request.getCurrencyConversionTypeId(),
 				request.getClientId(),

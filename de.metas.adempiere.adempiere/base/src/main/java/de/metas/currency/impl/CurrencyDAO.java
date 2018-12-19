@@ -31,7 +31,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ConversionType;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -190,7 +190,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	 * @param CurTo_ID
 	 * @return query which is finding the best matching {@link I_C_Conversion_Rate} for given parameters.
 	 */
-	protected final IQueryBuilder<I_C_Conversion_Rate> retrieveRateQuery(final ICurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
+	protected final IQueryBuilder<I_C_Conversion_Rate> retrieveRateQuery(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
 	{
 		final Properties ctx = Env.getCtx();
 		final int conversionTypeId = conversionCtx.getC_ConversionType_ID();
@@ -217,7 +217,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
-	public BigDecimal retrieveRateOrNull(final ICurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
+	public BigDecimal retrieveRateOrNull(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
 	{
 		final List<Map<String, Object>> result = retrieveRateQuery(conversionCtx, CurFrom_ID, CurTo_ID)
 				.setLimit(1)

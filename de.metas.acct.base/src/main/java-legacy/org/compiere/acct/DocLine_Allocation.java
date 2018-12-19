@@ -39,7 +39,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -106,7 +106,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	private final int m_C_Invoice_ID;
 	private final I_C_Invoice invoice;
-	private ICurrencyConversionContext invoiceCurrencyConversionCtx;
+	private CurrencyConversionContext invoiceCurrencyConversionCtx;
 	private final boolean creditMemoInvoice;
 	private final Boolean soTrxInvoice;
 
@@ -116,7 +116,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	private final int m_C_Payment_ID;
 	private final I_C_Payment payment;
-	private ICurrencyConversionContext paymentCurrencyConversionCtx;
+	private CurrencyConversionContext paymentCurrencyConversionCtx;
 	private final Boolean paymentReceipt;
 
 	private final int m_C_CashLine_ID;
@@ -504,7 +504,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return doc.getAccount(Doc.ACCTTYPE_CashTransfer, as);
 	}	// getCashAcct
 
-	public final ICurrencyConversionContext getInvoiceCurrencyConversionCtx()
+	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
 	{
 		if (invoiceCurrencyConversionCtx == null)
 		{
@@ -520,7 +520,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return invoiceCurrencyConversionCtx;
 	}
 
-	public final ICurrencyConversionContext getPaymentCurrencyConversionCtx()
+	public final CurrencyConversionContext getPaymentCurrencyConversionCtx()
 	{
 		if (paymentCurrencyConversionCtx == null)
 		{
