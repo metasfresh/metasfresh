@@ -830,6 +830,9 @@ html {
 }
 
 body {
+    /* TODO: No idea what's this supposed to do - Kuba
+    When taken out, the login panel is not centralized on page anymore - Mark
+    */
     height: calc(100% - 62px);
 }
 

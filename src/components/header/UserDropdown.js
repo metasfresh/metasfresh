@@ -101,6 +101,7 @@ class UserDropdown extends Component {
       <div
         className={
           'header-item-container ' +
+          'js-not-unselect ' +
           'pointer user-dropdown-container tooltip-parent ' +
           (open ? 'header-item-open ' : '')
         }

@@ -497,7 +497,6 @@ class Table extends Component {
       limitOnClickOutside,
     } = this.props;
     const parentNode = event.target.parentNode;
-
     const closeIncluded =
       limitOnClickOutside &&
       parentNode.className.includes('document-list-wrapper')
@@ -506,9 +505,9 @@ class Table extends Component {
 
     if (
       allowOutsideClick &&
-      event.target.parentNode !== document &&
-      event.target.parentNode &&
-      !event.target.parentNode.className.includes('notification') &&
+      parentNode &&
+      parentNode !== document &&
+      !parentNode.className.includes('notification') &&
       !inBackground &&
       closeIncluded
     ) {
@@ -1265,7 +1264,7 @@ class Table extends Component {
           }
         </div>
         {showPagination && (
-          <div>
+          <div onClick={this.handleClickOutside}>
             <TablePagination
               {...{
                 handleChangePage,
