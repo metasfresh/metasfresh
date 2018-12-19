@@ -49,6 +49,7 @@ import de.metas.cache.CCache;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -148,10 +149,10 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
 
-		final CurrencyId currencyId = CurrencyId.ofRepoId(acctSchemaRecord.getC_Currency_ID());
-		final I_C_Currency cur = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, currencyId.getRepoId());
-		final int standardPrecision = cur.getStdPrecision();
-		final int costingPrecision = cur.getCostingPrecision();
+		final CurrencyId acctCurrencyId = CurrencyId.ofRepoId(acctSchemaRecord.getC_Currency_ID());
+		final I_C_Currency acctCurrency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, acctCurrencyId.getRepoId());
+		final CurrencyPrecision standardPrecision = CurrencyPrecision.ofInt(acctCurrency.getStdPrecision());
+		final CurrencyPrecision costingPrecision = CurrencyPrecision.ofInt(acctCurrency.getCostingPrecision());
 
 		final I_C_AcctSchema_GL acctSchemaGL = retrieveAcctSchemaGLRecordOrNull(acctSchemaId);
 		if (acctSchemaGL == null)
@@ -165,7 +166,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.orgId(OrgId.ofRepoId(acctSchemaRecord.getAD_Org_ID()))
 				.name(acctSchemaRecord.getName())
 				//
-				.currencyId(currencyId)
+				.currencyId(acctCurrencyId)
 				.standardPrecision(standardPrecision)
 				//
 				// Costing
@@ -194,7 +195,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.build();
 	}
 
-	private AcctSchemaCosting toAcctSchemaCosting(final I_C_AcctSchema acctSchemaRecord, final int costingPrecision)
+	private AcctSchemaCosting toAcctSchemaCosting(final I_C_AcctSchema acctSchemaRecord, final CurrencyPrecision costingPrecision)
 	{
 		return AcctSchemaCosting.builder()
 				.costingPrecision(costingPrecision)

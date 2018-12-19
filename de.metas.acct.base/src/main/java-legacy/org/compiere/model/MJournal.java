@@ -39,6 +39,7 @@ import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -998,8 +999,9 @@ public class MJournal extends X_GL_Journal implements IDocument
 		}
 		
 		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
-		final int precision = as.getStandardPrecision();
-		if (journal.getControlAmt().scale() > precision)
-			journal.setControlAmt(journal.getControlAmt().setScale(precision, BigDecimal.ROUND_HALF_UP));
+		final CurrencyPrecision precision = as.getStandardPrecision();
+		
+		final BigDecimal controlAmt = precision.roundIfNeeded(journal.getControlAmt());
+		journal.setControlAmt(controlAmt);
 	}
 }	// MJournal

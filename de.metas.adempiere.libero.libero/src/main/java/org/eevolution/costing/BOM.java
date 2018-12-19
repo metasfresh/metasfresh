@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
@@ -113,7 +114,7 @@ public final class BOM
 			if (bomCostPrice != null && !bomCostPrice.isZero())
 			{
 				final Percent costAllocationPerc = bomLine.getCoProductCostDistributionPercent();
-				final CostAmount coProductCostPrice = bomCostPrice.multiply(costAllocationPerc, 4); // FIXME: hardcoded precision
+				final CostAmount coProductCostPrice = bomCostPrice.multiply(costAllocationPerc, CurrencyPrecision.ofInt(4)); // FIXME: hardcoded precision
 
 				bomLine.setComponentsCostPrice(coProductCostPrice, costElementId);
 

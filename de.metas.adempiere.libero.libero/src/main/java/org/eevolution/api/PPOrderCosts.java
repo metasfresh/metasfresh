@@ -18,6 +18,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -181,7 +182,7 @@ public final class PPOrderCosts
 		}
 	}
 
-	public void updatePostCalculationAmounts(final int precision)
+	public void updatePostCalculationAmounts(final CurrencyPrecision precision)
 	{
 		for (final CostElementId costElementId : getCostElementIds())
 		{
@@ -190,11 +191,9 @@ public final class PPOrderCosts
 	}
 
 	public void updatePostCalculationAmountsForCostElement(
-			final int precision,
+			final CurrencyPrecision precision,
 			final CostElementId costElementId)
 	{
-		final int costingPrecision = 4; // TODO hardcoded
-
 		final List<PPOrderCost> costs = filterAndList(PPOrderCostFilter.builder()
 				.costElementId(costElementId)
 				.build());
@@ -221,7 +220,7 @@ public final class PPOrderCosts
 
 		//
 		// Update co-product costs and calculate total co-product costs
-		coProductCosts.forEach(cost -> cost.setPostCalculationAmount(totalInboundCostAmount.multiply(cost.getCoProductCostDistributionPercent(), costingPrecision)));
+		coProductCosts.forEach(cost -> cost.setPostCalculationAmount(totalInboundCostAmount.multiply(cost.getCoProductCostDistributionPercent(), precision)));
 		final CostAmount totalCoProductsCostAmount = coProductCosts.stream()
 				.map(cost -> cost.getPostCalculationAmount())
 				.reduce(CostAmount::add)

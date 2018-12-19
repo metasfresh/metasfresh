@@ -6,6 +6,7 @@ import org.adempiere.service.OrgId;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.impl.AcctSchemaPeriodControl;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,7 +52,8 @@ public class AcctSchema
 
 	@NonNull
 	CurrencyId currencyId;
-	int standardPrecision;
+	@NonNull
+	CurrencyPrecision standardPrecision;
 
 	@NonNull
 	AcctSchemaCosting costing;

@@ -17,6 +17,7 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
@@ -49,7 +50,7 @@ public class PPOrderCostsTest
 {
 	private final PPOrderId ppOrderId = PPOrderId.ofRepoId(1);
 
-	private final int costingPrecision = 4;
+	private final CurrencyPrecision costingPrecision = CurrencyPrecision.ofInt(4);
 	private final CurrencyId currencyId = CurrencyId.ofRepoId(1);
 
 	private final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(1);

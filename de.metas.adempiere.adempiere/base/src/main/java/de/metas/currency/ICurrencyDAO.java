@@ -84,14 +84,9 @@ public interface ICurrencyDAO extends ISingletonService
 	 */
 	int getStdPrecision(Properties ctx, int C_Currency_ID);
 
-	default int getStdPrecision(final int C_Currency_ID)
+	default CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
 	{
-		return getStdPrecision(Env.getCtx(), C_Currency_ID);
-	}
-
-	default int getStdPrecision(@NonNull final CurrencyId currencyId)
-	{
-		return getStdPrecision(Env.getCtx(), currencyId.getRepoId());
+		return CurrencyPrecision.ofInt(getStdPrecision(Env.getCtx(), currencyId.getRepoId()));
 	}
 
 	/**

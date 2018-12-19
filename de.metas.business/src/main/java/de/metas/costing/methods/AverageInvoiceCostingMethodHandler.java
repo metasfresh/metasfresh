@@ -1,6 +1,7 @@
 package de.metas.costing.methods;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,6 +24,7 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
@@ -117,7 +119,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		final int asiId = costSegment.getAttributeSetInstanceId().getRepoId();
 		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
 		final CurrencyId acctCurencyId = acctSchema.getCurrencyId();
-		final int costingPrecision = acctSchema.getCosting().getCostingPrecision();
+		final CurrencyPrecision costingPrecision = acctSchema.getCosting().getCostingPrecision();
 
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"
 				+ " i.C_Currency_ID, i.DateAcct, i.C_ConversionType_ID, i.AD_Client_ID, i.AD_Org_ID, t.M_Transaction_ID "
@@ -186,8 +188,8 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 				final BigDecimal averageCurrent = oldStockQty.multiply(oldAverageAmt);
 				final BigDecimal averageIncrease = matchQty.multiply(cost);
 				BigDecimal newAmt = averageCurrent.add(averageIncrease);
-				newAmt = newAmt.setScale(costingPrecision, BigDecimal.ROUND_HALF_UP);
-				newAverageAmt = newAmt.divide(newStockQty, costingPrecision, BigDecimal.ROUND_HALF_UP);
+				newAmt = newAmt.setScale(costingPrecision.toInt(), RoundingMode.HALF_UP);
+				newAverageAmt = newAmt.divide(newStockQty, costingPrecision.toInt(), RoundingMode.HALF_UP);
 			}
 		}
 		catch (final SQLException e)

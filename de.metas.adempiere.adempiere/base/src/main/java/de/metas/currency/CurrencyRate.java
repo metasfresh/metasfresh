@@ -23,12 +23,10 @@ package de.metas.currency;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,19 +39,17 @@ public final class CurrencyRate
 	CurrencyId toCurrencyId;
 	CurrencyConversionTypeId conversionTypeId;
 	LocalDate conversionDate;
-	int currencyPrecision;
+	CurrencyPrecision currencyPrecision;
 
 	@Builder
 	private CurrencyRate(
 			@NonNull final BigDecimal conversionRate,
 			@NonNull final CurrencyId fromCurrencyId,
 			@NonNull final CurrencyId toCurrencyId,
-			final int currencyPrecision,
+			@NonNull final CurrencyPrecision currencyPrecision,
 			@NonNull final CurrencyConversionTypeId conversionTypeId,
 			@NonNull final LocalDate conversionDate)
 	{
-		Check.assumeGreaterOrEqualToZero(currencyPrecision, "currencyPrecision");
-
 		this.conversionRate = conversionRate;
 		this.fromCurrencyId = fromCurrencyId;
 		this.toCurrencyId = toCurrencyId;
@@ -67,16 +63,10 @@ public final class CurrencyRate
 		return convertAmount(amount, getCurrencyPrecision());
 	}
 
-	public final BigDecimal convertAmount(@NonNull final BigDecimal amount, final int precision)
+	public final BigDecimal convertAmount(@NonNull final BigDecimal amount, @NonNull final CurrencyPrecision precision)
 	{
 		final BigDecimal rate = getConversionRate();
-		BigDecimal amountConv = rate.multiply(amount);
-
-		if (precision >= 0 && amountConv.scale() > precision)
-		{
-			amountConv = amountConv.setScale(precision, RoundingMode.HALF_UP);
-		}
-
-		return amountConv;
+		final BigDecimal amountConv = rate.multiply(amount);
+		return precision.roundIfNeeded(amountConv);
 	}
 }

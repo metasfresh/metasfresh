@@ -42,6 +42,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionContext.CurrencyConversionContextBuilder;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyConversionResult.CurrencyConversionResultBuilder;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
@@ -157,7 +158,7 @@ public class CurrencyBL implements ICurrencyBL
 				.build();
 	}	// convert
 
-	protected int getCurrencyPrecision(final CurrencyId currencyId)
+	protected CurrencyPrecision getCurrencyPrecision(final CurrencyId currencyId)
 	{
 		return Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
 	}
@@ -258,7 +259,7 @@ public class CurrencyBL implements ICurrencyBL
 	{
 		final CurrencyConversionTypeId conversionTypeId = conversionCtx.getConversionTypeId();
 		final LocalDate conversionDate = conversionCtx.getConversionDate();
-		final int currencyPrecision = getCurrencyPrecision(currencyToId);
+		final CurrencyPrecision currencyPrecision = getCurrencyPrecision(currencyToId);
 
 		final BigDecimal conversionRate;
 		if (currencyFromId.equals(currencyToId))

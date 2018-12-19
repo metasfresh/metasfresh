@@ -50,6 +50,7 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -1241,7 +1242,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		//
 		// Iterate the invoice tax facts
-		final int precision = as.getStandardPrecision();
+		final CurrencyPrecision precision = as.getStandardPrecision();
 		for (final I_Fact_Acct taxFactAcct : getInvoiceTaxFacts())
 		{
 			//
@@ -1398,7 +1399,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * @param precision precision
 	 * @return (taxAmt / invoice grand total amount) * taxAmt
 	 */
-	private static final BigDecimal calcAmount(final BigDecimal taxAmt, final BigDecimal invoiceGrandTotalAmt, final BigDecimal discountAmt, final int precision)
+	private static final BigDecimal calcAmount(final BigDecimal taxAmt, final BigDecimal invoiceGrandTotalAmt, final BigDecimal discountAmt, final CurrencyPrecision precision)
 	{
 		if (log.isDebugEnabled())
 		{
@@ -1413,12 +1414,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		//
-		final BigDecimal multiplier = taxAmt.divide(invoiceGrandTotalAmt, 10, BigDecimal.ROUND_HALF_UP);
+		final BigDecimal multiplier = taxAmt.divide(invoiceGrandTotalAmt, 10, RoundingMode.HALF_UP);
 		BigDecimal taxAmtPart = multiplier.multiply(discountAmt);
-		if (taxAmtPart.scale() > precision)
-		{
-			taxAmtPart = taxAmtPart.setScale(precision, BigDecimal.ROUND_HALF_UP);
-		}
+		taxAmtPart = precision.roundIfNeeded(taxAmtPart);
 
 		if (log.isDebugEnabled())
 		{

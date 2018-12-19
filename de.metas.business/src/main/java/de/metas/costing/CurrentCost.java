@@ -7,6 +7,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -49,7 +50,7 @@ public final class CurrentCost
 	private final CostElement costElement;
 
 	private final CurrencyId currencyId;
-	private final int precision;
+	private final CurrencyPrecision precision;
 
 	private final UomId uomId;
 
@@ -65,7 +66,7 @@ public final class CurrentCost
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
 			@NonNull final CurrencyId currencyId,
-			final int precision,
+			@NonNull final CurrencyPrecision precision,
 			@NonNull final I_C_UOM uom,
 			final BigDecimal ownCostPrice,
 			final BigDecimal componentsCostPrice,
@@ -73,8 +74,6 @@ public final class CurrentCost
 			final BigDecimal cumulatedAmt,
 			final BigDecimal cumulatedQty)
 	{
-		Check.assume(precision >= 0, "precision >= 0");
-
 		this.repoId = repoId > 0 ? repoId : 0;
 
 		this.costSegment = costSegment;
@@ -149,7 +148,7 @@ public final class CurrentCost
 		final Quantity newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
-			final CostAmount ownCostPrice = newAmt.divide(newQty.getAsBigDecimal(), getPrecision(), RoundingMode.HALF_UP);
+			final CostAmount ownCostPrice = newAmt.divide(newQty.getAsBigDecimal(), getPrecision().toInt(), RoundingMode.HALF_UP);
 			this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
 		}
 		currentQty = newQty;

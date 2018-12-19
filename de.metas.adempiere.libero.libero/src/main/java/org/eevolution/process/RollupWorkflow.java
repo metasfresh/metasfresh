@@ -57,6 +57,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.IResourceProductService;
@@ -288,24 +289,23 @@ public class RollupWorkflow extends JavaProcess
 
 	private Stream<RoutingActivitySegmentCost> computeRoutingSegmentCostsAndStream(final PPRouting routing, final CostSegmentAndElement costSegmentAndElement)
 	{
-		final int precision = getCostingPrecision(costSegmentAndElement.getAcctSchemaId());
+		final CurrencyPrecision precision = getCostingPrecision(costSegmentAndElement.getAcctSchemaId());
 
 		return routing.getActivities()
 				.stream()
 				.map(activity -> computeRoutingActivitySegmentCost(activity, costSegmentAndElement, precision));
 	}
 
-	private int getCostingPrecision(final AcctSchemaId acctSchemaId)
+	private CurrencyPrecision getCostingPrecision(final AcctSchemaId acctSchemaId)
 	{
 		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
-		final int precision = acctSchema.getCosting().getCostingPrecision();
-		return precision;
+		return acctSchema.getCosting().getCostingPrecision();
 	}
 
 	private RoutingActivitySegmentCost computeRoutingActivitySegmentCost(
 			final PPRoutingActivity activity,
 			final CostSegmentAndElement costSegmentAndElement,
-			final int precision)
+			final CurrencyPrecision precision)
 	{
 		final ResourceId stdResourceId = activity.getResourceId();
 		final CostSegmentAndElement resourceCostSegmentAndElement = createCostSegment(costSegmentAndElement, stdResourceId);

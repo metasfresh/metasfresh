@@ -26,6 +26,7 @@ import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -141,7 +142,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		return Optional.ofNullable(result);
 	}
 
-	private int getCostingPrecision(final CostDetailCreateRequest request)
+	private CurrencyPrecision getCostingPrecision(final CostDetailCreateRequest request)
 	{
 		final AcctSchemaId acctSchemaId = request.getAcctSchemaId();
 		return acctSchemasRepo.getById(acctSchemaId)

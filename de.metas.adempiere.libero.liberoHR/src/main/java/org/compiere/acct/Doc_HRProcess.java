@@ -16,6 +16,7 @@
 package org.compiere.acct;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -128,7 +129,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 				int HR_Concept_ID = rs.getInt(1);
 				BigDecimal sumAmount = rs.getBigDecimal(3);
 				// round amount according to currency
-				sumAmount = sumAmount.setScale(as.getStandardPrecision(), BigDecimal.ROUND_HALF_UP);
+				sumAmount = sumAmount.setScale(as.getStandardPrecision().toInt(), RoundingMode.HALF_UP);
 				String AccountSign = rs.getString(4);
 				int AD_OrgTrx_ID = rs.getInt(6);
 				int C_Activity_ID = rs.getInt(7);

@@ -7,6 +7,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -123,7 +124,7 @@ public class CostAmount
 		return multiply(quantity.getAsBigDecimal());
 	}
 
-	public CostAmount multiply(@NonNull final Percent percent, final int precision)
+	public CostAmount multiply(@NonNull final Percent percent, final CurrencyPrecision precision)
 	{
 		if (percent.isZero())
 		{
@@ -135,7 +136,7 @@ public class CostAmount
 		}
 		else
 		{
-			return new CostAmount(percent.multiply(value, precision), currencyId);
+			return new CostAmount(percent.multiply(value, precision.toInt()), currencyId);
 		}
 	}
 
@@ -166,21 +167,23 @@ public class CostAmount
 		return divide(divisor.getAsBigDecimal(), precision, roundingMode);
 	}
 
-	public CostAmount roundToPrecisionIfNeeded(final int precision)
+	public CostAmount roundToPrecisionIfNeeded(final CurrencyPrecision precision)
 	{
-		if (value.scale() <= precision)
+		final BigDecimal valueRounded = precision.roundIfNeeded(value);
+		if (value.equals(valueRounded))
 		{
 			return this;
 		}
-
-		final BigDecimal valueNew = value.setScale(precision, RoundingMode.HALF_UP);
-		return new CostAmount(valueNew, currencyId);
+		else
+		{
+			return new CostAmount(valueRounded, currencyId);
+		}
 	}
 
 	public CostAmount roundToCostingPrecisionIfNeeded(final AcctSchema acctSchema)
 	{
 		final AcctSchemaCosting acctSchemaCosting = acctSchema.getCosting();
-		final int precision = acctSchemaCosting.getCostingPrecision();
+		final CurrencyPrecision precision = acctSchemaCosting.getCostingPrecision();
 		return roundToPrecisionIfNeeded(precision);
 	}
 

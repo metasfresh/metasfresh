@@ -44,6 +44,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.product.IProductBL;
@@ -264,7 +265,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
 		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
-		final int costingPrecision = acctSchema.getCosting().getCostingPrecision();
+		final CurrencyPrecision costingPrecision = acctSchema.getCosting().getCostingPrecision();
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 

@@ -41,6 +41,7 @@ import org.compiere.model.X_GL_JournalLine;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -92,16 +93,16 @@ public class GL_JournalLine
 	{
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(journalLine.getGL_Journal().getC_AcctSchema_ID());
 		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
-		final int precision = acctSchema.getStandardPrecision();
+		final CurrencyPrecision precision = acctSchema.getStandardPrecision();
 		final BigDecimal currencyRate = journalLine.getCurrencyRate();
 
 		// AmtAcct = AmtSource * CurrencyRate ==> Precision
 		final BigDecimal amtSourceDr = journalLine.getAmtSourceDr();
-		final BigDecimal amtAcctDr = amtSourceDr.multiply(currencyRate).setScale(precision, RoundingMode.HALF_UP);
+		final BigDecimal amtAcctDr = amtSourceDr.multiply(currencyRate).setScale(precision.toInt(), RoundingMode.HALF_UP);
 		journalLine.setAmtAcctDr(amtAcctDr);
 
 		final BigDecimal amtSourceCr = journalLine.getAmtSourceCr();
-		final BigDecimal amtAcctCr = amtSourceCr.multiply(currencyRate).setScale(precision, RoundingMode.HALF_UP);
+		final BigDecimal amtAcctCr = amtSourceCr.multiply(currencyRate).setScale(precision.toInt(), RoundingMode.HALF_UP);
 		journalLine.setAmtAcctCr(amtAcctCr);
 	}
 
