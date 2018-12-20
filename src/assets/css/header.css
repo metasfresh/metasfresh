@@ -299,31 +299,34 @@
 
 .header-left-side {
     width: calc(50% - 75px);
-    position: relative;
     padding-left: 55px;
+    align-items: center;
 }
+
+.desktop .header-left-side {
+    position: relative;
+}
+
 .header-left-side > .tooltip-parent {
     position: absolute;
     top: 0;
     left: 0;
 }
+
 .header-right-side {
     width: calc(50% - 75px);
     display: flex;
     flex-direction: row;
-}
-.header-right-side {
     align-items: center;
     justify-content: flex-end;
 }
+
 .header-right-side .form-group {
     height: auto;
     min-height: 100%;
     margin: 0;
 }
-.header-left-side {
-    align-items: center;
-}
+
 .btn-header-open {
     border-width: 1px 1px 0 1px;
     border-style: solid;
@@ -337,7 +340,6 @@
 }
 
 /* OVERLAY */
-
 
 .menu-overlay {
     position: fixed;
