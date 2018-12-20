@@ -252,6 +252,24 @@ Cypress.Commands.add('pressDoneButton', () => {
   })
 });
 
+Cypress.Commands.add('pressStartButton', () => {
+  describe('Press an overlay\'s start-button', function() {
+
+    // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
+    // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
+    cy.on('window:confirm', (str) => {
+      expect(str).to.eq('Everything is awesome and the process has started')
+    });
+
+    //webui.modal.actions.done
+    const startText = Cypress.messages.modal.actions.start;
+    cy.get('.btn')
+      .contains(startText)
+      .should('exist')
+      .click();
+  })
+});
+
 Cypress.Commands.add('selectTab', (tabName) => {
   describe('Select and activate the tab with a certain name', function() {
     return cy.get(`#tab_${tabName}`).click()
@@ -353,13 +371,12 @@ Cypress.Commands.add('executeQuickAction', (actionName, active) => {
 });
 
 Cypress.Commands.add('executeHeaderAction', (actionName) => {
-  const name = actionName.toLowerCase().replace(/\s/g, '');
-
-  describe('Fire header action with a certain name', function() {
-    cy.get('.header-container .btn-header').click();
+   describe('Fire header action with a certain name', function() {
+    cy.get('.header-container .btn-square .meta-icon-more').click();
     cy.get('.subheader-container').should('exist');
 
-    return cy.get(`#headerAction_${name}`).click();
+    //return cy.get(`#headerAction_${name}`).click();
+    return cy.get(`#headerAction_${actionName}`).click();
   });
 });
 
