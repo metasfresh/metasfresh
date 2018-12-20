@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import lombok.NonNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -45,6 +43,7 @@ import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Create MLookups
@@ -611,7 +610,7 @@ public class MLookupFactory
 			{
 				if (whereClause.indexOf('.') == -1)
 				{
-					s_log.error("getLookupInfo: WHERE should be fully qualified: {} \n tableRefInfo={}", whereClause, tableRefInfo);
+					s_log.error("getLookupInfo: WHERE should be fully qualified whereClause={};\n tableRefInfo={}", whereClause, tableRefInfo);
 				}
 				sqlWhereClauseStatic = whereClause;
 				sqlWhereClauseDynamic = null;
