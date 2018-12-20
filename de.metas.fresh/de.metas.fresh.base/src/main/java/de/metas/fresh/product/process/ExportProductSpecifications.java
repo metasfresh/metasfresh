@@ -7,7 +7,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.ss.usermodel.Font;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
@@ -59,7 +59,7 @@ public class ExportProductSpecifications extends JavaProcess
 				.data(data)
 				.columnHeaders(getColumnHeaders())
 				.build()
-				.setCharset(HSSFFont.ANSI_CHARSET)
+				.setCharset(Font.ANSI_CHARSET)
 				.exportToTempFile();
 
 		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();

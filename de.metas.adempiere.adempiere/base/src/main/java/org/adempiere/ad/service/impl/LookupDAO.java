@@ -1,9 +1,5 @@
 package org.adempiere.ad.service.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.concurrent.Immutable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -49,8 +45,6 @@ import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_AD_Column;
@@ -71,13 +65,14 @@ import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 
 public class LookupDAO implements ILookupDAO
 {
@@ -86,7 +81,7 @@ public class LookupDAO implements ILookupDAO
 	private final static String COLUMNNAME_Value = "Value";
 
 	private static final ITableRefInfo tableRefInfo_Account = TableRefInfo.builder()
-			.setName("Account")
+			.setIdentifier("Account - C_ValidCombination_ID")
 			.setTableName(I_C_ValidCombination.Table_Name)
 			.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
 			.setAutoComplete(true)
@@ -141,7 +136,7 @@ public class LookupDAO implements ILookupDAO
 		}
 	}
 
-	@Immutable
+	@Value
 	@VisibleForTesting
 	public static final class TableRefInfo implements ITableRefInfo
 	{
@@ -150,11 +145,7 @@ public class LookupDAO implements ILookupDAO
 			return new TableRefInfoBuilder();
 		}
 
-		// NOTE to developer:
-		// * make sure all the fields are primitives or immutable.
-		// * when adding new fields, please change "equals" and "hashCode" methods too
-
-		private final String name; // used only for debugging
+		private final String identifier; // used only for debugging
 		private final String tableName;
 		private final String keyColumn;
 		private final String displayColumn;
@@ -170,13 +161,9 @@ public class LookupDAO implements ILookupDAO
 
 		private TableRefInfo(@NonNull final TableRefInfoBuilder builder)
 		{
-			name = builder.name;
-
-			Check.assumeNotEmpty(builder.tableName, "tableName not empty");
-			tableName = builder.tableName;
-
-			Check.assumeNotEmpty(builder.keyColumn, "keyColumn not empty");
-			keyColumn = builder.keyColumn;
+			identifier = builder.identifier;
+			tableName = Check.assumeNotEmpty(builder.tableName, "tableName not empty");
+			keyColumn = Check.assumeNotEmpty(builder.keyColumn, "keyColumn not empty");
 
 			if (!Check.isEmpty(builder.displayColumn, true))
 			{
@@ -222,157 +209,6 @@ public class LookupDAO implements ILookupDAO
 			zoomAD_Window_ID_Override = builder.zoomAD_Window_ID_Override <= 0 ? -1 : builder.zoomAD_Window_ID_Override;
 
 			autoComplete = builder.autoComplete;
-
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.omitNullValues()
-					.add("name", name)
-					.add("tableName", tableName)
-					.add("keyColumn", keyColumn)
-					.add("displayColumn", displayColumn)
-					.add("displayColumnSQL", displayColumnSQL)
-					.add("valueDisplayed", valueDisplayed)
-					.add("whereClause", whereClause)
-					.add("orderByClause", orderByClause)
-					.add("translated", translated)
-					.add("zoomWindow", zoomSO_Window_ID)
-					.add("zoomWindowPO", zoomPO_Window_ID)
-					.add("overrideZoomWindow", zoomAD_Window_ID_Override)
-					.add("autoComplete", autoComplete)
-
-					.toString();
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return new HashcodeBuilder()
-					.append(tableName)
-					.append(keyColumn)
-					.append(displayColumn)
-					.append(displayColumnSQL)
-					.append(valueDisplayed)
-					.append(whereClause)
-					.append(orderByClause)
-					.append(translated)
-					.append(zoomSO_Window_ID)
-					.append(zoomPO_Window_ID)
-					.append(zoomAD_Window_ID_Override)
-					.append(autoComplete)
-
-					.toHashcode();
-		}
-
-		@Override
-		public boolean equals(final Object obj)
-		{
-			if (this == obj)
-			{
-				return true;
-			}
-
-			final TableRefInfo other = EqualsBuilder.getOther(this, obj);
-			if (other == null)
-			{
-				return false;
-			}
-
-			return new EqualsBuilder()
-					.append(tableName, other.tableName)
-					.append(keyColumn, other.keyColumn)
-					.append(displayColumn, other.displayColumn)
-					.append(displayColumnSQL, other.displayColumnSQL)
-					.append(valueDisplayed, other.valueDisplayed)
-					.append(whereClause, other.whereClause)
-					.append(orderByClause, other.orderByClause)
-					.append(translated, other.translated)
-					.append(zoomSO_Window_ID, other.zoomSO_Window_ID)
-					.append(zoomPO_Window_ID, other.zoomPO_Window_ID)
-					.append(zoomAD_Window_ID_Override, other.zoomAD_Window_ID_Override)
-					.append(autoComplete, other.autoComplete)
-					.isEqual();
-		}
-
-		@Override
-		public String getName()
-		{
-			return name;
-		}
-
-		@Override
-		public String getTableName()
-		{
-			return tableName;
-		}
-
-		@Override
-		public String getKeyColumn()
-		{
-			return keyColumn;
-		}
-
-		@Override
-		public String getDisplayColumn()
-		{
-			return displayColumn;
-		}
-
-		@Override
-		public boolean isValueDisplayed()
-		{
-			return valueDisplayed;
-		}
-
-		@Override
-		public boolean isTranslated()
-		{
-			return translated;
-		}
-
-		@Override
-		public String getWhereClause()
-		{
-			return whereClause;
-		}
-
-		@Override
-		public String getOrderByClause()
-		{
-			return orderByClause;
-		}
-
-		@Override
-		public int getZoomSO_Window_ID()
-		{
-			return zoomSO_Window_ID;
-		}
-
-		@Override
-		public int getZoomPO_Window_ID()
-		{
-			return zoomPO_Window_ID;
-		}
-
-		@Override
-		public int getZoomAD_Window_ID_Override()
-		{
-			return zoomAD_Window_ID_Override;
-		}
-
-		@Override
-		public String getDisplayColumnSQL()
-		{
-			return displayColumnSQL;
-		}
-
-		@Override
-		public boolean isAutoComplete()
-		{
-			return autoComplete;
 		}
 
 		@Override
@@ -389,7 +225,7 @@ public class LookupDAO implements ILookupDAO
 	@VisibleForTesting
 	public static final class TableRefInfoBuilder
 	{
-		private String name; // used only for debugging
+		private String identifier; // used only for debugging
 		private String tableName;
 		private String keyColumn;
 		private String displayColumn = null;
@@ -405,7 +241,6 @@ public class LookupDAO implements ILookupDAO
 
 		private TableRefInfoBuilder()
 		{
-			super();
 		}
 
 		public TableRefInfo build()
@@ -413,9 +248,9 @@ public class LookupDAO implements ILookupDAO
 			return new TableRefInfo(this);
 		}
 
-		public TableRefInfoBuilder setName(final String name)
+		public TableRefInfoBuilder setIdentifier(final String identifier)
 		{
-			this.name = name;
+			this.identifier = identifier;
 			return this;
 		}
 
@@ -490,7 +325,6 @@ public class LookupDAO implements ILookupDAO
 			this.autoComplete = autoComplete;
 			return this;
 		}
-
 	}
 
 	/* package */class LookupDisplayInfo implements ILookupDisplayInfo
@@ -637,7 +471,7 @@ public class LookupDAO implements ILookupDAO
 				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "					// 10..11
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
-				+ ", r.Name as ReferenceName" // 14
+				+ ", r.Name as ReferenceName"
 				// #2340 Also collect information about the ref table being a reference target
 				+ " FROM AD_Ref_Table rt"
 				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
@@ -671,10 +505,10 @@ public class LookupDAO implements ILookupDAO
 				final String displayColumnSQL = rs.getString(11);
 				final int zoomAD_Window_ID_Override = rs.getInt(12);
 				final boolean autoComplete = "Y".equals(rs.getString(13));
-				final String referenceName = rs.getString(14);
+				final String referenceName = rs.getString("ReferenceName");
 
 				tableRefInfo = TableRefInfo.builder()
-						.setName(referenceName)
+						.setIdentifier("AD_Reference[ID=" + AD_Reference_ID + ",Name=" + referenceName + "]")
 						.setTableName(TableName)
 						.setKeyColumn(KeyColumn)
 						.setDisplayColumn(DisplayColumn)
@@ -744,7 +578,7 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		final ITableRefInfo tableRefInfo = TableRefInfo.builder()
-				.setName("Direct_" + tableName)
+				.setIdentifier("Direct[FromColumn" + columnName + ",To=" + tableName + "." + columnName + "]")
 				.setTableName(tableName)
 				.setKeyColumn(keyColumn)
 				.setAutoComplete(autoComplete)
