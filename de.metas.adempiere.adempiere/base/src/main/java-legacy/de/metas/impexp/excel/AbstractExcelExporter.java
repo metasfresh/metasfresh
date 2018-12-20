@@ -147,7 +147,7 @@ public abstract class AbstractExcelExporter
 	public AbstractExcelExporter(@Nullable final ExcelFormat excelFormat)
 	{
 		this.excelFormat = excelFormat != null ? excelFormat : ExcelFormats.getDefaultFormat();
-		m_workbook = excelFormat.createWorkbook();
+		m_workbook = this.excelFormat.createWorkbook();
 		m_dataFormat = m_workbook.createDataFormat();
 	}
 
