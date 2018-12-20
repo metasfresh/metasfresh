@@ -2,6 +2,7 @@ package de.metas.impexp.excel;
 
 import org.apache.poi.hssf.usermodel.HSSFHeader;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Workbook;
 
 /*
@@ -46,7 +47,7 @@ final class Excel97Format implements ExcelFormat
 	}
 
 	@Override
-	public Workbook createWorkbook()
+	public Workbook createWorkbook(final boolean useStreamingImplementation_IGNORED)
 	{
 		return new HSSFWorkbook();
 	}
@@ -66,5 +67,11 @@ final class Excel97Format implements ExcelFormat
 	public String getTotalPagesMarkupTag()
 	{
 		return HSSFHeader.numPages();
+	}
+
+	@Override
+	public int getLastRowIndex()
+	{
+		return SpreadsheetVersion.EXCEL97.getLastRowIndex();
 	}
 }
