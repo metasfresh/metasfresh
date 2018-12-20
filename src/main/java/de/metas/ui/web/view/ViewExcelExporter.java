@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.impexp.excel.AbstractExcelExporter;
 import de.metas.impexp.excel.CellValue;
 import de.metas.impexp.excel.CellValues;
+import de.metas.impexp.excel.ExcelFormat;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.util.PageIndex;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -56,11 +57,13 @@ import lombok.NonNull;
 
 	@Builder
 	private ViewExcelExporter(
+			@NonNull final ExcelFormat excelFormat,
 			@NonNull final IView view,
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final ViewLayout layout,
 			@NonNull final String adLanguage)
 	{
+		super(excelFormat);
 		this.layout = layout;
 		this.adLanguage = adLanguage;
 
