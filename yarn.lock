@@ -11058,10 +11058,10 @@ react-datetime@^2.14.0:
     prop-types "^15.5.7"
     react-onclickoutside "^6.5.0"
 
-react-debounce-input@~3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/react-debounce-input/-/react-debounce-input-3.1.0.tgz#38e63d0ed7d8b519d8b5f39487600aee58af451d"
-  integrity sha512-7XG+VpWHfcZfKjrXQ11fPB30YdVvAjnPvi45RJQtLRb79otQEnXON2cCInydEAw+y+zxvH5g48kRMKU069vd0w==
+react-debounce-input@~3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/react-debounce-input/-/react-debounce-input-3.2.0.tgz#6978c6061d898f549f40417fb0d2ebbecf50aaaa"
+  integrity sha1-aXjGBh2Jj1SfQEF/sNLrvs9Qqqo=
   dependencies:
     lodash.debounce "^4"
     prop-types "^15"
