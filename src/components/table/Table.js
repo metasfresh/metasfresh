@@ -386,7 +386,7 @@ class Table extends Component {
   selectRangeProduct = ids => {
     const { dispatch, tabInfo, type, viewId } = this.props;
 
-    this.setState({ selected: ids });
+    this.setState({ selected: [...ids] });
 
     if (tabInfo) {
       dispatch(
@@ -522,9 +522,12 @@ class Table extends Component {
             return;
           }
         }
+      } else if (parentNode.className.includes('js-not-unselect')) {
+        return;
       }
 
       this.deselectAllProducts();
+
       if (showIncludedViewOnSelect) {
         showIncludedViewOnSelect({
           showIncludedView: false,
