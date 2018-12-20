@@ -85,7 +85,7 @@ public class UpdateContractOrderStatus
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(term.getContractStatus())
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
 		{
-			// update order contract status to cancelled
+			// update order contract status to cancel
 			final List<I_C_Order> orders = orderDAO.getByIds(orderIds, I_C_Order.class);
 			for (final I_C_Order order : orders)
 			{
