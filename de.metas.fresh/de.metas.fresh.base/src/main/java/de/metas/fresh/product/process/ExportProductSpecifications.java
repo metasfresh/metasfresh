@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
+import org.apache.poi.ss.usermodel.Font;
+import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Ini;
 
@@ -62,6 +64,15 @@ public class ExportProductSpecifications extends JavaProcess
 		final IExporter csvExporter = Services.get(IExporterFactory.class).createExporter(IExporterFactory.MIMETYPE_CSV, dataSource, config);
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		csvExporter.export(out);
+
+		final List<List<Object>> data = excelExporterService.getDataFromSQL(getSql());
+		final File tempFile = ArrayExcelExporter.builder()
+				.ctx(getCtx())
+				.data(data)
+				.columnHeaders(getColumnHeaders())
+				.build()
+				.setCharset(Font.ANSI_CHARSET)
+				.exportToTempFile();
 
 		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();
 

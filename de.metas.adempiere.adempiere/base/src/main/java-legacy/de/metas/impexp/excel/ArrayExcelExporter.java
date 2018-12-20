@@ -16,6 +16,8 @@ package de.metas.impexp.excel;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -27,20 +29,25 @@ import lombok.NonNull;
  */
 public class ArrayExcelExporter extends AbstractExcelExporter
 {
-	private Properties m_ctx = null;
-	private List<List<Object>> m_data = null;
+	private final Properties m_ctx;
+	private final List<List<Object>> m_data;
+	private final List<String> m_columnHeaders;
 
 	@Builder
 	private ArrayExcelExporter(
+			@Nullable final ExcelFormat excelFormat,
 			@NonNull final Properties ctx,
-			@NonNull final List<List<Object>> data)
+			@NonNull final List<List<Object>> data,
+			final List<String> columnHeaders)
 	{
+		super(excelFormat);
+
 		m_ctx = ctx;
 		m_data = data;
 	}
 
 	@Override
-	public Properties getCtx()
+	protected Properties getCtx()
 	{
 		return m_ctx;
 	}

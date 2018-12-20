@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -103,10 +104,13 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+import com.google.common.io.Files;
+
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
+import de.metas.impexp.excel.ExcelFormats;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import net.miginfocom.layout.AC;
@@ -1008,10 +1012,20 @@ public class Viewer extends CFrame
 		chooser.addChoosableFileFilter(new ExtensionFileFilter("txt", msgBL.getMsg(m_ctx, "FileTXT")));
 		chooser.addChoosableFileFilter(new ExtensionFileFilter("ssv", msgBL.getMsg(m_ctx, "FileSSV")));
 		chooser.addChoosableFileFilter(new ExtensionFileFilter("csv", msgBL.getMsg(m_ctx, "FileCSV")));
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("xls", msgBL.getMsg(m_ctx, "FileXLS")));
+		//
+		final Set<String> excelFileExtensions = ExcelFormats.getFileExtensionsDefaultFirst();
+		for(String excelFileExtension : excelFileExtensions)
+		{
+			final String formatName = ExcelFormats.getFormatByFileExtension(excelFileExtension).getName();
+			final ExtensionFileFilter filter = new ExtensionFileFilter(excelFileExtension, excelFileExtension + " - " + formatName);
+			chooser.addChoosableFileFilter(filter);
+		}
+		
 		//
 		if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+		{
 			return;
+		}
 
 		//	Create File
 		File outFile = ExtensionFileFilter.getFile(chooser.getSelectedFile(), chooser.getFileFilter());
@@ -1026,15 +1040,7 @@ public class Viewer extends CFrame
 			return;
 		}
 
-		String ext = outFile.getPath();
-		//	no extension
-		if (ext.lastIndexOf('.') == -1)
-		{
-			ADialog.error(m_WindowNo, this, "FileInvalidExtension");
-			return;
-		}
-		ext = ext.substring(ext.lastIndexOf('.')+1).toLowerCase();
-		log.info( "File=" + outFile.getPath() + "; Type=" + ext);
+		final String ext = Files.getFileExtension(outFile.getPath()).toLowerCase();
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
@@ -1052,7 +1058,7 @@ public class Viewer extends CFrame
 				m_reportEngine.createCSV(outFile, '\t', m_reportEngine.getPrintFormat().getLanguage());
 			else if (ext.equals("html") || ext.equals("htm"))
 				m_reportEngine.createHTML(outFile, false, m_reportEngine.getPrintFormat().getLanguage());
-			else if (ext.equals("xls"))
+			else if(excelFileExtensions.contains(ext))
 			{
 				m_reportEngine.createXLS(outFile, m_reportEngine.getPrintFormat().getLanguage());
 				Env.startBrowser(outFile);

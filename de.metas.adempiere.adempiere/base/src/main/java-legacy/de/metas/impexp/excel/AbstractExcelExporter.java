@@ -23,19 +23,22 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFFooter;
-import org.apache.poi.hssf.usermodel.HSSFHeader;
-import org.apache.poi.hssf.usermodel.HSSFHyperlink;
-import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.BuiltinFormats;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Footer;
+import org.apache.poi.ss.usermodel.Header;
+import org.apache.poi.ss.usermodel.Hyperlink;
+import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.compiere.Adempiere;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -48,7 +51,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-
 import lombok.NonNull;
 
 /**
@@ -127,22 +129,36 @@ public abstract class AbstractExcelExporter
 	protected final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	//
-	private final HSSFWorkbook m_workbook;
-	private final HSSFDataFormat m_dataFormat;
-	private HSSFFont m_fontHeader = null;
-	private HSSFFont m_fontDefault = null;
+	private final ExcelFormat excelFormat;
+	//
+	private final Workbook m_workbook;
+	private final DataFormat m_dataFormat;
+	private Font m_fontHeader = null;
+	private Font m_fontDefault = null;
 	private Language m_lang = null;
 	private int m_sheetCount = 0;
+	private byte m_charset = Font.DEFAULT_CHARSET;
 	//
 	private int m_colSplit = 1;
 	private int m_rowSplit = 1;
 	/** Styles cache */
-	private HashMap<String, HSSFCellStyle> m_styles = new HashMap<>();
+	private HashMap<String, CellStyle> m_styles = new HashMap<>();
 
-	public AbstractExcelExporter()
+	public AbstractExcelExporter(@Nullable final ExcelFormat excelFormat)
 	{
-		m_workbook = new HSSFWorkbook();
+		this.excelFormat = excelFormat != null ? excelFormat : ExcelFormats.getDefaultFormat();
+		m_workbook = excelFormat.createWorkbook();
 		m_dataFormat = m_workbook.createDataFormat();
+	}
+
+	public final ExcelFormat getExcelFormat()
+	{
+		return excelFormat;
+	}
+
+	public final String getFileExtension()
+	{
+		return getExcelFormat().getFileExtension();
 	}
 
 	protected Properties getCtx()
@@ -182,23 +198,23 @@ public abstract class AbstractExcelExporter
 		return this;
 	}
 
-	private HSSFFont getHeaderFont()
+	private Font getHeaderFont()
 	{
 		if (m_fontHeader == null)
 		{
 			m_fontHeader = m_workbook.createFont();
-			m_fontHeader.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			m_fontHeader.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		}
 		return m_fontHeader;
 	}
 
-	private HSSFFont getFont(final int row)
+	private Font getFont(final int row)
 	{
-		HSSFFont font = null;
+		Font font = null;
 		if (isFunctionRow(row))
 		{
 			font = m_workbook.createFont();
-			font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 			font.setItalic(true);
 		}
 		else
@@ -209,6 +225,8 @@ public abstract class AbstractExcelExporter
 			}
 			font = m_fontDefault;
 		}
+
+		font.setCharSet(m_charset);
 		return font;
 	}
 
@@ -258,16 +276,16 @@ public abstract class AbstractExcelExporter
 
 	}
 
-	private HSSFCellStyle getStyle(final int row, final int col)
+	private CellStyle getStyle(final int row, final int col)
 	{
 		int displayType = getDisplayType(row, col);
 		String key = "cell-" + col + "-" + displayType;
-		HSSFCellStyle cs = m_styles.get(key);
+		CellStyle cs = m_styles.get(key);
 		if (cs == null)
 		{
-			boolean isHighlightNegativeNumbers = true;
+			final boolean isHighlightNegativeNumbers = true;
 			cs = m_workbook.createCellStyle();
-			HSSFFont font = getFont(row);
+			final Font font = getFont(row);
 			cs.setFont(font);
 			// Border
 			cs.setBorderLeft((short)1);
@@ -290,27 +308,27 @@ public abstract class AbstractExcelExporter
 		return cs;
 	}
 
-	private HSSFCellStyle getHeaderStyle(final int col)
+	private CellStyle getHeaderStyle(final int col)
 	{
 		String key = "header-" + col;
-		HSSFCellStyle cs_header = m_styles.get(key);
+		CellStyle cs_header = m_styles.get(key);
 		if (cs_header == null)
 		{
-			HSSFFont font_header = getHeaderFont();
+			Font font_header = getHeaderFont();
 			cs_header = m_workbook.createCellStyle();
 			cs_header.setFont(font_header);
 			cs_header.setBorderLeft((short)2);
 			cs_header.setBorderTop((short)2);
 			cs_header.setBorderRight((short)2);
 			cs_header.setBorderBottom((short)2);
-			cs_header.setDataFormat(HSSFDataFormat.getBuiltinFormat("text"));
+			cs_header.setDataFormat((short)BuiltinFormats.getBuiltinFormat("text"));
 			cs_header.setWrapText(true);
 			m_styles.put(key, cs_header);
 		}
 		return cs_header;
 	}
 
-	private void fixColumnWidth(final HSSFSheet sheet, final int lastColumnIndex)
+	private void fixColumnWidth(final Sheet sheet, final int lastColumnIndex)
 	{
 		for (short colnum = 0; colnum < lastColumnIndex; colnum++)
 		{
@@ -318,10 +336,13 @@ public abstract class AbstractExcelExporter
 		}
 	}
 
-	private void closeTableSheet(final HSSFSheet prevSheet, final String prevSheetName, final int colCount)
+	private void closeTableSheet(final Sheet prevSheet, final String prevSheetName, final int colCount)
 	{
 		if (prevSheet == null)
+		{
 			return;
+		}
+
 		//
 		fixColumnWidth(prevSheet, colCount);
 		if (m_colSplit >= 0 || m_rowSplit >= 0)
@@ -340,9 +361,9 @@ public abstract class AbstractExcelExporter
 		}
 	}
 
-	private HSSFSheet createTableSheet()
+	private Sheet createTableSheet()
 	{
-		HSSFSheet sheet = m_workbook.createSheet();
+		Sheet sheet = m_workbook.createSheet();
 		formatPage(sheet);
 		createHeaderFooter(sheet);
 		createTableHeader(sheet);
@@ -351,29 +372,31 @@ public abstract class AbstractExcelExporter
 		return sheet;
 	}
 
-	private void createTableHeader(final HSSFSheet sheet)
+	private void createTableHeader(final Sheet sheet)
 	{
 		int colnumMax = 0;
 
-		HSSFRow row = sheet.createRow(0);
+		final Row row = sheet.createRow(0);
 		// for all columns
 		int colnum = 0;
 		for (int col = 0; col < getColumnCount(); col++)
 		{
 			if (colnum > colnumMax)
+			{
 				colnumMax = colnum;
+			}
+
 			//
 			if (isColumnPrinted(col))
 			{
-				HSSFCell cell = row.createCell(colnum);
+				final Cell cell = row.createCell(colnum);
 				// header row
-				HSSFCellStyle style = getHeaderStyle(col);
+				CellStyle style = getHeaderStyle(col);
 				cell.setCellStyle(style);
 				String str = fixString(getHeaderName(col));
 
 				// poi37, poi301 compatibility issue
 				cell.setCellValue(str);
-				// cell.setCellValue(new HSSFRichTextString(str));
 
 				colnum++;
 			}	// printed
@@ -381,27 +404,27 @@ public abstract class AbstractExcelExporter
 		// m_workbook.setRepeatingRowsAndColumns(m_sheetCount, 0, 0, 0, 0);
 	}
 
-	protected void createHeaderFooter(final HSSFSheet sheet)
+	protected void createHeaderFooter(final Sheet sheet)
 	{
 		// Sheet Header
-		HSSFHeader header = sheet.getHeader();
-		header.setRight(HSSFHeader.page() + " / " + HSSFHeader.numPages());
+		Header header = sheet.getHeader();
+		header.setRight(excelFormat.getCurrentPageMarkupTag() + " / " + excelFormat.getTotalPagesMarkupTag());
 		// Sheet Footer
-		HSSFFooter footer = sheet.getFooter();
+		Footer footer = sheet.getFooter();
 		footer.setLeft(Adempiere.getBrandCopyright());
 		footer.setCenter(Env.getHeader(getCtx(), 0));
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		footer.setRight(DisplayType.getDateFormat(DisplayType.DateTime, getLanguage()).format(now));
 	}
 
-	protected void formatPage(final HSSFSheet sheet)
+	protected void formatPage(final Sheet sheet)
 	{
 		sheet.setFitToPage(true);
 		// Print Setup
-		HSSFPrintSetup ps = sheet.getPrintSetup();
+		PrintSetup ps = sheet.getPrintSetup();
 		ps.setFitWidth((short)1);
 		ps.setNoColor(true);
-		ps.setPaperSize(HSSFPrintSetup.A4_PAPERSIZE);
+		ps.setPaperSize(PrintSetup.A4_PAPERSIZE);
 		ps.setLandscape(false);
 	}
 
@@ -414,14 +437,14 @@ public abstract class AbstractExcelExporter
 	 */
 	public final void export(final OutputStream out) throws IOException
 	{
-		HSSFSheet sheet = createTableSheet();
+		Sheet sheet = createTableSheet();
 		String sheetName = null;
 		//
 		int colnumMax = 0;
 		for (int rownum = 0, xls_rownum = 1; rownum < getRowCount(); rownum++, xls_rownum++)
 		{
 			boolean isPageBreak = false;
-			final HSSFRow row = sheet.createRow(xls_rownum);
+			final Row row = sheet.createRow(xls_rownum);
 			// for all columns
 			int colnum = 0;
 			for (int col = 0; col < getColumnCount(); col++)
@@ -431,10 +454,10 @@ public abstract class AbstractExcelExporter
 				//
 				if (isColumnPrinted(col))
 				{
-					final HSSFCell cell = row.createCell(colnum);
+					final Cell cell = row.createCell(colnum);
 
 					// 03917: poi-3.7 doesn't have this method anymore
-					// cell.setEncoding(HSSFCell.ENCODING_UTF_16); // Bug-2017673 - Export Report as Excel - Bad Encoding
+					// cell.setEncoding(Cell.ENCODING_UTF_16); // Bug-2017673 - Export Report as Excel - Bad Encoding
 
 					//
 					// Fetch cell value
@@ -465,15 +488,19 @@ public abstract class AbstractExcelExporter
 					}
 					else if (cellValue.isBoolean())
 					{
-						final boolean value = cellValue.booleanValue();
-						cell.setCellValue(new HSSFRichTextString(convertBooleanToString(value)));
+						final CreationHelper creationHelper = m_workbook.getCreationHelper();
+
+						final String value = convertBooleanToString(cellValue.booleanValue());
+						cell.setCellValue(creationHelper.createRichTextString(value));
 					}
 					else
 					{
-						final String value = fixString(cellValue.stringValue());	// formatted
-						cell.setCellValue(new HSSFRichTextString(value));
+						final CreationHelper creationHelper = m_workbook.getCreationHelper();
 
-						final HSSFHyperlink hyperlink = createHyperlinkIfURL(value);
+						final String value = fixString(cellValue.stringValue());	// formatted
+						cell.setCellValue(creationHelper.createRichTextString(value));
+
+						final Hyperlink hyperlink = createHyperlinkIfURL(value);
 						if (hyperlink != null)
 						{
 							cell.setHyperlink(hyperlink);
@@ -515,7 +542,7 @@ public abstract class AbstractExcelExporter
 		}
 	}
 
-	private HSSFHyperlink createHyperlinkIfURL(final String str)
+	private Hyperlink createHyperlinkIfURL(final String str)
 	{
 		if (str == null || str.isEmpty())
 		{
@@ -526,7 +553,7 @@ public abstract class AbstractExcelExporter
 		if (urlStr.startsWith("http://")
 				|| urlStr.startsWith("https://"))
 		{
-			final HSSFHyperlink hyperlink = m_workbook.getCreationHelper().createHyperlink(HSSFHyperlink.LINK_URL);
+			final Hyperlink hyperlink = m_workbook.getCreationHelper().createHyperlink(Hyperlink.LINK_URL);
 			hyperlink.setAddress(urlStr);
 			return hyperlink;
 		}
@@ -541,7 +568,7 @@ public abstract class AbstractExcelExporter
 		final File file;
 		try
 		{
-			file = File.createTempFile("Report_", ".xls");
+			file = File.createTempFile("Report_", "." + excelFormat.getFileExtension());
 		}
 		catch (IOException ex)
 		{
