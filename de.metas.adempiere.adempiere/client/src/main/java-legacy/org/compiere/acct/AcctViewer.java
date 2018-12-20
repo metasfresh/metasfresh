@@ -1180,7 +1180,9 @@ public class AcctViewer extends CFrame
 		}
 		try
 		{
-			RModelExcelExporter exporter = new RModelExcelExporter(model);
+			final RModelExcelExporter exporter = RModelExcelExporter.builder()
+					.model(model)
+					.build();
 			final File file = exporter.exportToTempFile();
 			Env.startBrowser(file);
 		}
