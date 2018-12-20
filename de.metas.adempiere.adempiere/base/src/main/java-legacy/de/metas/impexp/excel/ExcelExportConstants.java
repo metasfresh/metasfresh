@@ -46,7 +46,7 @@ public class ExcelExportConstants
 	private static final String SYSCONFIG_MaxRowsToAllowCellWidthAutoSize = "de.metas.excel.MaxRowsToAllowCellWidthAutoSize";
 	private static final String SYSCONFIG_UseStreamingWorkbookImplementation = "de.metas.excel.UseStreamingWorkbookImplementation";
 
-	public static final int DEFAULT_MaxRowsToAllowCellWidthAutoSize = -1;
+	public static final int DEFAULT_MaxRowsToAllowCellWidthAutoSize = 100_000;
 	@Default
 	private int maxRowsToAllowCellWidthAutoSize = DEFAULT_MaxRowsToAllowCellWidthAutoSize;
 
