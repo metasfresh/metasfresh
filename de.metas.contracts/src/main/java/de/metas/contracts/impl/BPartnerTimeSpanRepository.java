@@ -182,29 +182,7 @@ public class BPartnerTimeSpanRepository
 
 		if (!Check.isEmpty(lastSalesContractInvoiceId))
 		{
-			final InvoiceId predecessorSalesContractInvoiceId = contractInvoiceService.retrievePredecessorSalesContractInvoiceId(lastSalesContractInvoiceId);
-
-			if (Check.isEmpty(predecessorSalesContractInvoiceId))
-			{
-				setNewCustomer(bpartnerId);
-			}
-			else
-			{
-				final I_C_Invoice predecessorInvoice = invoiceDAO.getByIdInTrx(predecessorSalesContractInvoiceId);
-				final I_C_Invoice lastInvoice = invoiceDAO.getByIdInTrx(lastSalesContractInvoiceId);
-
-				final Timestamp predecessorInvoiceDate = predecessorInvoice.getDateInvoiced();
-				final Timestamp lastInvoiceDate = lastInvoice.getDateInvoiced();
-
-				if (dateExceedsThreshold(predecessorInvoiceDate, lastInvoiceDate))
-				{
-					setNewCustomer(bpartnerId);
-				}
-				else
-				{
-					setRegularCustomer(bpartnerId);
-				}
-			}
+			updateTimeSpanAfterInvoiceId(bpartnerId, lastSalesContractInvoiceId);
 		}
 
 	}
@@ -237,6 +215,34 @@ public class BPartnerTimeSpanRepository
 			return;
 		}
 
-		updateTimeSpan(bpartnerId);
+		updateTimeSpanAfterInvoiceId(bpartnerId, invoiceId);
+	}
+
+	private void updateTimeSpanAfterInvoiceId(final BPartnerId bpartnerId, final InvoiceId invoiceId)
+	{
+		final InvoiceId predecessorSalesContractInvoiceId = contractInvoiceService.retrievePredecessorSalesContractInvoiceId(invoiceId);
+
+		if (Check.isEmpty(predecessorSalesContractInvoiceId))
+		{
+			setNewCustomer(bpartnerId);
+		}
+		else
+		{
+			final I_C_Invoice predecessorInvoice = invoiceDAO.getByIdInTrx(predecessorSalesContractInvoiceId);
+			final I_C_Invoice lastInvoice = invoiceDAO.getByIdInTrx(invoiceId);
+
+			final Timestamp predecessorInvoiceDate = predecessorInvoice.getDateInvoiced();
+			final Timestamp lastInvoiceDate = lastInvoice.getDateInvoiced();
+
+			if (dateExceedsThreshold(predecessorInvoiceDate, lastInvoiceDate))
+			{
+				setNewCustomer(bpartnerId);
+			}
+			else
+			{
+				setRegularCustomer(bpartnerId);
+			}
+		}
+
 	}
 }

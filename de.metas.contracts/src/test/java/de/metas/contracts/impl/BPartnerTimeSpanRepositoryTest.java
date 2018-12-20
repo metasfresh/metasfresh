@@ -285,6 +285,44 @@ public class BPartnerTimeSpanRepositoryTest
 
 	}
 
+	@Test
+	public void updateTimeSpan_SameInvoiceDate()
+	{
+		final I_C_BPartner partner = createPartner("Partner1");
+
+		final I_C_BPartner_TimeSpan timespan = createBPartnerTimeSpan(partner.getC_BPartner_ID());
+
+		final Timestamp masterEndDate1 = SystemTime.asTimestamp();
+		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate1);
+
+		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
+
+		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(),"documentNo1", masterEndDate1);
+
+		final I_C_InvoiceLine invoiceLine1 = createInvoiceLine(invoice1.getC_Invoice_ID());
+
+		createInvoiceLineAlloc(cand1.getC_Invoice_Candidate_ID(), invoiceLine1.getC_InvoiceLine_ID());
+
+		final Timestamp masterEndDate2 = SystemTime.asTimestamp();
+		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate2);
+
+		final I_C_Invoice_Candidate cand2 = createInvoiceCandidate(term2.getC_Flatrate_Term_ID());
+
+		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(),"documentNo2", SystemTime.asTimestamp());
+
+		final I_C_InvoiceLine invoiceLine2 = createInvoiceLine(invoice2.getC_Invoice_ID());
+
+		createInvoiceLineAlloc(cand2.getC_Invoice_Candidate_ID(), invoiceLine2.getC_InvoiceLine_ID());
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+
+		repository.updateTimeSpan(bpartnerId);
+
+		refresh(timespan);
+		assertThat(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Stammkunde).isEqualTo(timespan.getC_BPartner_TimeSpan());
+
+	}
+
 	private I_C_Invoice_Line_Alloc createInvoiceLineAlloc(final int candId, final int invoiceLineId)
 	{
 		final I_C_Invoice_Line_Alloc alloc = newInstance(I_C_Invoice_Line_Alloc.class);
