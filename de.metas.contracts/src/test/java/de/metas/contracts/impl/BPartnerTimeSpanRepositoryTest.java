@@ -16,6 +16,7 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_TimeSpan;
 import org.compiere.model.X_C_BPartner_TimeSpan;
+import org.compiere.model.X_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -311,6 +312,7 @@ public class BPartnerTimeSpanRepositoryTest
 		invoice.setDocumentNo(documentNo);
 		invoice.setDateInvoiced(dateInvoiced);
 		invoice.setIsSOTrx(true);
+		invoice.setDocStatus(X_C_Invoice.DOCSTATUS_Completed);
 
 		save(invoice);
 
