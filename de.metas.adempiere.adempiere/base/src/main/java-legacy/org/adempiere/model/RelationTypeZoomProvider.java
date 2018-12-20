@@ -530,7 +530,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 		if (windowId <= 0)
 		{
-			throw PORelationException.throwMissingWindowId(tableRefInfo.getName(), tableRefInfo.getTableName(), isSOTrx);
+			throw PORelationException.throwMissingWindowId(tableRefInfo.getIdentifier(), tableRefInfo.getTableName(), isSOTrx);
 		}
 
 		return windowId;

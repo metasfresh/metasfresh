@@ -8,7 +8,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Base64;
 import java.util.GregorianCalendar;
@@ -464,7 +463,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			{
 				externalFactorMod = invoiceLineAmount
 						.setScale(invoiceLineAmount.scale() + 10)
-						.multiply(xServiceExternalFactor, MathContext.UNLIMITED)
+						.multiply(xServiceExternalFactor)
 						.divide(xServiceAmount, RoundingMode.HALF_UP);
 			}
 			serviceMod.externalFactor(externalFactorMod);
