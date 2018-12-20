@@ -2,7 +2,7 @@
 
 import { createAndCompleteTransition, createAndCompleteRefundAmountConditions } from '../../support/utils/contract';
 import { BPartner, BPartnerLocation } from '../../support/utils/bPartner';
-import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
+//import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 
 describe('Create tiered amount-based refund conditions', function() {
     before(function() {
