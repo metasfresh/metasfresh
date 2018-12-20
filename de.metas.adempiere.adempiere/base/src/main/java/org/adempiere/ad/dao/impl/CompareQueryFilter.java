@@ -28,17 +28,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.compiere.model.MQuery;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -222,7 +220,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 	}
 
-	private final int compareValues(Object value1, Object value2)
+	private static final int compareValues(final Object value1, final Object value2)
 	{
 		if (Objects.equals(value1, value2))
 		{
@@ -236,38 +234,42 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		{
 			return -1;
 		}
-		else if (value1 instanceof Comparable<?>)
+
+		final Object value1Norm = normalizeValue(value1);
+		final Object value2Norm = normalizeValue(value2);
+		try
 		{
-			return compareHandleRepoIdAware(value1, value2);
+			@SuppressWarnings("unchecked")
+			final Comparable<Object> value1Cmp = (Comparable<Object>)value1Norm;
+			return value1Cmp.compareTo(value2Norm);
 		}
-		else if (value2 instanceof Comparable<?>)
+		catch (final Exception ex)
 		{
-			return -1 * compareHandleRepoIdAware(value2, value1);
-		}
-		else
-		{
-			throw new IllegalArgumentException("Values '" + value1 + "' and '" + value2 + "' could not be compared");
+			throw new IllegalStateException("Failed comparing values:"
+					+ "\n value1: '" + value1 + "' (" + value1.getClass() + "), normalized to " + value1Norm + " (" + value1Norm.getClass() + ")"
+					+ "\n value2: '" + value2 + "' (" + value2.getClass() + "), normalized to " + value2Norm + " (" + value2Norm.getClass() + ")",
+					ex);
 		}
 	}
 
-	/**
-	 * @param comparableObj can be cast to {@code Comparable<Object>}
-	 * @param valueToCompareWith might be {@code instanceof} {@link RepoIdAware}.
-	 */
-	private int compareHandleRepoIdAware(
-			@NonNull final Object comparableObj,
-			@Nullable final Object valueToCompareWith)
+	private static Object normalizeValue(final Object value)
 	{
-		@SuppressWarnings("unchecked")
-		final Comparable<Object> comparable = (Comparable<Object>)comparableObj;
-
-		if (comparableObj instanceof Integer && valueToCompareWith instanceof RepoIdAware)
+		if (value == null)
 		{
-			final RepoIdAware repoIdAware = (RepoIdAware)valueToCompareWith;
-			return comparable.compareTo(repoIdAware.getRepoId());
+			return null;
 		}
-
-		return comparable.compareTo(valueToCompareWith);
+		else if (value instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)value).getRepoId();
+		}
+		else if (TimeUtil.isDateOrTimeObject(value))
+		{
+			return TimeUtil.asZonedDateTime(value);
+		}
+		else
+		{
+			return value;
+		}
 	}
 
 	@Override
