@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.cache.CacheBuilder;
@@ -14,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.impexp.excel.AbstractExcelExporter;
 import de.metas.impexp.excel.CellValue;
 import de.metas.impexp.excel.CellValues;
+import de.metas.impexp.excel.ExcelExportConstants;
 import de.metas.impexp.excel.ExcelFormat;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.util.PageIndex;
@@ -57,13 +60,14 @@ import lombok.NonNull;
 
 	@Builder
 	private ViewExcelExporter(
-			@NonNull final ExcelFormat excelFormat,
+			@Nullable final ExcelFormat excelFormat,
+			@Nullable final ExcelExportConstants constants,
 			@NonNull final IView view,
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final ViewLayout layout,
 			@NonNull final String adLanguage)
 	{
-		super(excelFormat);
+		super(excelFormat, constants);
 		this.layout = layout;
 		this.adLanguage = adLanguage;
 
