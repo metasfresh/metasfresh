@@ -1,6 +1,8 @@
 package de.metas.impexp.excel;
 
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /*
@@ -13,12 +15,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,16 +28,18 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 
 /**
- * Excel Open XML format (XLSX)
- * 
+ * Excel Open XML format (XLSX, aka Excel 2007)
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 final class ExcelOpenXMLFormat implements ExcelFormat
 {
+	public static final String FILE_EXTENSION = "xlsx";
+
 	@Override
 	public String getFileExtension()
 	{
-		return "xlsx";
+		return FILE_EXTENSION;
 	}
 
 	@Override
@@ -45,9 +49,16 @@ final class ExcelOpenXMLFormat implements ExcelFormat
 	}
 
 	@Override
-	public Workbook createWorkbook()
+	public Workbook createWorkbook(final boolean useStreamingImplementation)
 	{
-		return new XSSFWorkbook();
+		if (useStreamingImplementation)
+		{
+			return new SXSSFWorkbook();
+		}
+		else
+		{
+			return new XSSFWorkbook();
+		}
 	}
 
 	@Override
@@ -62,6 +73,12 @@ final class ExcelOpenXMLFormat implements ExcelFormat
 	{
 		// see XSSFHeaderFooter javadoc
 		return "&N";
+	}
+
+	@Override
+	public int getLastRowIndex()
+	{
+		return SpreadsheetVersion.EXCEL2007.getLastRowIndex();
 	}
 
 }

@@ -44,9 +44,10 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	@Builder
 	private GridTabExcelExporter(
 			@Nullable final ExcelFormat excelFormat,
+			@Nullable final ExcelExportConstants constants,
 			@NonNull final GridTab tab)
 	{
-		super(excelFormat);
+		super(excelFormat, constants);
 		m_tab = tab;
 		setFreezePane(0, 1);
 	}
