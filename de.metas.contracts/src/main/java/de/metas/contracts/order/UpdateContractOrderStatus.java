@@ -115,7 +115,7 @@ public class UpdateContractOrderStatus
 	private void setContractStatusForCurrentOrder(@NonNull final I_C_Order contractOrder, @NonNull final I_C_Flatrate_Term term)
 	{
 		// set status for the current order
-		final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTerms(OrderId.ofRepoId(contractOrder.getC_Order_ID()));
+		final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTermsForOrderId(OrderId.ofRepoId(contractOrder.getC_Order_ID()));
 		final boolean anyActiveTerms = terms
 				.stream()
 				.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()

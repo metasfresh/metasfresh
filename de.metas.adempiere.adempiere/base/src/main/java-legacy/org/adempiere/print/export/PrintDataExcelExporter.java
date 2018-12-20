@@ -16,19 +16,25 @@ package org.adempiere.print.export;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSizeName;
 
-import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.MPrintFormatItem;
 import org.compiere.print.MPrintPaper;
 import org.compiere.print.PrintData;
 import org.compiere.print.PrintDataElement;
 
+import de.metas.i18n.Language;
 import de.metas.impexp.excel.AbstractExcelExporter;
 import de.metas.impexp.excel.CellValue;
 import de.metas.impexp.excel.CellValues;
+import de.metas.impexp.excel.ExcelExportConstants;
+import de.metas.impexp.excel.ExcelFormat;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
  * Export PrintData to Excel (XLS) file
@@ -40,14 +46,21 @@ import de.metas.impexp.excel.CellValues;
 public class PrintDataExcelExporter
 		extends AbstractExcelExporter
 {
-	private PrintData m_printData;
-	private MPrintFormat m_printFormat;
+	private final PrintData m_printData;
+	private final MPrintFormat m_printFormat;
 
-	public PrintDataExcelExporter(final PrintData printData, final MPrintFormat printFormat)
+	@Builder
+	private PrintDataExcelExporter(
+			@Nullable final ExcelFormat excelFormat,
+			@Nullable final ExcelExportConstants constants,
+			@NonNull final PrintData printData,
+			@NonNull final MPrintFormat printFormat,
+			@Nullable final Language language)
 	{
-		super();
+		super(excelFormat, constants);
 		this.m_printData = printData;
 		this.m_printFormat = printFormat;
+		setLanguage(language);
 	}
 
 	@Override
@@ -157,7 +170,7 @@ public class PrintDataExcelExporter
 	}
 
 	@Override
-	protected void formatPage(final HSSFSheet sheet)
+	protected void formatPage(final Sheet sheet)
 	{
 		super.formatPage(sheet);
 		MPrintPaper paper = MPrintPaper.get(this.m_printFormat.getAD_PrintPaper_ID());
@@ -167,37 +180,37 @@ public class PrintDataExcelExporter
 		MediaSizeName mediaSizeName = paper.getMediaSize().getMediaSizeName();
 		if (MediaSizeName.NA_LETTER.equals(mediaSizeName))
 		{
-			paperSize = HSSFPrintSetup.LETTER_PAPERSIZE;
+			paperSize = PrintSetup.LETTER_PAPERSIZE;
 		}
 		else if (MediaSizeName.NA_LEGAL.equals(mediaSizeName))
 		{
-			paperSize = HSSFPrintSetup.LEGAL_PAPERSIZE;
+			paperSize = PrintSetup.LEGAL_PAPERSIZE;
 		}
 		else if (MediaSizeName.EXECUTIVE.equals(mediaSizeName))
 		{
-			paperSize = HSSFPrintSetup.EXECUTIVE_PAPERSIZE;
+			paperSize = PrintSetup.EXECUTIVE_PAPERSIZE;
 		}
 		else if (MediaSizeName.ISO_A4.equals(mediaSizeName))
 		{
-			paperSize = HSSFPrintSetup.A4_PAPERSIZE;
+			paperSize = PrintSetup.A4_PAPERSIZE;
 		}
 		else if (MediaSizeName.ISO_A5.equals(mediaSizeName))
 		{
-			paperSize = HSSFPrintSetup.A5_PAPERSIZE;
+			paperSize = PrintSetup.A5_PAPERSIZE;
 		}
 		else if (MediaSizeName.NA_NUMBER_10_ENVELOPE.equals(mediaSizeName))
 		{
-			paperSize = HSSFPrintSetup.ENVELOPE_10_PAPERSIZE;
+			paperSize = PrintSetup.ENVELOPE_10_PAPERSIZE;
 		}
 		// else if (MediaSizeName..equals(mediaSizeName)) {
-		// paperSize = HSSFPrintSetup.ENVELOPE_DL_PAPERSIZE;
+		// paperSize = PrintSetup.ENVELOPE_DL_PAPERSIZE;
 		// }
 		// else if (MediaSizeName..equals(mediaSizeName)) {
-		// paperSize = HSSFPrintSetup.ENVELOPE_CS_PAPERSIZE;
+		// paperSize = PrintSetup.ENVELOPE_CS_PAPERSIZE;
 		// }
 		else if (MediaSizeName.MONARCH_ENVELOPE.equals(mediaSizeName))
 		{
-			paperSize = HSSFPrintSetup.ENVELOPE_MONARCH_PAPERSIZE;
+			paperSize = PrintSetup.ENVELOPE_MONARCH_PAPERSIZE;
 		}
 		if (paperSize != -1)
 		{
@@ -208,10 +221,10 @@ public class PrintDataExcelExporter
 		sheet.getPrintSetup().setLandscape(paper.isLandscape());
 		//
 		// Set Paper Margin:
-		sheet.setMargin(HSSFSheet.TopMargin, ((double)paper.getMarginTop()) / 72);
-		sheet.setMargin(HSSFSheet.RightMargin, ((double)paper.getMarginRight()) / 72);
-		sheet.setMargin(HSSFSheet.LeftMargin, ((double)paper.getMarginLeft()) / 72);
-		sheet.setMargin(HSSFSheet.BottomMargin, ((double)paper.getMarginBottom()) / 72);
+		sheet.setMargin(Sheet.TopMargin, ((double)paper.getMarginTop()) / 72);
+		sheet.setMargin(Sheet.RightMargin, ((double)paper.getMarginRight()) / 72);
+		sheet.setMargin(Sheet.LeftMargin, ((double)paper.getMarginLeft()) / 72);
+		sheet.setMargin(Sheet.BottomMargin, ((double)paper.getMarginBottom()) / 72);
 		//
 	}
 

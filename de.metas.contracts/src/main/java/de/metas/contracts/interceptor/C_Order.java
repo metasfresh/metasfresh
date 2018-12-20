@@ -7,6 +7,8 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_BPartner_TimeSpan;
 import org.compiere.model.ModelValidator;
 
 /*
@@ -32,15 +34,19 @@ import org.compiere.model.ModelValidator;
  */
 
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
+import de.metas.contracts.impl.BPartnerTimeSpanRepository;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -49,10 +55,12 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 @Interceptor(I_C_Order.class)
+@Component("de.metas.contracts.interceptor.C_Order")
 public class C_Order
 {
 	private static final Logger logger = LogManager.getLogger(C_Order.class);
@@ -169,5 +177,40 @@ public class C_Order
 
 		ol.setProcessed(true);
 		InterfaceWrapperHelper.save(ol);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void updateBPartnerTimeSpan(final I_C_Order order)
+	{
+
+		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
+
+		final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
+
+		if (!order.isSOTrx())
+		{
+			// nothing to do
+			return;
+		}
+
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		if (!contractOrderService.isContractSalesOrder(orderId))
+		{
+			// nothing to do
+			return;
+		}
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+
+		final I_C_BPartner_TimeSpan bpartnerTimeSpan = bpartnerTimeSpanRepo.retrieveBPartnerTimeSpan(bpartnerId);
+
+		if (!Check.isEmpty(bpartnerTimeSpan))
+		{
+			// nothing to do
+			return;
+		}
+
+		bpartnerTimeSpanRepo.setNewCustomer(bpartnerId);
 	}
 }

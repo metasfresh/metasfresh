@@ -172,6 +172,12 @@
 			<artifactId>jxls-poi</artifactId>
 			<version>1.0.9</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

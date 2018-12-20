@@ -943,7 +943,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTerms(orderId);
+		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderId(orderId);
 		final I_C_Flatrate_Term suitableTerm = orderTerms
 				.stream()
 				.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID()
