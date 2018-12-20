@@ -26,11 +26,11 @@ describe('purchase order Test', function() {
         .lastName('Contact')
         .defaultContact(true)
         .build())
-        .contact(new BPartnerContact
-          .builder()
-          .firstName('Secondary')
-          .lastName('Contact')
-          .build())
+      .contact(new BPartnerContact
+        .builder()
+        .firstName('Secondary')
+        .lastName('Contact')
+        .build())
       .build()
       .apply();
   });

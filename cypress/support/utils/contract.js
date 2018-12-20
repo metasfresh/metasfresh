@@ -84,12 +84,18 @@ export function createAndCompleteRefundAmountConditions(conditionsName, transiti
 function createAmountConfig(refundMode, minQty, amount) 
 {
     cy.pressAddNewButton();
+    cy.writeIntoStringField('MinQty', `{selectall}{backspace}${minQty}`);
+    cy.wait(500);
     cy.selectInListField('RefundMode', refundMode);
     cy.selectInListField('RefundBase', 'B'/*Betrag/amount*/); 
 
     cy.writeIntoLookupListField('M_Product_ID', 'P002737', 'Convenience Salat 250g_P002737');
-    cy.writeIntoStringField('MinQty', `{selectall}{backspace}${minQty}`);
-    cy.writeIntoStringField('RefundAmt', `{selectall}{backspace}${amount}`);
+    cy.writeIntoLookupListField('C_Currency_ID', 'EUR', 'EUR');
+    
     cy.selectInListField('C_InvoiceSchedule_ID', 'jä', 'jährlich');
+    cy.wait(500);
+
+    cy.writeIntoStringField('RefundAmt', `{selectall}{backspace}${amount}{enter}`);
+    cy.wait(500);
     cy.pressDoneButton();
 }

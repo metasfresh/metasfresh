@@ -5,6 +5,7 @@ export class BPartner
     {
         this.name = builder.name;
         this.isVendor = builder.isVendor;
+        this.vendorDiscountSchema = builder.vendorDiscountSchema;
         this.isCustomer = builder.isCustomer;
         this.locations = builder.bPartnerLocations;
         this.contacts = builder.contacts;
@@ -34,6 +35,12 @@ export class BPartner
             {
                cy.log(`BPartnerBuilder - isVendor = ${isVendor}`);
                this.isVendor = isVendor;
+               return this;
+            }
+            vendorDiscountSchema(vendorDiscountSchema)
+            {
+               cy.log(`BPartnerBuilder - vendorDiscountSchema = ${vendorDiscountSchema}`);
+               this.vendorDiscountSchema = vendorDiscountSchema;
                return this;
             }
             customer(isCustomer)
@@ -158,14 +165,23 @@ function applyBPartner(bPartner)
         cy.visit('/window/123/NEW');
 
         cy.writeIntoStringField('CompanyName', bPartner.name);
+        cy.wait(500);
         cy.writeIntoStringField('Name2', bPartner.name);
-        if(bPartner.isVendor) 
+        cy.wait(500);
+        if(bPartner.isVendor || bPartner.vendorDiscountSchema) 
         {
             cy.selectTab('Vendor');
             cy.selectSingleTabRow();
 
             cy.openAdvancedEdit();
-            cy.clickOnCheckBox('IsVendor');
+            if(bPartner.isVendor)
+            {
+                cy.clickOnCheckBox('IsVendor');
+            }
+            if(bPartner.vendorDiscountSchema)
+            {
+                cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, bPartner.vendorDiscountSchema);
+            }
             cy.pressDoneButton();
         }
 
@@ -180,17 +196,22 @@ function applyBPartner(bPartner)
         }
 
         // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
-        bPartner.locations.forEach(function (bPartnerLocation) {
-            applyLocation(bPartnerLocation);
-        });
-        cy.get('table tbody tr')
-            .should('have.length', bPartner.locations.length);
-
-        bPartner.contacts.forEach(function (bPartnerContact) {
-            applyContact(bPartnerContact);
-        });
-        cy.get('table tbody tr')
-            .should('have.length', bPartner.contacts.length);
+        if(bPartner.locations.length > 0)
+        {
+            bPartner.locations.forEach(function (bPartnerLocation) {
+                applyLocation(bPartnerLocation);
+            });
+            cy.get('table tbody tr')
+                .should('have.length', bPartner.locations.length);
+        }
+        if(bPartner.contacts.length > 0)
+        {
+            bPartner.contacts.forEach(function (bPartnerContact) {
+                applyContact(bPartnerContact);
+            });
+            cy.get('table tbody tr')
+                .should('have.length', bPartner.contacts.length);
+        }
     });
 }
 
