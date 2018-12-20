@@ -157,7 +157,7 @@ function applyPurchaseOrderLine(purchaseOrderLine)
     cy.selectTab('C_OrderLine');
     cy.pressBatchEntryButton();
 
-    cy.wait('@postAddress').then(xhr => {
+    //cy.wait('@postAddress').then(xhr => {
         //const requestId = xhr.response.body.id;
 
         //cy.route('PATCH', `/rest/api/window/143/1000489/187/quickInput/${requestId}`).as('patchAddress');
@@ -169,5 +169,5 @@ function applyPurchaseOrderLine(purchaseOrderLine)
         cy.get('.table-flex-wrapper')
           .find('tbody tr')
           .should('have.length', 3);
-      });
+    //});
 }
