@@ -95,6 +95,8 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
+		// extend the contract
+		//
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
@@ -102,22 +104,19 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 				.forceComplete(true)
 				.nextTermStartDate(null)
 				.build();
-
 		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
-
 		final I_C_Order order = InterfaceWrapperHelper.create(extendedContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 
 		// simulate extending order
+		//
 		final I_C_Flatrate_Term newContract = simulateExtendingContractOrder(contract);
 
-//		final I_C_Flatrate_Term newContract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
-//		newContract.setC_OrderLine_Term(orderLineExtended);
-//		InterfaceWrapperHelper.save(newContract);
-
+		// cancel the contract
+		//
 		final Timestamp cancellingDate = TimeUtil.parseTimestamp("2018-12-10");
 		final ContractChangeParameters changeParameters = ContractChangeParameters.builder()
 				.changeDate(cancellingDate)
@@ -125,18 +124,14 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_General)
 				.terminationMemo(terminationMemo)
 				.build();
-
 		contractChangeBL.cancelContract(newContract, changeParameters);
 
-		InterfaceWrapperHelper.refresh(newContract);
+		//
+		//
 		InterfaceWrapperHelper.refresh(order);
-		
 		final I_C_Order extendedOrder = InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
-		System.out.println("Initial order : " + order.getC_Order_ID());
-		System.out.println("Extended order : " + extendedOrder.getC_Order_ID());
 		
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
-		
 		assertThat(extendedOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 	}
 
@@ -145,6 +140,8 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
+		// extend the contract
+		//
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
@@ -152,18 +149,19 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 				.forceComplete(true)
 				.nextTermStartDate(null)
 				.build();
-
 		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
-
 		final I_C_Order order = InterfaceWrapperHelper.create(extendedContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 
 		// simulate extending order
+		//
 		final I_C_Flatrate_Term newContract = simulateExtendingContractOrder(contract);
 
+		// void the contract
+		//
 		final Timestamp cancellingDate = TimeUtil.parseTimestamp("2018-12-10");
 		final ContractChangeParameters changeParameters = ContractChangeParameters.builder()
 				.changeDate(cancellingDate)
@@ -172,14 +170,12 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_General)
 				.terminationMemo(terminationMemo)
 				.build();
-
 		contractChangeBL.cancelContract(newContract, changeParameters);
 
-		InterfaceWrapperHelper.refresh(newContract);
 		InterfaceWrapperHelper.refresh(order);
-
-		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 		final I_C_Order extendedtOrder = InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 		assertThat(extendedtOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 	}
 
@@ -188,17 +184,18 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
-
 		final I_C_Order order = InterfaceWrapperHelper.create(contract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 
-		// simulate extending order
+		// simulate extending the order
+		//
 		final I_C_Flatrate_Term newContract = simulateExtendingContractOrder(contract);
-
 		InterfaceWrapperHelper.refresh(order);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 
 
+		// extend the contract
+		//
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(newContract)
@@ -206,13 +203,13 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 				.forceComplete(true)
 				.nextTermStartDate(null)
 				.build();
-
 		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
-
 		final I_C_Flatrate_Term extendedContract = newContract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
 
 
+		// void the contract
+		//
 		final Timestamp cancellingDate = TimeUtil.parseTimestamp("2018-12-10");
 		final ContractChangeParameters changeParameters = ContractChangeParameters.builder()
 				.changeDate(cancellingDate)
@@ -221,14 +218,12 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_General)
 				.terminationMemo(terminationMemo)
 				.build();
-
 		contractChangeBL.cancelContract(extendedContract, changeParameters);
 
-		InterfaceWrapperHelper.refresh(newContract);
 		InterfaceWrapperHelper.refresh(order);
-
-		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 		final I_C_Order extendedOrder = InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 		assertThat(extendedOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}
 
