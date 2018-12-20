@@ -512,7 +512,7 @@ public class MLookupFactory
 		// Do we have columns ?
 		if (displayColumns.isEmpty())
 		{
-			s_log.error("No Identifier records found for {}", tableRefInfo);
+			s_log.error("No Identifier records found for tableRefInfo={}", tableRefInfo);
 			return null;
 		}
 
@@ -610,7 +610,8 @@ public class MLookupFactory
 			{
 				if (whereClause.indexOf('.') == -1)
 				{
-					s_log.error("getLookupInfo: WHERE should be fully qualified whereClause={};\n tableRefInfo={}", whereClause, tableRefInfo);
+					s_log.error("getLookupInfo: whereClause of tableRefInfo {} should be fully qualified\n where={};\n tableRefInfo={}",
+							tableRefInfo.getIdentifier(), whereClause, tableRefInfo);
 				}
 				sqlWhereClauseStatic = whereClause;
 				sqlWhereClauseDynamic = null;
