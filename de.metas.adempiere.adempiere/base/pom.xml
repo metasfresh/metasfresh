@@ -203,7 +203,10 @@
 					<artifactId>servlet-api</artifactId>
 				</exclusion>
 			</exclusions>
-
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
 		</dependency>
 
 		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/print/layout/BarcodeElement.java -->

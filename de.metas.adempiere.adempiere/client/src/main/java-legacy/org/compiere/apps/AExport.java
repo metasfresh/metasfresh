@@ -16,7 +16,7 @@ package org.compiere.apps;
 import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.JFileChooser;
 
@@ -25,7 +25,9 @@ import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
 import org.slf4j.Logger;
 
-import de.metas.i18n.Msg;
+import com.google.common.io.Files;
+
+import de.metas.impexp.excel.ExcelFormats;
 import de.metas.impexp.excel.GridTabExcelExporter;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -37,19 +39,26 @@ import lombok.NonNull;
  */
 public class AExport
 {
-	private Logger log = LogManager.getLogger(getClass());	
-	private Properties m_ctx = null;
+	private static final Logger log = LogManager.getLogger(AExport.class);	
 	private int m_WindowNo = 0;
 	
-	public AExport(APanel parent)
+	public AExport(final APanel parent)
 	{
-		m_ctx = Env.getCtx();
 		m_WindowNo = parent.getWindowNo();
 		//
-		JFileChooser chooser = new JFileChooser();
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("xls", Msg.getMsg(m_ctx, "FileXLS")));
+		final JFileChooser chooser = new JFileChooser();
+		final Set<String> fileExtensions = ExcelFormats.getFileExtensionsDefaultFirst();
+		for(String fileExtension : fileExtensions)
+		{
+			final String formatName = ExcelFormats.getFormatByFileExtension(fileExtension).getName();
+			final ExtensionFileFilter filter = new ExtensionFileFilter(fileExtension, fileExtension + " - " + formatName);
+			chooser.addChoosableFileFilter(filter);
+		}
+		
 		if (chooser.showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
+		{
 			return;
+		}
 
 		//	Create File
 		File outFile = ExtensionFileFilter.getFile(chooser.getSelectedFile(), chooser.getFileFilter());
@@ -64,20 +73,12 @@ public class AExport
 			return;
 		}
 
-		String ext = outFile.getPath();
-		//	no extension
-		if (ext.lastIndexOf('.') == -1)
-		{
-			ADialog.error(m_WindowNo, parent, "FileInvalidExtension");
-			return;
-		}
-		ext = ext.substring(ext.lastIndexOf('.')+1).toLowerCase();
-		log.info( "File=" + outFile.getPath() + "; Type=" + ext);
+		final String fileExtension = Files.getFileExtension(outFile.getPath());
 
 		parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try
 		{
-			if (ext.equals("xls"))
+			if(fileExtensions.contains(fileExtension))
 			{
 				createXLS(outFile, parent.getCurrentTab());
 			}
@@ -100,8 +101,12 @@ public class AExport
 	
 	private void createXLS(@NonNull final File outFile, @NonNull final GridTab tab)
 	{
-		final GridTabExcelExporter exporter = new GridTabExcelExporter(tab);
-		exporter.exportToFile(outFile);
+		GridTabExcelExporter.builder()
+				.excelFormat(ExcelFormats.getFormatByFile(outFile))
+				.tab(tab)
+				.build()
+				.exportToFile(outFile);
+
 		Env.startBrowser(outFile);
 	}
 }
