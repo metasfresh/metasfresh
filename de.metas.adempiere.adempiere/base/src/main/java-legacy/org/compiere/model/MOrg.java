@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
@@ -143,8 +144,10 @@ public class MOrg extends X_AD_Org
 		if (newRecord)
 		{
 			//	Info
-			MOrgInfo info = new MOrgInfo (this);
-			info.saveEx();
+			final I_AD_OrgInfo info = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class, this);
+			info.setDUNS ("?");
+			info.setTaxID ("?");
+			InterfaceWrapperHelper.saveRecord(info);
 
 			//	TreeNode
 			insert_Tree(MTree_Base.TREETYPE_Organization);

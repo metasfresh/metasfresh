@@ -40,7 +40,6 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrg;
-import org.compiere.model.MOrgInfo;
 import org.compiere.model.MProduct;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
@@ -859,7 +858,8 @@ public class DistributionRun extends JavaProcess
 		I_M_Warehouse m_target = null;
 		I_M_Locator m_locator_to = null;
 
-		MOrgInfo oi_source = MOrgInfo.get(getCtx(), m_run.getAD_Org_ID());
+
+		final I_AD_OrgInfo oi_source = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), m_run.getAD_Org_ID(), ITrx.TRXNAME_None);
 		m_source = warehousesRepo.getById(WarehouseId.ofRepoId(oi_source.getM_Warehouse_ID()));
 		if (m_source == null)
 			throw new AdempiereException("Do not exist Defautl Warehouse Source");
@@ -919,7 +919,8 @@ public class DistributionRun extends JavaProcess
 			lastC_BPartner_Location_ID = detail.getC_BPartner_Location_ID();
 
 			bp = new MBPartner(getCtx(), detail.getC_BPartner_ID(), get_TrxName());
-			MOrgInfo oi_target = MOrgInfo.get(getCtx(), bp.getAD_OrgBP_ID_Int());
+
+			final I_AD_OrgInfo oi_target = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), bp.getAD_OrgBP_ID_Int(),ITrx.TRXNAME_None);
 			m_target = warehousesRepo.getById(WarehouseId.ofRepoId(oi_target.getM_Warehouse_ID()));
 			if (m_target == null)
 				throw new AdempiereException("Do not exist Default Warehouse Target");
