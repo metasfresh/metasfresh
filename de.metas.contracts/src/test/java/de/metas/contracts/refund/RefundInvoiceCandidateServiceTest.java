@@ -104,7 +104,7 @@ public class RefundInvoiceCandidateServiceTest
 		conditionsId = ConditionsId.ofRepoId(20);
 		refundConfigRecords = createAndVerifyBaseRefundconfigs(conditionsId);
 
-		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(new AssignableInvoiceCandidateFactory());
+		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(AssignableInvoiceCandidateFactory.newForUnitTesting());
 
 		final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
 

@@ -282,7 +282,7 @@ import lombok.NonNull;
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(ic);
 
-		invoiceCandidateHandlerBL.setInvoiceSchedule(ic);
+		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(ic);
 
 		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
 
@@ -324,8 +324,6 @@ import lombok.NonNull;
 
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else
-
-		invoiceCandBL.set_DateToInvoice(ctx, ic);
 
 		// We need to update the NetAmtToInvoice again because in some cases this value depends on overall in invoiceable amount
 		// e.g. see ManualCandidateHandler which is calculated how much we can invoice of a credit memo amount

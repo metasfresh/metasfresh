@@ -3,11 +3,11 @@ package de.metas.contracts.refund.exceedingqty;
 import static de.metas.util.collections.CollectionUtils.singleElement;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.Mutable;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -70,7 +70,7 @@ public class CandidateAssignServiceExceedingQty
 
 	public UpdateAssignmentResult updateAssignment(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
-			@NonNull final List<RefundInvoiceCandidate> refundCandidatesToAssign,
+			@NonNull final List<RefundInvoiceCandidate> refundCandidatesToAssignTo,
 			@NonNull final RefundContract refundContract)
 	{
 		Check.errorUnless(RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundContract.extractRefundMode()),
@@ -85,18 +85,14 @@ public class CandidateAssignServiceExceedingQty
 
 		final List<AssignmentToRefundCandidate> assignments = new ArrayList<>();
 
-		for (final RefundInvoiceCandidate refundCandidateToAssign : refundCandidatesToAssign)
+		for (final RefundInvoiceCandidate refundCandidateToAssignTo : orderCandidatesByConfigMinQty(refundCandidatesToAssignTo))
 		{
+			final RefundConfig refundConfig = singleElement(refundCandidateToAssignTo.getRefundConfigs());
+
 			final AssignCandidatesRequestBuilder assignCandidatesRequest = AssignCandidatesRequest
 					.builder()
-					.assignableInvoiceCandidate(assignableCandidateWithoutRefundInvoiceCandidates);
-
-			final Mutable<RefundInvoiceCandidate> lastAssignedResultCandidate = new Mutable<>(refundCandidateToAssign);
-
-			final RefundConfig refundConfig = singleElement(refundCandidateToAssign.getRefundConfigs());
-
-			assignCandidatesRequest
-					.refundInvoiceCandidate(lastAssignedResultCandidate.getValue())
+					.assignableInvoiceCandidate(assignableCandidateWithoutRefundInvoiceCandidates)
+					.refundInvoiceCandidate(refundCandidateToAssignTo)
 					.refundConfig(refundConfig);
 
 			assignedCandidateWithRemainingQty = assignCandidates(
@@ -108,9 +104,6 @@ public class CandidateAssignServiceExceedingQty
 			// the assignableInvoiceCandidate of our assignCandidatesRequest had no assignments, so the result has exactly one assignment.
 			final AssignmentToRefundCandidate createdAssignment = singleElement(createdAssignments);
 			assignments.add(createdAssignment);
-
-			lastAssignedResultCandidate.setValue(createdAssignment.getRefundInvoiceCandidate());
-
 		}
 
 		final AssignableInvoiceCandidate resultCandidate = assignableCandidate
@@ -118,7 +111,15 @@ public class CandidateAssignServiceExceedingQty
 				.clearAssignmentsToRefundCandidates()
 				.assignmentsToRefundCandidates(assignments)
 				.build();
-		return UpdateAssignmentResult.updateDone(resultCandidate, ImmutableList.of());
+		return UpdateAssignmentResult.updateDone(resultCandidate, ImmutableList.of()/*additionalChangedCandidates*/);
+	}
+
+	private ImmutableList<RefundInvoiceCandidate> orderCandidatesByConfigMinQty(@NonNull final List<RefundInvoiceCandidate> refundCandidatesToAssign)
+	{
+		return refundCandidatesToAssign
+				.stream()
+				.sorted(Comparator.comparing(c -> singleElement(c.getRefundConfigs()).getMinQty()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -167,12 +168,7 @@ public class CandidateAssignServiceExceedingQty
 						refundConfig,
 						candidateToAssign);
 
-		final RefundInvoiceCandidate //
-		updatedRefundCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();
-		refundInvoiceCandidateRepository.save(updatedRefundCandidate);
-
-		// final AssignCandidatesRequest //
-		// updatedPair = assignCandidatesRequest.withAssignmentToRefundCandidate(assignmentToRefundCandidate);
+		refundInvoiceCandidateRepository.save(assignmentToRefundCandidate.getRefundInvoiceCandidate());
 
 		assignmentToRefundCandidateRepository.save(assignmentToRefundCandidate);
 
@@ -181,8 +177,6 @@ public class CandidateAssignServiceExceedingQty
 						.toBuilder()
 						.assignmentToRefundCandidate(assignmentToRefundCandidate)
 						.build(),
-				// saveCandidateAssignment(assignCandidatesRequest, assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate()),
 				remainingQty);
 	}
-
 }

@@ -22,7 +22,6 @@ import de.metas.contracts.refund.RefundInvoiceCandidateFactory;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.contracts.refund.RefundTestTools;
-import de.metas.contracts.refund.exceedingqty.CandidateAssignServiceExceedingQty;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -52,12 +51,13 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
-public class CandidateAssignServiceCurrentMinQtyConfigTest
+public class CandidateAssignServiceExceedingQty_RealRecords_Test
 {
-	private static final BigDecimal TWO = new BigDecimal("2");;
+	private static final BigDecimal TWO = new BigDecimal("2");
 
 	private static final BigDecimal HUNDRED = new BigDecimal("100");
-	private CandidateAssignServiceExceedingQty candidateAssignServiceCurrentMinQtyConfig;
+
+	private CandidateAssignServiceExceedingQty candidateAssignServiceExceedingQty;
 
 	private RefundTestTools refundTestTools;
 
@@ -86,7 +86,7 @@ public class CandidateAssignServiceCurrentMinQtyConfigTest
 				moneyService,
 				assignmentAggregateService);
 
-		candidateAssignServiceCurrentMinQtyConfig = new CandidateAssignServiceExceedingQty(
+		candidateAssignServiceExceedingQty = new CandidateAssignServiceExceedingQty(
 				refundInvoiceCandidateRepository,
 				refundInvoiceCandidateService,
 				assignmentToRefundCandidateRepository);
@@ -109,7 +109,7 @@ public class CandidateAssignServiceCurrentMinQtyConfigTest
 
 		// invoke the method under test
 		final IPair<AssignableInvoiceCandidate, Quantity> result = //
-				candidateAssignServiceCurrentMinQtyConfig.assignCandidates(
+				candidateAssignServiceExceedingQty.assignCandidates(
 						assignCandidatesRequest,
 						assignableCandidate.getQuantity());
 

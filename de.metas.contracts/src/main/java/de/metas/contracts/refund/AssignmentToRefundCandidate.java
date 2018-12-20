@@ -3,6 +3,7 @@ package de.metas.contracts.refund;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -29,6 +30,7 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class AssignmentToRefundCandidate
 {
 	@NonNull
@@ -52,6 +54,11 @@ public class AssignmentToRefundCandidate
 
 	boolean useAssignedQtyInSum;
 
+	/**
+	 *
+	 * @return an instance that has the currently assigned money and quantity subtracted;
+	 *         also from the new instance's {@link #getRefundInvoiceCandidate()}
+	 */
 	public AssignmentToRefundCandidate withSubtractedAssignedMoneyAndQuantity()
 	{
 		final Money moneySubtrahent = getMoneyAssignedToRefundCandidate();

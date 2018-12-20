@@ -45,7 +45,6 @@ import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -130,7 +129,7 @@ public class CandidateAssignServiceTest
 
 		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
 
-		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory();
+		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = AssignableInvoiceCandidateFactory.newForUnitTesting();
 		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(assignableInvoiceCandidateFactory);
 
 		final RefundInvoiceCandidateService refundInvoiceCandidateService = new RefundInvoiceCandidateService(
@@ -447,7 +446,7 @@ public class CandidateAssignServiceTest
 				.getById(preparedAssignableCandidates.get(TEN).getRepoId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(preparedAssignableCandidates.get(TEN)))
+						assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(preparedAssignableCandidates.get(TEN).getRepoId()))
 				.build();
 
 		final I_C_UOM uom = refundTestTools.getUomRecord();
@@ -502,7 +501,7 @@ public class CandidateAssignServiceTest
 				.getById(preparedAssignableCandidates.get(SEVEN).getRepoId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(preparedAssignableCandidates.get(SEVEN)))
+						assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(preparedAssignableCandidates.get(SEVEN).getRepoId()))
 				.build();
 
 		final I_C_UOM uom = refundTestTools.getUomRecord();
@@ -629,14 +628,14 @@ public class CandidateAssignServiceTest
 				.getById(assignableCandidateWithSeven.getRepoId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateWithSeven))
+						assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableCandidateWithSeven.getRepoId()))
 				.build();
 		final AssignableInvoiceCandidate //
 		reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository
 				.getById(assignableCandidateWithTen.getRepoId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateWithTen))
+						assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableCandidateWithTen.getRepoId()))
 				.build();
 
 		//

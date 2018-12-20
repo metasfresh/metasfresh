@@ -14,12 +14,12 @@ import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
+import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -112,7 +112,7 @@ public class CandidateAssignServiceAllQties
 		final AssignableInvoiceCandidate resultCandidate = assignableCandidate
 				.toBuilder()
 				.clearAssignmentsToRefundCandidates() // need to reload the assignments
-				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate))
+				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableCandidate.getRepoId()))
 				.build();
 		return UpdateAssignmentResult.updateDone(resultCandidate, ImmutableList.of());
 	}

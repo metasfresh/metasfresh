@@ -40,7 +40,9 @@ import lombok.Value;
  * #L%
  */
 
-/** Represents an invoice candidate that matches a refund contract and can therefore be assigned to a {@link RefundInvoiceCandidate}. */
+/**
+ * Represents a "normal" invoice candidate (e.g. from a purchase order line) that matches a refund contract and can therefore be assigned to one or more {@link RefundInvoiceCandidate}(s).
+ */
 @Value
 public class AssignableInvoiceCandidate
 {

@@ -45,7 +45,7 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 
 	PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate invoiceCandidateRecord);
 
-	Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(Consumer<I_C_Invoice_Candidate> defaultImplementation);
+	Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(Consumer<I_C_Invoice_Candidate> defaultImplementation);
 
 	boolean isMissingInvoiceCandidate(I_C_Flatrate_Term flatrateTerm);
 }

@@ -13,6 +13,7 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
@@ -85,7 +86,9 @@ public class CandidateAssignmentService
 			@NonNull final AssignableInvoiceCandidate assignableCandidate)
 	{
 		final RefundContractQuery refundContractQuery = RefundContractQuery.of(assignableCandidate);
-		final RefundContract refundContract = refundContractRepository.getByQuery(refundContractQuery).orElse(null);
+		final RefundContract refundContract = refundContractRepository
+				.getByQuery(refundContractQuery)
+				.orElse(null);
 
 		if (refundContract == null)
 		{
@@ -118,7 +121,7 @@ public class CandidateAssignmentService
 		final AssignableInvoiceCandidate reloadedAssignableCandidate = assignableInvoiceCandidateRepository
 				.getById(assignableCandidate.getRepoId())
 				.toBuilder()
-				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate))
+				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableCandidate.getRepoId()))
 				.build();
 		if (reloadedAssignableCandidate.isAssigned())
 		{
@@ -194,7 +197,7 @@ public class CandidateAssignmentService
 			return result;
 		}
 
-		// refundMode == PER_SCALE
+		// refundMode == APPLY_TO_EXCEEDING_QTY
 		final RefundContract refundContract = extractSingleElement(
 				unassignedPairs,
 				pair -> pair.getRefundInvoiceCandidate().getRefundContract());
@@ -293,9 +296,10 @@ public class CandidateAssignmentService
 
 	/**
 	 * Just unassign the given candidate for its refund candidates and subtract the formerly assigned quantity and money from those candidates.
-	 * Does not do anything about changed refund config scales.
+	 * Do not do anything about changed refund config scales.
 	 */
-	private UnassignResult unassignSingleCandidate(
+	@VisibleForTesting
+	UnassignResult unassignSingleCandidate(
 			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
 		final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates = Check

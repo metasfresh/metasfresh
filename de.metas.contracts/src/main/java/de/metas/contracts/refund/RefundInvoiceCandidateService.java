@@ -28,7 +28,6 @@ import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -262,5 +261,4 @@ public class RefundInvoiceCandidateService
 
 		return refundInvoiceCandidateRepository.save(candidateWithUpdatedMoney);
 	}
-
 }

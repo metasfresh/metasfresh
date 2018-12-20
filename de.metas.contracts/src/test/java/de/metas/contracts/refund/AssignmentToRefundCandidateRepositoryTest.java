@@ -160,17 +160,17 @@ public class AssignmentToRefundCandidateRepositoryTest
 	@Test
 	public void ofRecord_AssignableInvoiceCandidate_no_assignment_record()
 	{
-		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory();
+		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = AssignableInvoiceCandidateFactory.newForUnitTesting();
 		final AssignableInvoiceCandidate assignableIc = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
 
 		// guards
-		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
+		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getRepoId());
 		assertThat(resultBeforeDeletion).isNotEmpty();
 
 		delete(assignmentRecord);
 
 		// invoke the method under test
-		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
+		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getRepoId());
 		assertThat(resultAfterDeletion).isEmpty();
 	}
 }

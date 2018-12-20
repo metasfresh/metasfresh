@@ -51,7 +51,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -175,7 +174,7 @@ public class RefundTestTools
 	 */
 	public RefundInvoiceCandidate createRefundCandidate()
 	{
-		final RefundContract refundContract = createRefundContract();
+		final RefundContract refundContract = createRefundContract_APPLY_TO_ALL_QTIES();
 
 		return createRefundCandidate(refundContract);
 	}
@@ -205,7 +204,10 @@ public class RefundTestTools
 				.get();
 	}
 
-	public RefundContract createRefundContract()
+	/**
+	 * Creates a refund contract with a single config that has {@link RefundMode#APPLY_TO_ALL_QTIES}, i.e. {@link X_C_Flatrate_RefundConfig#REFUNDMODE_Accumulated}.
+	 */
+	public RefundContract createRefundContract_APPLY_TO_ALL_QTIES()
 	{
 		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
 		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
@@ -237,33 +239,6 @@ public class RefundTestTools
 
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
 		return refundContractRepository.getById(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
-		//
-		// final InvoiceSchedule invoiceSchedule = InvoiceSchedule
-		// .builder()
-		// .id(InvoiceScheduleId.ofRepoId(invoiceScheduleRecord.getC_InvoiceSchedule_ID()))
-		// .frequency(Frequency.DAILY)
-		// .build();
-		//
-		// final RefundConfig refundConfig = RefundConfig
-		// .builder()
-		// .id(RefundConfigId.ofRepoId(refundConfigRecord.getC_Flatrate_RefundConfig_ID()))
-		// .productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
-		// .minQty(ZERO)
-		// .refundBase(RefundBase.PERCENTAGE)
-		// .percent(Percent.of(TWENTY))
-		// .conditionsId(ConditionsId.ofRepoId(contractRecord.getC_Flatrate_Conditions_ID()))
-		// .invoiceSchedule(invoiceSchedule)
-		// .refundInvoiceType(RefundInvoiceType.INVOICE) // keep in sync with the C_DocType's subType that we set up in the constructor.
-		// .refundMode(RefundMode.ALL_MAX_SCALE)
-		// .build();
-		//
-		// final RefundContract refundContract = RefundContract.builder()
-		// .id(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()))
-		// .refundConfig(refundConfig)
-		// .startDate(CONTRACT_START_DATE)
-		// .endDate(CONTRACT_END_DATE)
-		// .build();
-		// return refundContract;
 	}
 
 	public AssignableInvoiceCandidate createAssignableCandidateStandlone()
@@ -315,7 +290,7 @@ public class RefundTestTools
 				assignableInvoiceCandidate.getMoney(),
 				Money.of(TWO, reloadedRefundCandidate.getMoney().getCurrencyId()),
 				Quantity.of(ONE, uomRecord),
-				true /*useAssignedQtyInSum*/);
+				true /* useAssignedQtyInSum */);
 		return assignableInvoiceCandidate
 				.toBuilder()
 				.assignmentToRefundCandidate(assignementToRefundCandidate)
