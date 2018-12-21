@@ -64,8 +64,11 @@ Here come the actual release notes:
   * [#1253](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1253) Problem with composed fields with non-mandatory elements
     * Adds None Option to Lookup widget dropdowns, that alows o overwrite already set a selection in a non mandatory field.
   * [#2047](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2047) Run QR code action: sometimes ESC does not work
+    * Improves the handling of escape shortcut in QR Code action.
   * [#2103](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2103) Chrome feature overwrites country selection in Lookup
+    * Fixes the behavior of WebUI after some changes in the latest Chrome update.
   * [#2109](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2109) Chrome not recognized properly
+    * Fixes the behavior of WebUI after some changes in the latest Chrome update.
   
 # metasfresh 5.84
 # Features
