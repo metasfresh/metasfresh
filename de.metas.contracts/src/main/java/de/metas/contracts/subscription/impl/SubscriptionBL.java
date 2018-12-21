@@ -243,8 +243,9 @@ public class SubscriptionBL implements ISubscriptionBL
 			correspondingTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
 			save(correspondingTerm);
 			
-			// set correct the start date by the previous flatrate term
+			// set correct the dates by the previous flatrate term
 			newTerm.setStartDate(TimeUtil.addDays(correspondingTerm.getEndDate(), 1));
+			newTerm.setMasterStartDate(correspondingTerm.getMasterStartDate());
 			save(newTerm);
 		}
 	}
