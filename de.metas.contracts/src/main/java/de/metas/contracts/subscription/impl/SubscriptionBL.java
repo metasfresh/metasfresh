@@ -178,16 +178,11 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		save(newTerm);
 
+		linkContractsIfNeeded(newTerm);
+		
 		if (completeIt)
 		{
 			Services.get(IDocumentBL.class).processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
-		}
-
-		final I_C_Flatrate_Term correspondingTerm = retrieveCorrespondingFlatrateTermFromDifferentOrder(newTerm);
-		if (correspondingTerm != null)
-		{
-			correspondingTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
-			save(correspondingTerm);
 		}
 
 		return newTerm;
@@ -246,6 +241,20 @@ public class SubscriptionBL implements ISubscriptionBL
 				.computeOrThrowEx();
 	}
 
+	private void linkContractsIfNeeded(final I_C_Flatrate_Term newTerm)
+	{
+		final I_C_Flatrate_Term correspondingTerm = retrieveCorrespondingFlatrateTermFromDifferentOrder(newTerm);
+		if (correspondingTerm != null)
+		{
+			correspondingTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
+			save(correspondingTerm);
+			
+			// set correct the start date by the previous flatrate term
+			newTerm.setStartDate(TimeUtil.addDays(correspondingTerm.getEndDate(), 1));
+			save(newTerm);
+		}
+	}
+	
 	@Override
 	public int createMissingTermsForOLCands(
 			final Properties ctx,
