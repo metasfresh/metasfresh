@@ -296,18 +296,14 @@ import lombok.NonNull;
 		}
 		catch (final ServiceConnectionException e)
 		{
-			final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
-			if (retryAdvisedInMillis > 0)
+			throw handleServiceConnectionException(trxName, e);
+		}
+		catch (final AdempiereException e)
+		{
+			final Throwable cause = e.getCause();
+			if (cause instanceof ServiceConnectionException)
 			{
-				Loggables.get().addLog("Caught a {} with an avise to retry in {}ms", e.getClass().getSimpleName(), retryAdvisedInMillis);
-
-				final WorkpackageSkipRequestException //
-				workpackageSkipRequestException = WorkpackageSkipRequestException
-						.createWithTimeoutAndThrowable(
-								e.getMessage(),
-								retryAdvisedInMillis,
-								e);
-				throw appendParameters(workpackageSkipRequestException, trxName);
+				throw handleServiceConnectionException(trxName, (ServiceConnectionException)cause);
 			}
 			throw appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
 		}
@@ -315,6 +311,24 @@ import lombok.NonNull;
 		{
 			throw appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
 		}
+	}
+
+	private RuntimeException handleServiceConnectionException(final String trxName, final ServiceConnectionException e)
+	{
+		final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
+		if (retryAdvisedInMillis > 0)
+		{
+			Loggables.get().addLog("Caught a {} with an avise to retry in {}ms", e.getClass().getSimpleName(), retryAdvisedInMillis);
+
+			final WorkpackageSkipRequestException //
+			workpackageSkipRequestException = WorkpackageSkipRequestException
+					.createWithTimeoutAndThrowable(
+							e.getMessage(),
+							retryAdvisedInMillis,
+							e);
+			return appendParameters(workpackageSkipRequestException, trxName);
+		}
+		return appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
 	}
 
 	private AdempiereException appendParameters(@NonNull final AdempiereException e, @Nullable final String trxName)
