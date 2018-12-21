@@ -996,6 +996,19 @@ public class BPartnerDAO implements IBPartnerDAO
 		return Optional.ofNullable(bPartnerId);
 	}
 
+
+	@Override
+	public ImmutableSet<BPartnerId> retrieveAllCustomerIDs()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
+				.create()
+				.listIds(BPartnerId::ofRepoId);
+	}
+
 	private <T> IQueryBuilder<T> createQueryBuilder(
 			final boolean outOfTrx,
 			@NonNull final Class<T> modelClass)
@@ -1030,5 +1043,6 @@ public class BPartnerDAO implements IBPartnerDAO
 			queryBuilder.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, query.getOrgId());
 		}
 		return queryBuilder;
+
 	}
 }

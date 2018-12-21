@@ -1,7 +1,7 @@
 package de.metas.bpartner.service;
 
+import static de.metas.util.Check.errorIf;
 import static de.metas.util.Check.isEmpty;
-import static org.compiere.util.Util.errorIf;
 
 /*
  * #%L
@@ -326,6 +326,8 @@ public interface IBPartnerDAO extends ISingletonService
 	}
 
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+
+	ImmutableSet<BPartnerId> retrieveAllCustomerIDs();
 
 	@Value
 	@Builder
