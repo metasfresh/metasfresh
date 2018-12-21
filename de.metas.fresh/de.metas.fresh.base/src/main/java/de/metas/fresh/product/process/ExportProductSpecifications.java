@@ -59,7 +59,7 @@ public class ExportProductSpecifications extends JavaProcess
 				.data(data)
 				.columnHeaders(getColumnHeaders())
 				.build()
-				.setCharset(Font.ANSI_CHARSET)
+				.setFontCharset(Font.ANSI_CHARSET)
 				.exportToTempFile();
 
 		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();

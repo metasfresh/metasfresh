@@ -13,9 +13,12 @@
  *****************************************************************************/
 package org.compiere.report.core;
 
+import javax.annotation.Nullable;
+
 import de.metas.impexp.excel.AbstractExcelExporter;
 import de.metas.impexp.excel.CellValue;
 import de.metas.impexp.excel.CellValues;
+import de.metas.impexp.excel.ExcelExportConstants;
 import de.metas.impexp.excel.ExcelFormat;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,10 +34,11 @@ public class RModelExcelExporter
 
 	@Builder
 	private RModelExcelExporter(
-			@NonNull final ExcelFormat poiFactory,
+			@Nullable final ExcelFormat poiFactory,
+			@Nullable final ExcelExportConstants constants,
 			@NonNull final RModel model)
 	{
-		super(poiFactory);
+		super(poiFactory, constants);
 		m_model = model;
 	}
 

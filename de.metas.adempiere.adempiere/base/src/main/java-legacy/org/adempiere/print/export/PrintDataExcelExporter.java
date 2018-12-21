@@ -31,6 +31,7 @@ import de.metas.i18n.Language;
 import de.metas.impexp.excel.AbstractExcelExporter;
 import de.metas.impexp.excel.CellValue;
 import de.metas.impexp.excel.CellValues;
+import de.metas.impexp.excel.ExcelExportConstants;
 import de.metas.impexp.excel.ExcelFormat;
 import lombok.Builder;
 import lombok.NonNull;
@@ -50,12 +51,13 @@ public class PrintDataExcelExporter
 
 	@Builder
 	private PrintDataExcelExporter(
-			@NonNull final ExcelFormat excelFormat,
+			@Nullable final ExcelFormat excelFormat,
+			@Nullable final ExcelExportConstants constants,
 			@NonNull final PrintData printData,
 			@NonNull final MPrintFormat printFormat,
 			@Nullable final Language language)
 	{
-		super(excelFormat);
+		super(excelFormat, constants);
 		this.m_printData = printData;
 		this.m_printFormat = printFormat;
 		setLanguage(language);

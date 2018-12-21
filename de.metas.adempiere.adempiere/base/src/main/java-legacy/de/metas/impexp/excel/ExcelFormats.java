@@ -41,7 +41,6 @@ public class ExcelFormats
 {
 	public static final ExcelFormat EXCEL_OPEN_XML = new ExcelOpenXMLFormat();
 	public static final ExcelFormat EXCEL97 = new Excel97Format();
-
 	private static final ImmutableList<ExcelFormat> ALL_FORMATS = ImmutableList.of(EXCEL_OPEN_XML, EXCEL97);
 
 	private static final String SYSCONFIG_DefaultExcelFileExtension = "de.metas.excel.DefaultFileExtension";
@@ -49,9 +48,7 @@ public class ExcelFormats
 	public static String getDefaultFileExtension()
 	{
 		final ISysConfigBL sysconfigs = Services.get(ISysConfigBL.class);
-
-		final String defaultValue = EXCEL_OPEN_XML.getFileExtension();
-		return sysconfigs.getValue(SYSCONFIG_DefaultExcelFileExtension, defaultValue);
+		return sysconfigs.getValue(SYSCONFIG_DefaultExcelFileExtension, ExcelOpenXMLFormat.FILE_EXTENSION);
 	}
 
 	public static ExcelFormat getDefaultFormat()

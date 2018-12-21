@@ -18,6 +18,8 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.compiere.util.Env;
+
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -37,13 +39,14 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	@Builder
 	private ArrayExcelExporter(
 			@Nullable final ExcelFormat excelFormat,
-			@NonNull final Properties ctx,
+			@Nullable final ExcelExportConstants constants,
+			@Nullable final Properties ctx,
 			@NonNull final List<List<Object>> data,
-			final List<String> columnHeaders)
+			@Nullable final List<String> columnHeaders)
 	{
-		super(excelFormat);
+		super(excelFormat, constants);
 
-		m_ctx = ctx;
+		m_ctx = ctx != null ? ctx : Env.getCtx();
 		m_data = data;
 		m_columnHeaders = columnHeaders;
 	}

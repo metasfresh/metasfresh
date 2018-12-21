@@ -30,9 +30,11 @@ public interface ExcelFormat
 
 	String getName();
 
-	Workbook createWorkbook();
+	Workbook createWorkbook(boolean useStreamingImplementation);
 
 	String getCurrentPageMarkupTag();
 
 	String getTotalPagesMarkupTag();
+	
+	int getLastRowIndex();
 }
