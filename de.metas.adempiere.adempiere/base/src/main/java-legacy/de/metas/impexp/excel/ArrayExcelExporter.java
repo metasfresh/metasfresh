@@ -25,7 +25,7 @@ import lombok.NonNull;
 
 /**
  * Export excel from ArrayList of data
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  *
  */
