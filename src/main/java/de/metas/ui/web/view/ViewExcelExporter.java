@@ -3,6 +3,7 @@ package de.metas.ui.web.view;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -23,6 +24,7 @@ import de.metas.ui.web.view.util.PageIndex;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -165,6 +167,16 @@ import lombok.NonNull;
 		{
 			final String valueStr = ((JSONLookupValue)value).getCaption();
 			return CellValues.toCellValue(valueStr, widgetType.getDisplayType());
+		}
+		else if (value instanceof JSONLookupValuesList)
+		{
+			final JSONLookupValuesList jsonLookupValuesList = (JSONLookupValuesList)value;
+			final String valueStr = jsonLookupValuesList
+					.getValues()
+					.stream()
+					.map(lookupValue -> lookupValue.getCaption())
+					.collect(Collectors.joining(", "));
+			return CellValue.ofString(valueStr);
 		}
 		else
 		{
