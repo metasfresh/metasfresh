@@ -69,21 +69,19 @@ public class ContractOrderService
 	{
 		final Set<OrderId> orderIds = new HashSet<>();
 		final OrderId ancestorId = retrieveOriginalContractOrder(orderId);
-		if (ancestorId != null)
-		{
-			orderIds.add(ancestorId);
-			buildAllContractOrderList(ancestorId, orderIds);
-		}
-		else
-		{	// add itself
-			orderIds.add(orderId);
-		}
+		orderIds.add(ancestorId);
+		buildAllContractOrderList(ancestorId, orderIds);
 		return orderIds;
 	}
 
 	/**
-	 * retrieves original order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>,
+	 * <ul>
+	 * * retrieves original order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>,
 	 * going recursively until the original one
+	 * </ul>
+	 * <ul>
+	 * * if the order given as parameter does not have any ancestor, will be that returned
+	 * </ul>
 	 */
 	public OrderId retrieveOriginalContractOrder(@NonNull final OrderId orderId)
 	{
@@ -98,7 +96,7 @@ public class ContractOrderService
 			}
 		}
 
-		return ancestor;
+		return orderId;
 	}
 
 	/**
