@@ -66,15 +66,15 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 		setAmount(Doc.AMTTYPE_Gross, cash.getStatementDifference());
 
 		// Set CashBook Org & Currency
-		MCashBook cb = MCashBook.get(Env.getCtx(), cash.getC_CashBook_ID());
-		setC_CashBook_ID(cb.getC_CashBook_ID());
+		setC_CashBook_ID(cash.getC_CashBook_ID());
+		final MCashBook cb = MCashBook.get(Env.getCtx(), cash.getC_CashBook_ID());
 		setC_Currency_ID(CurrencyId.ofRepoId(cb.getC_Currency_ID()));
 
 		// Contained Objects
-		setDocLines(loadLines(cash, cb));
+		setDocLines(loadLines(cash));
 	}
 
-	private List<DocLine_Cash> loadLines(I_C_Cash cash, MCashBook cb)
+	private List<DocLine_Cash> loadLines(I_C_Cash cash)
 	{
 		final List<DocLine_Cash> list = new ArrayList<>();
 		final MCash cashPO = LegacyAdapters.convertToPO(cash);

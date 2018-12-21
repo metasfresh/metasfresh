@@ -214,13 +214,8 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		// ignoring invoice line org as not used in posting
 		final I_M_InOutLine receiptLine = docLine.getReceiptLine();
 		final I_C_OrderLine orderLine = docLine.getOrderLine();
-		if (receiptLine != null
+		return receiptLine != null
 				&& orderLine != null
-				&& receiptLine.getAD_Org_ID() != orderLine.getAD_Org_ID())
-		{
-			return true;
-		}
-
-		return false;
+				&& receiptLine.getAD_Org_ID() != orderLine.getAD_Org_ID();
 	}
 }   // Doc_MatchPO

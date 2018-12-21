@@ -545,18 +545,16 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderRouting orderRouting = getOrderRouting();
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{
-			if (activity.isMilestone())
+			if (activity.isMilestone()
+					&& (activity.isSubcontracting() || orderRouting.isFirstActivity(activity)))
 			{
-				if (activity.isSubcontracting() || orderRouting.isFirstActivity(activity))
-				{
-					ppCostCollectorBL.createActivityControl(ActivityControlCreateRequest.builder()
-							.order(this)
-							.orderActivity(activity)
-							.qtyMoved(activity.getQtyToDeliver())
-							.durationSetup(Duration.ZERO)
-							.duration(Duration.ZERO)
-							.build());
-				}
+				ppCostCollectorBL.createActivityControl(ActivityControlCreateRequest.builder()
+						.order(this)
+						.orderActivity(activity)
+						.qtyMoved(activity.getQtyToDeliver())
+						.durationSetup(Duration.ZERO)
+						.duration(Duration.ZERO)
+						.build());
 			}
 		}
 	}

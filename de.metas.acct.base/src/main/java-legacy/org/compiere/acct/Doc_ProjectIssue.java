@@ -26,6 +26,7 @@ import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_S_TimeExpenseLine;
 import org.compiere.model.MProject;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -235,13 +236,13 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	private CostAmount getLaborCost(final AcctSchema as)
 	{
 		String sql = "SELECT ConvertedAmt, Qty" +
-				" FROM S_TimeExpenseLine " +
+				" FROM " + I_S_TimeExpenseLine.Table_Name +
 				" WHERE S_TimeExpenseLine.S_TimeExpenseLine_ID = ?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			pstmt.setInt(1, m_issue.getS_TimeExpenseLine_ID());
 			rs = pstmt.executeQuery();
 			BigDecimal costs;

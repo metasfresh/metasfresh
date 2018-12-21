@@ -262,13 +262,14 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 		//
 		// Create Rate and Method Variances
-		if (!isReversal)
-		{
-			// costEngine.createRateVariances(this);
-			// costEngine.createMethodVariances(this);
-		}
+		// if (!isReversal)
+		// {
+		// costEngine.createRateVariances(this);
+		// costEngine.createMethodVariances(this);
+		// }
+		
 		// Reverse Rate and Method Variances
-		else
+		if(isReversal)
 		{
 			// Get the initial cost collector (which is reversed by this one)
 			final I_PP_Cost_Collector ccOriginal = getReversal();

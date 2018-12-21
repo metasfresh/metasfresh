@@ -254,11 +254,11 @@ public class Doc_Order extends Doc<DocLine_Order>
 		final String docBaseType = getDocumentType();
 		if (DOCTYPE_POrder.equals(docBaseType))
 		{
-			return createFacts_PurchaseOrder(as);
+			return createFacts_PurchaseOrder();
 		}
 		else if (DOCTYPE_SOrder.equals(docBaseType))
 		{
-			return createFacts_SalesOrder(as);
+			return createFacts_SalesOrder();
 		}
 		else
 		{
@@ -266,12 +266,12 @@ public class Doc_Order extends Doc<DocLine_Order>
 		}
 	}   // createFact
 
-	private List<Fact> createFacts_PurchaseOrder(final AcctSchema as)
+	private List<Fact> createFacts_PurchaseOrder()
 	{
 		return ImmutableList.of();
 	}
 
-	private List<Fact> createFacts_SalesOrder(final AcctSchema as)
+	private List<Fact> createFacts_SalesOrder()
 	{
 		return ImmutableList.of();
 	}

@@ -163,7 +163,7 @@ public final class PPOrderRoutingActivity
 	private void changeStatusTo(@NonNull final PPOrderRoutingActivityStatus newStatus)
 	{
 		final PPOrderRoutingActivityStatus currentStatus = getStatus();
-		if (currentStatus == newStatus)
+		if (currentStatus.equals(newStatus))
 		{
 			return;
 		}
