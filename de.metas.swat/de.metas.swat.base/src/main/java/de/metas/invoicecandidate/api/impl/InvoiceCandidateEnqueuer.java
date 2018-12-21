@@ -47,6 +47,7 @@ import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.InvoiceCandidateLockingUtil;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
@@ -56,8 +57,6 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.LockOwner;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -83,7 +82,6 @@ import lombok.NonNull;
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 
 	// Parameters
 	private Properties _ctx = Env.getCtx();
@@ -119,7 +117,7 @@ import lombok.NonNull;
 
 	private final IInvoiceCandidateEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
 	{
-		final ILock icLock = lockInvoiceCandidatesForSelection(pinstanceId);
+		final ILock icLock = InvoiceCandidateLockingUtil.lockInvoiceCandidatesForSelection(pinstanceId);
 		try (final ILockAutoCloseable l = icLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
 		{
 			return enqueueSelectionInTrx(icLock, pinstanceId);
@@ -250,20 +248,6 @@ import lombok.NonNull;
 				icLock);
 
 		return result;
-	}
-
-	/** Lock all invoice candidates for selection and return an auto-closable lock. */
-	private final ILock lockInvoiceCandidatesForSelection(final PInstanceId pinstanceId)
-	{
-		final LockOwner lockOwner = LockOwner.newOwner("ICEnqueuer", pinstanceId.getRepoId());
-		return lockManager.lock()
-				.setOwner(lockOwner)
-				// allow these locks to be cleaned-up on server starts.
-				// NOTE: when we will add the ICs to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
-				.setAutoCleanup(true)
-				.setFailIfAlreadyLocked(true)
-				.setRecordsBySelection(I_C_Invoice_Candidate.class, pinstanceId)
-				.acquire();
 	}
 
 	/**

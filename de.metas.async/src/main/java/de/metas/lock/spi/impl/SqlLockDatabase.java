@@ -525,9 +525,8 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	public final ILock retrieveLockForOwner(final LockOwner lockOwner)
+	public final ILock retrieveLockForOwner(@NonNull final LockOwner lockOwner)
 	{
-		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
 		Check.assumeNotNull(lockOwner.isRealOwner(), "Lock owner shall be real owner but it was {}", lockOwner);
 
 		final String sql = "SELECT "
@@ -554,7 +553,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				final int countLocked = rs.getInt("CountLocked");
 				final ILock lock = newLock(lockOwner, autoCleanup, countLocked);
 
-				Check.assume(!rs.next(), "More then one lock found for owner");
+				Check.assume(!rs.next(), "More than one lock found for owner");
 
 				return lock;
 			}

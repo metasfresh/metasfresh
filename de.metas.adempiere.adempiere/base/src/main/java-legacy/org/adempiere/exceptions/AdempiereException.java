@@ -39,7 +39,6 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /**
@@ -241,7 +240,7 @@ public class AdempiereException extends RuntimeException
 		this(Env.getAD_Language(), adMessage, params);
 	}
 
-	public AdempiereException(final Throwable cause)
+	public AdempiereException(@Nullable final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;

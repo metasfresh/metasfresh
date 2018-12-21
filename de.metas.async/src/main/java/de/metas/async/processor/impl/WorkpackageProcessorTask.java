@@ -23,7 +23,10 @@ package de.metas.async.processor.impl;
  */
 
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -47,8 +50,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-
-import com.google.common.base.Optional;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.Async_Constants;
@@ -79,7 +80,9 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.exceptions.ServiceConnectionException;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /* package */class WorkpackageProcessorTask implements Runnable
 {
@@ -160,7 +163,7 @@ import de.metas.util.time.SystemTime;
 						new TrxRunnable()
 						{
 							@Override
-							public void run(final String trxName) throws Exception
+							public void run(final String trxName_IGNORED) throws Exception
 							{
 								// ignore the concrete trxName param,
 								// by default everything shall use the thread inherited trx
@@ -285,20 +288,56 @@ import de.metas.util.time.SystemTime;
 		return result;
 	}
 
-	private Result invokeProcessorAndHandleException(final String trxName)
+	private Result invokeProcessorAndHandleException(@Nullable final String trxName)
 	{
 		try
 		{
 			return workPackageProcessorWrapped.processWorkPackage(workPackage, trxName);
 		}
+		catch (final ServiceConnectionException e)
+		{
+			throw handleServiceConnectionException(trxName, e);
+		}
+		catch (final AdempiereException e)
+		{
+			final Throwable cause = e.getCause();
+			if (cause instanceof ServiceConnectionException)
+			{
+				throw handleServiceConnectionException(trxName, (ServiceConnectionException)cause);
+			}
+			throw appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
+		}
 		catch (final RuntimeException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("I_C_Queue_WorkPackage", workPackage)
-					.setParameter("IQueueProcessor", queueProcessor)
-					.setParameter("trxName", trxName);
+			throw appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
 		}
+	}
+
+	private RuntimeException handleServiceConnectionException(final String trxName, final ServiceConnectionException e)
+	{
+		final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
+		if (retryAdvisedInMillis > 0)
+		{
+			Loggables.get().addLog("Caught a {} with an advise to retry in {}ms; ServiceURL={}",
+					e.getClass().getSimpleName(), retryAdvisedInMillis, e.getServiceURL());
+
+			final WorkpackageSkipRequestException //
+			workpackageSkipRequestException = WorkpackageSkipRequestException
+					.createWithTimeoutAndThrowable(
+							e.getMessage(),
+							retryAdvisedInMillis,
+							e);
+			return appendParameters(workpackageSkipRequestException, trxName);
+		}
+		return appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
+	}
+
+	private AdempiereException appendParameters(@NonNull final AdempiereException e, @Nullable final String trxName)
+	{
+		return e.appendParametersToMessage()
+				.setParameter("I_C_Queue_WorkPackage", workPackage)
+				.setParameter("IQueueProcessor", queueProcessor)
+				.setParameter("trxName", trxName);
 	}
 
 	/**
@@ -324,7 +363,6 @@ import de.metas.util.time.SystemTime;
 				elementsLock.get().close();
 			}
 
-			queueProcessor.getQueue().unlock(workPackage);
 		}
 		catch (final LockFailedException e)
 		{
@@ -334,6 +372,17 @@ import de.metas.util.time.SystemTime;
 		catch (final Exception e)
 		{
 			markError(workPackage, AdempiereException.wrapIfNeeded(e));
+		}
+		finally
+		{
+			try
+			{
+				queueProcessor.getQueue().unlock(workPackage);
+			}
+			catch (final Exception e)
+			{
+				markError(workPackage, AdempiereException.wrapIfNeeded(e));
+			}
 		}
 
 		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
@@ -401,11 +450,10 @@ import de.metas.util.time.SystemTime;
 	 *
 	 * @param workPackage
 	 */
-	private void markSkipped(final I_C_Queue_WorkPackage workPackage,
-			final IWorkpackageSkipRequest skipRequest)
+	private void markSkipped(
+			@NonNull final I_C_Queue_WorkPackage workPackage,
+			@NonNull final IWorkpackageSkipRequest skipRequest)
 	{
-		Check.assumeNotNull(workPackage, "Param 'workPackage' not null");
-		Check.assumeNotNull(skipRequest, "Param 'skipRequest' not null");
 
 		final Timestamp skippedAt = SystemTime.asTimestamp();
 		final Exception skipException = skipRequest.getException();
