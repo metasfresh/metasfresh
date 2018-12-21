@@ -6,6 +6,7 @@ import static de.metas.document.engine.IDocument.STATUS_Completed;
 import java.util.Collection;
 import java.util.Date;
 
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
 import org.springframework.context.annotation.Profile;
@@ -78,7 +79,7 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	I_DD_Order createDDOrder(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
 	{
 		final DDOrder ddOrder = ddOrderRequestedEvent.getDdOrder();
-		final Date dateOrdered = ddOrderRequestedEvent.getDateOrdered();
+		final Date dateOrdered = TimeUtil.asDate(ddOrderRequestedEvent.getDateOrdered());
 
 		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
 

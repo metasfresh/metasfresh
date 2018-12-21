@@ -1,7 +1,7 @@
 package de.metas.material.event.pporder;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
 import javax.annotation.Nullable;
 
@@ -65,7 +65,7 @@ public class PPOrderLine
 	 */
 	boolean receipt;
 
-	Date issueOrReceiveDate;
+	Instant issueOrReceiveDate;
 
 	ProductDescriptor productDescriptor;
 
@@ -81,7 +81,7 @@ public class PPOrderLine
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
 			@JsonProperty("receipt") @NonNull final Boolean receipt,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("issueOrReceiveDate") @NonNull final Date issueOrReceiveDate,
+			@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered)
 	{

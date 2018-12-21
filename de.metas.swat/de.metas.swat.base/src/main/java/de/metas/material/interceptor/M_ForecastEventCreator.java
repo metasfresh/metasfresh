@@ -6,6 +6,7 @@ import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import com.google.common.base.Preconditions;
@@ -82,7 +83,7 @@ public class M_ForecastEventCreator
 		final int customerId = Util.firstGreaterThanZero(forecastLine.getC_BPartner_ID(), forecast.getC_BPartner_ID());
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.date(forecastLine.getDatePromised())
+				.date(TimeUtil.asInstant(forecastLine.getDatePromised()))
 				.productDescriptor(productDescriptor)
 				.customerId(customerId)
 				.warehouseId(forecastLine.getM_Warehouse_ID())

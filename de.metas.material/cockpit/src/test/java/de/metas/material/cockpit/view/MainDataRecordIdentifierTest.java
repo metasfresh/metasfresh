@@ -7,10 +7,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,13 +55,13 @@ public class MainDataRecordIdentifierTest
 		cockpitRecord = newInstance(I_MD_Cockpit.class);
 		cockpitRecord.setM_Product_ID(productDescriptor.getProductId());
 		cockpitRecord.setAttributesKey(productDescriptor.getStorageAttributesKey().getAsString());
-		cockpitRecord.setDateGeneral(new Timestamp(NOW.getTime()));
+		cockpitRecord.setDateGeneral(TimeUtil.asTimestamp(NOW));
 		save(cockpitRecord);
 
 		someUnrelatedcockpitRecord = newInstance(I_MD_Cockpit.class);
 		someUnrelatedcockpitRecord.setM_Product_ID(productDescriptor.getProductId() + 10);
 		someUnrelatedcockpitRecord.setAttributesKey(productDescriptor.getStorageAttributesKey().getAsString());
-		someUnrelatedcockpitRecord.setDateGeneral(new Timestamp(NOW.getTime()));
+		someUnrelatedcockpitRecord.setDateGeneral(TimeUtil.asTimestamp(NOW));
 		save(someUnrelatedcockpitRecord);
 	}
 

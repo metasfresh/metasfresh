@@ -229,7 +229,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				true /* isSOTrx */);
 		ic.setC_Tax_ID(taxId);
 
-		ic.setExternalId(olc.getExternalId());
+		ic.setExternalId(olc.getExternalLineId());
 
 		olc.setProcessed(true);
 		saveRecord(olc);

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_User;
@@ -92,13 +93,15 @@ public class FlatrateTermCreator
 				{
 					Loggables.get().addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
 					logger.warn("Failed creating contract for {}", partner, ex);
-					return true; // rollback
+					throw AdempiereException
+						.wrapIfNeeded(ex)
+						.markUserNotified();
 				}
 
 				@Override
 				public void doFinally()
 				{
-					Loggables.get().addLog("@Created@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
+					Loggables.get().addLog("@Processed@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
 				}
 			});
 		}

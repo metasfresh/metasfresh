@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.lutuconfig.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,7 +28,6 @@ import java.text.DecimalFormat;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.helper.HUTerminalHelper;
@@ -39,6 +38,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public class TUKey extends AbstractLUTUKey
@@ -127,13 +127,13 @@ public class TUKey extends AbstractLUTUKey
 		// Build final name
 		final StringBuilder name = new StringBuilder();
 		name.append("<center>");
-		name.append(Util.maskHTML(piName));
+		name.append(StringUtils.maskHTML(piName));
 
 		if (qtyLineStr.length() > 0)
 		{
 			name.append("<br>");
 			name.append("(");
-			name.append(Util.maskHTML(qtyLineStr.toString()));
+			name.append(StringUtils.maskHTML(qtyLineStr.toString()));
 			name.append(")");
 		}
 

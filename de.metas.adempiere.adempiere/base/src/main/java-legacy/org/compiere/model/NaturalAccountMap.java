@@ -24,13 +24,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
-
-import org.compiere.util.Ini;
-import org.compiere.util.Util;
+import de.metas.util.StringUtils;
 
 /**
  *  Natural Account (HashMap) Management.
@@ -47,18 +47,18 @@ import org.compiere.util.Util;
  *  Change log:
  *  <ul>
  *  <li>2007-02-12 - teo_sarca - [ 1658127 ] Select charset encoding on import
- *  <li>2007-01-27 - teo_sarca - [ 1619158 ] Import is not working with UTF-8 
+ *  <li>2007-01-27 - teo_sarca - [ 1619158 ] Import is not working with UTF-8
  *  </ul>
  *
  *  @author Jorg Janke
  *  @version $Id: NaturalAccountMap.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
- *	@param <K> key 
+ *	@param <K> key
  *	@param <V> value
  */
 public final class NaturalAccountMap extends CCache<String,MElementValue>
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2246313934440519036L;
 
@@ -149,7 +149,7 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 			log.warn("Line "+lineNo+" is empty, ignored. ");
 			return "";
 		}
-		
+
 		//  Fields with ',' are enclosed in "
 		StringBuffer newLine = new StringBuffer();
 		StringTokenizer st = new StringTokenizer(line, "\"", false);
@@ -169,8 +169,8 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 		newLine.append(" ");
 
 		//  Parse Line - replace ",," with ", ,"    - tokenizer does not count empty fields
-		String pLine = Util.replace(newLine.toString(), ",,", ", ,");
-		pLine = Util.replace(pLine, ",,", ", ,");
+		String pLine = StringUtils.replace(newLine.toString(), ",,", ", ,");
+		pLine = StringUtils.replace(pLine, ",,", ", ,");
 		st = new StringTokenizer(pLine, ",", false);
 		//  All fields there ?
 		if (st.countTokens() == 1)
@@ -230,11 +230,11 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 			IsSummary = "N";
 		if (!IsSummary.equals("N"))
 			return "";
-			
+
 		//  Validation
 		if (AccountType == null || AccountType.length() == 0)
 			AccountType = "E";
-			
+
 		if (AccountSign == null || AccountSign.length() == 0)
 			AccountSign = "N";
 		if (IsDocControlled == null || IsDocControlled.length() == 0)
@@ -247,18 +247,18 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 
 		try
 		{
-			//	Try to find - allows to use same natutal account for multiple default accounts 
-			MElementValue na = (MElementValue)m_valueMap.get(Value);
+			//	Try to find - allows to use same natutal account for multiple default accounts
+			MElementValue na = m_valueMap.get(Value);
 			if (na == null)
 			{
 				//  Create Account - save later
 				na = new MElementValue(m_ctx, Value, Name, Description,
 					AccountType, AccountSign,
-					IsDocControlled.toUpperCase().startsWith("Y"), 
+					IsDocControlled.toUpperCase().startsWith("Y"),
 					IsSummary.toUpperCase().startsWith("Y"), m_trxName);
 				m_valueMap.put(Value, na);
 			}
-			
+
 			//  Add to Cache
 			put(Default_Account.toUpperCase(), na);
 		}
@@ -301,7 +301,7 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 	 */
 	public int getC_ElementValue_ID (String key)
 	{
-		MElementValue na = (MElementValue)this.get(key);
+		MElementValue na = this.get(key);
 		if (na == null)
 			return 0;
 		return na.getC_ElementValue_ID();

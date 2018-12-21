@@ -1,5 +1,11 @@
 package de.metas.handlingunits.material.interceptor;
 
+import static org.compiere.util.TimeUtil.asInstant;
+import static org.compiere.util.TimeUtil.getDay;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+
 import org.compiere.model.I_M_Transaction;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -20,11 +26,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,7 +46,7 @@ public class TransactionDescriptorFactory
 				.productId(record.getM_Product_ID())
 				.transactionId(record.getM_Transaction_ID())
 				.warehouseId(record.getM_Locator().getM_Warehouse_ID())
-				.movementDate(record.getMovementDate())
+				.transactionDate(extractTransactionDate(record))
 				.movementQty(record.getMovementQty())
 				.costCollectorId(record.getPP_Cost_Collector_ID())
 				.inoutLineId(record.getM_InOutLine_ID())
@@ -48,5 +54,32 @@ public class TransactionDescriptorFactory
 				.inventoryLineId(record.getM_InventoryLine_ID())
 				.movementType(record.getMovementType())
 				.build();
+	}
+
+	private Instant extractTransactionDate(@NonNull final I_M_Transaction record)
+	{
+		final Timestamp movementDate = record.getMovementDate();
+		final Timestamp movementDateDay = getDay(movementDate);
+
+		final boolean movementDateContainsTime = !movementDate.equals(movementDateDay);
+		if(movementDateContainsTime)
+		{
+			return asInstant(movementDate);
+		}
+
+		// try to fall back to the M_Transaction's created or update date, to get the actual movement date *and time*.
+		final Timestamp created = record.getCreated();
+		if (movementDateDay.equals(getDay(created)))
+		{
+			return asInstant(created);
+		}
+
+		final Timestamp updated = record.getUpdated();
+		if (movementDateDay.equals(getDay(updated)))
+		{
+			return asInstant(updated);
+		}
+
+		return asInstant(movementDate);
 	}
 }

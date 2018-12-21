@@ -1,20 +1,19 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice;
 
+import static de.metas.util.Check.assumeNotNull;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
-
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.Base64;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -46,11 +45,13 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.util.xml.XmlIntrospectionUtil;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.Types.RequestType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.ProcessingMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlCompany;
@@ -72,6 +73,8 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVat.VatMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVat.VatMod.VatModBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVatRate;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.TransportMod;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -99,13 +102,19 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 {
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
 	private final CrossVersionRequestConverter<?> exportConverter;
+	private final XmlMode exportFileMode;
+	private final String exportFileFromEAN;
+	private final String exportFileViaEAN;
 
 	public InvoiceExportClientImpl(
 			@NonNull final CrossVersionServiceRegistry crossVersionServiceRegistry,
-			@NonNull final XmlVersion exportVersion)
+			@NonNull final ExportConfig exportConfig)
 	{
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
-		exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportVersion);
+		exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportConfig.getXmlVersion());
+		exportFileMode = assumeNotNull(exportConfig.getMode(), "The given exportConfig needs to have a non-null mode; exportconfig={}", exportConfig);
+		exportFileFromEAN = exportConfig.getFromEAN();
+		exportFileViaEAN = exportConfig.getViaEAN();
 	}
 
 	@Override
@@ -187,10 +196,31 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 	{
 		final RequestMod requestMod = RequestMod
 				.builder()
+				.modus(exportFileMode)
+				.processingMod(createProcessingMod())
 				.payloadMod(createPayloadMod(invoice, xRequest.getPayload()))
 				.build();
 
 		return xRequest.withMod(requestMod);
+	}
+
+	private ProcessingMod createProcessingMod()
+	{
+		return ProcessingMod.builder()
+				.transportMod(createTransportMod())
+				.build();
+	}
+
+	private TransportMod createTransportMod()
+	{
+		if (Check.isEmpty(exportFileFromEAN, true))
+		{
+			return null;
+		}
+		return TransportMod.builder()
+				.from(exportFileFromEAN)
+				.replacementViaEAN(exportFileViaEAN)
+				.build();
 	}
 
 	private PayloadMod createPayloadMod(
@@ -242,7 +272,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				.prologMod(createPrologMod(invoice.getMetasfreshVersion()))
 				.balanceMod(createBalanceMod(invoice))
 				.esr(createXmlEsr(invoice.getCustomInvoicePayload()))
-				.serviceModsWithSelectors(createServiceModsWithSelectors(invoice, xBody))
+				.serviceModsWithSelectors(createServiceModsWithSelectors(invoice, xBody.getServices()))
 				.documents(createDocuments(invoice.getInvoiceAttachments())) // replaces possible existing documents
 				.build();
 	}
@@ -387,11 +417,10 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 	private List<ServiceModWithSelector> createServiceModsWithSelectors(
 			@NonNull final InvoiceToExport invoice,
-			@NonNull final XmlBody xBody)
+			@NonNull final List<XmlService> xServices)
 	{
 		final ImmutableList.Builder<ServiceModWithSelector> serviceMods = ImmutableList.builder();
 
-		final List<XmlService> xServices = xBody.getServices();
 		final ImmutableMap<Integer, XmlService> //
 		recordId2xService = Maps.uniqueIndex(xServices, XmlService::getRecordId);
 
@@ -401,7 +430,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			final List<String> externalIdSegments = Splitter
 					.on("_")
 					.splitToList(externalId);
-			Check.assume(!externalIdSegments.isEmpty(), "Every line of an exportable invoice needs to have an externalId; invoiceLine={}, invoice={}", invoiceLine, invoice);
+			Check.assume(!externalIdSegments.isEmpty(), "Every invoiceLine of an exportable invoice needs to have an externalId; invoiceLine={}, invoice={}", invoiceLine, invoice);
 
 			final String recordIdStr = externalIdSegments.get(externalIdSegments.size() - 1);
 			final int recordId = Integer.parseInt(recordIdStr);
@@ -435,7 +464,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				externalFactorMod = invoiceLineAmount
 						.setScale(invoiceLineAmount.scale() + 10)
 						.multiply(xServiceExternalFactor)
-						.divide(xServiceAmount);
+						.divide(xServiceAmount, RoundingMode.HALF_UP);
 			}
 			serviceMod.externalFactor(externalFactorMod);
 			serviceMods.add(serviceMod.build());

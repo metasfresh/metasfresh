@@ -10,6 +10,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -25,9 +26,9 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
-import de.metas.util.Services;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -182,7 +183,7 @@ public class M_ShipmentSchedule
 				productDescriptorFactory.createProductDescriptor(shipmentSchedule);
 
 		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
-				.date(preparationDate)
+				.date(TimeUtil.asInstant(preparationDate))
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId())
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule).getRepoId())

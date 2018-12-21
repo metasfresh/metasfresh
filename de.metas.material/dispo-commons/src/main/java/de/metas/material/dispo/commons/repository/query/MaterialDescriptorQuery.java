@@ -1,15 +1,15 @@
 package de.metas.material.dispo.commons.repository.query;
 
-import java.util.Date;
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
 
-import com.google.common.base.Preconditions;
-
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,15 +39,6 @@ import lombok.Value;
 @Value
 public class MaterialDescriptorQuery
 {
-	public enum DateOperator
-	{
-		BEFORE, //
-		BEFORE_OR_AT, //
-		AT, //
-		AT_OR_AFTER, //
-		AFTER
-	}
-
 	/**
 	 * Note: this operator only makes a difference if the given customerId is > 0.
 	 * If it's less than zero, the records with customerId == null (i.e. "none") are selected anyways.
@@ -62,36 +53,43 @@ public class MaterialDescriptorQuery
 	}
 
 	public static MaterialDescriptorQuery forDescriptor(
-			@NonNull final MaterialDescriptor materialDescriptor)
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@Nullable final DateAndSeqNo atTime)
 	{
-		return new MaterialDescriptorQuery(
-				materialDescriptor.getWarehouseId(),
-				materialDescriptor.getProductId(),
-				materialDescriptor.getStorageAttributesKey(),
-				materialDescriptor.getCustomerId(),
-				CustomerIdOperator.GIVEN_ID_ONLY,
-				materialDescriptor.getDate(),
-				DateOperator.AT);
+		return MaterialDescriptorQuery
+				.builder()
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.customerId(materialDescriptor.getCustomerId())
+				.customerIdOperator(CustomerIdOperator.GIVEN_ID_ONLY)
+				.atTime(atTime)
+				.build();
 	}
 
 	public static MaterialDescriptorQuery forDescriptor(
 			@NonNull final MaterialDescriptor materialDescriptor,
-			@NonNull final DateOperator dateOperator)
+			@Nullable final DateAndSeqNo timeRangeStart,
+			@Nullable final DateAndSeqNo timeRangeEnd)
 	{
-		return new MaterialDescriptorQuery(
-				materialDescriptor.getWarehouseId(),
-				materialDescriptor.getProductId(),
-				materialDescriptor.getStorageAttributesKey(),
-				materialDescriptor.getCustomerId(),
-				CustomerIdOperator.GIVEN_ID_ONLY,
-				materialDescriptor.getDate(),
-				dateOperator);
+		Check.errorIf(timeRangeStart == null && timeRangeEnd == null, "At least one of timeRangeStart or timeRangeEnd need to be not-null");
+
+		return MaterialDescriptorQuery
+				.builder()
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.customerId(materialDescriptor.getCustomerId())
+				.customerIdOperator(CustomerIdOperator.GIVEN_ID_ONLY)
+				.timeRangeStart(timeRangeStart)
+				.timeRangeEnd(timeRangeEnd)
+				.build();
 	}
 
 	/**
 	 * This property specifies how to interpret the date.
 	 */
-	DateOperator dateOperator;
+	// DateOperator dateOperator;
 
 	int warehouseId;
 	int productId;
@@ -100,20 +98,25 @@ public class MaterialDescriptorQuery
 	int customerId;
 	CustomerIdOperator customerIdOperator;
 
-	Date date;
+	DateAndSeqNo atTime;
+
+	DateAndSeqNo timeRangeStart;
+
+	DateAndSeqNo timeRangeEnd;
 
 	/**
 	 * @param customerId zero means "none", null or -1 means "any"; -2 means "none". Also see {@link AvailableToPromiseQuery}.
 	 */
-	@Builder
+	@Builder(toBuilder=true)
 	private MaterialDescriptorQuery(
 			final int warehouseId,
 			final int productId,
 			final AttributesKey storageAttributesKey,
 			final Integer customerId,
 			final CustomerIdOperator customerIdOperator,
-			final Date date,
-			final DateOperator dateOperator)
+			final DateAndSeqNo atTime,
+			final DateAndSeqNo timeRangeStart,
+			final DateAndSeqNo timeRangeEnd)
 	{
 		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
 
@@ -141,10 +144,25 @@ public class MaterialDescriptorQuery
 			throw new AdempiereException("Parameter bPartnerCustomerId has an invalid value=" + customerId);
 		}
 
-		Preconditions.checkArgument(dateOperator == null || date != null,
-				"Given date parameter may not be null because a not-null dateOperator=%s is given",
-				dateOperator);
-		this.date = date;
-		this.dateOperator = dateOperator != null ? dateOperator : DateOperator.AT;
+		if (atTime != null)
+		{
+			Check.errorIf(timeRangeStart != null, "If atTime != null, then timeRangeStart needs to be null");
+			Check.errorIf(timeRangeEnd != null, "If atTime != null, then timeRangeEnd needs to be null");
+			Check.errorIf(atTime.getOperator() != null, "The instance given as atTime needs to have no operator");
+		}
+		if (timeRangeStart != null)
+		{
+			Check.errorIf(atTime != null, "If timeRangeStart != null, then atTime needs to be null");
+			Check.errorIf(timeRangeStart.getOperator() == null, "If timeRangeStart is given, then its operator may not be null");
+		}
+		if (timeRangeEnd != null)
+		{
+			Check.errorIf(atTime != null, "If timeRangeEnd != null, then atTime needs to be null");
+			Check.errorIf(timeRangeEnd.getOperator() == null, "If timeRangeEnd is given, then its operator may not be null");
+		}
+		this.atTime = atTime;
+		this.timeRangeStart = timeRangeStart;
+		this.timeRangeEnd = timeRangeEnd;
+
 	}
 }

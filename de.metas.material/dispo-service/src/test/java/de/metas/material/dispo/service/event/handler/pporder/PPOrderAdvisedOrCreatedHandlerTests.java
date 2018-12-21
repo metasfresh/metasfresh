@@ -111,7 +111,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		stockRepository = new AvailableToPromiseRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandidateHandler(candidateRepositoryRetrieval, candidateRepositoryWriteService, stockCandidateService),
+				new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService),
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,
@@ -146,13 +146,13 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	@Test
 	public void handle_PPOrder_AdvisedEvent_then_CreatedEvent_with_groupId()
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent(true);
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent(true/*directlyPickSupply*/);
 		ppOrderAdvisedHandler.validateEvent(ppOrderAdvisedEvent);
 		ppOrderAdvisedHandler.handleEvent(ppOrderAdvisedEvent);
 
 		final int createdGroupId = assert_data_after_ppOrderEvent(ppOrderAdvisedEvent);
 
-		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30, createdGroupId);
+		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30/*ppOrderId*/, createdGroupId);
 		ppOrderCreatedHandler.validateEvent(ppOrderCreatedEvent);
 		ppOrderCreatedHandler.handleEvent(ppOrderCreatedEvent);
 

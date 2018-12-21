@@ -15,6 +15,8 @@ package de.metas.impexp.excel;
 
 import java.util.HashMap;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTabLayoutMode;
@@ -26,6 +28,7 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /**
@@ -36,10 +39,15 @@ import lombok.NonNull;
  */
 public class GridTabExcelExporter extends AbstractExcelExporter
 {
-	private GridTab m_tab = null;
+	private final GridTab m_tab;
 
-	public GridTabExcelExporter(@NonNull final GridTab tab)
+	@Builder
+	private GridTabExcelExporter(
+			@Nullable final ExcelFormat excelFormat,
+			@Nullable final ExcelExportConstants constants,
+			@NonNull final GridTab tab)
 	{
+		super(excelFormat, constants);
 		m_tab = tab;
 		setFreezePane(0, 1);
 	}
@@ -97,31 +105,31 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	public boolean isColumnPrinted(final int col)
 	{
 		final GridField f = m_tab.getField(col);
-		
+
 		// Hide not displayed fields
 		if (!f.isDisplayed(GridTabLayoutMode.Grid))
 		{
 			return false;
 		}
-		
+
 		// Hide encrypted fields
 		if (f.isEncrypted())
 		{
 			return false;
 		}
-		
+
 		// Hide simple button fields without a value
 		if (f.getDisplayType() == DisplayType.Button && f.getAD_Reference_Value_ID() <= 0)
 		{
 			return false;
 		}
-		
+
 		// Hide included tab fields (those are only placeholders for included tabs, always empty)
 		if (f.getIncluded_Tab_ID() > 0)
 		{
 			return false;
 		}
-		
+
 		//
 		return true;
 	}

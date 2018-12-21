@@ -230,6 +230,11 @@
 				<version>${poi.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
+				<version>${poi.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.google.zxing</groupId>
 				<artifactId>core</artifactId>
 				<version>${zxing.version}</version>

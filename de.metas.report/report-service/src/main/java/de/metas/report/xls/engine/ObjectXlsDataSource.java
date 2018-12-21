@@ -2,10 +2,10 @@ package de.metas.report.xls.engine;
 
 import java.util.Collection;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -20,15 +20,16 @@ import de.metas.util.Check;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@ToString
 public class ObjectXlsDataSource implements IXlsDataSource
 {
 	public static final <T> ObjectXlsDataSource of(final Collection<T> rows)
@@ -44,19 +45,9 @@ public class ObjectXlsDataSource implements IXlsDataSource
 
 	private final Collection<?> rows;
 
-	private ObjectXlsDataSource(final Collection<?> collection)
+	private ObjectXlsDataSource(@NonNull final Collection<?> collection)
 	{
-		super();
-		Check.assumeNotNull(collection, "collection not null");
 		this.rows = collection;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("rows", rows)
-				.toString();
 	}
 
 	@Override

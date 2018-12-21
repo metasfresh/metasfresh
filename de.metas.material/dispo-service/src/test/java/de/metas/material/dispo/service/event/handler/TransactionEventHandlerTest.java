@@ -87,6 +87,7 @@ public class TransactionEventHandlerTest
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(10))
 				.attributeSetInstanceId(20)
 				.transactionId(30)
+				.transactionDate(AFTER_NOW)
 				.complete(true)
 				.build();
 

@@ -14,7 +14,7 @@ public class X_M_ShipmentSchedule_AttributeConfig extends org.compiere.model.PO 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1460016934L;
+	private static final long serialVersionUID = -838832506L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_AttributeConfig (Properties ctx, int M_ShipmentSchedule_AttributeConfig_ID, String trxName)
@@ -24,7 +24,7 @@ public class X_M_ShipmentSchedule_AttributeConfig extends org.compiere.model.PO 
         {
 			setM_IolCandHandler_ID (0);
 			setM_ShipmentSchedule_AttributeConfig_ID (0);
-			setOnlyIfInReferencedASI (false);
+			setOnlyIfInReferencedASI (false); // N
         } */
     }
 

@@ -1,10 +1,10 @@
-package de.metas.ordercandidate.rest.exceptions;
+package de.metas.impexp.excel;
 
-import org.adempiere.exceptions.AdempiereException;
+import org.apache.poi.ss.usermodel.Workbook;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api-impl
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -15,22 +15,26 @@ import org.adempiere.exceptions.AdempiereException;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-public class BPartnerInfoNotFoundException extends AdempiereException
+public interface ExcelFormat
 {
-	private static final long serialVersionUID = -4776977540135879202L;
+	String getFileExtension();
 
-	public BPartnerInfoNotFoundException(String msg)
-	{
-		super(msg);
-	}
+	String getName();
+
+	Workbook createWorkbook(boolean useStreamingImplementation);
+
+	String getCurrentPageMarkupTag();
+
+	String getTotalPagesMarkupTag();
+	
+	int getLastRowIndex();
 }

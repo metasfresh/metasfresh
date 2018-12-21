@@ -1,11 +1,12 @@
 package de.metas.material.cockpit.view;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.util.TimeUtil;
 
+import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -46,7 +47,7 @@ public class MainDataRecordIdentifier
 	{
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(material)
-				.date(TimeUtil.getDay(material.getDate()))
+				.date(TimeUtil.getDay(material.getDate(), CockpitConstants.TIME_ZONE))
 				.plantId(0)
 				.build();
 		return identifier;
@@ -54,7 +55,7 @@ public class MainDataRecordIdentifier
 
 	ProductDescriptor productDescriptor;
 
-	Date date;
+	Instant date;
 
 	/**
 	 * Optional, a value <= 0 means "none"
@@ -63,7 +64,7 @@ public class MainDataRecordIdentifier
 
 	public MainDataRecordIdentifier(
 			@NonNull final ProductDescriptor productDescriptor,
-			@NonNull final Date date,
+			@NonNull final Instant date,
 			int plantId)
 	{
 		productDescriptor.getStorageAttributesKey().assertNotAllOrOther();
@@ -84,7 +85,7 @@ public class MainDataRecordIdentifier
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Cockpit.COLUMN_M_Product_ID, productDescriptor.getProductId())
 				.addEqualsFilter(I_MD_Cockpit.COLUMN_AttributesKey, attributesKey.getAsString())
-				.addEqualsFilter(I_MD_Cockpit.COLUMN_DateGeneral, getDate());
+				.addEqualsFilter(I_MD_Cockpit.COLUMN_DateGeneral, TimeUtil.asTimestamp(getDate()));
 
 		if (getPlantId() > 0)
 		{

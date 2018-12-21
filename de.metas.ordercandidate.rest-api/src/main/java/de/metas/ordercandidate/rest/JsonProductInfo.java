@@ -1,14 +1,16 @@
 package de.metas.ordercandidate.rest;
 
+import static org.compiere.util.Util.coalesce;
+
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -32,30 +34,25 @@ import lombok.NonNull;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder
+// @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Value
 public class JsonProductInfo
 {
-
 	public enum Type
 	{
 		ITEM, SERVICE
 	}
 
 	/** This translates to {@code M_Product.Value}. */
-	@Nullable
-	@ApiModelProperty(value="This translates to <code>M_Product.Value</code>.")
+	@ApiModelProperty(value = "This translates to <code>M_Product.Value</code>.")
 	private String code;
 
 	/**
 	 * This translates to {@code M_Product.Name}.
 	 * If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.
 	 */
-	@Nullable
 	private String name;
 
-	@NonNull
 	private Type type;
 
 	/**
@@ -63,6 +60,24 @@ public class JsonProductInfo
 	 * The respective UOM needs to exist in metasfresh and it's ID is set as <code>M_Product.C_UOM_ID</code>.
 	 * If this is empty, and a product with the given <code>code</code> does not yet exist, then the request will fail.
 	 */
-	@Nullable
 	private String uomCode;
+
+	private SyncAdvise syncAdvise;
+
+	@Builder(toBuilder = true)
+	@JsonCreator
+	private JsonProductInfo(
+			@JsonProperty("code") @Nullable final String code,
+			@JsonProperty("name") @Nullable final String name,
+			@JsonProperty("type") @NonNull final Type type,
+			@JsonProperty("uomCode") @Nullable final String uomCode,
+			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
+	{
+		this.code = code;
+		this.name = name;
+		this.type = type;
+		this.uomCode = uomCode;
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+	}
+
 }
