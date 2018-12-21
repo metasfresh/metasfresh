@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.adempiere.util.exceptions.ServicesException;
 import org.adempiere.util.proxy.IInterceptorInstance;
 import org.adempiere.util.proxy.IInvocationContext;
 
@@ -38,6 +37,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.IService;
+import de.metas.util.exceptions.ServicesException;
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;

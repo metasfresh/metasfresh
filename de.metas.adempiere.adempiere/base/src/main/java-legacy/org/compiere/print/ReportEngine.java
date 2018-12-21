@@ -1006,7 +1006,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 				return Document.getPDFAsArray(m_layout.getPageable(false));
 			} // 03744
 		}
-		catch (Exception e)
+		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
