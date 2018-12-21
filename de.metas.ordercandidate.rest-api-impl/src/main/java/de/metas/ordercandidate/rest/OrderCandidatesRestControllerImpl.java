@@ -108,7 +108,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 			// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.;
 			// invoke creatOrdersInTrx with the same unchanged bulkRequest, because the requests bpartner and product instances are
 			// (at least currently) part of the respective caching keys.
-			return creatOrdersInTrx(bulkRequest, masterdataProvider);
+			return creatOrderLineCandidates(bulkRequest, masterdataProvider);
 		});
 
 		return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
@@ -147,7 +147,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		productMasterDataProvider.getCreateProductInfo(json.getProduct(), orgId);
 	}
 
-	private JsonOLCandCreateBulkResponse creatOrdersInTrx(
+	private JsonOLCandCreateBulkResponse creatOrderLineCandidates(
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
