@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -667,7 +669,7 @@ public abstract class AbstractExcelExporter
 		return workbook;
 	}
 
-	private Hyperlink createHyperlinkIfURL(final String str)
+	private Hyperlink createHyperlinkIfURL(@Nullable final String str)
 	{
 		if (str == null || str.isEmpty())
 		{
@@ -678,9 +680,17 @@ public abstract class AbstractExcelExporter
 		if (urlStr.startsWith("http://")
 				|| urlStr.startsWith("https://"))
 		{
-			final Hyperlink hyperlink = getWorkbook().getCreationHelper().createHyperlink(org.apache.poi.common.usermodel.Hyperlink.LINK_URL);
-			hyperlink.setAddress(urlStr);
-			return hyperlink;
+			try
+			{
+				new URI(urlStr);
+				final Hyperlink hyperlink = getWorkbook().getCreationHelper().createHyperlink(org.apache.poi.common.usermodel.Hyperlink.LINK_URL);
+				hyperlink.setAddress(urlStr);
+				return hyperlink;
+			}
+			catch (final URISyntaxException e)
+			{
+				return null;
+			}
 		}
 		else
 		{
