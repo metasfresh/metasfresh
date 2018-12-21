@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.MimeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -26,6 +27,8 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.impexp.excel.ExcelFormat;
+import de.metas.impexp.excel.ExcelFormats;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.ProcessRestController;
@@ -413,11 +416,13 @@ public class ViewRestController
 
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr));
 
-		final File tmpFile = File.createTempFile("exportToExcel", ".xls");
+		final ExcelFormat excelFormat = ExcelFormats.getDefaultFormat();
+		final File tmpFile = File.createTempFile("exportToExcel", "." + excelFormat.getFileExtension());
 
 		try (final FileOutputStream out = new FileOutputStream(tmpFile))
 		{
 			ViewExcelExporter.builder()
+					.excelFormat(excelFormat)
 					.view(viewsRepo.getView(viewId))
 					.rowIds(DocumentIdsSelection.ofCommaSeparatedString(selectedIdsListStr))
 					.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid, ViewProfileId.NULL))
@@ -426,9 +431,10 @@ public class ViewRestController
 					.export(out);
 		}
 
-		final String filename = "report.xls"; // TODO: use a better name
+		final String filename = "report." + excelFormat.getFileExtension(); // TODO: use a better name
+		final String contentType = MimeType.getMimeType(filename);
 		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
+		headers.setContentType(MediaType.parseMediaType(contentType));
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
