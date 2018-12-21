@@ -136,7 +136,9 @@ public class RefundTestTools
 		saveRecord(productRecord);
 
 		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
-		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
+		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
+		invoiceScheduleRecord.setInvoiceDay(5);
+		invoiceScheduleRecord.setInvoiceDistance(1);
 		saveRecord(invoiceScheduleRecord);
 
 		final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
@@ -209,9 +211,9 @@ public class RefundTestTools
 	 */
 	public RefundContract createRefundContract_APPLY_TO_ALL_QTIES()
 	{
-		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
-		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
-		saveRecord(invoiceScheduleRecord);
+//		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
+//		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
+//		saveRecord(invoiceScheduleRecord);
 
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
@@ -221,7 +223,7 @@ public class RefundTestTools
 		refundConfigRecord.setC_Flatrate_Conditions(conditions);
 		refundConfigRecord.setM_Product(productRecord);
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice); // keep in sync with the C_DocType's subType that we set up in the constructor.
-		refundConfigRecord.setC_InvoiceSchedule(invoiceScheduleRecord);
+		refundConfigRecord.setC_InvoiceSchedule_ID(invoiceSchedule.getId().getRepoId());
 		refundConfigRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
 		refundConfigRecord.setRefundPercent(TWENTY);
 		refundConfigRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);

@@ -181,7 +181,7 @@ public final class CollectionUtils
 	 */
 	public static <T> T singleElement(@NonNull final Collection<T> collection)
 	{
-		Check.errorUnless(collection.size() == 1, "The given collection needs to have exactly one 1 item, but has {} items; collection={}", collection);
+		Check.errorUnless(collection.size() == 1, "The given collection needs to have exactly one 1 item, but has {} items; collection={}", collection.size(), collection);
 		return collection.iterator().next();
 	}
 
