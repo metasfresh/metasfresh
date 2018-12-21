@@ -87,7 +87,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		}
 		catch (final LockFailedException e)
 		{
-			// this can happen, if e.g. there was a restart, or of the WP was flaged as error once
+			// this can happen, if e.g. there was a restart, or if the WP was flaged as error once
 			Loggables.get().addLog("Missing lock for ownerName={}; was probably cleaned up meanwhile", elementsLockOwnerName);
 			return Optional.empty();
 		}
