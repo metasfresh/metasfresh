@@ -318,7 +318,8 @@ import lombok.NonNull;
 		final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
 		if (retryAdvisedInMillis > 0)
 		{
-			Loggables.get().addLog("Caught a {} with an avise to retry in {}ms", e.getClass().getSimpleName(), retryAdvisedInMillis);
+			Loggables.get().addLog("Caught a {} with an advise to retry in {}ms; ServiceURL={}",
+					e.getClass().getSimpleName(), retryAdvisedInMillis, e.getServiceURL());
 
 			final WorkpackageSkipRequestException //
 			workpackageSkipRequestException = WorkpackageSkipRequestException
