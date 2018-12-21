@@ -75,14 +75,8 @@ public class UpdateContractOrderStatus
 		{
 			// update order contract status to extended
 			final OrderId currentContractOrderId = contractOrderService.getContractOrderId(term);
-
-			orderIds.forEach(id -> {
-				if (id.getRepoId() != currentContractOrderId.getRepoId())  // different order from the current one
-				{
-					final I_C_Order order = orderDAO.getById(id, I_C_Order.class);
-					contractOrderService.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Extended);
-				}
-			});
+			final I_C_Order order = orderDAO.getById(currentContractOrderId, I_C_Order.class);
+			contractOrderService.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Extended);
 		}
 	}
 
@@ -91,7 +85,7 @@ public class UpdateContractOrderStatus
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(term.getContractStatus())
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
 		{
-			// update order contract status to cancelled
+			// update order contract status to cancel
 			final List<I_C_Order> orders = orderDAO.getByIds(orderIds, I_C_Order.class);
 			for (final I_C_Order order : orders)
 			{
