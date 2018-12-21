@@ -123,7 +123,6 @@ public class JSONLookupValuesList implements Serializable
 
 	private JSONLookupValuesList(final ImmutableList<JSONLookupValue> values, final Map<String, String> otherProperties)
 	{
-		super();
 		this.values = values;
 		if (otherProperties != null && !otherProperties.isEmpty())
 		{
@@ -133,7 +132,6 @@ public class JSONLookupValuesList implements Serializable
 
 	private JSONLookupValuesList()
 	{
-		super();
 		values = ImmutableList.of();
 	}
 
@@ -143,7 +141,7 @@ public class JSONLookupValuesList implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("values", values)
-				.add("properties", otherProperties.isEmpty() ? null : otherProperties)
+				.add("properties", otherProperties == null || otherProperties.isEmpty() ? null : otherProperties)
 				.toString();
 	}
 
