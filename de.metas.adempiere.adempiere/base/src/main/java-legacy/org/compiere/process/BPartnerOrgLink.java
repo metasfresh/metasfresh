@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.List;
 
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -23,12 +25,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Role_OrgAccess;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MOrg;
-import org.compiere.model.MOrgInfo;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.AdempiereUserError;
 
@@ -90,7 +92,7 @@ public class BPartnerOrgLink extends JavaProcess
 
 	/**
 	 * Perform process.
-	 * 
+	 *
 	 * @return Message (text with variables)
 	 * @throws Exception if not successful
 	 */
@@ -130,7 +132,7 @@ public class BPartnerOrgLink extends JavaProcess
 		p_AD_Org_ID = org.getAD_Org_ID();
 
 		// Update Org Info
-		MOrgInfo oInfo = org.getInfo();
+		final I_AD_OrgInfo oInfo = org.getInfo();
 		oInfo.setAD_OrgType_ID(p_AD_OrgType_ID);
 
 		// metas: 03084: We are no longer setting the location to AD_OrgInfo.
@@ -161,8 +163,7 @@ public class BPartnerOrgLink extends JavaProcess
 
 		// Update/Save Org Info
 		oInfo.setM_Warehouse_ID(wh.getM_Warehouse_ID());
-		if (!oInfo.save(get_TrxName()))
-			throw new Exception("Organization Info not saved");
+		save(oInfo,get_TrxName());
 
 		// Update BPartner
 		bp.setAD_OrgBP_ID(p_AD_Org_ID);

@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.security.IRoleDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.IOrgDAO;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.MClient;
-import org.compiere.model.MOrgInfo;
 import org.compiere.model.PO;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DB;
@@ -46,7 +48,7 @@ import de.metas.util.Services;
 
 /**
  *	Workflow Processor
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: WorkflowProcessor.java,v 1.4 2006/07/30 00:53:33 jjanke Exp $
  */
@@ -62,14 +64,14 @@ public class WorkflowProcessor extends AdempiereServer
 		m_model = model;
 		m_client = MClient.get(model.getCtx(), model.getAD_Client_ID());
 	}	//	WorkflowProcessor
-	
+
 	/**	The Concrete Model			*/
 	private	MWorkflowProcessor	m_model = null;
 	/**	Last Summary				*/
 	private StringBuffer 		m_summary = new StringBuffer();
 	/** Client onfo					*/
 	private MClient 			m_client = null;
-	
+
 	/**
 	 * 	Work
 	 */
@@ -117,11 +119,11 @@ public class WorkflowProcessor extends AdempiereServer
 			while (rs.next ())
 			{
 				MWFActivity activity = new MWFActivity (getCtx(), rs, null);
-				activity.setWFState (StateEngine.STATE_Completed);	
+				activity.setWFState (StateEngine.STATE_Completed);
 				// saves and calls MWFProcess.checkActivities();
 				count++;
 			}
-			rs.close ();			
+			rs.close ();
 		}
 		catch (Exception e)
 		{
@@ -133,7 +135,7 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 		m_summary.append("Wakeup #").append(count).append (" - ");
 	}	//	wakeup
-	
+
 	/**
 	 * 	Set/Increase Priority dynamically
 	 */
@@ -177,11 +179,11 @@ public class WorkflowProcessor extends AdempiereServer
 		{
 			DB.close(pstmt);
 		}
-		
-		m_summary.append("DynPriority #").append(count).append (" - ");		    
+
+		m_summary.append("DynPriority #").append(count).append (" - ");
 	}	//	setPriority
-	
-	
+
+
 	/**
 	 * 	Send Alerts
 	 */
@@ -196,7 +198,7 @@ public class WorkflowProcessor extends AdempiereServer
 				+ " AND Priority >= ?"				//	##1
 				+ " AND (DateLastAlert IS NULL";
 			if (m_model.getRemindDays() > 0)
-				sql += " OR (DateLastAlert+" + m_model.getRemindDays() 
+				sql += " OR (DateLastAlert+" + m_model.getRemindDays()
 					+ ") < now()";
 			sql += ") AND EXISTS (SELECT * FROM AD_Workflow wf "
 					+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
@@ -214,7 +216,7 @@ public class WorkflowProcessor extends AdempiereServer
 				while (rs.next())
 				{
 					MWFActivity activity = new MWFActivity (getCtx(), rs, null);
-					boolean escalate = activity.getDateLastAlert() != null; 
+					boolean escalate = activity.getDateLastAlert() != null;
 					countEMails += sendEmail (activity, "ActivityOverPriority",
 						escalate, true);
 					activity.setDateLastAlert(new Timestamp(System.currentTimeMillis()));
@@ -247,7 +249,7 @@ public class WorkflowProcessor extends AdempiereServer
 			+ " AND EndWaitTime > now()"
 			+ " AND (DateLastAlert IS NULL";
 		if (m_model.getRemindDays() > 0)
-			sql += " OR (DateLastAlert+" + m_model.getRemindDays() 
+			sql += " OR (DateLastAlert+" + m_model.getRemindDays()
 				+ ") < now()";
 		sql += ") AND EXISTS (SELECT * FROM AD_Workflow wf "
 				+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
@@ -265,8 +267,8 @@ public class WorkflowProcessor extends AdempiereServer
 			while (rs.next ())
 			{
 				MWFActivity activity = new MWFActivity (getCtx(), rs, null);
-				boolean escalate = activity.getDateLastAlert() != null; 
-				countEMails += sendEmail (activity, "ActivityEndWaitTime", 
+				boolean escalate = activity.getDateLastAlert() != null;
+				countEMails += sendEmail (activity, "ActivityEndWaitTime",
 					escalate, false);
 				activity.setDateLastAlert(new Timestamp(System.currentTimeMillis()));
 				activity.save();
@@ -282,7 +284,7 @@ public class WorkflowProcessor extends AdempiereServer
 		{
 			DB.close(pstmt);
 		}
-		
+
 		m_summary.append("EndWaitTime #").append(count);
 		if (countEMails > 0)
 			m_summary.append(" (").append(countEMails).append(" EMail)");
@@ -299,7 +301,7 @@ public class WorkflowProcessor extends AdempiereServer
 				+ " AND (Updated+" + m_model.getInactivityAlertDays() + ") < now()"
 				+ " AND (DateLastAlert IS NULL";
 			if (m_model.getRemindDays() > 0)
-				sql += " OR (DateLastAlert+" + m_model.getRemindDays() 
+				sql += " OR (DateLastAlert+" + m_model.getRemindDays()
 					+ ") < now()";
 			sql += ") AND EXISTS (SELECT * FROM AD_Workflow wf "
 					+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
@@ -315,7 +317,7 @@ public class WorkflowProcessor extends AdempiereServer
 				while (rs.next())
 				{
 					MWFActivity activity = new MWFActivity (getCtx(), rs, null);
-					boolean escalate = activity.getDateLastAlert() != null; 
+					boolean escalate = activity.getDateLastAlert() != null;
 					countEMails += sendEmail (activity, "ActivityInactivity",
 						escalate, false);
 					activity.setDateLastAlert(new Timestamp(System.currentTimeMillis()));
@@ -337,9 +339,9 @@ public class WorkflowProcessor extends AdempiereServer
 			if (countEMails > 0)
 				m_summary.append(" (").append(countEMails).append(" EMail)");
 			m_summary.append (" - ");
-		}	//	Inactivity		
+		}	//	Inactivity
 	}	//	sendAlerts
-	
+
 	/**
 	 *  Send Alert EMail
 	 *  @param activity activity
@@ -353,14 +355,14 @@ public class WorkflowProcessor extends AdempiereServer
 	{
 		if (m_client == null || m_client.getAD_Client_ID() != activity.getAD_Client_ID())
 			m_client = MClient.get(getCtx(), activity.getAD_Client_ID());
-			
+
 		MWFProcess process = new MWFProcess (getCtx(), activity.getAD_WF_Process_ID(), null);
 
 		String subjectVar = activity.getNode().getName();
 		String message = activity.getTextMsg();
 		if (message == null || message.length() == 0)
 			message = process.getTextMsg();
-		File pdf = null; 
+		File pdf = null;
 		final PO po = activity.getPO();
 		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
 		if (document != null)
@@ -368,14 +370,14 @@ public class WorkflowProcessor extends AdempiereServer
 			message = document.getDocumentInfo() + "\n" + message;
 			pdf = document.createPDF();
 		}
-		
+
 		//  Inactivity Alert: Workflow Activity {}
 		String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message, new Object[] {subjectVar});
-		
+
 		//	Prevent duplicates
 		ArrayList<Integer> list = new ArrayList<>();
 		int counter = 0;
-		
+
 		//	To Activity Owner
 		if (m_client.sendEMail(activity.getAD_User_ID(), subject, message, pdf))
 			counter++;
@@ -389,12 +391,12 @@ public class WorkflowProcessor extends AdempiereServer
 				counter++;
 			list.add (new Integer(process.getAD_User_ID()));
 		}
-		
+
 		//	To Activity Responsible
 		MWFResponsible responsible = MWFResponsible.get(getCtx(), activity.getAD_WF_Responsible_ID());
 		counter += sendAlertToResponsible (responsible, list, process,
 			subject, message, pdf);
-		
+
 		//	To Process Responsible
 		if (toProcess
 			&& process.getAD_WF_Responsible_ID() != activity.getAD_WF_Responsible_ID())
@@ -403,9 +405,9 @@ public class WorkflowProcessor extends AdempiereServer
 			counter += sendAlertToResponsible (responsible, list, process,
 				subject, message, pdf);
 		}
-		
+
 		//	Processor SuperVisor
-		if (toSupervisor 
+		if (toSupervisor
 			&& m_model.getSupervisor_ID() != 0
 			&& !list.contains(new Integer(m_model.getSupervisor_ID())))
 		{
@@ -416,7 +418,7 @@ public class WorkflowProcessor extends AdempiereServer
 
 		return counter;
 	}   //  sendAlert
-	
+
 	/**
 	 * 	Send Alert To Responsible
 	 *	@param responsible responsible
@@ -427,7 +429,7 @@ public class WorkflowProcessor extends AdempiereServer
 	 *	@param pdf optional pdf
 	 *	@return number of mail sent
 	 */
-	private int sendAlertToResponsible (MWFResponsible responsible, 
+	private int sendAlertToResponsible (MWFResponsible responsible,
 		ArrayList<Integer> alreadyNotifiedUserIds, MWFProcess process,
 		String subject, String message, File pdf)
 	{
@@ -449,7 +451,7 @@ public class WorkflowProcessor extends AdempiereServer
 			PO document = process.getPO();
 			if (document != null)
 			{
-				MOrgInfo org = MOrgInfo.get (getCtx(), document.getAD_Org_ID());
+				final I_AD_OrgInfo org = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), document.getAD_Org_ID(), ITrx.TRXNAME_None);
 				if (org.getSupervisor_ID() > 0
 					&& !alreadyNotifiedUserIds.contains(org.getSupervisor_ID()))
 				{
@@ -476,8 +478,8 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 		return counter;
 	}	//	sendAlertToResponsible
-	
-	
+
+
 	/**
 	 * 	Get Server Info
 	 *	@return info
