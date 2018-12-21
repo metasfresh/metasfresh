@@ -29,6 +29,7 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
@@ -218,11 +219,14 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 		final ILock lock = InvoiceCandidateLockingUtil.lockInvoiceCandidates(invoiceCandidateRecords, uniqueLockOwnerSuffix);
 
+		// update the parameter; it is used to release the lock we just obtained when the workpackage was processed
 		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 		workpackageParamDAO.setParameterValue(
 				getC_Queue_WorkPackage(),
 				PARAMETERNAME_ElementsLockOwner,
 				lock.getOwner().getOwnerName());
+		final IParams parameters = workpackageParamDAO.retrieveWorkpackageParams(getC_Queue_WorkPackage());
+		setParameters(parameters);
 
 		Loggables.get().addLog("Obtained new lock with ownerName={} and updated our package parameter", lock.getOwner().getOwnerName());
 		return lock;
