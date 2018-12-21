@@ -19,7 +19,8 @@ package org.eevolution.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.model.MOrgInfo;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.IOrgDAO;
 import org.compiere.model.MResource;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -28,6 +29,7 @@ import org.compiere.wf.MWorkflow;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Product Data Planning
@@ -85,7 +87,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 											int m_product_id,
 											String trxname)
 	{
-		int M_Warehouse_ID = MOrgInfo.get(ctx, ad_org_id).getM_Warehouse_ID();
+		int M_Warehouse_ID = Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, ad_org_id, ITrx.TRXNAME_None).getM_Warehouse_ID();
 		if(M_Warehouse_ID <= 0)
 		{
 			return null;

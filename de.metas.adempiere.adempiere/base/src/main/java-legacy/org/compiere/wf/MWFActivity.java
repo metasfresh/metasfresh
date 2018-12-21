@@ -38,8 +38,10 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.user.api.IUserDAO;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
@@ -49,7 +51,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
-import org.compiere.model.MOrgInfo;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Activity;
@@ -790,7 +791,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			{
 				log.debug("No Supervisor");
 				MOrg org = MOrg.get(getCtx(), AD_Org_ID);
-				MOrgInfo orgInfo = org.getInfo();
+				I_AD_OrgInfo orgInfo = org.getInfo();
 				// Get Org Supervisor
 				if (orgInfo.getSupervisor_ID() != 0)
 				{
@@ -1614,7 +1615,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			}
 			else if (resp.isOrganization())
 			{
-				MOrgInfo org = MOrgInfo.get(getCtx(), m_po.getAD_Org_ID());
+				final I_AD_OrgInfo org = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), m_po.getAD_Org_ID(), ITrx.TRXNAME_None);
 				if (org.getSupervisor_ID() <= 0)
 					log.debug("No Supervisor for AD_Org_ID=" + m_po.getAD_Org_ID());
 				else
