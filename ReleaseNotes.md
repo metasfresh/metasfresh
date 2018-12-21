@@ -28,11 +28,17 @@ Here come the actual release notes:
 # Features
 * metasfresh
   * [#4809](https://github.com/metasfresh/metasfresh/pull/4809) Make contact persons's location editable under circumstances
+    * Improving the behavior when editing the location of contact persons in some minor cases.
   * [#4823](https://github.com/metasfresh/metasfresh/issues/4823) CSV import BP URL
+    * Extended Business Partner import, now allowing to import the Businesspartner Website URL aswell.
   * [#4825](https://github.com/metasfresh/metasfresh/issues/4825) invoice and async improvements
+    * Improvement of logging for skipped asynch Work Packages.
   * [#4828](https://github.com/metasfresh/metasfresh/issues/4828) Extend OLCand REST API to allow not to create products on the fly
+    * Extended Functionality in Orderlines Candidates REST-API.
   * [#4832](https://github.com/metasfresh/metasfresh/issues/4832) Extend Datenaustausch-Config and XML modding
+    * Extending the Format of forum-datenaustusche Datenaustausch Configuration and bahavior
   * [#4837](https://github.com/metasfresh/metasfresh/issues/4837) Add fiscal year 2019 to our standard calendar
+    * Adding the fiscal year 2019 to the default accounting calendar.
 
 * metasfresh-webui-frontend
   * [#2097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2097) Lookup and Dropdown: Empty list entry for non mandatory
