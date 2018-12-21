@@ -82,37 +82,35 @@ export class ChartWidget extends Component {
               ''
             )}
           </p>
-          {!editmode &&
-            !framework && (
-              <i
-                className="draggable-widget-icon meta-icon-down-1 input-icon-sm"
-                onClick={() => this.toggleMenu()}
-              />
-            )}
-          {toggleWidgetMenu &&
-            !editmode && (
-              <div className="draggable-widget-menu">
-                {isMaximized ? (
-                  <span
-                    onClick={() => {
-                      maximizeWidget();
-                      this.toggleMenu(false);
-                    }}
-                  >
-                    Minimize
-                  </span>
-                ) : (
-                  <span
-                    onClick={() => {
-                      maximizeWidget(id);
-                      this.toggleMenu(false);
-                    }}
-                  >
-                    Maximize
-                  </span>
-                )}
-              </div>
-            )}
+          {!editmode && !framework && (
+            <i
+              className="draggable-widget-icon meta-icon-down-1 input-icon-sm"
+              onClick={() => this.toggleMenu()}
+            />
+          )}
+          {toggleWidgetMenu && !editmode && (
+            <div className="draggable-widget-menu">
+              {isMaximized ? (
+                <span
+                  onClick={() => {
+                    maximizeWidget();
+                    this.toggleMenu(false);
+                  }}
+                >
+                  Minimize
+                </span>
+              ) : (
+                <span
+                  onClick={() => {
+                    maximizeWidget(id);
+                    this.toggleMenu(false);
+                  }}
+                >
+                  Maximize
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="draggable-widget-body">

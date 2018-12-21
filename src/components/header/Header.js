@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import classnames from 'classnames';
 
 import {
   deleteRequest,
@@ -62,7 +63,7 @@ class Header extends Component {
     this.removeEventListeners();
   }
 
-  componentWillUpdate(nextProps) {
+  UNSAFE_componentWillUpdate(nextProps) {
     const { dropzoneFocused } = this.props;
 
     if (
@@ -390,10 +391,9 @@ class Header extends Component {
         )}
 
         <nav
-          className={
-            'header header-super-faded js-not-unselect ' +
-            (scrolled ? 'header-shadow' : '')
-          }
+          className={classnames('header header-super-faded', {
+            'header-shadow': scrolled,
+          })}
         >
           <div className="container-fluid">
             <div className="header-container">
@@ -404,14 +404,14 @@ class Header extends Component {
                     this.toggleTooltip(keymap.OPEN_ACTIONS_MENU)
                   }
                   onMouseLeave={() => this.toggleTooltip('')}
-                  className={
-                    'btn-square btn-header ' +
-                    'tooltip-parent ' +
-                    (isSubheaderShow
-                      ? 'btn-meta-default-dark ' +
-                        'btn-subheader-open btn-header-open'
-                      : 'btn-meta-primary')
-                  }
+                  className={classnames(
+                    'btn-square btn-header',
+                    'tooltip-parent js-not-unselect',
+                    {
+                      'btn-meta-default-dark btn-subheader-open btn-header-open': isSubheaderShow,
+                      'btn-meta-primary': !isSubheaderShow,
+                    }
+                  )}
                 >
                   <i className="meta-icon-more" />
 
@@ -439,7 +439,7 @@ class Header extends Component {
                   openModal={this.openModal}
                 />
               </div>
-              <div className="header-center">
+              <div className="header-center js-not-unselect">
                 <img
                   src={logo}
                   className="header-logo pointer"
@@ -449,7 +449,7 @@ class Header extends Component {
               <div className="header-right-side">
                 {docStatus && (
                   <div
-                    className="hidden-sm-down tooltip-parent"
+                    className="hidden-sm-down tooltip-parent js-not-unselect"
                     onClick={() => this.toggleTooltip('')}
                     onMouseEnter={() => this.toggleTooltip(keymap.DOC_STATUS)}
                   >
@@ -478,12 +478,14 @@ class Header extends Component {
                 )}
 
                 <div
-                  className={
-                    'header-item-container ' +
-                    'header-item-container-static ' +
-                    'pointer tooltip-parent ' +
-                    (isInboxOpen ? 'header-item-open ' : '')
-                  }
+                  className={classnames(
+                    'header-item-container',
+                    'header-item-container-static',
+                    'pointer tooltip-parent js-not-unselect',
+                    {
+                      'header-item-open': isInboxOpen,
+                    }
+                  )}
                   onClick={() =>
                     this.closeOverlays('', () => this.handleInboxOpen(true))
                   }
@@ -531,13 +533,15 @@ class Header extends Component {
 
                 {showSidelist && (
                   <div
-                    className={
-                      'tooltip-parent btn-header ' +
-                      'side-panel-toggle btn-square ' +
-                      (isSideListShow
-                        ? 'btn-meta-default-bright ' + 'btn-header-open'
-                        : 'btn-meta-primary')
-                    }
+                    className={classnames(
+                      'tooltip-parent btn-header',
+                      'side-panel-toggle btn-square',
+                      'js-not-unselect',
+                      {
+                        'btn-meta-default-bright btn-header-open': isSideListShow,
+                        'btn-meta-primary': !isSideListShow,
+                      }
+                    )}
                     onClick={() => {
                       this.closeOverlays();
                       this.handleSidelistToggle(0);
@@ -597,19 +601,18 @@ class Header extends Component {
           />
         )}
 
-        {showSidelist &&
-          isSideListShow && (
-            <SideList
-              windowType={windowType ? windowType : ''}
-              closeOverlays={this.closeOverlays}
-              closeSideList={this.handleSidelistToggle}
-              isSideListShow={isSideListShow}
-              disableOnClickOutside={!showSidelist}
-              docId={dataId}
-              defaultTab={sideListTab}
-              open
-            />
-          )}
+        {showSidelist && isSideListShow && (
+          <SideList
+            windowType={windowType ? windowType : ''}
+            closeOverlays={this.closeOverlays}
+            closeSideList={this.handleSidelistToggle}
+            isSideListShow={isSideListShow}
+            disableOnClickOutside={!showSidelist}
+            docId={dataId}
+            defaultTab={sideListTab}
+            open
+          />
+        )}
 
         {isEmailOpen && (
           <NewEmail

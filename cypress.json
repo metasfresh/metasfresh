@@ -8,5 +8,6 @@
   
   "viewport_comment1": "the default is 1000px by 660px",
   "viewportWidth": 1500,
-  "viewportHeight": 1000
+  "viewportHeight": 1000,
+  "defaultCommandTimeout": 6000
 }

@@ -267,6 +267,7 @@ class TableQuickInput extends Component {
 
 TableQuickInput.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  closeBatchEntry: PropTypes.func,
   forceHeight: PropTypes.number,
 };
 

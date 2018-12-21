@@ -34,26 +34,64 @@ describe('New sales order test', function() {
     cy.visit('/window/'+windowId);
   });
 
+  describe('List tests', function() {
+    it('Test if rows get selected/deselected properly', function() {
+      cy.get('.table-flex-wrapper-row')
+        .find('tbody tr').eq(0)
+        .should('exist')
+
+      cy.get('.table-flex-wrapper-row')
+        .find('tbody tr').eq(1)
+        .find('td').eq(0)
+        .type('{shift}', { release: false })
+        .click();
+
+      cy.get('.table-flex-wrapper-row')
+        .find('tbody tr').eq(2)
+        .find('td').eq(0)
+        .type('{shift}', { release: false })
+        .click();
+
+      cy.get('.row-selected')
+        .should('have.length', 2);
+
+      cy.get('.document-list-header')
+        .click();
+
+      cy.get('.row-selected')
+        .should('have.length', 0);
+    });
+  });
+
   context('Create a new sales order', function() {
     before(function() {
       cy.get('.header-breadcrumb')
-        .contains('.header-item', caption, { timeout: 10000 })
-        .click();
+        .contains('.header-item', caption, { timeout: 10000 });
 
-      cy.get('.header-breadcrumb')
-        .find('.menu-overlay')
-        .should('exist')
-        .find('.menu-overlay-link')
-        .contains(menuOption)
-        .click();
+      const option = ~~(Math.random() * (2 - 0)) + 0;
+
+      if (option === 0) {
+        cy.get('.header-breadcrumb')
+          .contains('.header-item', caption)
+          .click();
+
+        cy.get('.header-breadcrumb')
+          .find('.menu-overlay')
+          .should('exist')
+          .find('.menu-overlay-link')
+          .contains(menuOption)
+          .click();
+      } else {
+        cy.clickHeaderNav('New');
+      }
 
       cy.get('.header-breadcrumb-sitename').should('contain', '<');
     });
 
     it('Fill Business Partner', function() {
-      cy.writeIntoCompositeLookupField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
-      cy.get('#lookup_C_BPartner_ID').click();
-      cy.writeIntoCompositeLookupField('C_BPartner_Location_ID', 'test', 'Testadresse 3');
+      cy.writeIntoLookupListField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
+      cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Testadresse 3', 'Testadresse 3');
+      cy.writeIntoLookupListField('AD_User_ID', 'Test', 'Test');
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
     });
@@ -61,10 +99,6 @@ describe('New sales order test', function() {
     it('Fill order reference to differentiate cypress tests', function() {
       cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
       /*
-      cy.get('.form-field-POReference')
-        .find('input')
-        .type(`Cypress Test ${new Date().getTime()}{enter}`);
-
       cy.get('.indicator-pending').should('exist');
       cy.wait(100);
       cy.get('.indicator-pending').should('not.exist');

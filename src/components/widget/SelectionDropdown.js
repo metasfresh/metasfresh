@@ -35,6 +35,16 @@ export default class SelectionDropdown extends Component {
 
   optionToRef = new Map();
 
+  constructor(props) {
+    super(props);
+
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.scrollIntoView = this.scrollIntoView.bind(this);
+    this.handleMouseEnter = this.handleMouseEnter.bind(this);
+    this.handleMouseDown = this.handleMouseDown.bind(this);
+  }
+
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
@@ -67,7 +77,7 @@ export default class SelectionDropdown extends Component {
     return options.get(index);
   }
 
-  scrollIntoView = (element, up) => {
+  scrollIntoView(element, up) {
     const {
       top: topMax,
       bottom: bottomMax,
@@ -77,7 +87,7 @@ export default class SelectionDropdown extends Component {
     if (top < topMax || bottom > bottomMax) {
       element.scrollIntoView(up);
     }
-  };
+  }
 
   navigate = up => {
     this.ignoreMouse = true;
@@ -142,7 +152,7 @@ export default class SelectionDropdown extends Component {
     onChange(selectedNew);
   };
 
-  handleKeyDown = event => {
+  handleKeyDown(event) {
     const { navigate } = this;
     const { selected, onCancel, onSelect } = this.props;
 
@@ -170,13 +180,13 @@ export default class SelectionDropdown extends Component {
           return;
       }
     }
-  };
+  }
 
-  handleKeyUp = () => {
+  handleKeyUp() {
     this.ignoreMouse = false;
-  };
+  }
 
-  handleMouseEnter = option => {
+  handleMouseEnter(option) {
     if (this.ignoreMouse) {
       return;
     }
@@ -194,11 +204,11 @@ export default class SelectionDropdown extends Component {
 
     this.ignoreOption = null;
     this.props.onChange(option);
-  };
+  }
 
-  handleMouseDown = option => {
+  handleMouseDown(option) {
     this.props.onSelect(option, true);
-  };
+  }
 
   renderHeader = children => {
     return (
@@ -216,6 +226,7 @@ export default class SelectionDropdown extends Component {
       <div
         ref={ref => this.optionToRef.set(option, ref)}
         key={`${key}${caption}`}
+        data-test-id={`${key}${caption}`}
         className={classnames(
           'input-dropdown-list-option ignore-react-onclickoutside',
           {

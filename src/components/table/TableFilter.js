@@ -45,46 +45,43 @@ class TableFilter extends Component {
       <div className="form-flex-align table-filter-line">
         <div className="form-flex-align">
           <div>
-            {!isBatchEntry &&
-              allowCreateNew && (
-                <button
-                  className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                  onClick={openModal}
-                  tabIndex={tabIndex}
-                >
-                  {counterpart.translate('window.addNew.caption')}
-                </button>
-              )}
-            {supportQuickInput &&
-              !fullScreen &&
-              allowCreateNew && (
-                <button
-                  className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                  onClick={handleBatchEntryToggle}
-                  onMouseEnter={() =>
-                    this.toggleTooltip(keymap.TOGGLE_QUICK_INPUT)
-                  }
-                  onMouseLeave={this.toggleTooltip}
-                  tabIndex={tabIndex}
-                >
-                  {isBatchEntry
-                    ? counterpart.translate('window.batchEntryClose.caption')
-                    : counterpart.translate('window.batchEntry.caption')}
-                  {isTooltipShow === keymap.TOGGLE_QUICK_INPUT && (
-                    <Tooltips
-                      name={keymap.TOGGLE_QUICK_INPUT}
-                      action={
-                        isBatchEntry
-                          ? counterpart.translate(
-                              'window.batchEntryClose.caption'
-                            )
-                          : counterpart.translate('window.batchEntry.caption')
-                      }
-                      type={''}
-                    />
-                  )}
-                </button>
-              )}
+            {!isBatchEntry && allowCreateNew && (
+              <button
+                className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                onClick={openModal}
+                tabIndex={tabIndex}
+              >
+                {counterpart.translate('window.addNew.caption')}
+              </button>
+            )}
+            {supportQuickInput && !fullScreen && allowCreateNew && (
+              <button
+                className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                onClick={handleBatchEntryToggle}
+                onMouseEnter={() =>
+                  this.toggleTooltip(keymap.TOGGLE_QUICK_INPUT)
+                }
+                onMouseLeave={this.toggleTooltip}
+                tabIndex={tabIndex}
+              >
+                {isBatchEntry
+                  ? counterpart.translate('window.batchEntryClose.caption')
+                  : counterpart.translate('window.batchEntry.caption')}
+                {isTooltipShow === keymap.TOGGLE_QUICK_INPUT && (
+                  <Tooltips
+                    name={keymap.TOGGLE_QUICK_INPUT}
+                    action={
+                      isBatchEntry
+                        ? counterpart.translate(
+                            'window.batchEntryClose.caption'
+                          )
+                        : counterpart.translate('window.batchEntry.caption')
+                    }
+                    type={''}
+                  />
+                )}
+              </button>
+            )}
           </div>
           {supportQuickInput &&
             (isBatchEntry || fullScreen) &&

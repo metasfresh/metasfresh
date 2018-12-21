@@ -118,6 +118,15 @@ context('Reusable "login" custom command', function() {
   });
 });
 
+
+Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
+  describe('Click on a checkbox field', function() {
+    cy.get(`.form-field-${fieldName}`)
+      .find('.input-checkbox-tick')
+      .click();
+  });
+});
+
 // Should also work for date columns, e.g. '01/01/2018{enter}'
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
   describe('Enter value into string field', function() {
@@ -139,34 +148,25 @@ Cypress.Commands.add(
   'writeIntoLookupListField',
   (fieldName, partialValue, listValue) => {
     describe('Enter value into lookup list field', function() {
-      cy.get(`.form-field-${fieldName}`)
-        .find('input')
-        .type(partialValue);
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    });
-});
-
-Cypress.Commands.add(
-  'writeIntoCompositeLookupField',
-  (fieldName, partialValue, listValue) => {
-    describe('Enter value into lookup list field', function() {
       cy.get(`#lookup_${fieldName}`)
         .within(($el) => {
-          if ($el.find('.raw-lookup-wrapper input').length) {
-            return cy.get('input').type(partialValue);
+          if ($el.find('.lookup-widget-wrapper input').length) {
+            return cy.get('input').clear()
+              .type(partialValue);
           }
 
           return cy.get('.lookup-dropdown').click();
         })
 
       cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click();
+      cy.contains('.input-dropdown-list-option', listValue).click({ force: true });
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
     });
 });
 
+/**
+ * Select the given list value in a static list.
+ */
 Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
   describe('Select value in list field', function() {
       cy.get(`.form-field-${fieldName}`)
@@ -178,29 +178,6 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
         .click();
     }
   );
-});
-
-Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
-  describe('Click on a checkbox field', function() {
-    cy.get(`.form-field-${fieldName}`)
-      .find('.input-checkbox-tick')
-      .click();
-  });
-});
-
-/** !!not working!! */
-Cypress.Commands.add(
-  'writeIntoMultiListField',
-  (fieldName, index, partialValue, listValue) => {
-    describe('Enter value into list field within a "fieldgroup" (field with additional fields, e.g sales order bPartner with lcoation and user)', function() {
-      cy.get(`.form-field-${fieldName}`)
-        .find('input')
-        .find(`:nth.child(${index})`)
-        .type(partialValue);
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    });
 });
 
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
@@ -225,7 +202,71 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
 
 Cypress.Commands.add('openAdvancedEdit', () => {
   describe('Open the advanced edit overlay via ALT+E shortcut', function() {
-    cy.get('body').type('{alt}E')
+    cy.get('body').type('{alt}E');
+    cy.get('.panel-modal').should('exist');
+  })
+});
+
+Cypress.Commands.add('pressAddNewButton', () => {
+  describe('Press table\'s add-new-record-button', function() {
+    const addNewText = Cypress.messages.window.addNew.caption;
+    cy.get('.btn')
+        .contains(addNewText)
+        .should('exist')
+        .click();
+        
+    cy.get('.panel-modal').should('exist');
+  })
+});
+
+Cypress.Commands.add('pressBatchEntryButton', () => {
+  describe('Press table\'s batch-entry-record-button', function() {
+    const batchEntryText = Cypress.messages.window.batchEntry.caption;
+    cy.get('.btn')
+        .contains(batchEntryText)
+        .should('exist')
+        .click();
+        
+    cy.get('.quick-input-container').should('exist');
+  })
+});
+
+/*
+ * Press an overlay's "Done" button. Fail if there is a confirm dialog since that means the record could not be saved. 
+ */
+Cypress.Commands.add('pressDoneButton', () => {
+  describe('Press an overlay\'s done-button', function() {
+
+    // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
+    // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
+    cy.on('window:confirm', (str) => {
+      expect(str).to.eq('Everything is awesome and the data record is saved')
+    });
+
+    //webui.modal.actions.done
+    const doneText = Cypress.messages.modal.actions.done;
+    cy.get('.btn')
+      .contains(doneText)
+      .should('exist')
+      .click();
+  })
+});
+
+Cypress.Commands.add('pressStartButton', () => {
+  describe('Press an overlay\'s start-button', function() {
+
+    // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
+    // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
+    cy.on('window:confirm', (str) => {
+      expect(str).to.eq('Everything is awesome and the process has started')
+    });
+
+    //webui.modal.actions.done
+    const startText = Cypress.messages.modal.actions.start;
+    cy.get('.btn')
+      .contains(startText)
+      .should('exist')
+      .click();
   })
 });
 
@@ -235,17 +276,117 @@ Cypress.Commands.add('selectTab', (tabName) => {
   });
 });
 
-// This command runs a quick actions. If second parameter is truthy, the default action
-// will be executed.
+Cypress.Commands.add('selectReference', (refName) => {
+  describe('Select reference with a certain name', function() {
+    return cy.get(`.reference_${refName}`)
+  });
+});
+
+/*
+ * This command allows waiting for the breadcrumb in the header to be visible, which
+ * helps make the tests less flaky as even though the page fires load event, some
+ * requests may still be pending/running.
+ *
+ * Command accepts two params:
+ * - pageName : if we explicitly want to define what to wait for
+ * - breadcrumbNr : if we want to select breadcrumb value from the redux store at
+ *                  the given index
+ * In case pageName is not defined, command will fall back to broadcrembNr and either
+ * use the provided value or the value at index 0.
+ *
+ */
+Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
+  describe('Wait for page name visible in the header', function() {
+    if (pageName) {
+      cy.get('.header-breadcrumb')
+        .find('.header-item-container')
+        .should('not.have.length', 1)
+        .get('.header-item').should('contain', pageName);
+    } else {
+      const breadcrumbNumber = breadcrumbNr || 0;
+
+      cy.get('.header-breadcrumb')
+        .find('.header-item-container')
+        .should('not.have.length', 1)
+        .window().its('store').invoke('getState').its('menuHandler.breadcrumb')
+        .should('not.have.length', 0)
+        .window().its('store').invoke('getState')
+        .its('menuHandler.breadcrumb')
+        .then((breadcrumbs) => {
+          cy.get('.header-item').should('contain', breadcrumbs[breadcrumbNumber].caption);
+        });
+    }
+  });
+});
+
+Cypress.Commands.add('selectSingleTabRow', () => {
+  describe('Select the only row in the currently selected tab', function() {
+    cy.get('.table-flex-wrapper')
+    .find('tbody tr')
+    .should('exist')
+    .click();
+  });
+});
+
+Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
+  describe(`Select ${fieldName}'s address-button and invoke the given function`, function() {
+   
+    cy.server()
+    cy.route('POST', '/rest/api/address').as('postAddress')
+
+    cy.get(`.form-field-${fieldName}`).find('button').click();
+
+    cy.wait('@postAddress').then(xhr => {
+      const requestId = xhr.response.body.id;
+
+      Cypress.emit('emit:addressPatchResolved', requestId);
+    });
+
+    cy.on('emit:addressPatchResolved', (requestId) => {
+
+      cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
+
+      addressFunction();
+      cy.get(`.form-field-C_Location_ID`).click();
+      cy.wait('@completeAddress');
+    });
+
+  });
+});
+
+/*
+ * This command runs a quick actions. If the second parameter is truthy, the default action will be executed.
+ */
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {
     if (!active) {
-      cy.get('.quick-actions-wrapper .btn-inline').click();
+      cy.get('.quick-actions-wrapper .btn-inline').eq(0).click();
       cy.get('.quick-actions-dropdown').should('exist');
 
       return cy.get(`#quickAction_${actionName}`).click();
     }
 
     return cy.get('.quick-actions-wrapper').click();
+  });
+});
+
+Cypress.Commands.add('executeHeaderAction', (actionName) => {
+   describe('Fire header action with a certain name', function() {
+    cy.get('.header-container .btn-square .meta-icon-more').click();
+    cy.get('.subheader-container').should('exist');
+
+    //return cy.get(`#headerAction_${name}`).click();
+    return cy.get(`#headerAction_${actionName}`).click();
+  });
+});
+
+Cypress.Commands.add('clickHeaderNav', (navName) => {
+  const name = navName.toLowerCase().replace(/\s/g, '');
+
+  describe('Fire header action with a certain name', function() {
+    cy.get('.header-container .btn-header').click();
+    cy.get('.subheader-container').should('exist');
+
+    return cy.get(`#subheaderNav_${name}`).click();
   });
 });

@@ -91,11 +91,9 @@ export class Dashboard extends Component {
           />
         </div>
 
-        {enableTutorial &&
-          introHints &&
-          introHints.length > 0 && (
-            <Hints enabled={hintsEnabled} hints={introHints} />
-          )}
+        {enableTutorial && introHints && introHints.length > 0 && (
+          <Hints enabled={hintsEnabled} hints={introHints} />
+        )}
       </Container>
     );
   }

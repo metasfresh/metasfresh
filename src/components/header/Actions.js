@@ -207,6 +207,7 @@ class Actions extends Component {
       <div
         key={identifier + key}
         tabIndex={0}
+        id={`headerAction_${item.internalName}`}
         className={
           'subheader-item js-subheader-item' +
           (item.disabled ? ' subheader-item-disabled' : '')
@@ -214,12 +215,11 @@ class Actions extends Component {
         onClick={handleClick}
       >
         {item.caption}
-        {item.disabled &&
-          item.disabledReason && (
-            <p className="one-line">
-              <small>({item.disabledReason})</small>
-            </p>
-          )}
+        {item.disabled && item.disabledReason && (
+          <p className="one-line">
+            <small>({item.disabledReason})</small>
+          </p>
+        )}
       </div>
     );
   };
@@ -251,12 +251,11 @@ class Actions extends Component {
         onClick={handleClick}
       >
         {item.caption}
-        {item.disabled &&
-          item.disabledReason && (
-            <p className="one-line">
-              <small>({item.disabledReason})</small>
-            </p>
-          )}
+        {item.disabled && item.disabledReason && (
+          <p className="one-line">
+            <small>({item.disabledReason})</small>
+          </p>
+        )}
       </div>
     );
   };

@@ -22,7 +22,7 @@ import Link from './Link';
 import List from './List/List';
 import Lookup from './Lookup/Lookup';
 
-class RawWidget extends Component {
+export class RawWidget extends Component {
   constructor(props) {
     super(props);
 
@@ -104,7 +104,7 @@ class RawWidget extends Component {
       () => {
         enableOnClickOutside && enableOnClickOutside();
         dispatch(allowShortcut());
-        handleBlur && handleBlur(this.willPatch(value));
+        handleBlur && handleBlur(this.willPatch(widgetField, value));
 
         listenOnKeysTrue && listenOnKeysTrue();
 
@@ -116,8 +116,11 @@ class RawWidget extends Component {
   };
 
   handleKeyDown = (e, property, value, widgetType) => {
-    if ((e.key === 'Enter' || e.key === 'Tab') && widgetType !== 'LongText') {
-      this.handlePatch(property, value);
+    if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
+      if (e.key === 'Enter' && widgetType.search(/text/i) > -1) {
+        e.preventDefault();
+      }
+      return this.handlePatch(property, value);
     }
   };
 
@@ -130,31 +133,13 @@ class RawWidget extends Component {
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if (
-      (isForce || willPatch) &&
-      handlePatch &&
-      !this.state.requestInProgress
-    ) {
-      return this.setState(
-        {
-          cachedValue: value,
-          clearedFieldWarning: false,
-          requestInProgress: true,
-        },
-        () => {
-          const patchReturn = handlePatch(property, value, id, valueTo);
+    if ((isForce || willPatch) && handlePatch) {
+      this.setState({
+        cachedValue: value,
+        clearedFieldWarning: false,
+      });
 
-          if (patchReturn && patchReturn.then) {
-            return patchReturn.then(() => {
-              this.setState({
-                requestInProgress: false,
-              });
-            });
-          }
-
-          return patchReturn;
-        }
-      );
+      return handlePatch(property, value, id, valueTo);
     }
 
     return Promise.resolve(null);
@@ -195,13 +180,13 @@ class RawWidget extends Component {
       fieldData = widgetData[0];
     }
 
-    return (
+    let allowPatching =
       (isValue &&
         (JSON.stringify(fieldData.value) !== JSON.stringify(value) ||
           JSON.stringify(fieldData.valueTo) !== JSON.stringify(valueTo))) ||
-      (cachedValue !== undefined &&
-        JSON.stringify(cachedValue) !== JSON.stringify(value))
-    );
+      JSON.stringify(cachedValue) !== JSON.stringify(value);
+
+    return allowPatching;
   };
 
   clearFieldWarning = warning => {
@@ -268,6 +253,7 @@ class RawWidget extends Component {
       dateFormat,
       initialFocus,
     } = this.props;
+
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
 
@@ -288,6 +274,8 @@ class RawWidget extends Component {
 
     const widgetProperties = {
       ref: c => (this.rawWidget = c),
+      // Chrome hack for autofills - Kuba
+      autoComplete: 'new-password',
       className: 'input-field js-input-field',
       value: widgetValue,
       defaultValue,
@@ -310,7 +298,7 @@ class RawWidget extends Component {
     switch (widgetType) {
       case 'Date':
         if (range) {
-          // Watch out! The datetimerange widget as exception,
+          // TODO: Watch out! The datetimerange widget as exception,
           // is non-controlled input! For further usage, needs
           // upgrade.
           return (
@@ -481,7 +469,7 @@ class RawWidget extends Component {
             dataId={dataId}
             properties={fields}
             windowType={windowType}
-            defaultValue={widgetData}
+            widgetData={widgetData}
             placeholder={fields[0].emptyText}
             readonly={readonly}
             mandatory={widgetData[0].mandatory}
@@ -907,61 +895,61 @@ class RawWidget extends Component {
         )}
       >
         {captionElement || null}
-        {!noLabel &&
-          caption && (
-            <div
-              key="title"
-              className={
-                'form-control-label ' +
-                (type === 'primary' && !oneLineException
-                  ? 'col-sm-12 panel-title'
-                  : type === 'primaryLongLabels' ? 'col-sm-6' : 'col-sm-3 ')
-              }
-              title={description || caption}
-            >
-              {fields[0].supportZoomInto ? (
-                <span
-                  className="zoom-into"
-                  onClick={() => handleZoomInto(fields[0].field)}
-                >
-                  {caption}
-                </span>
-              ) : (
-                caption
-              )}
-            </div>
-          )}
+        {!noLabel && caption && (
+          <div
+            key="title"
+            className={
+              'form-control-label ' +
+              (type === 'primary' && !oneLineException
+                ? 'col-sm-12 panel-title'
+                : type === 'primaryLongLabels'
+                ? 'col-sm-6'
+                : 'col-sm-3 ')
+            }
+            title={description || caption}
+          >
+            {fields[0].supportZoomInto ? (
+              <span
+                className="zoom-into"
+                onClick={() => handleZoomInto(fields[0].field)}
+              >
+                {caption}
+              </span>
+            ) : (
+              caption
+            )}
+          </div>
+        )}
         <div
           className={
             ((type === 'primary' || noLabel) && !oneLineException
               ? 'col-sm-12 '
-              : type === 'primaryLongLabels' ? 'col-sm-6' : 'col-sm-9 ') +
-            (fields[0].devices ? 'form-group-flex ' : '')
+              : type === 'primaryLongLabels'
+              ? 'col-sm-6'
+              : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex ' : '')
           }
           onMouseEnter={() => this.handleErrorPopup(true)}
           onMouseLeave={() => this.handleErrorPopup(false)}
         >
-          {!clearedFieldWarning &&
-            warning && (
-              <div
-                className={classnames('field-warning', {
-                  'field-warning-message': warning,
-                  'field-error-message': warning && warning.error,
-                })}
-                onMouseEnter={() => this.toggleTooltip(true)}
-                onMouseLeave={() => this.toggleTooltip(false)}
-              >
-                <span>{warning.caption}</span>
-                <i
-                  className="meta-icon-close-alt"
-                  onClick={() => this.clearFieldWarning(warning)}
-                />
-                {warning.message &&
-                  tooltipToggled && (
-                    <Tooltips action={warning.message} type="" />
-                  )}
-              </div>
-            )}
+          {!clearedFieldWarning && warning && (
+            <div
+              className={classnames('field-warning', {
+                'field-warning-message': warning,
+                'field-error-message': warning && warning.error,
+              })}
+              onMouseEnter={() => this.toggleTooltip(true)}
+              onMouseLeave={() => this.toggleTooltip(false)}
+            >
+              <span>{warning.caption}</span>
+              <i
+                className="meta-icon-close-alt"
+                onClick={() => this.clearFieldWarning(warning)}
+              />
+              {warning.message && tooltipToggled && (
+                <Tooltips action={warning.message} type="" />
+              )}
+            </div>
+          )}
 
           <div className="input-body-container">
             <ReactCSSTransitionGroup
@@ -977,16 +965,15 @@ class RawWidget extends Component {
             </ReactCSSTransitionGroup>
             {widgetBody}
           </div>
-          {fields[0].devices &&
-            !widgetData[0].readonly && (
-              <DevicesWidget
-                devices={fields[0].devices}
-                tabIndex={1}
-                handleChange={value =>
-                  handlePatch && handlePatch(fields[0].field, value)
-                }
-              />
-            )}
+          {fields[0].devices && !widgetData[0].readonly && (
+            <DevicesWidget
+              devices={fields[0].devices}
+              tabIndex={1}
+              handleChange={value =>
+                handlePatch && handlePatch(fields[0].field, value)
+              }
+            />
+          )}
         </div>
       </div>
     );

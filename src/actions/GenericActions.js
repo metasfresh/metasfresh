@@ -134,17 +134,11 @@ export function completeRequest(
   subentityId
 ) {
   return axios.post(
-    config.API_URL +
-      '/' +
-      entity +
-      '/' +
-      (docType ? '/' + docType : '') +
-      (docId ? '/' + docId : '') +
-      (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
-      (subentity ? '/' + subentity : '') +
-      (subentityId ? '/' + subentityId : '') +
-      '/complete'
+    `${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
+      docId ? `/${docId}` : ''
+    }${tabId ? `/${tabId}` : ''}${rowId ? `/${rowId}` : ''}${
+      subentity ? `/${subentity}` : ''
+    }${subentityId ? `/${subentityId}` : ''}/complete`
   );
 }
 

@@ -13,6 +13,8 @@ import keymap from '../../shortcuts/keymap';
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 
+const simplifyName = name => name.toLowerCase().replace(/\s/g, '');
+
 const mapStateToProps = (state, props) => ({
   standardActions: state.windowHandler.master.standardActions,
   selected: getSelection({
@@ -148,6 +150,7 @@ class Subheader extends Component {
 
     return (
       <div
+        id={`subheaderNav_${simplifyName(caption)}`}
         key={action}
         className="subheader-item js-subheader-item"
         tabIndex={0}
@@ -270,6 +273,9 @@ class Subheader extends Component {
         currentNode.type !== 'window'
       );
     }
+    const editModeText = editmode
+      ? counterpart.translate('window.closeEditMode')
+      : counterpart.translate('window.openEditMode');
 
     return (
       <div className="subheader-column js-subheader-column" tabIndex={0}>
@@ -293,6 +299,9 @@ class Subheader extends Component {
 
         {windowType && (
           <div
+            id={`subheaderNav_${simplifyName(
+              counterpart.translate('window.new.caption')
+            )}`}
             className="subheader-item js-subheader-item"
             tabIndex={0}
             onClick={() => {
@@ -308,30 +317,29 @@ class Subheader extends Component {
           </div>
         )}
 
-        {windowType &&
-          query &&
-          query.viewId && (
-            <a
-              className="subheader-item js-subheader-item"
-              href={`${config.API_URL}/documentView/${windowType}/${
-                query.viewId
-              }/export/excel?selectedIds=${selected.join(',')}`}
-              download
-              onClick={this.handleDownloadSelected}
-              style={{
-                opacity: selected.length === 0 ? '0.5' : 1,
-              }}
-            >
-              {counterpart.translate('window.downloadSelected.caption')}
-              {selected.length === 0 &&
-                ` (${counterpart.translate(
-                  'window.downloadSelected.nothingSelected'
-                )})`}
-            </a>
-          )}
+        {windowType && query && query.viewId && (
+          <a
+            className="subheader-item js-subheader-item"
+            href={`${config.API_URL}/documentView/${windowType}/${
+              query.viewId
+            }/export/excel?selectedIds=${selected.join(',')}`}
+            download
+            onClick={this.handleDownloadSelected}
+            style={{
+              opacity: selected.length === 0 ? '0.5' : 1,
+            }}
+          >
+            {counterpart.translate('window.downloadSelected.caption')}
+            {selected.length === 0 &&
+              ` (${counterpart.translate(
+                'window.downloadSelected.nothingSelected'
+              )})`}
+          </a>
+        )}
         {this.renderDocLinks()}
         {editmode !== undefined && (
           <div
+            id={`subheaderNav_${simplifyName(editModeText)}`}
             key={editmode}
             className="subheader-item js-subheader-item"
             tabIndex={0}
@@ -341,9 +349,7 @@ class Subheader extends Component {
             }}
           >
             <i className="meta-icon-settings" />
-            {editmode
-              ? counterpart.translate('window.closeEditMode')
-              : counterpart.translate('window.openEditMode')}
+            {editModeText}
             <span className="tooltip-inline">{keymap.TOGGLE_EDIT_MODE}</span>
           </div>
         )}

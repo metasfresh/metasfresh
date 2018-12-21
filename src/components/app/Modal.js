@@ -2,6 +2,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 
 import { processNewRecord } from '../../actions/GenericActions';
 import {
@@ -159,7 +160,9 @@ class Modal extends Component {
             type: parentType,
             ids: modalViewId
               ? modalViewDocumentIds
-              : dataId ? [dataId] : parentSelection,
+              : dataId
+              ? [dataId]
+              : parentSelection,
             tabId,
             rowId,
           };
@@ -367,11 +370,13 @@ class Modal extends Component {
     const cancelHandler =
       modalType === 'process'
         ? this.handleClose
-        : isNewDoc ? this.removeModal : undefined;
+        : isNewDoc
+        ? this.removeModal
+        : undefined;
 
     return (
       Object.keys(data).length > 0 && (
-        <div className="screen-freeze js-not-unselect">
+        <div className="modal-content-wrapper">
           <div className="panel panel-modal panel-modal-primary">
             <div
               className={
@@ -505,7 +510,9 @@ class Modal extends Component {
     const cancelHandler =
       modalType === 'process'
         ? this.handleClose
-        : isNewDoc ? this.removeModal : undefined;
+        : isNewDoc
+        ? this.removeModal
+        : undefined;
 
     function defer() {
       let res, rej;
@@ -550,13 +557,23 @@ class Modal extends Component {
 
   render() {
     const { layout } = this.props;
+    let renderedContent = null;
+
+    if (layout && Object.keys(layout) && Object.keys(layout).length) {
+      if (!layout.layoutType || layout.layoutType === 'panel') {
+        renderedContent = this.renderPanel();
+      } else if (layout.layoutType === 'singleOverlayField') {
+        renderedContent = this.renderOverlay();
+      }
+    }
 
     return (
-      <div>
-        {(!layout.layoutType || layout.layoutType === 'panel') &&
-          this.renderPanel()}
-
-        {layout.layoutType === 'singleOverlayField' && this.renderOverlay()}
+      <div
+        className={classnames('screen-freeze js-not-unselect', {
+          light: layout.layoutType === 'singleOverlayField',
+        })}
+      >
+        {renderedContent}
       </div>
     );
   }

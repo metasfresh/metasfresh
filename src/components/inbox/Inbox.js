@@ -119,7 +119,7 @@ class Inbox extends Component {
 
     return (
       <div
-        className="js-inbox-wrapper"
+        className="js-inbox-wrapper js-not-unselect"
         onKeyDown={e => this.handleKeyDown(e)}
         onFocus={onFocus}
         tabIndex={modalVisible ? -1 : 0}
@@ -146,12 +146,11 @@ class Inbox extends Component {
                       onDelete={e => this.handleDelete(e, item)}
                     />
                   ))}
-                {inbox &&
-                  inbox.notifications.length == 0 && (
-                    <div className="inbox-item inbox-item-empty">
-                      {counterpart.translate('window.inbox.empty')}
-                    </div>
-                  )}
+                {inbox && inbox.notifications.length == 0 && (
+                  <div className="inbox-item inbox-item-empty">
+                    {counterpart.translate('window.inbox.empty')}
+                  </div>
+                )}
               </div>
               <div className="inbox-footer">
                 {!all && (

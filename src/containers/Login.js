@@ -2,59 +2,26 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import { detect } from 'detect-browser';
 
 import LoginForm from '../components/app/LoginForm';
+
+const BROWSER = detect();
 
 class Login extends Component {
   constructor(props) {
     super(props);
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { logged, dispatch } = this.props;
     if (logged) {
       dispatch(push('/'));
     }
   }
 
-  // TODO: We could use current-device lib for this
-  userBrowser = () => {
-    const isChrome = !!window.chrome && !!window.chrome.webstore;
-
-    const isFirefox = typeof InstallTrigger !== 'undefined';
-
-    const isSafari =
-      navigator.vendor &&
-      navigator.vendor.indexOf('Apple') > -1 &&
-      navigator.userAgent &&
-      !navigator.userAgent.match('CriOS');
-
-    const isOpera =
-      (!!window.opr && !!window.opr.addons) ||
-      !!window.opera ||
-      navigator.userAgent.indexOf(' OPR/') >= 0;
-
-    const isIE = /*@cc_on!@*/ false || !!document.documentMode; // IE 6-11
-
-    const isEdge = !isIE && !!window.StyleMedia;
-
-    if (isChrome) {
-      return 'chrome';
-    } else if (isFirefox) {
-      return 'firefox';
-    } else if (isSafari) {
-      return 'safari';
-    } else if (isOpera) {
-      return 'opera';
-    } else if (isIE) {
-      return 'ie';
-    } else if (isEdge) {
-      return 'edge';
-    }
-  };
-
   browserSupport = (...supportedBrowsers) => {
-    const userBrowser = this.userBrowser();
+    const userBrowser = BROWSER.name;
     let isSupported = false;
 
     supportedBrowsers.map(browser => {

@@ -170,7 +170,7 @@ export const getRoutes = (store, auth, plugins) => {
         component={({ location }) => (
           <Login
             redirect={location.query.redirect}
-            logged={localStorage.isLogged}
+            logged={localStorage.getItem('isLogged') === 'true'}
             {...{ auth }}
           />
         )}

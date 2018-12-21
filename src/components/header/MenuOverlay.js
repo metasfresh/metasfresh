@@ -55,6 +55,7 @@ class MenuOverlay extends Component {
 
   handleQuery = e => {
     e.preventDefault();
+
     if (e.target.value) {
       this.setState({
         query: e.target.value,
@@ -79,7 +80,7 @@ class MenuOverlay extends Component {
           queriedResults: [],
         },
         () => {
-          document.getElementById('search-input-query').value = '';
+          if (this.searchInputQuery) this.searchInputQuery.value = '';
         }
       );
     }
@@ -93,7 +94,7 @@ class MenuOverlay extends Component {
         queriedResults: [],
       },
       () => {
-        document.getElementById('search-input-query').value = '';
+        if (this.searchInputQuery) this.searchInputQuery.value = '';
       }
     );
   };
@@ -265,7 +266,8 @@ class MenuOverlay extends Component {
 
   handleKeyDown = e => {
     const { handleMenuOverlay } = this.props;
-    const input = document.getElementById('search-input-query');
+    const input = this.searchInputQuery;
+
     const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
     const firstQueryItem = document
       .getElementsByClassName('menu-overlay-query')[0]
@@ -288,6 +290,7 @@ class MenuOverlay extends Component {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
+
         if (document.activeElement === input) {
           firstQueryItem && firstQueryItem.focus();
         } else if (overlay) {
@@ -329,6 +332,7 @@ class MenuOverlay extends Component {
         break;
       case 'Tab':
         e.preventDefault();
+
         if (document.activeElement === input) {
           headerLink.focus();
         } else {
@@ -337,6 +341,7 @@ class MenuOverlay extends Component {
         break;
       case 'Enter':
         e.preventDefault();
+
         document.activeElement.click();
         break;
       case 'Backspace':
@@ -348,14 +353,16 @@ class MenuOverlay extends Component {
         break;
       case 'Escape':
         e.preventDefault();
+
         handleMenuOverlay('', '');
     }
   };
 
   handleArrowUp() {
     let prevSiblings = document.activeElement.previousSibling;
+
     if (prevSiblings && prevSiblings.classList.contains('input-primary')) {
-      document.getElementById('search-input-query').focus();
+      this.searchInputQuery && this.searchInputQuery.focus();
     } else if (
       prevSiblings &&
       prevSiblings.classList.contains('js-menu-item')
@@ -369,6 +376,7 @@ class MenuOverlay extends Component {
   findPreviousGroup() {
     let elem = document.activeElement.parentElement;
     let i = 0;
+
     while (
       !(
         (elem &&
@@ -388,6 +396,7 @@ class MenuOverlay extends Component {
   selectLastItem(previousGroup) {
     const listChildren = previousGroup.childNodes;
     const lastChildren = listChildren[listChildren.length - 1];
+
     if (listChildren.length == 1) {
       listChildren[0].focus && listChildren[0].focus();
     } else {
@@ -435,7 +444,9 @@ class MenuOverlay extends Component {
     const { nodeId, node, handleMenuOverlay, openModal } = this.props;
     const nodeData = data.length
       ? data
-      : node && node.children ? node.children : node;
+      : node && node.children
+      ? node.children
+      : node;
 
     return (
       <div className="menu-overlay menu-overlay-primary">
@@ -452,11 +463,14 @@ class MenuOverlay extends Component {
                   <DebounceInput
                     debounceTimeout={250}
                     type="text"
-                    id="search-input-query"
+                    inputRef={ref => {
+                      this.searchInputQuery = ref;
+                    }}
                     className="input-field"
                     placeholder={counterpart.translate(
                       'window.type.placeholder'
                     )}
+                    autoComplete="new-password"
                     onChange={this.handleQuery}
                     onKeyDown={this.handleKeyDown}
                   />
@@ -481,12 +495,14 @@ class MenuOverlay extends Component {
                       handlePath={this.handlePath}
                       handleMenuOverlay={handleMenuOverlay}
                       openModal={openModal}
+                      inputElement={this.searchInputQuery}
                       {...result}
                     />
                   ))}
 
-                {queriedResults.length === 0 &&
-                  query !== '' && <span>There are no results</span>}
+                {queriedResults.length === 0 && query !== '' && (
+                  <span>There are no results</span>
+                )}
               </div>
             </div>
           ) : (

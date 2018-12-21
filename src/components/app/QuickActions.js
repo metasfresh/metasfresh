@@ -333,4 +333,9 @@ export class QuickActions extends Component {
   }
 }
 
-export default connect(false, false, false, { withRef: true })(QuickActions);
+export default connect(
+  false,
+  false,
+  false,
+  { withRef: true }
+)(QuickActions);

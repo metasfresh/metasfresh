@@ -234,13 +234,14 @@ class ListWidget extends Component {
         const promise = onChange(properties[0].field, option);
         const mainPropertyField = mainProperty[0].field;
 
-        if (option) {
-          this.setState({
-            selectedItem: option,
-          });
+        this.setState({
+          selectedItem: option,
+        });
 
-          this.previousValue = option.caption;
-        }
+        this.previousValue =
+          option !== null && option.caption !== 'undefined'
+            ? option.caption
+            : option;
 
         if (promise) {
           promise.then(patchResult => {
@@ -352,6 +353,9 @@ const mapStateToProps = state => ({
   filter: state.windowHandler.filter,
 });
 
-export default connect(mapStateToProps, false, false, { withRef: true })(
-  ListWidget
-);
+export default connect(
+  mapStateToProps,
+  false,
+  false,
+  { withRef: true }
+)(ListWidget);

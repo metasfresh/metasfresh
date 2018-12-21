@@ -59,7 +59,7 @@ class RawList extends PureComponent {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     window.addEventListener('keydown', this.handleTab);
   }
 
@@ -68,23 +68,14 @@ class RawList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      list,
-      mandatory,
-      defaultValue,
-      selected,
-      autoFocus,
-      emptyText,
-      isFocused,
-    } = this.props;
-
+    const { list, mandatory, defaultValue, selected, emptyText } = this.props;
     let dropdownList = this.state.dropdownList;
     let changedValues = {};
 
     if (!is(prevProps.list, list)) {
       dropdownList = List(list);
       if (!mandatory && emptyText) {
-        dropdownList = dropdownList.unshift({
+        dropdownList = dropdownList.push({
           caption: emptyText,
           key: null,
         });
@@ -128,7 +119,7 @@ class RawList extends PureComponent {
           ...changedValues,
         },
         () => {
-          autoFocus && !isFocused && this.dropdown.focus();
+          this.dropdown.focus();
         }
       );
     }
@@ -360,13 +351,11 @@ class RawList extends PureComponent {
                 disabled={readonly || disabled}
               />
             </div>
-            {clearable &&
-              selected &&
-              !readonly && (
-                <div className="input-icon" onClick={this.handleClear}>
-                  <i className="meta-icon-close-alt" />
-                </div>
-              )}
+            {clearable && selected && !readonly && (
+              <div className="input-icon" onClick={this.handleClear}>
+                <i className="meta-icon-close-alt" />
+              </div>
+            )}
             {!selected && (
               <div className="input-icon input-readonly">
                 <i className="meta-icon-down-1" />
@@ -374,19 +363,18 @@ class RawList extends PureComponent {
             )}
           </div>
         </div>
-        {isFocused &&
-          isToggled && (
-            <SelectionDropdown
-              loading={loading}
-              options={this.state.dropdownList}
-              empty="There is no choice available"
-              selected={this.state.selected}
-              width={this.dropdown.offsetWidth}
-              onChange={this.handleTemporarySelection}
-              onSelect={this.handleSelect}
-              onCancel={this.handleCancel}
-            />
-          )}
+        {isFocused && isToggled && (
+          <SelectionDropdown
+            loading={loading}
+            options={this.state.dropdownList}
+            empty="There is no choice available"
+            selected={this.state.selected}
+            width={this.dropdown.offsetWidth}
+            onChange={this.handleTemporarySelection}
+            onSelect={this.handleSelect}
+            onCancel={this.handleCancel}
+          />
+        )}
       </TetherComponent>
     );
   }

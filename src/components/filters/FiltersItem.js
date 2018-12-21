@@ -33,7 +33,7 @@ class FiltersItem extends Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.init();
   }
 
@@ -317,6 +317,7 @@ class FiltersItem extends Component {
       onHide,
       viewId,
       outsideClick,
+      closeFilterMenu,
       captionValue,
       openedFilter,
       panelCaption,
@@ -332,17 +333,19 @@ class FiltersItem extends Component {
     return (
       <div>
         {data.parametersLayoutType === 'singleOverlayField' ? (
-          <OverlayField
-            type={windowType}
-            filter
-            captionValue={captionValue}
-            layout={filter}
-            handlePatch={this.setValue}
-            handleChange={this.setValue}
-            closeOverlay={outsideClick}
-            handleSubmit={this.handleApply}
-            {...{ windowType, onShow, onHide, viewId }}
-          />
+          <div className="screen-freeze js-not-unselect light">
+            <OverlayField
+              type={windowType}
+              filter
+              captionValue={captionValue}
+              layout={filter}
+              handlePatch={this.setValue}
+              handleChange={this.setValue}
+              closeOverlay={outsideClick ? outsideClick : closeFilterMenu}
+              handleSubmit={this.handleApply}
+              {...{ windowType, onShow, onHide, viewId }}
+            />
+          </div>
         ) : (
           <div
             className="filter-menu filter-widget"

@@ -386,7 +386,7 @@ class Table extends Component {
   selectRangeProduct = ids => {
     const { dispatch, tabInfo, type, viewId } = this.props;
 
-    this.setState({ selected: ids });
+    this.setState({ selected: [...ids] });
 
     if (tabInfo) {
       dispatch(
@@ -496,18 +496,20 @@ class Table extends Component {
       allowOutsideClick,
       limitOnClickOutside,
     } = this.props;
+    const parentNode = event.target.parentNode;
+    const closeIncluded =
+      limitOnClickOutside &&
+      parentNode.className.includes('document-list-wrapper')
+        ? parentNode.className.includes('document-list-has-included')
+        : true;
 
     if (
       allowOutsideClick &&
-      event.target.parentNode !== document &&
-      event.target.parentNode &&
-      !event.target.parentNode.className.includes('notification') &&
+      parentNode &&
+      parentNode !== document &&
+      !parentNode.className.includes('notification') &&
       !inBackground &&
-      (limitOnClickOutside &&
-        event.target.parentNode.className.includes('document-list-included') &&
-        event.target.parentNode.className.includes(
-          'document-list-has-included'
-        ))
+      closeIncluded
     ) {
       const item = event.path || (event.composedPath && event.composedPath());
 
@@ -520,9 +522,12 @@ class Table extends Component {
             return;
           }
         }
+      } else if (parentNode.className.includes('js-not-unselect')) {
+        return;
       }
 
       this.deselectAllProducts();
+
       if (showIncludedViewOnSelect) {
         showIncludedViewOnSelect({
           showIncludedView: false,
@@ -942,13 +947,15 @@ class Table extends Component {
 
       if (!rows || !rows.length) return;
 
-      rows.filter(row => row[keyProperty] === rowId).map(item => {
-        let field = item.fieldsByName[prop];
+      rows
+        .filter(row => row[keyProperty] === rowId)
+        .map(item => {
+          let field = item.fieldsByName[prop];
 
-        if (field) {
-          field.value = value;
-        }
-      });
+          if (field) {
+            field.value = value;
+          }
+        });
     }
 
     onRowEdited && onRowEdited(true);
@@ -1260,7 +1267,7 @@ class Table extends Component {
           }
         </div>
         {showPagination && (
-          <div>
+          <div onClick={this.handleClickOutside}>
             <TablePagination
               {...{
                 handleChangePage,
@@ -1311,13 +1318,12 @@ class Table extends Component {
           />
         )}
 
-        {allowShortcut &&
-          !readonly && (
-            <TableContextShortcuts
-              handleToggleQuickInput={this.handleBatchEntryToggle}
-              handleToggleExpand={() => toggleFullScreen(!fullScreen)}
-            />
-          )}
+        {allowShortcut && !readonly && (
+          <TableContextShortcuts
+            handleToggleQuickInput={this.handleBatchEntryToggle}
+            handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+          />
+        )}
       </div>
     );
   }
@@ -1328,6 +1334,9 @@ const mapStateToProps = state => ({
   allowOutsideClick: state.windowHandler.allowOutsideClick,
 });
 
-export default connect(mapStateToProps, false, false, { withRef: true })(
-  onClickOutside(Table)
-);
+export default connect(
+  mapStateToProps,
+  false,
+  false,
+  { withRef: true }
+)(onClickOutside(Table));

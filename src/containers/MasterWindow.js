@@ -245,7 +245,13 @@ class MasterWindow extends Component {
       return Promise.reject();
     }
 
-    const { dispatch, master: { data, layout: { type } } } = this.props;
+    const {
+      dispatch,
+      master: {
+        data,
+        layout: { type },
+      },
+    } = this.props;
     const dataId = data ? data.ID.value : -1;
 
     let fd = new FormData();
@@ -292,7 +298,11 @@ class MasterWindow extends Component {
   };
 
   sort = (asc, field, startPage, page, tabId) => {
-    const { dispatch, master, params: { windowType } } = this.props;
+    const {
+      dispatch,
+      master,
+      params: { windowType },
+    } = this.props;
     const orderBy = (asc ? '+' : '-') + field;
     const dataId = master.docId;
 
@@ -342,18 +352,21 @@ class MasterWindow extends Component {
       action: master.data.DocAction || -1,
       displayed: true,
     };
-
     const docSummaryData =
       documentSummaryElement &&
       master.data[documentSummaryElement.fields[0].field];
 
-    // TODO: We should be using indicator from the state instead of another variable
+    // valid status for unsaved items with errors does not
+    // have initialValue set, but does have the error message
+    const initialValidStatus =
+      master.validStatus.initialValue !== undefined
+        ? master.validStatus.initialValue
+        : master.validStatus.valid;
     const isDocumentNotSaved =
       dataId !== 'notfound' &&
       master.saveStatus.saved !== undefined &&
       !master.saveStatus.saved &&
-      master.validStatus.initialValue !== undefined &&
-      !master.validStatus.initialValue;
+      !initialValidStatus;
 
     return (
       <Container
@@ -402,22 +415,18 @@ class MasterWindow extends Component {
           />
         )}
 
-        {enableTutorial &&
-          introSteps &&
-          introSteps.length > 0 && (
-            <Steps
-              enabled={introEnabled}
-              steps={introSteps}
-              initialStep={0}
-              onExit={this.handleIntroExit}
-            />
-          )}
+        {enableTutorial && introSteps && introSteps.length > 0 && (
+          <Steps
+            enabled={introEnabled}
+            steps={introSteps}
+            initialStep={0}
+            onExit={this.handleIntroExit}
+          />
+        )}
 
-        {enableTutorial &&
-          introHints &&
-          introHints.length > 0 && (
-            <Hints enabled={hintsEnabled} hints={introHints} />
-          )}
+        {enableTutorial && introHints && introHints.length > 0 && (
+          <Hints enabled={hintsEnabled} hints={introHints} />
+        )}
       </Container>
     );
   }

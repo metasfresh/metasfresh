@@ -18,20 +18,16 @@ describe('New subscription flatrate conditions Test', function() {
             cy.writeIntoStringField('ValidFrom', '01/01/2018{enter}');
         });
 
-        describe('Create add a break records', function() {
+        describe('Create break records', function() {
             addBreakRecord('P002737', '0', '0');
-             addBreakRecord('P002737', '50', '20');
+            addBreakRecord('P002737', '50', '20');
         });
     });
 
 });
 
 function addBreakRecord(productValue, breakValue, breakDiscount) {
-    const addNewText = Cypress.messages.window.addNew.caption;
-    cy.get('.btn')
-        .contains(addNewText)
-        .should('exist')
-        .click();
+    cy.pressAddNewButton();
     cy.writeIntoLookupListField('M_Product_ID', productValue, productValue);
     cy.writeIntoStringField('BreakValue', breakValue);
     cy.writeIntoStringField('BreakDiscount', breakDiscount);

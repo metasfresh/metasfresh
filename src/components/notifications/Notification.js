@@ -31,7 +31,7 @@ class Notification extends Component {
     }, 10);
   }
 
-  componentWillUpdate(nextProps) {
+  UNSAFE_componentWillUpdate(nextProps) {
     const { item } = this.props;
 
     if (item.count !== nextProps.item.count) {
@@ -134,16 +134,14 @@ class Notification extends Component {
         </div>
         <div className="notification-content">
           {shortMsg ? shortMsg + ' ' : msg}
-          {shortMsg &&
-            msg &&
-            !isDisplayedMore && (
-              <u
-                className="text-right text-small pointer"
-                onClick={this.handleToggleMore}
-              >
-                (read more)
-              </u>
-            )}
+          {shortMsg && msg && !isDisplayedMore && (
+            <u
+              className="text-right text-small pointer"
+              onClick={this.handleToggleMore}
+            >
+              (read more)
+            </u>
+          )}
           {isDisplayedMore ? <p>{msg}</p> : ''}
         </div>
         <div
@@ -156,8 +154,8 @@ class Notification extends Component {
             typeof progress === 'number'
               ? { width: `${progress}%`, transition: 'width 0s' }
               : isClosing
-                ? { width: 0, transition: 'width 5s linear' }
-                : { width: '100%', transition: 'width 0s' }
+              ? { width: 0, transition: 'width 5s linear' }
+              : { width: '100%', transition: 'width 0s' }
           }
         />
       </div>

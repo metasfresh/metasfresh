@@ -87,7 +87,7 @@ export default class ShortcutProvider extends Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     document.addEventListener('keydown', this.handleKeyDown);
     document.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);

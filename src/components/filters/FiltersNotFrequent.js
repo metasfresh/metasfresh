@@ -140,7 +140,6 @@ class FiltersNotFrequent extends Component {
                 isActive={activeFilter.isActive}
                 onShow={() => handleShow(true)}
                 onHide={() => handleShow(false)}
-                outsideClick={this.outsideClick}
                 openedFilter={true}
                 filtersWrapper={this.props.filtersWrapper}
               />

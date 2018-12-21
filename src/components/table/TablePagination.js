@@ -233,7 +233,7 @@ class TablePagination extends PureComponent {
     const isShowSelectAllItems = size > pageLength;
 
     return (
-      <div className="hidden-sm-down">
+      <div className="hidden-sm-down js-not-unselect">
         <div>
           {selected.length > 0
             ? counterpart.translate('view.itemsSelected.caption', {
@@ -346,12 +346,12 @@ class TablePagination extends PureComponent {
     }
 
     return (
-      <div className="pagination-wrapper js-not-unselect">
+      <div className="pagination-wrapper js-unselect">
         <div className="pagination-row">
           {compressed && <div />}
           {!compressed && this.renderSelectAll()}
 
-          <div className="items-row-2 pagination-part">
+          <div className="items-row-2 pagination-part js-not-unselect">
             {!compressed && this.renderTotalItems()}
             <div>
               <nav>
@@ -382,7 +382,7 @@ TablePagination.propTypes = {
   handleSelectRange: PropTypes.func,
   handleChangePage: PropTypes.func,
   rowLength: PropTypes.number.isRequired,
-  compressed: PropTypes.any, // Looks like it's not used
+  compressed: PropTypes.any, // TODO: Looks like it's not used
   size: PropTypes.number.isRequired,
   queryLimitHit: PropTypes.number,
   pageLength: PropTypes.number.isRequired,

@@ -13,11 +13,10 @@ export default function menuHandler(state = initialState, action) {
     case types.UPDATE_BREADCRUMB: {
       return {
         ...state,
-        breadcrumb: state.breadcrumb.map(
-          node =>
-            node.nodeId === action.node.nodeId
-              ? { ...node, children: action.node }
-              : node
+        breadcrumb: state.breadcrumb.map(node =>
+          node.nodeId === action.node.nodeId
+            ? { ...node, children: action.node }
+            : node
         ),
       };
     }

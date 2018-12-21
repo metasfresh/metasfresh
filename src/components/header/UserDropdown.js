@@ -101,6 +101,7 @@ class UserDropdown extends Component {
       <div
         className={
           'header-item-container ' +
+          'js-not-unselect ' +
           'pointer user-dropdown-container tooltip-parent ' +
           (open ? 'header-item-open ' : '')
         }
@@ -160,14 +161,13 @@ class UserDropdown extends Component {
             </div>
           </div>
         )}
-        {tooltipOpen === shortcut &&
-          !open && (
-            <Tooltips
-              name={shortcut}
-              action={counterpart.translate('mainScreen.userMenu.tooltip')}
-              type={''}
-            />
-          )}
+        {tooltipOpen === shortcut && !open && (
+          <Tooltips
+            name={shortcut}
+            action={counterpart.translate('mainScreen.userMenu.tooltip')}
+            type={''}
+          />
+        )}
       </div>
     );
   }
