@@ -42,6 +42,7 @@ import de.metas.lock.spi.ILockDatabase;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /* package */class Lock implements ILock
 {
@@ -57,14 +58,14 @@ import de.metas.util.Services;
 	// Status
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
-	/* package */ Lock(final ILockDatabase lockDatabase, final LockOwner owner, final boolean isAutoCleanup, final int countLocked)
+	/* package */ Lock(
+			@NonNull final ILockDatabase lockDatabase,
+			@NonNull final LockOwner owner,
+			final boolean isAutoCleanup,
+			final int countLocked)
 	{
-		super();
-
-		Check.assumeNotNull(lockDatabase, "lockDatabase not null");
 		this.lockDatabase = lockDatabase;
 
-		Check.assumeNotNull(owner, "owner not null");
 		Check.assume(owner.isRealOwnerOrNoOwner(), "owner shall be a real owner or no owner: {}", owner);
 		this.owner = owner;
 
