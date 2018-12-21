@@ -1,10 +1,10 @@
 package de.metas.invoice;
 
 import static de.metas.util.Check.assume;
-import static de.metas.util.Check.assumeGreaterThanZero;
 import static de.metas.util.Check.assumeNotNull;
 import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
 import static java.time.temporal.TemporalAdjusters.nextOrSame;
+import static org.compiere.util.Util.coalesce;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -72,7 +72,7 @@ public class InvoiceSchedule
 	public InvoiceSchedule(
 			@Nullable final InvoiceScheduleId id,
 			@NonNull final Frequency frequency,
-			final int invoiceDistance,
+			final Integer invoiceDistance,
 			final DayOfWeek invoiceDayOfWeek,
 			final int invoiceDayOfMonth)
 	{
@@ -98,8 +98,8 @@ public class InvoiceSchedule
 			this.invoiceDayOfMonth = -1;
 		}
 
-		assume(invoiceDistance >= 1, "The invoiceDistance needs to be >=1; id={}", id);;
-		this.invoiceDistance = assumeGreaterThanZero(invoiceDistance, "invoiceDistance");
+		assume(invoiceDistance == null || invoiceDistance >= 1, "If invoiceDistance is specified, it needs to be >=1; id={}", id);;
+		this.invoiceDistance = coalesce(invoiceDistance, 1);
 	}
 
 	public LocalDate calculateNextDateToInvoice(@NonNull final LocalDate deliveryDate)

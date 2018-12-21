@@ -443,11 +443,7 @@ public class CandidateAssignServiceTest
 		assertThat(result.getAdditionalChangedCandidates()).isEmpty();
 
 		final AssignableInvoiceCandidate reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository
-				.getById(preparedAssignableCandidates.get(TEN).getRepoId())
-				.toBuilder()
-				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(preparedAssignableCandidates.get(TEN).getRepoId()))
-				.build();
+				.getById(preparedAssignableCandidates.get(TEN).getRepoId());
 
 		final I_C_UOM uom = refundTestTools.getUomRecord();
 		final CurrencyId currentId = refundTestTools.getCurrency().getId();
@@ -498,11 +494,7 @@ public class CandidateAssignServiceTest
 		assertThat(reloadedAssignableCandidateWithTen.getAssignmentsToRefundCandidates()).isEmpty();
 
 		final AssignableInvoiceCandidate reloadedAssignableCandidateWithSeven = assignableInvoiceCandidateRepository
-				.getById(preparedAssignableCandidates.get(SEVEN).getRepoId())
-				.toBuilder()
-				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(preparedAssignableCandidates.get(SEVEN).getRepoId()))
-				.build();
+				.getById(preparedAssignableCandidates.get(SEVEN).getRepoId());
 
 		final I_C_UOM uom = refundTestTools.getUomRecord();
 		final CurrencyId currentId = refundTestTools.getCurrency().getId();
@@ -625,18 +617,10 @@ public class CandidateAssignServiceTest
 		// reload the two assignable candidate with their assigned refund candidates
 		final AssignableInvoiceCandidate //
 		reloadedAssignableCandidateWithSeven = assignableInvoiceCandidateRepository
-				.getById(assignableCandidateWithSeven.getRepoId())
-				.toBuilder()
-				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableCandidateWithSeven.getRepoId()))
-				.build();
+				.getById(assignableCandidateWithSeven.getRepoId());
 		final AssignableInvoiceCandidate //
 		reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository
-				.getById(assignableCandidateWithTen.getRepoId())
-				.toBuilder()
-				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableCandidateWithTen.getRepoId()))
-				.build();
+				.getById(assignableCandidateWithTen.getRepoId());
 
 		//
 		// guards for reloadedAssignableCandidateWithSeven
@@ -707,7 +691,6 @@ public class CandidateAssignServiceTest
 		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
 		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate(refundContract)
 				.toBuilder()
-				.refundConfigs(ImmutableList.of(refundConfig))
 				.money(Money.of(ONE, currencyId))
 				.assignedQuantity(Quantity.of(assignedQty, refundTestTools.getUomRecord()))
 				.build();

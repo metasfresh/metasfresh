@@ -102,6 +102,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		final I_C_InvoiceSchedule invoiceSchedule = newInstance(I_C_InvoiceSchedule.class);
 		invoiceSchedule.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
+		invoiceSchedule.setInvoiceDistance(1);
 		saveRecord(invoiceSchedule);
 
 		final I_C_Flatrate_RefundConfig refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);

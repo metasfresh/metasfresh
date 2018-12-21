@@ -108,6 +108,7 @@ public class RefundInvoiceCandidateService
 				// but it might not yet have all relevant configs, so add them to the final result
 				final RefundInvoiceCandidate result = singleElement(existingCandidates)
 						.toBuilder()
+						.clearRefundConfigs()
 						.refundConfigs(relevantRefundConfigs)
 						.build();
 				return ImmutableList.of(result);

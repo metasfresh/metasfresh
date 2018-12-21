@@ -119,10 +119,7 @@ public class CandidateAssignmentService
 
 		// reload from backend to find out if the assignableCandidate is already assigned or not
 		final AssignableInvoiceCandidate reloadedAssignableCandidate = assignableInvoiceCandidateRepository
-				.getById(assignableCandidate.getRepoId())
-				.toBuilder()
-				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableCandidate.getRepoId()))
-				.build();
+				.getById(assignableCandidate.getRepoId());
 		if (reloadedAssignableCandidate.isAssigned())
 		{
 			// the refund candidate matching the given assignableCandidate might have changed;
