@@ -86,6 +86,7 @@ import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
+import de.metas.impexp.excel.ExcelFormats;
 import de.metas.logging.LogManager;
 import de.metas.print.IPrintService;
 import de.metas.process.PInstanceId;
@@ -1108,11 +1109,15 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param outFile output file
 	 * @param language
 	 */
-	public void createXLS(File outFile, Language language)
+	public void createXLS(@NonNull final File outFile, final Language language)
 	{
-		final PrintDataExcelExporter exp = new PrintDataExcelExporter(getPrintData(), getPrintFormat());
-		exp.setLanguage(language);
-		exp.exportToFile(outFile);
+		PrintDataExcelExporter.builder()
+				.excelFormat(ExcelFormats.getFormatByFile(outFile))
+				.printData(getPrintData())
+				.printFormat(getPrintFormat())
+				.language(language)
+				.build()
+				.exportToFile(outFile);
 	}
 
 	/**************************************************************************

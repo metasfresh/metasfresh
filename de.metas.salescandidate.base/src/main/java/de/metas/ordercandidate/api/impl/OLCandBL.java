@@ -117,7 +117,11 @@ public class OLCandBL implements IOLCandBL
 
 			final int bpartnerId = BPartnerId.toRepoId(effectiveValuesBL.getBillBPartnerEffectiveId(olCand));
 
-			final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemId(Env.getCtx(), bpartnerId, SOTrx.SALES, ITrx.TRXNAME_None);
+			final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemId(
+					Env.getCtx(),
+					bpartnerId,
+					SOTrx.SALES,
+					ITrx.TRXNAME_ThreadInherited/* we don't know if the C_BPartner already exists outside this transaction */);
 			return pricingSystemId;
 		}
 	}

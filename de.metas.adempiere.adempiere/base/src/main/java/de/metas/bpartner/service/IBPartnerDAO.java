@@ -1,5 +1,6 @@
 package de.metas.bpartner.service;
 
+
 import static de.metas.util.Check.errorIf;
 import static de.metas.util.Check.isEmpty;
 
@@ -342,5 +343,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 		boolean alsoTryRelation;
 	}
+
+	ImmutableSet<BPartnerId> retrieveAllCustomerIDs();
 
 }

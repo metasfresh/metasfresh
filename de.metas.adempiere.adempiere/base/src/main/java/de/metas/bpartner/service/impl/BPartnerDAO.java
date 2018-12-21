@@ -1,5 +1,6 @@
 package de.metas.bpartner.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -44,6 +45,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -55,7 +57,6 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -456,7 +457,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final int adOrgId = bPartner.getAD_Org_ID();
 		if (adOrgId > 0 && soTrx.isSales())
 		{
-			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(MOrgInfo.get(ctx, adOrgId, null), I_AD_OrgInfo.class);
+			final I_AD_OrgInfo orgInfo = create(Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, ITrx.TRXNAME_None), I_AD_OrgInfo.class);
 			if (orgInfo.getM_PricingSystem_ID() > 0)
 			{
 				return PricingSystemId.ofRepoId(orgInfo.getM_PricingSystem_ID());
@@ -989,6 +990,19 @@ public class BPartnerDAO implements IBPartnerDAO
 		return Optional.ofNullable(bPartnerId);
 	}
 
+
+	@Override
+	public ImmutableSet<BPartnerId> retrieveAllCustomerIDs()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
+				.create()
+				.listIds(BPartnerId::ofRepoId);
+	}
+
 	private <T> IQueryBuilder<T> createQueryBuilder(
 			final boolean outOfTrx,
 			@NonNull final Class<T> modelClass)
@@ -1023,5 +1037,6 @@ public class BPartnerDAO implements IBPartnerDAO
 			queryBuilder.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, query.getOrgId());
 		}
 		return queryBuilder;
+
 	}
 }

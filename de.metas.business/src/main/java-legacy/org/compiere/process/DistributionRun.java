@@ -22,11 +22,14 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartner;
@@ -37,7 +40,6 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrg;
-import org.compiere.model.MOrgInfo;
 import org.compiere.model.MProduct;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
@@ -54,7 +56,7 @@ import de.metas.util.Services;
 
 /**
  * Create Distribution
- * 
+ *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com
  *         <li>FR Let use the Distribution List and Distribution Run for DO
@@ -140,7 +142,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Perform process.
-	 * 
+	 *
 	 * @return Message (text with variables)
 	 * @throws Exception if not successful
 	 */
@@ -227,7 +229,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Insert Details
-	 * 
+	 *
 	 * @return number of rows inserted
 	 */
 	private int insertDetails()
@@ -322,7 +324,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Is Allocation Equals Total
-	 * 
+	 *
 	 * @return true if allocation eq total
 	 * @throws Exception
 	 */
@@ -346,7 +348,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Adjust Allocation
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void adjustAllocation() throws Exception
@@ -357,7 +359,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Adjust Run Line Allocation
-	 * 
+	 *
 	 * @param index run line index
 	 * @throws Exception
 	 */
@@ -435,7 +437,7 @@ public class DistributionRun extends JavaProcess
 
 	/**************************************************************************
 	 * Create Orders
-	 * 
+	 *
 	 * @return true if created
 	 */
 	private boolean createOrders()
@@ -527,7 +529,8 @@ public class DistributionRun extends JavaProcess
 						log.debug("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID_Int()
 								+ "-" + bp + ", To_BP=" + runBPartner);
 						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
-						MOrgInfo oi = MOrgInfo.get(getCtx(), bp.getAD_OrgBP_ID_Int());
+
+						final I_AD_OrgInfo oi = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), bp.getAD_OrgBP_ID_Int(), ITrx.TRXNAME_None);
 						if (oi.getM_Warehouse_ID() > 0)
 							order.setM_Warehouse_ID(oi.getM_Warehouse_ID());
 						order.setBPartner(runBPartner);
@@ -591,7 +594,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Insert Details
-	 * 
+	 *
 	 * @return number of rows inserted
 	 */
 	private int insertDetailsDistributionDemand()
@@ -697,7 +700,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Insert Details
-	 * 
+	 *
 	 * @return number of rows inserted
 	 */
 	private int insertDetailsDistribution()
@@ -756,7 +759,7 @@ public class DistributionRun extends JavaProcess
 
 	/**************************************************************************
 	 * Create Orders
-	 * 
+	 *
 	 * @return true if created
 	 */
 	private boolean distributionOrders()
@@ -767,7 +770,7 @@ public class DistributionRun extends JavaProcess
 			int M_Warehouse_ID = 0;
 			if (p_M_Warehouse_ID <= 0)
 			{
-				MOrgInfo oi_source = MOrgInfo.get(getCtx(), m_run.getAD_Org_ID());
+				final I_AD_OrgInfo oi_source = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), m_run.getAD_Org_ID(), ITrx.TRXNAME_None);
 				M_Warehouse_ID = oi_source.getM_Warehouse_ID();
 			}
 			else
@@ -855,7 +858,8 @@ public class DistributionRun extends JavaProcess
 		I_M_Warehouse m_target = null;
 		I_M_Locator m_locator_to = null;
 
-		MOrgInfo oi_source = MOrgInfo.get(getCtx(), m_run.getAD_Org_ID());
+
+		final I_AD_OrgInfo oi_source = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), m_run.getAD_Org_ID(), ITrx.TRXNAME_None);
 		m_source = warehousesRepo.getById(WarehouseId.ofRepoId(oi_source.getM_Warehouse_ID()));
 		if (m_source == null)
 			throw new AdempiereException("Do not exist Defautl Warehouse Source");
@@ -915,7 +919,8 @@ public class DistributionRun extends JavaProcess
 			lastC_BPartner_Location_ID = detail.getC_BPartner_Location_ID();
 
 			bp = new MBPartner(getCtx(), detail.getC_BPartner_ID(), get_TrxName());
-			MOrgInfo oi_target = MOrgInfo.get(getCtx(), bp.getAD_OrgBP_ID_Int());
+
+			final I_AD_OrgInfo oi_target = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), bp.getAD_OrgBP_ID_Int(),ITrx.TRXNAME_None);
 			m_target = warehousesRepo.getById(WarehouseId.ofRepoId(oi_target.getM_Warehouse_ID()));
 			if (m_target == null)
 				throw new AdempiereException("Do not exist Default Warehouse Target");

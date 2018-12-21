@@ -27,12 +27,14 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
@@ -2163,7 +2165,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		final MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, null);
-		final I_AD_OrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID, null);
+		final I_AD_OrgInfo counterOrgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), counterAD_Org_ID, ITrx.TRXNAME_None);
+
 		log.debug("Counter BP={}", counterBP);
 
 		// Document Type
