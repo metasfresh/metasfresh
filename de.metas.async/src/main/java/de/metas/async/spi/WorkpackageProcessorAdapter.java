@@ -83,7 +83,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		try
 		{
 			final ILock existingLockForOwner = Services.get(ILockManager.class).getExistingLockForOwner(elementsLockOwner);
-			return java.util.Optional.of(existingLockForOwner);
+			return Optional.of(existingLockForOwner);
 		}
 		catch (final LockFailedException e)
 		{
