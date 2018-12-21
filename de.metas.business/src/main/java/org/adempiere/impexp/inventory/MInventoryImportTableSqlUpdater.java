@@ -99,9 +99,8 @@ public class MInventoryImportTableSqlUpdater
 	{
 		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET M_Locator_ID=(SELECT MAX(M_Locator_ID) FROM M_Locator l ")
-				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID) ")
+				.append("WHERE i.LocatorValue=l.Value AND i.M_Warehouse_ID = l.M_Warehouse_ID AND i.AD_Client_ID=l.AD_Client_ID) ")
 				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL ")
-				.append("AND i.M_Warehouse_ID  = l.M_Warehouse_ID")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
