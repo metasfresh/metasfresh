@@ -42,6 +42,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#2097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2097) Lookup and Dropdown: Empty list entry for non mandatory
+    * New Feature, now steering the mandatory Logic of List and Lookup widgets in WebUI.
   * [#2098](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2098) extract the edit-location code into a command
 
 # Fixes
