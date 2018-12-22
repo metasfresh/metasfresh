@@ -83,11 +83,11 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_AD_Org.Table_Name)
-	public I_AD_Org retrieveOrg(@CacheCtx final Properties ctx, final int adOrgId)
+	public I_AD_Org retrieveOrg(final Properties ctx, final int adOrgId)
 	{
+		// we can't use TRXNAME_None because we don't know if the record aleady exists outside of the current trx!
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, adOrgId)
 				.create()
 				.firstOnly(I_AD_Org.class);

@@ -247,7 +247,7 @@ public class AdempiereException extends RuntimeException
 		this(Env.getAD_Language(), adMessage, params);
 	}
 
-	public AdempiereException(final Throwable cause)
+	public AdempiereException(@Nullable final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;

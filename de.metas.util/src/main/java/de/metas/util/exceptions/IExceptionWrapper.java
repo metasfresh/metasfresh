@@ -1,4 +1,4 @@
-package org.adempiere.util.exceptions;
+package de.metas.util.exceptions;
 
 /*
  * #%L
@@ -24,7 +24,7 @@ package org.adempiere.util.exceptions;
 
 /**
  * Implementors are used to augment one one the "basic" metasfresh exceptions.
- * Current/first example is <code>DBException</code> where a module specific implementor allow the DB exception to wrap and SQLException into a module specific DBEXception subclass.
+ * Current/first example is <code>DBException</code> where a module specific implementor allow the DB exception to wrap an SQLException into a module specific DBEXception subclass.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
