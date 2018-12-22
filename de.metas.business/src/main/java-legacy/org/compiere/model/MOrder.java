@@ -1976,8 +1976,7 @@ public class MOrder extends X_C_Order implements IDocument
 				setInvoiceRule(INVOICERULE_AfterDelivery);
 			}
 			//
-			final MInOutLine[] sLines = shipment.getLines();
-			for (final MInOutLine sLine2 : sLines)
+			for (final MInOutLine sLine2 : shipment.getLines())
 			{
 				final MInOutLine sLine = sLine2;
 				//

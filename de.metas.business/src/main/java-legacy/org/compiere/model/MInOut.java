@@ -675,7 +675,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param requery refresh from db
 	 * @return lines
 	 */
-	public MInOutLine[] getLines(final boolean requery)
+	private MInOutLine[] getLines(final boolean requery)
 	{
 		if (m_lines != null && !requery)
 		{
@@ -735,8 +735,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			return 0;
 		}
-		final MInOutLine[] fromLines = otherShipment.getLines();
 		int count = 0;
+		final MInOutLine[] fromLines = otherShipment.getLines();
 		for (final MInOutLine fromLine : fromLines)
 		{
 			final MInOutLine line = new MInOutLine(this);
@@ -1197,7 +1197,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		checkCreditLimit();
 
 		// Lines
-		final MInOutLine[] lines = getLines(true);
+		final MInOutLine[] lines = getLines();
 		if (lines == null || lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
@@ -2215,8 +2215,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final boolean inTrx = MovementType.charAt(1) == '+'; // V+ Vendor Receipt
 
 		// Update copied lines
-		final MInOutLine[] counterLines = counter.getLines();
-		for (final MInOutLine counterLine : counterLines)
+		for (final MInOutLine counterLine : counter.getLines())
 		{
 			counterLine.setClientOrg(counter);
 			counterLine.setM_Warehouse_ID(counter.getM_Warehouse_ID());
@@ -2272,8 +2271,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
 		{
 			// Set lines to 0
-			final MInOutLine[] lines = getLines();
-			for (final MInOutLine line : lines)
+			for (final MInOutLine line : getLines())
 			{
 				final BigDecimal old = line.getMovementQty();
 				if (old.signum() != 0)
@@ -2548,7 +2546,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		//
 		// For all lines
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-		for (final I_M_InOutLine inoutLine : getLines(true))
+		for (final I_M_InOutLine inoutLine : getLines())
 		{
 			final I_M_Product product = inoutLine.getM_Product();
 			final BigDecimal movementQty = inoutLine.getMovementQty();
