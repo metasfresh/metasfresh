@@ -866,7 +866,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 *
 	 * @param DocBaseType doc type MDocType.DOCBASETYPE_
 	 */
-	public void setC_DocType_ID(final String DocBaseType)
+	private void setC_DocType_ID(final String DocBaseType)
 	{
 		final String sql = "SELECT C_DocType_ID FROM C_DocType "
 				+ "WHERE AD_Client_ID=? AND DocBaseType=?"
@@ -890,7 +890,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Set Default C_DocType_ID. Based on SO flag
 	 */
-	public void setC_DocType_ID()
+	private void setC_DocType_ID()
 	{
 		if (isSOTrx())
 		{
@@ -1083,7 +1083,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		// return false;
 		// }
 
-		if (isSOTrx() && getM_RMA_ID() != 0)
+		if (isSOTrx() && getM_RMA_ID() > 0)
 		{
 			// Set Document and Movement type for this Receipt
 			final MRMA rma = new MRMA(getCtx(), getM_RMA_ID(), get_TrxName());
