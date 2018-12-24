@@ -27,8 +27,8 @@ export class BPartner
               cy.log(`BPartnerBuilder - name = ${name}`);
               this.name = name;
               this.isVendor = false;
-              this.vendorPricingSystem = null;
-              this.vendorDiscountSchema = null;
+              //this.vendorPricingSystem = null;
+              //this.vendorDiscountSchema = null;
               this.isCustomer = false;
               this.bPartnerLocations = [];
               this.contacts = [];
