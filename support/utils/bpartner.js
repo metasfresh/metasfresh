@@ -5,11 +5,12 @@ export class BPartner
     {
         this.name = builder.name;
         this.isVendor = builder.isVendor;
+        this.vendorPricingSystem = builder.vendorPricingSystem;
         this.vendorDiscountSchema = builder.vendorDiscountSchema;
         this.isCustomer = builder.isCustomer;
         this.locations = builder.bPartnerLocations;
         this.contacts = builder.contacts;
-     }
+    }
 
     apply() 
     {
@@ -23,19 +24,27 @@ export class BPartner
         {
             constructor(name) 
             {
-              cy.log(`BPartnerBuilder - name = ${this.name}`);
+              cy.log(`BPartnerBuilder - name = ${name}`);
               this.name = name;
               this.isVendor = false;
+              this.vendorPricingSystem = null;
+              this.vendorDiscountSchema = null;
               this.isCustomer = false;
               this.bPartnerLocations = [];
               this.contacts = [];
-            } 
+            }
           
             vendor(isVendor)
             {
                cy.log(`BPartnerBuilder - isVendor = ${isVendor}`);
                this.isVendor = isVendor;
                return this;
+            }
+            vendorPricingSystem(vendorPricingSystem)
+            {
+                cy.log(`BPartnerBuilder - vendorPricingSystem = ${vendorPricingSystem}`);
+                this.vendorPricingSystem = vendorPricingSystem;
+                return this; 
             }
             vendorDiscountSchema(vendorDiscountSchema)
             {
@@ -168,7 +177,7 @@ function applyBPartner(bPartner)
         cy.wait(500);
         cy.writeIntoStringField('Name2', bPartner.name);
         cy.wait(500);
-        if(bPartner.isVendor || bPartner.vendorDiscountSchema) 
+        if(bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem) 
         {
             cy.selectTab('Vendor');
             cy.selectSingleTabRow();
@@ -177,6 +186,10 @@ function applyBPartner(bPartner)
             if(bPartner.isVendor)
             {
                 cy.clickOnCheckBox('IsVendor');
+            }
+            if(bPartner.vendorPricingSystem)
+            {
+                cy.selectInListField('PO_PricingSystem_ID',bPartner.vendorPricingSystem, bPartner.vendorPricingSystem);
             }
             if(bPartner.vendorDiscountSchema)
             {
