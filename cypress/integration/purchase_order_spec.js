@@ -20,6 +20,8 @@ describe('purchase order Test', function() {
             new BPartner
                 .builder(vendorName)
                 .vendor(true)
+                //.vendorPricingSystem("Testpreisliste Lieferanten")
+                //.vendorDiscountSchema("STandard")
                 .location(new BPartnerLocation
                     .builder('Address1')
                     .city('Cologne')

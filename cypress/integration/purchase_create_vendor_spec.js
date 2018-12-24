@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
 
-import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bPartner';
+import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bpartner';
 
 describe('purchase order Test', function() {
   before(function() {
@@ -15,6 +15,8 @@ describe('purchase order Test', function() {
     new BPartner
       .builder(vendorName)
       .vendor(true)
+      .vendorPricingSystem("Testpreisliste Lieferanten")
+      .vendorDiscountSchema("STandard")
       .location(new BPartnerLocation
         .builder('Address1')
         .city('Cologne')
