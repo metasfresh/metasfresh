@@ -27,44 +27,44 @@ export class BPartner
               cy.log(`BPartnerBuilder - name = ${name}`);
               this.name = name;
               this.isVendor = false;
-              //this.vendorPricingSystem = null;
-              //this.vendorDiscountSchema = null;
+              this.vendorPricingSystem = undefined;
+              this.vendorDiscountSchema = undefined;
               this.isCustomer = false;
               this.bPartnerLocations = [];
               this.contacts = [];
             }
           
-            vendor(isVendor)
+            setVendor(isVendor)
             {
                cy.log(`BPartnerBuilder - isVendor = ${isVendor}`);
                this.isVendor = isVendor;
                return this;
             }
-            vendorPricingSystem(vendorPricingSystem)
+            setVendorPricingSystem(vendorPricingSystem)
             {
                 cy.log(`BPartnerBuilder - vendorPricingSystem = ${vendorPricingSystem}`);
                 this.vendorPricingSystem = vendorPricingSystem;
                 return this; 
             }
-            vendorDiscountSchema(vendorDiscountSchema)
+            setVendorDiscountSchema(vendorDiscountSchema)
             {
                cy.log(`BPartnerBuilder - vendorDiscountSchema = ${vendorDiscountSchema}`);
                this.vendorDiscountSchema = vendorDiscountSchema;
                return this;
             }
-            customer(isCustomer)
+            setCustomer(isCustomer)
             {
                 cy.log(`BPartnerBuilder - isCustomer = ${isCustomer}`);
                 this.isCustomer = isCustomer;
                 return this;
             }
-            location(bPartnerLocation) 
+            addLocation(bPartnerLocation) 
             {
                 cy.log(`BPartnerBuilder - add location = ${JSON.stringify(bPartnerLocation)}`);
                 this.bPartnerLocations.push(bPartnerLocation);
                 return this;
             }
-            contact(contact) 
+            addContact(contact) 
             {
                 this.contacts.push(contact);
                 return this;
@@ -99,13 +99,13 @@ export class BPartnerLocation
                 this.name = name;
             } 
 
-            city(city)
+            setCity(city)
             {
                 cy.log(`BPartnerLocationBuilder - city = ${city}`);
                 this.city = city;
                 return this;
             }
-            country(country) 
+            setCountry(country) 
             {
                 cy.log(`BPartnerLocationBuilder - country = ${country}`);
                 this.country = country;
@@ -139,19 +139,19 @@ export class BPartnerContact
                 this.isDefaultContact = false;
             } 
 
-            firstName(firstName)
+            setFirstName(firstName)
             {
                 cy.log(`BPartnerContactBuilder - firstName = ${firstName}`);
                 this.firstName = firstName;
                 return this;
             }
-            lastName(lastName) 
+            setLastName(lastName) 
             {
                 cy.log(`BPartnerContactBuilder - lastName = ${lastName}`);
                 this.lastName = lastName;
                 return this;
             }
-            defaultContact(isDefaultContact)
+            setDefaultContact(isDefaultContact)
             {
                 cy.log(`BPartnerContactBuilder - defaultContact = ${isDefaultContact}`);
                 this.isDefaultContact = isDefaultContact;

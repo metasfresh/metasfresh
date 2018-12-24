@@ -19,24 +19,24 @@ describe('purchase order Test', function() {
 
             new BPartner
                 .builder(vendorName)
-                .vendor(true)
-                //.vendorPricingSystem("Testpreisliste Lieferanten")
-                //.vendorDiscountSchema("STandard")
-                .location(new BPartnerLocation
+                .setVendor(true)
+                .setVendorPricingSystem("Testpreisliste Lieferanten")
+                .setVendorDiscountSchema("STandard")
+                .addLocation(new BPartnerLocation
                     .builder('Address1')
-                    .city('Cologne')
-                    .country('Deutschland')
+                    .setCity('Cologne')
+                    .setCountry('Deutschland')
                     .build())
-                .contact(new BPartnerContact
+                .addContact(new BPartnerContact
                     .builder()
-                    .firstName('Default')
-                    .lastName('Contact')
-                    .defaultContact(true)
+                    .setFirstName('Default')
+                    .setLastName('Contact')
+                    .setDefaultContact(true)
                     .build())
-                .contact(new BPartnerContact
+                .addContact(new BPartnerContact
                     .builder()
-                    .firstName('Secondary')
-                    .lastName(contactLastName)
+                    .setFirstName('Secondary')
+                    .setLastName(contactLastName)
                     .build())
                 .build()
                 .apply();
