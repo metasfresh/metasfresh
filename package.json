@@ -45,6 +45,7 @@
     "testEnvironment": "jsdom"
   },
   "devDependencies": {
+    "@cypress/snapshot": "^2.0.1",
     "@cypress/webpack-preprocessor": "^4.0.2",
     "@storybook/react": "^3.2.13",
     "autoprefixer": "~8.3.0",

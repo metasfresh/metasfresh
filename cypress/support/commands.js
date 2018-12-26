@@ -24,6 +24,9 @@
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 
+// https://www.cypress.io/blog/2018/01/16/end-to-end-snapshot-testing/#End-to-end-snapshot-testing
+require('@cypress/snapshot').register()
+
 import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';
 
@@ -130,6 +133,8 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
 // Should also work for date columns, e.g. '01/01/2018{enter}'
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
   describe('Enter value into string field', function() {
+
+    cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}`);
     cy.get(`.form-field-${fieldName}`)
       .find('input')
       .type(stringValue);
@@ -138,6 +143,8 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
 
 Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
   describe('Enter value into text field', function() {
+
+      cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}`);
       cy.get(`.form-field-${fieldName}`)
         .find('textarea')
         .type(stringValue);
