@@ -43,4 +43,4 @@ else
     record_param="--record --key $cypress_record_key"
 fi
 
-CYPRESS_baseUrl=$frontend_url node_modules/.bin/cypress run $record_param || sleep 1h #if the cypress command fails, keep running so that we can inspect the container
+CYPRESS_baseUrl=$frontend_url node_modules/.bin/cypress run $record_param #|| sleep 1h #if the cypress command fails, keep running so that we can inspect the container

@@ -42,19 +42,21 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     final String currentDate = dateFormat.format(date)
 
 	final String additionalBuildArgs = "--build-arg CACHEBUST=${currentDate} --build-arg GIT_BRANCH=${MF_UPSTREAM_BRANCH}"
+	final DockerConf e2eDockerConf = new DockerConf(
+		'metasfresh-e2e', // artifactName
+		MF_UPSTREAM_BRANCH, // branchName
+		MF_VERSION, // versionSuffix
+		'.', // workDir
+		additionalBuildArgs
+	);
 	final String publishedE2eDockerImageName;
 	stage('Build and push e2e docker image')
 	{
-		final DockerConf e2eDockerConf = new DockerConf(
-			'metasfresh-e2e', // artifactName
-			MF_UPSTREAM_BRANCH, // branchName
-			MF_VERSION, // versionSuffix
-			'.', // workDir
-			additionalBuildArgs
-		);
 		// echo "e2eDockerConf=${e2eDockerConf.toString()}"
 		publishedE2eDockerImageName = dockerBuildAndPush(e2eDockerConf)
 	}
+
+	final String e2eDockerImageNameNoRegistry=publishedE2eDockerImageName.substring("${e2eDockerConf.pushRegistry}/".length());
 
 	currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
 <ul>
@@ -74,6 +76,10 @@ If you want to upload the test results to the cypress dashboard of metasfresh, t
 <code>
 -e "RECORD_KEY=<the-secret-key>"
 </code>
+<p/>
+<ul>
+<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_REGISTRY=${e2eDockerConf.pushRegistry}&MF_DOCKER_IMAGE=${e2eDockerImageNameNoRegistry}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using this job's docker image.</li>
+</ul>
 """
 } // node
 } // timestamps
