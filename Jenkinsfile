@@ -9,20 +9,13 @@ import de.metas.jenkins.DockerConf
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
-// 		string(defaultValue: '',
-// 			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
-// This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
-// <p>
-// So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
-// <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
-// 			name: 'MF_UPSTREAM_BRANCH'),
-
 		string(defaultValue: '',
-			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
-			name: 'MF_UPSTREAM_VERSION'),
-
-		booleanParam(defaultValue: true, description: 'Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere',
-			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
+			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
+This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
+<p>
+So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
+<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
+			name: 'MF_UPSTREAM_BRANCH'),
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
@@ -66,6 +59,21 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
 <ul>
 <li>a docker image with name <code>${publishedE2eDockerImageName}</code><br>
-</ul>"""
+</ul>
+<p/>
+To run the docker image like this:<br>
+<code>
+docker run --rm\
+ -e "FRONTEND_URL=http://172.17.0.1:30080"\
+ -e "API_URL=http=http://172.17.0.1:8080/rest/api"\
+ -e "WS_URL=http=http://172.17.0.1:8080/stomp"\
+ ${publishedE2eDockerImageName}
+</code>
+<p/>
+If you want to upload the test results to the cypress dashboard of metasfresh, then also include the parameter
+<code>
+-e "RECORD_KEY=<the-secret-key>"
+</code>
+"""
 } // node
 } // timestamps
