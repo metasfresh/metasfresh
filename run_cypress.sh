@@ -28,7 +28,7 @@ else
     echo "RECORD_KEY=***"
     record_param="--record --key $cypress_record_key"
 fi
-if [[ no_exit = "NOT_SET" ]]
+if [[ $no_exit = "NOT_SET" ]]
 then
     echo "NO_EXIT is not set"
     noexit_param=""
@@ -36,7 +36,7 @@ else
     echo "NO_EXIT is set (=$no_exit)"
     noexit_param="--no-exit"
 fi
-if [[ debug = "NOT_SET" ]]
+if [[ $debug = "NOT_SET" ]]
 then
     echo "DEBUG is not set"
     debug_param=""
@@ -44,7 +44,6 @@ else
     echo "DEBUG is set (=$debug)"
     debug_param="DEBUG=cypress:*"
 fi
-
 
 cd /e2e
 
