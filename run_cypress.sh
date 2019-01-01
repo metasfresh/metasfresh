@@ -7,8 +7,9 @@ ws_url=${WS_URL:-http://localhost:8080/stomp}
 username=${USERNAME:-metasfresh}
 password=${PASSWORD:-metasfresh}
 cypress_record_key=${RECORD_KEY:-NOT_SET}
-no_exit=${NO_EXIT:-NOT_SET}
-debug=${DEBUG:-NOT_SET}
+no_exit=${NO_EXIT:-n}
+debug_cypress_output=${DEBUG_CYPRESS_OUTPUT:-n}
+debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 
 echo "*************************************************************"
 echo "Display the variable values we run with"
@@ -20,7 +21,8 @@ echo "PLUGIN_API_URL=$plugin_api_url"
 echo "WS_URL=$ws_url"
 echo "USERNAME=$username"
 echo "PASSWORD=***"
-if [[ $cypress_record_key = "NOT_SET" ]]
+
+if [ "$cypress_record_key" = "NOT_SET" ]
 then
     echo "RECORD_KEY is not set"
     record_param=""
@@ -28,21 +30,19 @@ else
     echo "RECORD_KEY=***"
     record_param="--record --key $cypress_record_key"
 fi
-if [[ $no_exit = "NOT_SET" ]]
+
+echo "NO_EXIT=$no_exit"
+if [ "$no_exit" = "n" ]
 then
-    echo "NO_EXIT is not set"
     noexit_param=""
 else
-    echo "NO_EXIT is set (=$no_exit)"
     noexit_param="--no-exit"
 fi
-if [[ $debug = "NOT_SET" ]]
+
+echo "DEBUG_CYPRESS_OUTPUT=$debug_cypress_output"
+if [ "$debug_cypress_output" != "n" ];
 then
-    echo "DEBUG is not set"
-    debug_param=""
-else
-    echo "DEBUG is set (=$debug)"
-    debug_param="DEBUG=cypress:*"
+    export DEBUG=cypress:*
 fi
 
 cd /e2e
@@ -56,4 +56,13 @@ echo "  username: '${username}'," >> cypress/config.js
 echo "  password: '${password}'," >> cypress/config.js
 echo "};" >> cypress/config.js
 
-$debug_param CYPRESS_baseUrl=$frontend_url node_modules/.bin/cypress run $record_param $noexit_param
+# start printing all bash commands from here onwards, if activated
+if [ "$debug_print_bash_cmds" != "n" ];
+then
+	echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}, so from here we will output all bash commands; set to n (just the lowercase letter) to skip this."
+	echo ""
+    set -x
+fi
+
+export CYPRESS_baseUrl=$frontend_url  
+node_modules/.bin/cypress run $record_param $noexit_param
