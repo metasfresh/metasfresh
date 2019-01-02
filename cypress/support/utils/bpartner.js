@@ -174,9 +174,7 @@ function applyBPartner(bPartner)
         cy.visit('/window/123/NEW');
 
         cy.writeIntoStringField('CompanyName', bPartner.name);
-        cy.wait(500);
         cy.writeIntoStringField('Name2', bPartner.name);
-        cy.wait(500);
         if(bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem) 
         {
             cy.selectTab('Vendor');
