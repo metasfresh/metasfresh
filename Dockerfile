@@ -11,11 +11,9 @@ FROM cypress/browsers:chrome69
 # thx to https://github.com/moby/moby/issues/1996#issuecomment-185872769
 ARG CACHEBUST=1
 
-ARG GIT_BRANCH=master
-
 RUN apt-get update && apt-get -y upgrade && apt-get -y autoremove
 
-# note: if we had a recent git version, we could follow https://stackoverflow.com/a/3489576 to check out the revision we need
+# note: if we had a recent git version in here, we could follow https://stackoverflow.com/a/3489576 to check out the revision we need
 COPY cypress-git-repo /e2e
 
 WORKDIR /e2e

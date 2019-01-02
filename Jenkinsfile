@@ -27,11 +27,8 @@ chuckNorris()
 
 timestamps
 {
-	final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
-	echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
-
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-	final String MF_VERSION = retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
+	final String MF_VERSION = retrieveArtifactVersion(env.BRANCH_NAME, env.BUILD_NUMBER)
 	currentBuild.displayName = "artifact-version ${MF_VERSION}";
 
 node('agent && linux') // shall only run on a jenkins agent with linux
@@ -48,10 +45,10 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     final def date = new Date()
     final String currentDate = dateFormat.format(date)
 
-	final String additionalBuildArgs = "--build-arg CACHEBUST=${currentDate} --build-arg GIT_BRANCH=${MF_UPSTREAM_BRANCH}"
+	final String additionalBuildArgs = "--build-arg CACHEBUST=${currentDate}"
 	final DockerConf e2eDockerConf = new DockerConf(
 		'metasfresh-e2e', // artifactName
-		MF_UPSTREAM_BRANCH, // branchName
+		env.BRANCH_NAME, // branchName
 		MF_VERSION, // versionSuffix
 		'.', // workDir
 		additionalBuildArgs
