@@ -89,8 +89,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// set the artifact version of everything below the webui's ${mvnConf.pomFile}
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${mvnConf.resolveParams} versions:set"
 
-		final def misc = new de.metas.jenkins.Misc();
-
 		final String BUILD_ARTIFACT_URL = "${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-api/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-api-${misc.urlEncode(MF_VERSION)}.jar"
 
 		// do the actual building and deployment
@@ -111,7 +109,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		env.BUILD_ARTIFACT_URL = BUILD_ARTIFACT_URL
 		env.BUILD_CHANGE_URL = env.CHANGE_URL
 		env.MF_VERSION = MF_VERSION
-		env.BUILD_GIT_SHA1 = misc.getCommitSha1()
+		env.BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
 		env.BUILD_DOCKER_IMAGE = publishedDockerImageName
 		env.MF_VERSION = MF_VERSION
 
