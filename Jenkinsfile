@@ -10,12 +10,14 @@ import de.metas.jenkins.DockerConf
 properties([
 	parameters([
 		string(defaultValue: '',
-			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
-This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
-<p>
-So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
-<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
-			name: 'MF_UPSTREAM_BRANCH'),
+			description: '''Revison or branch name of the https://github.com/metasfresh/metasfresh-webui-frontend version to take the cypress tests from.<br>
+Examples:
+<ul>
+<li><code>master</code></li>
+<li><code>release</code></li>
+<li><code>98ad2dbbf35127564461b07c6fa55260bec17d77</code></li>
+</ul>''',
+			name: 'MF_WEBUI_FRONTEND_REVISION'),
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
@@ -36,6 +38,11 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 {
 	checkout scm // i hope this to do all the magic we need
 	sh 'git clean -d --force -x' // clean the workspace
+
+	// check out the metasfresh-webui-frontend version that whose cypress tests we are going to execute
+	dir('cypress-git-repo') {
+    	checkout([$class: 'GitSCM', branches: [[name: params.MF_WEBUI_FRONTEND_REVISION ]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'git@github.com:metasfresh/metasfresh-webui-frontend.git']]])
+	}
 
  	final def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
     final def date = new Date()

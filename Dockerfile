@@ -1,5 +1,5 @@
 # this docker image contains electron; 
-# running the docker image with electron fails, probably due to one of theses reasons: https://github.com/cypress-io/cypress/issues/1235
+# running the docker image with electron fails, probably due to one of these reasons: https://github.com/cypress-io/cypress/issues/1235
 #FROM cypress/base:10
 
 # This docker image contains the latest (currently 71) chrome;
@@ -15,8 +15,8 @@ ARG GIT_BRANCH=master
 
 RUN apt-get update && apt-get -y upgrade && apt-get -y autoremove
 
-# shallow-clone the $GIT_BRANCH branch into the e2e folder
-RUN git clone -b $GIT_BRANCH --depth 1 https://github.com/metasfresh/metasfresh-webui-frontend.git e2e
+# note: if we had a recent git version, we could follow https://stackoverflow.com/a/3489576 to check out the revision we need
+COPY cypress-git-repo /e2e
 
 WORKDIR /e2e
 
