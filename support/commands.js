@@ -194,16 +194,13 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
 
     cy.get('.form-field-DocAction')
       .find('.meta-dropdown-toggle')
-      .click();
-
-    cy.get('.form-field-DocAction')
-      .find('.dropdown-status-toggler')
-      .should('have.class', 'dropdown-status-open');
+      .click()
+      .should('have.class', 'dropdown-status-open')
 
     cy.get('.form-field-DocAction .dropdown-status-list')
       .find('.dropdown-status-item')
       .contains(action)
-      .click({ force: true }) // force is needed in some cases with chrome71 (IDK why, to the naked eye the action seems to be visible)
+      .click()
 
     cy.log(`Verify that the doc status is now ${expectedStatus}`)
 
