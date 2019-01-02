@@ -167,7 +167,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 						booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
 					], wait: false
 			},
-			metasfresh-e2e : {
+			metasfresh_e2e : {
 				build job: metasfreshE2eJobName,
 					parameters: [
 						string(name: 'MF_WEBUI_FRONTEND_REVISION', value: BUILD_GIT_SHA1)
