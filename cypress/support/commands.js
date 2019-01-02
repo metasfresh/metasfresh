@@ -189,6 +189,9 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
 
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
   describe('Execute a doc action', function() {
+
+    cy.log(`Execute doc action ${action}`)
+
     cy.get('.form-field-DocAction')
       .find('.meta-dropdown-toggle')
       .click();
@@ -200,10 +203,12 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
     cy.get('.form-field-DocAction .dropdown-status-list')
       .find('.dropdown-status-item')
       .contains(action)
-      .click();
+      .click({ force: true }) // force is needed in some cases with chrome71 (IDK why, to the naked eye the action seems to be visible)
 
-    cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
-    cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus);
+    cy.log(`Verify that the doc status is now ${expectedStatus}`)
+
+    cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist')
+    cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus)
   })
 });
 
