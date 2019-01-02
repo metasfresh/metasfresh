@@ -37,6 +37,7 @@ echo "DEBUG_SLEEP_AFTER_FAIL=$debug_sleep_after_fail"
 echo "DEBUG_CYPRESS_OUTPUT=$debug_cypress_output"
 if [ "$debug_cypress_output" != "n" ];
 then
+    echo "DEBUG_CYPRESS_OUTPUT=${debug_cypress_output}, so we export DEBUG=cypress:* as env variable; set to n (just the lowercase letter) to skip this."
     export DEBUG=cypress:*
 fi
 
@@ -60,6 +61,9 @@ then
 fi
 
 export CYPRESS_baseUrl=$frontend_url  
+
+# note: we run with chrome after running with electron hung on jenkins; Probably related to https://github.com/cypress-io/cypress/issues/1912
+# ofc this assumes that the docker image contains chrome..
 node_modules/.bin/cypress run $record_param $noexit_param --browser chrome
 
 cypress_exit_status=$?

@@ -1,4 +1,9 @@
+# this docker image contains electron; 
+# running the docker image with electron fails, probably due to one of theses reasons: https://github.com/cypress-io/cypress/issues/1235
 #FROM cypress/base:10
+
+# This docker image contains the latest (currently 71) chrome;
+# See the Dockerfile here: https://github.com/cypress-io/cypress-docker-images/blob/master/browsers/chrome69/Dockerfile
 FROM cypress/browsers:chrome69
 
 # to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
