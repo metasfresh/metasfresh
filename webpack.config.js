@@ -4,7 +4,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var WebpackGitHash = require('webpack-git-hash');
 var fs = require('fs');
 
-// allow webpack.config.js to be evaluated if there is no git binary or if it's outside of the git repo;
+// allow webpack.config.js to be evaluated if there is no git binary or if we are outside of the git repo;
 // useful for cypress scenarios
 const commitHash = computeCommitHash();
 function computeCommitHash() {
