@@ -107,7 +107,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				sh "tar cvzf webui-dist-${MF_VERSION}.tar.gz dist"
 				sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
 
-				BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(MF_VERSION)}.tar.gz";
+				final misc = new de.metas.jenkins.Misc()
+				BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(MF_VERSION)}.tar.gz"
 /*
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
 				currentBuild.description="""artifacts (if not yet cleaned up)
@@ -151,7 +152,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream jobs')
 	{
-		def misc = new de.metas.jenkins.Misc()
+		final misc = new de.metas.jenkins.Misc()
 		final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH)
 		final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
 
@@ -171,7 +172,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 				build job: metasfreshE2eJobName,
 					parameters: [
 						string(name: 'MF_WEBUI_FRONTEND_REVISION', value: BUILD_GIT_SHA1)
-					], wait: false
+					], wait: true
 			}
 		)
 	}
