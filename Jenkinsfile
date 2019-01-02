@@ -9,7 +9,7 @@ import de.metas.jenkins.DockerConf
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
-		string(defaultValue: '',
+		string(defaultValue: 'master',
 			description: '''Revison or branch name of the https://github.com/metasfresh/metasfresh-webui-frontend version to take the cypress tests from.<br>
 Examples:
 <ul>
@@ -38,7 +38,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 	// check out the metasfresh-webui-frontend version that whose cypress tests we are going to execute
 	dir('cypress-git-repo') {
-    	checkout([$class: 'GitSCM', branches: [[name: params.MF_WEBUI_FRONTEND_REVISION ]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'git@github.com:metasfresh/metasfresh-webui-frontend.git']]])
+    	checkout([$class: 'GitSCM', branches: [[name: params.MF_WEBUI_FRONTEND_REVISION ]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'metas-dev-ssh-key', url: 'git@github.com:metasfresh/metasfresh-webui-frontend.git']]])
 	}
 
  	final def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
