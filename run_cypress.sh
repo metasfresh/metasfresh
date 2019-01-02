@@ -7,7 +7,7 @@ ws_url=${WS_URL:-http://localhost:8080/stomp}
 username=${USERNAME:-metasfresh}
 password=${PASSWORD:-metasfresh}
 cypress_record_key=${RECORD_KEY:-NOT_SET}
-no_exit=${NO_EXIT:-n}
+cypress_browser=${BROWSER:-electron}
 debug_cypress_output=${DEBUG_CYPRESS_OUTPUT:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 debug_sleep_after_fail=${DEBUG_SLEEP_AFTER_FAIL:-n}
@@ -16,6 +16,7 @@ echo "*************************************************************"
 echo "Display the variable values we run with"
 echo "*************************************************************"
 echo ""
+echo "BROWSER=$cypress_browser"
 echo "FRONTEND_URL=$frontend_url"
 echo "API_URL=$api_url"
 echo "PLUGIN_API_URL=$plugin_api_url"
@@ -62,9 +63,10 @@ fi
 
 export CYPRESS_baseUrl=$frontend_url  
 
-# note: we run with chrome after running with electron hung on jenkins; Probably related to https://github.com/cypress-io/cypress/issues/1912
+# note: run with chrome after running with electron hung on jenkins; Probably related to https://github.com/cypress-io/cypress/issues/1912
 # ofc this assumes that the docker image contains chrome..
-node_modules/.bin/cypress run $record_param $noexit_param --browser chrome
+# also note, that unless running with electron, we can't record videos
+node_modules/.bin/cypress run $record_param $noexit_param --browser $cypress_browser
 
 cypress_exit_status=$?
 echo "cypress_exit_status=$cypress_exit_status"

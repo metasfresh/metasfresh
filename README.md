@@ -1,22 +1,29 @@
 # build
 
-Build the docker image using
+To build the docker image locally, you can do
 
 ```
+git clone -b master --depth=1 https://github.com/metasfresh/metasfresh-webui-frontend.git cypress-git-repo
 docker build --tag metasfresh-e2e --build-arg CACHEBUST=$(date "+%Y-%m-%d") .
 ```
 
 # run
 
-run the docker container 
+run the docker container, e.g. like this
 
 ```
+hostname=dev199.metasfresh.com
 docker run --rm\
- -e "DEBUG_CYPRESS_OUTPUT=y"\
- -e "DEBUG_PRINT_BASH_CMDS=y"\
- -e "FRONTEND_URL=http://172.17.0.1:30080"\
- -e "API_URL=http=http://172.17.0.1:8080/rest/api"\
- -e "WS_URL=http=http://172.17.0.1:8080/stomp"\
- -e "RECORD_KEY=6082dd8a-4093-4d0c-a2d8-8cbc1bd45fcb"\
+ -e "FRONTEND_URL=https://${hostname}:443"\
+ -e "API_URL=https://${hostname}:443/rest/api"\
+ -e "WS_URL=https://${hostname}:443/stomp"\
+ -e "USERNAME=dev"\
+ -e "PASSWORD=password"\
+ -e "RECORD_KEY=NOT_SET"\
+ -e "BROWSER=chrome"\
+ -e "DEBUG_CYPRESS_OUTPUT=n"\
+ -e "DEBUG_PRINT_BASH_CMDS=n"\
+ -e "DEBUG_PRINT_BASH_CMDS=n"\
+ e- "DEBUG_SLEEP_AFTER_FAIL=n"\
  metasfresh-e2e
 ```
