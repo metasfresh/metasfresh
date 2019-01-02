@@ -179,7 +179,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 
 				currentBuild.description="""${currentBuild.description}
 <p/>
-This build triggered the jenkins job <a href="${buildResult.absoluteUrl}">${buildResult.displayName}</a>
+This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${buildResult.absoluteUrl}">${buildResult.displayName}</a>
 				"""
 			}
 		)
