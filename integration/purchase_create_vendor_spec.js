@@ -14,32 +14,32 @@ describe('purchase - vendor spec', function() {
   it('Create a vendor with two contacts', function() {
     new BPartner
       .builder(vendorName)
-
-      // commented this out for now, because already entering `vendorName` into the Name2 field usually fails
-      // .setVendor(true)
-      // .setVendorPricingSystem("Testpreisliste Lieferanten")
-      // .setVendorDiscountSchema("STandard")
-      // .addLocation(new BPartnerLocation
-      //   .builder('Address1')
-      //   .setCity('Cologne')
-      //   .setCountry('Deutschland')
-      //   .build())
-      // .addContact(new BPartnerContact
-      //   .builder()
-      //   .setFirstName('Default')
-      //   .setLastName('Contact')
-      //   .setDefaultContact(true)
-      //   .build())
-      // .addContact(new BPartnerContact
-      //   .builder()
-      //   .setFirstName('Secondary')
-      //   .setLastName('Contact')
-      //   .build())
+      
+      // note that entering `vendorName` into the Name2 field usually fails; the first letters are swallowed
+      .setVendor(true)
+      .setVendorPricingSystem("Testpreisliste Lieferanten")
+      .setVendorDiscountSchema("STandard")
+      .addLocation(new BPartnerLocation
+        .builder('Address1')
+        .setCity('Cologne')
+        .setCountry('Deutschland')
+        .build())
+      .addContact(new BPartnerContact
+        .builder()
+        .setFirstName('Default')
+        .setLastName('Contact')
+        .setDefaultContact(true)
+        .build())
+      .addContact(new BPartnerContact
+        .builder()
+        .setFirstName('Secondary')
+        .setLastName('Contact')
+        .build())
       .build()
       .apply();
-      // });
+
+      cy.log('Now going to verify all fields were set correctly')
       
-      // it('Verify the all fields were set correctly', function() {
       cy.location().then(($location)=>{
         const apiUrl = `${config.API_URL}${$location.pathname}`
         cy.log(`Get bpartner JSON - apiUrl=${apiUrl}`)
