@@ -1,7 +1,7 @@
 /// <reference types="Cypress" />
 
 import { createAndCompleteTransition, createAndCompleteRefundAmountConditions } from '../../support/utils/contract';
-import { BPartner, BPartnerLocation } from '../../support/utils/bPartner';
+import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 //import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 
 describe('Create tiered amount-based refund conditions', function() {
