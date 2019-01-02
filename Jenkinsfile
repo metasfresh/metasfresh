@@ -143,7 +143,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
 <ul>
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
-<li>a docker image with name <code>${publishedDockerImageName}</code><br>
+<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${MF_UPSTREAM_BRANCH}_LATEST</code></li>
 </ul>"""
 	} // configFileProvider
  } // node
@@ -166,13 +166,21 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 						string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
 						booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
 						booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-					], wait: false
+					],
+					wait: false
 			},
 			metasfresh_e2e : {
-				build job: metasfreshE2eJobName,
+				final def buildResult = build job: metasfreshE2eJobName,
 					parameters: [
 						string(name: 'MF_WEBUI_FRONTEND_REVISION', value: BUILD_GIT_SHA1)
-					], wait: true
+					], 
+					wait: true,
+					propagate: false
+
+				currentBuild.description="""${currentBuild.description}
+<p/>
+This build triggered the jenkins job <a href="${buildResult.absoluteUrl}">${buildResult.displayName}</a>
+				"""
 			}
 		)
 	}
