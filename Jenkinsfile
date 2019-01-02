@@ -43,6 +43,8 @@ timestamps
 	final String MF_VERSION = retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
 	currentBuild.displayName = "artifact-version ${MF_VERSION}";
 
+	String BUILD_GIT_SHA1 = "NOT_YET_SET" // will be set when we check out
+
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
@@ -60,7 +62,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 		stage('Set versions and build metasfresh-webui-frontend')
 		{
-			checkout scm; // i hope this to do all the magic we need
+			def scmVars = checkout scm
+			BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
 			sh 'git clean -d --force -x' // clean the workspace
 
 			nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
@@ -84,8 +87,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				
 				sh "webpack --config webpack.prod.js --bail --display-error-details"
 
-				def misc = new de.metas.jenkins.Misc();
-				env.BUILD_GIT_SHA1="${misc.getCommitSha1()}";
+				
+				
 
 				// https://github.com/metasfresh/metasfresh-webui-frontend/issues/292
 				// add a file info.json whose shall look similar to the info which spring-boot provides unter the /info URL
@@ -96,7 +99,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     \"jenkinsBuildNo\": \"${env.BUILD_NUMBER}\",
     \"jenkinsJobName\": \"${env.JOB_NAME}\",
     \"jenkinsBuildTag\": \"${env.BUILD_TAG}\"
-    \"gitSHA1\": \"${env.BUILD_GIT_SHA1}\"
+    \"gitSHA1\": \"${BUILD_GIT_SHA1}\"
   }
 }""";
 				writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json;
@@ -117,7 +120,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 			// gh #968:
 			// set env variables which will be available to a possible upstream job that might have called us
 			// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-			env.MF_VERSION="${MF_VERSION}"
+			env.MF_VERSION=MF_VERSION
+			env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
 		} // stage
 
 		final String publishedDockerImageName;
@@ -145,20 +149,31 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
-	stage('Invoke downstream job')
+	stage('Invoke downstream jobs')
 	{
-   def misc = new de.metas.jenkins.Misc();
-   final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
+		def misc = new de.metas.jenkins.Misc()
+		final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH)
+		final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
 
-   build job: jobName,
-     parameters: [
-       string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-       string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
-       string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
-       string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
-       booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
-       booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-     ], wait: false
+		parallel (
+			metasfresh : {
+				build job: metasfreshJobName,
+					parameters: [
+						string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
+						string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
+						string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
+						string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
+						booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
+						booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+					], wait: false
+			},
+			metasfresh-e2e : {
+				build job: metasfreshE2eJobName,
+					parameters: [
+						string(name: 'MF_WEBUI_FRONTEND_REVISION', value: BUILD_GIT_SHA1)
+					], wait: false
+			}
+		)
 	}
 }
 else
