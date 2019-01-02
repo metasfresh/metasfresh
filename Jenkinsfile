@@ -89,6 +89,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// set the artifact version of everything below the webui's ${mvnConf.pomFile}
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${mvnConf.resolveParams} versions:set"
 
+		final def misc = new de.metas.jenkins.Misc();
 		final String BUILD_ARTIFACT_URL = "${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-api/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-api-${misc.urlEncode(MF_VERSION)}.jar"
 
 		// do the actual building and deployment
@@ -132,18 +133,18 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream job')
 	{
-   def misc = new de.metas.jenkins.Misc();
-   final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
+		def misc = new de.metas.jenkins.Misc();
+		final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
 
-   build job: jobName,
-     parameters: [
-       string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-       string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
-       string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
-       string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
-       booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
-       booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-     ], wait: false
+		build job: jobName,
+			parameters: [
+			string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
+			string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
+			string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
+			string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
+			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
+			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+			], wait: false
 	}
 }
 else
