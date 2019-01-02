@@ -13,16 +13,17 @@ ARG CACHEBUST=1
 
 RUN apt-get update && apt-get -y upgrade && apt-get -y autoremove
 
-# note: if we had a recent git version in here, we could follow https://stackoverflow.com/a/3489576 to check out the revision we need
-COPY cypress-git-repo /e2e
-
 WORKDIR /e2e
 
 RUN npm install --save-dev cypress@3.1.4
 RUN npm install --save-dev @cypress/snapshot@2.0.1
 RUN npm install --save-dev @cypress/webpack-preprocessor@4.0.2
 
-# the following npm install is needed; without it, running cypress will fail like this:
+# note: if we had a recent git version in here, we could follow https://stackoverflow.com/a/3489576 to check out the revision we need
+COPY cypress-git-repo /e2e
+
+# The following npm install is needed; without it, running cypress would fail as follows
+# --------------
 # Your pluginsFile is set to '/e2e/cypress/plugins/index.js', but either the file is missing, it contains a syntax error, or threw an error when required. The pluginsFile must be a .js or .coffee file.
 
 # Please fix this, or set 'pluginsFile' to 'false' if a plugins file is not necessary for your project.
@@ -31,6 +32,7 @@ RUN npm install --save-dev @cypress/webpack-preprocessor@4.0.2
 
 # Error: Cannot find module 'webpack'
 #     at Function.Module._resolveFilename (module.js:485:15)
+# --------------
 RUN npm install
 
 RUN $(npm bin)/cypress verify

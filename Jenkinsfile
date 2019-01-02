@@ -36,9 +36,11 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	checkout scm // i hope this to do all the magic we need
 	sh 'git clean -d --force -x' // clean the workspace
 
+	final def WEBUI_FRONTEND_SHA1
 	// check out the metasfresh-webui-frontend version that whose cypress tests we are going to execute
 	dir('cypress-git-repo') {
-    	checkout([$class: 'GitSCM', branches: [[name: params.MF_WEBUI_FRONTEND_REVISION ]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'metas-dev-ssh-key', url: 'git@github.com:metasfresh/metasfresh-webui-frontend.git']]])
+    	final def scmVars = checkout([$class: 'GitSCM', branches: [[name: params.MF_WEBUI_FRONTEND_REVISION ]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'metas-dev-ssh-key', url: 'git@github.com:metasfresh/metasfresh-webui-frontend.git']]])
+		WEBUI_FRONTEND_SHA1 = scmVars.GIT_COMMIT
 	}
 
  	final def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
@@ -62,33 +64,30 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 	final String e2eDockerImageNameNoRegistry=publishedE2eDockerImageName.substring("${e2eDockerConf.pushRegistry}/".length());
 
-	currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
+	currentBuild.description="""This build's main artifact (if not yet cleaned up) is
 <ul>
-<li>a docker image with name <code>${publishedE2eDockerImageName}</code><br>
+<li>a docker image with name <code>${publishedE2eDockerImageName}</code>; Note that you can also use the tag <code>${env.BRANCH_NAME}_LATEST</code></li>
 </ul>
 <p/>
-To run the docker image like this:<br>
-<pre>
-hostname=yourinstance.metasfresh.com
-docker run --rm\
- -e "FRONTEND_URL=https://\${hostname}:443"\
- -e "API_URL=https://\${hostname}:443/rest/api"\
- -e "WS_URL=https://\${hostname}:443/stomp"\
- -e "USERNAME=dev"\
- -e "PASSWORD=password"\
- -e "RECORD_KEY=NOT_SET"\
- -e "BROWSER=chrome"\
- -e "DEBUG_CYPRESS_OUTPUT=n"\
- -e "DEBUG_PRINT_BASH_CMDS=n"\
- -e "DEBUG_PRINT_BASH_CMDS=n"\
- e- "DEBUG_SLEEP_AFTER_FAIL=n"\
-${publishedE2eDockerImageName}
-</pre>
+It contains the cypress tests from <a href='https://github.com/metasfresh/metasfresh-webui-frontend/commit/${WEBUI_FRONTEND_SHA1}'>https://github.com/metasfresh/metasfresh-webui-frontend/commit/${WEBUI_FRONTEND_SHA1}</a>
 <p/>
-If you want to upload the test results to the cypress dashboard of metasfresh, then also include the parameter
-<code>
--e "RECORD_KEY=<the-secret-key>"
-</code>
+You can run the docker image like this:<br>
+<pre>
+hostname=yourinstance.metasfresh.com<br>
+docker run --rm\\
+ -e "FRONTEND_URL=https://\${hostname}:443"\\
+ -e "API_URL=https://\${hostname}:443/rest/api"\\
+ -e "WS_URL=https://\${hostname}:443/stomp"\\
+ -e "USERNAME=dev"\\
+ -e "PASSWORD=password"\\
+ -e "RECORD_KEY=NOT_SET"\\
+ -e "BROWSER=chrome"\\
+ -e "DEBUG_CYPRESS_OUTPUT=n"\\
+ -e "DEBUG_PRINT_BASH_CMDS=n"\\
+ -e "DEBUG_PRINT_BASH_CMDS=n"\\
+ -e "DEBUG_SLEEP_AFTER_FAIL=n"\\
+ ${publishedE2eDockerImageName}
+</pre>
 <p/>
 Related jenkins jobs:
 <ul>
