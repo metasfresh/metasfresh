@@ -68,12 +68,12 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 </ul>
 <p/>
 To run the docker image like this:<br>
-<code>
+<pre>
 hostname=yourinstance.metasfresh.com
 docker run --rm\
- -e "FRONTEND_URL=https://${hostname}:443"\
- -e "API_URL=https://${hostname}:443/rest/api"\
- -e "WS_URL=https://${hostname}:443/stomp"\
+ -e "FRONTEND_URL=https://\${hostname}:443"\
+ -e "API_URL=https://\${hostname}:443/rest/api"\
+ -e "WS_URL=https://\${hostname}:443/stomp"\
  -e "USERNAME=dev"\
  -e "PASSWORD=password"\
  -e "RECORD_KEY=NOT_SET"\
@@ -83,7 +83,7 @@ docker run --rm\
  -e "DEBUG_PRINT_BASH_CMDS=n"\
  e- "DEBUG_SLEEP_AFTER_FAIL=n"\
 ${publishedE2eDockerImageName}
-</code>
+</pre>
 <p/>
 If you want to upload the test results to the cypress dashboard of metasfresh, then also include the parameter
 <code>
