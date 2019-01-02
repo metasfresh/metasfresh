@@ -77,6 +77,7 @@ If you want to upload the test results to the cypress dashboard of metasfresh, t
 -e "RECORD_KEY=<the-secret-key>"
 </code>
 <p/>
+Related jenkins jobs:
 <ul>
 <li><a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_REGISTRY=${e2eDockerConf.pushRegistry}&MF_DOCKER_IMAGE=${e2eDockerImageNameNoRegistry}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using this job's docker image.</li>
 </ul>
