@@ -10,6 +10,7 @@ cypress_record_key=${RECORD_KEY:-NOT_SET}
 no_exit=${NO_EXIT:-n}
 debug_cypress_output=${DEBUG_CYPRESS_OUTPUT:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+debug_sleep_after_fail=${DEBUG_SLEEP_AFTER_FAIL:-n}
 
 echo "*************************************************************"
 echo "Display the variable values we run with"
@@ -31,13 +32,7 @@ else
     record_param="--record --key $cypress_record_key"
 fi
 
-echo "NO_EXIT=$no_exit"
-if [ "$no_exit" = "n" ]
-then
-    noexit_param=""
-else
-    noexit_param="--no-exit"
-fi
+echo "DEBUG_SLEEP_AFTER_FAIL=$debug_sleep_after_fail"
 
 echo "DEBUG_CYPRESS_OUTPUT=$debug_cypress_output"
 if [ "$debug_cypress_output" != "n" ];
@@ -65,4 +60,13 @@ then
 fi
 
 export CYPRESS_baseUrl=$frontend_url  
-node_modules/.bin/cypress run $record_param $noexit_param
+node_modules/.bin/cypress run $record_param $noexit_param --browser chrome
+
+cypress_exit_status=$?
+echo "cypress_exit_status=$cypress_exit_status"
+
+if [ "$cypress_exit_status" != "0" -a  "$debug_sleep_after_fail" != "n" ];
+then
+    echo "DEBUG_SLEEP_AFTER_FAIL=$debug_sleep_after_fail and cypress exited with status=$cypress_exit_status, so we sleep 1h now; set to n (just the lowercase letter) to skip this."
+    sleep 1h
+fi

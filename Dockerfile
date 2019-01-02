@@ -1,4 +1,5 @@
-FROM cypress/base:10
+#FROM cypress/base:10
+FROM cypress/browsers:chrome69
 
 # to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
 # that way we should get the latest updates since the release of our base image 
