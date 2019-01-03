@@ -25,8 +25,11 @@ import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
+import de.metas.money.CurrencyRepository;
+import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -53,10 +56,32 @@ import lombok.NonNull;
 
 public class CandidateAssignServiceExceedingQty
 {
-
+	@VisibleForTesting
+	@Getter
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
+
 	private final RefundInvoiceCandidateService refundInvoiceCandidateService;
+
+	@VisibleForTesting
+	@Getter
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
+
+	@VisibleForTesting
+	public static CandidateAssignServiceExceedingQty createInstanceForUnitTesting()
+	{
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
+
+		final RefundInvoiceCandidateService refundInvoiceCandidateService = new RefundInvoiceCandidateService(
+				refundInvoiceCandidateRepository,
+				new MoneyService(new CurrencyRepository()));
+
+		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
+
+		return new CandidateAssignServiceExceedingQty(
+				refundInvoiceCandidateRepository,
+				refundInvoiceCandidateService,
+				assignmentToRefundCandidateRepository);
+	}
 
 	public CandidateAssignServiceExceedingQty(
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
@@ -111,7 +136,7 @@ public class CandidateAssignServiceExceedingQty
 				.clearAssignmentsToRefundCandidates()
 				.assignmentsToRefundCandidates(assignments)
 				.build();
-		return UpdateAssignmentResult.updateDone(resultCandidate, ImmutableList.of()/*additionalChangedCandidates*/);
+		return UpdateAssignmentResult.updateDone(resultCandidate, ImmutableList.of()/* additionalChangedCandidates */);
 	}
 
 	private ImmutableList<RefundInvoiceCandidate> orderCandidatesByConfigMinQty(@NonNull final List<RefundInvoiceCandidate> refundCandidatesToAssign)

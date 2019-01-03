@@ -25,7 +25,6 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
-import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -76,37 +75,15 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 
 		refundTestTools = new RefundTestTools(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
 
-		refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
-		RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 
-		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+		refundConfigRepository = refundInvoiceCandidateRepository.getRefundContractRepository().getRefundConfigRepository();
 
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
-
-		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
-				refundContractRepository,
-				refundInvoiceCandidateFactory);
-		//
-		// invoiceCandidateRepository = new InvoiceCandidateRepository(
-		// new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository),
-		// refundContractRepository);
-		//
 		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
-		//
-		//
+
 		refundInvoiceCandidateService = new RefundInvoiceCandidateService(
 				refundInvoiceCandidateRepository,
-				refundInvoiceCandidateFactory,
-				moneyService,
-				assignmentAggregateService);
-		//
-		// final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
-		//
-		// invoiceScheduleRepository.save(InvoiceSchedule
-		// .builder()
-		// .frequency(Frequency.DAILY)
-		// .build());
-
+				moneyService);
 	}
 
 	@Test
@@ -140,8 +117,8 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 		// invoke the method under test
 		final Throwable e = catchThrowable(() -> refundInvoiceCandidateService.addAssignableMoney(refundCandidate, refundConfig, assignableCandidate));
 		assertThat(e).isNull();
-//		assertThat(e).isInstanceOf(AdempiereException.class);
-//		assertThat(e).hasMessageContaining("together they exceed the quantity for candidateToUpdate's refund config");
+		// assertThat(e).isInstanceOf(AdempiereException.class);
+		// assertThat(e).hasMessageContaining("together they exceed the quantity for candidateToUpdate's refund config");
 	}
 
 	private RefundInvoiceCandidate prepareRefundCandidateAndConfigs(final RefundMode refundMode)

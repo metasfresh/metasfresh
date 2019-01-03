@@ -62,14 +62,12 @@ public class RefundInvoiceCandidateService
 
 	public RefundInvoiceCandidateService(
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
-			@NonNull final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory,
-			@NonNull final MoneyService moneyService,
-			@NonNull final AssignmentAggregateService assignmentAggregateService)
+			@NonNull final MoneyService moneyService)
 	{
-		this.assignmentAggregateService = assignmentAggregateService;
-		this.refundInvoiceCandidateFactory = refundInvoiceCandidateFactory;
+		this.refundInvoiceCandidateFactory = refundInvoiceCandidateRepository.getRefundInvoiceCandidateFactory();
 		this.refundInvoiceCandidateRepository = refundInvoiceCandidateRepository;
 		this.moneyService = moneyService;
+		this.assignmentAggregateService = refundInvoiceCandidateFactory.getAssignmentAggregateService();
 	}
 
 	/**
@@ -105,10 +103,10 @@ public class RefundInvoiceCandidateService
 			if (!existingCandidates.isEmpty())
 			{
 				// with refundMode=ALL_MAX_SCALE there should be just one;
-				// but it might not yet have all relevant configs, so add them to the final result
 				final RefundInvoiceCandidate result = singleElement(existingCandidates)
 						.toBuilder()
 						.clearRefundConfigs()
+						// ...but it might not yet have all relevant configs, so add them to the final result
 						.refundConfigs(relevantRefundConfigs)
 						.build();
 				return ImmutableList.of(result);
@@ -215,7 +213,7 @@ public class RefundInvoiceCandidateService
 
 		return new AssignmentToRefundCandidate(
 				refundConfig.getId(),
-				candidateToAssign.getRepoId(),
+				candidateToAssign.getId(),
 				updatedRefundCandidate,
 				candidateToAssign.getMoney(),
 				moneyAugend,

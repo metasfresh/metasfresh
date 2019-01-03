@@ -24,6 +24,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
@@ -31,11 +32,13 @@ import com.google.common.collect.Multimaps;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -64,8 +67,30 @@ import lombok.Value;
 @Repository
 public class RefundInvoiceCandidateRepository
 {
+	@VisibleForTesting
+	@Getter
 	private final RefundContractRepository refundContractRepository;
+
+	@Getter
 	private final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory;
+
+	@VisibleForTesting
+	public static RefundInvoiceCandidateRepository createInstanceForUnitTesting()
+	{
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(
+				refundContractRepository,
+				assignmentAggregateService);
+
+		return new RefundInvoiceCandidateRepository(
+				refundContractRepository,
+				refundInvoiceCandidateFactory);
+	}
 
 	public RefundInvoiceCandidateRepository(
 			@NonNull final RefundContractRepository refundContractRepository,
@@ -226,6 +251,8 @@ public class RefundInvoiceCandidateRepository
 
 		record.setBill_BPartner_ID(refundCandidate.getBpartnerId().getRepoId());
 		record.setDateToInvoice(asTimestamp(refundCandidate.getInvoiceableFrom()));
+
+		record.setM_Product_ID(RefundConfigs.extractProductId(refundCandidate.getRefundConfigs()).getRepoId());
 
 		final Money money = refundCandidate.getMoney();
 		record.setPriceActual(money.getValue());

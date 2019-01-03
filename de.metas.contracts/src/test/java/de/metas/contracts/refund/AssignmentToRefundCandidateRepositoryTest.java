@@ -165,13 +165,13 @@ public class AssignmentToRefundCandidateRepositoryTest
 		final AssignableInvoiceCandidate assignableIc = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
 
 		// guards
-		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getRepoId());
+		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getId());
 		assertThat(resultBeforeDeletion).isNotEmpty();
 
 		delete(assignmentRecord);
 
 		// invoke the method under test
-		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getRepoId());
+		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getId());
 		assertThat(resultAfterDeletion).isEmpty();
 	}
 }

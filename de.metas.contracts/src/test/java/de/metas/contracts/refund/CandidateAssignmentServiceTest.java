@@ -168,7 +168,7 @@ public class CandidateAssignmentServiceTest
 				.build();
 
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
-				.repoId(InvoiceCandidateId.ofRepoId(1000023))
+				.id(InvoiceCandidateId.ofRepoId(1000023))
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
 				.productId(ProductId.ofRepoId(2005577))
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
@@ -215,7 +215,7 @@ public class CandidateAssignmentServiceTest
 		final List<UnassignedPairOfCandidates> resultUnassignedPairs = result.getUnassignedPairs();
 		assertThat(resultUnassignedPairs)
 				.hasSize(2)
-				.allSatisfy(p -> assertThat(p.getAssignableInvoiceCandidate().getRepoId()).isEqualTo(InvoiceCandidateId.ofRepoId(1000023)))
+				.allSatisfy(p -> assertThat(p.getAssignableInvoiceCandidate().getId()).isEqualTo(InvoiceCandidateId.ofRepoId(1000023)))
 				.anySatisfy(p -> assertThat(p.getUnassignedQuantity().getAsBigDecimal()).isEqualByComparingTo(TWELVE))
 				.anySatisfy(p -> assertThat(p.getUnassignedQuantity().getAsBigDecimal()).isEqualByComparingTo(FOURTEEN));
 

@@ -9,6 +9,7 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -83,6 +84,14 @@ public class RefundConfigs
 				refundConfigs,
 				RefundConfig::getRefundMode);
 		return refundMode;
+	}
+
+	public ProductId extractProductId(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		final ProductId productId = extractSingleElement(
+				refundConfigs,
+				RefundConfig::getProductId);
+		return productId;
 	}
 
 	public void assertValid(@NonNull final List<RefundConfig> refundConfigs)

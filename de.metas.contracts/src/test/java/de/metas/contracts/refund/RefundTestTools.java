@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
@@ -21,6 +22,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
@@ -256,7 +259,7 @@ public class RefundTestTools
 
 		return AssignableInvoiceCandidate
 				.builder()
-				.repoId(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
+				.id(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
 				.bpartnerId(BPARTNER_ID)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.money(money)
@@ -275,7 +278,7 @@ public class RefundTestTools
 
 		final I_C_Invoice_Candidate_Assignment assignmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundCandidate.getId().getRepoId());
-		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableInvoiceCandidate.getRepoId().getRepoId());
+		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundCandidate.getRefundContract().getId().getRepoId());
 		assignmentRecord.setC_Flatrate_RefundConfig_ID(refundConfig.getId().getRepoId());
 		assignmentRecord.setIsAssignedQuantityIncludedInSum(true);
@@ -287,7 +290,7 @@ public class RefundTestTools
 
 		final AssignmentToRefundCandidate assignementToRefundCandidate = new AssignmentToRefundCandidate(
 				refundConfig.getId(),
-				assignableInvoiceCandidate.getRepoId(),
+				assignableInvoiceCandidate.getId(),
 				reloadedRefundCandidate,
 				assignableInvoiceCandidate.getMoney(),
 				Money.of(TWO, reloadedRefundCandidate.getMoney().getCurrencyId()),
@@ -320,6 +323,7 @@ public class RefundTestTools
 		final RefundConfigBuilder refundConfigBuilder = RefundConfig
 				.builder()
 				.minQty(ZERO)
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.refundBase(RefundBase.PERCENTAGE)
 				.percent(Percent.of(TWENTY))
 				.conditionsId(ConditionsId.ofRepoId(20))
@@ -335,5 +339,17 @@ public class RefundTestTools
 		final List<RefundConfig> resultConfigs = refundCandidate.getRefundConfigs();
 		assertThat(resultConfigs).hasSize(1);
 		return resultConfigs.get(0);
+	}
+
+	public static ImmutableList<AssignmentToRefundCandidate> retrieveAllAssignmentsToRefundCandidates(
+			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository)
+	{
+		final List<I_C_Invoice_Candidate_Assignment> assignmentRecords = POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class);
+		final ImmutableList.Builder<AssignmentToRefundCandidate> result = ImmutableList.builder();
+		for (final I_C_Invoice_Candidate_Assignment assignmentRecord : assignmentRecords)
+		{
+			result.add(assignmentToRefundCandidateRepository.ofRecordOrNull(assignmentRecord));
+		}
+		return result.build();
 	}
 }

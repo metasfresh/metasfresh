@@ -12,21 +12,11 @@ import org.junit.Test;
 
 import de.metas.contracts.refund.AssignCandidatesRequest;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
-import de.metas.contracts.refund.AssignmentAggregateService;
-import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.RefundConfig;
-import de.metas.contracts.refund.RefundConfigRepository;
-import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
-import de.metas.contracts.refund.RefundInvoiceCandidateFactory;
-import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
-import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.contracts.refund.RefundTestTools;
-import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.CurrencyRepository;
-import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 
 /*
@@ -51,7 +41,7 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
-public class CandidateAssignServiceExceedingQty_RealRecords_Test
+public class CandidateAssignServiceExceedingQtyTest
 {
 	private static final BigDecimal TWO = new BigDecimal("2");
 
@@ -66,30 +56,7 @@ public class CandidateAssignServiceExceedingQty_RealRecords_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
-
-		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
-
-		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
-
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
-
-		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
-
-		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
-
-		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
-
-		final RefundInvoiceCandidateService refundInvoiceCandidateService = new RefundInvoiceCandidateService(
-				refundInvoiceCandidateRepository,
-				refundInvoiceCandidateFactory,
-				moneyService,
-				assignmentAggregateService);
-
-		candidateAssignServiceExceedingQty = new CandidateAssignServiceExceedingQty(
-				refundInvoiceCandidateRepository,
-				refundInvoiceCandidateService,
-				assignmentToRefundCandidateRepository);
+		candidateAssignServiceExceedingQty = CandidateAssignServiceExceedingQty.createInstanceForUnitTesting();
 
 		refundTestTools = new RefundTestTools();
 	}

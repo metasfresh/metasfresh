@@ -94,7 +94,7 @@ public class AssignableInvoiceCandidateFactory
 		final List<AssignmentToRefundCandidate> assignments = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(invoiceCandidateId);
 
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
-				.repoId(invoiceCandidateId)
+				.id(invoiceCandidateId)
 				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)

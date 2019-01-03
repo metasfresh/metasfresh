@@ -50,6 +50,7 @@ import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -78,6 +79,8 @@ import lombok.NonNull;
 public class RefundInvoiceCandidateFactory
 {
 	private final RefundContractRepository refundContractRepository;
+
+	@Getter
 	private final AssignmentAggregateService assignmentAggregateService;
 
 	public RefundInvoiceCandidateFactory(
@@ -131,7 +134,7 @@ public class RefundInvoiceCandidateFactory
 			@NonNull final List<RefundConfig> refundConfigs)
 	{
 		final I_C_Invoice_Candidate assignableInvoiceCandidateRecord = load(
-				assignableCandidate.getRepoId().getRepoId(),
+				assignableCandidate.getId().getRepoId(),
 				I_C_Invoice_Candidate.class);
 
 		final I_C_Invoice_Candidate refundInvoiceCandidateRecord = Services.get(IInvoiceCandBL.class)
@@ -267,7 +270,7 @@ public class RefundInvoiceCandidateFactory
 
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(refundRecord.getC_Invoice_Candidate_ID());
 
-		final Map<RefundConfig, BigDecimal> configIdAndQuantity = assignmentAggregateService.retrieveAssignedQuantity(invoiceCandidateId);
+		final Map<RefundConfig, BigDecimal> configIdAndQuantity = assignmentAggregateService.retrieveAssignedQuantities(invoiceCandidateId);
 		final List<RefundConfig> refundConfigs;
 		final BigDecimal assignedQuantity;
 		if (configIdAndQuantity.isEmpty())
@@ -280,7 +283,6 @@ public class RefundInvoiceCandidateFactory
 			// add assigned quantities for the different refund configs
 			assignedQuantity = configIdAndQuantity.values().stream().reduce(ZERO, BigDecimal::add);
 
-			// take the refund config with the biggest minQty
 			refundConfigs = ImmutableList.copyOf(configIdAndQuantity.keySet());
 		}
 

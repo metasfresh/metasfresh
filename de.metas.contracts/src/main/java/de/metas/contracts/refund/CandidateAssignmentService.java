@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.Check.fail;
 import static de.metas.util.collections.CollectionUtils.extractSingleElement;
 import static de.metas.util.collections.CollectionUtils.singleElement;
 
@@ -110,7 +111,6 @@ public class CandidateAssignmentService
 
 		// guards
 		matchingRefundCandidates.forEach(c -> Check.assumeNotEmpty(c.getRefundConfigs(), "Every refundInvoiceCandidate returned by retrieveOrCreateMatchingRefundCandidates() needs to have at least one config", c));
-		final RefundMode refundMode = refundContract.extractRefundMode();
 
 		final ImmutableMap<InvoiceCandidateId, RefundInvoiceCandidate> //
 		refundCandidateId2matchingRefundCandidate = Maps.uniqueIndex(matchingRefundCandidates, RefundInvoiceCandidate::getId);
@@ -119,7 +119,7 @@ public class CandidateAssignmentService
 
 		// reload from backend to find out if the assignableCandidate is already assigned or not
 		final AssignableInvoiceCandidate reloadedAssignableCandidate = assignableInvoiceCandidateRepository
-				.getById(assignableCandidate.getRepoId());
+				.getById(assignableCandidate.getId());
 		if (reloadedAssignableCandidate.isAssigned())
 		{
 			// the refund candidate matching the given assignableCandidate might have changed;
@@ -138,37 +138,44 @@ public class CandidateAssignmentService
 			refundCandidatesToAssign = matchingRefundCandidates;
 		}
 
-		if (RefundMode.APPLY_TO_ALL_QTIES.equals(refundMode))
+		final RefundMode refundMode = refundContract.extractRefundMode();
+		switch (refundMode)
 		{
-			Check.assume(matchingRefundCandidates.size() == 1,
-					"If refundMode={}, then there needs to be exactly one refund candidate; refundCandidatesToAssign={}", refundMode, matchingRefundCandidates);
+			case APPLY_TO_ALL_QTIES:
 
-			final CandidateAssignServiceAllQties candidateAssignService = new CandidateAssignServiceAllQties(
-					refundConfigChangeService,
-					refundInvoiceCandidateService,
-					assignmentToRefundCandidateRepository,
-					refundInvoiceCandidateRepository);
+				Check.assume(matchingRefundCandidates.size() == 1,
+						"If refundMode={}, then there needs to be exactly one refund candidate; refundCandidatesToAssign={}", refundMode, matchingRefundCandidates);
 
-			return candidateAssignService
-					.updateAssignment(
-							reloadedAssignableCandidate,
-							singleElement(refundCandidatesToAssign),
-							refundContract);
-		}
-		else
-		{
-			matchingRefundCandidates.forEach(c -> Check.assume(c.getRefundConfigs().size() == 1,
-					"If refundMode={}, then every refundInvoiceCandidate returned by retrieveOrCreateMatchingRefundCandidates() needs to have exactly one config", refundMode, c));
+				final CandidateAssignServiceAllQties candidateAssignServiceAllQties = new CandidateAssignServiceAllQties(
+						refundConfigChangeService,
+						refundInvoiceCandidateService,
+						assignmentToRefundCandidateRepository,
+						refundInvoiceCandidateRepository);
 
-			final CandidateAssignServiceExceedingQty candidateAssignService = new CandidateAssignServiceExceedingQty(
-					refundInvoiceCandidateRepository,
-					refundInvoiceCandidateService,
-					assignmentToRefundCandidateRepository);
+				return candidateAssignServiceAllQties
+						.updateAssignment(
+								reloadedAssignableCandidate,
+								singleElement(refundCandidatesToAssign),
+								refundContract);
 
-			return candidateAssignService.updateAssignment(
-					reloadedAssignableCandidate,
-					refundCandidatesToAssign,
-					refundContract);
+			case APPLY_TO_EXCEEDING_QTY:
+
+				matchingRefundCandidates.forEach(c -> Check.assume(c.getRefundConfigs().size() == 1,
+						"If refundMode={}, then every refundInvoiceCandidate returned by retrieveOrCreateMatchingRefundCandidates() needs to have exactly one config", refundMode, c));
+
+				final CandidateAssignServiceExceedingQty candidateAssignServiceExceedingQty = new CandidateAssignServiceExceedingQty(
+						refundInvoiceCandidateRepository,
+						refundInvoiceCandidateService,
+						assignmentToRefundCandidateRepository);
+
+				return candidateAssignServiceExceedingQty.updateAssignment(
+						reloadedAssignableCandidate,
+						refundCandidatesToAssign,
+						refundContract);
+
+			default:
+				fail("Unexpected refundMode= {}", refundMode);
+				return null;
 		}
 	}
 
@@ -209,7 +216,7 @@ public class CandidateAssignmentService
 		{
 			final UnassignResultBuilder resultBuilder = result.toBuilder();
 
-			final Comparator<RefundInvoiceCandidate> // if refundMode == PER_SCALE, then each refundCandidate has just one config
+			final Comparator<RefundInvoiceCandidate> // if refundMode == APPLY_TO_EXCEEDING_QTY, then each refundCandidate has just one config
 			comparingByMinQty = Comparator.comparing(r -> singleElement(r.getRefundConfigs()).getMinQty());
 
 			final ImmutableList<RefundInvoiceCandidate> sortedByMinQty = matchingRefundCandidates
@@ -228,7 +235,7 @@ public class CandidateAssignmentService
 			{
 				final RefundInvoiceCandidate refundInvoiceCandidate = sortedByMinQty.get(i);
 
-				// remember, if refundMode == PER_SCALE, then each refundCandidate has just one config
+				// remember, if refundMode == APPLY_TO_EXCEEDING_QTY, then each refundCandidate has just one config
 				final RefundConfig refundConfigs = singleElement(refundInvoiceCandidate.getRefundConfigs());
 
 				final Quantity assignableQty = refundInvoiceCandidate.computeAssignableQuantity(refundConfigs);
@@ -317,7 +324,7 @@ public class CandidateAssignmentService
 		for (final AssignmentToRefundCandidate assignmentToRefundCandidate : assignmentsToRefundCandidates)
 		{
 			final RefundInvoiceCandidate withSubtractedMoneyAmount = assignmentToRefundCandidate
-					.withSubtractedAssignedMoneyAndQuantity()
+					.withZeroAssignedMoneyAndQuantity()
 					.getRefundInvoiceCandidate();
 			refundInvoiceCandidateRepository.save(withSubtractedMoneyAmount);
 
@@ -338,7 +345,7 @@ public class CandidateAssignmentService
 	{
 		final DeleteAssignmentsRequest request = DeleteAssignmentsRequest
 				.builder()
-				.removeForAssignedCandidateId(invoiceCandidate.getRepoId())
+				.removeForAssignedCandidateId(invoiceCandidate.getId())
 				.build();
 		assignmentToRefundCandidateRepository.deleteAssignments(request);
 	}

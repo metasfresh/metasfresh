@@ -48,9 +48,9 @@ public class AssignableInvoiceCandidate
 {
 	/**
 	 * <li>May be {@code null} if this instance was not persisted.
-	 * <li>The result of {@link #splitQuantity(BigDecimal)} can contain multiple instances that have the same repoId
+	 * <li>The result of {@link #splitQuantity(BigDecimal)} can contain multiple instances that have the same id
 	 */
-	InvoiceCandidateId repoId;
+	InvoiceCandidateId id;
 
 	BPartnerId bpartnerId;
 	ProductId productId;
@@ -68,7 +68,7 @@ public class AssignableInvoiceCandidate
 
 	@Builder(toBuilder = true)
 	private AssignableInvoiceCandidate(
-			@Nullable final InvoiceCandidateId repoId,
+			@Nullable final InvoiceCandidateId id,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
@@ -77,7 +77,7 @@ public class AssignableInvoiceCandidate
 			@NonNull final Quantity quantity,
 			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
-		this.repoId = repoId;
+		this.id = id;
 		this.bpartnerId = bpartnerId;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
@@ -127,7 +127,7 @@ public class AssignableInvoiceCandidate
 				.build();
 
 		final AssignableInvoiceCandidate newCandidate = toBuilder()
-				.repoId(repoId)
+				.id(id)
 				.quantity(newQuantity)
 				.money(newMoney)
 				.build();
