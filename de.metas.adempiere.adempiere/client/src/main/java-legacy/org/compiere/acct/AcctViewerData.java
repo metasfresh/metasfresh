@@ -49,21 +49,19 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.logging.LogManager;
 
 /**
  * Account Viewer State - maintains State information for the Account Viewer
  *
  * @author Jorg Janke
  * @version $Id: AcctViewerData.java,v 1.3 2006/08/10 01:00:27 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1748449 ] Info Account - Posting Type is not translated <li>BF [ 1778373 ] AcctViewer: data is not sorted proper
  */
 class AcctViewerData
@@ -153,12 +151,12 @@ class AcctViewerData
 	boolean displayDocumentInfo = false;
 	/** Display Account Ending Balance */
 	boolean displayEndingBalance = true;
-	
+
 	/**
 	 * task 09243: flag to tell if the void/reversed docs are to be displayed or not
 	 */
 	boolean displayVoidDocuments = true;
-	
+
 	//
 	String sortBy1 = "";
 	String sortBy2 = "";
@@ -195,7 +193,7 @@ class AcctViewerData
 
 	/**************************************************************************
 	 * Fill Accounting Schema
-	 * 
+	 *
 	 * @param cb JComboBox to be filled
 	 */
 	protected void fillAcctSchema(JComboBox<KeyNamePair> cb)
@@ -215,7 +213,7 @@ class AcctViewerData
 
 	/**
 	 * Fill Posting Type
-	 * 
+	 *
 	 * @param cb JComboBox to be filled
 	 */
 	protected void fillPostingType(JComboBox<ValueNamePair> cb)
@@ -253,7 +251,7 @@ class AcctViewerData
 				String tableName = rs.getString(2);
 				String name = msgBL.translate(Env.getCtx(), tableName + "_ID");
 				//
-				final ValueNamePair pp = new ValueNamePair(tableName, name);
+				final ValueNamePair pp = ValueNamePair.of(tableName, name);
 				cb.addItem(pp);
 				_tableInfo.put(tableName, new Integer(id));
 				if (id == AD_Table_ID)
@@ -357,7 +355,7 @@ class AcctViewerData
 
 	/**************************************************************************
 	 * /** Create Query and submit
-	 * 
+	 *
 	 * @return Report Model
 	 */
 	protected RModel query()
@@ -425,7 +423,7 @@ class AcctViewerData
 			// Add Account_ID between Account_ID and AccountTo_ID
 			appendAccountWhereClause(whereClause);
 		}
-		
+
 		if(!isDisplayVoidDocuments())
 		{
 			whereClause.append( "AND ").append(RModel.TABLE_ALIAS).append(".DocStatus NOT IN (")
@@ -552,7 +550,7 @@ class AcctViewerData
 
 	/**
 	 * Create Report Model (Columns)
-	 * 
+	 *
 	 * @return Report Model
 	 */
 	private RModel getRModel()
@@ -638,7 +636,7 @@ class AcctViewerData
 					RModel.TABLE_ALIAS + ".PostingType",
 					X_Fact_Acct.POSTINGTYPE_AD_Reference_ID,
 					null));
-		
+
 		// task 09243: add docstatus
 		rm.addColumn(new RColumn(ctx, "DocStatus", DisplayType.String));
 		return rm;
@@ -646,7 +644,7 @@ class AcctViewerData
 
 	/**
 	 * Create the key columns in sequence
-	 * 
+	 *
 	 * @return List of Key Columns
 	 */
 	private ArrayList<String> createKeyColumns()
@@ -943,9 +941,9 @@ class AcctViewerData
 	public void setDisplayVoidDocuments(boolean isDisplayVoidDocuments)
 	{
 		this.displayVoidDocuments = isDisplayVoidDocuments;
-		
+
 	}
-	
+
 	public boolean isDisplayVoidDocuments()
 	{
 		return displayVoidDocuments;

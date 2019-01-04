@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -70,9 +70,8 @@ public final class ConstantStringExpression implements IStringExpression, ICache
 
 	private final String expressionStr;
 
-	private ConstantStringExpression(final String expressionStr)
+	private ConstantStringExpression(@NonNull final String expressionStr)
 	{
-		Check.assumeNotNull(expressionStr, "Parameter expressionStr is not null");
 		this.expressionStr = expressionStr;
 	}
 
@@ -118,7 +117,7 @@ public final class ConstantStringExpression implements IStringExpression, ICache
 	{
 		return expressionStr;
 	}
-	
+
 	@Override
 	public Set<CtxName> getParameters()
 	{

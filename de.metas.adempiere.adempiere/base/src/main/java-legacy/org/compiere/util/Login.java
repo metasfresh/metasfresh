@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import lombok.NonNull;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -65,6 +63,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * Login Manager
@@ -268,7 +267,7 @@ public class Login
 				ctx.setSysAdmin(true);
 			}
 
-			final KeyNamePair roleKNP = KeyNamePair.of(role.getAD_Role_ID(), role.getName());
+			final KeyNamePair roleKNP = KeyNamePair.of(role.getAD_Role_ID(), role.getName(), role.getDescription());
 			roles.add(roleKNP);
 		}
 		//

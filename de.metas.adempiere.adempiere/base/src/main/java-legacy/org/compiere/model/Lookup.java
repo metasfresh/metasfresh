@@ -48,7 +48,7 @@ public abstract class Lookup extends AbstractListModel
 	implements MutableComboBoxModel, Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2811763289904455349L;
 
@@ -79,9 +79,9 @@ public abstract class Lookup extends AbstractListModel
 	private final int m_displayType;
 	/**	Window No				*/
 	private final int m_WindowNo;
-	
+
 	private boolean 				m_mandatory;
-	
+
 	private boolean					m_loaded;
 
 	/**
@@ -101,7 +101,7 @@ public abstract class Lookup extends AbstractListModel
 	{
 		return m_WindowNo;
 	}	//	getWindowNo
-	
+
 	/**************************************************************************
 	 * Set the value of the selected item. The selected item may be null.
 	 * <p>
@@ -115,7 +115,7 @@ public abstract class Lookup extends AbstractListModel
 		{
 			return;
 		}
-		
+
 		if ((m_selectedObject != null && !m_selectedObject.equals( anObject ))
 			|| m_selectedObject == null && anObject != null)
 		{
@@ -166,7 +166,7 @@ public abstract class Lookup extends AbstractListModel
 
 	/**
 	 * Returns the index-position of the specified object in the list.
-	 * 
+	 *
 	 * @param anObject object
 	 * @return an int representing the index position, where 0 is the first position, or -1 if this list does not contain the element
 	 */
@@ -246,28 +246,17 @@ public abstract class Lookup extends AbstractListModel
 		m_loaded = false;
 	}   //  removeAllElements
 
-	
-	/**************************************************************************
-	 *	Put Value
-	 *  @param key key
-	 *  @param value value
-	 */
-	public void put (String key, String value)
+	public void put (String key, String value, String help)
 	{
-		NamePair pp = new ValueNamePair (key, value);
+		NamePair pp = ValueNamePair.of(key, value, help);
 		addElement(pp);
-	}	//	put
+	}
 
-	/**
-	 *	Put Value
-	 *  @param key key
-	 *  @param value value
-	 */
-	public void put (int key, String value)
+	public void put (int key, String value, String help)
 	{
-		NamePair pp = new KeyNamePair (key, value);
+		NamePair pp = KeyNamePair.of(key, value, help);
 		addElement(pp);
-	}	//	put
+	}
 
 	/**
 	 *  Fill ComboBox with lookup data (async using Worker).
@@ -298,7 +287,7 @@ public abstract class Lookup extends AbstractListModel
 
 		//  may cause delay *** The Actual Work ***
 		p_data = getData (mandatory, onlyValidated, onlyActive, temporary);
-		
+
 		//  Selected Object changed
 		if (selectedObjectOld != m_selectedObject)
 		{
@@ -314,8 +303,8 @@ public abstract class Lookup extends AbstractListModel
 		// 	log.trace(getColumnName() + ": SelectedValue SetToFirst=" + obj);
 		// //	fireContentsChanged(this, -1, -1);
 		// }
-		
-		m_loaded = true; 
+
+		m_loaded = true;
 		if (p_data.isEmpty())
 		{
 			fireContentsChanged(this, -1, -1);
@@ -348,7 +337,7 @@ public abstract class Lookup extends AbstractListModel
 			if (obj == null && p_data.size() > 0)
 				obj = p_data.get(0);
 			setSelectedItem(obj);
-			
+
 			fireContentsChanged(this, 0, p_data.size());
 			return;
 		}
@@ -356,12 +345,12 @@ public abstract class Lookup extends AbstractListModel
 			fillComboBox(isMandatory(), true, true, false);
 	}   //  fillComboBox
 
-	
+
 	/**
 	 * Get Display of Key Value
-	 * 
+	 *
 	 * NOTE: this method is checking if given key is valid in given context
-	 * 
+	 *
 	 * @param evalCtx
 	 * @param key key
 	 * @return String
@@ -370,9 +359,9 @@ public abstract class Lookup extends AbstractListModel
 
 	/**
 	 * Get Display of Key Value.
-	 * 
+	 *
 	 * NOTE: this method is not validating the record
-	 * 
+	 *
 	 * @param key
 	 * @return
 	 */
@@ -383,8 +372,8 @@ public abstract class Lookup extends AbstractListModel
 
 	/**
 	 * Get Object of Key Value
-	 * 
-	 * @param evalCtx evaluation context to be used 
+	 *
+	 * @param evalCtx evaluation context to be used
 	 * @param key key
 	 * @return Object or null
 	 */
@@ -392,9 +381,9 @@ public abstract class Lookup extends AbstractListModel
 
 	/**
 	 * Get Object of Key Value.
-	 * 
+	 *
 	 * NOTE: no validation will be performed
-	 * 
+	 *
 	 * @param key key
 	 * @return Object or null
 	 */
@@ -416,27 +405,27 @@ public abstract class Lookup extends AbstractListModel
 
 	/**
 	 * Gets Lookup TableName or null if the lookup is not based on a particular table
-	 * 
+	 *
 	 * @return TableName or null
 	 */
 	public abstract String getTableName();
-	
+
 	/** @return true if this lookup shall enable autocomplete feature in UI */
 	public boolean isAutoComplete()
 	{
 		return false;
 	}
-	
+
 	/**
 	 *	Get underlying fully qualified Table.Column Name.
 	 *	Used for VLookup.actionButton (Zoom)
 	 *  @return column name
 	 */
 	public abstract String getColumnName();
-	
+
 	/**
 	 * Get underlying NOT fully qualified Column Name.
-	 * 
+	 *
 	 * @return not fully qualified column name
 	 */
 	public abstract String getColumnNameNotFQ();
@@ -448,13 +437,13 @@ public abstract class Lookup extends AbstractListModel
 	 *  @return true if contains key
 	 */
 	public abstract boolean containsKey (final IValidationContext evalCtx, final Object key);
-	
+
 	public final boolean containsKey (Object key)
 	{
 		return containsKey(IValidationContext.DISABLED, key);
 	}
 
-	
+
 	/**************************************************************************
 	 *	Refresh Values - default implementation
 	 *  @return size
@@ -482,7 +471,7 @@ public abstract class Lookup extends AbstractListModel
 	{
 		return "";
 	}   //  getValidation
-	
+
 	public boolean hasValidation()
 	{
 		return !Check.isEmpty(getValidation(), true);
@@ -558,7 +547,7 @@ public abstract class Lookup extends AbstractListModel
 	public void loadComplete()
 	{
 	}   //  loadComplete
-	
+
 	/**
 	 * Set lookup model as mandatory, use in loading data
 	 * @param flag
@@ -567,7 +556,7 @@ public abstract class Lookup extends AbstractListModel
 	{
 		m_mandatory = flag;
 	}
-	
+
 	/**
 	 * Is lookup model mandatory
 	 * @return boolean
@@ -576,30 +565,30 @@ public abstract class Lookup extends AbstractListModel
 	{
 		return m_mandatory;
 	}
-	
+
 	/**
 	 * Is this lookup model populated
 	 * @return boolean
 	 */
-	public boolean isLoaded() 
+	public boolean isLoaded()
 	{
 		return m_loaded;
 	}
-	
+
 	/**
 	 * Get custom info factory class
 	 * @return info factory class name
 	 */
-	public String getInfoFactoryClass() 
+	public String getInfoFactoryClass()
 	{
 		return "";
 	}
 
 	/**
 	 * Returns a list of parameters on which this lookup depends.
-	 * 
+	 *
 	 * Those parameters will be fetched from context on validation time.
-	 * 
+	 *
 	 * @return list of parameter names
 	 */
 	public Set<String> getParameters()
@@ -608,7 +597,7 @@ public abstract class Lookup extends AbstractListModel
 	}
 
 	/**
-	 * 
+	 *
 	 * @return evaluation context
 	 */
 	public IValidationContext getValidationContext()
@@ -618,7 +607,7 @@ public abstract class Lookup extends AbstractListModel
 
 	/**
 	 * Suggests a valid value for given value
-	 * 
+	 *
 	 * @param value
 	 * @return equivalent valid value or same this value is valid; if there are no suggestions, null will be returned
 	 */
@@ -630,7 +619,7 @@ public abstract class Lookup extends AbstractListModel
 	/**
 	 * Returns true if given <code>display</code> value was rendered for a not found item.
 	 * To be used together with {@link #getDisplay} methods.
-	 * 
+	 *
 	 * @param display
 	 * @return true if <code>display</code> contains not found markers
 	 */
