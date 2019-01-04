@@ -27,8 +27,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
-import de.metas.util.Check;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -84,7 +84,7 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 	{
 		return true; // not cached but returning true to avoid caching
 	}
-	
+
 	@Override
 	public void cacheInvalidate()
 	{
@@ -225,7 +225,7 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 				final String postal = rs.getString(I_C_Postal.COLUMNNAME_Postal);
 				final String city = rs.getString(I_C_Postal.COLUMNNAME_City);
 				final int countryId = rs.getInt(I_C_Postal.COLUMNNAME_C_Country_ID);
-				
+
 				final LookupValue countryLookupValue = countryLookup.getLookupValueById(countryId);
 
 				lookupValues.add(buildPostalLookupValue(postalId, postal, city, countryLookupValue.getDisplayNameTrl()));
@@ -242,7 +242,7 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 			DB.close(rs, pstmt);
 		}
 	}
-	
+
 	public IntegerLookupValue getLookupValueFromLocation(final I_C_Location locationRecord)
 	{
 		final I_C_Postal postalRecord = locationRecord.getC_Postal();
@@ -250,15 +250,19 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 		{
 			return null;
 		}
-		
+
 		final LookupValue countryLookupValue = countryLookup.getLookupValueById(postalRecord.getC_Country_ID());
 
 		return buildPostalLookupValue(postalRecord.getC_Postal_ID(), postalRecord.getPostal(), postalRecord.getCity(), countryLookupValue.getDisplayNameTrl());
 	}
 
-	private static final IntegerLookupValue buildPostalLookupValue(final int postalId, final String postal, final String city, final ITranslatableString countryName)
+	private static final IntegerLookupValue buildPostalLookupValue(
+			final int postalId,
+			final String postal,
+			final String city,
+			final ITranslatableString countryName)
 	{
 		final ITranslatableString displayName = ITranslatableString.compose("", postal, " ", city, " (", countryName, ")");
-		return IntegerLookupValue.of(postalId, displayName);
+		return IntegerLookupValue.of(postalId, displayName, null/* description */);
 	}
 }

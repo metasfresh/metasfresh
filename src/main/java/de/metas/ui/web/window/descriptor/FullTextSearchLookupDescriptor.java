@@ -234,8 +234,8 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 	}
 
 	@Override
-	public IStringExpression getSqlForFetchingDisplayNameByIdExpression(final String sqlKeyColumn)
+	public IStringExpression getSqlForFetchingLookupByIdExpression(final String sqlKeyColumn)
 	{
-		return sqlLookupDescriptor != null ? sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlKeyColumn) : NullStringExpression.instance;
+		return sqlLookupDescriptor != null ? sqlLookupDescriptor.getSqlForFetchingLookupByIdExpression(sqlKeyColumn) : NullStringExpression.instance;
 	}
 }

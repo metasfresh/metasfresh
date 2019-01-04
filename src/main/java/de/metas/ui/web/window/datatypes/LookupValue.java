@@ -111,13 +111,11 @@ public abstract class LookupValue
 		}
 		if (id instanceof Integer)
 		{
-			final Map<String, Object> attributes = null;
-			return new IntegerLookupValue((int)id, ImmutableTranslatableString.constant(displayName), attributes);
+			return new IntegerLookupValue((int)id, ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */);
 		}
 		else
 		{
-			final Map<String, Object> attributes = null;
-			return new StringLookupValue(id.toString(), ImmutableTranslatableString.constant(displayName), attributes);
+			return new StringLookupValue(id.toString(), ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */);
 		}
 	}
 
@@ -129,7 +127,7 @@ public abstract class LookupValue
 	}
 
 	public static final LookupValue fromNamePair(
-			@Nullable final NamePair namePair, 
+			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage)
 	{
 		final LookupValue defaultValue = null;
@@ -137,8 +135,8 @@ public abstract class LookupValue
 	}
 
 	public static final LookupValue fromNamePair(
-			@Nullable final NamePair namePair, 
-			@Nullable final String adLanguage, 
+			@Nullable final NamePair namePair,
+			@Nullable final String adLanguage,
 			@Nullable final LookupValue defaultValue)
 	{
 		if (namePair == null)
@@ -147,24 +145,27 @@ public abstract class LookupValue
 		}
 
 		final ITranslatableString displayNameTrl;
+		final ITranslatableString descriptionTrl;
 		if (adLanguage == null)
 		{
 			displayNameTrl = ImmutableTranslatableString.anyLanguage(namePair.getName());
+			descriptionTrl = ImmutableTranslatableString.anyLanguage(namePair.getDescription());
 		}
 		else
 		{
 			displayNameTrl = ImmutableTranslatableString.singleLanguage(adLanguage, namePair.getName());
+			descriptionTrl = ImmutableTranslatableString.singleLanguage(adLanguage, namePair.getDescription());
 		}
 
 		if (namePair instanceof ValueNamePair)
 		{
 			final ValueNamePair vnp = (ValueNamePair)namePair;
-			return StringLookupValue.of(vnp.getValue(), displayNameTrl);
+			return StringLookupValue.of(vnp.getValue(), displayNameTrl, descriptionTrl);
 		}
 		else if (namePair instanceof KeyNamePair)
 		{
 			final KeyNamePair knp = (KeyNamePair)namePair;
-			return IntegerLookupValue.of(knp.getKey(), displayNameTrl);
+			return IntegerLookupValue.of(knp.getKey(), displayNameTrl, descriptionTrl);
 		}
 		else
 		{
@@ -175,12 +176,19 @@ public abstract class LookupValue
 
 	protected final Object id;
 	protected final ITranslatableString displayName;
+	protected final ITranslatableString description;
+
 	private final ImmutableMap<String, Object> additionalAttributes;
 
-	private LookupValue(@NonNull final Object id, @Nullable final ITranslatableString displayName, final Map<String, Object> additionalAttributes)
+	private LookupValue(
+			@NonNull final Object id,
+			@Nullable final ITranslatableString displayName,
+			@Nullable final ITranslatableString description,
+			final Map<String, Object> additionalAttributes)
 	{
 		this.id = id;
 		this.displayName = displayName == null ? ImmutableTranslatableString.empty() : displayName;
+		this.description = description == null ? ImmutableTranslatableString.empty() : description;
 		this.additionalAttributes = additionalAttributes != null && !additionalAttributes.isEmpty() ? ImmutableMap.copyOf(additionalAttributes) : null;
 	}
 
@@ -191,6 +199,7 @@ public abstract class LookupValue
 				.omitNullValues()
 				.add("id", id)
 				.add("displayName", displayName)
+				.add("description", description)
 				.add("additionalAttributes", additionalAttributes)
 				.toString();
 	}
@@ -237,6 +246,11 @@ public abstract class LookupValue
 	public ITranslatableString getDisplayNameTrl()
 	{
 		return displayName;
+	}
+
+	public ITranslatableString getDescriptionTrl()
+	{
+		return description;
 	}
 
 	public final Object getId()
@@ -344,20 +358,20 @@ public abstract class LookupValue
 	{
 		public static final StringLookupValue of(final String value, final String displayName)
 		{
-			final Map<String, Object> attributes = null;
-			return new StringLookupValue(value, ImmutableTranslatableString.constant(displayName), attributes);
+			return new StringLookupValue(value, ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */);
 		}
 
-		public static final StringLookupValue of(final String value, final ITranslatableString displayName)
+		public static final StringLookupValue of(
+				final String id,
+				final ITranslatableString displayName,
+				final ITranslatableString helpText)
 		{
-			final Map<String, Object> attributes = null;
-			return new StringLookupValue(value, displayName, attributes);
+			return new StringLookupValue(id, displayName, helpText, null/* attributes */);
 		}
 
 		public static final StringLookupValue unknown(final String value)
 		{
-			final Map<String, Object> attributes = null;
-			return new StringLookupValue(value, ImmutableTranslatableString.constant("<" + value + ">"), attributes);
+			return new StringLookupValue(value, ImmutableTranslatableString.constant("<" + value + ">"), null/* description */, null/* attributes */);
 		}
 
 		private Integer idInt; // lazy
@@ -366,9 +380,10 @@ public abstract class LookupValue
 		private StringLookupValue(
 				@NonNull final String id,
 				@Nullable final ITranslatableString displayName,
+				@Nullable final ITranslatableString description,
 				@Singular final Map<String, Object> attributes)
 		{
-			super(id, displayName, attributes);
+			super(id, displayName, description, attributes);
 		}
 
 		@Override
@@ -387,27 +402,30 @@ public abstract class LookupValue
 		/**
 		 * Create a new value using the given {@code displayName} as a constant string that is valid in any language and thus never needs translation.
 		 * Note: without "anyLanguage", you can run into trouble when combining {@link ProcessParamLookupValuesProvider} and {@link IProcessDefaultParametersProvider} in one {@link JavaProcess} implementation.
-		 * 
-		 * @param id
-		 * @param displayName
-		 * @return
 		 */
 		public static final IntegerLookupValue of(final int id, final String displayName)
 		{
-			final Map<String, Object> attributes = null;
-			return new IntegerLookupValue(id, ImmutableTranslatableString.anyLanguage(displayName), attributes);
+			return new IntegerLookupValue(
+					id,
+					ImmutableTranslatableString.anyLanguage(displayName),
+					null /* helpText */,
+					null/* attributes */);
 		}
 
-		public static final IntegerLookupValue of(final int id, final ITranslatableString displayName)
+		public static final IntegerLookupValue of(
+				final int id,
+				@Nullable final ITranslatableString displayName,
+				@Nullable final ITranslatableString helpText)
 		{
-			final Map<String, Object> attributes = null;
-			return new IntegerLookupValue(id, displayName, attributes);
+			return new IntegerLookupValue(id, displayName, helpText, null/* attributes */);
 		}
 
-		public static final IntegerLookupValue of(@NonNull final RepoIdAware id, final ITranslatableString displayName)
+		public static final IntegerLookupValue of(
+				@NonNull final RepoIdAware id,
+				@Nullable final ITranslatableString displayName,
+				@Nullable final ITranslatableString helpText)
 		{
-			final Map<String, Object> attributes = null;
-			return new IntegerLookupValue(id.getRepoId(), displayName, attributes);
+			return new IntegerLookupValue(id.getRepoId(), displayName, helpText, null/* attributes */);
 		}
 
 		public static final IntegerLookupValue of(final StringLookupValue stringLookupValue)
@@ -416,23 +434,29 @@ public abstract class LookupValue
 			{
 				return null;
 			}
-			final Map<String, Object> attributes = null;
-			return new IntegerLookupValue(stringLookupValue.getIdAsInt(), stringLookupValue.displayName, attributes);
+			return new IntegerLookupValue(stringLookupValue.getIdAsInt(),
+					stringLookupValue.displayName,
+					stringLookupValue.description,
+					null /* attributes */);
 		}
 
 		public static final IntegerLookupValue unknown(final int id)
 		{
-			final Map<String, Object> attributes = null;
-			return new IntegerLookupValue(id, ImmutableTranslatableString.constant("<" + id + ">"), attributes);
+			return new IntegerLookupValue(
+					id,
+					ImmutableTranslatableString.constant("<" + id + ">"),
+					null/* description */,
+					null/* attributes */);
 		}
 
 		@Builder
 		private IntegerLookupValue(
 				final int id,
-				final ITranslatableString displayName,
+				@Nullable final ITranslatableString displayName,
+				@Nullable final ITranslatableString description,
 				@Singular final Map<String, Object> attributes)
 		{
-			super(id, displayName, attributes);
+			super(id, displayName, description, attributes);
 		}
 
 		@Override

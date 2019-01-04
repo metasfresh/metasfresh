@@ -254,7 +254,8 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
-	private final ImmutableList<IViewRow> loadViewRows(final ResultSet rs,
+	private final ImmutableList<IViewRow> loadViewRows(
+			@NonNull final ResultSet rs,
 			final ViewEvaluationCtx viewEvalCtx,
 			final ViewId viewId,
 			final int limit) throws SQLException
@@ -307,7 +308,10 @@ class SqlViewDataRepository implements IViewDataRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ViewRow.Builder loadViewRow(final ResultSet rs, final WindowId windowId, final String adLanguage) throws SQLException
+	private ViewRow.Builder loadViewRow(
+			@NonNull final ResultSet rs,
+			final WindowId windowId,
+			final String adLanguage) throws SQLException
 	{
 		final boolean isRecordMissing = DisplayType.toBoolean(rs.getString(SqlViewSelectData.COLUMNNAME_IsRecordMissing));
 		if (isRecordMissing)
