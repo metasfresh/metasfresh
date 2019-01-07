@@ -10,10 +10,24 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.86
+# metasfresh 5.87
 # Features
 
 # Fixes
+
+# metasfresh 5.86
+# Features
+* metasfresh
+  * [#4310](https://github.com/metasfresh/metasfresh/issues/4310) WebUI: add Manufacturer field in Pricing Conditions
+  * [#4848](https://github.com/metasfresh/metasfresh/issues/4848) mass-invoicing improvements
+
+# Fixes
+* metasfresh
+  * [#4843](https://github.com/metasfresh/metasfresh/issues/4843) InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class) returns null
+
+* metasfresh-webui-api
+  * [#1113](https://github.com/metasfresh/metasfresh-webui-api/issues/1113) Generate PO from Sales order not working anymore
+
 * metasfresh-webui-frontend
   * [#2075](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2075) Deselecting lines does not work when clicking everywhere outside of table
     * Improvement of the deselection Handling of Grid Table Rows. Now it's possible to deseclect by clicking any areas outside table.
