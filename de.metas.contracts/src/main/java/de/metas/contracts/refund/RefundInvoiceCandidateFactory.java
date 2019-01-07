@@ -7,10 +7,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,11 +33,11 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
-import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -50,6 +50,7 @@ import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -78,6 +79,8 @@ import lombok.NonNull;
 public class RefundInvoiceCandidateFactory
 {
 	private final RefundContractRepository refundContractRepository;
+
+	@Getter
 	private final AssignmentAggregateService assignmentAggregateService;
 
 	public RefundInvoiceCandidateFactory(
@@ -131,7 +134,7 @@ public class RefundInvoiceCandidateFactory
 			@NonNull final List<RefundConfig> refundConfigs)
 	{
 		final I_C_Invoice_Candidate assignableInvoiceCandidateRecord = load(
-				assignableCandidate.getRepoId().getRepoId(),
+				assignableCandidate.getId().getRepoId(),
 				I_C_Invoice_Candidate.class);
 
 		final I_C_Invoice_Candidate refundInvoiceCandidateRecord = Services.get(IInvoiceCandBL.class)
@@ -157,23 +160,12 @@ public class RefundInvoiceCandidateFactory
 		refundInvoiceCandidateRecord.setInvoiceRule_Override(null);
 		refundInvoiceCandidateRecord.setDateToInvoice_Override(null);
 
-		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
-		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(invoiceSchedule.getId().getRepoId());
+		final NextInvoiceDate nextRefundInvoiceDate = refundContract.computeNextInvoiceDate(assignableCandidate.getInvoiceableFrom());
+		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(nextRefundInvoiceDate.getInvoiceSchedule().getId().getRepoId());
 
-		final LocalDate dateToInvoiceFromInvoiceSchedule = invoiceSchedule.calculateNextDateToInvoice(assignableCandidate.getInvoiceableFrom());
-		final Timestamp dateForRefundCandidate;
-		if (dateToInvoiceFromInvoiceSchedule.isAfter(refundContract.getEndDate()))
-		{
-			// make sure the refund candidate's dateToInvoice is not *after* the contract's actual ending.
-			// otherwise RefundInvoiceCandidateRepository.getRefundInvoiceCandidates() won't find the invoice candidate record later.
-			dateForRefundCandidate = TimeUtil.asTimestamp(refundContract.getEndDate());
-		}
-		else
-		{
-			dateForRefundCandidate = TimeUtil.asTimestamp(dateToInvoiceFromInvoiceSchedule);
-		}
-		refundInvoiceCandidateRecord.setDateOrdered(dateForRefundCandidate);
-		refundInvoiceCandidateRecord.setDeliveryDate(dateForRefundCandidate);
+		final Timestamp dateToInvoiceFromInvoiceSchedule = asTimestamp(nextRefundInvoiceDate.getDateToInvoice());
+		refundInvoiceCandidateRecord.setDateOrdered(dateToInvoiceFromInvoiceSchedule);
+		refundInvoiceCandidateRecord.setDeliveryDate(dateToInvoiceFromInvoiceSchedule);
 
 		final RefundInvoiceType refundInvoiceType = extractSingleElement(refundConfigs, RefundConfig::getRefundInvoiceType);
 		try
@@ -198,6 +190,7 @@ public class RefundInvoiceCandidateFactory
 
 		final RefundInvoiceCandidate resultCandidate = refundInvoiceCandidate
 				.toBuilder()
+				.clearRefundConfigs()
 				.refundConfigs(refundConfigs)
 				.build();
 		return resultCandidate;
@@ -277,7 +270,7 @@ public class RefundInvoiceCandidateFactory
 
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(refundRecord.getC_Invoice_Candidate_ID());
 
-		final Map<RefundConfig, BigDecimal> configIdAndQuantity = assignmentAggregateService.retrieveAssignedQuantity(invoiceCandidateId);
+		final Map<RefundConfig, BigDecimal> configIdAndQuantity = assignmentAggregateService.retrieveAssignedQuantities(invoiceCandidateId);
 		final List<RefundConfig> refundConfigs;
 		final BigDecimal assignedQuantity;
 		if (configIdAndQuantity.isEmpty())
@@ -290,7 +283,6 @@ public class RefundInvoiceCandidateFactory
 			// add assigned quantities for the different refund configs
 			assignedQuantity = configIdAndQuantity.values().stream().reduce(ZERO, BigDecimal::add);
 
-			// take the refund config with the biggest minQty
 			refundConfigs = ImmutableList.copyOf(configIdAndQuantity.keySet());
 		}
 

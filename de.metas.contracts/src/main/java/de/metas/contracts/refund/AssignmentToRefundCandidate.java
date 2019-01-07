@@ -3,6 +3,7 @@ package de.metas.contracts.refund;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -29,6 +30,7 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class AssignmentToRefundCandidate
 {
 	@NonNull
@@ -52,7 +54,10 @@ public class AssignmentToRefundCandidate
 
 	boolean useAssignedQtyInSum;
 
-	public AssignmentToRefundCandidate withSubtractedAssignedMoneyAndQuantity()
+	/**
+	 * @return a new instance that has the previously assigned money and quantity subtracted from its {@link #getRefundInvoiceCandidate()}
+	 */
+	public AssignmentToRefundCandidate withZeroAssignedMoneyAndQuantity()
 	{
 		final Money moneySubtrahent = getMoneyAssignedToRefundCandidate();
 		final Money newMoneyAmount = refundInvoiceCandidate
@@ -69,10 +74,23 @@ public class AssignmentToRefundCandidate
 				.assignedQuantity(newQuantity)
 				.build();
 
+		return withZeroAssignedMoneyAndQuantity(newRefundCandidate);
+	}
+
+	/**
+	 * Like {@link #withZeroAssignedMoneyAndQuantity()}, but the new instance does not contain a different refund invoice candidate.
+	 */
+	public AssignmentToRefundCandidate withZeroAssignedMoneyAndQuantitySameCandidate()
+	{
+		return withZeroAssignedMoneyAndQuantity(getRefundInvoiceCandidate());
+	}
+
+	private AssignmentToRefundCandidate withZeroAssignedMoneyAndQuantity(@NonNull final RefundInvoiceCandidate refundCandidate)
+	{
 		return new AssignmentToRefundCandidate(
 				refundConfigId,
 				assignableInvoiceCandidateId,
-				newRefundCandidate,
+				refundCandidate,
 				moneyBase,
 				moneyAssignedToRefundCandidate.toZero(),
 				quantityAssigendToRefundCandidate.toZero(),

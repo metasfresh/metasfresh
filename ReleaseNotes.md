@@ -10,10 +10,29 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.86
+# metasfresh 5.87
 # Features
 
 # Fixes
+
+# metasfresh 5.86
+# Features
+* metasfresh
+  * [#4310](https://github.com/metasfresh/metasfresh/issues/4310) WebUI: add Manufacturer field in Pricing Conditions
+  * [#4820](https://github.com/metasfresh/metasfresh/issues/4820) Categorize Business Partners as "Neukunde", "Stammkunde"
+  * [#4840](https://github.com/metasfresh/metasfresh/pull/4840) ITableRefInfo - rename "name" to "identifier" and make it more verbose
+  * [#4842](https://github.com/metasfresh/metasfresh/issues/4842) Implement Excel Open XML format support
+  * [#4848](https://github.com/metasfresh/metasfresh/issues/4848) mass-invoicing improvements
+
+# Fixes
+* metasfresh
+  * [#4843](https://github.com/metasfresh/metasfresh/issues/4843) InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class) returns null
+  * [#4846](https://github.com/metasfresh/metasfresh/issues/4846) Contract extension does not set date correctly
+
+* metasfresh-webui-api
+  * [#968](https://github.com/metasfresh/metasfresh-webui-api/issues/968) Error msg missing when trying to create flatrate term from bpartner window in case of no bpartner location
+  * [#1113](https://github.com/metasfresh/metasfresh-webui-api/issues/1113) Generate PO from Sales order not working anymore
+
 * metasfresh-webui-frontend
   * [#2075](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2075) Deselecting lines does not work when clicking everywhere outside of table
     * Improvement of the deselection Handling of Grid Table Rows. Now it's possible to deseclect by clicking any areas outside table.
@@ -21,8 +40,14 @@ Here come the actual release notes:
     * Shows an error now, when Pricelist Name is not unique.
   * [#2111](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2111) Additional Dropdown in menu search in latest Chrome
     * Removes the Google Chrome Search result proposal.
+  * [#2112](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2112) Overlays open in narrow window on latest Chrome
+  * [#2116](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2116) Fix specs in cypress/integration/contracts
   * [#2117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2117) Barcode scanner looks bad in filters
-    * Improvement of the Barcode Scanner Look&Fell in Filter Menu entry.
+    * Improvement of the Barcode Scanner Look&Feel in Filter Menu entry.
+  * [#2128](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2128) View: select all no longer works
+
+* metasfresh-dist
+  * [#55](https://github.com/metasfresh/metasfresh-dist/pull/55) introduce a parameter to set the DB seed's URL
 
 # metasfresh 5.85
 # Features

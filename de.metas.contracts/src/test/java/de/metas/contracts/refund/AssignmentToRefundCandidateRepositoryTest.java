@@ -102,6 +102,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		final I_C_InvoiceSchedule invoiceSchedule = newInstance(I_C_InvoiceSchedule.class);
 		invoiceSchedule.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
+		invoiceSchedule.setInvoiceDistance(1);
 		saveRecord(invoiceSchedule);
 
 		final I_C_Flatrate_RefundConfig refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
@@ -160,17 +161,17 @@ public class AssignmentToRefundCandidateRepositoryTest
 	@Test
 	public void ofRecord_AssignableInvoiceCandidate_no_assignment_record()
 	{
-		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory();
+		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = AssignableInvoiceCandidateFactory.newForUnitTesting();
 		final AssignableInvoiceCandidate assignableIc = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
 
 		// guards
-		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
+		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getId());
 		assertThat(resultBeforeDeletion).isNotEmpty();
 
 		delete(assignmentRecord);
 
 		// invoke the method under test
-		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
+		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getId());
 		assertThat(resultAfterDeletion).isEmpty();
 	}
 }
