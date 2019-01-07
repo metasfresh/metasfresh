@@ -47,7 +47,7 @@ import lombok.NonNull;
 @EnableRabbit // needed for @RabbitListener to be considered
 public class AMQPEventBusConfiguration
 {
-	public static final String EVENTS_QUEUE_BEAN_NAME = "metasfreshEventsQueue";
+	private static final String EVENTS_QUEUE_BEAN_NAME = "metasfreshEventsQueue";
 	public static final String EVENTS_QUEUE_NAME_SPEL = "#{metasfreshEventsQueue.name}";
 	public static final String EVENTS_EXCHANGE_NAME = "metasfresh-events";
 

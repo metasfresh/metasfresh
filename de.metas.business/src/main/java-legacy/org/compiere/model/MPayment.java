@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsBL;
@@ -1874,14 +1875,14 @@ public final class MPayment extends X_C_Payment
 			return null;
 		}
 		// Business Partner needs to be linked to Org
-		final MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		final int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
-		if (counterAD_Org_ID == 0)
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(getC_BPartner_ID());
+		final int counterAD_Org_ID = bp.getAD_OrgBP_ID();
+		if (counterAD_Org_ID <= 0)
 		{
 			return null;
 		}
 
-		final MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, get_TrxName());
+		final I_C_BPartner counterBP = Services.get(IBPartnerDAO.class).getById(counterC_BPartner_ID);
 		// MOrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID);
 		log.info("Counter BP=" + counterBP.getName());
 

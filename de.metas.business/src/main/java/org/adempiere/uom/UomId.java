@@ -2,7 +2,6 @@ package org.adempiere.uom;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -49,6 +48,6 @@ public class UomId implements RepoIdAware
 
 	private UomId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_UOM_ID");
 	}
 }

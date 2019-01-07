@@ -20,7 +20,6 @@ package de.metas.acct.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for Fact_Acct_Summary
  *  @author Adempiere (generated) 
@@ -41,15 +40,15 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
       /** if (Fact_Acct_Summary_ID == 0)
         {
 			setAccount_ID (0);
-			setAmtAcctCr (Env.ZERO);
-			setAmtAcctCr_YTD (Env.ZERO);
-			setAmtAcctDr (Env.ZERO);
-			setAmtAcctDr_YTD (Env.ZERO);
+			setAmtAcctCr (BigDecimal.ZERO);
+			setAmtAcctCr_YTD (BigDecimal.ZERO);
+			setAmtAcctDr (BigDecimal.ZERO);
+			setAmtAcctDr_YTD (BigDecimal.ZERO);
 			setC_AcctSchema_ID (0);
 			setC_Period_ID (0);
 			setC_Year_ID (0);
 			setPostingType (null);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -160,7 +159,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -179,7 +178,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr_YTD);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -201,7 +200,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -220,7 +219,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr_YTD);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -888,7 +887,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

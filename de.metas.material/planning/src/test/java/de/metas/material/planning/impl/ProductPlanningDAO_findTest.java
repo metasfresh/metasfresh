@@ -9,6 +9,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import de.metas.business.BusinessTestHelper;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 
 /*
  * #%L
@@ -221,9 +223,9 @@ public class ProductPlanningDAO_findTest
 	private I_PP_Product_Planning invokeFindMethodWithASI(final int attributeSetInstanceId)
 	{
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
-				.orgId(warehouse.getAD_Org_ID())
+				.orgId(OrgId.ofRepoId(warehouse.getAD_Org_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
-				.plantId(plant.getS_Resource_ID())
+				.plantId(ResourceId.ofRepoId(plant.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceId))
 				.build();

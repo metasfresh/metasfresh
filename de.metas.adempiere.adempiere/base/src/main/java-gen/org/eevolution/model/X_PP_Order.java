@@ -1133,17 +1133,17 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
+//	@Override
+//	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+//	}
+//
+//	@Override
+//	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+//	{
+//		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+//	}
 
 	/** Set Produkt.
 		@param M_Product_ID 

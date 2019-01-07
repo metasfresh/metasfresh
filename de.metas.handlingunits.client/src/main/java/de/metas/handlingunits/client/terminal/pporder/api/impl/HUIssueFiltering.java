@@ -30,23 +30,23 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.pporder.api.IHUIssueFiltering;
@@ -57,6 +57,8 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -75,9 +77,9 @@ public class HUIssueFiltering implements IHUIssueFiltering
 	}
 
 	@Override
-	public List<I_PP_Order> getManufacturingOrders(final Properties ctx, final int warehouseId)
+	public List<I_PP_Order> getManufacturingOrders(final WarehouseId warehouseId)
 	{
-		final List<I_PP_Order> ppOrders = Services.get(IPPOrderDAO.class).retrieveReleasedManufacturingOrdersForWarehouse(ctx, warehouseId);
+		final List<I_PP_Order> ppOrders = Services.get(IPPOrderDAO.class).retrieveReleasedManufacturingOrdersForWarehouse(warehouseId);
 		//
 		// 08181: ORDER BY promisedDateTime ASC, preparationDateTime ASC, productName ASC, partner ASC
 		Collections.sort(ppOrders, new Comparator<I_PP_Order>()
@@ -101,11 +103,11 @@ public class HUIssueFiltering implements IHUIssueFiltering
 				final Timestamp datePromised = ppOrder.getDatePromised(); // not null
 				final Timestamp sortingDate = ppOrder.getPreparationDate() != null ? ppOrder.getPreparationDate() : datePromised;
 
-				final I_M_Product product = ppOrder.getM_Product();
-				final String productName = product == null ? null : product.getName(); // shall not be null...
+				ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+				final String productName = Services.get(IProductBL.class).getProductName(productId);
 
-				final I_C_BPartner bpartner = ppOrder.getC_BPartner();
-				final String bpartnerName = bpartner == null ? null : bpartner.getName();
+				final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
+				final String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerName(bpartnerId);
 
 				return Util.mkKey(sortingDate,
 						productName,
@@ -119,7 +121,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 	public IHUQueryBuilder getHUsForIssueQuery(
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final List<I_PP_Order_BOMLine> orderBOMLines,
-			final int warehouseId)
+			final WarehouseId warehouseId)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -128,7 +130,8 @@ public class HUIssueFiltering implements IHUIssueFiltering
 		final Set<Integer> productIds = new HashSet<>();
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
-			if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
+			final BOMComponentType componentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
+			if (PPOrderUtil.isReceipt(componentType))
 			{
 				continue;
 			}
@@ -143,7 +146,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 				.setContext(ppOrder)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithProductIds(productIds)
-				.addOnlyInWarehouseId(WarehouseId.ofRepoId(warehouseId))
+				.addOnlyInWarehouseId(warehouseId)
 				.onlyNotLocked() // skip those locked because usually those were planned for something...
 		;
 

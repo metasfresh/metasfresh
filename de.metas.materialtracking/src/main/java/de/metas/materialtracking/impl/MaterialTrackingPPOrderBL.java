@@ -33,6 +33,7 @@ import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -102,9 +103,10 @@ public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 
 		final List<I_M_InOutLine> allIssuedInOutLines = new ArrayList<>();
 
-		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.retrieveForOrder(ppOrder))
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.getByOrderId(ppOrderId))
 		{
-			if (!ppCostCollectorBL.isMaterialIssue(cc, true))
+			if (!ppCostCollectorBL.isAnyComponentIssueOrCoProduct(cc))
 			{
 				continue;
 			}

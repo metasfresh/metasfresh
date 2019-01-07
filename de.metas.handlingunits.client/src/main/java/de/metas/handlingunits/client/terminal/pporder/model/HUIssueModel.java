@@ -36,8 +36,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_M_Locator;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -80,7 +79,6 @@ public class HUIssueModel implements IDisposable
 {
 	// Services
 	private final transient IPOSAccessBL posAccessBL = Services.get(IPOSAccessBL.class);
-	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	//
@@ -238,36 +236,25 @@ public class HUIssueModel implements IDisposable
 		setActionButtonsEnabled(moKey != null);
 	}
 
-	public I_M_Warehouse getSelectedWarehouse()
+	private I_M_Warehouse getSelectedWarehouse()
 	{
 		return _selectedWarehouse;
 	}
 
-	public I_M_Locator getSelectedLocator()
-	{
-		final I_M_Warehouse warehouse = getSelectedWarehouse();
-		if (warehouse == null)
-		{
-			return null;
-		}
-
-		return warehouseBL.getDefaultLocator(warehouse);
-	}
-
-	public int getSelectedWarehouseId()
+	public WarehouseId getSelectedWarehouseId()
 	{
 		final I_M_Warehouse selectedWarehouse = getSelectedWarehouse();
 		if (selectedWarehouse == null)
 		{
-			return -1;
+			return null;
 		}
-		return selectedWarehouse.getM_Warehouse_ID();
+		return WarehouseId.ofRepoId(selectedWarehouse.getM_Warehouse_ID());
 	}
 
-	public final void loadManufacturingOrderKeyLayout()
+	private final void loadManufacturingOrderKeyLayout()
 	{
-		final int warehouseId = getSelectedWarehouseId();
-		final List<I_PP_Order> orders = service.getManufacturingOrders(getCtx(), warehouseId);
+		final WarehouseId warehouseId = getSelectedWarehouseId();
+		final List<I_PP_Order> orders = service.getManufacturingOrders(warehouseId);
 		manufacturingOrderKeyLayout.createAndSetKeysFromOrders(orders);
 	}
 
@@ -389,7 +376,7 @@ public class HUIssueModel implements IDisposable
 
 		final I_PP_Order ppOrder = getSelectedOrder();
 		final List<I_PP_Order_BOMLine> ppOrderBOMLines = getOrderBOMLinesForIssuing();
-		final int selectedWarehouseId = getSelectedWarehouseId();
+		final WarehouseId selectedWarehouseId = getSelectedWarehouseId();
 
 		//
 		// Create a Root HU Key from HUs assigned to our documents

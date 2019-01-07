@@ -28,8 +28,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
@@ -44,6 +44,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -565,7 +566,7 @@ public class MOrder extends X_C_Order implements IDocument
 		line.setQtyDelivered(BigDecimal.ZERO);
 		line.setQtyInvoiced(BigDecimal.ZERO);
 		// task 09358: get rid of this; instead, update qtyReserved at one central place
-		// line.setQtyReserved(Env.ZERO);
+		// line.setQtyReserved(BigDecimal.ZERO);
 		line.setDateDelivered(null);
 		line.setDateInvoiced(null);
 		// don't copy linked lines
@@ -973,13 +974,13 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 
 		// No Partner Info - set Template
-		if (getC_BPartner_ID() == 0)
+		if (getC_BPartner_ID() <= 0)
 		{
-			setBPartner(MBPartner.getTemplate(getCtx(), getAD_Client_ID()));
+			throw new FillMandatoryException(I_C_Order.COLUMNNAME_C_BPartner_ID);
 		}
-		if (getC_BPartner_Location_ID() == 0)
+		if (getC_BPartner_Location_ID() <= 0)
 		{
-			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), null));
+			setBPartner(Services.get(IBPartnerDAO.class).getById(getC_BPartner_ID()));
 		}
 		// No Bill - get from Ship
 		if (getBill_BPartner_ID() <= 0)
@@ -1411,11 +1412,11 @@ public class MOrder extends X_C_Order implements IDocument
 //				// Convert into Comment Line
 //				line.setM_Product_ID(0);
 //				line.setM_AttributeSetInstance_ID(0);
-//				line.setPrice(Env.ZERO);
-//				line.setPriceLimit(Env.ZERO);
-//				line.setPriceList(Env.ZERO);
-//				line.setLineNetAmt(Env.ZERO);
-//				line.setFreightAmt(Env.ZERO);
+//				line.setPrice(BigDecimal.ZERO);
+//				line.setPriceLimit(BigDecimal.ZERO);
+//				line.setPriceList(BigDecimal.ZERO);
+//				line.setLineNetAmt(BigDecimal.ZERO);
+//				line.setFreightAmt(BigDecimal.ZERO);
 //				//
 //				String description = product.getName();
 //				if (product.getDescription() != null)
@@ -1975,8 +1976,7 @@ public class MOrder extends X_C_Order implements IDocument
 				setInvoiceRule(INVOICERULE_AfterDelivery);
 			}
 			//
-			final MInOutLine[] sLines = shipment.getLines();
-			for (final MInOutLine sLine2 : sLines)
+			for (final MInOutLine sLine2 : shipment.getLines())
 			{
 				final MInOutLine sLine = sLine2;
 				//
@@ -2076,11 +2076,6 @@ public class MOrder extends X_C_Order implements IDocument
 				line.setQty(BigDecimal.ZERO);
 				line.setLineNetAmt(BigDecimal.ZERO);
 				line.save(get_TrxName());
-			}
-			// AZ Goodwill
-			if (!isSOTrx())
-			{
-				deleteMatchPOCostDetail(line);
 			}
 		}
 
@@ -2525,37 +2520,6 @@ public class MOrder extends X_C_Order implements IDocument
 	{
 		return getGrandTotal();
 	}	// getApprovalAmt
-
-	// AZ Goodwill
-	private String deleteMatchPOCostDetail(final MOrderLine line)
-	{
-		// Get Account Schemas to delete MCostDetail
-		final MAcctSchema[] acctschemas = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
-		for (final MAcctSchema as : acctschemas)
-		{
-			if (as.isSkipOrg(getAD_Org_ID()))
-			{
-				continue;
-			}
-
-			// update/delete Cost Detail and recalculate Current Cost
-			final MMatchPO[] mPO = MMatchPO.getOrderLine(getCtx(), line.getC_OrderLine_ID(), get_TrxName());
-			// delete Cost Detail if the Matched PO has been deleted
-			if (mPO.length == 0)
-			{
-				final MCostDetail cd = MCostDetail.get(getCtx(), "C_OrderLine_ID=?",
-						line.getC_OrderLine_ID(), line.getM_AttributeSetInstance_ID(),
-						as.getC_AcctSchema_ID(), get_TrxName());
-				if (cd != null)
-				{
-					cd.setProcessed(false);
-					cd.delete(true);
-				}
-			}
-		}
-
-		return "";
-	}
 
 	/**
 	 * Document Status is Complete or Closed

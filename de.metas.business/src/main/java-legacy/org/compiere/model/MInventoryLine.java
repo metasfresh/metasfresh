@@ -27,6 +27,7 @@ import org.compiere.util.DB;
 
 import de.metas.inventory.IInventoryBL;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -169,8 +170,8 @@ public class MInventoryLine extends X_M_InventoryLine
 			// Product requires ASI
 			if (getM_AttributeSetInstance_ID() <= 0)
 			{
-				final MProduct product = MProduct.get(getCtx(), getM_Product_ID());
-				if (product != null && product.isASIMandatory(isSOTrx()))
+				final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+				if(Services.get(IProductBL.class).isASIMandatory(productId, isSOTrx()))
 				{
 					throw new FillMandatoryException(COLUMNNAME_M_AttributeSetInstance_ID);
 				}

@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IGLJournalLineBL;
 import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.acct.api.ITaxDeclarationDAO;
@@ -56,6 +55,7 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.util.TrxRunnable;
 
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;

@@ -170,7 +170,7 @@ public abstract class PO
 	private static DocWorkflowMgr s_docWFMgr = null;
 
 	/** User Maintained Entity Type */
-	static protected final String ENTITYTYPE_UserMaintained = "U";
+	static public final String ENTITYTYPE_UserMaintained = "U";
 	/** Dictionary Maintained Entity Type */
 	static public final String ENTITYTYPE_Dictionary = "D";
 
@@ -2296,7 +2296,7 @@ public abstract class PO
 	 * @param AD_Org_ID org
 	 */
 	@OverridingMethodsMustInvokeSuper
-	protected void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
+	public void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
 		if (AD_Client_ID != getAD_Client_ID())
 			setAD_Client_ID(AD_Client_ID);

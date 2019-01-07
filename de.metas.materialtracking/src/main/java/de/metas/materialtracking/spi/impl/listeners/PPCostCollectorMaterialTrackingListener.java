@@ -40,12 +40,11 @@ public final class PPCostCollectorMaterialTrackingListener extends MaterialTrack
 {
 	public static final transient PPCostCollectorMaterialTrackingListener instance = new PPCostCollectorMaterialTrackingListener();
 
-	final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-	final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
+	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	private final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 
 	private PPCostCollectorMaterialTrackingListener()
 	{
-		super();
 	}
 
 	@Override
@@ -53,8 +52,9 @@ public final class PPCostCollectorMaterialTrackingListener extends MaterialTrack
 	{
 		final I_PP_Cost_Collector ppCostCollector = InterfaceWrapperHelper.create(request.getModel(), I_PP_Cost_Collector.class);
 
+
 		// Applies only on issue collectors
-		if (!ppCostCollectorBL.isMaterialIssue(ppCostCollector, false))
+		if(!ppCostCollectorBL.isAnyComponentIssue(ppCostCollector))
 		{
 			return;
 		}
@@ -75,7 +75,7 @@ public final class PPCostCollectorMaterialTrackingListener extends MaterialTrack
 		final I_PP_Cost_Collector ppCostCollector = InterfaceWrapperHelper.create(model, I_PP_Cost_Collector.class);
 
 		// Applies only on issue collectors
-		if (!ppCostCollectorBL.isMaterialIssue(ppCostCollector, false))
+		if(!ppCostCollectorBL.isAnyComponentIssue(ppCostCollector))
 		{
 			return;
 		}

@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.uom.UomId;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -42,7 +41,11 @@ public interface IProductBL extends ISingletonService
 
 	int getUOMPrecision(int productId);
 
+	int getUOMPrecision(ProductId productId);
+
 	String getMMPolicy(I_M_Product product);
+
+	String getMMPolicy(int productId);
 
 	/**
 	 * @param product
@@ -103,22 +106,6 @@ public interface IProductBL extends ISingletonService
 
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
 
-	/**
-	 * Get Product Costing Level
-	 *
-	 * @param as accounting schema
-	 * @return product costing level
-	 */
-	String getCostingLevel(I_M_Product product, I_C_AcctSchema as);
-
-	/**
-	 * Get Product Costing Method
-	 *
-	 * @param C_AcctSchema_ID accounting schema ID
-	 * @return product costing method
-	 */
-	String getCostingMethod(I_M_Product product, I_C_AcctSchema as);
-
 	/** @return UOM used in material storage; never return null; */
 	I_C_UOM getStockingUOM(I_M_Product product);
 
@@ -161,6 +148,17 @@ public interface IProductBL extends ISingletonService
 	boolean isTradingProduct(I_M_Product product);
 
 	/**
+	 * Check if ASI is mandatory
+	 *
+	 * @param product
+	 * @param isSOTrx is outgoing trx?
+	 * @return true if ASI is mandatory, false otherwise
+	 */
+	boolean isASIMandatory(I_M_Product product, boolean isSOTrx);
+
+	boolean isASIMandatory(ProductId productId, boolean isSOTrx);
+
+	/**
 	 * Has the Product Instance Attribute
 	 *
 	 * @return true if instance attributes
@@ -180,5 +178,4 @@ public interface IProductBL extends ISingletonService
 	String getProductValue(ProductId productId);
 
 	String getProductName(ProductId productId);
-
 }

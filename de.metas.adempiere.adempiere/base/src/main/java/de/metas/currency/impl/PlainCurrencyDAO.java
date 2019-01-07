@@ -1,11 +1,14 @@
 package de.metas.currency.impl;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_ConversionType_Default;
@@ -15,8 +18,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ConversionType;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
 
 /*
  * #%L
@@ -31,11 +35,11 @@ import de.metas.currency.ICurrencyDAO;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -102,15 +106,16 @@ public class PlainCurrencyDAO extends CurrencyDAO
 	public void setRate(final I_C_Currency currencyFrom, final I_C_Currency currencyTo, final BigDecimal rate)
 	{
 		final Properties ctx = Env.getCtx();
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
-		final Date date = TimeUtil.getDay(1970, 1, 1);
-		final I_C_ConversionType conversionType = retrieveDefaultConversionType(ctx, adClientId, adOrgId, date);
-		final ICurrencyConversionContext conversionCtx = CurrencyConversionContext.builder()
-				.setAD_Client_ID(adClientId)
-				.setAD_Org_ID(adOrgId)
-				.setC_ConversionType_ID(conversionType.getC_ConversionType_ID())
-				.setConversionDate(date)
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
+		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
+		final LocalDate date = LocalDate.of(1970, Month.JANUARY, 1);
+		final I_C_ConversionType conversionType = retrieveDefaultConversionType(ctx, clientId.getRepoId(), orgId.getRepoId(), TimeUtil.asDate(date));
+		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoId(conversionType.getC_ConversionType_ID());
+		final CurrencyConversionContext conversionCtx = CurrencyConversionContext.builder()
+				.clientId(clientId)
+				.orgId(orgId)
+				.conversionTypeId(conversionTypeId)
+				.conversionDate(date)
 				.build();
 
 		I_C_Conversion_Rate conversionRate = retrieveRateQuery(conversionCtx, currencyFrom.getC_Currency_ID(), currencyTo.getC_Currency_ID())
@@ -119,9 +124,9 @@ public class PlainCurrencyDAO extends CurrencyDAO
 		if (conversionRate == null)
 		{
 			conversionRate = InterfaceWrapperHelper.create(ctx, I_C_Conversion_Rate.class, ITrx.TRXNAME_None);
-			conversionRate.setAD_Org_ID(adOrgId);
-			conversionRate.setC_ConversionType(conversionType);
-			conversionRate.setC_Currency(currencyFrom);
+			conversionRate.setAD_Org_ID(orgId.getRepoId());
+			conversionRate.setC_ConversionType_ID(conversionTypeId.getRepoId());
+			conversionRate.setC_Currency_ID(currencyFrom.getC_Currency_ID());
 			conversionRate.setC_Currency_ID_To(currencyTo.getC_Currency_ID());
 			// FIXME: this one is not working due a bug in POJOWrapper or because it's not respecting the standard naming conventions (i.e. C_Currency_To_ID)
 			// conversionRate.setC_Currency_To(currencyTo);

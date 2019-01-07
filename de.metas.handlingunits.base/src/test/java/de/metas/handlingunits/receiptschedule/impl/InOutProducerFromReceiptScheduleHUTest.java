@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
@@ -61,7 +62,9 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
+import de.metas.util.Services;
 
 /**
  * Test creation of material receipts ({@link I_M_InOut}s) from scheduled receipts ({@link I_M_ReceiptSchedule}s) and how line aggregations are made based on products, packing and ASIs.
@@ -80,6 +83,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	protected void afterInitialize()
 	{
 		super.afterInitialize();
+		
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_DocType.class);
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);

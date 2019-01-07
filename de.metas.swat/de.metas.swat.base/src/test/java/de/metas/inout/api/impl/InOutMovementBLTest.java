@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.test.AdempiereTestHelper;
@@ -27,6 +28,7 @@ import org.junit.Test;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.product.IProductActivityProvider;
 import de.metas.util.Services;
 
 /*
@@ -72,6 +74,8 @@ public class InOutMovementBLTest
 		save(warehouseForIssues);
 
 		locatorForIssues = createLocator(warehouseForIssues);
+		
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		inOutMovementBL = new InOutMovementBL();
 	}

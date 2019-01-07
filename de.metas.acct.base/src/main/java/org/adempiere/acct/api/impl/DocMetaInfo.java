@@ -41,13 +41,13 @@ import de.metas.util.Check;
 {
 	private final int adTableId;
 	private final String tableName;
-	private final Class<? extends Doc> docClass;
-	private final Constructor<? extends Doc> docConstructor;
+	private final Class<? extends Doc<?>> docClass;
+	private final Constructor<? extends Doc<?>> docConstructor;
 
 	public DocMetaInfo(final int adTableId,
 			final String tableName,
-			final Class<? extends Doc> docClass,
-			final Constructor<? extends Doc> docConstructor)
+			final Class<? extends Doc<?>> docClass,
+			final Constructor<? extends Doc<?>> docConstructor)
 	{
 		super();
 
@@ -83,13 +83,13 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public Class<? extends Doc> getDocClass()
+	public Class<? extends Doc<?>> getDocClass()
 	{
 		return docClass;
 	}
 
 	@Override
-	public Constructor<? extends Doc> getDocConstructor()
+	public Constructor<? extends Doc<?>> getDocConstructor()
 	{
 		return docConstructor;
 	}

@@ -107,6 +107,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	int retrieveLocatorIdByBarcode(String barcode);
 
+	OrgId retrieveOrgIdByLocatorId(int locatorId);
+
 	LocatorId retrieveLocatorIdByValueAndWarehouseId(String locatorValue, WarehouseId warehouseId);
 
 	I_M_Locator getOrCreateLocatorByCoordinates(WarehouseId warehouseId, String value, String x, String y, String z);

@@ -1,28 +1,29 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.wf;
 
-import org.adempiere.exceptions.AdempiereException;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.wf.api.IADWorkflowBL;
-import org.compiere.wf.exceptions.WorkflowNotValidException;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -33,44 +34,34 @@ import de.metas.util.Services;
  */
 public class WorkflowValidate extends JavaProcess
 {
-	private int p_AD_Worlflow_ID = 0;
+	private int p_AD_Worlflow_ID;
 
 	/**
 	 * Prepare
 	 */
+	@Override
 	protected void prepare()
 	{
 		p_AD_Worlflow_ID = getRecord_ID();
-	}	// prepare
+	}
 
-	/**
-	 * Process
-	 * 
-	 * @return info
-	 * @throws Exception
-	 */
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final I_AD_Workflow wf = InterfaceWrapperHelper.create(getCtx(), p_AD_Worlflow_ID, I_AD_Workflow.class, get_TrxName());
-		if (wf == null)
-		{
-			throw new AdempiereException("@NotFound@ @AD_Workflow_ID@");
-		}
-		log.info("WF=" + wf);
+		final I_AD_Workflow workflow = load(p_AD_Worlflow_ID, I_AD_Workflow.class);
+		Check.assumeNotNull(workflow, "Parameter workflow is not null");
 
-		try
-		{
-			Services.get(IADWorkflowBL.class).validate(wf);
-		}
-		catch (WorkflowNotValidException e)
-		{
-			// Make sure IsValid state is saved
-			InterfaceWrapperHelper.save(wf);
-			throw e;
-		}
+		final String errorMsg = Services.get(IADWorkflowBL.class).validateAndGetErrorMsg(workflow);
+		// Make sure IsValid state is saved
+		InterfaceWrapperHelper.save(workflow);
 
-		return wf.isValid() ? "@OK@" : "@Error@";
-	}	// doIt
-
-}	// WorkflowValidate
+		if (Check.isEmpty(errorMsg, true))
+		{
+			return MSG_OK;
+		}
+		else
+		{
+			return "@Error@: " + errorMsg;
+		}
+	}
+}

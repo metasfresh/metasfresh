@@ -46,7 +46,7 @@ import lombok.NonNull;
  */
 
 @Service
-@DependsOn(Adempiere.BEAN_NAME)
+@DependsOn(Adempiere.BEAN_NAME) // needs database
 public class DocumentPostingBusService
 {
 	private static final Topic TOPIC = Topic.remote("de.metas.acct.handler.DocumentPostRequest");
@@ -63,20 +63,17 @@ public class DocumentPostingBusService
 	{
 		this.eventBusFactory = eventBusFactory;
 		this.eventLogUserService = eventLogUserService;
-
-	}
-
-	private IEventBus getEventBus()
-	{
-		final IEventBus eventBus = eventBusFactory.getEventBus(TOPIC);
-		return eventBus;
 	}
 
 	public void postRequest(@NonNull final DocumentPostRequest request)
 	{
 		final Event event = createEventFromRequest(request);
 		getEventBus().postEvent(event);
+	}
 
+	private IEventBus getEventBus()
+	{
+		return eventBusFactory.getEventBus(TOPIC);
 	}
 
 	private Event createEventFromRequest(final DocumentPostRequest request)
@@ -162,7 +159,7 @@ public class DocumentPostingBusService
 		private Properties createCtx(final DocumentPostRequest request)
 		{
 			final Properties ctx = Env.newTemporaryCtx();
-			Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, request.getAdClientId());
+			Env.setAD_Client_ID(ctx, request.getClientId());
 			return ctx;
 		}
 	}

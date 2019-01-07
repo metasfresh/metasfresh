@@ -18,11 +18,13 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Multimaps;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -255,6 +257,21 @@ public final class GuavaCollectors
 		return Collectors.toMap(keyMapper, valueMapper, mergeFunction, HashMap::new);
 	}
 
+	public static <K, V> Collector<V, ?, HashMap<K, V>> toHashMapByKeyFailOnDuplicates(final Function<? super V, ? extends K> keyMapper)
+	{
+		final Function<V, V> valueMapper = value -> value;
+		final BinaryOperator<V> mergeFunction = (valuePrev, valueNow) -> {
+			throw new IllegalStateException("Duplicates not allowed: " + valuePrev + ", " + valueNow);
+		};
+		return Collectors.toMap(keyMapper, valueMapper, mergeFunction, HashMap::new);
+	}
+
+	public static <K, V> Collector<V, ?, HashMap<K, V>> toHashMapByKey(final Function<? super V, ? extends K> keyMapper, final BinaryOperator<V> mergeFunction)
+	{
+		final Function<V, V> valueMapper = value -> value;
+		return Collectors.toMap(keyMapper, valueMapper, mergeFunction, HashMap::new);
+	}
+
 	/**
 	 * Collects to {@link ImmutableMap}.
 	 *
@@ -303,6 +320,11 @@ public final class GuavaCollectors
 	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableSetMultimap<K, V>> toImmutableSetMultimap()
 	{
 		return ImmutableSetMultimap.<Map.Entry<K, V>, K, V> toImmutableSetMultimap(e -> e.getKey(), e -> e.getValue());
+	}
+
+	public static <K, V> Collector<V, ?, ArrayListMultimap<K, V>> toArrayListMultimapByKey(@NonNull final Function<V, K> keyFunction)
+	{
+		return Multimaps.toMultimap(keyFunction, Function.identity(), ArrayListMultimap::create);
 	}
 
 	/**

@@ -46,6 +46,7 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
@@ -1148,6 +1149,11 @@ public final class Env
 	public static int getAD_Client_ID()
 	{
 		return getAD_Client_ID(getCtx());
+	}
+	
+	public static void setAD_Client_ID(@NonNull final Properties ctx, @NonNull final ClientId clientId)
+	{
+		Env.setContext(ctx, CTXNAME_AD_Client_ID, clientId.getRepoId());
 	}
 
 	/**

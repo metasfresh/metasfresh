@@ -24,18 +24,17 @@ package de.metas.acct.process;
 
 
 import java.util.Iterator;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 
-import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.util.DB;
+
+import de.metas.acct.api.IAccountBL;
+import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * Calls {@link IAccountBL#setValueDescription(I_C_ValidCombination)} for all accounts defined in the system.

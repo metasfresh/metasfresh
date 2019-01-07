@@ -36,7 +36,6 @@ import java.util.Set;
 
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -373,8 +372,8 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 	private final CUKey createCUKey(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		final I_M_Product cuProduct = lutuConfiguration.getM_Product();
-		final CUKey cuKey = new CUKey(getTerminalContext(), cuProduct);
+		final ProductId cuProductId = ProductId.ofRepoId(lutuConfiguration.getM_Product_ID());
+		final CUKey cuKey = new CUKey(getTerminalContext(), cuProductId);
 		return cuKey;
 	}
 
@@ -727,7 +726,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	 * @param qty
 	 * @return true if quantity could be distributed
 	 */
-	public boolean distributeTotalQtyCU(final BigDecimal qty)
+	public boolean distributeTotalQtyCU(final Quantity qty)
 	{
 		if (qty == null)
 		{
@@ -786,11 +785,11 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		if (qtyCUsPerTUInfinite)
 		{
 			qtyTU = BigDecimal.ONE;
-			qtyCU = qty;
+			qtyCU = qty.getAsBigDecimal();
 		}
 		else
 		{
-			qtyTU = qty.divide(qtyCUsPerTU, 0, RoundingMode.UP);
+			qtyTU = qty.getAsBigDecimal().divide(qtyCUsPerTU, 0, RoundingMode.UP);
 			if (qtyTU.signum() <= 0)
 			{
 				// shall not be possible
@@ -798,7 +797,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 			}
 			else if (qtyTU.compareTo(BigDecimal.ONE) == 0)
 			{
-				qtyCU = qty.min(qtyCUsPerTU);
+				qtyCU = qty.getAsBigDecimal().min(qtyCUsPerTU);
 			}
 			else
 			{

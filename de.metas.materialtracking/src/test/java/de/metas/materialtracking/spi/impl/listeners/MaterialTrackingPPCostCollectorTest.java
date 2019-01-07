@@ -37,9 +37,9 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.X_PP_Cost_Collector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -96,9 +96,9 @@ public class MaterialTrackingPPCostCollectorTest
 		final I_PP_Order ppOrder = createPP_Order(null);
 		linkPPOrder(ppOrder);
 
-		final I_PP_Cost_Collector ppCostColector1 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder, BigDecimal.valueOf(10));
-		final I_PP_Cost_Collector ppCostColector2 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder, BigDecimal.valueOf(20));
-		final I_PP_Cost_Collector ppCostColector3 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder, BigDecimal.valueOf(30));
+		final I_PP_Cost_Collector ppCostColector1 = createPP_CostColector(CostCollectorType.ComponentIssue, ppOrder, BigDecimal.valueOf(10));
+		final I_PP_Cost_Collector ppCostColector2 = createPP_CostColector(CostCollectorType.ComponentIssue, ppOrder, BigDecimal.valueOf(20));
+		final I_PP_Cost_Collector ppCostColector3 = createPP_CostColector(CostCollectorType.ComponentIssue, ppOrder, BigDecimal.valueOf(30));
 
 		this.docActionBL.processEx(ppCostColector1, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
@@ -126,9 +126,9 @@ public class MaterialTrackingPPCostCollectorTest
 		linkPPOrder(ppOrder1);
 		linkPPOrder(ppOrder2);
 
-		final I_PP_Cost_Collector ppCostColector1 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder1, BigDecimal.valueOf(10));
-		final I_PP_Cost_Collector ppCostColector2 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder2, BigDecimal.valueOf(20));
-		final I_PP_Cost_Collector ppCostColector3 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder2, BigDecimal.valueOf(30));
+		final I_PP_Cost_Collector ppCostColector1 = createPP_CostColector(CostCollectorType.ComponentIssue, ppOrder1, BigDecimal.valueOf(10));
+		final I_PP_Cost_Collector ppCostColector2 = createPP_CostColector(CostCollectorType.ComponentIssue, ppOrder2, BigDecimal.valueOf(20));
+		final I_PP_Cost_Collector ppCostColector3 = createPP_CostColector(CostCollectorType.ComponentIssue, ppOrder2, BigDecimal.valueOf(30));
 
 		this.docActionBL.processEx(ppCostColector1, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
@@ -189,10 +189,10 @@ public class MaterialTrackingPPCostCollectorTest
 		return materialTracking;
 	}
 
-	private I_PP_Cost_Collector createPP_CostColector(final String type, final I_PP_Order ppOrder, final BigDecimal movementQty)
+	private I_PP_Cost_Collector createPP_CostColector(final CostCollectorType type, final I_PP_Order ppOrder, final BigDecimal movementQty)
 	{
 		final I_PP_Cost_Collector ppCostColector = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class, context);
-		ppCostColector.setCostCollectorType(type);
+		ppCostColector.setCostCollectorType(type.getCode());
 		ppCostColector.setPP_Order(ppOrder);
 		ppCostColector.setMovementQty(movementQty);
 		InterfaceWrapperHelper.save(ppCostColector);

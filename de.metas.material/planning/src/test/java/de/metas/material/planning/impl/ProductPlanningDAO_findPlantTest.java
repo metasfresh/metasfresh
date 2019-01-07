@@ -99,8 +99,8 @@ public class ProductPlanningDAO_findPlantTest
 	public void findPlant_WarehouseWithoutPlant_NoProductPlanning()
 	{
 		final I_M_Warehouse warehouse = createWarehouse("Warehouse", null);
-		final int adOrgId = -1; // N/A
-		final int productId = -1; // N/A
+		final int adOrgId = 1;
+		final int productId = 2;
 
 		// shall throw exception
 		productPlanningDAO.findPlant(adOrgId, warehouse, productId, AttributeConstants.M_AttributeSetInstance_ID_None);

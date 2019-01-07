@@ -16,67 +16,77 @@ package org.eevolution.exceptions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.compiere.model.I_S_Resource;
+import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_Node;
 
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author teo_sarca
  *
  */
+@SuppressWarnings("serial")
 public class CRPException extends LiberoException
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1927337830932438508L;
-	
+	public static CRPException wrapIfNeeded(@NonNull final Throwable throwable)
+	{
+		final Throwable cause = extractCause(throwable);
+		if (cause instanceof CRPException)
+		{
+			return (CRPException)cause;
+		}
+		else
+		{
+			return new CRPException(cause);
+		}
+	}
+
 	private I_PP_Order order = null;
-	private I_PP_Order_Node node = null;
+	private PPOrderRoutingActivity orderActivity = null;
 	private I_S_Resource resource = null;
-	
+
 	public CRPException(String message)
 	{
 		super(message);
 	}
-	
-	public CRPException(Exception e)
+
+	public CRPException(Throwable e)
 	{
 		super(e);
 	}
-	
+
 	public CRPException setPP_Order(I_PP_Order order)
 	{
 		this.order = order;
 		resetMessageBuilt();
 		return this;
 	}
-	public CRPException setPP_Order_Node(I_PP_Order_Node node)
+
+	public CRPException setOrderActivity(PPOrderRoutingActivity orderActivity)
 	{
-		this.node = node;
+		this.orderActivity = orderActivity;
 		resetMessageBuilt();
 		return this;
 	}
 
 	public CRPException setS_Resource(I_S_Resource resource)
 	{
-		this.resource  = resource;
+		this.resource = resource;
 		resetMessageBuilt();
 		return this;
 	}
@@ -96,13 +106,13 @@ public class CRPException extends LiberoException
 			}
 			else
 			{
-				info = ""+order.getDocumentNo()+"/"+order.getDatePromised();
+				info = "" + order.getDocumentNo() + "/" + order.getDatePromised();
 			}
 			sb.append(" @PP_Order_ID@:").append(info);
 		}
-		if (this.node != null)
+		if (this.orderActivity != null)
 		{
-			sb.append(" @PP_Order_Node_ID@:").append(node.getValue()).append("_").append(node.getName());
+			sb.append(" @PP_Order_Node_ID@:").append(orderActivity);
 		}
 		if (this.resource != null)
 		{
@@ -111,6 +121,5 @@ public class CRPException extends LiberoException
 		//
 		return Services.get(IMsgBL.class).parseTranslatableString(sb.toString());
 	}
-	
-	
+
 }

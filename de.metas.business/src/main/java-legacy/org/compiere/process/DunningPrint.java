@@ -19,7 +19,7 @@ package org.compiere.process;
 import java.io.File;
 
 import org.compiere.model.I_AD_User;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDunningLevel;
 import org.compiere.model.MDunningRun;
@@ -32,6 +32,7 @@ import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
@@ -136,13 +137,7 @@ public class DunningPrint extends JavaProcess
 			if (p_PrintUnprocessedOnly && entry.isProcessed())
 				continue;
 			//	To BPartner
-			MBPartner bp = new MBPartner (getCtx(), entry.getC_BPartner_ID(), get_TrxName());
-			if (bp.get_ID() == 0)
-			{
-				addLog (entry.get_ID(), null, null, "@NotFound@: @C_BPartner_ID@ " + entry.getC_BPartner_ID());
-				errors++;
-				continue;
-			}
+			I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(entry.getC_BPartner_ID());
 			//	To User
 			I_AD_User to = entry.getAD_User();
 			if (p_EMailPDF)

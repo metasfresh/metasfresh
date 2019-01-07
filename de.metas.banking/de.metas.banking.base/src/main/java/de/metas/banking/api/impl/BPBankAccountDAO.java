@@ -1,5 +1,7 @@
 package de.metas.banking.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -33,11 +35,17 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_BP_BankAccount;
 
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
-
 
 public class BPBankAccountDAO implements IBPBankAccountDAO
 {
+	@Override
+	public I_C_BP_BankAccount getById(final int bpBankAccountId)
+	{
+		Check.assumeGreaterThanZero(bpBankAccountId, "bpBankAccountId");
+		return loadOutOfTrx(bpBankAccountId, I_C_BP_BankAccount.class);
+	}
 
 	@Override
 	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(Properties ctx, int partnerID, int currencyID)

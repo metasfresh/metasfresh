@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PP_Order_Workflow
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 78776406L;
+	private static final long serialVersionUID = 2003472398L;
 
     /** Standard Constructor */
     public X_PP_Order_Workflow (Properties ctx, int PP_Order_Workflow_ID, String trxName)
@@ -40,24 +23,12 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
       super (ctx, PP_Order_Workflow_ID, trxName);
       /** if (PP_Order_Workflow_ID == 0)
         {
-			setAccessLevel (null);
 			setAD_Workflow_ID (0);
-			setAuthor (null);
-			setCost (Env.ZERO);
-			setDuration (0);
-// 0
+			setDuration (0); // 0
 			setDurationLimit (0);
-			setDurationUnit (null);
-// h
-			setEntityType (null);
-// U
-			setName (null);
+			setDurationUnit (null); // h
 			setPP_Order_ID (0);
 			setPP_Order_Workflow_ID (0);
-			setPriority (0);
-			setPublishStatus (null);
-// U
-			setVersion (0);
 			setWaitingTime (0);
         } */
     }
@@ -68,178 +39,14 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_PP_Order_Workflow[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** 
-	 * AccessLevel AD_Reference_ID=5
-	 * Reference name: AD_Table Access Levels
-	 */
-	public static final int ACCESSLEVEL_AD_Reference_ID=5;
-	/** Organization = 1 */
-	public static final String ACCESSLEVEL_Organization = "1";
-	/** ClientPlusOrganization = 3 */
-	public static final String ACCESSLEVEL_ClientPlusOrganization = "3";
-	/** SystemOnly = 4 */
-	public static final String ACCESSLEVEL_SystemOnly = "4";
-	/** All = 7 */
-	public static final String ACCESSLEVEL_All = "7";
-	/** SystemPlusClient = 6 */
-	public static final String ACCESSLEVEL_SystemPlusClient = "6";
-	/** ClientOnly = 2 */
-	public static final String ACCESSLEVEL_ClientOnly = "2";
-	/** Set Berechtigungsstufe.
-		@param AccessLevel 
-		Access Level required
-	  */
-	@Override
-	public void setAccessLevel (java.lang.String AccessLevel)
-	{
-
-		set_Value (COLUMNNAME_AccessLevel, AccessLevel);
-	}
-
-	/** Get Berechtigungsstufe.
-		@return Access Level required
-	  */
-	@Override
-	public java.lang.String getAccessLevel () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_AccessLevel);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
-	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
-	{
-		if (AD_Table_ID < 1) 
-			set_Value (COLUMNNAME_AD_Table_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
-	}
-
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
-	@Override
-	public int getAD_Table_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_WF_Node getAD_WF_Node() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class);
-	}
-
-	@Override
-	public void setAD_WF_Node(org.compiere.model.I_AD_WF_Node AD_WF_Node)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class, AD_WF_Node);
-	}
-
-	/** Set Knoten.
-		@param AD_WF_Node_ID 
-		Workflow Node (activity), step or process
-	  */
-	@Override
-	public void setAD_WF_Node_ID (int AD_WF_Node_ID)
-	{
-		if (AD_WF_Node_ID < 1) 
-			set_Value (COLUMNNAME_AD_WF_Node_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_WF_Node_ID, Integer.valueOf(AD_WF_Node_ID));
-	}
-
-	/** Get Knoten.
-		@return Workflow Node (activity), step or process
-	  */
-	@Override
-	public int getAD_WF_Node_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Node_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class);
-	}
-
-	@Override
-	public void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class, AD_WF_Responsible);
-	}
-
-	/** Set Workflow - Verantwortlicher.
-		@param AD_WF_Responsible_ID 
-		Responsible for Workflow Execution
-	  */
-	@Override
-	public void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID)
-	{
-		if (AD_WF_Responsible_ID < 1) 
-			set_Value (COLUMNNAME_AD_WF_Responsible_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_WF_Responsible_ID, Integer.valueOf(AD_WF_Responsible_ID));
-	}
-
-	/** Get Workflow - Verantwortlicher.
-		@return Responsible for Workflow Execution
-	  */
-	@Override
-	public int getAD_WF_Responsible_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Responsible_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException
@@ -278,84 +85,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_WorkflowProcessor getAD_WorkflowProcessor() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WorkflowProcessor_ID, org.compiere.model.I_AD_WorkflowProcessor.class);
-	}
-
-	@Override
-	public void setAD_WorkflowProcessor(org.compiere.model.I_AD_WorkflowProcessor AD_WorkflowProcessor)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WorkflowProcessor_ID, org.compiere.model.I_AD_WorkflowProcessor.class, AD_WorkflowProcessor);
-	}
-
-	/** Set Workflow - Prozessor.
-		@param AD_WorkflowProcessor_ID 
-		Workflow Processor Server
-	  */
-	@Override
-	public void setAD_WorkflowProcessor_ID (int AD_WorkflowProcessor_ID)
-	{
-		if (AD_WorkflowProcessor_ID < 1) 
-			set_Value (COLUMNNAME_AD_WorkflowProcessor_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_WorkflowProcessor_ID, Integer.valueOf(AD_WorkflowProcessor_ID));
-	}
-
-	/** Get Workflow - Prozessor.
-		@return Workflow Processor Server
-	  */
-	@Override
-	public int getAD_WorkflowProcessor_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WorkflowProcessor_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Author.
-		@param Author 
-		Author/Creator of the Entity
-	  */
-	@Override
-	public void setAuthor (java.lang.String Author)
-	{
-		set_Value (COLUMNNAME_Author, Author);
-	}
-
-	/** Get Author.
-		@return Author/Creator of the Entity
-	  */
-	@Override
-	public java.lang.String getAuthor () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Author);
-	}
-
-	/** Set Kosten.
-		@param Cost 
-		Cost information
-	  */
-	@Override
-	public void setCost (java.math.BigDecimal Cost)
-	{
-		set_Value (COLUMNNAME_Cost, Cost);
-	}
-
-	/** Get Kosten.
-		@return Cost information
-	  */
-	@Override
-	public java.math.BigDecimal getCost () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Cost);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -370,25 +99,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
-	}
-
-	/** Set Beleg Nr..
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
-	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
-	{
-		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
-	}
-
-	/** Get Beleg Nr..
-		@return Document sequence number of the document
-	  */
-	@Override
-	public java.lang.String getDocumentNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	/** Set Duration.
@@ -472,31 +182,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		return (java.lang.String)get_Value(COLUMNNAME_DurationUnit);
 	}
 
-	/** 
-	 * EntityType AD_Reference_ID=389
-	 * Reference name: _EntityTypeNew
-	 */
-	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
-	@Override
-	public void setEntityType (java.lang.String EntityType)
-	{
-
-		set_Value (COLUMNNAME_EntityType, EntityType);
-	}
-
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
-	@Override
-	public java.lang.String getEntityType () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
-	}
-
 	/** Set Kommentar/Hilfe.
 		@param Help 
 		Comment or Hint
@@ -514,32 +199,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	public java.lang.String getHelp () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Help);
-	}
-
-	/** Set Standard.
-		@param IsDefault 
-		Default value
-	  */
-	@Override
-	public void setIsDefault (boolean IsDefault)
-	{
-		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
-	}
-
-	/** Get Standard.
-		@return Default value
-	  */
-	@Override
-	public boolean isDefault () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set Moving Time.
@@ -561,33 +220,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		return ii.intValue();
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
-	@Override
-	public void setName (java.lang.String Name)
-	{
-		set_Value (COLUMNNAME_Name, Name);
-	}
-
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
-	@Override
-	public java.lang.String getName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
-	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getName());
-    }
-
 	/** Set Overlap Units.
 		@param OverlapUnits 
 		Overlap Units are number of units that must be completed before they are moved the next activity
@@ -606,7 +238,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverlapUnits);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -703,28 +335,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		return ii.intValue();
 	}
 
-	/** Set Priorität.
-		@param Priority 
-		Indicates if this request is of a high, medium or low priority.
-	  */
-	@Override
-	public void setPriority (int Priority)
-	{
-		set_Value (COLUMNNAME_Priority, Integer.valueOf(Priority));
-	}
-
-	/** Get Priorität.
-		@return Indicates if this request is of a high, medium or low priority.
-	  */
-	@Override
-	public int getPriority () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Priority);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** 
 	 * ProcessType AD_Reference_ID=53224
 	 * Reference name: PP_Process Type
@@ -759,39 +369,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		return (java.lang.String)get_Value(COLUMNNAME_ProcessType);
 	}
 
-	/** 
-	 * PublishStatus AD_Reference_ID=310
-	 * Reference name: _PublishStatus
-	 */
-	public static final int PUBLISHSTATUS_AD_Reference_ID=310;
-	/** Released = R */
-	public static final String PUBLISHSTATUS_Released = "R";
-	/** Test = T */
-	public static final String PUBLISHSTATUS_Test = "T";
-	/** Under Revision = U */
-	public static final String PUBLISHSTATUS_UnderRevision = "U";
-	/** Löschen = V */
-	public static final String PUBLISHSTATUS_Loeschen = "V";
-	/** Set Publication Status.
-		@param PublishStatus 
-		Status of Publication
-	  */
-	@Override
-	public void setPublishStatus (java.lang.String PublishStatus)
-	{
-
-		set_Value (COLUMNNAME_PublishStatus, PublishStatus);
-	}
-
-	/** Get Publication Status.
-		@return Status of Publication
-	  */
-	@Override
-	public java.lang.String getPublishStatus () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PublishStatus);
-	}
-
 	/** Set Qty Batch Size.
 		@param QtyBatchSize Qty Batch Size	  */
 	@Override
@@ -807,7 +384,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBatchSize);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -907,103 +484,8 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_UnitsCycles);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** Set Workflow validieren.
-		@param ValidateWorkflow Workflow validieren	  */
-	@Override
-	public void setValidateWorkflow (java.lang.String ValidateWorkflow)
-	{
-		set_Value (COLUMNNAME_ValidateWorkflow, ValidateWorkflow);
-	}
-
-	/** Get Workflow validieren.
-		@return Workflow validieren	  */
-	@Override
-	public java.lang.String getValidateWorkflow () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValidateWorkflow);
-	}
-
-	/** Set Gültig ab.
-		@param ValidFrom 
-		Valid from including this date (first day)
-	  */
-	@Override
-	public void setValidFrom (java.sql.Timestamp ValidFrom)
-	{
-		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
-	}
-
-	/** Get Gültig ab.
-		@return Valid from including this date (first day)
-	  */
-	@Override
-	public java.sql.Timestamp getValidFrom () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
-	}
-
-	/** Set Gültig bis.
-		@param ValidTo 
-		Valid to including this date (last day)
-	  */
-	@Override
-	public void setValidTo (java.sql.Timestamp ValidTo)
-	{
-		set_Value (COLUMNNAME_ValidTo, ValidTo);
-	}
-
-	/** Get Gültig bis.
-		@return Valid to including this date (last day)
-	  */
-	@Override
-	public java.sql.Timestamp getValidTo () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidTo);
-	}
-
-	/** Set Suchschlüssel.
-		@param Value 
-		Search key for the record in the format required - must be unique
-	  */
-	@Override
-	public void setValue (java.lang.String Value)
-	{
-		set_Value (COLUMNNAME_Value, Value);
-	}
-
-	/** Get Suchschlüssel.
-		@return Search key for the record in the format required - must be unique
-	  */
-	@Override
-	public java.lang.String getValue () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
-	}
-
-	/** Set Version.
-		@param Version 
-		Version of the table definition
-	  */
-	@Override
-	public void setVersion (int Version)
-	{
-		set_Value (COLUMNNAME_Version, Integer.valueOf(Version));
-	}
-
-	/** Get Version.
-		@return Version of the table definition
-	  */
-	@Override
-	public int getVersion () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Version);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set Waiting Time.
@@ -1026,39 +508,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** 
-	 * WorkflowType AD_Reference_ID=108
-	 * Reference name: AD_Window Types
-	 */
-	public static final int WORKFLOWTYPE_AD_Reference_ID=108;
-	/** Single Record = S */
-	public static final String WORKFLOWTYPE_SingleRecord = "S";
-	/** Verwalten = M */
-	public static final String WORKFLOWTYPE_Verwalten = "M";
-	/** Transaktion = T */
-	public static final String WORKFLOWTYPE_Transaktion = "T";
-	/** Query Only = Q */
-	public static final String WORKFLOWTYPE_QueryOnly = "Q";
-	/** Set Workflow Type.
-		@param WorkflowType 
-		Type of Worflow
-	  */
-	@Override
-	public void setWorkflowType (java.lang.String WorkflowType)
-	{
-
-		set_Value (COLUMNNAME_WorkflowType, WorkflowType);
-	}
-
-	/** Get Workflow Type.
-		@return Type of Worflow
-	  */
-	@Override
-	public java.lang.String getWorkflowType () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_WorkflowType);
 	}
 
 	/** Set Working Time.

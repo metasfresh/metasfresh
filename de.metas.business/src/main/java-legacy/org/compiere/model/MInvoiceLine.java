@@ -1245,8 +1245,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				// Create List
 				ArrayList<MInOutLine> list = new ArrayList<>();
 				MInOut ship = new MInOut(getCtx(), lc.getM_InOut_ID(), get_TrxName());
-				MInOutLine[] lines = ship.getLines();
-				for (MInOutLine line : lines)
+				for (MInOutLine line : ship.getLines())
 				{
 					if (line.isDescription() || line.getM_Product_ID() == 0)
 						continue;

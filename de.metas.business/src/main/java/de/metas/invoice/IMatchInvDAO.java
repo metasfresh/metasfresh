@@ -13,15 +13,14 @@ package de.metas.invoice;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,6 +35,8 @@ import de.metas.util.ISingletonService;
 
 public interface IMatchInvDAO extends ISingletonService
 {
+	I_M_MatchInv getById(int matchInvId);
+
 	/**
 	 * Retrieves the (active) records that reference the given invoice line.
 	 * 
@@ -62,6 +63,7 @@ public interface IMatchInvDAO extends ISingletonService
 
 	/**
 	 * Retrieves all (active or not) {@link I_M_MatchInv} records of given {@link I_M_InOut}.
+	 * 
 	 * @param inout
 	 */
 	List<I_M_MatchInv> retrieveForInOut(I_M_InOut inout);

@@ -228,6 +228,11 @@ public interface ITrxManager extends ISingletonService
 
 	void run(String trxName, Runnable runnable);
 
+	default void runInThreadInheritedTrx(final TrxRunnable runnable)
+	{
+		run(ITrx.TRXNAME_ThreadInherited, runnable);
+	}
+
 	default void runInThreadInheritedTrx(final Runnable runnable)
 	{
 		run(ITrx.TRXNAME_ThreadInherited, runnable);

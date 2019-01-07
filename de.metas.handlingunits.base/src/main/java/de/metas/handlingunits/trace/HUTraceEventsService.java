@@ -15,7 +15,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
-import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.CostCollectorType;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +37,7 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -103,8 +104,7 @@ public class HUTraceEventsService
 	 *
 	 * @param costCollector
 	 */
-	public void createAndAddFor(
-			@NonNull final I_PP_Cost_Collector costCollector)
+	public void createAndAddFor(@NonNull final I_PP_Cost_Collector costCollector)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.ppCostCollectorId(costCollector.getPP_Cost_Collector_ID())
@@ -113,8 +113,9 @@ public class HUTraceEventsService
 				.docStatus(costCollector.getDocStatus())
 				.eventTime(costCollector.getMovementDate().toInstant());
 
-		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
-		if (costCollectorBL.isMaterialIssue(costCollector, true))
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(costCollector.getCostCollectorType());
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(costCollector.getPP_Order_BOMLine_ID());
+		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
 			builder.type(HUTraceType.PRODUCTION_ISSUE);
 		}

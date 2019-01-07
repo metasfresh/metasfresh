@@ -20,18 +20,20 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
 import org.compiere.model.Query;
-import org.compiere.util.AdempiereUserError;
 
+import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -46,10 +48,8 @@ import de.metas.util.Services;
  */
 public class BPartnerValidate extends JavaProcess
 {
-	/** BPartner ID */
-	int p_C_BPartner_ID = 0;
-	/** BPartner Group */
-	int p_C_BP_Group_ID = 0;
+	private BPartnerId p_C_BPartner_ID;
+	private BPGroupId p_C_BP_Group_ID;
 
 	/**
 	 * Prepare
@@ -57,7 +57,8 @@ public class BPartnerValidate extends JavaProcess
 	@Override
 	protected void prepare()
 	{
-		p_C_BPartner_ID = getRecord_ID();
+		p_C_BPartner_ID = BPartnerId.ofRepoIdOrNull(getRecord_ID());
+		
 		final ProcessInfoParameter[] para = getParametersAsArray();
 		for (final ProcessInfoParameter element : para)
 		{
@@ -68,41 +69,30 @@ public class BPartnerValidate extends JavaProcess
 			}
 			else if (name.equals("C_BPartner_ID"))
 			{
-				p_C_BPartner_ID = element.getParameterAsInt();
+				p_C_BPartner_ID = BPartnerId.ofRepoIdOrNull(element.getParameterAsInt());
 			}
 			else if (name.equals("C_BP_Group_ID"))
 			{
-				p_C_BP_Group_ID = element.getParameterAsInt();
+				p_C_BP_Group_ID = BPGroupId.ofRepoIdOrNull(element.getParameterAsInt());
 			}
 			else
 			{
 				log.error("Unknown Parameter: " + name);
 			}
 		}
-	}	// prepare
+	}
 
-	/**
-	 * Process
-	 *
-	 * @return info
-	 * @throws Exception
-	 */
 	@Override
 	protected String doIt() throws Exception
 	{
-		log.info("C_BPartner_ID=" + p_C_BPartner_ID + ", C_BP_Group_ID=" + p_C_BP_Group_ID);
-		if (p_C_BPartner_ID == 0 && p_C_BP_Group_ID == 0)
+		if (p_C_BPartner_ID == null && p_C_BP_Group_ID == null)
 		{
-			throw new AdempiereUserError("No Business Partner/Group selected");
+			throw new AdempiereException("No Business Partner/Group selected");
 		}
 
-		if (p_C_BP_Group_ID == 0)
+		if (p_C_BP_Group_ID == null)
 		{
-			final MBPartner bp = new MBPartner(getCtx(), p_C_BPartner_ID, get_TrxName());
-			if (bp.get_ID() == 0)
-			{
-				throw new AdempiereUserError("Business Partner not found - C_BPartner_ID=" + p_C_BPartner_ID);
-			}
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getByIdInTrx(p_C_BPartner_ID);
 			checkBP(bp);
 		}
 		else
@@ -118,7 +108,7 @@ public class BPartnerValidate extends JavaProcess
 			}
 		}
 		//
-		return "OK";
+		return MSG_OK;
 	}	// doIt
 
 	/**
@@ -127,12 +117,11 @@ public class BPartnerValidate extends JavaProcess
 	 * @param bp bp
 	 * @throws SQLException
 	 */
-	private void checkBP(final MBPartner bp) throws SQLException
+	private void checkBP(final I_C_BPartner bp) throws SQLException
 	{
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), bp.getC_BPartner_ID(), I_C_BPartner.class, getTrxName());
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bp);
 
 		addLog(0, null, null, bp.getName() + ":");
 		// See also VMerge.postMerge
@@ -160,7 +149,7 @@ public class BPartnerValidate extends JavaProcess
 	 *
 	 * @param bp business partner
 	 */
-	private void checkPayments(final MBPartner bp)
+	private void checkPayments(final I_C_BPartner bp)
 	{
 		// See also VMerge.postMerge
 		int changed = 0;
@@ -185,7 +174,7 @@ public class BPartnerValidate extends JavaProcess
 	 *
 	 * @param bp business partner
 	 */
-	private void checkInvoices(final MBPartner bp)
+	private void checkInvoices(final I_C_BPartner bp)
 	{
 		// See also VMerge.postMerge
 		int changed = 0;

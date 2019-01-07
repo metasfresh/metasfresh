@@ -37,6 +37,7 @@ import org.eevolution.api.IProductLowLevelUpdater;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -93,7 +94,7 @@ import de.metas.util.Services;
 	{
 		try
 		{
-			final int lowlevel = productBOMBL.calculateProductLowestLevel(product.getM_Product_ID());
+			final int lowlevel = productBOMBL.calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
 			product.setLowLevel(lowlevel);
 			InterfaceWrapperHelper.save(product);
 			count_ok++;

@@ -45,6 +45,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -276,6 +277,11 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 	private final int getM_Product_ID()
 	{
 		return rs.getM_Product_ID();
+	}
+	
+	public ProductId getProductId()
+	{
+		return ProductId.ofRepoId(getM_Product_ID());
 	}
 
 	public I_M_Product getM_Product()

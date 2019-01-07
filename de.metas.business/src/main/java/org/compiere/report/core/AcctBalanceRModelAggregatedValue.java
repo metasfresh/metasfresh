@@ -26,12 +26,12 @@ package org.compiere.report.core;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.acct.api.IAccountBL;
-import org.adempiere.acct.api.IElementValueDAO;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.KeyNamePair;
 
+import de.metas.acct.api.IAccountBL;
+import de.metas.acct.api.IElementValueDAO;
 import de.metas.util.Services;
 
 public class AcctBalanceRModelAggregatedValue extends AbstractRModelAggregatedValue

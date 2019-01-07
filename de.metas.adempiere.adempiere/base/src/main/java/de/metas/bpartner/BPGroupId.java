@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -41,9 +40,18 @@ public class BPGroupId implements RepoIdAware
 		return new BPGroupId(repoId);
 	}
 
+	public static BPGroupId ofRepoIdOrNull(final int repoId)
+	{
+		if (repoId <= 0)
+		{
+			return null;
+		}
+		return new BPGroupId(repoId);
+	}
+
 	private BPGroupId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BP_Group_ID");
 	}
 
 	@JsonValue

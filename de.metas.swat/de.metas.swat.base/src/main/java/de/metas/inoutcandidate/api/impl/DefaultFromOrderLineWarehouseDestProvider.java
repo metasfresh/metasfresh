@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistribution;
@@ -92,7 +93,7 @@ import de.metas.util.Services;
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
-				.orgId(context.getAD_Org_ID())
+				.orgId(OrgId.ofRepoId(context.getAD_Org_ID()))
 				.productId(ProductId.ofRepoId(context.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceId))
 				// no warehouse, no plant

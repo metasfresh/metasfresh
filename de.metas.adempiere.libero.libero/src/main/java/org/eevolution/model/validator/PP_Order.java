@@ -1,28 +1,5 @@
 package org.eevolution.model.validator;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -41,14 +18,11 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderCostDAO;
-import org.eevolution.api.IPPOrderWorkflowBL;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.material.event.PostMaterialEventService;
@@ -56,6 +30,7 @@ import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -81,8 +56,7 @@ public class PP_Order
 		// If UOM not filled, get it from Product
 		if (ppOrder.getC_UOM_ID() <= 0 && ppOrder.getM_Product_ID() > 0)
 		{
-			final I_M_Product product = ppOrder.getM_Product();
-			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
+			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(ppOrder.getM_Product_ID());
 			ppOrder.setC_UOM(uom);
 		}
 
@@ -100,18 +74,6 @@ public class PP_Order
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
 			final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 			ppOrder.setM_Locator_ID(locatorId.getRepoId());
-		}
-
-		//
-		// Order Stock
-		if (!newRecord
-				&& (InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_QtyDelivered)
-						|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_QtyOrdered)
-						|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_QtyScrap)
-						|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Warehouse_ID)
-						|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Locator_ID)))
-		{
-			ppOrderBL.orderStock(ppOrder);
 		}
 
 		//
@@ -186,19 +148,20 @@ public class PP_Order
 		createWorkflowAndBOM(ppOrderRecord);
 	}
 
-	@ModelChange(//
-			timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyEntered)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyEntered)
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
-		final boolean delivered = Services.get(IPPOrderBL.class).isDelivered(ppOrderRecord);
-		if (delivered)
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		
+		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))
 		{
-			throw new LiberoException("Cannot Change Quantity, Only is allow with Draft or In Process Status"); // TODO: Create Message for Translation
+			throw new LiberoException("Cannot quantity is not allowed because there is something already processed on this order"); // TODO: trl
 		}
 
 		final PPOrderChangedEventFactory eventfactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderRecord);
 
-		deleteWorkflowAndBOM(ppOrderRecord);
+		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
+		deleteWorkflowAndBOM(orderId);
 		createWorkflowAndBOM(ppOrderRecord);
 
 		final PPOrderChangedEvent event = eventfactory.inspectPPOrderAfterChange();
@@ -207,28 +170,22 @@ public class PP_Order
 		materialEventService.postEventAfterNextCommit(event);
 	}
 
-	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)
+	private void deleteWorkflowAndBOM(final PPOrderId orderId)
 	{
-		Services.get(IPPOrderWorkflowDAO.class).deleteOrderWorkflow(ppOrder);
-
-		final I_PP_Order_BOM orderBOM = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(ppOrder);
-		if (orderBOM != null)
-		{
-			InterfaceWrapperHelper.delete(orderBOM);
-		}
+		Services.get(IPPOrderRoutingRepository.class).deleteByOrderId(orderId);
+		Services.get(IPPOrderBOMDAO.class).deleteByOrderId(orderId);
 	}
 
 	private void createWorkflowAndBOM(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderWorkflowBL.class).createOrderWorkflow(ppOrder);
+		Services.get(IPPOrderBL.class).createOrderRouting(ppOrder);
 		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(@NonNull final I_PP_Order ppOrder)
 	{
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		final IPPOrderCostDAO ppOrderCostDAO = Services.get(IPPOrderCostDAO.class);
+		final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
 
 		//
 		// Delete depending records
@@ -236,13 +193,10 @@ public class PP_Order
 		if (X_PP_Order.DOCSTATUS_Drafted.equals(docStatus)
 				|| X_PP_Order.DOCSTATUS_InProgress.equals(docStatus))
 		{
-			ppOrderCostDAO.deleteOrderCosts(ppOrder);
-			deleteWorkflowAndBOM(ppOrder);
-		}
+			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 
-		//
-		// Un-Order Stock
-		ppOrderBL.setQtyOrdered(ppOrder, BigDecimal.ZERO);
-		ppOrderBL.orderStock(ppOrder);
+			orderCostsService.deleteByOrderId(ppOrderId);
+			deleteWorkflowAndBOM(ppOrderId);
+		}
 	}
 }

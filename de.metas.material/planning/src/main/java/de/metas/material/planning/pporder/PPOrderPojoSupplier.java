@@ -1,21 +1,18 @@
 package de.metas.material.planning.pporder;
 
+import static org.compiere.util.TimeUtil.asDate;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_Resource;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -33,11 +30,13 @@ import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -101,7 +100,7 @@ public class PPOrderPojoSupplier
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final I_M_Product product = mrpContext.getM_Product();
 
-		final Instant demandDateStartSchedule = TimeUtil.asInstant(request.getDemandDate());
+		final Instant demandDateStartSchedule = request.getDemandDate();
 		final Quantity qtyToSupply = request.getQtyToSupply();
 
 		// BOM
@@ -185,7 +184,6 @@ public class PPOrderPojoSupplier
 			@NonNull final IMaterialPlanningContext mrpContext,
 			@NonNull final BigDecimal qty)
 	{
-		final Properties ctx = mrpContext.getCtx();
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 
 		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
@@ -195,11 +193,11 @@ public class PPOrderPojoSupplier
 			return leadtimeDays;
 		}
 
-		final I_AD_Workflow adWorkflow = productPlanningData.getAD_Workflow();
-		final I_S_Resource plant = productPlanningData.getS_Resource();
-		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(ctx);
-		final BigDecimal leadtimeCalc = routingService.calculateDurationDays(adWorkflow, plant, qty);
-		return leadtimeCalc.intValueExact();
+		final PPRoutingId routingId = PPRoutingId.ofRepoId(productPlanningData.getAD_Workflow_ID());
+		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanningData.getS_Resource_ID());
+		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
+		final int leadtimeCalc = routingService.calculateDurationDays(routingId, plantId, qty);
+		return leadtimeCalc;
 	}
 
 	private List<PPOrderLine> supplyPPOrderLinePojos(@NonNull final PPOrder ppOrder)
@@ -221,7 +219,7 @@ public class PPOrderPojoSupplier
 
 			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productBomLine);
 
-			final boolean receipt = PPOrderUtil.isReceipt(productBomLine.getComponentType());
+			final boolean receipt = PPOrderUtil.isReceipt(BOMComponentType.ofCode(productBomLine.getComponentType()));
 
 			final PPOrderLine intermedidatePPOrderLine = PPOrderLine.builder()
 					.productBomLineId(productBomLine.getPP_Product_BOMLine_ID())
@@ -233,10 +231,9 @@ public class PPOrderPojoSupplier
 					.build();
 
 			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-			final BigDecimal qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder, ppOrder.getQtyRequired());
+			final Quantity qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder.getQtyRequired());
 
-			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.toBuilder()
-					.qtyRequired(qtyRequired).build();
+			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.withQtyRequired(qtyRequired.getAsBigDecimal());
 
 			result.add(ppOrderLine);
 		}
@@ -247,15 +244,14 @@ public class PPOrderPojoSupplier
 	private I_PP_Product_BOM retriveAndVerifyBOM(@NonNull final PPOrder ppOrder)
 	{
 		final Instant dateStartSchedule = ppOrder.getDateStartSchedule();
-		final Integer ppOrderProductId = ppOrder.getProductDescriptor().getProductId();
+		final ProductId ppOrderProductId = ProductId.ofRepoId(ppOrder.getProductDescriptor().getProductId());
 
-		final I_PP_Product_BOM productBOM = InterfaceWrapperHelper
-				.create(Env.getCtx(), ppOrder.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None)
-				.getPP_Product_BOM();
+		final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(ppOrder.getProductPlanningId());
 
-		return PPOrderUtil.verifyProductBOM(
-				ppOrderProductId,
-				TimeUtil.asDate(dateStartSchedule),
-				productBOM);
+		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(productPlanning.getPP_Product_BOM_ID());
+
+		return PPOrderUtil.verifyProductBOMAndReturnIt(ppOrderProductId, asDate(dateStartSchedule), productBOM);
 	}
 }

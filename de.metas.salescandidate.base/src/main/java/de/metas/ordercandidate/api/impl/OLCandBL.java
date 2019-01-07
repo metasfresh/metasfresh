@@ -47,6 +47,7 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -246,8 +247,8 @@ public class OLCandBL implements IOLCandBL
 					+ "\n Pricing result: " + pricingResult);
 		}
 
-		final int currencyPrecision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId.getRepoId());
-		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, currencyPrecision);
+		final CurrencyPrecision currencyPrecision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
+		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, currencyPrecision.toInt());
 
 		pricingResult.setPriceStd(priceActual);
 

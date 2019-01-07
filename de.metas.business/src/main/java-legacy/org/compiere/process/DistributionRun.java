@@ -30,9 +30,9 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MDistributionRun;
 import org.compiere.model.MDistributionRunDetail;
 import org.compiere.model.MDistributionRunLine;
@@ -48,6 +48,7 @@ import org.compiere.util.Env;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Msg;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
@@ -451,8 +452,8 @@ public class DistributionRun extends JavaProcess
 		boolean counter = !m_run.isCreateSingleOrder()	// no single Order
 				&& runC_BPartner_ID > 0						// Org linked to BP
 				&& !m_docType.isSOTrx();					// PO
-		MBPartner runBPartner = counter ? new MBPartner(getCtx(), runC_BPartner_ID, get_TrxName()) : null;
-		if (!counter || runBPartner == null || runBPartner.get_ID() != runC_BPartner_ID)
+		I_C_BPartner runBPartner = counter ? Services.get(IBPartnerDAO.class).getById(runC_BPartner_ID) : null;
+		if (!counter || runBPartner == null || runBPartner.getC_BPartner_ID() != runC_BPartner_ID)
 			counter = false;
 		if (counter)
 			log.info("RunBP=" + runBPartner
@@ -462,15 +463,14 @@ public class DistributionRun extends JavaProcess
 		log.debug("Counter=" + counter
 				+ ",C_BPartner_ID=" + runC_BPartner_ID + "," + runBPartner);
 		//
-		MBPartner bp = null;
+		I_C_BPartner bp = null;
 		MOrder singleOrder = null;
 		MProduct product = null;
 		// Consolidated Order
 		if (m_run.isCreateSingleOrder())
 		{
-			bp = new MBPartner(getCtx(), m_run.getC_BPartner_ID(), get_TrxName());
-			if (bp.get_ID() == 0)
-				throw new IllegalArgumentException("Business Partner not found - C_BPartner_ID=" + m_run.getC_BPartner_ID());
+			bp = Services.get(IBPartnerDAO.class).getById(m_run.getC_BPartner_ID());
+			
 			//
 			if (!p_IsTest)
 			{
@@ -516,7 +516,7 @@ public class DistributionRun extends JavaProcess
 			// New Order
 			if (order == null)
 			{
-				bp = new MBPartner(getCtx(), detail.getC_BPartner_ID(), get_TrxName());
+				bp = Services.get(IBPartnerDAO.class).getById(detail.getC_BPartner_ID());
 				if (!p_IsTest)
 				{
 					order = new MOrder(getCtx(), 0, get_TrxName());
@@ -524,13 +524,13 @@ public class DistributionRun extends JavaProcess
 					order.setC_DocType_ID(m_docType.getC_DocType_ID());
 					order.setIsSOTrx(m_docType.isSOTrx());
 					// Counter Doc
-					if (counter && bp.getAD_OrgBP_ID_Int() > 0)
+					if (counter && bp.getAD_OrgBP_ID() > 0)
 					{
-						log.debug("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID_Int()
+						log.debug("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID()
 								+ "-" + bp + ", To_BP=" + runBPartner);
-						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+						order.setAD_Org_ID(bp.getAD_OrgBP_ID());
 
-						final I_AD_OrgInfo oi = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), bp.getAD_OrgBP_ID_Int(), ITrx.TRXNAME_None);
+						final I_AD_OrgInfo oi = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), bp.getAD_OrgBP_ID(), ITrx.TRXNAME_None);
 						if (oi.getM_Warehouse_ID() > 0)
 							order.setM_Warehouse_ID(oi.getM_Warehouse_ID());
 						order.setBPartner(runBPartner);
@@ -566,7 +566,7 @@ public class DistributionRun extends JavaProcess
 
 			// Create Order Line
 			MOrderLine line = new MOrderLine(order);
-			if (counter && bp.getAD_OrgBP_ID_Int() > 0)
+			if (counter && bp.getAD_OrgBP_ID() > 0)
 				;	// don't overwrite counter doc
 			else	// normal - optionally overwrite
 			{
@@ -838,8 +838,8 @@ public class DistributionRun extends JavaProcess
 		boolean counter = !m_run.isCreateSingleOrder()	// no single Order
 				&& runC_BPartner_ID > 0						// Org linked to BP
 				&& !m_docType.isSOTrx();					// PO
-		MBPartner runBPartner = counter ? new MBPartner(getCtx(), runC_BPartner_ID, get_TrxName()) : null;
-		if (!counter || runBPartner == null || runBPartner.get_ID() != runC_BPartner_ID)
+		I_C_BPartner runBPartner = counter ? Services.get(IBPartnerDAO.class).getById(runC_BPartner_ID) : null;
+		if (!counter || runBPartner == null || runBPartner.getC_BPartner_ID() != runC_BPartner_ID)
 			counter = false;
 		if (counter)
 			log.info("RunBP=" + runBPartner
@@ -849,7 +849,7 @@ public class DistributionRun extends JavaProcess
 		log.debug("Counter=" + counter
 				+ ",C_BPartner_ID=" + runC_BPartner_ID + "," + runBPartner);
 		//
-		MBPartner bp = null;
+		I_C_BPartner bp = null;
 		MDDOrder singleOrder = null;
 		MProduct product = null;
 
@@ -872,9 +872,7 @@ public class DistributionRun extends JavaProcess
 		// Consolidated Single Order
 		if (m_run.isCreateSingleOrder())
 		{
-			bp = new MBPartner(getCtx(), m_run.getC_BPartner_ID(), get_TrxName());
-			if (bp.get_ID() == 0)
-				throw new IllegalArgumentException("Business Partner not found - C_BPartner_ID=" + m_run.getC_BPartner_ID());
+			bp = Services.get(IBPartnerDAO.class).getById(m_run.getC_BPartner_ID());
 			//
 			if (!p_IsTest)
 			{
@@ -918,9 +916,9 @@ public class DistributionRun extends JavaProcess
 			lastC_BPartner_ID = detail.getC_BPartner_ID();
 			lastC_BPartner_Location_ID = detail.getC_BPartner_Location_ID();
 
-			bp = new MBPartner(getCtx(), detail.getC_BPartner_ID(), get_TrxName());
+			bp = Services.get(IBPartnerDAO.class).getById(detail.getC_BPartner_ID());
 
-			final I_AD_OrgInfo oi_target = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), bp.getAD_OrgBP_ID_Int(),ITrx.TRXNAME_None);
+			final I_AD_OrgInfo oi_target = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), bp.getAD_OrgBP_ID(),ITrx.TRXNAME_None);
 			m_target = warehousesRepo.getById(WarehouseId.ofRepoId(oi_target.getM_Warehouse_ID()));
 			if (m_target == null)
 				throw new AdempiereException("Do not exist Default Warehouse Target");
@@ -935,7 +933,7 @@ public class DistributionRun extends JavaProcess
 			if (p_ConsolidateDocument)
 			{
 
-				String whereClause = "DocStatus IN ('DR','IN') AND AD_Org_ID=" + bp.getAD_OrgBP_ID_Int() + " AND " +
+				String whereClause = "DocStatus IN ('DR','IN') AND AD_Org_ID=" + bp.getAD_OrgBP_ID() + " AND " +
 						MDDOrder.COLUMNNAME_C_BPartner_ID + "=? AND " +
 						MDDOrder.COLUMNNAME_M_Warehouse_ID + "=?  AND " +
 						MDDOrder.COLUMNNAME_DatePromised + "<=? ";
@@ -952,16 +950,16 @@ public class DistributionRun extends JavaProcess
 				if (!p_IsTest)
 				{
 					order = new MDDOrder(getCtx(), 0, get_TrxName());
-					order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+					order.setAD_Org_ID(bp.getAD_OrgBP_ID());
 					order.setC_DocType_ID(m_docType.getC_DocType_ID());
 					order.setIsSOTrx(m_docType.isSOTrx());
 
 					// Counter Doc
-					if (counter && bp.getAD_OrgBP_ID_Int() > 0)
+					if (counter && bp.getAD_OrgBP_ID() > 0)
 					{
-						log.debug("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID_Int()
+						log.debug("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID()
 								+ "-" + bp + ", To_BP=" + runBPartner);
-						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+						order.setAD_Org_ID(bp.getAD_OrgBP_ID());
 						order.setM_Warehouse_ID(warehouseInTransitId.getRepoId());
 						order.setBPartner(runBPartner);
 					}
@@ -969,7 +967,7 @@ public class DistributionRun extends JavaProcess
 					{
 						log.debug("From_Org=" + runAD_Org_ID
 								+ ", To_BP=" + bp);
-						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+						order.setAD_Org_ID(bp.getAD_OrgBP_ID());
 						order.setBPartner(bp);
 						if (detail.getC_BPartner_Location_ID() != 0)
 							order.setC_BPartner_Location_ID(detail.getC_BPartner_Location_ID());
@@ -1005,7 +1003,7 @@ public class DistributionRun extends JavaProcess
 				if (DD_OrderLine_ID <= 0)
 				{
 					MDDOrderLine line = new MDDOrderLine(order);
-					line.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+					line.setAD_Org_ID(bp.getAD_OrgBP_ID());
 					line.setM_Locator_ID(m_locator.getM_Locator_ID());
 					line.setM_LocatorTo_ID(m_locator_to.getM_Locator_ID());
 					line.setIsInvoiced(false);
@@ -1046,7 +1044,7 @@ public class DistributionRun extends JavaProcess
 			{
 				// Create Order Line
 				MDDOrderLine line = new MDDOrderLine(order);
-				if (counter && bp.getAD_OrgBP_ID_Int() > 0)
+				if (counter && bp.getAD_OrgBP_ID() > 0)
 					;	// don't overwrite counter doc
 				/*
 				 * else // normal - optionally overwrite
@@ -1057,7 +1055,7 @@ public class DistributionRun extends JavaProcess
 				 * }
 				 */
 				//
-				line.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+				line.setAD_Org_ID(bp.getAD_OrgBP_ID());
 				line.setM_Locator_ID(m_locator.getM_Locator_ID());
 				line.setM_LocatorTo_ID(m_locator_to.getM_Locator_ID());
 				line.setIsInvoiced(false);

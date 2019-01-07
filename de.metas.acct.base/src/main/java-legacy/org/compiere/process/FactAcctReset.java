@@ -21,10 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
@@ -46,6 +44,9 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_HR_Process;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.impl.AcctSchemaPeriodControl;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -184,17 +185,17 @@ public class FactAcctReset extends JavaProcess
 
 		final Timestamp today = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
-		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(getCtx());
-		final boolean autoPeriod = as != null && as.isAutoPeriodControl();
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(getCtx());
+		final AcctSchemaPeriodControl periodControl = acctSchema.getPeriodControl();
 
-		if (autoPeriod)
+		if (periodControl.isAutomaticPeriodControl())
 		{
-			Timestamp temp = TimeUtil.addDays(today, - as.getPeriod_OpenHistory());
+			Timestamp temp = TimeUtil.addDays(today, - periodControl.getOpenDaysInPast());
 			if ( p_DateAcct_From == null || p_DateAcct_From.before(temp) ) {
 				p_DateAcct_From = temp;
 				log.info("DateAcct From set to: " + p_DateAcct_From);
 			}
-			temp = TimeUtil.addDays(today, as.getPeriod_OpenFuture());
+			temp = TimeUtil.addDays(today, periodControl.getOpenDaysInFuture());
 			if ( p_DateAcct_To == null || p_DateAcct_To.after(temp) ) {
 				p_DateAcct_To = temp;
 				log.info("DateAcct To set to: " + p_DateAcct_To);
@@ -271,7 +272,7 @@ public class FactAcctReset extends JavaProcess
 			+ " INNER JOIN Fact_Acct fact ON (fact.C_Period_ID=pc.C_Period_ID) "
 			+ " WHERE fact.AD_Table_ID=" + AD_Table_ID
 			+ " AND fact.Record_ID=" + TableName + "." + TableName + "_ID";
-		if ( !autoPeriod )
+		if ( !periodControl.isAutomaticPeriodControl() )
 			sql1 += " AND pc.PeriodStatus = 'O'" + docBaseType;
 		if (p_DateAcct_From != null)
 			sql1 += " AND TRUNC(fact.DateAcct) >= " + DB.TO_DATE(p_DateAcct_From);
@@ -286,7 +287,7 @@ public class FactAcctReset extends JavaProcess
 		String sql2 = "DELETE FROM Fact_Acct "
 			+ "WHERE AD_Client_ID=" + p_AD_Client_ID
 			+ " AND AD_Table_ID=" + AD_Table_ID;
-		if ( !autoPeriod )
+		if ( !periodControl.isAutomaticPeriodControl() )
 			sql2 += " AND EXISTS (SELECT 1 FROM C_PeriodControl pc "
 				+ "WHERE pc.PeriodStatus = 'O'" + docBaseType
 				+ " AND Fact_Acct.C_Period_ID=pc.C_Period_ID)";

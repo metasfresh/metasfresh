@@ -30,7 +30,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMDAO;
@@ -42,9 +41,10 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.X_PP_Cost_Collector;
 import org.junit.Assert;
 
 import de.metas.inout.model.I_M_InOut;
@@ -91,7 +91,7 @@ public class WaschprobeStandardMasterData
 
 	public WaschprobeStandardMasterData()
 	{
-		this(new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None));
+		this(PlainContextAware.createUsingOutOfTransaction());
 	}
 
 	public WaschprobeStandardMasterData(final IContextAware context)
@@ -203,24 +203,24 @@ public class WaschprobeStandardMasterData
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, context);
 		ppOrder.setDateDelivered(asTimestamp(productionDate));
-		ppOrder.setM_Product(product);
-		ppOrder.setC_UOM(uom);
+		ppOrder.setM_Product_ID(product.getM_Product_ID());
+		ppOrder.setC_UOM_ID(uom.getC_UOM_ID());
 		ppOrder.setQtyDelivered(qtyDelivered);
 		ppOrder.setQM_QtyDeliveredPercOfRaw(BigDecimal.ZERO); // to be set by BL
 		ppOrder.setQM_QtyDeliveredAvg(BigDecimal.ZERO); // to be set by BL
-		InterfaceWrapperHelper.save(ppOrder);
+		Services.get(IPPOrderDAO.class).save(ppOrder);
 		return ppOrder;
 	}
 
 	public I_PP_Order_BOMLine createPP_Order_BOMLine(final org.eevolution.model.I_PP_Order ppOrder,
-			final String componentType,
+			final BOMComponentType componentType,
 			final I_M_Product product,
 			final BigDecimal qtyDelivered,
 			final I_C_UOM uom)
 	{
 		final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class, context);
 		ppOrderBOMLine.setPP_Order(ppOrder);
-		ppOrderBOMLine.setComponentType(componentType);
+		ppOrderBOMLine.setComponentType(componentType.getCode());
 		ppOrderBOMLine.setM_Product(product);
 		ppOrderBOMLine.setC_UOM(uom);
 
@@ -305,7 +305,7 @@ public class WaschprobeStandardMasterData
 	{
 		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class, context);
 		cc.setPP_Order(ppOrder);
-		cc.setCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue);
+		cc.setCostCollectorType(CostCollectorType.ComponentIssue.getCode());
 		cc.setMovementQty(issuedQty);
 
 		InterfaceWrapperHelper.save(cc);

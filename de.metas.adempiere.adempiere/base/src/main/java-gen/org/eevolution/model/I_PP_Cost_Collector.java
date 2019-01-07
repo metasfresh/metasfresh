@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.eevolution.model;
 
 
@@ -32,7 +16,7 @@ public interface I_PP_Cost_Collector
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
@@ -48,7 +32,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_Client>(I_PP_Cost_Collector.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -104,7 +88,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getAD_OrgTrx_ID();
 
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_OrgTrx();
 
 	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
 
@@ -133,7 +117,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException;
+	public org.compiere.model.I_AD_User getAD_User();
 
 	public void setAD_User(org.compiere.model.I_AD_User AD_User);
 
@@ -146,7 +130,7 @@ public interface I_PP_Cost_Collector
 	 * Set Kostenstelle.
 	 * Kostenstelle
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -156,13 +140,13 @@ public interface I_PP_Cost_Collector
 	 * Get Kostenstelle.
 	 * Kostenstelle
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Activity_ID();
 
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException;
+	public org.compiere.model.I_C_Activity getC_Activity();
 
 	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
 
@@ -175,7 +159,7 @@ public interface I_PP_Cost_Collector
 	 * Set Werbemassnahme.
 	 * Marketing Campaign
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -185,13 +169,13 @@ public interface I_PP_Cost_Collector
 	 * Get Werbemassnahme.
 	 * Marketing Campaign
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Campaign_ID();
 
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException;
+	public org.compiere.model.I_C_Campaign getC_Campaign();
 
 	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
 
@@ -204,7 +188,7 @@ public interface I_PP_Cost_Collector
 	 * Set Belegart.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -214,13 +198,13 @@ public interface I_PP_Cost_Collector
 	 * Get Belegart.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocType_ID();
 
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException;
+	public org.compiere.model.I_C_DocType getC_DocType();
 
 	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
@@ -249,7 +233,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getC_DocTypeTarget_ID();
 
-	public org.compiere.model.I_C_DocType getC_DocTypeTarget() throws RuntimeException;
+	public org.compiere.model.I_C_DocType getC_DocTypeTarget();
 
 	public void setC_DocTypeTarget(org.compiere.model.I_C_DocType C_DocTypeTarget);
 
@@ -262,7 +246,7 @@ public interface I_PP_Cost_Collector
 	 * Set Projekt.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -272,13 +256,13 @@ public interface I_PP_Cost_Collector
 	 * Get Projekt.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Project_ID();
 
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException;
+	public org.compiere.model.I_C_Project getC_Project();
 
 	public void setC_Project(org.compiere.model.I_C_Project C_Project);
 
@@ -291,7 +275,7 @@ public interface I_PP_Cost_Collector
 	 * Set Maßeinheit.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -301,13 +285,13 @@ public interface I_PP_Cost_Collector
 	 * Get Maßeinheit.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException;
+	public org.compiere.model.I_C_UOM getC_UOM();
 
 	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
@@ -470,7 +454,7 @@ public interface I_PP_Cost_Collector
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -480,7 +464,7 @@ public interface I_PP_Cost_Collector
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -589,8 +573,8 @@ public interface I_PP_Cost_Collector
     public static final String COLUMNNAME_IsSubcontracting = "IsSubcontracting";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -599,8 +583,8 @@ public interface I_PP_Cost_Collector
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -608,7 +592,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException;
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
 	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
@@ -637,7 +621,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException;
+	public org.compiere.model.I_M_Locator getM_Locator();
 
 	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
 
@@ -666,7 +650,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
+	public org.compiere.model.I_M_Product getM_Product();
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
@@ -679,7 +663,7 @@ public interface I_PP_Cost_Collector
 	 * Set Lager.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -689,13 +673,13 @@ public interface I_PP_Cost_Collector
 	 * Get Lager.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException;
+	public org.compiere.model.I_M_Warehouse getM_Warehouse();
 
 	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
@@ -705,8 +689,8 @@ public interface I_PP_Cost_Collector
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Bewegungs-Datum.
-	 * Date a product was moved in or out of inventory
+	 * Set Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -715,8 +699,8 @@ public interface I_PP_Cost_Collector
 	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungs-Datum.
-	 * Date a product was moved in or out of inventory
+	 * Get Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -820,7 +804,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getPP_Cost_Collector_Parent_ID();
 
-	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector_Parent() throws RuntimeException;
+	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector_Parent();
 
 	public void setPP_Cost_Collector_Parent(org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector_Parent);
 
@@ -832,7 +816,7 @@ public interface I_PP_Cost_Collector
 	/**
 	 * Set Manufacturing Order BOM Line.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -841,13 +825,13 @@ public interface I_PP_Cost_Collector
 	/**
 	 * Get Manufacturing Order BOM Line.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getPP_Order_BOMLine_ID();
 
-	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine() throws RuntimeException;
+	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine();
 
 	public void setPP_Order_BOMLine(org.eevolution.model.I_PP_Order_BOMLine PP_Order_BOMLine);
 
@@ -874,7 +858,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getPP_Order_ID();
 
-	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException;
+	public org.eevolution.model.I_PP_Order getPP_Order();
 
 	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
 
@@ -887,7 +871,7 @@ public interface I_PP_Cost_Collector
 	 * Set Manufacturing Order Activity.
 	 * Workflow Node (activity), step or process
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -897,13 +881,13 @@ public interface I_PP_Cost_Collector
 	 * Get Manufacturing Order Activity.
 	 * Workflow Node (activity), step or process
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getPP_Order_Node_ID();
 
-	public org.eevolution.model.I_PP_Order_Node getPP_Order_Node() throws RuntimeException;
+	public org.eevolution.model.I_PP_Order_Node getPP_Order_Node();
 
 	public void setPP_Order_Node(org.eevolution.model.I_PP_Order_Node PP_Order_Node);
 
@@ -911,33 +895,6 @@ public interface I_PP_Cost_Collector
     public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.eevolution.model.I_PP_Order_Node> COLUMN_PP_Order_Node_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.eevolution.model.I_PP_Order_Node>(I_PP_Cost_Collector.class, "PP_Order_Node_ID", org.eevolution.model.I_PP_Order_Node.class);
     /** Column name PP_Order_Node_ID */
     public static final String COLUMNNAME_PP_Order_Node_ID = "PP_Order_Node_ID";
-
-	/**
-	 * Set Manufacturing Order Workflow.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPP_Order_Workflow_ID (int PP_Order_Workflow_ID);
-
-	/**
-	 * Get Manufacturing Order Workflow.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPP_Order_Workflow_ID();
-
-	public org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow() throws RuntimeException;
-
-	public void setPP_Order_Workflow(org.eevolution.model.I_PP_Order_Workflow PP_Order_Workflow);
-
-    /** Column definition for PP_Order_Workflow_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.eevolution.model.I_PP_Order_Workflow> COLUMN_PP_Order_Workflow_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.eevolution.model.I_PP_Order_Workflow>(I_PP_Cost_Collector.class, "PP_Order_Workflow_ID", org.eevolution.model.I_PP_Order_Workflow.class);
-    /** Column name PP_Order_Workflow_ID */
-    public static final String COLUMNNAME_PP_Order_Workflow_ID = "PP_Order_Workflow_ID";
 
 	/**
 	 * Set Verarbeitet.
@@ -1014,7 +971,7 @@ public interface I_PP_Cost_Collector
 	 * Set Reversal ID.
 	 * ID of document reversal
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1024,13 +981,13 @@ public interface I_PP_Cost_Collector
 	 * Get Reversal ID.
 	 * ID of document reversal
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getReversal_ID();
 
-	public org.eevolution.model.I_PP_Cost_Collector getReversal() throws RuntimeException;
+	public org.eevolution.model.I_PP_Cost_Collector getReversal();
 
 	public void setReversal(org.eevolution.model.I_PP_Cost_Collector Reversal);
 
@@ -1059,7 +1016,7 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getS_Resource_ID();
 
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException;
+	public org.compiere.model.I_S_Resource getS_Resource();
 
 	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
 
@@ -1150,7 +1107,7 @@ public interface I_PP_Cost_Collector
 	 * Set Nutzer 1.
 	 * User defined list element #1
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1160,13 +1117,13 @@ public interface I_PP_Cost_Collector
 	 * Get Nutzer 1.
 	 * User defined list element #1
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getUser1_ID();
 
-	public org.compiere.model.I_AD_User getUser1() throws RuntimeException;
+	public org.compiere.model.I_AD_User getUser1();
 
 	public void setUser1(org.compiere.model.I_AD_User User1);
 
@@ -1179,7 +1136,7 @@ public interface I_PP_Cost_Collector
 	 * Set Nutzer 2.
 	 * User defined list element #2
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1189,13 +1146,13 @@ public interface I_PP_Cost_Collector
 	 * Get Nutzer 2.
 	 * User defined list element #2
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getUser2_ID();
 
-	public org.compiere.model.I_AD_User getUser2() throws RuntimeException;
+	public org.compiere.model.I_AD_User getUser2();
 
 	public void setUser2(org.compiere.model.I_AD_User User2);
 

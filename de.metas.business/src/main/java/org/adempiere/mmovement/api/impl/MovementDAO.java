@@ -1,5 +1,7 @@
 package org.adempiere.mmovement.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -34,6 +36,7 @@ import org.compiere.model.I_M_MovementLine;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class MovementDAO implements IMovementDAO
 {
@@ -68,5 +71,17 @@ public class MovementDAO implements IMovementDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Movement.class)
 				.addEqualsFilter(I_M_Movement.COLUMN_M_Inventory_ID, inventoryId);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_Movement movement)
+	{
+		saveRecord(movement);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_MovementLine movementLine)
+	{
+		saveRecord(movementLine);
 	}
 }

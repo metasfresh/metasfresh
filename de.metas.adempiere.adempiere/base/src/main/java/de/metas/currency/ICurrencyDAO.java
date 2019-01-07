@@ -11,7 +11,10 @@ import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -26,11 +29,11 @@ import de.metas.util.ISingletonService;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,6 +44,10 @@ import de.metas.util.ISingletonService;
  */
 public interface ICurrencyDAO extends ISingletonService
 {
+	int DEFAULT_PRECISION = 2;
+
+	I_C_Currency getById(CurrencyId currencyId);
+
 	/**
 	 * retrieves Currency by ID
 	 *
@@ -77,9 +84,9 @@ public interface ICurrencyDAO extends ISingletonService
 	 */
 	int getStdPrecision(Properties ctx, int C_Currency_ID);
 
-	default int getStdPrecision(int C_Currency_ID)
+	default CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
 	{
-		return getStdPrecision(Env.getCtx(), C_Currency_ID);
+		return CurrencyPrecision.ofInt(getStdPrecision(Env.getCtx(), currencyId.getRepoId()));
 	}
 
 	/**
@@ -91,10 +98,13 @@ public interface ICurrencyDAO extends ISingletonService
 	 */
 	I_C_ConversionType retrieveDefaultConversionType(Properties ctx, int adClientId, int adOrgId, Date date);
 
-	/**
-	 * @return conversion type of given {@link ConversionType}; never returns null
-	 */
-	I_C_ConversionType retrieveConversionType(Properties ctx, ConversionType type);
+	default CurrencyConversionTypeId getDefaultConversionTypeId(final int adClientId, final int adOrgId, final Date date)
+	{
+		final I_C_ConversionType defaultConversionType = retrieveDefaultConversionType(Env.getCtx(), adClientId, adOrgId, date);
+		return defaultConversionType != null ? CurrencyConversionTypeId.ofRepoId(defaultConversionType.getC_ConversionType_ID()) : null;
+	}
 
-	BigDecimal retrieveRateOrNull(ICurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
+	CurrencyConversionTypeId getConversionTypeId(ConversionType type);
+
+	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
 }

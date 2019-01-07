@@ -7,6 +7,8 @@ import java.util.Properties;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
 
+import de.metas.acct.api.AcctSchema;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -251,11 +253,11 @@ public class LoginContext
 		Ini.setProperty(Ini.P_PRINTER, printerName);
 	}
 
-	public void setAcctSchema(final int C_AcctSchema_ID, final int C_Currency_ID, final boolean hasAlias)
+	public void setAcctSchema(final AcctSchema acctSchema)
 	{
-		setProperty("$C_AcctSchema_ID", C_AcctSchema_ID);
-		setProperty("$C_Currency_ID", C_Currency_ID);
-		setProperty("$HasAlias", hasAlias);
+		setProperty("$C_AcctSchema_ID", acctSchema.getId().getRepoId());
+		setProperty("$C_Currency_ID", acctSchema.getCurrencyId().getRepoId());
+		setProperty("$HasAlias", acctSchema.getValidCombinationOptions().isUseAccountAlias());
 	}
 
 	public int getC_AcctSchema_ID()

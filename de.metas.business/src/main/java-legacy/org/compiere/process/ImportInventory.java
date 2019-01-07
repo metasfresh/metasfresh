@@ -24,7 +24,6 @@ import org.compiere.model.I_I_Inventory;
  */
 public class ImportInventory extends AbstractImportJavaProcess<I_I_Inventory>
 {
-
 	public ImportInventory()
 	{
 		super(I_I_Inventory.class);

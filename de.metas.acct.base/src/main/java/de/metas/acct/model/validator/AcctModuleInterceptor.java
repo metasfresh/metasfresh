@@ -25,8 +25,7 @@ package de.metas.acct.model.validator;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IFactAcctListenersService;
-import org.adempiere.acct.api.IPostingService;
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -45,6 +44,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.acct.aggregation.async.ScheduleFactAcctLogProcessingFactAcctListener;
+import de.metas.acct.api.IFactAcctListenersService;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
@@ -55,6 +56,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductActivityProvider;
 import de.metas.util.Services;
 
 /**
@@ -86,11 +88,18 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		{
 			Services.get(IUserRolePermissionsDAO.class).setAccountingModuleActive();
 		}
+
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 	}
 
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
+		// engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(), client); // spring component
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL(), client);
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default(), client);
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element(), client);
+
 		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount(), client); // 08354
 		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(), client);
 		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(), client);

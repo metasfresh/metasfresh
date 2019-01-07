@@ -1,10 +1,12 @@
 package de.metas.material.planning.pporder;
 
+import static org.compiere.util.TimeUtil.asInstant;
+
 import java.util.List;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.Adempiere;
-import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
@@ -57,7 +59,8 @@ public class PPOrderPojoConverter
 		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrderRecord);
 		for (final I_PP_Order_BOMLine ppOrderLineRecord : orderBOMLines)
 		{
-			final boolean receipt = PPOrderUtil.isReceipt(ppOrderLineRecord.getComponentType());
+			final BOMComponentType componentType = BOMComponentType.ofCode(ppOrderLineRecord.getComponentType());
+			final boolean receipt = PPOrderUtil.isReceipt(componentType);
 
 			final PPOrderLine ppOrderLinePojo = PPOrderLine.builder()
 					.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
@@ -66,7 +69,7 @@ public class PPOrderPojoConverter
 					.productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
 					.qtyRequired(ppOrderLineRecord.getQtyRequiered())
 					.qtyDelivered(ppOrderLineRecord.getQtyDelivered())
-					.issueOrReceiveDate(TimeUtil.asInstant(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule()))
+					.issueOrReceiveDate(asInstant(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule()))
 					.receipt(receipt)
 					.build();
 
@@ -82,8 +85,8 @@ public class PPOrderPojoConverter
 		final int groupIdFromPPOrderRequestedEvent = ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord, 0);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
-				.datePromised(TimeUtil.asInstant(ppOrderRecord.getDatePromised()))
-				.dateStartSchedule(TimeUtil.asInstant(ppOrderRecord.getDateStartSchedule()))
+				.datePromised(asInstant(ppOrderRecord.getDatePromised()))
+				.dateStartSchedule(asInstant(ppOrderRecord.getDateStartSchedule()))
 				.docStatus(ppOrderRecord.getDocStatus())
 				.orgId(ppOrderRecord.getAD_Org_ID())
 				.plantId(ppOrderRecord.getS_Resource_ID())

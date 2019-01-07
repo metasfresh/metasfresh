@@ -21,8 +21,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAcctSchemaDefault;
 import org.compiere.model.MDocType;
 import org.compiere.model.MGLCategory;
 import org.compiere.model.MInvoice;
@@ -33,12 +31,16 @@ import org.compiere.model.MOrg;
 import org.compiere.model.Query;
 import org.compiere.model.X_T_InvoiceGL;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * 	Invoice Not realized Gain & Loss.
@@ -49,8 +51,10 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class InvoiceNGL extends JavaProcess
 {
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	
 	/**	Mandatory Acct Schema			*/
-	private int				p_C_AcctSchema_ID = 0;
+	private AcctSchemaId p_C_AcctSchema_ID;
 	/** Mandatory Conversion Type		*/
 	private int				p_C_ConversionTypeReval_ID = 0;
 	/** Revaluation Date				*/
@@ -79,7 +83,7 @@ public class InvoiceNGL extends JavaProcess
 			if (para[i].getParameter() == null)
 				;
 			else if (name.equals("C_AcctSchema_ID"))
-				p_C_AcctSchema_ID = para[i].getParameterAsInt();
+				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para[i].getParameterAsInt());
 			else if (name.equals("C_ConversionTypeReval_ID"))
 				p_C_ConversionTypeReval_ID = para[i].getParameterAsInt();
 			else if (name.equals("DateReval"))
@@ -150,7 +154,7 @@ public class InvoiceNGL extends JavaProcess
 		    + "WHERE i.IsPaid='N'"
 		    + " AND EXISTS (SELECT * FROM C_ElementValue ev "
 		    	+ "WHERE ev.C_ElementValue_ID=fa.Account_ID AND (ev.AccountType='A' OR ev.AccountType='L'))"
-		    + " AND fa.C_AcctSchema_ID=" + p_C_AcctSchema_ID;
+		    + " AND fa.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId();
 		if (!p_IsAllCurrencies)
 			sql += " AND i.C_Currency_ID<>a.C_Currency_ID";
 		if (ONLY_AR.equals(p_APAR))
@@ -231,8 +235,7 @@ public class InvoiceNGL extends JavaProcess
 			return " - No Records found";
 		
 		//
-		MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
-		MAcctSchemaDefault asDefaultAccts = MAcctSchemaDefault.get(getCtx(), p_C_AcctSchema_ID);
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(p_C_AcctSchema_ID);
 		MGLCategory cat = MGLCategory.getDefaultSystem(getCtx());
 		if (cat == null)
 		{
@@ -245,13 +248,13 @@ public class InvoiceNGL extends JavaProcess
 		batch.setC_DocType_ID(p_C_DocTypeReval_ID);
 		batch.setDateDoc(new Timestamp(System.currentTimeMillis()));
 		batch.setDateAcct(p_DateReval);
-		batch.setC_Currency_ID(as.getC_Currency_ID());
+		batch.setC_Currency_ID(as.getCurrencyId().getRepoId());
 		if (!batch.save())
 			return " - Could not create Batch";
 		//
 		MJournal journal = null;
-		BigDecimal drTotal = Env.ZERO;
-		BigDecimal crTotal = Env.ZERO;
+		BigDecimal drTotal = BigDecimal.ZERO;
+		BigDecimal crTotal = BigDecimal.ZERO;
 		int AD_Org_ID = 0;
 		for (int i = 0; i < list.size(); i++)
 		{
@@ -259,14 +262,14 @@ public class InvoiceNGL extends JavaProcess
 			if (gl.getAmtRevalDrDiff().signum() == 0 && gl.getAmtRevalCrDiff().signum() == 0)
 				continue;
 			MInvoice invoice = new MInvoice(getCtx(), gl.getC_Invoice_ID(), null);
-			if (invoice.getC_Currency_ID() == as.getC_Currency_ID())
+			if (invoice.getC_Currency_ID() == as.getCurrencyId().getRepoId())
 				continue;
 			//
 			if (journal == null)
 			{
 				journal = new MJournal (batch);
-				journal.setC_AcctSchema_ID (as.getC_AcctSchema_ID());
-				journal.setC_Currency_ID(as.getC_Currency_ID());
+				journal.setC_AcctSchema_ID (as.getId().getRepoId());
+				journal.setC_Currency_ID(as.getCurrencyId().getRepoId());
 				journal.setC_ConversionType_ID(p_C_ConversionTypeReval_ID);
 				MOrg org = MOrg.get(getCtx(), gl.getAD_Org_ID());
 				journal.setDescription (getName() + " - " + org.getName());
@@ -297,15 +300,15 @@ public class InvoiceNGL extends JavaProcess
 			//	Change in Org
 			if (AD_Org_ID != gl.getAD_Org_ID())
 			{
-				createBalancing (asDefaultAccts, journal, drTotal, crTotal, AD_Org_ID, (i+1) * 10);
+				createBalancing (as, journal, drTotal, crTotal, AD_Org_ID, (i+1) * 10);
 				//
 				AD_Org_ID = gl.getAD_Org_ID();
-				drTotal = Env.ZERO;
-				crTotal = Env.ZERO;
+				drTotal = BigDecimal.ZERO;
+				crTotal = BigDecimal.ZERO;
 				journal = null;
 			}
 		}
-		createBalancing (asDefaultAccts, journal, drTotal, crTotal, AD_Org_ID, (list.size()+1) * 10);
+		createBalancing (as, journal, drTotal, crTotal, AD_Org_ID, (list.size()+1) * 10);
 		
 		return " - " + batch.getDocumentNo() + " #" + list.size();
 	}	//	createGLJournal
@@ -319,19 +322,22 @@ public class InvoiceNGL extends JavaProcess
 	 *	@param AD_Org_ID org
 	 *	@param lineNo base line no
 	 */
-	private void createBalancing (MAcctSchemaDefault asDefaultAccts, MJournal journal, 
+	private void createBalancing (AcctSchema as, MJournal journal, 
 		BigDecimal drTotal, BigDecimal crTotal, int AD_Org_ID, int lineNo)
 	{
 		if (journal == null)
 			throw new IllegalArgumentException("Jornal is null");
+		
+		final AcctSchemaId acctSchemaId = as.getId();
+		
 		//		CR Entry = Gain
 		if (drTotal.signum() != 0)
 		{
 			MJournalLine line = new MJournalLine(journal);
 			line.setLine(lineNo+1);
-			MAccount base = MAccount.get(getCtx(), asDefaultAccts.getUnrealizedGain_Acct());
-			MAccount acct = MAccount.get(getCtx(), asDefaultAccts.getAD_Client_ID(), AD_Org_ID, 
-				asDefaultAccts.getC_AcctSchema_ID(), base.getAccount_ID(), base.getC_SubAcct_ID(),
+			MAccount base = accountDAO.getById(getCtx(), as.getDefaultAccounts().getUnrealizedGainAcctId());
+			MAccount acct = MAccount.get(getCtx(), as.getClientId().getRepoId(), AD_Org_ID, 
+				acctSchemaId, base.getAccount_ID(), base.getC_SubAcct_ID(),
 				base.getM_Product_ID(), base.getC_BPartner_ID(), base.getAD_OrgTrx_ID(), 
 				base.getC_LocFrom_ID(), base.getC_LocTo_ID(), base.getC_SalesRegion_ID(), 
 				base.getC_Project_ID(), base.getC_Campaign_ID(), base.getC_Activity_ID(),
@@ -348,9 +354,9 @@ public class InvoiceNGL extends JavaProcess
 		{
 			MJournalLine line = new MJournalLine(journal);
 			line.setLine(lineNo+2);
-			MAccount base = MAccount.get(getCtx(), asDefaultAccts.getUnrealizedLoss_Acct());
-			MAccount acct = MAccount.get(getCtx(), asDefaultAccts.getAD_Client_ID(), AD_Org_ID, 
-				asDefaultAccts.getC_AcctSchema_ID(), base.getAccount_ID(), base.getC_SubAcct_ID(),
+			MAccount base = accountDAO.getById(getCtx(), as.getDefaultAccounts().getUnrealizedLossAcctId());
+			MAccount.get(getCtx(), as.getClientId().getRepoId(), AD_Org_ID, 
+				acctSchemaId, base.getAccount_ID(), base.getC_SubAcct_ID(),
 				base.getM_Product_ID(), base.getC_BPartner_ID(), base.getAD_OrgTrx_ID(), 
 				base.getC_LocFrom_ID(), base.getC_LocTo_ID(), base.getC_SalesRegion_ID(), 
 				base.getC_Project_ID(), base.getC_Campaign_ID(), base.getC_Activity_ID(),

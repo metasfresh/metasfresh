@@ -1,39 +1,11 @@
 package de.metas.handlingunits.movement.api.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Properties;
-
-import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -42,6 +14,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.util.Services;
@@ -58,7 +32,7 @@ public class HUMovementBLTest
 	private HUMovementBL huMovementBL;
 
 	private IContextAware context;
-	private I_C_AcctSchema acctSchema;
+	private AcctSchemaId acctSchemaId;
 
 	@Before
 	public void init()
@@ -72,19 +46,9 @@ public class HUMovementBLTest
 
 		//
 		// Master data
-		acctSchema = InterfaceWrapperHelper.newInstance(I_C_AcctSchema.class, context);
-		InterfaceWrapperHelper.save(acctSchema);
-
-		//
-		// Mock accounting schema retrieval
-		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
-		{
-			@Override
-			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
-			{
-				return acctSchema;
-			}
-		});
+		// acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		acctSchemaId = AcctSchemaId.ofRepoId(1);
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
 	}
 
 	/**
@@ -108,7 +72,7 @@ public class HUMovementBLTest
 		InterfaceWrapperHelper.save(product);
 
 		final I_M_Product_Acct productAcct = InterfaceWrapperHelper.newInstance(I_M_Product_Acct.class, context);
-		productAcct.setC_AcctSchema(acctSchema);
+		productAcct.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		productAcct.setM_Product(product);
 		productAcct.setC_Activity(activity);
 		InterfaceWrapperHelper.save(productAcct);

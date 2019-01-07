@@ -429,7 +429,7 @@ import lombok.NonNull;
 
 		//
 		// Qty Entered and UOM
-		shipmentLine.setC_UOM(qtyEntered.getUOM());
+		shipmentLine.setC_UOM_ID(qtyEntered.getUOMId());
 		shipmentLine.setQtyEntered(qtyEntered.getAsBigDecimal());
 
 		// Set MovementQty

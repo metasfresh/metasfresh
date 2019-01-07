@@ -1,7 +1,9 @@
 package de.metas.product.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -27,14 +29,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
@@ -44,6 +50,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.product.IProductDAO;
@@ -52,6 +59,7 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -268,5 +276,72 @@ public class ProductDAO implements IProductDAO
 	public String getProductCategoryNameById(@NonNull final ProductCategoryId id)
 	{
 		return getProductCategoryById(id).getName();
+	}
+
+	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_S_Resource_ID)
+	@Override
+	public ProductId getProductIdByResourceId(@NonNull final ResourceId resourceId)
+	{
+		final ProductId productId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create()
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
+		if (productId == null)
+		{
+			throw new AdempiereException("No product found for " + resourceId);
+		}
+		return productId;
+	}
+
+	@Override
+	public void updateProductsByResourceIds(@NonNull final Set<ResourceId> resourceIds, @NonNull final Consumer<I_M_Product> productUpdater)
+	{
+		updateProductsByResourceIds(resourceIds, (resourceId, product) -> {
+			if (product != null)
+			{
+				productUpdater.accept(product);
+			}
+		});
+	}
+
+	@Override
+	public void updateProductsByResourceIds(@NonNull final Set<ResourceId> resourceIds, @NonNull final BiConsumer<ResourceId, I_M_Product> productUpdater)
+	{
+		Check.assumeNotEmpty(resourceIds, "resourceIds is not empty");
+
+		final Set<ProductId> productIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product.class) // in trx!
+				.addInArrayFilter(I_M_Product.COLUMN_S_Resource_ID, resourceIds)
+				.create()
+				.listIds(ProductId::ofRepoId);
+		if (productIds.isEmpty())
+		{
+			return;
+		}
+
+		final Map<ResourceId, I_M_Product> productsByResourceId = Maps.uniqueIndex(
+				loadByRepoIdAwares(productIds, I_M_Product.class),
+				product -> ResourceId.ofRepoId(product.getS_Resource_ID()));
+
+		resourceIds.forEach(resourceId -> {
+			final I_M_Product product = productsByResourceId.get(resourceId); // might be null
+			productUpdater.accept(resourceId, product);
+			saveRecord(product);
+		});
+	}
+
+	@Override
+	public void deleteProductByResourceId(@NonNull final ResourceId resourceId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product.class) // in trx
+				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create()
+				.delete();
 	}
 }

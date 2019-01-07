@@ -27,12 +27,12 @@ import java.math.BigDecimal;
 
 import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.util.Check;
 
 /**
@@ -207,8 +207,8 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public I_C_AcctSchema getC_AcctSchema()
+	public AcctSchemaId getAcctSchemaId()
 	{
-		return glJournalLine.getGL_Journal().getC_AcctSchema();
+		return AcctSchemaId.ofRepoId(glJournalLine.getGL_Journal().getC_AcctSchema_ID());
 	}
 }

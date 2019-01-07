@@ -20,7 +20,6 @@ package de.metas.acct.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for Fact_Acct_EndingBalance
  *  @author Adempiere (generated) 
@@ -41,8 +40,8 @@ public class X_Fact_Acct_EndingBalance extends org.compiere.model.PO implements 
       /** if (Fact_Acct_EndingBalance_ID == 0)
         {
 			setAccount_ID (0);
-			setAmtAcctCr_DTD (Env.ZERO);
-			setAmtAcctDr_DTD (Env.ZERO);
+			setAmtAcctCr_DTD (BigDecimal.ZERO);
+			setAmtAcctDr_DTD (BigDecimal.ZERO);
 			setC_AcctSchema_ID (0);
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
 			setFact_Acct_ID (0);
@@ -120,7 +119,7 @@ public class X_Fact_Acct_EndingBalance extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr_DTD);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -142,7 +141,7 @@ public class X_Fact_Acct_EndingBalance extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr_DTD);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
