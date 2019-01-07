@@ -44,7 +44,7 @@ public class MovementBLTest
 		AdempiereTestHelper.get().init();
 		context = PlainContextAware.newOutOfTrx();
 
-		final IProductActivityProvider productActivityProvider = this::retrieveActivityForAcct;
+		final IProductActivityProvider productActivityProvider = (clientId, orgId, productId) -> productActivities.get(productId);
 		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 
 		//
@@ -57,11 +57,6 @@ public class MovementBLTest
 		// acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
 		acctSchemaId = AcctSchemaId.ofRepoId(1);
 		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
-	}
-
-	private ActivityId retrieveActivityForAcct(final ClientId clientId, final OrgId orgId, final ProductId productId)
-	{
-		return productActivities.get(productId);
 	}
 
 	/**

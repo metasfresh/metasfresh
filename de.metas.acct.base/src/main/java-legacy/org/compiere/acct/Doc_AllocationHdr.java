@@ -587,7 +587,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			final BigDecimal discountFactor = calculateDiscountFactor(discountAmt_Abs, invoice);
 
 			// split discount for different taxes
-			BigDecimal discountSum = BigDecimal.ZERO;
+			BigDecimal discountSum = ZERO;
 			for (int i = 0; i < taxes.length; i++)
 			{
 				// TaxDiscountAmt = TaxBaseAmt * Skonto * (1+TaxRate)
