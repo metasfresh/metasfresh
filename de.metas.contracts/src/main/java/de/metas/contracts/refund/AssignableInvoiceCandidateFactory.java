@@ -1,6 +1,7 @@
 package de.metas.contracts.refund;
 
 import static de.metas.util.NumberUtils.stripTrailingDecimalZeros;
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 
 import java.math.BigDecimal;
@@ -84,12 +85,10 @@ public class AssignableInvoiceCandidateFactory
 		final I_C_Currency currencyRecord = assignableRecord.getC_Currency();
 		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
 		final int precision = currencyRecord.getStdPrecision();
-
 		final Money money = Money.of(stripTrailingDecimalZeros(moneyAmount), currencyId);
 
-		final Quantity quantity = Quantity.of(
-				assignableRecord.getQtyToInvoice().add(stripTrailingDecimalZeros(assignableRecord.getQtyInvoiced())),
-				assignableRecord.getM_Product().getC_UOM());
+		final Quantity quantity = extractQuantity(assignableRecord);
+		final Quantity quantityOld = extractQuantity(createOld(assignableRecord, I_C_Invoice_Candidate.class));
 
 		final List<AssignmentToRefundCandidate> assignments = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(invoiceCandidateId);
 
@@ -100,10 +99,19 @@ public class AssignableInvoiceCandidateFactory
 				.money(money)
 				.precision(precision)
 				.quantity(quantity)
+				.quantityOld(quantityOld)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
 				.assignmentsToRefundCandidates(assignments)
 				.build();
 
 		return invoiceCandidate;
+	}
+
+	private Quantity extractQuantity(@NonNull final I_C_Invoice_Candidate assignableRecord)
+	{
+		final Quantity quantity = Quantity.of(
+				assignableRecord.getQtyToInvoice().add(stripTrailingDecimalZeros(assignableRecord.getQtyInvoiced())),
+				assignableRecord.getM_Product().getC_UOM());
+		return quantity;
 	}
 }
