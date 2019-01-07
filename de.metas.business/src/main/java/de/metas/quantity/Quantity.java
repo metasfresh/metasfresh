@@ -52,12 +52,17 @@ import lombok.NonNull;
  */
 public final class Quantity implements Comparable<Quantity>
 {
-	public static final Quantity of(final BigDecimal qty, final I_C_UOM uom)
+	public static final Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uom)
+	{
+		return of(new BigDecimal(qty), uom);
+	}
+
+	public static final Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
 		return new Quantity(qty, uom);
 	}
 
-	public static final Quantity of(final int qty, final I_C_UOM uom)
+	public static final Quantity of(final int qty, @NonNull final I_C_UOM uom)
 	{
 		return of(BigDecimal.valueOf(qty), uom);
 	}
@@ -120,7 +125,7 @@ public final class Quantity implements Comparable<Quantity>
 	 * @param qty
 	 * @param uom
 	 */
-	public Quantity(final BigDecimal qty, final I_C_UOM uom)
+	public Quantity(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
 		this(qty, uom, qty, uom);
 	}
@@ -467,7 +472,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * Interchange the Qty/UOM with source Qty/UOM if the source is more precise.
 	 * Source is considered more precise if it's numeric value is bigger.
-	 * 
+	 *
 	 * This method is usually used before persisting to database where we want to persist the most precise amount,
 	 * because else, when we will load it back we won't get the same figures.
 	 */

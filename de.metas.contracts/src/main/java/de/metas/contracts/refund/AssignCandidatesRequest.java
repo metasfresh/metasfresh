@@ -44,7 +44,7 @@ public class AssignCandidatesRequest
 	{
 		this.refundInvoiceCandidate = refundInvoiceCandidate;
 
-		Check.assumeNotNull(assignableInvoiceCandidate.getRepoId(),
+		Check.assumeNotNull(assignableInvoiceCandidate.getId(),
 				"This unassignedPair's assignableInvoiceCandidate needs to have a non-null RepoId; this={}", this);
 		this.assignableInvoiceCandidate = assignableInvoiceCandidate;
 

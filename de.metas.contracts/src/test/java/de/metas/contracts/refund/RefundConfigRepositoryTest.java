@@ -172,6 +172,7 @@ public class RefundConfigRepositoryTest
 		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
 		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
 		invoiceScheduleRecord.setInvoiceDay(1);
+		invoiceScheduleRecord.setInvoiceDistance(5);
 		saveRecord(invoiceScheduleRecord);
 		return invoiceScheduleRecord;
 	}

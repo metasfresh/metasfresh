@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Currency;
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.time.SystemTime;
 
@@ -85,7 +86,13 @@ public class AssignableInvoiceCandidateFactoryTest
 		assignableIcRecord.setC_Currency(currencyRecord);
 		save(assignableIcRecord);
 
-		assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory();
+		final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(invoiceScheduleRepository);
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
+		assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory(new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository));
 	}
 
 	@Test

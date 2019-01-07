@@ -185,11 +185,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * <li>else (which should not happen, unless a new invoice rule is introduced): <code>Created</code>
 	 * </ul>
 	 *
-	 * @param ctx
-	 * @param ic
 	 * @task 08542
 	 */
-	void set_DateToInvoice(final Properties ctx, final I_C_Invoice_Candidate ic)
+	@Override
+	public void set_DateToInvoice_DefaultImpl(final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp dateToInvoice;
 

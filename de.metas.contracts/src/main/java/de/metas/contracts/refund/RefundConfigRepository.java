@@ -16,6 +16,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
@@ -35,7 +36,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -63,6 +64,8 @@ import lombok.NonNull;
 @Repository
 public class RefundConfigRepository
 {
+	@VisibleForTesting
+	@Getter
 	private final InvoiceScheduleRepository invoiceScheduleRepository;
 
 	public RefundConfigRepository(@NonNull final InvoiceScheduleRepository invoiceScheduleRepository)
@@ -263,6 +266,7 @@ public class RefundConfigRepository
 			case AMOUNT_PER_UNIT:
 				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
 				configRecord.setRefundAmt(refundConfig.getAmount().getValue());
+				configRecord.setC_Currency_ID(refundConfig.getAmount().getCurrencyId().getRepoId());
 				configRecord.setRefundPercent(null);
 				break;
 			default:
