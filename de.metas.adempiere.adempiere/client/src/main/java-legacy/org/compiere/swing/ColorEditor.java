@@ -57,13 +57,13 @@ public class ColorEditor extends CDialog
 		implements ActionListener, PropertyEditor
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -484760951046013782L;
 
 	/**
 	 * Get Background AdempiereColor
-	 * 
+	 *
 	 * @param owner owner
 	 * @param color optional initial color
 	 * @return AdempiereColor
@@ -78,7 +78,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Get Background AdempiereColor
-	 * 
+	 *
 	 * @param owner owner
 	 * @param color optional initial color
 	 * @return AdempiereColor
@@ -112,10 +112,10 @@ public class ColorEditor extends CDialog
 	};
 	/** Types */
 	private static final ValueNamePair[] TYPES = new ValueNamePair[] {
-			new ValueNamePair(TYPE_VALUES[0].getCode(), TYPE_NAMES[0]),
-			new ValueNamePair(TYPE_VALUES[1].getCode(), TYPE_NAMES[1]),
-			new ValueNamePair(TYPE_VALUES[2].getCode(), TYPE_NAMES[2]),
-			new ValueNamePair(TYPE_VALUES[3].getCode(), TYPE_NAMES[3])
+			 ValueNamePair.of(TYPE_VALUES[0].getCode(), TYPE_NAMES[0]),
+			 ValueNamePair.of(TYPE_VALUES[1].getCode(), TYPE_NAMES[1]),
+			 ValueNamePair.of(TYPE_VALUES[2].getCode(), TYPE_NAMES[2]),
+			 ValueNamePair.of(TYPE_VALUES[3].getCode(), TYPE_NAMES[3])
 	};
 
 	/** Gradient Starting Values */
@@ -134,19 +134,19 @@ public class ColorEditor extends CDialog
 	};
 	/** Gradient Starting Point */
 	private static final KeyNamePair[] GRADIENT_SP = new KeyNamePair[] {
-			new KeyNamePair(GRADIENT_SP_VALUES[0], GRADIENT_SP_NAMES[0]),
-			new KeyNamePair(GRADIENT_SP_VALUES[1], GRADIENT_SP_NAMES[1]),
-			new KeyNamePair(GRADIENT_SP_VALUES[2], GRADIENT_SP_NAMES[2]),
-			new KeyNamePair(GRADIENT_SP_VALUES[3], GRADIENT_SP_NAMES[3]),
-			new KeyNamePair(GRADIENT_SP_VALUES[4], GRADIENT_SP_NAMES[4]),
-			new KeyNamePair(GRADIENT_SP_VALUES[5], GRADIENT_SP_NAMES[5]),
-			new KeyNamePair(GRADIENT_SP_VALUES[6], GRADIENT_SP_NAMES[6]),
-			new KeyNamePair(GRADIENT_SP_VALUES[7], GRADIENT_SP_NAMES[7])
+			KeyNamePair.of(GRADIENT_SP_VALUES[0], GRADIENT_SP_NAMES[0]),
+			KeyNamePair.of(GRADIENT_SP_VALUES[1], GRADIENT_SP_NAMES[1]),
+			KeyNamePair.of(GRADIENT_SP_VALUES[2], GRADIENT_SP_NAMES[2]),
+			KeyNamePair.of(GRADIENT_SP_VALUES[3], GRADIENT_SP_NAMES[3]),
+			KeyNamePair.of(GRADIENT_SP_VALUES[4], GRADIENT_SP_NAMES[4]),
+			KeyNamePair.of(GRADIENT_SP_VALUES[5], GRADIENT_SP_NAMES[5]),
+			KeyNamePair.of(GRADIENT_SP_VALUES[6], GRADIENT_SP_NAMES[6]),
+			KeyNamePair.of(GRADIENT_SP_VALUES[7], GRADIENT_SP_NAMES[7])
 	};
 
 	/**
 	 * Create AdempiereColor Dialog with color
-	 * 
+	 *
 	 * @param owner owner
 	 * @param color Start Color
 	 */
@@ -158,7 +158,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Create AdempiereColor Dialog with color
-	 * 
+	 *
 	 * @param owner owner
 	 * @param color Start Color
 	 */
@@ -170,7 +170,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Init Dialog
-	 * 
+	 *
 	 * @param color Start Color
 	 */
 	private void init(MFColor color)
@@ -240,7 +240,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Static Layout.
-	 * 
+	 *
 	 * <pre>
 	 * -northPanel
 	 * 		- labels
@@ -248,7 +248,7 @@ public class ColorEditor extends CDialog
 	 * 				- centerPanel
 	 * 				- southPanel
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -303,7 +303,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Action Listener
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -407,7 +407,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Set Color and update UI
-	 * 
+	 *
 	 * @param color color
 	 */
 	public void setColor(MFColor color)
@@ -555,7 +555,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Get Color
-	 * 
+	 *
 	 * @return Color, when saved - else null
 	 */
 	public MFColor getColor()
@@ -565,7 +565,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Was the selection saved
-	 * 
+	 *
 	 * @return true if saved
 	 */
 	public boolean isSaved()
@@ -612,7 +612,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Determines whether this property editor is paintable.
-	 * 
+	 *
 	 * @return True if the class will honor the paintValue method.
 	 */
 	@Override
@@ -681,7 +681,7 @@ public class ColorEditor extends CDialog
 	 * java.lang.IllegalArgumentException if either the String is
 	 * badly formatted or if this kind of property can't be expressed
 	 * as text.
-	 * 
+	 *
 	 * @param text The string to be parsed.
 	 * @throws IllegalArgumentException
 	 */
@@ -730,7 +730,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Determines whether this property editor supports a custom editor.
-	 * 
+	 *
 	 * @return True if the propertyEditor can provide a custom editor.
 	 */
 	@Override
@@ -756,7 +756,7 @@ public class ColorEditor extends CDialog
 
 	/**
 	 * Remove a listener for the PropertyChange event.
-	 * 
+	 *
 	 * @param listener The PropertyChange listener to be removed.
 	 */
 	@Override

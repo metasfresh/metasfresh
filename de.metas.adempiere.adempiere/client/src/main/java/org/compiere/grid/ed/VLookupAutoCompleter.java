@@ -232,17 +232,17 @@ import de.metas.util.Services;
 	protected Object fetchUserObject(final ResultSet rs) throws SQLException
 	{
 		final String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
-
+		// TODO see if this code is also used by the webui
 		final NamePair item;
 		if (lookupInfo.isNumericKey())
 		{
 			final int key = rs.getInt(MLookupFactory.COLUMNINDEX_Key);
-			item = new KeyNamePair(key, name);
+			item = KeyNamePair.of(key, name);
 		}
 		else
 		{
 			final String value = rs.getString(MLookupFactory.COLUMNINDEX_Value);
-			item = new ValueNamePair(value, name);
+			item = ValueNamePair.of(value, name);
 		}
 
 		// Validate the result

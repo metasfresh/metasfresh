@@ -2,6 +2,8 @@ package de.metas.i18n;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
@@ -32,13 +34,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 /*package*/final class ConstantTranslatableString implements ITranslatableString
 {
-	static final ConstantTranslatableString of(final String value)
+	static final ConstantTranslatableString of(@Nullable final String value)
 	{
 		final boolean anyLanguage = false;
 		return of(value, anyLanguage);
 	}
-	
-	static final ConstantTranslatableString of(final String value, final boolean anyLanguage)
+
+	static final ConstantTranslatableString of(@Nullable final String value, final boolean anyLanguage)
 	{
 		if(value == null || value.isEmpty())
 		{
@@ -48,7 +50,7 @@ import lombok.EqualsAndHashCode;
 		{
 			return SPACE;
 		}
-		
+
 		return new ConstantTranslatableString(value, anyLanguage);
 	}
 
@@ -92,7 +94,7 @@ import lombok.EqualsAndHashCode;
 	{
 		return ImmutableSet.of();
 	}
-	
+
 	@Override
 	public boolean isTranslatedTo(final String adLanguage)
 	{

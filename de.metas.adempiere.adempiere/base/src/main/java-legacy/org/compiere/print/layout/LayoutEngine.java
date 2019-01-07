@@ -78,7 +78,7 @@ import de.metas.logging.LogManager;
  *
  * @author Jorg Janke
  * @version $Id: LayoutEngine.java,v 1.3 2006/07/30 00:53:02 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1673505 ] BarCode/Image problem when print format is not form <li>BF [ 1673542 ] Can't add static image in report table cell <li>BF [ 1673548 ]
  *         Image is not scaled in a report table cell <li>BF [ 1807917 ] Layout positioning issue with m_maxHeightSinceNewLine <li>BF [ 1825876 ] Layout boxes with auto width not working <li>FR [
  *         1966406 ] Report Engine: AD_PInstance_Logs should be displayed <li>BF [ 2487307 ] LayoutEngine: NPE when Barcode field is null <li>BF [ 2828893 ] Problem with NextPage in Print Format
@@ -91,7 +91,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 {
 	/**
 	 * Detail Constructor
-	 * 
+	 *
 	 * @param format Print Format
 	 * @param data Print Data
 	 * @param query query for parameter info
@@ -103,7 +103,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Detail Constructor
-	 * 
+	 *
 	 * @param format Print Format
 	 * @param data Print Data
 	 * @param query query for parameter info
@@ -228,7 +228,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	/**************************************************************************
 	 * Set Print Format
 	 * Optionally re-calculate layout
-	 * 
+	 *
 	 * @param doLayout if layout exists, redo it
 	 * @param format print Format
 	 */
@@ -264,7 +264,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	/**
 	 * Set PrintData.
 	 * Optionally re-calculate layout
-	 * 
+	 *
 	 * @param data data
 	 * @param doLayout if layout exists, redo it
 	 * @param query query for parameter
@@ -288,7 +288,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**************************************************************************
 	 * Set Paper
-	 * 
+	 *
 	 * @param paper Paper
 	 */
 	public void setPaper(final CPaper paper)
@@ -299,7 +299,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	/**
 	 * Set Paper
 	 * Optionally re-calculate layout
-	 * 
+	 *
 	 * @param paper Paper
 	 * @param headerHeight header height
 	 * @param footerHeight footer height
@@ -326,7 +326,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	/**
 	 * Show Dialog and Set Paper
 	 * Optionally re-calculate layout
-	 * 
+	 *
 	 * @param job printer job
 	 */
 	public void pageSetupDialog(final PrinterJob job)
@@ -342,7 +342,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	/**
 	 * Set Paper from Page Format.
 	 * PageFormat is derived from CPaper
-	 * 
+	 *
 	 * @param pf Optional PageFormat - if null standard paper Portrait
 	 */
 	protected void setPageFormat(final PageFormat pf)
@@ -355,7 +355,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Page Format
-	 * 
+	 *
 	 * @return page format
 	 */
 	public PageFormat getPageFormat()
@@ -365,7 +365,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Calculate Page size based on Paper and header/footerHeight.
-	 * 
+	 *
 	 * <pre>
 	 *  Paper: 8.5x11.0" Portrait x=32.0,y=32.0 w=548.0,h=728.0
 	 *  +------------------------ Paper   612x792
@@ -409,7 +409,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Set Paper
-	 * 
+	 *
 	 * @return Paper
 	 */
 	public CPaper getPaper()
@@ -517,7 +517,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Build the string that tells that the current page is the x'th page of the set of n pages
-	 * 
+	 *
 	 * @param pageNo
 	 * @return
 	 */
@@ -538,7 +538,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/***************************************************************************
 	 * Get PrintLayout (Report) Context
-	 * 
+	 *
 	 * @return context
 	 */
 	public Properties getCtx()
@@ -548,7 +548,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get the number of printed Columns
-	 * 
+	 *
 	 * @return no of printed columns
 	 */
 	public int getColumnCount()
@@ -558,7 +558,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Set the current Print Area
-	 * 
+	 *
 	 * @param area see HEADER_.. constants
 	 */
 	protected void setArea(final int area)
@@ -572,7 +572,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get the current Print Area
-	 * 
+	 *
 	 * @return area see HEADER_.. constants
 	 */
 	public int getArea()
@@ -582,7 +582,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Return bounds of current Area
-	 * 
+	 *
 	 * @return rectangle with bounds
 	 */
 	public Rectangle getAreaBounds()
@@ -598,7 +598,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**************************************************************************
 	 * Create New Page, set position to top content
-	 * 
+	 *
 	 * @param force if false will check if nothing printed so far
 	 * @param preserveXPos preserve X Position of content area
 	 * @return new page no
@@ -668,7 +668,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get current Page Number (not zero based)
-	 * 
+	 *
 	 * @return Page No
 	 */
 	public int getPageNo()
@@ -678,7 +678,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Page No
-	 * 
+	 *
 	 * @param pageNo page number (NOT zero based)
 	 * @return Page
 	 */
@@ -695,7 +695,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Pages
-	 * 
+	 *
 	 * @return Pages in ArrayList
 	 */
 	public ArrayList<Page> getPages()
@@ -705,7 +705,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Header & Footer info
-	 * 
+	 *
 	 * @return Header&Footer
 	 */
 	public HeaderFooter getHeaderFooter()
@@ -715,7 +715,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Set Current page to Page No
-	 * 
+	 *
 	 * @param pageNo page number (NOT zero based)
 	 */
 	protected void setPage(final int pageNo)
@@ -731,7 +731,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Page Info for Multi-Page tables
-	 * 
+	 *
 	 * @param pageNo page
 	 * @return info e.g. (1,1) if there is more than 1 page vertically. 1 otherwise
 	 */
@@ -750,7 +750,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Max Page Info ( Y dimension)
-	 * 
+	 *
 	 * @return info e.g. 1 ( if one page), 2 ( if 2pages) etc
 	 */
 	public String getPageInfoMax()
@@ -797,7 +797,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**************************************************************************
 	 * Set Position on current page (no check)
-	 * 
+	 *
 	 * @param p point relative in area
 	 */
 	protected void setRelativePosition(final Point2D p)
@@ -815,7 +815,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Set Position on current page (no check)
-	 * 
+	 *
 	 * @param x x position in 1/72 inch
 	 * @param y y position in 1/72 inch
 	 */
@@ -826,7 +826,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get the current position on current page
-	 * 
+	 *
 	 * @return current position
 	 */
 	public Point2D getPosition()
@@ -836,7 +836,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Set X Position on current page
-	 * 
+	 *
 	 * @param x x position in 1/72 inch
 	 */
 	protected void setX(final float x)
@@ -847,7 +847,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Add to X Position on current page
-	 * 
+	 *
 	 * @param xOffset add offset to x position in 1/72 inch
 	 */
 	protected void addX(final float xOffset)
@@ -860,7 +860,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get X Position on current page
-	 * 
+	 *
 	 * @return x position in 1/72 inch
 	 */
 	public float getX()
@@ -870,7 +870,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Set Y Position on current page
-	 * 
+	 *
 	 * @param y y position in 1/72 inch
 	 */
 	protected void setY(final int y)
@@ -881,7 +881,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Add to Y Position - may cause New Page
-	 * 
+	 *
 	 * @param yOffset add offset to y position in 1/72 inch
 	 */
 	protected void addY(final int yOffset)
@@ -909,7 +909,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Y Position on current page
-	 * 
+	 *
 	 * @return y position in 1/72 inch
 	 */
 	public float getY()
@@ -919,7 +919,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**************************************************************************
 	 * Return remaining X dimension space _ on current page in Area
-	 * 
+	 *
 	 * @return space in 1/72 inch remaining in line
 	 */
 	public float getXspace()
@@ -935,7 +935,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Remaining Space is OK for Width in Area
-	 * 
+	 *
 	 * @param width width
 	 * @return true if width fits in area
 	 */
@@ -946,7 +946,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Return remaining Y dimension space | on current page in Area
-	 * 
+	 *
 	 * @return space in 1/72 inch remaining on page
 	 */
 	public float getYspace()
@@ -962,7 +962,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Remaining Space is OK for Height in Area
-	 * 
+	 *
 	 * @param height height
 	 * @return true if height fits in area
 	 */
@@ -973,7 +973,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**************************************************************************
 	 * Create Standard Header/Footer
-	 * 
+	 *
 	 * <pre>
 	 *  title           C        Page x of x
 	 *  Copyright      who         date&time
@@ -1385,7 +1385,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Create Field Element
-	 * 
+	 *
 	 * @param item Format Item
 	 * @param maxWidth max width
 	 * @param FieldAlignmentType alignment type (MPrintFormatItem.FIELD_ALIGN_*)
@@ -1436,9 +1436,9 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		{	// Record_ID/ColumnName
 			Object value = data.getValue();
 			if (value instanceof KeyNamePair)
-				ID = new KeyNamePair(((KeyNamePair)value).getKey(), item.getColumnName());
+				ID = KeyNamePair.of(((KeyNamePair)value).getKey(), item.getColumnName());
 			else if (value instanceof ValueNamePair)
-				ID = new ValueNamePair(((ValueNamePair)value).getValue(), item.getColumnName());
+				ID = ValueNamePair.of(((ValueNamePair)value).getValue(), item.getColumnName());
 		}
 		else if (MPrintFormatItem.FIELDALIGNMENTTYPE_Default.equals(FieldAlignmentType))
 		{
@@ -1597,7 +1597,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	/**************************************************************************
 	 * Layout Table.
 	 * Convert PrintData into TableElement
-	 * 
+	 *
 	 * @param format format to use
 	 * @param printData data to use
 	 * @param xOffset X Axis - offset (start of table) i.e. indentation
@@ -1667,8 +1667,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 						item.save();
 					}
 				}
-				columnHeader[col] = new ValueNamePair(item.getColumnName(),
-						item.getPrintName(format.getLanguage()));
+				columnHeader[col] = ValueNamePair.of(item.getColumnName(), item.getPrintName(format.getLanguage()));
 				columnMaxWidth[col] = item.getMaxWidth();
 				fixedWidth[col] = (columnMaxWidth[col] != 0 && item.isFixedWidth());
 				colSuppressRepeats[col] = item.isSuppressRepeats();
@@ -1874,7 +1873,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Layout Parameter based on MQuery
-	 * 
+	 *
 	 * @return PrintElement
 	 */
 	private PrintElement layoutParameter()
@@ -1889,7 +1888,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Layout Process Instance Logs (if any)
-	 * 
+	 *
 	 * @return PrintElement
 	 */
 	private PrintElement layoutPInstanceLogs()
@@ -1898,7 +1897,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		{
 			return null;
 		}
-		
+
 		//
 		PInstanceLogElement e = new PInstanceLogElement(m_printCtx, m_query, m_format.getTableFormat());
 		if (e.getEffectiveRowCount() <= 0)
@@ -1911,7 +1910,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**************************************************************************
 	 * Get number of pages (Pageable Interface)
-	 * 
+	 *
 	 * @return number of pages
 	 */
 	@Override
@@ -1922,7 +1921,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Page Format (Pageable Interface)
-	 * 
+	 *
 	 * @param pageIndex page index
 	 * @return Page Format
 	 * @throws IndexOutOfBoundsException
@@ -1937,7 +1936,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Printable (PageableInterface)
-	 * 
+	 *
 	 * @param pageIndex page index
 	 * @return this
 	 * @throws IndexOutOfBoundsException
@@ -1952,7 +1951,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Print Page (Printable Interface)
-	 * 
+	 *
 	 * @param graphics graphics
 	 * @param pageFormat page format (ignored)
 	 * @param pageIndex page index
@@ -1978,7 +1977,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Do we have the page
-	 * 
+	 *
 	 * @param pageIndex page index
 	 * @return true if page exists
 	 */
@@ -2011,7 +2010,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**************************************************************************
 	 * Get the doc flavor (Doc Interface)
-	 * 
+	 *
 	 * @return SERVICE_FORMATTED.PAGEABLE
 	 */
 	@Override
@@ -2022,7 +2021,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 
 	/**
 	 * Get Print Data (Doc Interface)
-	 * 
+	 *
 	 * @return this
 	 * @throws IOException
 	 */
@@ -2047,7 +2046,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	/**
 	 * Obtains a reader for extracting character print data from this doc.
 	 * (Doc Interface)
-	 * 
+	 *
 	 * @return null
 	 * @exception IOException
 	 */
@@ -2060,7 +2059,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	/**
 	 * Obtains an input stream for extracting byte print data from this doc.
 	 * (Doc Interface)
-	 * 
+	 *
 	 * @return null
 	 * @exception IOException
 	 */
@@ -2071,7 +2070,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	}	// getStreamForBytes
 
 	/**
-	 * 
+	 *
 	 * @param PrintInfo info
 	 */
 	public void setPrintInfo(final PrintInfo info)
@@ -2080,7 +2079,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	}
 
 	/**
-	 * 
+	 *
 	 * @return PrintInfo
 	 */
 	public PrintInfo getPrintInfo()

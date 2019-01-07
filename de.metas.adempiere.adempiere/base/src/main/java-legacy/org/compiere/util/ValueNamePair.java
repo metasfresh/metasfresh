@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -35,17 +35,28 @@ public final class ValueNamePair extends NamePair
 {
 	private static final long serialVersionUID = -8315081335749462163L;
 
+
+	public static final ValueNamePair of(
+			@JsonProperty("v") final String value,
+			@JsonProperty("n") final String name)
+	{
+		return of(value, name, null/*help*/);
+	}
+
 	@JsonCreator
-	public static final ValueNamePair of(@JsonProperty("v") final String value, @JsonProperty("n") final String name)
+	public static final ValueNamePair of(
+			@JsonProperty("v") final String value,
+			@JsonProperty("n") final String name,
+			@JsonProperty("description") final String description)
 	{
 		if (Objects.equals(value, EMPTY.getValue()) && Objects.equals(name, EMPTY.getName()))
 		{
 			return EMPTY;
 		}
-		return new ValueNamePair(value, name);
+		return new ValueNamePair(value, name, description);
 	}
 
-	public static final ValueNamePair EMPTY = new ValueNamePair("", "");
+	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */);
 
 	/**
 	 * Construct KeyValue Pair
@@ -53,9 +64,9 @@ public final class ValueNamePair extends NamePair
 	 * @param value value
 	 * @param name string representation
 	 */
-	public ValueNamePair(final String value, final String name)
+	public ValueNamePair(final String value, final String name, final String help)
 	{
-		super(name);
+		super(name, help);
 		m_value = value == null ? "" : value;
 	}   // ValueNamePair
 
@@ -88,11 +99,11 @@ public final class ValueNamePair extends NamePair
 	@Override
 	public boolean equals(final Object obj)
 	{
-		if(obj == this)
+		if (obj == this)
 		{
 			return true;
 		}
-		
+
 		if (obj instanceof ValueNamePair)
 		{
 			final ValueNamePair other = (ValueNamePair)obj;
@@ -114,4 +125,3 @@ public final class ValueNamePair extends NamePair
 	}   // hashCode
 
 }	// KeyValuePair
-

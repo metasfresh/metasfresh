@@ -123,7 +123,7 @@ import net.miginfocom.swing.MigLayout;
  *
  * 	@author 	Jorg Janke
  * 	@version 	$Id: Viewer.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
- * globalqss: integrate phib contribution from 
+ * globalqss: integrate phib contribution from
  *   http://sourceforge.net/tracker/index.php?func=detail&aid=1566335&group_id=176962&atid=879334
  * globalqss: integrate Teo Sarca bug fixing
  * Colin Rooney 2007/03/20 RFE#1670185 & BUG#1684142
@@ -198,7 +198,7 @@ public class Viewer extends CFrame
 	/** Table ID					*/
 	private int					m_AD_Table_ID = 0;
 	private boolean				m_isCanExport;
-	
+
 	private MQuery 		m_ddQ = null;
 	private MQuery 		m_daQ = null;
 	private CMenuItem 	m_ddM = null;
@@ -245,7 +245,7 @@ public class Viewer extends CFrame
 		contentPane.add(toolBar, BorderLayout.NORTH);
 		contentPane.add(centerScrollPane, BorderLayout.CENTER);
 		contentPane.add(statusBar, BorderLayout.SOUTH);
-		
+
 		centerScrollPane.setViewportView(m_viewPanel);
 
 		//	ToolBar
@@ -259,20 +259,20 @@ public class Viewer extends CFrame
 					, new AC().gap("0px")
 					));
 			toolBar.setFloatable(false);
-			
+
 			//
 			//	Page Control
 			toolBar.add(bPrevious);
 			toolBar.add(bNext);
 			toolBar.add(fPageNo);
 			toolBar.add(fPerLastPageNo);
-			
+
 			//
 			// Zoom Level
 			// toolBar.addSeparator();
 			// toolBar.add(comboZoom, null);
 			// comboZoom.setToolTipText(msgBL.getMsg(m_ctx, "Zoom"));
-			
+
 			//
 			//	Drill
 			toolBar.addSeparator();
@@ -282,7 +282,7 @@ public class Viewer extends CFrame
 			toolBar.add(comboDrill);
 			comboDrill.setMaximumSize(null); // make sure we are not using the VEditorUI's enforced height
 			comboDrill.setToolTipText(msgBL.getMsg(m_ctx, "Drill"));
-			
+
 			//
 			//	Format, Customize, Find
 			toolBar.addSeparator();
@@ -294,7 +294,7 @@ public class Viewer extends CFrame
 			toolBar.add(bFind);
 			bFind.setToolTipText(msgBL.getMsg(m_ctx, "Find"));
 			toolBar.addSeparator();
-			
+
 			//
 			//	Print/Export
 			toolBar.add(bPrint);
@@ -308,7 +308,7 @@ public class Viewer extends CFrame
 				bExport.setToolTipText(msgBL.getMsg(m_ctx, "Export"));
 				toolBar.add(bExport);
 			}
-			
+
 			toolBar.add(Box.createHorizontalGlue(), new CC().growX());
 		}
 	}	//	jbInit
@@ -320,7 +320,7 @@ public class Viewer extends CFrame
 	{
 		createMenu();
 //		comboZoom.addActionListener(this);
-		
+
 		//	Change Listener to set Page no
 		centerScrollPane.getViewport().addChangeListener(new ChangeListener()
 		{
@@ -340,7 +340,7 @@ public class Viewer extends CFrame
 			{
 				fPageNo.selectAll();
 			}
-			
+
 			@Override
 			public void focusLost(FocusEvent e)
 			{
@@ -353,7 +353,7 @@ public class Viewer extends CFrame
 		});
 		fPageNo.addActionListener(new ActionListener()
 		{
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
@@ -377,8 +377,10 @@ public class Viewer extends CFrame
 		});
 
 		//	fill Drill Options (Name, TableName)
-		comboDrill.addItem(new ValueNamePair (null,""));
+		comboDrill.addItem(ValueNamePair.EMPTY);
+
 		String sql = "SELECT t.AD_Table_ID, t.TableName, e.PrintName, NULLIF(e.PO_PrintName,e.PrintName) "
+			+ ", e.Description "
 			+ "FROM AD_Column c "
 			+ " INNER JOIN AD_Column used ON (c.ColumnName=used.ColumnName)"
 			+ " INNER JOIN AD_Table t ON (used.AD_Table_ID=t.AD_Table_ID AND t.IsView='N' AND t.AD_Table_ID <> c.AD_Table_ID)"
@@ -386,9 +388,11 @@ public class Viewer extends CFrame
 			+ " INNER JOIN AD_Element e ON (cKey.ColumnName=e.ColumnName) "
 			+ "WHERE c.AD_Table_ID=? AND c.IsKey='Y' "
 			+ "ORDER BY 3";
+
 		boolean trl = !Env.isBaseLanguage(Env.getCtx(), "AD_Element");
 		if (trl)
 			sql = "SELECT t.AD_Table_ID, t.TableName, et.PrintName, NULLIF(et.PO_PrintName,et.PrintName) "
+				+ ", et.Description "
 				+ "FROM AD_Column c"
 				+ " INNER JOIN AD_Column used ON (c.ColumnName=used.ColumnName)"
 				+ " INNER JOIN AD_Table t ON (used.AD_Table_ID=t.AD_Table_ID AND t.IsView='N' AND t.AD_Table_ID <> c.AD_Table_ID)"
@@ -412,9 +416,11 @@ public class Viewer extends CFrame
 				String tableName = rs.getString(2);
 				String name = rs.getString(3);
 				String poName = rs.getString(4);
+				String description = rs.getString(5);
+
 				if (poName != null)
 					name += "/" + poName;
-				comboDrill.addItem(new ValueNamePair (tableName, name));
+				comboDrill.addItem(ValueNamePair.of(tableName, name, description));
 			}
 		}
 		catch (SQLException e)
@@ -480,7 +486,7 @@ public class Viewer extends CFrame
 		{
 			DB.close(rs, pstmt);
 		}
-		
+
 		StringBuilder sb = new StringBuilder("** ").append(msgBL.getMsg(m_ctx, "NewReport")).append(" **");
 		KeyNamePair pp = new KeyNamePair(-1, sb.toString());
 		comboReport.addItem(pp);
@@ -548,7 +554,7 @@ public class Viewer extends CFrame
 				.setParentWindowNo(m_WindowNo)
 				.setMenu(mView)
 				.build();
-		
+
 		//		Go
 		JMenu mGo = AEnv.getMenu("Go");
 		menuBar.add(mGo);
@@ -564,7 +570,7 @@ public class Viewer extends CFrame
 		{
 			AEnv.addMenuItem("Preference", null, null, mTools, this);
 		}
-		
+
 		//		Window
 		AMenu aMenu = (AMenu)Env.getWindow(0);
 		JMenu mWindow = new WindowMenu(aMenu.getWindowManager(), this);
@@ -591,7 +597,7 @@ public class Viewer extends CFrame
 			setButton(bArchive, "Archive", "Archive");
 			if (m_isCanExport)
 				setButton(bExport, "Export", "Export");
-			
+
 			setButton(bFind, "Find", "Find");
 			setButton(bCustomize, "PrintCustomize", "Preference");
 		}
@@ -630,7 +636,7 @@ public class Viewer extends CFrame
 		super.dispose();
 	}	//	dispose
 
-	
+
 	/**************************************************************************
 	 * 	Action Listener
 	 * 	@param e event
@@ -721,7 +727,7 @@ public class Viewer extends CFrame
 			m_pageNoSetting = false;
 		}
 	}	//	stateChanged
-	
+
 	private void setPageNoFromUI()
 	{
 		final Object pageNoObj = fPageNo.getValue();
@@ -747,7 +753,7 @@ public class Viewer extends CFrame
 				pageNo = m_pageNo;
 			}
 		}
-		
+
 		setPage(pageNo);
 	}
 
@@ -768,12 +774,12 @@ public class Viewer extends CFrame
 				m_pageNo = 1;
 			if (page > m_pageMax)
 				m_pageNo = m_pageMax;
-			
+
 			//
 			// Update bPrevious/bNext buttons
 			bPrevious.setEnabled (m_pageNo != 1);
 			bNext.setEnabled (m_pageNo != m_pageMax);
-			
+
 			//
 			// Scroll to page (if user is not currently scrolling)
 			if(!m_scrolling)
@@ -783,14 +789,14 @@ public class Viewer extends CFrame
 				pageRectangle.y -= View.MARGIN;
 				centerScrollPane.getViewport().setViewPosition(pageRectangle.getLocation());
 			}
-	
+
 			//	Update Page text field
 			fPageNo.setValue(m_pageNo);
 			fPerLastPageNo.setText(" / " + m_pageMax);
-			
+
 			//
 			// Status bar
-			final String pageInfo = m_viewPanel.updatePageInfo(m_pageNo);			
+			final String pageInfo = m_viewPanel.updatePageInfo(m_pageNo);
 			StringBuilder sb = new StringBuilder (msgBL.getMsg(m_ctx, "Page"))
 				.append(" ").append(pageInfo)
 				.append(" ").append(msgBL.getMsg(m_ctx, "slash")).append(" ")
@@ -803,7 +809,7 @@ public class Viewer extends CFrame
 		}
 	}	//	setPage
 
-	
+
 	/**************************************************************************
 	 * 	(Re)Set Drill Across Cursor
 	 */
@@ -854,7 +860,7 @@ public class Viewer extends CFrame
 			pop.show((Component)e.getSource(), pp.x, pp.y);
 			return;
 		}
-		
+
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		if (m_drillDown)
 		{
@@ -907,7 +913,7 @@ public class Viewer extends CFrame
 			return;
 		AEnv.zoom(query);
 	}	//	cmd_window
-	
+
 	/**************************************************************************
 	 * 	Print Report
 	 */
@@ -929,7 +935,7 @@ public class Viewer extends CFrame
 		String subject = m_reportEngine.getName();
 		String message = "";
 		File attachment = null;
-		
+
 		try
 		{
 			attachment = File.createTempFile("mail", ".pdf");
@@ -940,11 +946,11 @@ public class Viewer extends CFrame
 			log.error("", e);
 		}
 
-		//EMailDialog emd = 
+		//EMailDialog emd =
 		new EMailDialog (this,
 			msgBL.getMsg(Env.getCtx(), "SendMail"),
 			from, to, subject, message, attachment);
-		
+
 	}	//	cmd_sendMail
 
 	/**
@@ -998,7 +1004,7 @@ public class Viewer extends CFrame
 			ADialog.error(m_WindowNo, this, "AccessCannotExport", getTitle());
 			return;
 		}
-		
+
 		//
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -1020,7 +1026,7 @@ public class Viewer extends CFrame
 			final ExtensionFileFilter filter = new ExtensionFileFilter(excelFileExtension, excelFileExtension + " - " + formatName);
 			chooser.addChoosableFileFilter(filter);
 		}
-		
+
 		//
 		if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
 		{
@@ -1075,7 +1081,7 @@ public class Viewer extends CFrame
 		cmd_drill();	//	setCursor
 	}	//	cmd_export
 
-	
+
 	/**
 	 * 	Report Combo - Start other Report or create new one
 	 */
@@ -1113,8 +1119,8 @@ public class Viewer extends CFrame
 		}
 		else
 			pf = MPrintFormat.get (Env.getCtx(), AD_PrintFormat_ID, true);
-		
-		//	Get Language from previous - thanks Gunther Hoppe 
+
+		//	Get Language from previous - thanks Gunther Hoppe
 		if (m_reportEngine.getPrintFormat() != null)
 		{
 			pf.setLanguage(m_reportEngine.getPrintFormat().getLanguage());		//	needs to be re-set - otherwise viewer will be blank
@@ -1133,7 +1139,7 @@ public class Viewer extends CFrame
 	{
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		final int AD_Table_ID = m_reportEngine.getPrintFormat().getAD_Table_ID();
-		
+
 		//	Get Find Tab Info
 		String sql = "SELECT t.AD_Tab_ID"
 				+ ", t." + I_AD_Tab.COLUMNNAME_Template_Tab_ID
@@ -1172,7 +1178,7 @@ public class Viewer extends CFrame
 					+ " AND AD_Language='" + Env.getAD_Language(Env.getCtx()) + "' " + ASPFilter;
 		}
 
-		String title = null; 
+		String title = null;
 		String tableName = null;
 		int maxQueryRecordsPerTab = 0;
 		PreparedStatement pstmt = null;
@@ -1185,7 +1191,7 @@ public class Viewer extends CFrame
 			//
 			if (rs.next())
 			{
-				title = rs.getString(1);				
+				title = rs.getString(1);
 				tableName = rs.getString(2);
 				maxQueryRecordsPerTab = rs.getInt(I_AD_Tab.COLUMNNAME_MaxQueryRecords);
 			}
@@ -1205,7 +1211,7 @@ public class Viewer extends CFrame
 		{
 			findFields = GridField.createSearchFields(m_ctx, m_WindowNo, 0, tabAndTemplateTabId.getTabId(), tabAndTemplateTabId.getTemplateTabId());
 		}
-		
+
 		if (findFields == null)		//	No Tab for Table exists
 		{
 			bFind.setEnabled(false);
@@ -1345,13 +1351,13 @@ public class Viewer extends CFrame
 		m_reportEngine.setPrintFormat(MPrintFormat.get (Env.getCtx(), AD_PrintFormat_ID, true));
 		revalidateViewer();
 	}	//	cmd_translate
-	
+
 	@lombok.Builder
 	@lombok.Value
 	private static class TabAndTemplateTabId
 	{
 		static final TabAndTemplateTabId NONE = builder().build();
-		
+
 		int tabId;
 		int templateTabId;
 	}

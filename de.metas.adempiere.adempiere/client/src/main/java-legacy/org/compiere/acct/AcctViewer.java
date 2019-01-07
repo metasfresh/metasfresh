@@ -89,17 +89,17 @@ import de.metas.util.Services;
  *
  *  @author Jorg Janke
  *  @version  $Id: AcctViewer.java,v 1.3 2006/08/10 01:00:27 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			BF [ 1778534 ] Info Account: can't find product
- * @author Colin Rooney (croo) 
+ * @author Colin Rooney (croo)
  * 			BF [ 2006668 ] Selection of Product in the Accounting Viewer
  */
-public class AcctViewer extends CFrame 
+public class AcctViewer extends CFrame
 	implements ActionListener, ChangeListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -6160970582569467185L;
 
@@ -139,7 +139,7 @@ public class AcctViewer extends CFrame
 		log.info("AD_Table_ID=" + AD_Table_ID + ", Record_ID=" + Record_ID);
 
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		
+
 		// task 07393: find out the AD_Org_ID. we'll use that info to initially set the current document's accounting schema.
 		final int AD_Org_ID;
 		if (AD_Table_ID > 0 && Record_ID > 0)
@@ -152,7 +152,7 @@ public class AcctViewer extends CFrame
 		{
 			AD_Org_ID = 0; // assume AD_Org_ID=0
 		}
-		
+
 		m_data = new AcctViewerData(ctx, Env.createWindowNo(this), AD_Client_ID, AD_Org_ID, AD_Table_ID);
 		AEnv.addToWindowManager(this);
 		//
@@ -183,7 +183,7 @@ public class AcctViewer extends CFrame
 	private AcctViewerData m_data = null;
 	/** Image Icon			*/
 	private final ImageIcon m_iFind = Images.getImageIcon2("Find16");
-	
+
 	/**	Logger			*/
 	private static final Logger log = LogManager.getLogger(AcctViewer.class);
 
@@ -270,7 +270,7 @@ public class AcctViewer extends CFrame
 
 	/**
 	 *  Static Init.
-	 * 
+	 *
 	 *  <pre>
 	 *  - mainPanel
 	 *      - tabbedPane
@@ -278,7 +278,7 @@ public class AcctViewer extends CFrame
 	 *          - result
 	 *          - graphPanel
 	 *  </pre>
-	 * 
+	 *
 	 *  @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -616,13 +616,13 @@ public class AcctViewer extends CFrame
 			m_data.dispose();
 			m_data = null;
 		}
-		
+
 		super.dispose();
 	}   //  dispose;
 
 	/**
 	 * Tab Changed
-	 * 
+	 *
 	 * @param e ChangeEvent
 	 */
 	@Override
@@ -646,7 +646,7 @@ public class AcctViewer extends CFrame
 
 	/**
 	 * Action Performed (Action Listener)
-	 * 
+	 *
 	 * @param e ActionEvent
 	 */
 	@Override
@@ -742,26 +742,26 @@ public class AcctViewer extends CFrame
 		sortBy2.removeAllItems();
 		sortBy3.removeAllItems();
 		sortBy4.removeAllItems();
-		sortAddItem(new ValueNamePair("", ""));
-		sortAddItem(new ValueNamePair("DateAcct", msgBL.translate(Env.getCtx(), "DateAcct")));
-		sortAddItem(new ValueNamePair("DateTrx", msgBL.translate(Env.getCtx(), "DateTrx")));
-		sortAddItem(new ValueNamePair("C_Period_ID", msgBL.translate(Env.getCtx(), "C_Period_ID")));
+		sortAddItem(ValueNamePair.EMPTY);
+		sortAddItem(ValueNamePair.of("DateAcct", msgBL.translate(Env.getCtx(), "DateAcct")));
+		sortAddItem(ValueNamePair.of("DateTrx", msgBL.translate(Env.getCtx(), "DateTrx")));
+		sortAddItem(ValueNamePair.of("C_Period_ID", msgBL.translate(Env.getCtx(), "C_Period_ID")));
 		//
 		CLabel[] labels = new CLabel[] { lsel1, lsel2, lsel3, lsel4, lsel5, lsel6, lsel7, lsel8 };
 		CButton[] buttons = new CButton[] { sel1, sel2, sel3, sel4, sel5, sel6, sel7, sel8 };
 		int selectionIndex = 0;
-		
+
 		final List<I_C_AcctSchema_Element> elements = acctSchemaDAO.retrieveSchemaElements(m_data.getC_AcctSchema());
-		
+
 		for (final I_C_AcctSchema_Element ase : elements)
 		{
 			final String columnName = acctSchemaBL.getColumnName(ase);
 			final String displayColumnName = acctSchemaBL.getDisplayColumnName(ase);
 			final String displayColumnNameTrl = msgBL.translate(Env.getCtx(), displayColumnName);
-			
+
 			//  Add Sort Option
-			sortAddItem(new ValueNamePair(columnName, displayColumnNameTrl));
-			
+			sortAddItem(ValueNamePair.of(columnName, displayColumnNameTrl));
+
 			//  Additional Elements
 			if (!Check.equals(ase.getElementType(), X_C_AcctSchema_Element.ELEMENTTYPE_Organization)
 					&& !Check.equals(ase.getElementType(), X_C_AcctSchema_Element.ELEMENTTYPE_Account))
@@ -783,7 +783,7 @@ public class AcctViewer extends CFrame
 			buttons[selectionIndex++].setVisible(false);
 		}
 	}	//	actionAcctSchema
-	
+
 	/**
 	 * 	Add to Sort
 	 *
@@ -809,7 +809,7 @@ public class AcctViewer extends CFrame
 		m_data.setAD_Org_ID(0);
 
 		//  Save Selection Choices
-		
+
 		// Accounting Schema
 		{
 			final KeyNamePair kp = selAcctSchema.getSelectedItem();
@@ -851,13 +851,13 @@ public class AcctViewer extends CFrame
 			//
 			para.append(m_data.getAdditionalWhereClauseInfo());
 		}
-		
+
 		//
 		// Account From/To
 		{
 			final int accountId = getButtonSelectedId(selAcct);
 			m_data.setAccount_ID(accountId);
-			
+
 			final int accountToId = getButtonSelectedId(selAcctTo);
 			m_data.setAccountTo_ID(accountToId);
 		}
@@ -876,7 +876,7 @@ public class AcctViewer extends CFrame
 		para.append(", Doc=").append(m_data.displayDocumentInfo);
 		m_data.setDisplayEndingBalance(displayEndingBalance.isSelected());
 		para.append(", EndingBalance=").append(m_data.isDisplayEndingBalance());
-		
+
 		//
 		m_data.sortBy1 = (sortBy1.getSelectedItem()).getValue();
 		m_data.group1 = group1.isSelected();
@@ -956,7 +956,7 @@ public class AcctViewer extends CFrame
 		//  Reset Record
 		m_data.setRecord_ID(0);
 		selRecord.setText("");
-		
+
 		final String keyColumnName = tableName + "_ID";
 		selRecord.setActionCommand(keyColumnName);
 	}   //  actionTable
@@ -1050,7 +1050,7 @@ public class AcctViewer extends CFrame
 	{
 		final String keyColumn = button.getActionCommand();
 		log.info(keyColumn);
-		
+
 		String whereClause = "(IsSummary='N' OR IsSummary IS NULL)";
 		String lookupColumn = keyColumn;
 		if (Check.isEmpty(keyColumn, true))
@@ -1094,7 +1094,7 @@ public class AcctViewer extends CFrame
 		{
 			whereClause = "";
 		}
-		
+
 		final String tableName = MQuery.getZoomTableName(lookupColumn);
 		Info info = InfoBuilder.newBuilder()
 				.setParentFrame(this)
@@ -1112,11 +1112,11 @@ public class AcctViewer extends CFrame
 			m_data.resetAdditionalWhereClause(keyColumn);
 			return 0;
 		}
-		
+
 		// Show model Info panel and wait for it's close
 		// info.setVisible(true); // task: this has no effect. need to call info.showWindow() instead (thx teo)
 		info.showWindow();
-		
+
 		final String selectSQL = info.getSelectedSQL();       //  C_Project_ID=100 or ""
 		final Integer key = (Integer)info.getSelectedKey();
 		info = null;
@@ -1141,9 +1141,9 @@ public class AcctViewer extends CFrame
 		//  Display Selection and resize
 		final String buttonText = m_data.getButtonText(tableName, lookupColumn, selectSQL);
 		setButtonSelectedId(button, key, buttonText);
-		
+
 		pack();
-		
+
 		return key;
 	}   //  actionButton
 
@@ -1157,13 +1157,13 @@ public class AcctViewer extends CFrame
 		final int adTableId = m_data.getAD_Table_ID();
 		final int recordId = m_data.getRecord_ID();
 		final boolean force = forcePost.isSelected();
-		
-		if (m_data.isDocumentQuery() 
+
+		if (m_data.isDocumentQuery()
 			&& adTableId > 0 && recordId > 0
 			&& Services.get(IClientUI.class).ask(windowNo, "PostImmediate?"))
 		{
 			AEnv.postImmediate(windowNo, adClientId, adTableId, recordId, force);
-			
+
 			actionQuery();
 		}
 	}   //  actionRePost
@@ -1193,7 +1193,7 @@ public class AcctViewer extends CFrame
 				e.printStackTrace();
 		}
 	}
-	
+
 	private static final String PROPERTY_ButtonSelectedId = AcctViewer.class.getName() + "#SelectedId";
 
 	private void setButtonSelectedId(final CButton button, final int selectedId, final String text)
@@ -1201,7 +1201,7 @@ public class AcctViewer extends CFrame
 		button.setText(text);
 		button.putClientProperty(PROPERTY_ButtonSelectedId, selectedId);
 	}
-	
+
 	private int getButtonSelectedId(final CButton button)
 	{
 		final Integer selectedId = (Integer)button.getClientProperty(PROPERTY_ButtonSelectedId);

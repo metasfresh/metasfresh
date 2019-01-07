@@ -10,12 +10,12 @@ package org.adempiere.plaf;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -100,7 +100,7 @@ public class UIDefaultsEditorDialog extends JDialog
 
 	/**
 	 * Creates and shows the {@link UIDefaultsEditorDialog}.
-	 * 
+	 *
 	 * @param parent parent component (used to get the parent frame)
 	 */
 	public static final void createAndShow(final Component parent)
@@ -183,7 +183,7 @@ public class UIDefaultsEditorDialog extends JDialog
 			uiDefaultsTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			add(new JScrollPane(uiDefaultsTable), BorderLayout.CENTER);
 		}
-		
+
 		//
 		// Bottom
 		{
@@ -195,15 +195,15 @@ public class UIDefaultsEditorDialog extends JDialog
 			bottomPanel.add(btnReapply);
 			btnReapply.addActionListener(new ActionListener()
 			{
-				
+
 				@Override
 				public void actionPerformed(ActionEvent e)
 				{
 					final LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
-					final ValueNamePair lookAndFeelVNP = new ValueNamePair(lookAndFeel.getClass().getName(), lookAndFeel.getName());
+					final ValueNamePair lookAndFeelVNP = ValueNamePair.of(lookAndFeel.getClass().getName(), lookAndFeel.getName());
 					//
 					final MetalTheme theme = MetalLookAndFeel.getCurrentTheme();
-					final ValueNamePair themeVNP = new ValueNamePair(theme.getClass().getName(), theme.getName());
+					final ValueNamePair themeVNP = ValueNamePair.of(theme.getClass().getName(), theme.getName());
 					//
 					AdempierePLAF.setPLAF(lookAndFeelVNP, themeVNP, false); // updateIni=false
 					AEnv.updateUI();
@@ -242,7 +242,7 @@ public class UIDefaultsEditorDialog extends JDialog
 
 	/**
 	 * {@link UIDefaults} table model.
-	 * 
+	 *
 	 * @author tsa
 	 *
 	 */
@@ -801,14 +801,14 @@ public class UIDefaultsEditorDialog extends JDialog
 			setValue(table, rowIndexView, fontNew, font);
 
 		}
-		
+
 		private void editVEditorDialogButtonAlign(JTable table, int rowIndexView, VEditorDialogButtonAlign buttonAlign)
 		{
 			final Dialog owner = AEnv.getDialog(table);
 			final String key = getKey(table, rowIndexView);
 			final String title = "Editing: "+key;
 			final String message = "";
-			
+
 			final Object[] options = VEditorDialogButtonAlign.values();
 
 			final int optionIndex = JOptionPane.showOptionDialog(owner,
@@ -819,40 +819,40 @@ public class UIDefaultsEditorDialog extends JDialog
 					null, // icon
 					options,
 					buttonAlign);
-			
+
 			if (optionIndex == JOptionPane.CLOSED_OPTION)
 			{
 				return;
 			}
-			
+
 			final VEditorDialogButtonAlign buttonAlignNew = (VEditorDialogButtonAlign)options[optionIndex];
 			if (Check.equals(buttonAlign, buttonAlignNew))
 			{
 				return; // nothing changed
 			}
-			
+
 			setValue(table, rowIndexView, buttonAlignNew, buttonAlign);
 		}
-		
+
 		private void editInteger(final JTable table, final int rowIndexView, final Integer valueInt)
 		{
 			final Dialog owner = AEnv.getDialog(table);
 			final String key = getKey(table, rowIndexView);
 			final String title = "Editing: "+key;
-			
+
 			final String valueStrNew = JOptionPane.showInputDialog(owner, title, valueInt);
 			if(Check.isEmpty(valueStrNew, true))
 			{
 				return; // cancel
 			}
-			
+
 			final Integer valueIntNew = Integer.parseInt(valueStrNew.trim());
-			
+
 			if (Check.equals(valueInt, valueIntNew))
 			{
 				return; // nothing changed
 			}
-			
+
 			setValue(table, rowIndexView, valueIntNew, valueInt);
 		}
 
@@ -861,25 +861,25 @@ public class UIDefaultsEditorDialog extends JDialog
 			final Dialog owner = AEnv.getDialog(table);
 			final String key = getKey(table, rowIndexView);
 			final String title = "Editing: "+key;
-			
+
 			if (valueBoolean == null)
 			{
 				valueBoolean = false;
 			}
-			
+
 			final String valueStrNew = JOptionPane.showInputDialog(owner, title, valueBoolean.toString());
 			if(Check.isEmpty(valueStrNew, true))
 			{
 				return; // cancel
 			}
-			
+
 			final Boolean valueBooleanNew = Boolean.parseBoolean(valueStrNew);
-			
+
 			if (Check.equals(valueBoolean, valueBooleanNew))
 			{
 				return; // nothing changed
 			}
-			
+
 			setValue(table, rowIndexView, valueBooleanNew, valueBoolean);
 		}
 
