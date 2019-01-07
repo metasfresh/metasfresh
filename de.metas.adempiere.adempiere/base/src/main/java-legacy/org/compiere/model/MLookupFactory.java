@@ -564,13 +564,17 @@ public class MLookupFactory
 		final String descriptionColumnSQL_BaseLang;
 		final String descriptionColumnSQL_Trl;
 
+		final boolean isTranslated = lookupDisplayInfo.isTranslated();
+
 		//
 		// Description column SQL
 		final boolean tableHasDescriptionColumn = Services.get(IADTableDAO.class).hasColumnName(tableName, COLUMNNAME_Description);
 		if (tableHasDescriptionColumn)
 		{
 			descriptionColumnSQL_BaseLang = tableName + "." + COLUMNNAME_Description;
-			descriptionColumnSQL_Trl = tableName + "_Trl." + COLUMNNAME_Description;
+			descriptionColumnSQL_Trl = isTranslated
+					? tableName + "_Trl." + COLUMNNAME_Description
+					: descriptionColumnSQL_BaseLang;
 		}
 		else
 		{
@@ -582,7 +586,6 @@ public class MLookupFactory
 		// FROM SQL
 		final StringBuilder sqlFrom_BaseLang = new StringBuilder(tableName);
 		final StringBuilder sqlFrom_Trl = new StringBuilder(tableName);
-		final boolean isTranslated = lookupDisplayInfo.isTranslated();
 		if (isTranslated)
 		{
 			sqlFrom_Trl.append(" INNER JOIN ").append(tableName).append("_TRL ON (")
