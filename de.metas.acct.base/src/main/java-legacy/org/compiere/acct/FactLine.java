@@ -181,7 +181,7 @@ final class FactLine extends X_Fact_Acct
 		super.setC_AcctSchema_ID(acctSchema.getId().getRepoId());
 		//
 		m_acct = acct;
-		if (getAD_Client_ID() == 0)
+		if (getAD_Client_ID() <= 0)
 		{
 			setAD_Client_ID(m_acct.getAD_Client_ID());
 		}
@@ -246,19 +246,11 @@ final class FactLine extends X_Fact_Acct
 		return acctSchema;
 	}
 
-	// /**
-	// * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(MAcctSchema, MAccount)}.
-	// */
-	// @Override
-	// public final void setC_AcctSchema(final I_C_AcctSchema acctSchema)
-	// {
-	// throw new UnsupportedOperationException("Please use setAccount()");
-	// }
-
 	/**
 	 * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(AcctSchema, MAccount)}.
 	 */
 	@Override
+	@Deprecated
 	public final void setC_AcctSchema_ID(final int C_AcctSchema_ID)
 	{
 		throw new UnsupportedOperationException("Please use setAccount()");

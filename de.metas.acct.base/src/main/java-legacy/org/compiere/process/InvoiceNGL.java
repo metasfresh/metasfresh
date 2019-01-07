@@ -355,7 +355,7 @@ public class InvoiceNGL extends JavaProcess
 			MJournalLine line = new MJournalLine(journal);
 			line.setLine(lineNo+2);
 			MAccount base = accountDAO.getById(getCtx(), as.getDefaultAccounts().getUnrealizedLossAcctId());
-			MAccount acct = MAccount.get(getCtx(), as.getClientId().getRepoId(), AD_Org_ID, 
+			MAccount.get(getCtx(), as.getClientId().getRepoId(), AD_Org_ID, 
 				acctSchemaId, base.getAccount_ID(), base.getC_SubAcct_ID(),
 				base.getM_Product_ID(), base.getC_BPartner_ID(), base.getAD_OrgTrx_ID(), 
 				base.getC_LocFrom_ID(), base.getC_LocTo_ID(), base.getC_SalesRegion_ID(), 

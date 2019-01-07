@@ -46,6 +46,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -68,6 +69,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.material.planning.pporder.LiberoException;
@@ -77,6 +79,8 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * CopyPriceToStandard
@@ -195,6 +199,7 @@ public class CopyPriceToStandard extends JavaProcess
 				.list();
 	}
 
+	@ToString
 	private static final class CostDimension
 	{
 		private static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
@@ -206,79 +211,48 @@ public class CopyPriceToStandard extends JavaProcess
 		private static final String COLUMNNAME_M_CostType_ID = "M_CostType_ID";
 
 		private final ClientId clientId;
-		private OrgId orgId;
+		private final OrgId orgId;
 		private final ProductId productId;
-		// private ResourceId resourceId;
-		private AttributeSetInstanceId attributeSetInstanceId;
+		private final AttributeSetInstanceId attributeSetInstanceId;
 		private final CostTypeId costTypeId;
 		private final AcctSchemaId acctSchemaId;
 		private final CostElementId costElementId;
 
 		public CostDimension(
-				final I_M_Product product,
-				final AcctSchema as,
+				@NonNull final I_M_Product product,
+				@NonNull final AcctSchema as,
 				final CostTypeId costTypeId,
 				final OrgId orgId,
 				final AttributeSetInstanceId attributeSetInstanceId,
 				final CostElementId costElementId)
 		{
 			this.clientId = as.getClientId();
-			this.orgId = orgId != null ? orgId : OrgId.ANY;
 			this.productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
-			this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 			this.costTypeId = costTypeId;
 			this.acctSchemaId = as.getId();
 			this.costElementId = costElementId;
-			updateForProduct(product, as);
-		}
 
-		/**
-		 * Copy Constructor
-		 *
-		 * @param costDimension a <code>CostDimension</code> object
-		 */
-		private CostDimension(final CostDimension costDimension)
-		{
-			this.clientId = costDimension.clientId;
-			this.orgId = costDimension.orgId;
-			this.productId = costDimension.productId;
-			this.attributeSetInstanceId = costDimension.attributeSetInstanceId;
-			this.costTypeId = costDimension.costTypeId;
-			this.acctSchemaId = costDimension.acctSchemaId;
-			this.costElementId = costDimension.costElementId;
-		}
-
-		private void updateForProduct(I_M_Product product, AcctSchema as)
-		{
-			if (product == null)
-			{
-				product = Services.get(IProductDAO.class).getById(productId);
-			}
-			if (product == null)
-			{
-				// incomplete specified dimension [SKIP]
-				return;
-			}
-			if (as == null)
-			{
-				as = Services.get(IAcctSchemaDAO.class).getById(this.acctSchemaId);
-			}
 			final CostingLevel costingLevel = Services.get(IProductCostingBL.class).getCostingLevel(product, as);
 			if (CostingLevel.Client.equals(costingLevel))
 			{
-				orgId = OrgId.ANY;
-				attributeSetInstanceId = AttributeSetInstanceId.NONE;
+				this.orgId = OrgId.ANY;
+				this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 			}
 			else if (CostingLevel.Organization.equals(costingLevel))
 			{
-				attributeSetInstanceId = AttributeSetInstanceId.NONE;
+				this.orgId = orgId != null ? orgId : OrgId.ANY;
+				this.attributeSetInstanceId = AttributeSetInstanceId.NONE;
 			}
 			else if (CostingLevel.BatchLot.equals(costingLevel))
 			{
-				orgId = OrgId.ANY;
+				this.orgId = OrgId.ANY;
+				this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
+			}
+			else
+			{
+				throw new AdempiereException("Unknowns costing level: " + costingLevel);
 			}
 
-			// this.resourceId = ResourceId.ofRepoIdOrNull(product.getS_Resource_ID());
 		}
 
 		public <T> IQuery<T> toQuery(Class<T> clazz, String trxName)
@@ -287,7 +261,7 @@ public class CopyPriceToStandard extends JavaProcess
 					.create();
 		}
 
-		public <T> IQueryBuilder<T> toQueryBuilder(final Class<T> clazz, final String trxName)
+		private <T> IQueryBuilder<T> toQueryBuilder(final Class<T> clazz, final String trxName)
 		{
 			final String tableName = InterfaceWrapperHelper.getTableName(clazz);
 			final POInfo poInfo = POInfo.getPOInfo(tableName);
@@ -321,27 +295,6 @@ public class CopyPriceToStandard extends JavaProcess
 			}
 
 			return queryBuilder;
-		}
-
-		@Override
-		protected Object clone()
-		{
-			return new CostDimension(this);
-		}
-
-		@Override
-		public String toString()
-		{
-			final String TAB = ";";
-			return "CostDimension["
-					+ "AD_Client_ID = " + this.clientId + TAB
-					+ "AD_Org_ID = " + this.orgId + TAB
-					+ "M_Product_ID = " + this.productId + TAB
-					+ "M_AttributeSetInstance_ID = " + this.attributeSetInstanceId + TAB
-					+ "M_CostType_ID = " + this.costTypeId + TAB
-					+ "C_AcctSchema_ID = " + this.acctSchemaId + TAB
-					+ "M_CostElement_ID = " + this.costElementId + TAB
-					+ "]";
 		}
 	}
 
