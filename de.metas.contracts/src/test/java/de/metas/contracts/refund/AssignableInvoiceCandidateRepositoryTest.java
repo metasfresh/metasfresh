@@ -55,7 +55,7 @@ public class AssignableInvoiceCandidateRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(new AssignableInvoiceCandidateFactory());
+		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(AssignableInvoiceCandidateFactory.newForUnitTesting());
 
 		refundTestTools = new RefundTestTools();
 	}

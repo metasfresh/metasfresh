@@ -887,7 +887,7 @@ public class VSortTab extends CPanel implements APanelTab
 		private boolean	m_updateable;
 
 		public ListItem(int key, String name, int sortNo, boolean isYes, int AD_Client_ID, int AD_Org_ID) {
-			super(name);
+			super(name, null/* description */);
 			this.m_key = key;
 			this.m_AD_Client_ID = AD_Client_ID;
 			this.m_AD_Org_ID = AD_Org_ID;

@@ -207,7 +207,7 @@ public class PromotionRule {
 						} else if (pr.getRewardType().equals(MPromotionReward.REWARDTYPE_FlatDiscount)) {
 							discount = pr.getAmount();
 						} else if (pr.getRewardType().equals(MPromotionReward.REWARDTYPE_Percentage)) {
-							discount = pr.getAmount().divide(BigDecimal.valueOf(100.00)).multiply(totalPrice);
+							discount = pr.getAmount().divide(Env.ONEHUNDRED).multiply(totalPrice);
 						}
 						if (discount.signum() > 0) {
 							addDiscountLine(order, null, discount, BigDecimal.valueOf(1.00), pr.getC_Charge_ID(), pr.getM_Promotion());

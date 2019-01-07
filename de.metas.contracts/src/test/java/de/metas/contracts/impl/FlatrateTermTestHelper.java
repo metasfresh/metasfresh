@@ -20,7 +20,6 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
-import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;

@@ -18,15 +18,12 @@ package org.compiere.util;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -42,6 +39,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -86,6 +84,7 @@ import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
 
 /**
  * General Database Interface
@@ -734,7 +733,7 @@ public final class DB
 	 * @param stmt statements
 	 * @param params parameters array; if null or empty array, no parameters are set
 	 */
-	public static void setParameters(final PreparedStatement stmt, final Object... params) throws SQLException
+	public static void setParameters(@NonNull final PreparedStatement stmt, @Nullable final Object... params) throws SQLException
 	{
 		if (params == null || params.length == 0)
 		{
@@ -790,7 +789,7 @@ public final class DB
 			pstmt.setTimestamp(index, (Timestamp)param);
 		else if (param instanceof java.util.Date) // metas: support for java.util.Date
 			pstmt.setTimestamp(index, new Timestamp(((java.util.Date)param).getTime()));
-		else if(param instanceof LocalDateTime)
+		else if (param instanceof LocalDateTime)
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDateTime)param));
 		else if (param instanceof LocalDate)
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDate)param));
@@ -798,9 +797,9 @@ public final class DB
 		else if (param instanceof Boolean)
 			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
 		//
-		else if(param instanceof RepoIdAware)
+		else if (param instanceof RepoIdAware)
 			pstmt.setInt(index, ((RepoIdAware)param).getRepoId());
-		else if(param instanceof ReferenceListAwareEnum)
+		else if (param instanceof ReferenceListAwareEnum)
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		//
 		else
@@ -810,10 +809,12 @@ public final class DB
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
-	 * @param sql sql
 	 * @param trxName optional transaction name
 	 * @return number of rows updated or -1 if error
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static int executeUpdate(String sql, String trxName)
 	{
 		final Object[] params = null;
@@ -826,11 +827,13 @@ public final class DB
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
-	 * @param sql sql
 	 * @param ignoreError if true, no execution error is reported
 	 * @param trxName transaction
 	 * @return number of rows updated or -1 if error
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static int executeUpdate(String sql, boolean ignoreError, String trxName)
 	{
 		final Object[] sqlParams = null;
@@ -843,11 +846,12 @@ public final class DB
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
-	 * @param sql sql
-	 * @param param int param
 	 * @param trxName transaction
 	 * @return number of rows updated or -1 if error
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static int executeUpdate(String sql, int param, String trxName)
 	{
 		final Object[] params = new Object[] { param };
@@ -860,12 +864,13 @@ public final class DB
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
-	 * @param sql sql
-	 * @param params array of parameters
 	 * @param ignoreError if true, no execution error is reported
 	 * @param trxName optional transaction name
 	 * @return number of rows updated or -1 if error
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static int executeUpdate(String sql, Object[] params, boolean ignoreError, String trxName)
 	{
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
@@ -877,15 +882,14 @@ public final class DB
 	/**
 	 * Execute SQL Update.
 	 *
-	 * @param sql
-	 * @param params
 	 * @param onFail what to do if the update fails
-	 * @param trxName
-	 * @param timeOut
 	 * @param updateReturnProcessor
 	 * @return update count
 	 * @throws DBException if update fails and {@link OnFail#ThrowException}.
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static int executeUpdate(final String sql,
 			final Object[] params,
 			final OnFail onFail,
@@ -1267,7 +1271,10 @@ public final class DB
 	 * @param sql sql
 	 * @param params array of parameters
 	 * @return first value or -1 if not found or error
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static int getSQLValue(String trxName, String sql, Object... params)
 	{
 		int retValue = -1;
@@ -1289,7 +1296,10 @@ public final class DB
 	 * @param sql sql
 	 * @param params collection of parameters
 	 * @return first value or null
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static int getSQLValue(String trxName, String sql, List<Object> params)
 	{
 		return getSQLValue(trxName, sql, params.toArray(new Object[params.size()]));
@@ -1353,7 +1363,10 @@ public final class DB
 	 * @param sql sql
 	 * @param params array of parameters
 	 * @return first value or null
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static String getSQLValueString(String trxName, String sql, Object... params)
 	{
 		String retValue = null;
@@ -1375,7 +1388,10 @@ public final class DB
 	 * @param sql sql
 	 * @param params collection of parameters
 	 * @return first value or null
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static String getSQLValueString(String trxName, String sql, List<Object> params)
 	{
 		return getSQLValueString(trxName, sql, params.toArray(new Object[params.size()]));
@@ -1440,7 +1456,10 @@ public final class DB
 	 * @param sql sql
 	 * @param params array of parameters
 	 * @return first value or null
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static BigDecimal getSQLValueBD(String trxName, String sql, Object... params)
 	{
 		try
@@ -1461,7 +1480,10 @@ public final class DB
 	 * @param sql sql
 	 * @param params collection of parameters
 	 * @return first value or null
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static BigDecimal getSQLValueBD(String trxName, String sql, List<Object> params)
 	{
 		return getSQLValueBD(trxName, sql, params.toArray(new Object[params.size()]));
@@ -1525,7 +1547,10 @@ public final class DB
 	 * @param sql sql
 	 * @param params array of parameters
 	 * @return first value or null
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static Timestamp getSQLValueTS(String trxName, String sql, Object... params)
 	{
 		try
@@ -1542,16 +1567,52 @@ public final class DB
 	/**
 	 * Get Timestamp Value from sql
 	 *
-	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
 	 * @return first value or null
+	 *
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
+	@Deprecated
 	public static Timestamp getSQLValueTS(String trxName, String sql, List<Object> params)
 	{
 		Object[] arr = new Object[params.size()];
 		params.toArray(arr);
 		return getSQLValueTS(trxName, sql, arr);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T[] getSQLValueArrayEx(
+			@Nullable final String trxName,
+			@NonNull final String sql,
+			@Nullable final Object... params)
+	{
+		final PreparedStatement pstmt = prepareStatement(sql, trxName);;
+		ResultSet rs = null;
+		try
+		{
+			setParameters(pstmt, params);
+			rs = pstmt.executeQuery();
+
+			if (rs.next())
+			{
+				return (T[])rs.getArray(1).getArray();
+			}
+
+			log.debug("Got no array value for sql={}; params={}", sql, params);
+			return null;
+		}
+		catch (SQLException e)
+		{
+			throw DBException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("trxName", trxName)
+					.setParameter("sql", sql)
+					.setParameter("params", params);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+
 	}
 
 	/**
@@ -1582,33 +1643,50 @@ public final class DB
 	/**
 	 * Get Array of Key Name Pairs
 	 *
-	 * @param trxName
-	 * @param sql select with id / name as first / second column
+	 * @param sql select with id as first column, name as second column and optionally description as third column
 	 * @param optional if true (-1,"") is added
 	 * @param params query parameters
 	 */
-	public static KeyNamePair[] getKeyNamePairs(String trxName, String sql, boolean optional, Object... params)
+	public static KeyNamePair[] getKeyNamePairs(
+			@Nullable String trxName,
+			@NonNull String sql,
+			boolean optional,
+			Object... params)
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ArrayList<KeyNamePair> list = new ArrayList<>();
+		final ArrayList<KeyNamePair> list = new ArrayList<>();
 		if (optional)
 		{
-			list.add(new KeyNamePair(-1, ""));
+			list.add(KeyNamePair.EMPTY);
 		}
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
 			setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
+
+			final ResultSetMetaData rsmd = rs.getMetaData();
+			final int columnCount = rsmd.getColumnCount();
+			final boolean hasDescription = columnCount >= 3;
+
 			while (rs.next())
 			{
-				list.add(new KeyNamePair(rs.getInt(1), rs.getString(2)));
+				final String description = hasDescription ? rs.getString(3) : null;
+				final int key = rs.getInt(1);
+				final String name = rs.getString(2);
+
+				list.add(KeyNamePair.of(key, name, description));
 			}
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.extractSQLExceptionOrNull(e));
+			throw DBException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("trxName", trxName)
+					.setParameter("sql", sql)
+					.setParameter("optional", optional)
+					.setParameter("params", params);
 		}
 		finally
 		{
@@ -1804,7 +1882,7 @@ public final class DB
 		{
 			return String.valueOf(param);
 		}
-		else if(param instanceof RepoIdAware)
+		else if (param instanceof RepoIdAware)
 		{
 			return String.valueOf(((RepoIdAware)param).getRepoId());
 		}
@@ -1820,7 +1898,7 @@ public final class DB
 		{
 			return TO_DATE(TimeUtil.asTimestamp((java.util.Date)param));
 		}
-		else if(TimeUtil.isDateOrTimeObject(param))
+		else if (TimeUtil.isDateOrTimeObject(param))
 		{
 			return TO_DATE(TimeUtil.asTimestamp(param));
 		}
@@ -2119,100 +2197,6 @@ public final class DB
 	}
 
 	/**
-	 * Get Array of ValueNamePair items.
-	 *
-	 * <pre>
-	 * Example:
-	 * String sql = "SELECT Name, Description FROM AD_Ref_List WHERE AD_Reference_ID=?";
-	 * ValueNamePair[] list = DB.getValueNamePairs(sql, false, params);
-	 * </pre>
-	 *
-	 * @param sql SELECT Value_Column, Name_Column FROM ...
-	 * @param optional if {@link ValueNamePair#EMPTY} is added
-	 * @param params query parameters
-	 * @return array of {@link ValueNamePair} or empty array
-	 * @throws DBException if there is any SQLException
-	 */
-	public static ValueNamePair[] getValueNamePairs(String sql, boolean optional, List<Object> params)
-	{
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		ArrayList<ValueNamePair> list = new ArrayList<>();
-		if (optional)
-		{
-			list.add(ValueNamePair.EMPTY);
-		}
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			setParameters(pstmt, params);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				list.add(new ValueNamePair(rs.getString(1), rs.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql, params); // metas: tsa
-		}
-		finally
-		{
-			close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		return list.toArray(new ValueNamePair[list.size()]);
-	}
-
-	/**
-	 * Get Array of KeyNamePair items.
-	 *
-	 * <pre>
-	 * Example:
-	 * String sql = "SELECT C_City_ID, Name FROM C_City WHERE C_City_ID=?";
-	 * KeyNamePair[] list = DB.getKeyNamePairs(sql, false, params);
-	 * </pre>
-	 *
-	 * @param sql SELECT ID_Column, Name_Column FROM ...
-	 * @param optional if {@link ValueNamePair#EMPTY} is added
-	 * @param params query parameters
-	 * @return array of {@link KeyNamePair} or empty array
-	 * @throws DBException if there is any SQLException
-	 */
-	public static KeyNamePair[] getKeyNamePairs(String sql, boolean optional, List<Object> params)
-	{
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		ArrayList<KeyNamePair> list = new ArrayList<>();
-		if (optional)
-		{
-			list.add(KeyNamePair.EMPTY);
-		}
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			setParameters(pstmt, params);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				list.add(new KeyNamePair(rs.getInt(1), rs.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql, params); // metas: tsa
-		}
-		finally
-		{
-			close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		return list.toArray(new KeyNamePair[list.size()]);
-	}
-
-	/**
 	 * Create persistent selection in T_Selection table
 	 */
 	public static void createT_Selection(@NonNull final PInstanceId pinstanceId, Iterable<Integer> selection, String trxName)
@@ -2264,7 +2248,6 @@ public final class DB
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
 		return createT_Selection(ids, trxName);
 	}
-
 
 	/**
 	 * Delete T_Selection
@@ -2369,7 +2352,7 @@ public final class DB
 				.setEmbedSqlParams(embedSqlParams);
 		final String sql = builder.getSql();
 
-		if(!embedSqlParams)
+		if (!embedSqlParams)
 		{
 			final List<Object> sqlParams = builder.getSqlParams(Env.getCtx());
 			paramsOut.addAll(sqlParams);
@@ -2667,12 +2650,12 @@ public final class DB
 			final Timestamp ts = rs.getTimestamp(columnIndex);
 			value = (AT)ts;
 		}
-		else if(returnType.isAssignableFrom(LocalDateTime.class))
+		else if (returnType.isAssignableFrom(LocalDateTime.class))
 		{
 			final Timestamp ts = rs.getTimestamp(columnIndex);
 			value = (AT)TimeUtil.asLocalDateTime(ts);
 		}
-		else if(returnType.isAssignableFrom(LocalDate.class))
+		else if (returnType.isAssignableFrom(LocalDate.class))
 		{
 			final Timestamp ts = rs.getTimestamp(columnIndex);
 			value = (AT)TimeUtil.asLocalDate(ts);
@@ -2693,18 +2676,16 @@ public final class DB
 		return value;
 	}
 
-
 	public static final <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
 		final AT value = retrieveValue(rs, columnIndex, returnType);
-		if(value != null)
+		if (value != null)
 		{
 			return value;
 		}
 
 		return retrieveDefaultValue(returnType);
 	}
-
 
 	@FunctionalInterface
 	public static interface ResultSetConsumer
@@ -2724,12 +2705,12 @@ public final class DB
 			pstmt = prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
-			while(rs.next())
+			while (rs.next())
 			{
 				rowConsumer.accept(rs);
 			}
 		}
-		catch(SQLException ex)
+		catch (SQLException ex)
 		{
 			throw new DBException(sql);
 		}
@@ -2759,7 +2740,7 @@ public final class DB
 			rs = pstmt.executeQuery();
 
 			final ArrayList<T> rows = new ArrayList<>();
-			while(rs.next())
+			while (rs.next())
 			{
 				T row = loader.retrieveRow(rs);
 				rows.add(row);
@@ -2767,7 +2748,7 @@ public final class DB
 
 			return rows;
 		}
-		catch(SQLException ex)
+		catch (SQLException ex)
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}
@@ -2789,7 +2770,7 @@ public final class DB
 			pstmt = prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
-			if(rs.next())
+			if (rs.next())
 			{
 				return loader.retrieveRow(rs);
 			}
@@ -2798,7 +2779,7 @@ public final class DB
 				return null;
 			}
 		}
-		catch(SQLException ex)
+		catch (SQLException ex)
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}

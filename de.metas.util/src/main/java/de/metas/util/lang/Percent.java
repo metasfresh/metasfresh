@@ -35,10 +35,15 @@ import lombok.Value;
 @Value
 public class Percent
 {
+	public static Percent of(@NonNull final String value)
+	{
+		return of(new BigDecimal(value));
+	}
+
 	/**
 	 * @param value 100 based percent
 	 */
-	public static Percent of(final BigDecimal value)
+	public static Percent of(@NonNull final BigDecimal value)
 	{
 		if (value.signum() == 0)
 		{

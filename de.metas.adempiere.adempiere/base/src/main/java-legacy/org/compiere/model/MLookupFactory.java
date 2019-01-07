@@ -16,6 +16,9 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Description;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -25,6 +28,7 @@ import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
 import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -70,7 +74,8 @@ public class MLookupFactory
 	public static final int COLUMNINDEX_Value = 2;
 	public static final int COLUMNINDEX_DisplayName = 3;
 	public static final int COLUMNINDEX_IsActive = 4;
-	public static final int COLUMNINDEX_EntityType = 5;
+	public static final int COLUMNINDEX_Description = 5;
+	public static final int COLUMNINDEX_EntityType = 6;
 
 	/** Logging */
 	private static final Logger s_log = LogManager.getLogger(MLookupFactory.class);
@@ -326,23 +331,32 @@ public class MLookupFactory
 	/**************************************************************************
 	 * Get Lookup SQL for Lists
 	 *
-	 * @param AD_Reference_Value_ID reference value
-	 * @return SELECT NULL, Value, Name, IsActive FROM AD_Ref_List
+	 * @param AD_Reference_Value_ID
+	 * @return SELECT NULL, Value, Name, IsActive, Description, EntityType FROM AD_Ref_List
 	 */
 	static public MLookupInfo getLookup_List(final int AD_Reference_Value_ID)
 	{
-		String displayColumnSQL_BaseLang = "AD_Ref_List.Name";
-		String displayColumnSQL_Trl = "trl.Name";
 		final String sqlFrom_BaseLang = "AD_Ref_List";
 		final String sqlFrom_Trl = "AD_Ref_List INNER JOIN AD_Ref_List_Trl trl ON (AD_Ref_List.AD_Ref_List_ID=trl.AD_Ref_List_ID"
 				+ " AND trl.AD_Language='" + MLookupInfo.CTXNAME_AD_Language.toStringWithMarkers() + "')";
 
-		// metas: tsa: include reference value in reference name
+		final String displayColumnSQL_BaseLang;
+		final String displayColumnSQL_Trl;
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
-			displayColumnSQL_BaseLang = "AD_Ref_List.Value||'_'||" + displayColumnSQL_BaseLang;
-			displayColumnSQL_Trl = "AD_Ref_List.Value||'_'||" + displayColumnSQL_Trl;
+			// metas: tsa: include reference value in reference name
+			displayColumnSQL_BaseLang = "AD_Ref_List.Value||'_'||" + "AD_Ref_List.Name";
+			displayColumnSQL_Trl = "AD_Ref_List.Value||'_'||" + "trl.Name";
 		}
+		else
+		{
+			// normal
+			displayColumnSQL_BaseLang = "AD_Ref_List.Name";
+			displayColumnSQL_Trl = "trl.Name";
+		}
+
+		final String descriptionColumnSQL_BaseLang = "AD_Ref_List.Description";
+		final String descriptionColumnSQL_Trl = "trl.Description";
 
 		// SQL Select
 		final StringBuilder sqlSelect_BaseLang = new StringBuilder("SELECT ") // Key, Value
@@ -350,13 +364,16 @@ public class MLookupFactory
 				.append(", AD_Ref_List.Value") // Value
 				.append(",").append(displayColumnSQL_BaseLang) // DisplayName
 				.append(",AD_Ref_List.IsActive") // IsActive
+				.append(",").append(descriptionColumnSQL_BaseLang)
 				.append(",AD_Ref_List.EntityType") // EntityType
 				.append(" FROM ").append(sqlFrom_BaseLang);
+
 		final StringBuilder sqlSelect_Trl = new StringBuilder("SELECT ") // Key, Value
 				.append(" NULL") // Key
 				.append(", AD_Ref_List.Value") // Value
 				.append(",").append(displayColumnSQL_Trl) // DisplayName
 				.append(",AD_Ref_List.IsActive") // IsActive
+				.append(",").append(descriptionColumnSQL_Trl)
 				.append(",AD_Ref_List.EntityType") // EntityType
 				.append(" FROM ").append(sqlFrom_Trl);
 
@@ -396,6 +413,8 @@ public class MLookupFactory
 				MQuery.getEqualQuery("AD_Reference_ID", AD_Reference_Value_ID) // Zoom Query
 		);
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang, displayColumnSQL_Trl);
+		lookupInfo.setDescriptionColumnSQL(descriptionColumnSQL_BaseLang, descriptionColumnSQL_Trl);
+
 		lookupInfo.setSelectSqlPart(sqlSelect_BaseLang.toString(), sqlSelect_Trl.toString());
 		lookupInfo.setFromSqlPart(sqlFrom_BaseLang, sqlFrom_Trl);
 		lookupInfo.setWhereClauseSqlPart(sqlWhereClause.toString());
@@ -490,10 +509,8 @@ public class MLookupFactory
 	}
 
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
-	private static MLookupInfo getLookupInfo(final int windowNo, final ITableRefInfo tableRefInfo)
+	private static MLookupInfo getLookupInfo(final int windowNo, @NonNull final ITableRefInfo tableRefInfo)
 	{
-		Check.assumeNotNull(tableRefInfo, "tableRefInfo not null");
-
 		final ArrayKey cacheKey = createCacheKey(tableRefInfo);
 		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, () -> buildLookupInfo(windowNo, tableRefInfo));
 		return lookupInfo == null ? null : lookupInfo.cloneIt(windowNo);
@@ -501,6 +518,7 @@ public class MLookupFactory
 
 	private static final MLookupInfo buildLookupInfo(final int windowNo, final ITableRefInfo tableRefInfo)
 	{
+
 		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
 		if (lookupDisplayInfo == null)
 		{
@@ -516,10 +534,10 @@ public class MLookupFactory
 			return null;
 		}
 
-		final String TableName = tableRefInfo.getTableName();
-		final String KeyColumn = tableRefInfo.getKeyColumn();
+		final String tableName = tableRefInfo.getTableName();
+		final String keyColumn = tableRefInfo.getKeyColumn();
 
-		final String keyColumnFQ = TableName + "." + KeyColumn;
+		final String keyColumnFQ = tableName + "." + keyColumn;
 
 		//
 		// Display Column SQL
@@ -527,13 +545,13 @@ public class MLookupFactory
 		final List<String> displayColumnSqlList_Trl = new ArrayList<>(displayColumns.size());
 		for (final ILookupDisplayColumn ldc : displayColumns)
 		{
-			final String ldc_displayColumnSql_BaseLang = buildDisplayColumnSql(ldc, TableName, LanguageInfo.USE_BASE_LANGAUGE);
+			final String ldc_displayColumnSql_BaseLang = buildDisplayColumnSql(ldc, tableName, LanguageInfo.USE_BASE_LANGAUGE);
 			if (!Check.isEmpty(ldc_displayColumnSql_BaseLang, true))
 			{
 				displayColumnSqlList_BaseLang.add(ldc_displayColumnSql_BaseLang);
 			}
 
-			final String ldc_displayColumnSql_Trl = buildDisplayColumnSql(ldc, TableName, LanguageInfo.USE_TRANSLATION_LANGUAGE);
+			final String ldc_displayColumnSql_Trl = buildDisplayColumnSql(ldc, tableName, LanguageInfo.USE_TRANSLATION_LANGUAGE);
 			if (!Check.isEmpty(ldc_displayColumnSql_Trl, true))
 			{
 				displayColumnSqlList_Trl.add(ldc_displayColumnSql_Trl);
@@ -543,21 +561,38 @@ public class MLookupFactory
 		final String displayColumnSQL_BaseLang = joinDisplayColumnSqls(displayColumnSqlList_BaseLang, keyColumnFQ);
 		final String displayColumnSQL_Trl = joinDisplayColumnSqls(displayColumnSqlList_Trl, keyColumnFQ);
 
+		final String descriptionColumnSQL_BaseLang;
+		final String descriptionColumnSQL_Trl;
+
+		//
+		// Description column SQL
+		final boolean tableHasDescriptionColumn = Services.get(IADTableDAO.class).hasColumnName(tableName, COLUMNNAME_Description);
+		if (tableHasDescriptionColumn)
+		{
+			descriptionColumnSQL_BaseLang = tableName + "." + COLUMNNAME_Description;
+			descriptionColumnSQL_Trl = tableName + "_Trl." + COLUMNNAME_Description;
+		}
+		else
+		{
+			descriptionColumnSQL_BaseLang = null;
+			descriptionColumnSQL_Trl = null;
+		}
+
 		//
 		// FROM SQL
-		final StringBuilder sqlFrom_BaseLang = new StringBuilder(TableName);
-		final StringBuilder sqlFrom_Trl = new StringBuilder(TableName);
+		final StringBuilder sqlFrom_BaseLang = new StringBuilder(tableName);
+		final StringBuilder sqlFrom_Trl = new StringBuilder(tableName);
 		final boolean isTranslated = lookupDisplayInfo.isTranslated();
 		if (isTranslated)
 		{
-			sqlFrom_Trl.append(" INNER JOIN ").append(TableName).append("_TRL ON (")
-					.append(TableName).append(".").append(KeyColumn).append("=").append(TableName).append("_Trl.").append(KeyColumn)
-					.append(" AND ").append(TableName).append("_Trl.AD_Language='").append(MLookupInfo.CTXNAME_AD_Language.toStringWithMarkers()).append("')");
+			sqlFrom_Trl.append(" INNER JOIN ").append(tableName).append("_TRL ON (")
+					.append(tableName).append(".").append(keyColumn).append("=").append(tableName).append("_Trl.").append(keyColumn)
+					.append(" AND ").append(tableName).append("_Trl.AD_Language='").append(MLookupInfo.CTXNAME_AD_Language.toStringWithMarkers()).append("')");
 		}
 
 		final String sqlSelectKeyColumnSQL;
 		final String sqlSelectValueColumnSQL;
-		if (KeyColumn.endsWith("_ID"))
+		if (keyColumn.endsWith("_ID"))
 		{
 			sqlSelectKeyColumnSQL = keyColumnFQ;
 			sqlSelectValueColumnSQL = "NULL";
@@ -574,13 +609,16 @@ public class MLookupFactory
 				.append(sqlSelectKeyColumnSQL) // Key
 				.append(",").append(sqlSelectValueColumnSQL) // Value
 				.append(",").append(displayColumnSQL_BaseLang)
-				.append(",").append(TableName).append(".IsActive")
+				.append(",").append(tableName).append(".IsActive")
+				.append(",").append(descriptionColumnSQL_BaseLang)
 				.append(" FROM ").append(sqlFrom_BaseLang);
+
 		final StringBuilder sqlSelect_Trl = new StringBuilder("SELECT ")
 				.append(sqlSelectKeyColumnSQL) // Key
 				.append(",").append(sqlSelectValueColumnSQL) // Value
 				.append(",").append(displayColumnSQL_Trl)
-				.append(",").append(TableName).append(".IsActive")
+				.append(",").append(tableName).append(".IsActive")
+				.append(",").append(descriptionColumnSQL_Trl)
 				.append(" FROM ").append(sqlFrom_Trl);
 
 		//
@@ -628,7 +666,7 @@ public class MLookupFactory
 		final MQuery zoomQuery;
 		if (sqlWhereClauseStatic != null)
 		{
-			zoomQuery = new MQuery(TableName);
+			zoomQuery = new MQuery(tableName);
 			zoomQuery.addRestriction(sqlWhereClauseStatic);
 		}
 		else
@@ -646,7 +684,7 @@ public class MLookupFactory
 				sqlOrderBy = OrderByClause;
 				if (OrderByClause.indexOf('.') == -1)
 				{
-					s_log.error("getLookup_Table - " + TableName + ": ORDER BY must fully qualified: " + OrderByClause);
+					s_log.error("getLookup_Table - " + tableName + ": ORDER BY must fully qualified: " + OrderByClause);
 				}
 			}
 			else
@@ -691,13 +729,21 @@ public class MLookupFactory
 		//
 		// Create MLookupInfo
 		final MLookupInfo lookupInfo = new MLookupInfo(
-				sqlQueryFinal_BaseLang.toString(), sqlQueryFinal_Trl.toString() //
-				, TableName, keyColumnFQ //
-				, zoomSO_Window_ID, zoomPO_Window_ID, zoomAD_Window_ID_Override, zoomQuery //
-		);
+				sqlQueryFinal_BaseLang.toString(),
+				sqlQueryFinal_Trl.toString(),
+				tableName,
+				keyColumnFQ,
+				zoomSO_Window_ID,
+				zoomPO_Window_ID,
+				zoomAD_Window_ID_Override,
+				zoomQuery);
 		lookupInfo.setWindowNo(windowNo);
 		lookupInfo.setDisplayColumns(displayColumns);
-		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang.toString(), displayColumnSQL_Trl.toString());
+		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang, displayColumnSQL_Trl);
+		if (!isEmpty(descriptionColumnSQL_BaseLang, true))
+		{ // note: they are either both empty or both not-empty
+			lookupInfo.setDescriptionColumnSQL(descriptionColumnSQL_BaseLang, descriptionColumnSQL_Trl);
+		}
 		lookupInfo.setSelectSqlPart(sqlSelect_BaseLang.toString(), sqlSelect_Trl.toString());
 		lookupInfo.setFromSqlPart(sqlFrom_BaseLang.toString(), sqlFrom_Trl.toString());
 		lookupInfo.setWhereClauseSqlPart(sqlWhereClauseStatic);
@@ -732,14 +778,14 @@ public class MLookupFactory
 		}
 	}
 
-	private static String buildDisplayColumnSql(final ILookupDisplayColumn ldc, final String TableName, final LanguageInfo languageInfo)
+	private static String buildDisplayColumnSql(final ILookupDisplayColumn ldc, final String tableName, final LanguageInfo languageInfo)
 	{
-		final String columnSQL = ldc.isVirtual() ? ldc.getColumnSQL() : TableName + "." + ldc.getColumnName();
+		final String columnSQL = ldc.isVirtual() ? ldc.getColumnSQL() : tableName + "." + ldc.getColumnName();
 
 		// translated
 		if (ldc.isTranslated() && languageInfo.isUseTranslantionLanguage() && !ldc.isVirtual())
 		{
-			return TableName + "_Trl." + ldc.getColumnName();
+			return tableName + "_Trl." + ldc.getColumnName();
 		}
 		// date
 		else if (DisplayType.isDate(ldc.getDisplayType()))
@@ -765,9 +811,9 @@ public class MLookupFactory
 		{
 			final String embeddedSQL;
 			if (ldc.isVirtual())
-				embeddedSQL = getLookup_TableDirEmbed(languageInfo, ldc.getColumnName(), TableName, ldc.getColumnSQL());
+				embeddedSQL = getLookup_TableDirEmbed(languageInfo, ldc.getColumnName(), tableName, ldc.getColumnSQL());
 			else
-				embeddedSQL = getLookup_TableDirEmbed(languageInfo, ldc.getColumnName(), TableName);
+				embeddedSQL = getLookup_TableDirEmbed(languageInfo, ldc.getColumnName(), tableName);
 
 			if (embeddedSQL != null)
 			{
@@ -784,9 +830,9 @@ public class MLookupFactory
 		{
 			final String embeddedSQL;
 			if (ldc.isVirtual())
-				embeddedSQL = getLookup_TableEmbed(languageInfo, ldc.getColumnSQL(), TableName, ldc.getAD_Reference_ID());
+				embeddedSQL = getLookup_TableEmbed(languageInfo, ldc.getColumnSQL(), tableName, ldc.getAD_Reference_ID());
 			else
-				embeddedSQL = getLookup_TableEmbed(languageInfo, ldc.getColumnName(), TableName, ldc.getAD_Reference_ID());
+				embeddedSQL = getLookup_TableEmbed(languageInfo, ldc.getColumnName(), tableName, ldc.getAD_Reference_ID());
 
 			if (embeddedSQL != null)
 			{

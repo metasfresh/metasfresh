@@ -1,5 +1,8 @@
 package de.metas.contracts.impl;
 
+import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
+import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
+import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 
@@ -795,38 +798,39 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_DataEntry retrieveRefundableDataEntry(final int bPartner_ID, final Timestamp movementDate, final org.compiere.model.I_M_Product product)
+	public I_C_Flatrate_DataEntry retrieveRefundableDataEntry(
+			final int bPartner_ID,
+			@NonNull final Timestamp movementDate,
+			@NonNull final org.compiere.model.I_M_Product product)
 	{
-		final Properties ctx = getCtx(product);
-		final String trxName = getTrxName(product);
-		final StringBuilder wc = new StringBuilder();
-		final List<Object> params = new ArrayList<>();
 
-		wc.append("( EXISTS (SELECT * FROM ")
-				.append(I_C_Flatrate_Term.Table_Name + " ft INNER JOIN ")
-				.append(I_C_Flatrate_Conditions.Table_Name + " fc ")
-				.append(" ON fc." + I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID + " = ft." + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
-				.append(" INNER JOIN " + I_C_Period.Table_Name + " per ")
-				.append(" ON per." + I_C_Period.COLUMNNAME_C_Period_ID + " = " + I_C_Flatrate_DataEntry.Table_Name + "." + I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID)
-				.append(" WHERE  ( ft." + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + " = " + I_C_Flatrate_DataEntry.Table_Name + "." + I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID)
-				.append(" AND COALESCE(ft." + I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + ", ft." + I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID + ") =?");
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQuery<I_C_Period> periodQuery = queryBL
+				.createQueryBuilder(I_C_Period.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_Period.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, movementDate)
+				.addCompareFilter(I_C_Period.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, movementDate)
+				.create();
 
-		params.add(bPartner_ID);
+		return queryBL
+				.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter() // new
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMN_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMN_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed) // new
 
-		wc.append(" AND fc." + I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions + " = '" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable + "'")
-				.append(" AND	( ? >= per." + I_C_Period.COLUMNNAME_StartDate)
-				.append(" AND ? <= per." + I_C_Period.COLUMNNAME_EndDate + "))) AND ");
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID)
+				.addOnlyActiveRecordsFilter() // new
+				.addCoalesceEqualsFilter(bPartner_ID, I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID, I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, DOCSTATUS_Completed) // new
+				.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, ImmutableList.of(CONTRACTSTATUS_Quit, CONTRACTSTATUS_Voided)) // new
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, movementDate) // new
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, movementDate) // new
 
-		params.add(movementDate);
-		params.add(movementDate);
-
-		wc.append(I_C_Flatrate_DataEntry.COLUMNNAME_M_Product_DataEntry_ID + " = ? )");
-		params.add(product.getM_Product_ID());
-
-		return new Query(ctx, I_C_Flatrate_DataEntry.Table_Name, wc.toString(), trxName)
-				.setParameters(params)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
+				.andCollectChildren(I_C_Flatrate_DataEntry.COLUMN_C_Flatrate_Term_ID)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMN_M_Product_DataEntry_ID, product.getM_Product_ID())
+				.addInSubQueryFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID, I_C_Period.COLUMNNAME_C_Period_ID, periodQuery)
+				.create()
 				.firstOnly(I_C_Flatrate_DataEntry.class);
 	}
 

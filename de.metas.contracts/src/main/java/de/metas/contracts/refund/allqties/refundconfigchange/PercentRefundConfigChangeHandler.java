@@ -7,7 +7,6 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -68,14 +67,15 @@ public class PercentRefundConfigChangeHandler extends RefundConfigChangeHandler
 
 		final Money moneyToAssign = moneyService.percentage(percentToApply, base);
 
-		return new AssignmentToRefundCandidate(
-				getCurrentRefundConfig().getId(),
-				existingAssignment.getAssignableInvoiceCandidateId(),
-				existingAssignment.getRefundInvoiceCandidate(),
-				existingAssignment.getMoneyBase(),
-				moneyToAssign,
-				existingAssignment.getQuantityAssigendToRefundCandidate(),
-				getCurrentRefundConfig().isIncludeAssignmentsWithThisConfigInSum());
+		return AssignmentToRefundCandidate.builder()
+				.refundConfigId(getCurrentRefundConfig().getId())
+				.assignableInvoiceCandidateId(existingAssignment.getAssignableInvoiceCandidateId())
+				.refundInvoiceCandidate(existingAssignment.getRefundInvoiceCandidate())
+				.moneyBase(existingAssignment.getMoneyBase())
+				.moneyAssignedToRefundCandidate(moneyToAssign)
+				.quantityAssigendToRefundCandidate(existingAssignment.getQuantityAssigendToRefundCandidate())
+				.useAssignedQtyInSum(getCurrentRefundConfig().isIncludeAssignmentsWithThisConfigInSum())
+				.build();
 	}
 
 	@Override

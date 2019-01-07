@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IProductAcctDAO;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -60,7 +61,6 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Lookup;
-import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -94,6 +94,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -180,14 +181,18 @@ public class FlatrateBL implements IFlatrateBL
 				if (!X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(invoicingEntry.getDocStatus()))
 				{
 					final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
-					final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
+
+					final ITranslatableString competed = Services.get(IADReferenceDAO.class)
+							.retrieveListNameTranslatableString(
+									X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID,
+									X_C_Flatrate_DataEntry.DOCSTATUS_Completed);
 
 					return msgBL.getMsg(ctx,
 							FlatrateBL.MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P,
 							new Object[] {
 									invoicingEntry.getC_Period().getName(),
 									invoicingEntry.getC_UOM().getName(),
-									MRefList.get(ctx, X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID, X_C_Flatrate_DataEntry.DOCSTATUS_Completed, trxName) });
+									competed.translate(Env.getAD_Language()) });
 				}
 			}
 

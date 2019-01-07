@@ -262,7 +262,7 @@ public class Login
 				ctx.setSysAdmin(true);
 			}
 
-			final KeyNamePair roleKNP = KeyNamePair.of(role.getAD_Role_ID(), role.getName());
+			final KeyNamePair roleKNP = KeyNamePair.of(role.getAD_Role_ID(), role.getName(), role.getDescription());
 			roles.add(roleKNP);
 		}
 		//

@@ -16,6 +16,11 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Description;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_DocumentNo;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Name;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Value;
+
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
@@ -464,13 +469,13 @@ public abstract class PO
 		// same class
 		if (o1.getClass().equals(o2.getClass()))
 		{
-			int index = get_ColumnIndex("DocumentNo");
+			int index = get_ColumnIndex(COLUMNNAME_DocumentNo);
 			if (index == -1)
-				index = get_ColumnIndex("Value");
+				index = get_ColumnIndex(COLUMNNAME_Value);
 			if (index == -1)
-				index = get_ColumnIndex("Name");
+				index = get_ColumnIndex(COLUMNNAME_Name);
 			if (index == -1)
-				index = get_ColumnIndex("Description");
+				index = get_ColumnIndex(COLUMNNAME_Description);
 			if (index != -1)
 			{
 				final PO po1 = (PO)o1;

@@ -462,4 +462,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void markInvoiceCandInDisputeForReceiptLine(I_M_InOutLine inOutLine);
 
+	void set_DateToInvoice_DefaultImpl(I_C_Invoice_Candidate ic);
+
 }

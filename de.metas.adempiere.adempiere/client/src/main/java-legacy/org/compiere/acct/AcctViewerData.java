@@ -194,7 +194,7 @@ class AcctViewerData
 
 	/**************************************************************************
 	 * Fill Accounting Schema
-	 * 
+	 *
 	 * @param cb JComboBox to be filled
 	 */
 	protected void fillAcctSchema(JComboBox<KeyNamePair> cb)
@@ -214,7 +214,7 @@ class AcctViewerData
 
 	/**
 	 * Fill Posting Type
-	 * 
+	 *
 	 * @param cb JComboBox to be filled
 	 */
 	protected void fillPostingType(JComboBox<ValueNamePair> cb)
@@ -252,7 +252,7 @@ class AcctViewerData
 				String tableName = rs.getString(2);
 				String name = msgBL.translate(Env.getCtx(), tableName + "_ID");
 				//
-				final ValueNamePair pp = new ValueNamePair(tableName, name);
+				final ValueNamePair pp = ValueNamePair.of(tableName, name);
 				cb.addItem(pp);
 				_tableInfo.put(tableName, new Integer(id));
 				if (id == AD_Table_ID)
@@ -356,7 +356,7 @@ class AcctViewerData
 
 	/**************************************************************************
 	 * /** Create Query and submit
-	 * 
+	 *
 	 * @return Report Model
 	 */
 	protected RModel query()
@@ -551,7 +551,7 @@ class AcctViewerData
 
 	/**
 	 * Create Report Model (Columns)
-	 * 
+	 *
 	 * @return Report Model
 	 */
 	private RModel getRModel()
@@ -645,7 +645,7 @@ class AcctViewerData
 
 	/**
 	 * Create the key columns in sequence
-	 * 
+	 *
 	 * @return List of Key Columns
 	 */
 	private ArrayList<String> createKeyColumns()

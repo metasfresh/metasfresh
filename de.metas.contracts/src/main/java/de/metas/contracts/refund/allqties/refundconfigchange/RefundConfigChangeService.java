@@ -75,8 +75,8 @@ public class RefundConfigChangeService
 		if (oldRefundConfig.equals(newRefundConfig))
 		{
 			return refundInvoiceCandidate;
-
 		}
+
 		final RefundContract refundContract = refundInvoiceCandidate.getRefundContract();
 		final List<RefundConfig> refundConfigs = refundContract.getRefundConfigs();
 
@@ -102,17 +102,17 @@ public class RefundConfigChangeService
 		{
 			for (final RefundConfig currentRangeConfig : refundConfigRange)
 			{
-				handler.currentRefundConfig(currentRangeConfig);
+				handler.changeCurrentRefundConfig(currentRangeConfig);
 
 				final RefundConfig formerRefundConfig = handler.getFormerRefundConfig();
 				final Stream<AssignmentToRefundCandidate> assignmentsToExtend = streamAssignmentsToExtend(
 						refundInvoiceCandidate,
 						formerRefundConfig,
-						currentRangeConfig // onlyIfNotExistsConfig
-				);
+						currentRangeConfig);
 
+				// note: the nice thing here is that we don't need to alter the existing candidate in any way!
 				assignmentsToExtend
-						.map(handler::createNewAssignment)
+						.map(handler::createNewAssignment) // the new assignment only assigns *additional* stuff
 						.forEach(assignmentToRefundCandidateRepository::save);
 			}
 		}
@@ -207,15 +207,21 @@ public class RefundConfigChangeService
 	private Stream<AssignmentToRefundCandidate> streamAssignmentsToExtend(
 			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate,
 			@NonNull final RefundConfig refundConfig,
-			@NonNull final RefundConfig onlyIfNotExistsConfig)
+			@NonNull final RefundConfig additionalRefundConfig)
 	{
 		Check.assumeNotNull(refundInvoiceCandidate.getId(),
 				"The given refundInvoiceCandidate needs to have a not-null Id; assignableInvoiceCandidate={}",
 				refundInvoiceCandidate);
 
+		final RefundInvoiceCandidate candidateWithAdditionalConfig = refundInvoiceCandidate
+				.toBuilder()
+				.refundConfig(additionalRefundConfig)
+				.build();
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQuery<I_C_Invoice_Candidate> assignableCandidatesWithOnlyIfNotExistsConfig = queryBL
+		// these are to be excluded in the actual query
+		final IQuery<I_C_Invoice_Candidate> assignableCandidatesWithAdditionalConfig = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(
@@ -223,7 +229,7 @@ public class RefundConfigChangeService
 						refundInvoiceCandidate.getId().getRepoId())
 				.addEqualsFilter(
 						I_C_Invoice_Candidate_Assignment.COLUMN_C_Flatrate_RefundConfig_ID,
-						onlyIfNotExistsConfig.getId().getRepoId())
+						additionalRefundConfig.getId().getRepoId())
 				.andCollect(I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID,
 						I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
@@ -241,10 +247,11 @@ public class RefundConfigChangeService
 				.addNotInSubQueryFilter(
 						I_C_Invoice_Candidate_Assignment.COLUMNNAME_C_Invoice_Candidate_Assigned_ID,
 						I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID,
-						assignableCandidatesWithOnlyIfNotExistsConfig)
+						assignableCandidatesWithAdditionalConfig)
 				.create()
 				.iterateAndStream()
-				.map(assignmentToRefundCandidateRepository::ofRecordOrNull);
+				.map(assignmentToRefundCandidateRepository::ofRecordOrNull)
+				.map(a -> a.withRefundInvoiceCandidate(candidateWithAdditionalConfig));
 
 	}
 }

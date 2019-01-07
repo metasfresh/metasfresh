@@ -164,14 +164,14 @@ public class AttributeValueTest extends AbstractHUTest
 			final IAttributeValueContext attributeValueContext = new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute);
 			attributeValue.setValue(attributeValueContext, "1");
 			Assert.assertEquals("Only current value shall be in available values for high volume attribute",
-					Collections.singletonList(new ValueNamePair("1", "Value1")),
+					Collections.singletonList(ValueNamePair.of("1", "Value1")),
 					attributeValue.getAvailableValues());
 
 			//
 			// Set current value as "2" and test
 			attributeValue.setValue(attributeValueContext, "2");
 			Assert.assertEquals("Only current value shall be in available values for high volume attribute",
-					Collections.singletonList(new ValueNamePair("2", "Value2")),
+					Collections.singletonList(ValueNamePair.of("2", "Value2")),
 					attributeValue.getAvailableValues());
 		}
 	}
