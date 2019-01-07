@@ -69,7 +69,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
-import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -294,18 +293,6 @@ public class DebugRestController
 
 	}
 
-	@RequestMapping(value = "/sql/loadLimit/warn", method = RequestMethod.PUT)
-	public void setSqlLoadLimitWarn(@RequestBody final int limit)
-	{
-		SqlDocumentsRepository.instance.setLoadLimitWarn(limit);
-	}
-
-	@RequestMapping(value = "/sql/loadLimit/max", method = RequestMethod.PUT)
-	public void setSqlLoadLimitMax(@RequestBody final int limit)
-	{
-		SqlDocumentsRepository.instance.setLoadLimitMax(limit);
-	}
-
 	@GetMapping("/logger/{loggerName}/_getUpToRoot")
 	public List<Map<String, Object>> getLoggersUpToRoot(@PathVariable("loggerName") final String loggerName)
 	{
@@ -462,7 +449,7 @@ public class DebugRestController
 		String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
 				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(viewId.getViewId())
 				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1 + "=" + DB.buildSqlList(rowIds.toIntSet());
-		final int countDeleted = DB.executeUpdate(sql, ITrx.TRXNAME_None);
+		final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_None);
 
 		//
 		// Clear view's cache
