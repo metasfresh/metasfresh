@@ -131,6 +131,7 @@ class ActionButton extends Component {
             (selected === index ? 'dropdown-status-item-on-key ' : '') +
             this.getStatusClassName(item.key)
           }
+          title={item.description ? item.description : null}
           onClick={() => this.handleChangeStatus(item)}
         >
           {item.caption}
