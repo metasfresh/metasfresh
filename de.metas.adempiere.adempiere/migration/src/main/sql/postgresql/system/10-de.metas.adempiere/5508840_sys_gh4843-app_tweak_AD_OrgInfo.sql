@@ -89,6 +89,8 @@ INSERT INTO t_alter_column values('ad_orginfo','ReportPrefix','VARCHAR(512)',nul
 UPDATE AD_OrgInfo SET ReportPrefix='file:////opt/metasfresh/reports' WHERE ReportPrefix IS NULL
 ;
 
+COMMIT;
+
 -- 2018-12-21T06:16:34.536
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('ad_orginfo','ReportPrefix',null,'NOT NULL',null)
