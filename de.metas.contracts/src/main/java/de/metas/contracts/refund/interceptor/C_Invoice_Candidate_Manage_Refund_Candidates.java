@@ -108,7 +108,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 			invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
 		}
 		catch (final RuntimeException e)
-		{e.printStackTrace();
+		{
 			// allow the "normal ICs" to be updated, even if something is wrong with the "refund-ICs"
 			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
 			Loggables.get()

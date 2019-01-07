@@ -1,5 +1,7 @@
 package de.metas.contracts.refund;
 
+import static org.compiere.util.Util.coalesce;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -61,7 +63,11 @@ public class AssignableInvoiceCandidate
 	/** needed when splitting assignable candidates. */
 	int precision;
 
+	/** the underlying record's {@code QtyToInvoice} plus {@code QtyInvoiced}. */
 	Quantity quantity;
+
+	/** Like {@link #getQuantity()}, but contains the old quantity, if the underlying record was just changed. */
+	Quantity quantityOld;
 
 	/** i there is more than one, they are ordered by their refund candidates' configs' minQty, ascending. */
 	List<AssignmentToRefundCandidate> assignmentsToRefundCandidates;
@@ -75,6 +81,7 @@ public class AssignableInvoiceCandidate
 			@NonNull final Money money,
 			final int precision,
 			@NonNull final Quantity quantity,
+			@Nullable final Quantity quantityOld,
 			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
 		this.id = id;
@@ -84,6 +91,7 @@ public class AssignableInvoiceCandidate
 		this.money = money;
 		this.precision = Check.assumeGreaterOrEqualToZero(precision, "precision");
 		this.quantity = quantity;
+		this.quantityOld = coalesce(quantityOld, quantity);
 
 		this.assignmentsToRefundCandidates = assignmentsToRefundCandidates;
 	}
@@ -110,7 +118,7 @@ public class AssignableInvoiceCandidate
 		final Quantity remainderQuantity = quantity.subtract(qtyToSplit);
 
 		final BigDecimal newFraction = qtyToSplit
-				.setScale(precision*2, RoundingMode.HALF_UP)
+				.setScale(precision * 2, RoundingMode.HALF_UP)
 				.divide(quantity.getAsBigDecimal(), RoundingMode.HALF_UP);
 
 		final BigDecimal newMoneyValue = money
