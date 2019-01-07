@@ -23,6 +23,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -101,12 +102,24 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 	private static final String VERSION_DEFAULT = "0";
 
-	private int loadLimitWarn = 100;
-	private int loadLimitMax = 300;
+	private static final String SYSCONFIG_LoadLimitWarn = "webui.documents.LoadLimitWarn";
+	private static final int DEFAULT_LoadLimitWarn = 100;
+
+	private static final String SYSCONFIG_LoadLimitMax = "webui.documents.LoadLimitMax";
+	private static final int DEFAULT_LoadLimitMax = 300;
 
 	private SqlDocumentsRepository()
 	{
-		super();
+	}
+
+	private int getLoadLimitWarn()
+	{
+		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_LoadLimitWarn, DEFAULT_LoadLimitWarn);
+	}
+
+	private int getLoadLimitMax()
+	{
+		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_LoadLimitMax, DEFAULT_LoadLimitMax);
 	}
 
 	private final void assertThisRepository(final DocumentEntityDescriptor entityDescriptor)
@@ -119,20 +132,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 					+ "\n Expected: " + this
 					+ "\n But it was: " + documentsRepository);
 		}
-	}
-
-	public void setLoadLimitWarn(final int loadLimitWarn)
-	{
-		final int loadLimitWarnOld = this.loadLimitWarn;
-		this.loadLimitWarn = loadLimitWarn;
-		logger.warn("Changed LoadLimitWarn: {} -> {}", loadLimitWarnOld, this.loadLimitWarn);
-	}
-
-	public void setLoadLimitMax(final int loadLimitMax)
-	{
-		final int loadLimitMaxOld = this.loadLimitMax;
-		this.loadLimitMax = loadLimitMax;
-		logger.warn("Changed LoadLimitWarn: {} -> {}", loadLimitMaxOld, this.loadLimitMax);
 	}
 
 	private static DocumentId retrieveNextDocumentId(final DocumentEntityDescriptor entityDescriptor)
@@ -173,8 +172,8 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final String adLanguage = sqlBuilder.getAD_Language();
 		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
-		final int loadLimitWarn = this.loadLimitWarn;
-		final int loadLimitMax = this.loadLimitMax;
+		final int loadLimitWarn = getLoadLimitWarn();
+		final int loadLimitMax = getLoadLimitMax();
 		int maxRowsToFetch = limit;
 		if (maxRowsToFetch <= 0)
 		{
@@ -225,14 +224,18 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				// Stop if we reached the MAXIMUM limit
 				if (loadLimitMax > 0 && loadCount >= loadLimitMax)
 				{
-					logger.warn("Reached load count MAXIMUM level. Stop loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}", sql, sqlParams, loadCount);
+					logger.warn("Reached load count MAXIMUM level. Stop loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}"
+							+ "\n To change this limit check {} sysconfig.",
+							sql, sqlParams, loadCount, SYSCONFIG_LoadLimitMax);
 					break;
 				}
 
 				// WARN if we reached the Warning limit
 				if (!loadLimitWarnReported && loadLimitWarn > 0 && loadCount >= loadLimitWarn)
 				{
-					logger.warn("Reached load count Warning level. Continue loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}", sql, sqlParams, loadCount);
+					logger.warn("Reached load count Warning level. Continue loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}"
+							+ "\n To change this limit check {} sysconfig.",
+							sql, sqlParams, loadCount, SYSCONFIG_LoadLimitWarn);
 					loadLimitWarnReported = true;
 				}
 			}
