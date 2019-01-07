@@ -99,7 +99,7 @@ public final class JSONLookupValue
 	}
 
 	public static final IntegerLookupValue integerLookupValueFromJsonMap(
-			final Map<String, Object> map)
+			@NonNull final Map<String, Object> map)
 	{
 		final Object keyObj = map.get(PROPERTY_Key);
 		if (keyObj == null)
@@ -113,13 +113,8 @@ public final class JSONLookupValue
 		}
 		final int keyInt = Integer.parseInt(keyStr);
 
-		final Object captionObj = map.get(PROPERTY_Caption);
-		final String caption = captionObj != null ? captionObj.toString() : "";
-		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(caption);
-
-		final Object descriptionObj = map.get(PROPERTY_Description);
-		final String descriptionStr = descriptionObj != null ? descriptionObj.toString() : "";
-		final ITranslatableString description = ImmutableTranslatableString.anyLanguage(descriptionStr);
+		final ITranslatableString displayName = extractCaption(map);
+		final ITranslatableString description = extractDescription(map);
 
 		final IntegerLookupValueBuilder builder = IntegerLookupValue.builder()
 				.id(keyInt)
@@ -141,13 +136,8 @@ public final class JSONLookupValue
 		final Object keyObj = map.get(PROPERTY_Key);
 		final String key = keyObj != null ? keyObj.toString() : null;
 
-		final Object captionObj = map.get(PROPERTY_Caption);
-		final String caption = captionObj != null ? captionObj.toString() : "";
-		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(caption);
-
-		final Object descriptionObj = map.get(PROPERTY_Description);
-		final String descriptionStr = descriptionObj != null ? descriptionObj.toString() : "";
-		final ITranslatableString description = ImmutableTranslatableString.anyLanguage(descriptionStr);
+		final ITranslatableString displayName = extractCaption(map);
+		final ITranslatableString description = extractDescription(map);
 
 		final StringLookupValueBuilder builder = StringLookupValue.builder()
 				.id(key)
@@ -162,6 +152,22 @@ public final class JSONLookupValue
 		}
 
 		return builder.build();
+	}
+
+	private static ITranslatableString extractCaption(@NonNull final Map<String, Object> map)
+	{
+		final Object captionObj = map.get(PROPERTY_Caption);
+		final String caption = captionObj != null ? captionObj.toString() : "";
+		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(caption);
+		return displayName;
+	}
+
+	private static ITranslatableString extractDescription(final Map<String, Object> map)
+	{
+		final Object descriptionObj = map.get(PROPERTY_Description);
+		final String descriptionStr = descriptionObj != null ? descriptionObj.toString() : "";
+		final ITranslatableString description = ImmutableTranslatableString.anyLanguage(descriptionStr);
+		return description;
 	}
 
 	public static JSONLookupValue unknown(final int id)
