@@ -197,7 +197,7 @@ public class CandidateAssignmentService
 
 		if (RefundMode.APPLY_TO_ALL_QTIES.equals(refundMode))
 		{
-			createOrDeleteAdditionalAssignments(unassignedPairs, assignableInvoiceCandidate.getQuantity());
+			createOrDeleteAdditionalAssignments(unassignedPairs, assignableInvoiceCandidate);
 			return result;
 		}
 
@@ -272,14 +272,19 @@ public class CandidateAssignmentService
 
 	private void createOrDeleteAdditionalAssignments(
 			@NonNull final List<UnassignedPairOfCandidates> unassignedPairs,
-			@NonNull final Quantity assignableQty)
+			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
 		// "If refundMode=ALL_MAX_SCALE, then there can be only one refund candidate
 		final RefundInvoiceCandidate refundCandidate = extractSingleElement(unassignedPairs, UnassignedPairOfCandidates::getRefundInvoiceCandidate);
 
+		// additional quantity that we had before assignableInvoiceCandidate was changed
+		final Quantity quantityDelta = assignableInvoiceCandidate
+				.getQuantityOld()
+				.subtract(assignableInvoiceCandidate.getQuantity());
+
 		final Quantity previouslyAssignedQty = refundCandidate
 				.getAssignedQuantity()
-				.add(assignableQty);
+				.add(quantityDelta);
 
 		// note that in this refund mode the whole qty for *all* refundConfigs is assigned to this candidate.
 		// therefore we can get the "biggest" refund config like this.
