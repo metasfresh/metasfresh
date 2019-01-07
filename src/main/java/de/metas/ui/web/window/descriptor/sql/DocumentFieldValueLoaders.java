@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import java.awt.Color;
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -16,6 +17,7 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.ColorValue;
@@ -30,7 +32,6 @@ import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -59,7 +60,7 @@ import lombok.Value;
 
 /**
  * Factory methods to create specific {@link DocumentFieldValueLoader} instances.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -136,7 +137,11 @@ public final class DocumentFieldValueLoaders
 		return new IntegerDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static final DocumentFieldValueLoader toLookupValue(final String sqlColumnName, final String sqlDisplayColumnName, final boolean numericKey)
+	public static final DocumentFieldValueLoader toLookupValue(
+			@NonNull final String sqlColumnName,
+			@NonNull final String sqlDisplayColumnName,
+			// @Nullable final String sqlDescriptionColumnName,
+			final boolean numericKey)
 	{
 		if (Check.isEmpty(sqlDisplayColumnName, true))
 		{
@@ -145,11 +150,11 @@ public final class DocumentFieldValueLoaders
 
 		if (numericKey)
 		{
-			return new IntegerLookupValueDocumentFieldValueLoader(sqlColumnName, sqlDisplayColumnName);
+			return new IntegerLookupValueDocumentFieldValueLoader(sqlColumnName, sqlDisplayColumnName/* , sqlDescriptionColumnName */);
 		}
 		else
 		{
-			return new StringLookupValueDocumentFieldValueLoader(sqlColumnName, sqlDisplayColumnName);
+			return new StringLookupValueDocumentFieldValueLoader(sqlColumnName, sqlDisplayColumnName/* , sqlDescriptionColumnName */);
 		}
 	}
 
@@ -410,21 +415,37 @@ public final class DocumentFieldValueLoaders
 	@Value
 	private static final class IntegerLookupValueDocumentFieldValueLoader implements DocumentFieldValueLoader
 	{
+		@NonNull
 		private final String sqlColumnName;
+
+		@NonNull
 		private final String sqlDisplayColumnName;
 
 		@Override
-		public IntegerLookupValue retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public IntegerLookupValue retrieveFieldValue(
+				final ResultSet rs,
+				final boolean isDisplayColumnAvailable,
+				final String adLanguage,
+				final LookupDescriptor lookupDescriptor) throws SQLException
 		{
 			final int id = rs.getInt(sqlColumnName);
 			if (rs.wasNull())
 			{
 				return null;
 			}
+
 			if (isDisplayColumnAvailable)
 			{
-				final String displayName = rs.getString(sqlDisplayColumnName);
-				return IntegerLookupValue.of(id, ImmutableTranslatableString.singleLanguage(adLanguage, displayName));
+				final DisplayNameAndDescription result = DocumentFieldValueLoaders.extractDisplayNameAndDescription(
+						rs,
+						sqlDisplayColumnName,
+						adLanguage);
+
+				return IntegerLookupValue.builder()
+						.id(id)
+						.displayName(result.getDisplayName())
+						.description(result.getDescription())
+						.build();
 			}
 			else
 			{
@@ -436,21 +457,37 @@ public final class DocumentFieldValueLoaders
 	@Value
 	private static final class StringLookupValueDocumentFieldValueLoader implements DocumentFieldValueLoader
 	{
+		@NonNull
 		private final String sqlColumnName;
+
+		@NonNull
 		private final String sqlDisplayColumnName;
 
 		@Override
-		public StringLookupValue retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public StringLookupValue retrieveFieldValue(
+				@NonNull final ResultSet rs,
+				final boolean isDisplayColumnAvailable,
+				final String adLanguage,
+				final LookupDescriptor lookupDescriptor) throws SQLException
 		{
 			final String key = rs.getString(sqlColumnName);
 			if (rs.wasNull())
 			{
 				return null;
 			}
+
 			if (isDisplayColumnAvailable)
 			{
-				final String displayName = rs.getString(sqlDisplayColumnName);
-				return StringLookupValue.of(key, ImmutableTranslatableString.singleLanguage(adLanguage, displayName));
+				final DisplayNameAndDescription result = DocumentFieldValueLoaders.extractDisplayNameAndDescription(
+						rs,
+						sqlDisplayColumnName,
+						adLanguage);
+
+				return StringLookupValue.builder()
+						.id(key)
+						.displayName(result.getDisplayName())
+						.description(result.getDescription())
+						.build();
 			}
 			else
 			{
@@ -459,8 +496,50 @@ public final class DocumentFieldValueLoaders
 		}
 	}
 
+	private static DisplayNameAndDescription extractDisplayNameAndDescription(
+			@NonNull final ResultSet rs,
+			final String sqlDisplayColumnName,
+			final String adLanguage) throws SQLException
+	{
+		final ITranslatableString displayName;
+		final ITranslatableString description;
+
+		final Array array = rs.getArray(sqlDisplayColumnName);
+		if (array == null)
+		{
+			displayName = ImmutableTranslatableString.empty();
+			description = ImmutableTranslatableString.empty();
+		}
+		else
+		{
+			final String[] nameAndDescription = (String[])array.getArray();
+			displayName = ImmutableTranslatableString.singleLanguage(adLanguage, nameAndDescription[0]);
+
+			final boolean hasDescription = nameAndDescription.length > 1;
+			if (hasDescription)
+			{
+				description = ImmutableTranslatableString.singleLanguage(adLanguage, nameAndDescription[1]);
+			}
+			else
+			{
+				description = ImmutableTranslatableString.empty();
+			}
+		}
+		return new DisplayNameAndDescription(displayName, description);
+	}
+
 	@Value
-	private static final class LabelsLookupValueDocumentFieldValueLoader implements DocumentFieldValueLoader
+	private static class DisplayNameAndDescription
+	{
+		@NonNull
+		ITranslatableString displayName;
+
+		@NonNull
+		ITranslatableString description;
+	}
+
+	@Value
+	private static class LabelsLookupValueDocumentFieldValueLoader implements DocumentFieldValueLoader
 	{
 		private final String sqlColumnName;
 		private final String sqlDisplayColumnName = null;

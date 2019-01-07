@@ -28,5 +28,5 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 
 public interface ISqlLookupDescriptor extends LookupDescriptor
 {
-	IStringExpression getSqlForFetchingDisplayNameByIdExpression(String sqlKeyColumn);
+	IStringExpression getSqlForFetchingLookupByIdExpression(String sqlKeyColumn);
 }
