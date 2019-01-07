@@ -80,6 +80,7 @@ public class CandidateAssignServiceExceedingQty_Amount_Test
 	private static final Money money_12 = Money.of("12", CURRENCY_ID);
 	private static final Money money_14 = Money.of("14", CURRENCY_ID);
 	private static final Money money_26 = Money.of("26", CURRENCY_ID);
+
 	private Quantity quantity_0;
 	private Quantity quantity_12;
 	private Quantity quantity_14;

@@ -121,8 +121,6 @@ public class CandidateAssignServiceAllQties_Amount_Test
 
 	private ProductId productId;
 
-	private I_C_UOM uomRecord;
-
 	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 
 	private RefundConfig savedRefundConfig_0;
@@ -143,7 +141,7 @@ public class CandidateAssignServiceAllQties_Amount_Test
 		currencyRecord.setStdPrecision(2);
 		saveRecord(currencyRecord);
 
-		uomRecord = newInstance(I_C_UOM.class);
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
 		quantity_3 = Quantity.of("3", uomRecord);

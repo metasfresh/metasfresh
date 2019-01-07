@@ -90,7 +90,7 @@ public class InvoiceSchedule
 
 		if (Frequency.MONTLY.equals(getFrequency()))
 		{
-			assume(invoiceDayOfMonth >= 1, "If the invoicing freqency is 'monthly', then invoiceDayOfMonth needs to be >=1; id={}", id);;
+			assume(invoiceDayOfMonth >= 1, "If the invoicing freqency is 'monthly', then invoiceDayOfMonth needs to be >=1; id={}", id);
 			this.invoiceDayOfMonth = invoiceDayOfMonth;
 		}
 		else
@@ -98,7 +98,7 @@ public class InvoiceSchedule
 			this.invoiceDayOfMonth = -1;
 		}
 
-		assume(invoiceDistance == null || invoiceDistance >= 1, "If invoiceDistance is specified, it needs to be >=1; id={}", id);;
+		assume(invoiceDistance == null || invoiceDistance >= 1, "If invoiceDistance is specified, it needs to be >=1; id={}", id);
 		this.invoiceDistance = coalesce(invoiceDistance, 1);
 	}
 

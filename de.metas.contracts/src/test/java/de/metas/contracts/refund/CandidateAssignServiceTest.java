@@ -73,24 +73,15 @@ import lombok.Value;
 
 public class CandidateAssignServiceTest
 {
-	private static final BigDecimal SEVEN = new BigDecimal("7");
-
-	private static final BigDecimal FOUR = new BigDecimal("4");
-
-	private static final BigDecimal THREE = new BigDecimal("3");
-
 	private static final BigDecimal TWO = new BigDecimal("2");;
-
+	private static final BigDecimal THREE = new BigDecimal("3");
+	private static final BigDecimal FOUR = new BigDecimal("4");
+	private static final BigDecimal SEVEN = new BigDecimal("7");
 	private static final BigDecimal THIRTEEN = new BigDecimal("13");
-
 	private static final BigDecimal FOURTEEN = new BigDecimal("14");
-
 	private static final BigDecimal FIFTEEN = new BigDecimal("15");
-
 	private static final BigDecimal SIXTEEN = new BigDecimal("16");
-
 	private static final BigDecimal TWENTY = new BigDecimal("20");
-
 	private static final BigDecimal HUNDRED = new BigDecimal("100");
 
 	private static final LocalDate NOW = LocalDate.now();
@@ -106,8 +97,6 @@ public class CandidateAssignServiceTest
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private RefundContractRepository refundContractRepository;
 
-	private AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
-
 	@Before
 	public void init()
 	{
@@ -117,7 +106,7 @@ public class CandidateAssignServiceTest
 
 		refundContractRepository = refundInvoiceCandidateRepository.getRefundContractRepository();
 
-		assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(
+		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(
 				refundInvoiceCandidateRepository);
 
 		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
