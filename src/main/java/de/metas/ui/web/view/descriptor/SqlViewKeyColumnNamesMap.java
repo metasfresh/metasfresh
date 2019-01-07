@@ -363,6 +363,11 @@ public final class SqlViewKeyColumnNamesMap
 		return SqlAndParams.of(sql.toString(), sqlParams);
 	}
 
+	public List<Object> getSqlValuesList(@NonNull final DocumentId rowId)
+	{
+		return ImmutableList.copyOf(extractComposedKey(rowId).values());
+	}
+
 	public DocumentId retrieveRowId(final ResultSet rs, final String sqlColumnPrefix, final boolean useKeyColumnNames)
 	{
 		final List<Object> rowIdParts = keyFields

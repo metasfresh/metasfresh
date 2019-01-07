@@ -1,11 +1,10 @@
 package de.metas.ui.web.pporder.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -15,6 +14,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -121,14 +123,14 @@ public class WEBUI_PP_Order_Receipt
 		final PPOrderLineType type = row.getType();
 		if (type == PPOrderLineType.MainProduct)
 		{
-			final int ppOrderId = row.getPP_Order_ID();
-			final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
+			final PPOrderId ppOrderId = row.getOrderId();
+			final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
 			return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
-			final int ppOrderBOMLineId = row.getPP_Order_BOMLine_ID();
-			final I_PP_Order_BOMLine ppOrderBOMLine = load(ppOrderBOMLineId, I_PP_Order_BOMLine.class);
+			final PPOrderBOMLineId ppOrderBOMLineId = row.getOrderBOMLineId();
+			final I_PP_Order_BOMLine ppOrderBOMLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(ppOrderBOMLineId);
 			return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine);
 		}
 		else
@@ -142,14 +144,14 @@ public class WEBUI_PP_Order_Receipt
 		final PPOrderLineType type = row.getType();
 		if (type == PPOrderLineType.MainProduct)
 		{
-			final int ppOrderId = row.getPP_Order_ID();
-			final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
+			final PPOrderId ppOrderId = row.getOrderId();
+			final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
 			return IPPOrderReceiptHUProducer.receiveMainProduct(ppOrder);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
-			final int ppOrderBOMLineId = row.getPP_Order_BOMLine_ID();
-			final I_PP_Order_BOMLine ppOrderBOMLine = load(ppOrderBOMLineId, I_PP_Order_BOMLine.class);
+			final PPOrderBOMLineId ppOrderBOMLineId = row.getOrderBOMLineId();
+			final I_PP_Order_BOMLine ppOrderBOMLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(ppOrderBOMLineId);
 			return IPPOrderReceiptHUProducer.receiveByOrCoProduct(ppOrderBOMLine);
 		}
 		else

@@ -1,7 +1,5 @@
 package de.metas.ui.web.pporder.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -25,6 +23,7 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -157,7 +156,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	{
 		final PPOrderLineRow row = getSingleSelectedRow();
 
-		final I_PP_Order_BOMLine bomLine = load(row.getPP_Order_BOMLine_ID(), I_PP_Order_BOMLine.class);
+		final I_PP_Order_BOMLine bomLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(row.getOrderBOMLineId());
 		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
 		final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
 

@@ -231,7 +231,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			final List<IViewRow> documents = loadViewRows(rs, viewEvalCtx, viewId, limit);
 			if (documents.isEmpty())
 			{
-				throw new EntityNotFoundException("No document found for rowId=" + rowId);
+				throw new EntityNotFoundException("No document found for rowId=" + rowId + " in viewId=" + viewId);
 			}
 			else if (documents.size() > 1)
 			{

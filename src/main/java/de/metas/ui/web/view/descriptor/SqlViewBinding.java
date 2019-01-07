@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -435,7 +436,12 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		private SqlViewKeyColumnNamesMap getSqlViewKeyColumnNamesMap()
 		{
-			return SqlViewKeyColumnNamesMap.ofKeyFields(getKeyFields());
+			final ImmutableList<SqlViewRowFieldBinding> keyFields = getKeyFields();
+			if (keyFields.isEmpty())
+			{
+				throw new AdempiereException("No key columns defined for " + getTableName());
+			}
+			return SqlViewKeyColumnNamesMap.ofKeyFields(keyFields);
 		}
 
 		private ImmutableList<SqlViewRowFieldBinding> getKeyFields()
