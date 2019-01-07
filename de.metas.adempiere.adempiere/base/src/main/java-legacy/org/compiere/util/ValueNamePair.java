@@ -47,13 +47,13 @@ public final class ValueNamePair extends NamePair
 	public static final ValueNamePair of(
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name,
-			@JsonProperty("help") final String help)
+			@JsonProperty("description") final String description)
 	{
 		if (Objects.equals(value, EMPTY.getValue()) && Objects.equals(name, EMPTY.getName()))
 		{
 			return EMPTY;
 		}
-		return new ValueNamePair(value, name, help);
+		return new ValueNamePair(value, name, description);
 	}
 
 	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */);
