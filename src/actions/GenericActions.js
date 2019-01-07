@@ -270,6 +270,10 @@ export function actionsRequest({
     childViewSelectedIds,
   });
 
+  if (!entity) {
+    return Promise.resolve({ data: { actions: [] } });
+  }
+
   return axios.get(
     config.API_URL +
       '/' +
