@@ -245,14 +245,11 @@ public class InvoiceToExportFactory
 				invoiceRecord);
 
 		final I_C_BPartner bPartnerRecord = invoiceRecord.getC_BPartner();
-		final String vatTaxId = bPartnerRecord.getVATaxID();
-
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
 
 		final BPartner recipient = BPartner.builder()
 				.id(bPartnerId)
 				.ean(EAN.of(gln))
-				.vatNumber(vatTaxId)
 				.build();
 		return recipient;
 	}
@@ -278,13 +275,9 @@ public class InvoiceToExportFactory
 		final String gln = Check.assumeNotEmpty(remittoLocation.getGLN(), InvoiceNotExportableException.class,
 				"The remit-to location of the given invoice's orgBPartner needs to have a GLN; remittoLocation={}; invoiceRecord={}; orgBPartner={}", remittoLocation, invoiceRecord, orgBPartner);
 
-		final String vatTaxId = Check.assumeNotEmpty(orgBPartner.getVATaxID(), InvoiceNotExportableException.class,
-				"The given invoice's orgBPartner needs to have a VATaxID; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
-
 		final BPartner recipient = BPartner.builder()
 				.id(BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()))
 				.ean(EAN.of(gln))
-				.vatNumber(vatTaxId)
 				.build();
 		return recipient;
 	}
