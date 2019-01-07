@@ -2,6 +2,8 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
@@ -19,9 +21,12 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue.IntegerLookupValueBuilder;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue.StringLookupValueBuilder;
 import io.swagger.annotations.ApiModel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -51,16 +56,27 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public final class JSONLookupValue
 {
-	public static final JSONLookupValue of(final String key, final String caption)
-	{
-		final Map<String, Object> attributes = null;
-		return new JSONLookupValue(key, caption, attributes);
-	}
 
 	public static final JSONLookupValue of(final int key, final String caption)
 	{
 		final String keyStr = String.valueOf(key);
-		return of(keyStr, caption);
+		return of(keyStr, caption, null/* description */);
+	}
+
+	public static final JSONLookupValue of(
+			final String key,
+			final String caption)
+	{
+		return of(key, caption, null/* description */);
+	}
+
+	public static final JSONLookupValue of(
+			final String key,
+			final String caption,
+			@Nullable final String description)
+	{
+		final Map<String, Object> attributes = null;
+		return new JSONLookupValue(key, caption, description, attributes);
 	}
 
 	public static final JSONLookupValue ofLookupValue(final LookupValue lookupValue)
@@ -68,18 +84,22 @@ public final class JSONLookupValue
 		final String id = lookupValue.getIdAsString();
 
 		final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
+		final ITranslatableString descriptionTrl = lookupValue.getDescriptionTrl();
+
 		final String adLanguage = Env.getAD_Language(Env.getCtx()); // FIXME add it as parameter!
 		final String displayName = displayNameTrl.translate(adLanguage);
+		final String description = descriptionTrl.translate(adLanguage);
 
-		return new JSONLookupValue(id, displayName, lookupValue.getAttributes());
+		return new JSONLookupValue(id, displayName, description, lookupValue.getAttributes());
 	}
 
 	public static final JSONLookupValue ofNamePair(final NamePair namePair)
 	{
-		return of(namePair.getID(), namePair.getName());
+		return of(namePair.getID(), namePair.getName(), namePair.getDescription());
 	}
 
-	public static final IntegerLookupValue integerLookupValueFromJsonMap(final Map<String, Object> map)
+	public static final IntegerLookupValue integerLookupValueFromJsonMap(
+			@NonNull final Map<String, Object> map)
 	{
 		final Object keyObj = map.get(PROPERTY_Key);
 		if (keyObj == null)
@@ -93,22 +113,22 @@ public final class JSONLookupValue
 		}
 		final int keyInt = Integer.parseInt(keyStr);
 
-		final Object captionObj = map.get(PROPERTY_Caption);
-		final String caption = captionObj != null ? captionObj.toString() : "";
-		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(caption);
+		final ITranslatableString displayName = extractCaption(map);
+		final ITranslatableString description = extractDescription(map);
+
+		final IntegerLookupValueBuilder builder = IntegerLookupValue.builder()
+				.id(keyInt)
+				.displayName(displayName)
+				.description(description);
 
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
-		if (attributes == null || attributes.isEmpty())
+		if (attributes != null && !attributes.isEmpty())
 		{
-			return IntegerLookupValue.of(keyInt, displayName);
+			builder.attributes(attributes);
 		}
 
-		return IntegerLookupValue.builder()
-				.id(keyInt)
-				.displayName(displayName)
-				.attributes(attributes)
-				.build();
+		return builder.build();
 	}
 
 	public static final StringLookupValue stringLookupValueFromJsonMap(final Map<String, Object> map)
@@ -116,22 +136,38 @@ public final class JSONLookupValue
 		final Object keyObj = map.get(PROPERTY_Key);
 		final String key = keyObj != null ? keyObj.toString() : null;
 
-		final Object captionObj = map.get(PROPERTY_Caption);
-		final String caption = captionObj != null ? captionObj.toString() : "";
-		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(caption);
+		final ITranslatableString displayName = extractCaption(map);
+		final ITranslatableString description = extractDescription(map);
+
+		final StringLookupValueBuilder builder = StringLookupValue.builder()
+				.id(key)
+				.displayName(displayName)
+				.description(description);
 
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
-		if (attributes == null || attributes.isEmpty())
+		if (attributes != null && !attributes.isEmpty())
 		{
-			return StringLookupValue.of(key, displayName);
+			builder.attributes(attributes);
 		}
 
-		return StringLookupValue.builder()
-				.id(key)
-				.displayName(displayName)
-				.attributes(attributes)
-				.build();
+		return builder.build();
+	}
+
+	private static ITranslatableString extractCaption(@NonNull final Map<String, Object> map)
+	{
+		final Object captionObj = map.get(PROPERTY_Caption);
+		final String caption = captionObj != null ? captionObj.toString() : "";
+		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(caption);
+		return displayName;
+	}
+
+	private static ITranslatableString extractDescription(final Map<String, Object> map)
+	{
+		final Object descriptionObj = map.get(PROPERTY_Description);
+		final String descriptionStr = descriptionObj != null ? descriptionObj.toString() : "";
+		final ITranslatableString description = ImmutableTranslatableString.anyLanguage(descriptionStr);
+		return description;
 	}
 
 	public static JSONLookupValue unknown(final int id)
@@ -152,34 +188,47 @@ public final class JSONLookupValue
 
 		final String key = Joiner.on("_").skipNulls().join(lookupValue1.getKey(), lookupValue2.getKey());
 		final String caption = Joiner.on(" ").skipNulls().join(lookupValue1.getCaption(), lookupValue2.getCaption());
-		return JSONLookupValue.of(key, caption);
+		final String description = Joiner.on(" ").skipNulls().join(lookupValue1.getDescription(), lookupValue2.getDescription());
+		return JSONLookupValue.of(key, caption, description);
 
 	}
 
 	// IMPORTANT: when changing this property name, pls also check/change de.metas.handlingunits.attribute.impl.AbstractAttributeValue.extractKey(Map<String, String>, I_M_Attribute)
 	private static final String PROPERTY_Key = "key";
 	@JsonProperty(PROPERTY_Key)
+	@Getter
 	private final String key;
+
 	@JsonIgnore
 	private transient Integer keyAsInt = null; // lazy
 
 	private static final String PROPERTY_Caption = "caption";
 	@JsonProperty(PROPERTY_Caption)
+	@Getter
 	private final String caption;
+
+	private static final String PROPERTY_Description = "description";
+	@JsonProperty(PROPERTY_Description)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Getter
+	private final String description;
 
 	private static final String PROPERTY_Attributes = "attributes";
 	@JsonProperty(PROPERTY_Attributes)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Getter
 	private final Map<String, Object> attributes;
 
 	@JsonCreator
 	private JSONLookupValue(
 			@JsonProperty(PROPERTY_Key) @NonNull final String key,
 			@JsonProperty(PROPERTY_Caption) @NonNull final String caption,
+			@JsonProperty(PROPERTY_Description) @Nullable final String description,
 			@JsonProperty(PROPERTY_Attributes) final Map<String, Object> attributes)
 	{
 		this.key = key;
 		this.caption = caption;
+		this.description = description;
 		this.attributes = attributes != null && !attributes.isEmpty() ? ImmutableMap.copyOf(attributes) : ImmutableMap.of();
 	}
 
@@ -193,11 +242,6 @@ public final class JSONLookupValue
 				.toString();
 	}
 
-	public String getKey()
-	{
-		return key;
-	}
-
 	public int getKeyAsInt()
 	{
 		if (keyAsInt == null)
@@ -206,16 +250,6 @@ public final class JSONLookupValue
 		}
 
 		return keyAsInt;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public Map<String, Object> getAttributes()
-	{
-		return attributes;
 	}
 
 	public LookupValue toIntegerLookupValue()

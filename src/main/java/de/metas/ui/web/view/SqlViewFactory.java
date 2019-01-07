@@ -493,7 +493,7 @@ public class SqlViewFactory implements IViewFactory
 		private final boolean isDisplayColumnAvailable;
 
 		@Override
-		public Object retrieveValueAsJson(final ResultSet rs, final String adLanguage) throws SQLException
+		public Object retrieveValueAsJson(@NonNull final ResultSet rs, final String adLanguage) throws SQLException
 		{
 			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage, (LookupDescriptor)null);
 			return Values.valueToJsonObject(fieldValue);

@@ -13,6 +13,7 @@ import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
@@ -138,7 +139,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	private final Optional<String> tableName;
 	private final Optional<WindowId> zoomIntoWindowId;
 	private final ICachedStringExpression sqlForFetchingExpression;
-	private final ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
+	private final ICachedStringExpression sqlForFetchingLookupByIdExpression;
 	private final int entityTypeIndex;
 	private final INamePairPredicate postQueryPredicate;
 
@@ -156,7 +157,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		tableName = Optional.of(builder.sqlTableName);
 		zoomIntoWindowId = builder.getZoomIntoWindowId();
 		sqlForFetchingExpression = builder.sqlForFetchingExpression;
-		sqlForFetchingDisplayNameByIdExpression = builder.sqlForFetchingDisplayNameByIdExpression;
+		sqlForFetchingLookupByIdExpression = builder.sqlForFetchingLookupByIdExpression;
 		entityTypeIndex = builder.entityTypeIndex;
 
 		postQueryPredicate = builder.getPostQueryPredicate();
@@ -189,7 +190,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		return Objects.hash(
 				tableName,
 				sqlForFetchingExpression,
-				sqlForFetchingDisplayNameByIdExpression,
+				sqlForFetchingLookupByIdExpression,
 				entityTypeIndex,
 				postQueryPredicate,
 				//
@@ -221,7 +222,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		final SqlLookupDescriptor other = (SqlLookupDescriptor)obj;
 		return Objects.equals(tableName, other.tableName)
 				&& Objects.equals(sqlForFetchingExpression, other.sqlForFetchingExpression)
-				&& Objects.equals(sqlForFetchingDisplayNameByIdExpression, other.sqlForFetchingDisplayNameByIdExpression)
+				&& Objects.equals(sqlForFetchingLookupByIdExpression, other.sqlForFetchingLookupByIdExpression)
 				&& entityTypeIndex == other.entityTypeIndex
 				&& Objects.equals(postQueryPredicate, other.postQueryPredicate)
 				&& highVolume == other.highVolume
@@ -261,18 +262,20 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		return sqlForFetchingExpression;
 	}
 
-	public IStringExpression getSqlForFetchingDisplayNameByIdExpression()
+	public IStringExpression getSqlForFetchingLookupByIdExpression()
 	{
-		return sqlForFetchingDisplayNameByIdExpression;
+		return sqlForFetchingLookupByIdExpression;
 	}
 
 	@Override
-	public IStringExpression getSqlForFetchingDisplayNameByIdExpression(final String sqlKeyColumn)
+	public IStringExpression getSqlForFetchingLookupByIdExpression(final String sqlKeyColumn)
 	{
-		return sqlForFetchingDisplayNameByIdExpression.resolvePartial(Evaluatees.mapBuilder()
-				.put(SQL_PARAM_KeyId, sqlKeyColumn)
-				.put(SQL_PARAM_ShowInactive, SQL_PARAM_VALUE_ShowInactive_Yes)
-				.build());
+		return sqlForFetchingLookupByIdExpression
+				.resolvePartial(Evaluatees
+						.mapBuilder()
+						.put(SQL_PARAM_KeyId, sqlKeyColumn)
+						.put(SQL_PARAM_ShowInactive, SQL_PARAM_VALUE_ShowInactive_Yes)
+						.build());
 	}
 
 	public int getEntityTypeIndex()
@@ -338,7 +341,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private IValidationRule validationRuleEffective = NullValidationRule.instance;
 		private String sqlTableName;
 		private ICachedStringExpression sqlForFetchingExpression;
-		private ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
+		private ICachedStringExpression sqlForFetchingLookupByIdExpression;
 		private int entityTypeIndex = -1;
 
 		private int zoomIntoWindowId = -1;
@@ -468,7 +471,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				zoomIntoWindowId = lookupInfo.getZoomAD_Window_ID_Override();
 				sqlForFetchingExpression = buildSqlForFetching(lookupInfo, sqlWhereFinal, lookup_SqlOrderBy)
 						.caching();
-				sqlForFetchingDisplayNameByIdExpression = buildSqlForFetchingDisplayNameById(lookupInfo)
+				sqlForFetchingLookupByIdExpression = buildSqlForFetchingDisplayNameById(lookupInfo)
 						.caching();
 
 				if (lookupInfo.isQueryHasEntityType())
@@ -483,6 +486,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			final String tableName = I_M_AttributeSetInstance.Table_Name;
 			final String keyColumnNameFQ = tableName + "." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
 			final String displayColumnSql = tableName + "." + I_M_AttributeSetInstance.COLUMNNAME_Description;
+
 			final CompositeStringExpression.Builder sqlSelectFrom = IStringExpression.composer()
 					.append("SELECT ")
 					.append(" ").append(keyColumnNameFQ) // Key
@@ -526,8 +530,10 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit.toStringWithMarkers()) // LIMIT
 					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, isReadWriteAccessRequired(tableName))) // security
 					.build();
-			final IStringExpression sqlForFetchingDisplayNameById = IStringExpression.composer()
-					.append("SELECT ").append(displayColumnSql) // SELECT
+
+			final IStringExpression sqlForFetchingLookupById = IStringExpression
+					.composer()
+					.append("SELECT ").append("ARRAY[").append(displayColumnSql).append(", NULL]")
 					.append("\n FROM ").append(tableName) // FROM
 					.append("\n WHERE ").append(keyColumnNameFQ).append("=").append(SQL_PARAM_KeyId)
 					.build();
@@ -537,7 +543,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			{
 				sqlTableName = tableName;
 				sqlForFetchingExpression = sqlForFetching.caching();
-				sqlForFetchingDisplayNameByIdExpression = sqlForFetchingDisplayNameById.caching();
+				sqlForFetchingLookupByIdExpression = sqlForFetchingLookupById.caching();
 			}
 		}
 
@@ -607,26 +613,44 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					.build();
 		}
 
-		private final IStringExpression buildSqlForFetchingDisplayNameById(final MLookupInfo lookupInfo)
+		private IStringExpression buildSqlForFetchingDisplayNameById(final MLookupInfo lookupInfo)
 		{
 			final IStringExpression displayColumnSQL = TranslatableParameterizedStringExpression.of(lookupInfo.getDisplayColumnSql());
-			// useBaseLanguage ? lookupInfo.getDisplayColumnSQL_BaseLang() : lookupInfo.getDisplayColumnSQL_Trl();
+
+			final IStringExpression descriptionColumnSqlOrNull = TranslatableParameterizedStringExpression.of(lookupInfo.getDescriptionColumnSQL());
+			final IStringExpression descriptionColumnSQL;
+			if (descriptionColumnSqlOrNull == null || descriptionColumnSqlOrNull.isNullExpression())
+			{
+				descriptionColumnSQL = ConstantStringExpression.ofNullable("NULL");
+			}
+			else
+			{
+				descriptionColumnSQL = descriptionColumnSqlOrNull;
+			}
+
 			final IStringExpression fromSqlPart = TranslatableParameterizedStringExpression.of(lookupInfo.getFromSqlPart());
-			// useBaseLanguage ? lookupInfo.getFromSqlPart_BaseLang() : lookupInfo.getFromSqlPart_Trl();
+
 			final String keyColumnFQ = lookupInfo.getKeyColumnFQ();
 			final int displayType = lookupInfo.getDisplayType();
 			final String whereClauseSqlPart = lookupInfo.getWhereClauseSqlPart(); // assuming this is constant!
 
-			final IStringExpression sqlForFetchingDisplayNameById = IStringExpression.composer()
-					.append("SELECT ").append(displayColumnSQL) // SELECT ...
-					.append("\n FROM ").append(fromSqlPart) // FROM
-					.append("\n WHERE ").append(keyColumnFQ).append("=").append(SQL_PARAM_KeyId)
-					.append(" ")
-					// FIXME: make it better: this is actually adding the AD_Ref_List.AD_Reference_ID=....
-					.append(DisplayType.List == displayType || DisplayType.Button == displayType ? " AND " + whereClauseSqlPart : "")
-					.build();
+			final org.adempiere.ad.expression.api.impl.CompositeStringExpression.Builder composer = IStringExpression
+					.composer()
+					.append("SELECT ")
+					.append("ARRAY[").append(displayColumnSQL).append(", ").append(descriptionColumnSQL).append("]")
+					.append("\n FROM ")
+					.append(fromSqlPart)
+					.append("\n WHERE ")
+					.append(keyColumnFQ).append("=").append(SQL_PARAM_KeyId)
+					.append(" ");
 
-			return sqlForFetchingDisplayNameById;
+			final boolean listOrButton = DisplayType.List == displayType || DisplayType.Button == displayType;
+			if (listOrButton)
+			{
+				// FIXME: make it better: this is actually adding the AD_Ref_List.AD_Reference_ID=....
+				composer.append(" AND " + whereClauseSqlPart);
+			}
+			return composer.build();
 		}
 
 		private INamePairPredicate getPostQueryPredicate()

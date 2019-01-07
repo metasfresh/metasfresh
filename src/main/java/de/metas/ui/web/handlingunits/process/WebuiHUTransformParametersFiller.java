@@ -179,9 +179,10 @@ public class WebuiHUTransformParametersFiller
 
 		final String adLanguage = Env.getAD_Language();
 
-		return allActiveActionItems.stream()
+		return allActiveActionItems
+				.stream()
 				.filter(item -> allowedActions.contains(item.getValueName()))
-				.map(item -> StringLookupValue.of(item.getValueName(), item.getName()))
+				.map(item -> StringLookupValue.of(item.getValueName(), item.getName(), item.getDescription()))
 				.sorted(Comparator.comparing(lookupValue -> lookupValue.getDisplayName(adLanguage)))
 				.collect(LookupValuesList.collect());
 	}
