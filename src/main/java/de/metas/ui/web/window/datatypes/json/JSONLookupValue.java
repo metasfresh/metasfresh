@@ -162,7 +162,7 @@ public final class JSONLookupValue
 		return displayName;
 	}
 
-	private static ITranslatableString extractDescription(final Map<String, Object> map)
+	private static ITranslatableString extractDescription(@NonNull final Map<String, Object> map)
 	{
 		final Object descriptionObj = map.get(PROPERTY_Description);
 		final String descriptionStr = descriptionObj != null ? descriptionObj.toString() : "";
