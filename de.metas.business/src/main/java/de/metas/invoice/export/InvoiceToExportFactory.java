@@ -3,8 +3,6 @@ package de.metas.invoice.export;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -52,6 +50,7 @@ import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.SoftwareVersion;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -297,6 +296,7 @@ public class InvoiceToExportFactory
 		public InvoiceNotExportableException(@NonNull final String msg)
 		{
 			super(msg);
+			this.markAsUserValidationError(); // propagate error to the user
 		}
 	}
 }
