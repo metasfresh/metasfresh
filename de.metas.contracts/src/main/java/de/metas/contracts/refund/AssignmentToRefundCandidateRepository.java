@@ -64,13 +64,8 @@ public class AssignmentToRefundCandidateRepository
 		this.refundInvoiceCandidateRepository = refundInvoiceCandidateRepository;
 	}
 
-	public List<AssignmentToRefundCandidate> getAssignmentsToRefundCandidate(
-			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
+	public List<AssignmentToRefundCandidate> getAssignmentsByAssignableCandidateId(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
-		Check.assumeNotNull(assignableInvoiceCandidate.getRepoId(),
-				"The given assignableInvoiceCandidate needs to have a not-null Id; assignableInvoiceCandidate={}",
-				assignableInvoiceCandidate);
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final List<I_C_Invoice_Candidate_Assignment> assignmentRecords = queryBL
@@ -78,7 +73,7 @@ public class AssignmentToRefundCandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(
 						I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID,
-						assignableInvoiceCandidate.getRepoId().getRepoId())
+						invoiceCandidateId.getRepoId())
 				.create()
 				.list(I_C_Invoice_Candidate_Assignment.class); // we might have multiple records with different C_Flatrate_RefundConfig_ID
 

@@ -1,5 +1,7 @@
 package de.metas.async.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.async
@@ -10,18 +12,17 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -37,10 +38,15 @@ import org.adempiere.util.lang.IReference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
+import de.metas.cache.CCache;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
@@ -48,9 +54,15 @@ import de.metas.process.ProcessParams;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 public class WorkpackageParamDAO implements IWorkpackageParamDAO
 {
+	private final CCache<QueueWorkPackageId, List<I_C_Queue_WorkPackage_Param>> cache = CCache
+			.<QueueWorkPackageId, List<I_C_Queue_WorkPackage_Param>> builder()
+			.tableName(I_C_Queue_WorkPackage.Table_Name)
+			.build();
+
 	@Override
 	public IParams retrieveWorkpackageParams(final I_C_Queue_WorkPackage workpackage)
 	{
@@ -71,14 +83,9 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 	 * <li>parameters which were directly set to workpackage (i.e. {@link I_C_Queue_WorkPackage_Param})
 	 * <li>fallback: parameters which were set to creator AD_PInstance_ID
 	 * </ul>
-	 * 
-	 * @param workpackage
-	 * @return
 	 */
-	private List<ProcessInfoParameter> retrieveWorkpackageProcessInfoParameters(final I_C_Queue_WorkPackage workpackage)
+	private List<ProcessInfoParameter> retrieveWorkpackageProcessInfoParameters(@NonNull final I_C_Queue_WorkPackage workpackage)
 	{
-		Check.assumeNotNull(workpackage, "workpackage not null");
-
 		final Map<String, ProcessInfoParameter> workpackagesParamsMap = new HashMap<>();
 
 		//
@@ -104,20 +111,27 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		return new ArrayList<>(workpackagesParamsMap.values());
 	}
 
-	private List<I_C_Queue_WorkPackage_Param> retrieveWorkpackageParametersList(final I_C_Queue_WorkPackage workpackage)
+	private List<I_C_Queue_WorkPackage_Param> retrieveWorkpackageParametersList(@NonNull final I_C_Queue_WorkPackage workpackage)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Queue_WorkPackage_Param.class, workpackage)
+		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(workpackage.getC_Queue_WorkPackage_ID());
+		return cache.getOrLoad(workPackageId, () -> retrieveWorkpackageParametersList0(workPackageId));
+	}
+
+	private List<I_C_Queue_WorkPackage_Param> retrieveWorkpackageParametersList0(@NonNull final QueueWorkPackageId workpackageId)
+	{
+		final List<I_C_Queue_WorkPackage_Param> result = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Queue_WorkPackage_Param.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMN_C_Queue_WorkPackage_ID, workpackage.getC_Queue_WorkPackage_ID())
+				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMN_C_Queue_WorkPackage_ID, workpackageId)
 				.create()
 				.list();
+		return result;
 	}
 
 	private ProcessInfoParameter createProcessInfoParameter(final I_C_Queue_WorkPackage_Param workpackageParam)
 	{
 		// NOTE to developer: when changing this, make sure you are also changing the counterpart method setParameterValue()
-		
+
 		Check.assumeNotNull(workpackageParam, "workpackageParam not null");
 
 		final String parameterName = workpackageParam.getParameterName();
@@ -150,12 +164,40 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		final String info_To = null; // N/A
 		return new ProcessInfoParameter(parameterName, parameter, parameter_To, info, info_To);
 	}
-	
+
+	@Override
+	public void setParameterValue(
+			@NonNull final I_C_Queue_WorkPackage workpackageRecord,
+			@NonNull final String parameterName,
+			@NonNull final Object parameterValue)
+	{
+		final I_C_Queue_WorkPackage_Param paramRecord = getOrCreateParamRecord(workpackageRecord, parameterName);
+
+		setParameterValue(paramRecord, parameterValue);
+
+		saveRecord(paramRecord);
+	}
+
+	private I_C_Queue_WorkPackage_Param getOrCreateParamRecord(
+			@NonNull final I_C_Queue_WorkPackage workpackageRecord,
+			@NonNull final String parameterName)
+	{
+		final List<I_C_Queue_WorkPackage_Param> workpackageParameterRecords = retrieveWorkpackageParametersList(workpackageRecord);
+		final ImmutableMap<String, I_C_Queue_WorkPackage_Param> name2ParameterRecord = Maps.uniqueIndex(workpackageParameterRecords, I_C_Queue_WorkPackage_Param::getParameterName);
+
+		final I_C_Queue_WorkPackage_Param workPackageParamRecord = name2ParameterRecord.get(parameterName);
+		if (workPackageParamRecord != null)
+		{
+			return workPackageParamRecord;
+		}
+
+		return WorkPackageParamsUtil.createWorkPackageParamRecord(workpackageRecord, parameterName);
+	}
+
 	@Override
 	public void setParameterValue(final I_C_Queue_WorkPackage_Param workpackageParam, final Object parameterValue)
 	{
 		// NOTE to developer: when changing this, make sure you are also changing the counterpart method createProcessInfoParameter()
-		
 		if (parameterValue == null)
 		{
 			workpackageParam.setAD_Reference_ID(DisplayType.String);
@@ -214,7 +256,6 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		workpackageParam.setP_Number(null);
 		workpackageParam.setP_Date(null);
 	}
-
 
 	private static final PInstanceId extractAD_PInstance_ID(final I_C_Queue_WorkPackage workpackage)
 	{

@@ -10,10 +10,29 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.86
+# metasfresh 5.87
 # Features
 
 # Fixes
+
+# metasfresh 5.86
+# Features
+* metasfresh
+  * [#4310](https://github.com/metasfresh/metasfresh/issues/4310) WebUI: add Manufacturer field in Pricing Conditions
+  * [#4820](https://github.com/metasfresh/metasfresh/issues/4820) Categorize Business Partners as "Neukunde", "Stammkunde"
+  * [#4840](https://github.com/metasfresh/metasfresh/pull/4840) ITableRefInfo - rename "name" to "identifier" and make it more verbose
+  * [#4842](https://github.com/metasfresh/metasfresh/issues/4842) Implement Excel Open XML format support
+  * [#4848](https://github.com/metasfresh/metasfresh/issues/4848) mass-invoicing improvements
+
+# Fixes
+* metasfresh
+  * [#4843](https://github.com/metasfresh/metasfresh/issues/4843) InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class) returns null
+  * [#4846](https://github.com/metasfresh/metasfresh/issues/4846) Contract extension does not set date correctly
+
+* metasfresh-webui-api
+  * [#968](https://github.com/metasfresh/metasfresh-webui-api/issues/968) Error msg missing when trying to create flatrate term from bpartner window in case of no bpartner location
+  * [#1113](https://github.com/metasfresh/metasfresh-webui-api/issues/1113) Generate PO from Sales order not working anymore
+
 * metasfresh-webui-frontend
   * [#2075](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2075) Deselecting lines does not work when clicking everywhere outside of table
     * Improvement of the deselection Handling of Grid Table Rows. Now it's possible to deseclect by clicking any areas outside table.
@@ -21,8 +40,14 @@ Here come the actual release notes:
     * Shows an error now, when Pricelist Name is not unique.
   * [#2111](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2111) Additional Dropdown in menu search in latest Chrome
     * Removes the Google Chrome Search result proposal.
+  * [#2112](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2112) Overlays open in narrow window on latest Chrome
+  * [#2116](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2116) Fix specs in cypress/integration/contracts
   * [#2117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2117) Barcode scanner looks bad in filters
-    * Improvement of the Barcode Scanner Look&Fell in Filter Menu entry.
+    * Improvement of the Barcode Scanner Look&Feel in Filter Menu entry.
+  * [#2128](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2128) View: select all no longer works
+
+* metasfresh-dist
+  * [#55](https://github.com/metasfresh/metasfresh-dist/pull/55) introduce a parameter to set the DB seed's URL
 
 # metasfresh 5.85
 # Features
@@ -44,13 +69,18 @@ Here come the actual release notes:
   * [#2097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2097) Lookup and Dropdown: Empty list entry for non mandatory
     * New Feature, now steering the mandatory Logic of List and Lookup widgets in WebUI.
   * [#2098](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2098) extract the edit-location code into a command
+    * Extracting the edit location into a cypress command, to make it reusable for other tests.
 
 # Fixes
 * metasfresh
   * [#4679](https://github.com/metasfresh/metasfresh/issues/4679) Solve print info UI performance problem
+    * Improves thje Performance in WebUI for Print Info.
   * [#4805](https://github.com/metasfresh/metasfresh/issues/4805) ATP not correct after partial material receipt
+    * Fixes the Available to Promise calculation after doing partial Material Receipt.
   * [#4827](https://github.com/metasfresh/metasfresh/issues/4827) Forward C_OLCand POReference to C_Invoice_Candidate
-  * [#4829](https://github.com/metasfresh/metasfresh/issues/4829) Add UQ index for InternalName and Price systme in Price list
+    * Bugfix for the PO Reference fowarding from Order Candidates to invoice Candidates.
+  * [#4829](https://github.com/metasfresh/metasfresh/issues/4829) Add Unique index for InternalName and Price system in Price list
+    * Internal improvement of Price List, adding a unique index for internal name and price system.
 
 * metasfresh-webui-api
   * [#1114](https://github.com/metasfresh/metasfresh-webui-api/issues/1114) webui frontend does nothing in latest chrome
@@ -59,8 +89,11 @@ Here come the actual release notes:
   * [#1253](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1253) Problem with composed fields with non-mandatory elements
     * Adds None Option to Lookup widget dropdowns, that alows o overwrite already set a selection in a non mandatory field.
   * [#2047](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2047) Run QR code action: sometimes ESC does not work
+    * Improves the handling of escape shortcut in QR Code action.
   * [#2103](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2103) Chrome feature overwrites country selection in Lookup
+    * Fixes the behavior of WebUI after some changes in the latest Chrome update.
   * [#2109](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2109) Chrome not recognized properly
+    * Fixes the behavior of WebUI after some changes in the latest Chrome update.
   
 # metasfresh 5.84
 # Features

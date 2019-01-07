@@ -1,4 +1,4 @@
-package org.adempiere.util.exceptions;
+package de.metas.util.exceptions;
 
 /*
  * #%L

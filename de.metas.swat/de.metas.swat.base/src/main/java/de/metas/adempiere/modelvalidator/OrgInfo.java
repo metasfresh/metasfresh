@@ -1,5 +1,7 @@
 package de.metas.adempiere.modelvalidator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,12 +12,12 @@ package de.metas.adempiere.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,18 +27,20 @@ package de.metas.adempiere.modelvalidator;
 
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IOrgDAO;
 import org.compiere.model.MClient;
-import org.compiere.model.MOrgInfo;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.util.Services;
 
 /**
- * 
+ *
  * @author ts [metas 00036] Modelvalidator sets #StoreCreditCardData in the context. That value can then be used in the
  *         application dictionary.
  */
@@ -56,7 +60,7 @@ public class OrgInfo implements ModelValidator
 	{
 		final Properties ctx = Env.getCtx();
 
-		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(MOrgInfo.get(ctx, AD_Org_ID, null), I_AD_OrgInfo.class);
+		final I_AD_OrgInfo orgInfo = create(Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, AD_Org_ID, ITrx.TRXNAME_None), I_AD_OrgInfo.class);
 		final String ccStoreMode = orgInfo.getStoreCreditCardData();
 
 		Env.setContext(ctx, ENV_ORG_INFO_STORE_CC_DATA, ccStoreMode);

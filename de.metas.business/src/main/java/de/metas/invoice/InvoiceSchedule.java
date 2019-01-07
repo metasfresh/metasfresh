@@ -1,7 +1,10 @@
 package de.metas.invoice;
 
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.assumeNotNull;
 import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
 import static java.time.temporal.TemporalAdjusters.nextOrSame;
+import static org.compiere.util.Util.coalesce;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -11,7 +14,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -66,11 +68,11 @@ public class InvoiceSchedule
 	/** number of units (the value of #frequency) between two invoices */
 	int invoiceDistance;
 
-	@Builder(toBuilder=true)
+	@Builder(toBuilder = true)
 	public InvoiceSchedule(
 			@Nullable final InvoiceScheduleId id,
 			@NonNull final Frequency frequency,
-			final int invoiceDistance,
+			final Integer invoiceDistance,
 			final DayOfWeek invoiceDayOfWeek,
 			final int invoiceDayOfMonth)
 	{
@@ -79,7 +81,7 @@ public class InvoiceSchedule
 
 		if (Frequency.WEEKLY.equals(getFrequency()))
 		{
-			this.invoiceDayOfWeek = Check.assumeNotNull(invoiceDayOfWeek, "If the invoicing freqency is 'weekly', then invoiceWeekDay may not be null");
+			this.invoiceDayOfWeek = assumeNotNull(invoiceDayOfWeek, "If the invoicing freqency is 'weekly', then invoiceWeekDay may not be null");
 		}
 		else
 		{
@@ -88,14 +90,16 @@ public class InvoiceSchedule
 
 		if (Frequency.MONTLY.equals(getFrequency()))
 		{
-			this.invoiceDayOfMonth = Check.assumeGreaterThanZero(invoiceDayOfMonth, "If the invoicing freqency is 'monthly', then invoiceDayOfMonth needs to be >=1");
+			assume(invoiceDayOfMonth >= 1, "If the invoicing freqency is 'monthly', then invoiceDayOfMonth needs to be >=1; id={}", id);
+			this.invoiceDayOfMonth = invoiceDayOfMonth;
 		}
 		else
 		{
 			this.invoiceDayOfMonth = -1;
 		}
 
-		this.invoiceDistance = invoiceDistance;
+		assume(invoiceDistance == null || invoiceDistance >= 1, "If invoiceDistance is specified, it needs to be >=1; id={}", id);
+		this.invoiceDistance = coalesce(invoiceDistance, 1);
 	}
 
 	public LocalDate calculateNextDateToInvoice(@NonNull final LocalDate deliveryDate)
