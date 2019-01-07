@@ -46,6 +46,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.event.Topic;
 import de.metas.i18n.Msg;
 import de.metas.impexp.excel.ArrayExcelExporter;
+import de.metas.impexp.excel.ExcelFormats;
 import de.metas.impexp.excel.service.ExcelExporterService;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.notification.INotificationBL;
@@ -348,7 +349,7 @@ public class AlertProcessor extends AdempiereServer
 		}
 
 		//
-		final File file = rule.createReportFile("xls");
+		final File file = rule.createReportFile(ExcelFormats.getDefaultFileExtension());
 		ArrayExcelExporter.builder()
 				.ctx(getCtx())
 				.data(data)

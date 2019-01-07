@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,8 +43,6 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IQueueDAO;
@@ -235,7 +234,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		//
 		// Test: each workpackage has locked it's own invoice candidates by a separate lock
 		final Optional<ILock> icLock = workpackageProcessor.getElementsLock();
-		Check.assumeNotNull(icLock.orNull(), "icLock not null for workpackageProcessor {}", workpackageProcessor);
+		Check.assumeNotNull(icLock.orElse(null), "icLock not null for workpackageProcessor {}", workpackageProcessor);
 		for (final I_C_Invoice_Candidate ic : ics)
 		{
 			final String message = "IC is locked"

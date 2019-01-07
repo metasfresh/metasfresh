@@ -12,13 +12,18 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.service.ICountryDAO;
@@ -72,13 +77,14 @@ public class BPartnerMasterDataProvider
 						() -> PermissionService.of(ctx)));
 	}
 
-	private final Map<JsonBPartner, BPartnerId> bpartnerIdsByJson = new HashMap<>();
+	private final BiMap<JsonBPartner, BPartnerId> bpartnerIdsByJson = HashBiMap.<JsonBPartner, BPartnerId> create();
 	private final Map<String, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
 	private final Map<String, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryRepo = Services.get(ICountryDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final PermissionService permissionService;
 
@@ -311,10 +317,11 @@ public class BPartnerMasterDataProvider
 
 	private BPartnerId getCreateBPartnerId(@NonNull final JsonBPartner json, final Context context)
 	{
-		return bpartnerIdsByJson
+		final BPartnerId result = bpartnerIdsByJson
 				.compute(
 						json,
 						(existingJson, existingBPartnerId) -> createOrUpdateBPartnerId(json, context.setIfNotNull(existingBPartnerId)));
+		return result;
 	}
 
 	private BPartnerId createOrUpdateBPartnerId(
@@ -381,15 +388,26 @@ public class BPartnerMasterDataProvider
 
 	public JsonBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner bpartnerRecord = bpartnersRepo.getById(bpartnerId);
-		Check.assumeNotNull(bpartnerRecord, "bpartner shall exist for {}", bpartnerId);
+		return bpartnerIdsByJson
+				.inverse()
+				.compute(
+						bpartnerId,
+						(id, existingJsonBPartner) -> {
 
-		return JsonBPartner.builder()
-				.code(bpartnerRecord.getValue())
-				.externalId(bpartnerRecord.getExternalId())
-				.name(bpartnerRecord.getName())
-				.companyName(bpartnerRecord.getCompanyName())
-				.build();
+							if (existingJsonBPartner != null)
+							{
+								return existingJsonBPartner;
+							}
+							final I_C_BPartner bpartnerRecord = bpartnersRepo.getById(id);
+							Check.assumeNotNull(bpartnerRecord, "bpartner shall exist for {}", bpartnerId);
+
+							return JsonBPartner.builder()
+									.code(bpartnerRecord.getValue())
+									.externalId(bpartnerRecord.getExternalId())
+									.name(bpartnerRecord.getName())
+									.companyName(bpartnerRecord.getCompanyName())
+									.build();
+						});
 	}
 
 	private BPartnerLocationId getCreateBPartnerLocationId(@Nullable final JsonBPartnerLocation json, @NonNull final Context context)
@@ -433,7 +451,7 @@ public class BPartnerMasterDataProvider
 
 		if (context.isBPartnerIsOrgBP())
 		{
-			I_AD_OrgInfo orgInfoRecord = create(Services.get(IOrgDAO.class).retrieveOrgInfo(orgRepoId), I_AD_OrgInfo.class);
+			I_AD_OrgInfo orgInfoRecord = create(orgDAO.retrieveOrgInfo(Env.getCtx(), orgRepoId, ITrx.TRXNAME_ThreadInherited), I_AD_OrgInfo.class);
 			if (orgInfoRecord == null)
 			{
 				orgInfoRecord = newInstance(I_AD_OrgInfo.class);

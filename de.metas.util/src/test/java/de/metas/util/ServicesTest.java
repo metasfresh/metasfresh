@@ -25,7 +25,6 @@ package de.metas.util;
 
 import java.lang.reflect.Field;
 
-import org.adempiere.util.exceptions.ServicesException;
 import org.adempiere.util.testservice.IMockedMultitonService;
 import org.adempiere.util.testservice.IMockedSingletonService;
 import org.adempiere.util.testservice.ITestMissingService;
@@ -45,6 +44,7 @@ import de.metas.util.IMultitonService;
 import de.metas.util.IService;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
+import de.metas.util.exceptions.ServicesException;
 
 public class ServicesTest
 {

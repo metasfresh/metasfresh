@@ -158,8 +158,8 @@ public abstract class ReportStarter extends JavaProcess
 			case Other:
 				outputType = Util.coalesce(
 						// needs to take precedence because we might be invoked for an outer "preview" process, but with isPrintPreview()=false
-						processInfo.getJRDesiredOutputType(), 
-						desiredOutputType, 
+						processInfo.getJRDesiredOutputType(),
+						desiredOutputType,
 						OutputType.PDF);
 				break;
 

@@ -182,7 +182,7 @@ public class JXlsExporter
 		return _ctx;
 	}
 
-	public JXlsExporter setLoader(ClassLoader loader)
+	public JXlsExporter setLoader(final ClassLoader loader)
 	{
 		this._loader = loader;
 		return this;

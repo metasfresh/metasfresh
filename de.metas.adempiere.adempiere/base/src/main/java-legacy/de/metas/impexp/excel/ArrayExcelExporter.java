@@ -16,36 +16,43 @@ package de.metas.impexp.excel;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.compiere.util.Env;
+
 import lombok.Builder;
 import lombok.NonNull;
 
 /**
  * Export excel from ArrayList of data
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  *
  */
 
 public class ArrayExcelExporter extends AbstractExcelExporter
 {
-	private Properties m_ctx = null;
-	private List<List<Object>> m_data = null;
-	private List<String> m_columnHeaders = null;
+	private final Properties m_ctx;
+	private final List<List<Object>> m_data;
+	private final List<String> m_columnHeaders;
 
 	@Builder
 	private ArrayExcelExporter(
-			@NonNull final Properties ctx,
+			@Nullable final ExcelFormat excelFormat,
+			@Nullable final ExcelExportConstants constants,
+			@Nullable final Properties ctx,
 			@NonNull final List<List<Object>> data,
-			final List<String> columnHeaders
-			)
+			@Nullable final List<String> columnHeaders)
 	{
-		m_ctx = ctx;
+		super(excelFormat, constants);
+
+		m_ctx = ctx != null ? ctx : Env.getCtx();
 		m_data = data;
 		m_columnHeaders = columnHeaders;
 	}
 
 	@Override
-	public Properties getCtx()
+	protected Properties getCtx()
 	{
 		return m_ctx;
 	}

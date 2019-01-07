@@ -16,11 +16,11 @@ import org.junit.Test;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,13 +34,13 @@ public class MimeTypeTest
 		test_getMimeType(MimeType.TYPE_TextPlain, "report.txt");
 		test_getMimeType(MimeType.TYPE_BINARY, "report.unknown-extension");
 	}
-	
+
 	private static final void test_getMimeType(final String expectedMimeType, final String fileName)
 	{
 		final String actualMimeType = MimeType.getMimeType(fileName);
-		Assert.assertEquals("Invalid result for fileName="+fileName, expectedMimeType, actualMimeType);
+		Assert.assertEquals("Invalid result for fileName=" + fileName, expectedMimeType, actualMimeType);
 	}
-	
+
 	@Test
 	public void test_getExtensionByMimeType()
 	{
@@ -48,11 +48,11 @@ public class MimeTypeTest
 		test_getExtensionByMimeType(".txt", MimeType.TYPE_TextPlain);
 		test_getExtensionByMimeType(".jpg", "image/jpeg");
 	}
-	
+
 	private void test_getExtensionByMimeType(final String expectedExt, final String mimeType)
 	{
 		String actualExt = MimeType.getExtensionByType(mimeType);
-		Assert.assertEquals("Invalid result for mimeType="+mimeType, expectedExt, actualExt);
+		Assert.assertEquals("Invalid result for mimeType=" + mimeType, expectedExt, actualExt);
 	}
 
 }

@@ -116,7 +116,7 @@ final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 		// "By default, null values sort as if larger than any non-null value;
 		// that is, NULLS FIRST is the default for DESC order, and NULLS LAST otherwise."
 		//
-		// see http://www.postgresql.org/docs/9.1/static/queries-order.html
+		// see https://www.postgresql.org/docs/9.5/queries-order.html
 		if (direction == Direction.Descending)
 		{
 			return Nulls.First;

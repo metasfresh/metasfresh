@@ -125,7 +125,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		this.ctx = ctx;
 		this.packageProcessorIds = Collections.unmodifiableList(new ArrayList<>(packageProcessorIds));
 		this.priorityFrom = priorityFrom;
-		skipRetryTimeoutMillis = Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
+		this.skipRetryTimeoutMillis = Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
 
 		if (forEnqueing)
 		{
