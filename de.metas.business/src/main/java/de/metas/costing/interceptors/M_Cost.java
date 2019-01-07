@@ -88,12 +88,11 @@ public class M_Cost
 		}
 
 		// Percentage
-		if (costElement != null)
+		if (costElement != null
+				&& (!costElement.isAllowUserChangingCurrentCosts() || costElement.isMaterialCostingMethod())
+				&& costRecord.getPercent() != 0)
 		{
-			if ((!costElement.isAllowUserChangingCurrentCosts() || costElement.isMaterialCostingMethod()) && costRecord.getPercent() != 0)
-			{
-				costRecord.setPercent(0);
-			}
+			costRecord.setPercent(0);
 		}
 		if (costRecord.getPercent() != 0)
 		{
