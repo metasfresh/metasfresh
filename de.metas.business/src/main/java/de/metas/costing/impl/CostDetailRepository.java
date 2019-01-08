@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -151,21 +150,6 @@ public class CostDetailRepository implements ICostDetailRepository
 		final I_M_CostDetail record = load(costDetail.getRepoId(), I_M_CostDetail.class);
 		record.setProcessed(false);
 		InterfaceWrapperHelper.delete(record);
-	}
-
-	@Override
-	public void deleteUnprocessedWithNoChanges(@NonNull final CostDetailQuery query)
-	{
-		final int countDeleted = createQueryBuilder(query)
-				.addEqualsFilter(I_M_CostDetail.COLUMN_Processed, false)
-				.addInArrayFilter(I_M_CostDetail.COLUMN_DeltaAmt, null, BigDecimal.ZERO)
-				.addInArrayFilter(I_M_CostDetail.COLUMN_DeltaQty, null, BigDecimal.ZERO)
-				.create()
-				.deleteDirectly();
-		if (countDeleted > 0)
-		{
-			logger.debug("Deleted {} not processed cost details for {}", countDeleted, query);
-		}
 	}
 
 	@Override

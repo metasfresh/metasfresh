@@ -33,8 +33,6 @@ public interface ICostDetailRepository
 
 	void delete(CostDetail costDetail);
 
-	void deleteUnprocessedWithNoChanges(CostDetailQuery query);
-
 	CostDetail getCostDetailOrNull(CostDetailQuery query);
 
 	CostAmount getCostDetailAmtOrNull(CostDetailQuery query);
