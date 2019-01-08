@@ -44,7 +44,7 @@ public interface IEditablePricingContext extends IPricingContext
 	 * @param referencedObject
 	 */
 	IEditablePricingContext setReferencedObject(final Object referencedObject);
-	
+
 	IEditablePricingContext setSOTrx(final SOTrx soTrx);
 
 	IEditablePricingContext setQty(final BigDecimal qty);
@@ -67,8 +67,6 @@ public interface IEditablePricingContext extends IPricingContext
 
 	/**
 	 * Set this to <code>true</code> to indicate to the pricing engine that discounts shall <b>not</b> be computed and applied to the result.
-	 *
-	 * @param disallowDiscount
 	 */
 	IEditablePricingContext setDisallowDiscount(boolean disallowDiscount);
 

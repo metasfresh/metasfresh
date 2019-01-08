@@ -231,8 +231,10 @@ public class OrderLineBL implements IOrderLineBL
 			return orderLine.getC_Charge().getC_TaxCategory_ID();
 		}
 
+		final OrderLinePriceUpdateRequest request = OrderLinePriceUpdateRequest.ofOrderLine(orderLine);
+
 		return OrderLinePriceCalculator.builder()
-				.request(OrderLinePriceUpdateRequest.ofOrderLine(orderLine))
+				.request(request)
 				.orderLineBL(this)
 				.build()
 				.computeTaxCategoryId();
@@ -609,7 +611,7 @@ public class OrderLineBL implements IOrderLineBL
 	public Money getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
-		
+
 		final BigDecimal poCostPrice = orderLine.getPriceCost();
 		if (poCostPrice != null && poCostPrice.signum() != 0)
 		{
@@ -640,7 +642,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
 		return Money.of(priceActualWithoutTax, currencyId);
 	}
-	
+
 	@Override
 	public int getC_PaymentTerm_ID(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{

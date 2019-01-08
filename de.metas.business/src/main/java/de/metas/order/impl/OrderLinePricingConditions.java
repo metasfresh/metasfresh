@@ -45,7 +45,12 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 
 	private static enum HasPricingConditions
 	{
-		NO, YES, TEMPORARY
+		NO,
+
+		YES,
+
+		/** The respective order line has no {@code M_DiscountSchemaBreak_ID}, but manual discount etc. */
+		TEMPORARY
 	}
 
 	@Override

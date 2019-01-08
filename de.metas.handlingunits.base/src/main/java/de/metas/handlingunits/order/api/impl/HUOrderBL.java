@@ -157,6 +157,8 @@ public class HUOrderBL implements IHUOrderBL
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(ol)
 					.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
+
+					// since the price and thus netAmt might have changed, we also need to revalidate the discounts
 					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false)
 					.updateLineNetAmt(true)
 					.build());
