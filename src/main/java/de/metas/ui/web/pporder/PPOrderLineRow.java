@@ -18,6 +18,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -73,8 +76,8 @@ public class PPOrderLineRow implements IViewRow
 	private final List<PPOrderLineRow> includedDocuments;
 
 	private final boolean processed;
-	private final int ppOrderId;
-	private final int ppOrderBOMLineId;
+	private final PPOrderId ppOrderId;
+	private final PPOrderBOMLineId ppOrderBOMLineId;
 	private final int ppOrderQtyId;
 
 	private final HuId huId;
@@ -133,8 +136,8 @@ public class PPOrderLineRow implements IViewRow
 		this.rowId = rowId;
 		this.type = type;
 
-		this.ppOrderId = ppOrderQty.getPP_Order_ID();
-		this.ppOrderBOMLineId = ppOrderQty.getPP_Order_BOMLine_ID();
+		this.ppOrderId = PPOrderId.ofRepoId(ppOrderQty.getPP_Order_ID());
+		this.ppOrderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(ppOrderQty.getPP_Order_BOMLine_ID());
 		this.huId = HuId.ofRepoId(ppOrderQty.getM_HU_ID());
 		this.ppOrderQtyId = ppOrderQty.getPP_Order_Qty_ID();
 
@@ -174,15 +177,17 @@ public class PPOrderLineRow implements IViewRow
 		this.rowId = PPOrderLineRowId.ofPPOrderId(ppOrder.getPP_Order_ID());
 		this.type = PPOrderLineType.MainProduct;
 
-		this.ppOrderId = ppOrder.getPP_Order_ID();
-		this.ppOrderBOMLineId = -1;
+		this.ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		this.ppOrderBOMLineId = null;
 		this.huId = null;
 		this.ppOrderQtyId = -1;
 
 		this.processed = processed;
 
-		this.product = JSONLookupValueTool.createProductLookupValue(ppOrder.getM_Product());
-		this.uom = JSONLookupValueTool.createUOMLookupValue(ppOrder.getC_UOM());
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		this.product = JSONLookupValueTool.createProductLookupValue(Services.get(IProductDAO.class).getById(productId));
+		final int uomId = ppOrder.getC_UOM_ID();
+		this.uom = JSONLookupValueTool.createUOMLookupValue(Services.get(IUOMDAO.class).getById(uomId));
 		this.packingInfo = packingInfoOrNull;
 		this.code = null;
 
@@ -222,8 +227,8 @@ public class PPOrderLineRow implements IViewRow
 
 		this.type = type;
 
-		this.ppOrderId = ppOrderBomLine.getPP_Order_ID();
-		this.ppOrderBOMLineId = ppOrderBomLine.getPP_Order_BOMLine_ID();
+		this.ppOrderId = PPOrderId.ofRepoId(ppOrderBomLine.getPP_Order_ID());
+		this.ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(ppOrderBomLine.getPP_Order_BOMLine_ID());
 		this.huId = null;
 		this.ppOrderQtyId = -1;
 
@@ -273,8 +278,8 @@ public class PPOrderLineRow implements IViewRow
 		this.rowId = rowId;
 		this.type = type;
 
-		this.ppOrderId = -1;
-		this.ppOrderBOMLineId = -1;
+		this.ppOrderId = null;
+		this.ppOrderBOMLineId = null;
 		this.huId = huId;
 		this.ppOrderQtyId = -1;
 
@@ -343,12 +348,12 @@ public class PPOrderLineRow implements IViewRow
 		}
 	}
 
-	public int getPP_Order_ID()
+	public PPOrderId getOrderId()
 	{
 		return ppOrderId;
 	}
 
-	public int getPP_Order_BOMLine_ID()
+	public PPOrderBOMLineId getOrderBOMLineId()
 	{
 		return ppOrderBOMLineId;
 	}

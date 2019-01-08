@@ -153,7 +153,7 @@ public final class DefaultView implements IEditableView
 				{
 					viewDataRepository.deleteSelection(viewId);
 				}
-				
+
 				final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
 				final ViewRowIdsOrderedSelection defaultSelection = viewDataRepository.createOrderedSelection(
 						getViewEvaluationCtx(),
@@ -330,7 +330,10 @@ public final class DefaultView implements IEditableView
 	{
 		defaultSelectionDeleteBeforeCreate.set(true);
 		final ViewRowIdsOrderedSelections selections = selectionsRef.forget();
-		viewDataRepository.scheduleDeleteSelections(selections.getSelectionIds());
+		if (selections != null)
+		{
+			viewDataRepository.scheduleDeleteSelections(selections.getSelectionIds());
+		}
 
 		invalidateAll();
 

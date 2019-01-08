@@ -14,8 +14,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -156,15 +156,16 @@ class PPOrderLinesLoader
 	{
 		final Comparator<PPOrderLineRow> ppOrderBomLineRowSorter = //
 				Comparator.<PPOrderLineRow> comparingInt(row -> row.isReceipt() ? 0 : 1) // receipt lines first
-						.thenComparing(row -> row.getPP_Order_BOMLine_ID());  // BOM lines order
+						.thenComparing(row -> row.getOrderBOMLineId());  // BOM lines order
 
 		final Function<? super I_PP_Order_BOMLine, ? extends PPOrderLineRow> ppOrderBomLineRowCreator = //
-				ppOrderBOMLine -> createRowForBOMLine(ppOrder,
+				ppOrderBOMLine -> createRowForBOMLine(
 						ppOrderBOMLine,
 						isReadOnly(ppOrder),
 						ppOrderQtysByBOMLineId.get(ppOrderBOMLine.getPP_Order_BOMLine_ID()));
 
-		final ImmutableList<PPOrderLineRow> bomLineRows = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final ImmutableList<PPOrderLineRow> bomLineRows = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.map(ppOrderBomLineRowCreator)
 				.sorted(ppOrderBomLineRowSorter)
@@ -245,7 +246,6 @@ class PPOrderLinesLoader
 	}
 
 	private PPOrderLineRow createRowForBOMLine(
-			final I_PP_Order ppOrder,
 			final I_PP_Order_BOMLine ppOrderBOMLine,
 			final boolean readOnly,
 			final List<I_PP_Order_Qty> ppOrderQtys)
@@ -253,9 +253,8 @@ class PPOrderLinesLoader
 		final PPOrderLineType lineType;
 		final String packingInfo;
 		final BigDecimal qtyPlan;
-		final String componentType = ppOrderBOMLine.getComponentType();
-		if (X_PP_Order_BOMLine.COMPONENTTYPE_By_Product.equals(componentType)
-				|| X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType))
+		final BOMComponentType componentType = BOMComponentType.ofCode(ppOrderBOMLine.getComponentType());
+		if (componentType.isByOrCoProduct())
 		{
 			lineType = PPOrderLineType.BOMLine_ByCoProduct;
 			packingInfo = computePackingInfo(ppOrderBOMLine);
