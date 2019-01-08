@@ -191,7 +191,10 @@ public class CostDetailRepository implements ICostDetailRepository
 			queryBuilder.addInArrayFilter(I_M_CostDetail.COLUMN_M_AttributeSetInstance_ID, null, AttributeSetInstanceId.NONE);
 		}
 
-		queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_M_CostElement_ID, query.getCostElementId());
+		if (query.getCostElementId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_M_CostElement_ID, query.getCostElementId());
+		}
 
 		if (documentRef.getOutboundTrx() != null)
 		{
