@@ -150,52 +150,58 @@ class RawModal extends Component {
 
     const { scrolled, isTooltipShow } = this.state;
 
+    if (!children) {
+      return null;
+    }
+
     return (
       <div className="screen-freeze raw-modal">
-        <div className="panel panel-modal panel-modal-primary">
-          <div
-            className={
-              'panel-modal-header ' + (scrolled ? 'header-shadow' : '')
-            }
-          >
-            <span className="panel-modal-header-title">
-              {modalTitle ? modalTitle : 'Modal'}
-              <span className="panel-modal-description">
-                {modalDescription ? modalDescription : ''}
+        <div className="modal-content-wrapper">
+          <div className="panel panel-modal panel-modal-primary">
+            <div
+              className={
+                'panel-modal-header ' + (scrolled ? 'header-shadow' : '')
+              }
+            >
+              <span className="panel-modal-header-title">
+                {modalTitle ? modalTitle : 'Modal'}
+                <span className="panel-modal-description">
+                  {modalDescription ? modalDescription : ''}
+                </span>
               </span>
-            </span>
 
-            <div className="items-row-2">
-              <button
-                className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
-                onClick={this.handleClose}
-                tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
-                onMouseEnter={() => this.toggleTooltip(true)}
-                onMouseLeave={() => this.toggleTooltip(false)}
-              >
-                {counterpart.translate('modal.actions.done')}
-                {isTooltipShow && (
-                  <Tooltips
-                    name={keymap.APPLY}
-                    action={counterpart.translate('modal.actions.done')}
-                    type={''}
-                  />
-                )}
-              </button>
+              <div className="items-row-2">
+                <button
+                  className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
+                  onClick={this.handleClose}
+                  tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
+                  onMouseEnter={() => this.toggleTooltip(true)}
+                  onMouseLeave={() => this.toggleTooltip(false)}
+                >
+                  {counterpart.translate('modal.actions.done')}
+                  {isTooltipShow && (
+                    <Tooltips
+                      name={keymap.APPLY}
+                      action={counterpart.translate('modal.actions.done')}
+                      type={''}
+                    />
+                  )}
+                </button>
+              </div>
             </div>
+            <Indicator />
+            <div
+              className="panel-modal-content js-panel-modal-content"
+              ref={c => {
+                c && c.focus();
+              }}
+            >
+              {children}
+            </div>
+            <ModalContextShortcuts
+              apply={modalVisible ? null : () => this.handleClose()}
+            />
           </div>
-          <Indicator />
-          <div
-            className="panel-modal-content js-panel-modal-content"
-            ref={c => {
-              c && c.focus();
-            }}
-          >
-            {children}
-          </div>
-          <ModalContextShortcuts
-            apply={modalVisible ? null : () => this.handleClose()}
-          />
         </div>
       </div>
     );

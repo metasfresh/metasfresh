@@ -19,6 +19,8 @@ coverage
 
 package-lock.json
 
+snapshots.js
+
 plugins
 docker
 ansible

@@ -119,7 +119,7 @@ class Inbox extends Component {
 
     return (
       <div
-        className="js-inbox-wrapper"
+        className="js-inbox-wrapper js-not-unselect"
         onKeyDown={e => this.handleKeyDown(e)}
         onFocus={onFocus}
         tabIndex={modalVisible ? -1 : 0}

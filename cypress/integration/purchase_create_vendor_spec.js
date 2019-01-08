@@ -1,54 +1,93 @@
-describe('purchase order Test', function() {
+/// <reference types="Cypress" />
+
+import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bpartner';
+
+describe('purchase - vendor spec', function() {
   before(function() {
     // login before each test
     cy.loginByForm();
   });
 
   const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const vendorValue = `${timestamp} (Cypress Test)`;
+  const vendorName = `Vendor ${timestamp}`;
 
   it('Create a vendor with two contacts', function() {
-    cy.visit('/window/123/NEW');
-    // cy.writeIntoStringField('Value', `{selectall}{backspace}${vendorValue}`);
-    cy.writeIntoStringField('CompanyName', vendorValue);
-    cy.writeIntoStringField('Name2', 'CompanyName');
+    new BPartner
+      .builder(vendorName)
+      
+      // note that entering `vendorName` into the Name2 field usually fails; the first letters are swallowed
+      .setVendor(true)
+      .setVendorPricingSystem("Testpreisliste Lieferanten")
+      .setVendorDiscountSchema("STandard")
+      .addLocation(new BPartnerLocation
+        .builder('Address1')
+        .setCity('Cologne')
+        .setCountry('Deutschland')
+        .build())
+      .addContact(new BPartnerContact
+        .builder()
+        .setFirstName('Default')
+        .setLastName('Contact')
+        .setDefaultContact(true)
+        .build())
+      .addContact(new BPartnerContact
+        .builder()
+        .setFirstName('Secondary')
+        .setLastName('Contact')
+        .build())
+      .build()
+      .apply();
 
-    cy.selectTab('Vendor');
-    cy.selectSingleTabRow();
+      cy.log('Now going to verify all fields were set correctly')
+      
+      cy.location().then(($location)=>{
+        const apiUrl = `${config.API_URL}${$location.pathname}`
+        cy.log(`Get bpartner JSON - apiUrl=${apiUrl}`)
+        cy.request(apiUrl)
+          .then(($response)=>{
+            const bpartnerJson = $response.body;
 
-    cy.openAdvancedEdit();
-    cy.clickOnCheckBox('IsVendor');
-    cy.pressDoneButton();
+            cy.log(`bpartnerJson = ${JSON.stringify(bpartnerJson)}`)
 
-    // note that the partner needs an address to be eligible in the purchase order without causing an error
-    // TODO: Use proper tab name when rolled out - Kuba
-    cy.selectTab('C_BPartner_Location');
-    cy.pressAddNewButton();
-    cy.writeIntoStringField('Name', 'Address1');
-    
-    cy.editAddress('C_Location_ID', function a() {
-        cy.writeIntoStringField('City', 'Cologne')
-        cy.writeIntoLookupListField('C_Country_ID', 'Deu', 'Deutschland');
-        // cy.get('.panel-modal-header').click();
-    });
-    cy.get('.form-field-Address')
-        .should('contain', 'Cologne');
-    cy.pressDoneButton();  
+            cy.log('verify those fields that are different on each test run')
+            expect(bpartnerJson, 'bpartnerJson - length').to.have.lengthOf(1)
+            expect(bpartnerJson[0].fieldsByName.CompanyName.value, 'bpartnerJson - CompanyName').to.eq(vendorName)            
+            expect(bpartnerJson[0].fieldsByName.Name.value, 'bpartnerJson - Name').to.eq(vendorName)
+            
+            // this usually fails
+            //expect(bpartnerJson[0].fieldsByName.Name2.value, 'bpartnerJson - Name2').to.eq(vendorName)
+            
+            const expectedDocumentSummary = `${vendorName} ${bpartnerJson[0].fieldsByName.Value.value}`
+            expect(bpartnerJson[0].fieldsByName.V$DocumentSummary.value,'V$DocumentSummary').to.eq(expectedDocumentSummary)
 
-      cy.selectTab('AD_User');
-      cy.pressAddNewButton();
-      cy.writeIntoStringField('Firstname', 'Default');
-      cy.writeIntoStringField('Lastname', 'Contact');
-      cy.clickOnCheckBox('IsDefaultContact');
-      cy.pressDoneButton();
+            cy.log('create and snapshot the invariant part of the test result')
+            // remove the fields that are different on each test run from the JSON; the result is invariant between test runs
+            delete bpartnerJson[0].id;
+            delete bpartnerJson[0].fieldsByName.ID;
+            delete bpartnerJson[0].fieldsByName.Value;
+            delete bpartnerJson[0].fieldsByName.Name;
+            delete bpartnerJson[0].fieldsByName.Name2;
+            delete bpartnerJson[0].fieldsByName.CompanyName;
+            delete bpartnerJson[0].fieldsByName.V$DocumentSummary;
+            delete bpartnerJson[0].websocketEndpoint;
+            // snapshot the invariant result
+            cy.wrap(bpartnerJson).snapshot('purchase_create_vendor_bpartner')
+        })
 
-      cy.selectTab('AD_User');
-      cy.pressAddNewButton();
-      cy.writeIntoStringField('Firstname', 'Secondary');
-      cy.writeIntoStringField('Lastname', 'Contact');
-      cy.pressDoneButton();
+        // TODO look into making this work too
+        // cy.log('retrieve and snapshot the location(s) we created')
+        // cy.request(`${apiUrl}/541016`)
+        //   .then(($response)=>{
+        //     const bpartnerLocationsJson = $response.body;
+        //     cy.wrap(bpartnerLocationsJson).snapshot('purchase_create_vendor_bpartnerLocations')
+        // })
 
-      cy.get('table tbody tr')
-        .should('have.length', 2);
+        // cy.log('retrieve and snapshot the contact(s) we created')
+        // cy.request(`${apiUrl}/541017`)
+        //   .then(($response)=>{
+        //     const contactsJson = $response.body;
+        //     cy.wrap(contactsJson).snapshot('purchase_create_vendor_contacts')
+        // })
+      })
   });
 });

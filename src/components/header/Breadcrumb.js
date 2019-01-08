@@ -100,7 +100,7 @@ class Breadcrumb extends Component {
     }
 
     return (
-      <div key={index}>
+      <div key={index} className="js-not-unselect">
         {index ? <span className="divider">/</span> : null}
         <div className="header-btn tooltip-parent">
           <div
