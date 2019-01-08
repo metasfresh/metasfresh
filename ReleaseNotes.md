@@ -16,6 +16,7 @@ Here come the actual release notes:
 # Fixes
 * metasfresh-webui-frontend
   * [#2119](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2119) Screen turns grey for 1 sec sometimes
+  * [#2122](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2122) Quick actions dropdown covered by pagination in modals
 
 # metasfresh 5.86
 # Features
