@@ -621,7 +621,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			final IStringExpression descriptionColumnSQL;
 			if (descriptionColumnSqlOrNull == null || descriptionColumnSqlOrNull.isNullExpression())
 			{
-				descriptionColumnSQL = ConstantStringExpression.ofNullable("NULL");
+				descriptionColumnSQL = ConstantStringExpression.of("NULL");
 			}
 			else
 			{

@@ -161,13 +161,14 @@ class PricingConditionsRowsLoader
 			final Stream<PricingConditionsInfo> vendorPricingConditions = streamPricingConditionsInfos(BPartnerType.VENDOR);
 			final Stream<PricingConditionsInfo> customerPricingConditions = streamPricingConditionsInfos(BPartnerType.CUSTOMER);
 
-			pricingConditionsInfoById = Stream.concat(vendorPricingConditions, customerPricingConditions)
+			pricingConditionsInfoById = Stream
+					.concat(vendorPricingConditions, customerPricingConditions)
 					.collect(ImmutableSetMultimap.toImmutableSetMultimap(PricingConditionsInfo::getPricingConditionsId, Function.identity()));
 		}
 		return pricingConditionsInfoById;
 	}
 
-	private Stream<PricingConditionsInfo> streamPricingConditionsInfos(final BPartnerType bpartnerType)
+	private Stream<PricingConditionsInfo> streamPricingConditionsInfos(@NonNull final BPartnerType bpartnerType)
 	{
 		final Map<BPartnerId, Integer> discountSchemaIdsByBPartnerId = bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(bpartnerType);
 
