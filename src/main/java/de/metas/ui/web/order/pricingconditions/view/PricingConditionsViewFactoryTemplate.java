@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.pricingconditions.view;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import com.google.common.cache.Cache;
@@ -30,7 +31,6 @@ import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -172,7 +172,7 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 	}
 
 	@Override
-	public final PricingConditionsView createView(final CreateViewRequest request)
+	public final PricingConditionsView createView(@NonNull final CreateViewRequest request)
 	{
 		final PricingConditionsRowData rowsData = createPricingConditionsRowData(request);
 		return createView(rowsData);
@@ -198,9 +198,20 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 	}
 
 	@Override
-	public final PricingConditionsView filterView(final IView viewObj, final JSONFilterViewRequest filterViewRequest)
+	public PricingConditionsView filterView(
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest,
+			Supplier<IViewsRepository> viewsRepo_IGNORED)
 	{
-		return PricingConditionsView.cast(viewObj)
+		return filterView(view, filterViewRequest);
+	}
+
+	@Override
+	public final PricingConditionsView filterView(
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest)
+	{
+		return PricingConditionsView.cast(view)
 				.filter(filtersFactory.extractFilters(filterViewRequest));
 	}
 

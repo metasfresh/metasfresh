@@ -9,6 +9,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -48,13 +49,18 @@ public interface IViewFactory
 		return ImmutableList.of();
 	}
 
-	default IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest)
+	default IView filterView(
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest)
 	{
 		final CreateViewRequest createViewRequest = CreateViewRequest.filterViewBuilder(view, filterViewRequest).build();
 		return createView(createViewRequest);
 	}
 
-	default IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest, final Supplier<IViewsRepository> viewsRepo)
+	default IView filterView(
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest,
+			@NonNull final Supplier<IViewsRepository> viewsRepo)
 	{
 		final CreateViewRequest createViewRequest = CreateViewRequest.filterViewBuilder(view, filterViewRequest).build();
 		return createView(createViewRequest);

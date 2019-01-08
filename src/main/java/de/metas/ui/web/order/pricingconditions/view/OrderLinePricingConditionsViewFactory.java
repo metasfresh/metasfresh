@@ -37,7 +37,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -74,13 +73,13 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 	}
 
 	@Override
-	protected void onViewClosedByUser(final PricingConditionsView view)
+	protected void onViewClosedByUser(@NonNull final PricingConditionsView view)
 	{
 		view.updateSalesOrderLineIfPossible();
 	}
 
 	@Override
-	protected PricingConditionsRowData createPricingConditionsRowData(final CreateViewRequest request)
+	protected PricingConditionsRowData createPricingConditionsRowData(@NonNull final CreateViewRequest request)
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 

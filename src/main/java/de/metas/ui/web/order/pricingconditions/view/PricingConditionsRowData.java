@@ -60,6 +60,8 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 	@Getter
 	private final OrderLineId orderLineId;
 	private final DocumentFiltersList filters;
+
+	/** Sortof parent-instance that represents the superset of all pricing conditions rows. */
 	private final PricingConditionsRowData allRowsData;
 
 	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
@@ -68,38 +70,38 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 
 	@Builder
 	private PricingConditionsRowData(
-			final OrderLineId orderLineId,
+			@Nullable final OrderLineId orderLineId, // OK to not be set if called from material cockpit
 			@Nullable final PricingConditionsRow editableRow,
 			@NonNull final List<PricingConditionsRow> rows)
 	{
-		// Check.assumeGreaterThanZero(salesOrderLineId, "salesOrderLineId"); // OK to not be set
-
 		this.orderLineId = orderLineId;
 		this.allRowsData = null;
 		this.filters = DocumentFiltersList.EMPTY;
 
-		rowIds = stream(editableRow, rows)
+		this.rowIds = stream(editableRow, rows)
 				.map(PricingConditionsRow::getId)
 				.collect(ImmutableList.toImmutableList());
-		rowsById = stream(editableRow, rows)
+		this.rowsById = stream(editableRow, rows)
 				.collect(Collectors.toConcurrentMap(PricingConditionsRow::getId, Function.identity()));
 
 		this.editableRowId = editableRow != null ? editableRow.getId() : null;
 	}
 
-	private PricingConditionsRowData(final PricingConditionsRowData from, final DocumentFiltersList filters)
+	private PricingConditionsRowData(
+			@NonNull final PricingConditionsRowData from,
+			@NonNull final DocumentFiltersList filters)
 	{
 		this.allRowsData = from.getAllRowsData();
 		this.filters = filters;
 		this.orderLineId = allRowsData.getOrderLineId();
 
-		rowsById = allRowsData.rowsById;
+		this.rowsById = allRowsData.rowsById;
 		final ImmutableSet<DocumentId> rowIdsNotOrdered = allRowsData.rowsById.values()
 				.stream()
 				.filter(PricingConditionsViewFilters.isEditableRowOrMatching(filters))
 				.map(PricingConditionsRow::getId)
 				.collect(ImmutableSet.toImmutableSet());
-		rowIds = allRowsData.rowIds.stream()
+		this.rowIds = allRowsData.rowIds.stream()
 				.filter(rowIdsNotOrdered::contains)
 				.collect(ImmutableList.toImmutableList());
 

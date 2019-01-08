@@ -115,9 +115,11 @@ public final class DataTypes
 		// If we would not return java.util.Date then all value changed comparing will fail.
 		if (targetType.equals(value.getClass()))
 		{
-			@SuppressWarnings("unchecked")
-			final T valueConv = (T)value;
-			return valueConv;
+			return cast(value);
+		}
+		else if (Object.class == targetType)
+		{
+			return cast(value);
 		}
 
 		try
