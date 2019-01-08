@@ -47,6 +47,11 @@ public class ImpDataCell
 		{
 			return true;
 		}
+		
+		if (impFormatRow != null && impFormatRow.isDate() && "00000000".equals(value))
+		{
+			return true;
+		}
 
 		return false;
 	}
