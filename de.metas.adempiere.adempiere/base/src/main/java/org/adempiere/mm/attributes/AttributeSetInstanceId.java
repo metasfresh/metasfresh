@@ -1,7 +1,6 @@
 package org.adempiere.mm.attributes;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -80,7 +79,7 @@ public class AttributeSetInstanceId implements RepoIdAware
 
 	private AttributeSetInstanceId()
 	{
-		this.repoId = AttributeConstants.M_AttributeSetInstance_ID_None;
+		this.repoId = 0;
 	}
 
 	public boolean isNone()
