@@ -143,14 +143,14 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		}
 
 		//
-		if(orderCosts != null)
+		if (orderCosts != null)
 		{
 			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
 			ppOrderCostsService.save(orderCosts);
 		}
 
 		//
-		if(currentCost != null)
+		if (currentCost != null)
 		{
 			utils.saveCurrentCost(currentCost);
 		}
