@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.impl.BPartnerTimeSpanRepository;
+import de.metas.contracts.impl.CustomerRetentionRepository;
 import lombok.NonNull;
 
 /*
@@ -39,13 +39,13 @@ public class C_BPartner
 {
 
 	@Autowired
-	private BPartnerTimeSpanRepository bpartnerTimeSpanRepo;
+	private CustomerRetentionRepository bpartnerTimeSpanRepo;
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createC_BPartner_TimeSpan(@NonNull final I_C_BPartner bpartner)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
-		bpartnerTimeSpanRepo.createNewBPartnerTimeSpan(bpartnerId);
+		bpartnerTimeSpanRepo.createNewCustomerRetention(bpartnerId);
 	}
 
 }

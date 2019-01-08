@@ -7,7 +7,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.contracts.impl.BPartnerTimeSpanRepository;
+import de.metas.contracts.impl.CustomerRetentionRepository;
 import de.metas.invoice.InvoiceId;
 
 /*
@@ -39,10 +39,10 @@ public class C_Invoice
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateBPartnerTimeSpan(final I_C_Invoice invoice)
 	{
-		final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
+		final CustomerRetentionRepository bpartnerTimeSpanRepo = Adempiere.getBean(CustomerRetentionRepository.class);
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
-		bpartnerTimeSpanRepo.updateTimeSpanOnInvoiceComplete(invoiceId);
+		bpartnerTimeSpanRepo.updateCustomerRetentionOnInvoiceComplete(invoiceId);
 
 	}
 }

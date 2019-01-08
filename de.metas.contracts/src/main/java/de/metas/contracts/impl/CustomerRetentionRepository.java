@@ -11,9 +11,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_TimeSpan;
+import org.compiere.model.I_C_Customer_Retention;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.X_C_BPartner_TimeSpan;
+import org.compiere.model.X_C_Customer_Retention;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +54,10 @@ import lombok.NonNull;
  */
 
 @Repository
-public class BPartnerTimeSpanRepository
+public class CustomerRetentionRepository
 {
-	public final transient String SYS_CONFIG_C_BPartner_TimeSpan_Threshold = "C_BPartner_TimeSpan_Threshold";
-	public final transient int DEFAULT_Threshold_BPartner_TimeSpan = 12;
+	public final transient String SYS_CONFIG_C_CUSTOMER_RETENTION_Threshold = "C_Customer_Retention_Threshold";
+	public final transient int DEFAULT_Threshold_CustomerRetention= 12;
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -69,93 +69,93 @@ public class BPartnerTimeSpanRepository
 	@Autowired
 	private ContractInvoiceService contractInvoiceService;
 
-	public I_C_BPartner_TimeSpan createNewBPartnerTimeSpan(@NonNull final BPartnerId bpartnerId)
+	public I_C_Customer_Retention createNewCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner_TimeSpan timeSpan = newInstance(I_C_BPartner_TimeSpan.class);
+		final I_C_Customer_Retention customerRetention = newInstance(I_C_Customer_Retention.class);
 
-		timeSpan.setC_BPartner_ID(bpartnerId.getRepoId());
+		customerRetention.setC_BPartner_ID(bpartnerId.getRepoId());
 
-		timeSpan.setC_BPartner_TimeSpan(null);
+		customerRetention.setCustomerRetention(null);
 
-		save(timeSpan);
+		save(customerRetention);
 
-		return timeSpan;
+		return customerRetention;
 	}
 
 	public void setNewCustomer(@NonNull final BPartnerId bpartnerId)
 	{
-		I_C_BPartner_TimeSpan bpartnerTimeSpan = retrieveBPartnerTimeSpan(bpartnerId);
+		I_C_Customer_Retention customerRetention = retrieveCustomerRetention(bpartnerId);
 
-		if (bpartnerTimeSpan == null)
+		if (customerRetention == null)
 		{
-			bpartnerTimeSpan = createNewBPartnerTimeSpan(bpartnerId);
+			customerRetention = createNewCustomerRetention(bpartnerId);
 		}
 
-		bpartnerTimeSpan.setC_BPartner_TimeSpan(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Neukunde);
-		save(bpartnerTimeSpan);
+		customerRetention.setCustomerRetention(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
+		save(customerRetention);
 	}
 
 	public void setRegularCustomer(@NonNull final BPartnerId bpartnerId)
 	{
-		I_C_BPartner_TimeSpan bpartnerTimeSpan = retrieveBPartnerTimeSpan(bpartnerId);
+		I_C_Customer_Retention customerRetention = retrieveCustomerRetention(bpartnerId);
 
-		if (bpartnerTimeSpan == null)
+		if (customerRetention == null)
 		{
-			bpartnerTimeSpan = createNewBPartnerTimeSpan(bpartnerId);
+			customerRetention = createNewCustomerRetention(bpartnerId);
 		}
 
-		bpartnerTimeSpan.setC_BPartner_TimeSpan(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Stammkunde);
-		save(bpartnerTimeSpan);
+		customerRetention.setCustomerRetention(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde);
+		save(customerRetention);
 	}
 
 	public void setNonSubscriptionCustomer(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner_TimeSpan bpartnerTimeSpan = retrieveBPartnerTimeSpan(bpartnerId);
-		bpartnerTimeSpan.setC_BPartner_TimeSpan(null);
-		save(bpartnerTimeSpan);
+		final I_C_Customer_Retention customerRetention = retrieveCustomerRetention(bpartnerId);
+		customerRetention.setCustomerRetention(null);
+		save(customerRetention);
 	}
 
-	public I_C_BPartner_TimeSpan retrieveBPartnerTimeSpan(@NonNull final BPartnerId bpartnerId)
+	public I_C_Customer_Retention retrieveCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
-		return queryBL.createQueryBuilder(I_C_BPartner_TimeSpan.class)
+		return queryBL.createQueryBuilder(I_C_Customer_Retention.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_C_BPartner_TimeSpan.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
+				.addEqualsFilter(I_C_Customer_Retention.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
 				.create()
-				.firstOnly(I_C_BPartner_TimeSpan.class);
+				.firstOnly(I_C_Customer_Retention.class);
 	}
 
 	public boolean isNewCustomer(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner_TimeSpan bpartnerTimeSpan = retrieveBPartnerTimeSpan(bpartnerId);
+		final I_C_Customer_Retention customerRetention = retrieveCustomerRetention(bpartnerId);
 
-		final String currentTimeSpan = bpartnerTimeSpan.getC_BPartner_TimeSpan();
+		final String currentCustomerRetention = customerRetention.getCustomerRetention();
 
-		return Objects.equals(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Neukunde, currentTimeSpan);
+		return Objects.equals(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde, currentCustomerRetention);
 	}
 
-	public ImmutableSet<BPartnerId> retrieveBPartnerIdsWithTimeSpan()
+	public ImmutableSet<BPartnerId> retrieveBPartnerIdsWithCustomerRetention()
 	{
-		return queryBL.createQueryBuilder(I_C_BPartner_TimeSpan.class)
+		return queryBL.createQueryBuilder(I_C_Customer_Retention.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addNotNull(I_C_BPartner_TimeSpan.COLUMN_C_BPartner_TimeSpan)
-				.andCollect(I_C_BPartner_TimeSpan.COLUMN_C_BPartner_ID, I_C_BPartner.class)
+				.addNotNull(I_C_Customer_Retention.COLUMN_CustomerRetention)
+				.andCollect(I_C_Customer_Retention.COLUMN_C_BPartner_ID, I_C_BPartner.class)
 				.create()
 				.listIds(BPartnerId::ofRepoId);
 	}
 
-	public int retrieveBPartnerTimeSpanThreshold()
+	public int retrieveCustomerRetentionThreshold()
 	{
-		return sysConfigBL.getIntValue(SYS_CONFIG_C_BPartner_TimeSpan_Threshold, DEFAULT_Threshold_BPartner_TimeSpan);
+		return sysConfigBL.getIntValue(SYS_CONFIG_C_CUSTOMER_RETENTION_Threshold, DEFAULT_Threshold_CustomerRetention);
 	}
 
-	public boolean hasTimeSpan(BPartnerId bpartnerId)
+	public boolean hasCustomerRetention(final BPartnerId bpartnerId)
 	{
-		return !Check.isEmpty(retrieveBPartnerTimeSpan(bpartnerId));
+		return !Check.isEmpty(retrieveCustomerRetention(bpartnerId));
 	}
 
-	public void updateTimeSpan(final BPartnerId bpartnerId)
+	public void updateCustomerRetention(final BPartnerId bpartnerId)
 	{
 		final I_C_Flatrate_Term latestFlatrateTermForBPartnerId = contractsDAO.retrieveLatestFlatrateTermForBPartnerId(bpartnerId);
 
@@ -182,7 +182,7 @@ public class BPartnerTimeSpanRepository
 
 		if (!Check.isEmpty(lastSalesContractInvoiceId))
 		{
-			updateTimeSpanAfterInvoiceId(bpartnerId, lastSalesContractInvoiceId);
+			updateCustomerRetentionAfterInvoiceId(bpartnerId, lastSalesContractInvoiceId);
 		}
 
 	}
@@ -192,13 +192,13 @@ public class BPartnerTimeSpanRepository
 		final LocalDate currentDate = TimeUtil.asLocalDate(dateToCompare);
 		final LocalDate contractEndLocalDate = TimeUtil.asLocalDate(contractEndDate);
 
-		final int bpTimeSpanThreshold = retrieveBPartnerTimeSpanThreshold();
+		final int customerRetentionThreshold = retrieveCustomerRetentionThreshold();
 
-		return currentDate.minusMonths(bpTimeSpanThreshold).isAfter(contractEndLocalDate);
+		return currentDate.minusMonths(customerRetentionThreshold).isAfter(contractEndLocalDate);
 
 	}
 
-	public void updateTimeSpanOnInvoiceComplete(final InvoiceId invoiceId)
+	public void updateCustomerRetentionOnInvoiceComplete(final InvoiceId invoiceId)
 	{
 		if (!contractInvoiceService.isContractSalesInvoice(invoiceId))
 		{
@@ -215,10 +215,10 @@ public class BPartnerTimeSpanRepository
 			return;
 		}
 
-		updateTimeSpanAfterInvoiceId(bpartnerId, invoiceId);
+		updateCustomerRetentionAfterInvoiceId(bpartnerId, invoiceId);
 	}
 
-	private void updateTimeSpanAfterInvoiceId(final BPartnerId bpartnerId, final InvoiceId invoiceId)
+	private void updateCustomerRetentionAfterInvoiceId(final BPartnerId bpartnerId, final InvoiceId invoiceId)
 	{
 		final InvoiceId predecessorSalesContractInvoiceId = contractInvoiceService.retrievePredecessorSalesContractInvoiceId(invoiceId);
 
