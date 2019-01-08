@@ -103,7 +103,7 @@
     "stylelint": "^7.9.0",
     "webpack": "4.26.0",
     "webpack-cli": "3.1.2",
-    "webpack-dev-server": "3.1.10",
+    "webpack-dev-server": "^3.1.14",
     "webpack-node-externals": "1.7.2",
     "why-did-you-update": "^1.0.6"
   },
