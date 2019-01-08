@@ -43,6 +43,7 @@ class MenuOverlayItem extends Component {
 
   handleClick = (elementId, entity) => {
     const { handleRedirect } = this.props;
+
     handleRedirect(elementId, null, entity);
     this.renderBreadcrumb(entity, elementId);
   };
@@ -81,9 +82,11 @@ class MenuOverlayItem extends Component {
   };
 
   handleArrowUp() {
+    const { inputElement } = this.props;
     let prevSiblings = document.activeElement.previousSibling;
+
     if (prevSiblings && prevSiblings.classList.contains('input-primary')) {
-      document.getElementById('search-input-query').focus();
+      inputElement && inputElement.focus();
     } else if (
       prevSiblings &&
       prevSiblings.classList.contains('js-menu-item') &&
@@ -98,6 +101,7 @@ class MenuOverlayItem extends Component {
   handleArrowDown() {
     const nextElem = document.activeElement.nextSibling;
     const parentElem = document.activeElement.parentElement;
+
     if (nextElem) {
       if (nextElem.classList.contains('js-menu-item')) {
         nextElem.focus();
@@ -237,6 +241,7 @@ class MenuOverlayItem extends Component {
 
 MenuOverlayItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  inputElement: PropTypes.any,
 };
 
 export default connect()(MenuOverlayItem);

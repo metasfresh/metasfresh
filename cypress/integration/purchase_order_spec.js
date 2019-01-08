@@ -1,3 +1,7 @@
+/// <reference types="Cypress" />
+
+import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bpartner';
+
 describe('purchase order Test', function() {
     before(function() {
         // login before each test
@@ -6,24 +10,41 @@ describe('purchase order Test', function() {
 
     const timestamp = new Date().getTime(); // used in the document names, for ordering
     const poReference = `${timestamp} (Cypress Test)`;
-    const contactLastName = `${timestamp} (Cypress Test)`;
+    const contactLastName = `2ndary ${timestamp} (Cypress Test)`;
 
-    const vendorValue = 'G0002'; // "Test Lieferant"
+    const vendorName = `${timestamp} (Cypress Test)`; // "Test Lieferant"
 
 
-    it('Add another contact to Test-Vendor, then a purchase order', function() {
+    it('Create a vendor, then a purchase order', function() {
 
-            cy.visit('/window/123/2156423');
-
-            cy.selectTab('AD_User');
-            cy.pressAddNewButton();
-            cy.writeIntoStringField('Firstname', 'Other-Contact');
-            cy.writeIntoStringField('Lastname', contactLastName);
-            cy.pressDoneButton();
+            new BPartner
+                .builder(vendorName)
+                .setVendor(true)
+                .setVendorPricingSystem("Testpreisliste Lieferanten")
+                .setVendorDiscountSchema("STandard")
+                .addLocation(new BPartnerLocation
+                    .builder('Address1')
+                    .setCity('Cologne')
+                    .setCountry('Deutschland')
+                    .build())
+                .addContact(new BPartnerContact
+                    .builder()
+                    .setFirstName('Default')
+                    .setLastName('Contact')
+                    .setDefaultContact(true)
+                    .build())
+                .addContact(new BPartnerContact
+                    .builder()
+                    .setFirstName('Secondary')
+                    .setLastName(contactLastName)
+                    .build())
+                .build()
+                .apply();
 
             cy.visit('/window/181/NEW');
             
-            cy.writeIntoLookupListField('C_BPartner_ID', vendorValue, vendorValue);
+            cy.writeIntoLookupListField('C_BPartner_ID', vendorName, vendorName);
+
             // AD_User should be pre-filled with 'default contact';
             cy.writeIntoLookupListField('AD_User_ID', contactLastName, contactLastName);
             
