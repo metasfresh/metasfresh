@@ -117,6 +117,7 @@ public interface IQueryBuilder<T>
 	IQueryBuilderOrderByClause<T> orderBy();
 
 	//@formatter:off
+	default IQueryBuilder<T> clearOrderBys() { orderBy().clear(); return this; }
 	default IQueryBuilder<T> orderBy(final String columnName) { orderBy().addColumn(columnName); return this; }
 	default IQueryBuilder<T> orderBy(final ModelColumn<T, ?> column) { orderBy().addColumn(column); return this; }
 	default IQueryBuilder<T> orderByDescending(final String columnName) { orderBy().addColumnDescending(columnName); return this; }
