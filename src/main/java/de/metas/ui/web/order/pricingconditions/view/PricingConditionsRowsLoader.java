@@ -46,7 +46,6 @@ import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -237,6 +236,9 @@ class PricingConditionsRowsLoader
 		}
 	}
 
+	/**
+	 * On-the-fly create a PricingConditionsRow using this instance's {@link #sourceDocumentLine}.
+	 */
 	private PricingConditionsRow createEditablePricingConditionsRowOrNull()
 	{
 		if (sourceDocumentLine == null)
@@ -258,7 +260,8 @@ class PricingConditionsRowsLoader
 				// TODO: if we added those columns to C_OrderLine, then load them now
 				.paymentTermIdOrNull(sourceDocumentLine.getPaymentTermId())
 				.discount(sourceDocumentLine.getDiscount())
-				.dateCreated(null) // N/A
+				.dateCreated(null) // N/A; the PricingConditionsBreak hasn't been created (i.e. persisted on DB) yet
+				.createdById(null)
 				.build();
 
 		return PricingConditionsRow.builder()
