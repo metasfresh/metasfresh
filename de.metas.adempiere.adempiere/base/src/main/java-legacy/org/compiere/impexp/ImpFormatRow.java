@@ -452,7 +452,8 @@ public final class ImpFormatRow
 	 */
 	String parse(final String info) throws Exception
 	{
-		if (info == null || info.length() == 0)
+		if (info == null || info.length() == 0
+				|| (isDate() && "00000000".equals(info)) ) // consider this an empty value for date
 		{
 			return "";
 		}
@@ -510,7 +511,7 @@ public final class ImpFormatRow
 		{
 			Timestamp ts = null;
 
-			if (!Check.isEmpty(info, true))
+			if (!Check.isEmpty(info, true)) 
 			{
 				final DateFormat dateFormat = getDateFormat();
 				final Date date = dateFormat.parse(info.trim());
