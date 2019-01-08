@@ -20,6 +20,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
@@ -175,4 +176,9 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		}
 	}	// getLastInvoicePrice
 
+	@Override
+	public void voidCosts(final CostDetailVoidRequest request)
+	{
+		throw new UnsupportedOperationException();
+	}
 }
