@@ -27,6 +27,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.WeakList;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,7 +53,7 @@ import de.metas.util.WeakList;
 
 /**
  * {@link IDeviceConfigPool} implementation which reads all the configs from {@link I_AD_SysConfig}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -67,7 +68,7 @@ import de.metas.util.WeakList;
 	private static final String DEVICE_PARAM_DeviceClass = "DeviceClass";
 	private static final String DEVICE_PARAM_AttributeInternalName = "AttributeInternalName";
 	private static final String DEVICE_PARAM_M_Warehouse_ID = "M_Warehouse_ID";
-	
+
 	/*package */static final String IPADDRESS_ANY = "0.0.0.0";
 
 	private final IHostIdentifier clientHost;
@@ -81,10 +82,8 @@ import de.metas.util.WeakList;
 
 	private final WeakList<IDeviceConfigPoolListener> listeners = new WeakList<>(true); // weakDefault=true
 
-	public SysConfigDeviceConfigPool(final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
+	public SysConfigDeviceConfigPool(@NonNull final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
 	{
-		super();
-
 		Check.assumeNotNull(clientHost, "Parameter clientHost is not null");
 
 		this.clientHost = clientHost;
@@ -224,7 +223,7 @@ import de.metas.util.WeakList;
 		final String paramValue = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, parameterName, defaultValue);
 		return paramValue;
 	}
-	
+
 	private Set<String> getDeviceAssignedAttributeCodes(final String deviceName)
 	{
 		final String attribSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_AttributeInternalName;
@@ -234,7 +233,7 @@ import de.metas.util.WeakList;
 			logger.info("Found no SysConfig assigned attribute to device {}; SysConfig-prefix={}", deviceName, attribSysConfigPrefix);
 			return ImmutableSet.of();
 		}
-		
+
 		return ImmutableSet.copyOf(assignedAttributeCodes);
 	}
 
