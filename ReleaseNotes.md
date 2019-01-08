@@ -14,6 +14,8 @@ Here come the actual release notes:
 # Features
 
 # Fixes
+* metasfresh-webui-frontend
+  * [#2119](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2119) Screen turns grey for 1 sec sometimes
 
 # metasfresh 5.86
 # Features
