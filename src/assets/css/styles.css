@@ -1093,11 +1093,12 @@ td.pulse-off input {
 
 .quick-actions-dropdown {
     position: absolute;
-    z-index:1;
+    z-index:10;
     width: 100%;
     right: 0;
     top: 100%;
     min-width: 100px;
+    overflow-y: scroll;
 
     margin-top: .2rem;
     padding: .3rem;
