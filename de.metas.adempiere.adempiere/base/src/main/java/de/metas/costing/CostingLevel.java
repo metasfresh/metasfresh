@@ -85,9 +85,19 @@ public enum CostingLevel
 
 	public OrgId effectiveValue(@NonNull final OrgId orgId)
 	{
+		return effectiveValueOr(orgId, OrgId.ANY);
+	}
+
+	public OrgId effectiveValueOrNull(@NonNull final OrgId orgId)
+	{
+		return effectiveValueOr(orgId, null);
+	}
+
+	private OrgId effectiveValueOr(@NonNull final OrgId orgId, final OrgId nullValue)
+	{
 		if (this == Client)
 		{
-			return OrgId.ANY;
+			return nullValue;
 		}
 		else if (this == Organization)
 		{
@@ -99,7 +109,7 @@ public enum CostingLevel
 		}
 		else if (this == BatchLot)
 		{
-			return OrgId.ANY;
+			return nullValue;
 		}
 		else
 		{
@@ -109,13 +119,23 @@ public enum CostingLevel
 
 	public AttributeSetInstanceId effectiveValue(@NonNull final AttributeSetInstanceId asiId)
 	{
+		return effectiveValueOr(asiId, AttributeSetInstanceId.NONE);
+	}
+
+	public AttributeSetInstanceId effectiveValueOrNull(@NonNull final AttributeSetInstanceId asiId)
+	{
+		return effectiveValueOr(asiId, null);
+	}
+
+	private AttributeSetInstanceId effectiveValueOr(@NonNull final AttributeSetInstanceId asiId, final AttributeSetInstanceId nullValue)
+	{
 		if (this == Client)
 		{
-			return AttributeSetInstanceId.NONE;
+			return nullValue;
 		}
 		else if (this == Organization)
 		{
-			return AttributeSetInstanceId.NONE;
+			return nullValue;
 		}
 		else if (this == BatchLot)
 		{

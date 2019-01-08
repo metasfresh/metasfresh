@@ -42,7 +42,7 @@ import lombok.experimental.Wither;
 public class CostDetail
 {
 	@Wither
-	int repoId;
+	CostDetailId id;
 
 	ClientId clientId;
 	OrgId orgId;
@@ -65,7 +65,7 @@ public class CostDetail
 
 	@Builder
 	private CostDetail(
-			final int repoId,
+			final CostDetailId id,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final AcctSchemaId acctSchemaId,
@@ -79,7 +79,7 @@ public class CostDetail
 			@NonNull final CostingDocumentRef documentRef,
 			@Nullable final String description)
 	{
-		this.repoId = repoId;
+		this.id = id;
 		this.clientId = clientId;
 		this.orgId = orgId;
 		this.acctSchemaId = acctSchemaId;

@@ -10,7 +10,6 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
-import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
@@ -136,13 +135,12 @@ public class CostingMethodHandlerUtils
 
 	private static CostDetailQuery extractCostDetailQuery(final CostDetailCreateRequest request)
 	{
-		final CostElementId costElementId = request.isAllCostElements() ? null : request.getCostElementId();
-
 		return CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
-				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.costElementId(costElementId)
+				.costElementId(request.getCostElementId()) // assume request's costing element is set
 				.documentRef(request.getDocumentRef())
+				// .productId(request.getProductId())
+				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build();
 	}
 

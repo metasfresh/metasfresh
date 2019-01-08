@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
@@ -43,4 +44,5 @@ public interface ICostDetailRepository
 
 	boolean hasCostDetailsForProductId(ProductId productId);
 
+	Stream<CostDetail> streamOrderedById(CostDetailQuery query);
 }
