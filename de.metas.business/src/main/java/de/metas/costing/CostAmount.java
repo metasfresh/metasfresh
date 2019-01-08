@@ -11,8 +11,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.util.NumberUtils;
 import de.metas.util.lang.Percent;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -64,10 +64,9 @@ public class CostAmount
 	BigDecimal value;
 	CurrencyId currencyId;
 
-	@Builder
 	private CostAmount(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
 	{
-		this.value = value;
+		this.value = NumberUtils.stripTrailingDecimalZeros(value);
 		this.currencyId = currencyId;
 	}
 
@@ -95,8 +94,10 @@ public class CostAmount
 		{
 			return this;
 		}
-
-		return new CostAmount(value.negate(), currencyId);
+		else
+		{
+			return new CostAmount(value.negate(), currencyId);
+		}
 	}
 
 	public CostAmount negateIf(final boolean condition)
@@ -115,8 +116,10 @@ public class CostAmount
 		{
 			return this;
 		}
-
-		return new CostAmount(value.multiply(multiplicand), currencyId);
+		else
+		{
+			return new CostAmount(value.multiply(multiplicand), currencyId);
+		}
 	}
 
 	public CostAmount multiply(@NonNull final Quantity quantity)
