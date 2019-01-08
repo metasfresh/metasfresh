@@ -35,11 +35,13 @@ class MasterWidget extends Component {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { widgetData } = this.props;
-    const { edited } = this.state;
+    const { edited, data } = this.state;
 
     if (
+      !edited &&
+      JSON.stringify(nextProps.widgetData[0].value) !== data &&
       JSON.stringify(widgetData[0].value) !==
-      JSON.stringify(nextProps.widgetData[0].value)
+        JSON.stringify(nextProps.widgetData[0].value)
     ) {
       this.setState({
         data: nextProps.widgetData[0].value,
