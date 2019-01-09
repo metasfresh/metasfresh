@@ -3,6 +3,7 @@ package de.metas.contracts.process;
 import java.sql.Timestamp;
 
 import org.compiere.Adempiere;
+import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -58,9 +59,9 @@ public class C_Customer_Retention_Update extends JavaProcess
 				continue;
 			}
 
-			final Timestamp contractMasterEndDate = latestFlatrateTermForBPartnerId.getMasterEndDate();
+			final Timestamp endDate = Util.coalesce(latestFlatrateTermForBPartnerId.getMasterEndDate(), latestFlatrateTermForBPartnerId.getEndDate());
 
-			if (customerRetentionRepo.dateExceedsThreshold(contractMasterEndDate, SystemTime.asTimestamp()))
+			if (customerRetentionRepo.dateExceedsThreshold(endDate, SystemTime.asTimestamp()))
 			{
 				customerRetentionRepo.setNonSubscriptionCustomer(bpartnerId);
 			}
