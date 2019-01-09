@@ -5,10 +5,12 @@ export class BPartner
     {
         this.name = builder.name;
         this.isVendor = builder.isVendor;
+        this.vendorPricingSystem = builder.vendorPricingSystem;
+        this.vendorDiscountSchema = builder.vendorDiscountSchema;
         this.isCustomer = builder.isCustomer;
         this.locations = builder.bPartnerLocations;
         this.contacts = builder.contacts;
-     }
+    }
 
     apply() 
     {
@@ -22,33 +24,47 @@ export class BPartner
         {
             constructor(name) 
             {
-              cy.log(`BPartnerBuilder - name = ${this.name}`);
+              cy.log(`BPartnerBuilder - set name = ${name}`);
               this.name = name;
               this.isVendor = false;
+              this.vendorPricingSystem = undefined;
+              this.vendorDiscountSchema = undefined;
               this.isCustomer = false;
               this.bPartnerLocations = [];
               this.contacts = [];
-            } 
+            }
           
-            vendor(isVendor)
+            setVendor(isVendor)
             {
-               cy.log(`BPartnerBuilder - isVendor = ${isVendor}`);
+               cy.log(`BPartnerBuilder - set isVendor = ${isVendor}`);
                this.isVendor = isVendor;
                return this;
             }
-            customer(isCustomer)
+            setVendorPricingSystem(vendorPricingSystem)
             {
-                cy.log(`BPartnerBuilder - isCustomer = ${isCustomer}`);
+                cy.log(`BPartnerBuilder - set vendorPricingSystem = ${vendorPricingSystem}`);
+                this.vendorPricingSystem = vendorPricingSystem;
+                return this; 
+            }
+            setVendorDiscountSchema(vendorDiscountSchema)
+            {
+               cy.log(`BPartnerBuilder - set vendorDiscountSchema = ${vendorDiscountSchema}`);
+               this.vendorDiscountSchema = vendorDiscountSchema;
+               return this;
+            }
+            setCustomer(isCustomer)
+            {
+                cy.log(`BPartnerBuilder - set isCustomer = ${isCustomer}`);
                 this.isCustomer = isCustomer;
                 return this;
             }
-            location(bPartnerLocation) 
+            addLocation(bPartnerLocation) 
             {
                 cy.log(`BPartnerBuilder - add location = ${JSON.stringify(bPartnerLocation)}`);
                 this.bPartnerLocations.push(bPartnerLocation);
                 return this;
             }
-            contact(contact) 
+            addContact(contact) 
             {
                 this.contacts.push(contact);
                 return this;
@@ -79,19 +95,19 @@ export class BPartnerLocation
         {
             constructor(name) 
             {
-                cy.log(`BPartnerLocationBuilder - name = ${name}`);
+                cy.log(`BPartnerLocationBuilder - set name = ${name}`);
                 this.name = name;
             } 
 
-            city(city)
+            setCity(city)
             {
-                cy.log(`BPartnerLocationBuilder - city = ${city}`);
+                cy.log(`BPartnerLocationBuilder - set city = ${city}`);
                 this.city = city;
                 return this;
             }
-            country(country) 
+            setCountry(country) 
             {
-                cy.log(`BPartnerLocationBuilder - country = ${country}`);
+                cy.log(`BPartnerLocationBuilder - set country = ${country}`);
                 this.country = country;
                 return this;
             }
@@ -123,25 +139,24 @@ export class BPartnerContact
                 this.isDefaultContact = false;
             } 
 
-            firstName(firstName)
+            setFirstName(firstName)
             {
-                cy.log(`BPartnerContactBuilder - firstName = ${firstName}`);
+                cy.log(`BPartnerContactBuilder - set firstName = ${firstName}`);
                 this.firstName = firstName;
                 return this;
             }
-            lastName(lastName) 
+            setLastName(lastName) 
             {
-                cy.log(`BPartnerContactBuilder - lastName = ${lastName}`);
+                cy.log(`BPartnerContactBuilder - set lastName = ${lastName}`);
                 this.lastName = lastName;
                 return this;
             }
-            defaultContact(isDefaultContact)
+            setDefaultContact(isDefaultContact)
             {
-                cy.log(`BPartnerContactBuilder - defaultContact = ${isDefaultContact}`);
+                cy.log(`BPartnerContactBuilder - set defaultContact = ${isDefaultContact}`);
                 this.isDefaultContact = isDefaultContact;
                 return this;
             }
-
             build() 
             {
                 return new BPartnerContact(this);
@@ -159,13 +174,24 @@ function applyBPartner(bPartner)
 
         cy.writeIntoStringField('CompanyName', bPartner.name);
         cy.writeIntoStringField('Name2', bPartner.name);
-        if(bPartner.isVendor) 
+        if(bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem) 
         {
             cy.selectTab('Vendor');
             cy.selectSingleTabRow();
 
             cy.openAdvancedEdit();
-            cy.clickOnCheckBox('IsVendor');
+            if(bPartner.isVendor)
+            {
+                cy.clickOnCheckBox('IsVendor');
+            }
+            if(bPartner.vendorPricingSystem)
+            {
+                cy.selectInListField('PO_PricingSystem_ID',bPartner.vendorPricingSystem, bPartner.vendorPricingSystem);
+            }
+            if(bPartner.vendorDiscountSchema)
+            {
+                cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, bPartner.vendorDiscountSchema);
+            }
             cy.pressDoneButton();
         }
 
@@ -180,17 +206,22 @@ function applyBPartner(bPartner)
         }
 
         // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
-        bPartner.locations.forEach(function (bPartnerLocation) {
-            applyLocation(bPartnerLocation);
-        });
-        cy.get('table tbody tr')
-            .should('have.length', bPartner.locations.length);
-
-        bPartner.contacts.forEach(function (bPartnerContact) {
-            applyContact(bPartnerContact);
-        });
-        cy.get('table tbody tr')
-            .should('have.length', bPartner.contacts.length);
+        if(bPartner.locations.length > 0)
+        {
+            bPartner.locations.forEach(function (bPartnerLocation) {
+                applyLocation(bPartnerLocation);
+            });
+            cy.get('table tbody tr')
+                .should('have.length', bPartner.locations.length);
+        }
+        if(bPartner.contacts.length > 0)
+        {
+            bPartner.contacts.forEach(function (bPartnerContact) {
+                applyContact(bPartnerContact);
+            });
+            cy.get('table tbody tr')
+                .should('have.length', bPartner.contacts.length);
+        }
     });
 }
 
@@ -198,7 +229,7 @@ function applyLocation(bPartnerLocation)
 {
     cy.selectTab('C_BPartner_Location');
     cy.pressAddNewButton();
-    cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
+    //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
     cy.writeIntoStringField('Name', bPartnerLocation.name);
     
     cy.editAddress('C_Location_ID', function () {

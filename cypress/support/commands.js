@@ -24,6 +24,9 @@
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 
+// https://www.cypress.io/blog/2018/01/16/end-to-end-snapshot-testing/#End-to-end-snapshot-testing
+require('@cypress/snapshot').register()
+
 import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';
 
@@ -130,6 +133,8 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
 // Should also work for date columns, e.g. '01/01/2018{enter}'
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
   describe('Enter value into string field', function() {
+
+    cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}`);
     cy.get(`.form-field-${fieldName}`)
       .find('input')
       .type(stringValue);
@@ -138,6 +143,8 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
 
 Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
   describe('Enter value into text field', function() {
+
+      cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}`);
       cy.get(`.form-field-${fieldName}`)
         .find('textarea')
         .type(stringValue);
@@ -182,21 +189,23 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
 
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
   describe('Execute a doc action', function() {
-    cy.get('.form-field-DocAction')
-      .find('.meta-dropdown-toggle')
-      .click();
+
+    cy.log(`Execute doc action ${action}`)
 
     cy.get('.form-field-DocAction')
-      .find('.dropdown-status-toggler')
-      .should('have.class', 'dropdown-status-open');
+      .find('.meta-dropdown-toggle')
+      .click()
+      .should('have.class', 'dropdown-status-open')
 
     cy.get('.form-field-DocAction .dropdown-status-list')
       .find('.dropdown-status-item')
       .contains(action)
-      .click();
+      .click()
 
-    cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
-    cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus);
+    cy.log(`Verify that the doc status is now ${expectedStatus}`)
+
+    cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist')
+    cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus)
   })
 });
 
@@ -247,6 +256,24 @@ Cypress.Commands.add('pressDoneButton', () => {
     const doneText = Cypress.messages.modal.actions.done;
     cy.get('.btn')
       .contains(doneText)
+      .should('exist')
+      .click();
+  })
+});
+
+Cypress.Commands.add('pressStartButton', () => {
+  describe('Press an overlay\'s start-button', function() {
+
+    // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
+    // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
+    cy.on('window:confirm', (str) => {
+      expect(str).to.eq('Everything is awesome and the process has started')
+    });
+
+    //webui.modal.actions.done
+    const startText = Cypress.messages.modal.actions.start;
+    cy.get('.btn')
+      .contains(startText)
       .should('exist')
       .click();
   })
@@ -353,13 +380,12 @@ Cypress.Commands.add('executeQuickAction', (actionName, active) => {
 });
 
 Cypress.Commands.add('executeHeaderAction', (actionName) => {
-  const name = actionName.toLowerCase().replace(/\s/g, '');
-
-  describe('Fire header action with a certain name', function() {
-    cy.get('.header-container .btn-header').click();
+   describe('Fire header action with a certain name', function() {
+    cy.get('.header-container .btn-square .meta-icon-more').click();
     cy.get('.subheader-container').should('exist');
 
-    return cy.get(`#headerAction_${name}`).click();
+    //return cy.get(`#headerAction_${name}`).click();
+    return cy.get(`#headerAction_${actionName}`).click();
   });
 });
 

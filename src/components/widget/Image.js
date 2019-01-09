@@ -150,7 +150,7 @@ class Image extends Component {
             },
           })
           .then(stream => {
-            this.camera.src = window.URL.createObjectURL(stream);
+            this.camera.srcObject = stream;
             this.camera.onloadedmetadata = () => {
               this.camera.play();
             };
