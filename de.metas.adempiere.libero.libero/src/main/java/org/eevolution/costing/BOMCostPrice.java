@@ -4,10 +4,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
+import com.google.common.base.Predicates;
+
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -98,11 +101,12 @@ public class BOMCostPrice
 		return pricesByElementId.values();
 	}
 
-	Stream<Integer> streamRepoIds()
+	<T extends RepoIdAware> Stream<T> streamIds(@NonNull final Class<T> idType)
 	{
 		return getElementPrices()
 				.stream()
-				.map(BOMCostElementPrice::getRepoId)
-				.filter(repoId -> repoId > 0);
+				.map(BOMCostElementPrice::getId)
+				.filter(Predicates.notNull())
+				.map(idType::cast);
 	}
 }

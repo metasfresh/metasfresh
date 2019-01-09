@@ -4,6 +4,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.money.CurrencyId;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -42,7 +43,7 @@ public class BOMCostElementPrice
 				.build();
 	}
 
-	private int repoId;
+	private RepoIdAware id;
 
 	@NonNull
 	private final CostElementId costElementId;

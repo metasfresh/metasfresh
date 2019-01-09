@@ -98,6 +98,7 @@ public class CostDetailRepository implements ICostDetailRepository
 			record.setPrev_CumulatedQty(previousAmounts.getCumulatedQty().getAsBigDecimal());
 		}
 
+		record.setIsSOTrx(cd.isOutboundTrx());
 		updateRecordFromDocumentRef(record, cd.getDocumentRef());
 
 		record.setDescription(cd.getDescription());
@@ -113,7 +114,7 @@ public class CostDetailRepository implements ICostDetailRepository
 	{
 		final String tableName = documentRef.getTableName();
 		final int recordId = documentRef.getRecordId();
-		final Boolean soTrx = documentRef.getOutboundTrx();
+		// final Boolean soTrx = documentRef.getOutboundTrx();
 		if (CostingDocumentRef.TABLE_NAME_M_MatchInv.equals(tableName))
 		{
 			record.setM_MatchInv_ID(recordId);
@@ -125,7 +126,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(tableName))
 		{
 			record.setM_InOutLine_ID(recordId);
-			record.setIsSOTrx(soTrx);
+			// record.setIsSOTrx(soTrx);
 		}
 		else if (CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(tableName))
 		{
@@ -134,7 +135,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		else if (CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(tableName))
 		{
 			record.setM_MovementLine_ID(recordId);
-			record.setIsSOTrx(soTrx);
+			// record.setIsSOTrx(soTrx);
 		}
 		else if (CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(tableName))
 		{

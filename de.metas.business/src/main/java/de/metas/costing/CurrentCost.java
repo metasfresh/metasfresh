@@ -43,7 +43,7 @@ import lombok.ToString;
 public final class CurrentCost
 {
 	@Setter
-	private int repoId;
+	private CurrentCostId id;
 
 	private final CostSegment costSegment;
 	private final CostElement costElement;
@@ -61,7 +61,7 @@ public final class CurrentCost
 
 	@Builder
 	private CurrentCost(
-			final int repoId,
+			final CurrentCostId id,
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
 			@NonNull final CurrencyId currencyId,
@@ -73,7 +73,7 @@ public final class CurrentCost
 			final BigDecimal cumulatedAmt,
 			final BigDecimal cumulatedQty)
 	{
-		this.repoId = repoId > 0 ? repoId : 0;
+		this.id = id;
 
 		this.costSegment = costSegment;
 		this.costElement = costElement;
@@ -94,7 +94,7 @@ public final class CurrentCost
 
 	private CurrentCost(@NonNull final CurrentCost from)
 	{
-		this.repoId = from.repoId;
+		this.id = from.id;
 
 		this.costElement = from.costElement;
 		this.costSegment = from.costSegment;

@@ -32,7 +32,7 @@ import org.compiere.model.I_M_Product;
 
 public interface ICurrentCostsRepository
 {
-	List<CurrentCost> getByIds(Set<Integer> repoIds);
+	List<CurrentCost> getByIds(Set<CurrentCostId> ids);
 
 	CurrentCost getOrNull(CostSegmentAndElement costSegmentAndElement);
 
