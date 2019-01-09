@@ -32,11 +32,13 @@ import lombok.Value;
 @Builder
 public class CostDetailPreviousAmounts
 {
-	public static CostDetailPreviousAmounts of(CurrentCost currentCosts)
+	public static CostDetailPreviousAmounts of(CurrentCost currentCost)
 	{
 		return builder()
-				.costPrice(currentCosts.getCostPrice())
-				.qty(currentCosts.getCurrentQty())
+				.costPrice(currentCost.getCostPrice())
+				.qty(currentCost.getCurrentQty())
+				.cumulatedAmt(currentCost.getCumulatedAmt())
+				.cumulatedQty(currentCost.getCumulatedQty())
 				.build();
 	}
 
@@ -45,6 +47,11 @@ public class CostDetailPreviousAmounts
 
 	@NonNull
 	Quantity qty;
+
+	@NonNull
+	private CostAmount cumulatedAmt;
+	@NonNull
+	private Quantity cumulatedQty;
 
 	public CurrencyId getCurrencyId()
 	{

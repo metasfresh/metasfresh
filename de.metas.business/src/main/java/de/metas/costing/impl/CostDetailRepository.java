@@ -93,6 +93,9 @@ public class CostDetailRepository implements ICostDetailRepository
 			record.setPrev_CurrentCostPrice(previousAmounts.getCostPrice().getOwnCostPrice().getValue());
 			record.setPrev_CurrentCostPriceLL(previousAmounts.getCostPrice().getComponentsCostPrice().getValue());
 			record.setPrev_CurrentQty(previousAmounts.getQty().getAsBigDecimal());
+
+			record.setPrev_CumulatedAmt(previousAmounts.getCumulatedAmt().getValue());
+			record.setPrev_CumulatedQty(previousAmounts.getCumulatedQty().getAsBigDecimal());
 		}
 
 		updateRecordFromDocumentRef(record, cd.getDocumentRef());
@@ -285,6 +288,8 @@ public class CostDetailRepository implements ICostDetailRepository
 								.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), currencyId))
 								.build())
 						.qty(Quantity.of(record.getPrev_CurrentQty(), productUOM))
+						.cumulatedAmt(CostAmount.of(record.getPrev_CumulatedAmt(), currencyId))
+						.cumulatedQty(Quantity.of(record.getPrev_CumulatedQty(), productUOM))
 						.build())
 				.documentRef(extractDocumentRef(record))
 				.description(record.getDescription())
