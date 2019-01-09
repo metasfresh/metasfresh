@@ -25,11 +25,16 @@ describe('New boiler plate (textsnippet) test', function() {
         cy.selectTab('AD_BoilerPlate_Trl');
         cy.get('.btn').should('not.exist');
 
+        const trlTextSnippet = `en_US trl of ${boilerPlateTextSnippet}`;
+        cy.get('table').contains('td', trlTextSnippet).should('not.exist')
+
         cy.log('Select the "English (US)" translation trecord and provide a trl')     
         cy.get('table').contains('td', 'English (US)').click();
         cy.openAdvancedEdit()
-        cy.writeIntoTextField('TextSnippet', `en_US trl of ${boilerPlateTextSnippet}`)  // this fails because we now have two "TextSnippet" fields on the page
+        cy.writeIntoTextField('TextSnippet', `{selectall}{backspace}${trlTextSnippet}`, true/*modal*/)  // this fails because we now have two "TextSnippet" fields on the page
         cy.clickOnCheckBox('IsTranslated')
         cy.pressDoneButton();
+
+        cy.get('table').contains('td', trlTextSnippet).should('exist')
    });
 });
