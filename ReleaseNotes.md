@@ -21,6 +21,7 @@ Here come the actual release notes:
   * [#2130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2130) Header/subheader not working correctly on mobile
   * [#2133](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2133) Display value description when hovering over field
   * [#2034](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2034) Uncaught TypeError: selected.indexOf is not a function
+  * [#2134](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2134) string field is reset in mid-typing
 
 # metasfresh 5.86
 # Features
