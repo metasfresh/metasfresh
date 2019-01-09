@@ -201,7 +201,7 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
       .find('.dropdown-status-item')
       .contains(action)
       .click()
-
+      // .click({ force: true }) // force is needed in some cases with chrome71 (IDK why, to the naked eye the action seems to be visible)
     cy.log(`Verify that the doc status is now ${expectedStatus}`)
 
     cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist')

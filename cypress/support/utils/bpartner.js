@@ -14,7 +14,9 @@ export class BPartner
 
     apply() 
     {
+        cy.log(`BPartner - apply - START (name=${this.name})`);
         applyBPartner(this);
+        cy.log(`BPartner - apply - END (name=${this.name})`);
         return this;
     }
 
@@ -170,10 +172,11 @@ function applyBPartner(bPartner)
 {
     describe(`Create new bPartner ${bPartner.name}`, function () {
 
-        cy.visit('/window/123/NEW');
-
+        cy.visit('/window/123/NEW')
+        cy.wait(500) // TODO: better figure out how to wait until the layout was gotten and processed
         cy.writeIntoStringField('CompanyName', bPartner.name);
         cy.writeIntoStringField('Name2', bPartner.name);
+
         if(bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem) 
         {
             cy.selectTab('Vendor');

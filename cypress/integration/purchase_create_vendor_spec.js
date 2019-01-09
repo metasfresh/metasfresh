@@ -1,6 +1,7 @@
 /// <reference types="Cypress" />
 
 import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bpartner';
+import { DiscountSchema } from '../support/utils/discountschema';
 
 describe('purchase - vendor spec', function() {
   before(function() {
@@ -8,17 +9,24 @@ describe('purchase - vendor spec', function() {
     cy.loginByForm();
   });
 
-  const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const vendorName = `Vendor ${timestamp}`;
+  const timestamp = new Date().getTime() // used in the document names, for ordering
+  const vendorName = `Vendor ${timestamp}`
+
+  const discountSchemaName = `DiscountSchema ${timestamp}`
 
   it('Create a vendor with two contacts', function() {
+
+    new DiscountSchema
+      .builder(discountSchemaName)
+      .setValidFrom('01/01/2019{enter}')
+      .build()
+      .apply();
+
     new BPartner
       .builder(vendorName)
-      
-      // note that entering `vendorName` into the Name2 field usually fails; the first letters are swallowed
       .setVendor(true)
-      .setVendorPricingSystem("Testpreisliste Lieferanten")
-      .setVendorDiscountSchema("STandard")
+      .setVendorPricingSystem('Testpreisliste Lieferanten')
+      .setVendorDiscountSchema(discountSchemaName)
       .addLocation(new BPartnerLocation
         .builder('Address1')
         .setCity('Cologne')
@@ -53,10 +61,8 @@ describe('purchase - vendor spec', function() {
             expect(bpartnerJson, 'bpartnerJson - length').to.have.lengthOf(1)
             expect(bpartnerJson[0].fieldsByName.CompanyName.value, 'bpartnerJson - CompanyName').to.eq(vendorName)            
             expect(bpartnerJson[0].fieldsByName.Name.value, 'bpartnerJson - Name').to.eq(vendorName)
-            
-            // this usually fails
-            //expect(bpartnerJson[0].fieldsByName.Name2.value, 'bpartnerJson - Name2').to.eq(vendorName)
-            
+            expect(bpartnerJson[0].fieldsByName.Name2.value, 'bpartnerJson - Name2').to.eq(vendorName)
+
             const expectedDocumentSummary = `${vendorName} ${bpartnerJson[0].fieldsByName.Value.value}`
             expect(bpartnerJson[0].fieldsByName.V$DocumentSummary.value,'V$DocumentSummary').to.eq(expectedDocumentSummary)
 
@@ -71,7 +77,7 @@ describe('purchase - vendor spec', function() {
             delete bpartnerJson[0].fieldsByName.V$DocumentSummary;
             delete bpartnerJson[0].websocketEndpoint;
             // snapshot the invariant result
-            cy.wrap(bpartnerJson).snapshot('purchase_create_vendor_bpartner')
+            cy.wrap(bpartnerJson).snapshot(`purchase_create_vendor_bpartner - apiUrl=${apiUrl}`)
         })
 
         // TODO look into making this work too
