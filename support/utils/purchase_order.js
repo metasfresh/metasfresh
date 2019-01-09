@@ -13,7 +13,9 @@ export class PurchaseOrder
 
     apply() 
     {
+        cy.log(`DiscountSchema - apply - START (poReference=${this.poReference})`);
         applyPurchaseOrder(this);
+        cy.log(`DiscountSchema - apply - END (poReference=${this.poReference})`);
         return this;
     }
 
@@ -26,41 +28,41 @@ export class PurchaseOrder
               this.purchaseOrderLines = [];
             } 
           
-            bPartner(bPartner)
+            setBPartner(bPartner)
             {
-               cy.log(`PurchaseOrderBuilder - bPartner = ${bPartner}`);
+               cy.log(`PurchaseOrderBuilder - setBPartner = ${bPartner}`);
                this.bPartner = bPartner;
                return this;
             }
-            poReference(poReference)
+            setPoReference(poReference)
             {
-               cy.log(`PurchaseOrderBuilder - poReference = ${poReference}`);
+               cy.log(`PurchaseOrderBuilder - setPoReference = ${poReference}`);
                this.poReference = poReference;
                return this;
             }
-            dropShip(isDropShip)
+            setDropShip(isDropShip)
             {
-               cy.log(`PurchaseOrderBuilder - dropShip = ${isDropShip}`);
+               cy.log(`PurchaseOrderBuilder - setDropShip = ${isDropShip}`);
                this.isDropShip = isDropShip;
                return this;
             }
 
-            docAction(docAction)
+            setDocAction(docAction)
             {
-               cy.log(`PurchaseOrderBuilder - docAction = ${docAction}`);
+               cy.log(`PurchaseOrderBuilder - setDocAction = ${docAction}`);
                this.docAction = docAction;
                return this;
             }
-            docStatus(docStatus)
+            setDocStatus(docStatus)
             {
-               cy.log(`PurchaseOrderBuilder - docStatus = ${docStatus}`);
+               cy.log(`PurchaseOrderBuilder - setDocStatus = ${docStatus}`);
                this.docStatus = docStatus;
                return this;
             }
         
-            line(purchaseOrderLine) 
+            addLine(purchaseOrderLine) 
             {
-                cy.log(`PurchaseOrderBuilder - add line = ${JSON.stringify(purchaseOrderLine)}`);
+                cy.log(`PurchaseOrderBuilder - addLine = ${JSON.stringify(purchaseOrderLine)}`);
                 this.purchaseOrderLines.push(purchaseOrderLine);
                 return this;
             }
@@ -91,15 +93,15 @@ export class PurchaseOrderLine
             {
             } 
 
-            product(product)
+            setProduct(product)
             {
-                cy.log(`PurchaseOrderLineBuilder - product = ${product}`);
+                cy.log(`PurchaseOrderLineBuilder - setProduct = ${product}`);
                 this.product = product;
                 return this;
             }
-            tuQuantity(tuQuantity) 
+            setTuQuantity(tuQuantity) 
             {
-                cy.log(`PurchaseOrderLineBuilder - tuQuantity = ${tuQuantity}`);
+                cy.log(`PurchaseOrderLineBuilder - setTuQuantity = ${tuQuantity}`);
                 this.tuQuantity = tuQuantity;
                 return this;
             }
@@ -119,6 +121,7 @@ function applyPurchaseOrder(purchaseOrder)
     describe(`Create new purchaseOrder`, function () {
 
         cy.visit('/window/181/NEW');
+        cy.wait(500)
 
         cy.writeIntoLookupListField('C_BPartner_ID', purchaseOrder.bPartner, purchaseOrder.bPartner);
         cy.writeIntoStringField('POReference', purchaseOrder.poReference);
@@ -132,7 +135,7 @@ function applyPurchaseOrder(purchaseOrder)
         if(purchaseOrder.lines.length > 0)
         {
             purchaseOrder.lines.forEach(function (purchaseOrderLine) {
-                applyPurchaseOrderLine(purchaseOrderLine);
+                applyPurchaseOrderLineAddNew(purchaseOrderLine);
             });
             cy.get('table tbody tr')
                 .should('have.length', purchaseOrder.lines.length);
@@ -152,22 +155,34 @@ function applyPurchaseOrder(purchaseOrder)
     });
 }
 
-function applyPurchaseOrderLine(purchaseOrderLine)
+function applyPurchaseOrderLineAddNew(purchaseOrderLine)
 {
-    cy.selectTab('C_OrderLine');
-    cy.pressBatchEntryButton();
-
-    //cy.wait('@postAddress').then(xhr => {
-        //const requestId = xhr.response.body.id;
-
-        //cy.route('PATCH', `/rest/api/window/143/1000489/187/quickInput/${requestId}`).as('patchAddress');
-        cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product);
-        //cy.wait('@patchAddress');
-        cy.get('#lookup_M_HU_PI_Item_Product_ID input').should('have.value', 'IFCO 6410 x 10 Stk');
-        cy.writeIntoStringField('Qty', purchaseOrderLine.tuQuantity).type('{enter}');
-
-        cy.get('.table-flex-wrapper')
-          .find('tbody tr')
-          .should('have.length', 3);
+    cy.selectTab('C_OrderLine')
+    cy.pressAddNewButton()
+  
+    cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product)
+    //cy.wait('@patchAddress');
+    //cy.get('#lookup_M_HU_PI_Item_Product_ID input').should('have.value', 'IFCO 6410 x 10 Stk');
+    //cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', 'IFCO 6410 x 10 Stk');
+    cy.writeIntoStringField('QtyEnteredTU', purchaseOrderLine.tuQuantity)
+    cy.wait(500)
+    cy.pressDoneButton()
     //});
 }
+
+// doesn't work
+// function applyPurchaseOrderLineBatchEntry(purchaseOrderLine)
+// {
+//     cy.selectTab('C_OrderLine');
+//     cy.pressBatchEntryButton();
+
+//     //cy.wait('@postAddress').then(xhr => {
+//         //const requestId = xhr.response.body.id;
+
+//         //cy.route('PATCH', `/rest/api/window/143/1000489/187/quickInput/${requestId}`).as('patchAddress');
+//         cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product);
+//         //cy.wait('@patchAddress');
+//         //cy.get('#lookup_M_HU_PI_Item_Product_ID input').should('have.value', 'IFCO 6410 x 10 Stk');
+//         cy.writeIntoStringField('Qty', purchaseOrderLine.tuQuantity).type('{enter}');
+//     //});
+// }
