@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -91,6 +93,7 @@ class PricingContext implements IEditablePricingContext
 	private boolean failIfNotCalculated = false;
 
 	private boolean disallowDiscount;
+
 	@Getter
 	private PricingConditionsBreak forcePricingConditionsBreak;
 
@@ -421,8 +424,9 @@ class PricingContext implements IEditablePricingContext
 		return skipCheckingPriceListSOTrxFlag;
 	}
 
+	/** If set to not-{@code null}, then the {@link de.metas.pricing.rules.Discount} rule with go with this break as opposed to look for the currently matching break. */
 	@Override
-	public IEditablePricingContext setForcePricingConditionsBreak(final PricingConditionsBreak forcePricingConditionsBreak)
+	public IEditablePricingContext setForcePricingConditionsBreak(@Nullable final PricingConditionsBreak forcePricingConditionsBreak)
 	{
 		this.forcePricingConditionsBreak = forcePricingConditionsBreak;
 		return this;
