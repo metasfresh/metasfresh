@@ -34,4 +34,14 @@ module.exports = on => {
   options.webpackOptions.plugins = opts;
 
   on('file:preprocessor', webpackPre(options));
+
+  // Uncomment for disabling CORS protection in chrome
+  // on('before:browser:launch', (browser = {}, args) => {
+  //   if (browser.name === 'chrome') {
+  //     args.push('--disable-web-security --user-data-dir=/tmp/chrome')
+
+  //     // whatever you return here becomes the new args
+  //     return args
+  //   }
+  // })
 };

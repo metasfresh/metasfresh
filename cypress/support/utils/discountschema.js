@@ -3,14 +3,15 @@ export class DiscountSchema
     constructor(builder) 
     {
         this.name = builder.name
-        this.type = builder.type
         this.validFrom = builder.validFrom
         this.discountBreaks = builder.discountBreaks
     }
 
     apply() 
     {
+        cy.log(`DiscountSchema - apply - START (name=${this.name})`);
         applyDiscountSchema(this);
+        cy.log(`DiscountSchema - apply - END (name=${this.name})`);
         return this;
     }
 
@@ -50,6 +51,7 @@ export class DiscountBreak
 {
     constructor(builder) 
     {
+        cy.log(`DiscountBreak - constructor`)
         this.breakValue = builder.breakValue
         this.breakDiscount = builder.breakDiscount
     }
@@ -61,13 +63,13 @@ export class DiscountBreak
             constructor() 
             {
               cy.log(`DiscountBreakBuilder`)
-              this.breakValue = 0
-              this.breakDiscount = 0
+              this.breakValue = '0';
+              this.breakDiscount = '0'
             }
             setBreakValue(breakValue) 
             {
                 cy.log(`DiscountBreakBuilder - set breakValue = ${breakValue}`)
-                this.breakValue = breakValue;
+                this.breakValue = breakValue
                 return this
             }
             setBreakDiscount(breakDiscount)
@@ -91,13 +93,14 @@ function applyDiscountSchema(discountSchema)
 
         cy.visit('/window/233/NEW');
         cy.selectInListField('DiscountType', 'Breaks')
-        cy.writeIntoStringField('ValidFrom', `${discountSchema.validFrom}{enter}`)
         cy.writeIntoStringField('Name', discountSchema.name)
+        cy.writeIntoStringField('ValidFrom', `${discountSchema.validFrom}{enter}`)
 
-        cy.pressAddNewButton();
         // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
         if(discountSchema.discountBreaks.length > 0)
         {
+            cy.pressAddNewButton();
+
             discountSchema.discountBreaks.forEach(function (discountBreak) {
                 applyDiscountBreak(discountBreak);
             });
