@@ -42,10 +42,18 @@ public class C_BPartner
 	private CustomerRetentionRepository bpartnerTimeSpanRepo;
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
-	public void createC_BPartner_TimeSpan(@NonNull final I_C_BPartner bpartner)
+	public void createC_CustomerRetention(@NonNull final I_C_BPartner bpartner)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		bpartnerTimeSpanRepo.createNewCustomerRetention(bpartnerId);
+	}
+
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteC_CustomerRetention(@NonNull final I_C_BPartner bpartner)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+		bpartnerTimeSpanRepo.deteleCustomerRetention(bpartnerId);
 	}
 
 }

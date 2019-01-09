@@ -37,12 +37,12 @@ import de.metas.invoice.InvoiceId;
 public class C_Invoice
 {
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void updateBPartnerTimeSpan(final I_C_Invoice invoice)
+	public void updateCustomerRetention(final I_C_Invoice invoice)
 	{
-		final CustomerRetentionRepository bpartnerTimeSpanRepo = Adempiere.getBean(CustomerRetentionRepository.class);
+		final CustomerRetentionRepository customerRetentionRepo = Adempiere.getBean(CustomerRetentionRepository.class);
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
-		bpartnerTimeSpanRepo.updateCustomerRetentionOnInvoiceComplete(invoiceId);
+		customerRetentionRepo.updateCustomerRetentionOnInvoiceComplete(invoiceId);
 
 	}
 }

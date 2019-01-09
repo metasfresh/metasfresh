@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -57,7 +58,7 @@ import lombok.NonNull;
 public class CustomerRetentionRepository
 {
 	public final transient String SYS_CONFIG_C_CUSTOMER_RETENTION_Threshold = "C_Customer_Retention_Threshold";
-	public final transient int DEFAULT_Threshold_CustomerRetention= 12;
+	public final transient int DEFAULT_Threshold_CustomerRetention = 12;
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -244,5 +245,12 @@ public class CustomerRetentionRepository
 			}
 		}
 
+	}
+
+	public void deteleCustomerRetention(final BPartnerId bpartnerId)
+	{
+		final I_C_Customer_Retention customerRetention = retrieveCustomerRetention(bpartnerId);
+
+		delete(customerRetention);
 	}
 }
