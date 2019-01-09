@@ -99,8 +99,6 @@ function applyDiscountSchema(discountSchema)
         // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
         if(discountSchema.discountBreaks.length > 0)
         {
-            cy.pressAddNewButton();
-
             discountSchema.discountBreaks.forEach(function (discountBreak) {
                 applyDiscountBreak(discountBreak);
             });

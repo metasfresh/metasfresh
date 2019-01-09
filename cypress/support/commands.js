@@ -187,6 +187,9 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
   );
 });
 
+/**
+ * @param expectedStatus - optional; if given, the command verifies the status
+ */
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
   describe('Execute a doc action', function() {
 
@@ -202,10 +205,13 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
       .contains(action)
       .click()
       // .click({ force: true }) // force is needed in some cases with chrome71 (IDK why, to the naked eye the action seems to be visible)
-    cy.log(`Verify that the doc status is now ${expectedStatus}`)
 
     cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist')
-    cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus)
+    if(expectedStatus) {
+      cy.log(`Verify that the doc status is now ${expectedStatus}`)
+
+      cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus)
+    }
   })
 });
 
