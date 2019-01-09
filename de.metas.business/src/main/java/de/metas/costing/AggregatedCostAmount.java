@@ -1,7 +1,5 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -102,21 +100,6 @@ public final class AggregatedCostAmount
 		other.amountsPerElement.forEach((costElement, amtToAdd) -> {
 			amountsNew.compute(costElement, (ce, amtOld) -> amtOld != null ? amtOld.add(amtToAdd) : amtToAdd);
 		});
-
-		return new AggregatedCostAmount(costSegment, amountsNew);
-	}
-
-	public AggregatedCostAmount divide(@NonNull final BigDecimal divisor, final int precision, @NonNull final RoundingMode roundingMode)
-	{
-		Check.assume(divisor.signum() != 0, "divisor != 0");
-
-		if (BigDecimal.ONE.equals(divisor))
-		{
-			return this;
-		}
-
-		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amountsPerElement.size());
-		amountsPerElement.forEach((costElement, amt) -> amountsNew.put(costElement, amt.divide(divisor, precision, roundingMode)));
 
 		return new AggregatedCostAmount(costSegment, amountsNew);
 	}

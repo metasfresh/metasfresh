@@ -159,15 +159,15 @@ public class CostAmount
 		return new CostAmount(value.add(amtToAdd.value), currencyId);
 	}
 
-	public CostAmount divide(final BigDecimal divisor, final int precision, final RoundingMode roundingMode)
+	public CostAmount divide(@NonNull final BigDecimal divisor, @NonNull final CurrencyPrecision precision)
 	{
-		final BigDecimal valueNew = value.divide(divisor, precision, roundingMode);
+		final BigDecimal valueNew = value.divide(divisor, precision.toInt(), RoundingMode.HALF_UP);
 		return new CostAmount(valueNew, currencyId);
 	}
 
-	public CostAmount divide(final Quantity divisor, final int precision, final RoundingMode roundingMode)
+	public CostAmount divide(@NonNull final Quantity divisor, @NonNull final CurrencyPrecision precision)
 	{
-		return divide(divisor.getAsBigDecimal(), precision, roundingMode);
+		return divide(divisor.getAsBigDecimal(), precision);
 	}
 
 	public CostAmount roundToPrecisionIfNeeded(final CurrencyPrecision precision)

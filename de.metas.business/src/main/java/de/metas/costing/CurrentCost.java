@@ -1,7 +1,6 @@
 package de.metas.costing;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.UomId;
@@ -148,7 +147,7 @@ public final class CurrentCost
 		final Quantity newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
-			final CostAmount ownCostPrice = newAmt.divide(newQty.getAsBigDecimal(), getPrecision().toInt(), RoundingMode.HALF_UP);
+			final CostAmount ownCostPrice = newAmt.divide(newQty, getPrecision());
 			this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
 		}
 		currentQty = newQty;

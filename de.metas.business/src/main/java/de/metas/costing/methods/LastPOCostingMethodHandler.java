@@ -1,7 +1,6 @@
 package de.metas.costing.methods;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -84,7 +83,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 		{
 			if (qty.signum() != 0)
 			{
-				final CostAmount price = amt.divide(qty, currentCosts.getPrecision().toInt(), RoundingMode.HALF_UP);
+				final CostAmount price = amt.divide(qty, currentCosts.getPrecision());
 				currentCosts.setCostPrice(CostPrice.ownCostPrice(price));
 			}
 			else
