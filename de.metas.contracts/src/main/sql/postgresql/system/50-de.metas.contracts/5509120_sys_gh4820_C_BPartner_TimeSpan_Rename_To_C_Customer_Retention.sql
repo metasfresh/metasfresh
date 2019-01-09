@@ -30,8 +30,8 @@ UPDATE AD_Sequence SET Name='C_Customer_Retention',Updated=TO_TIMESTAMP('2019-01
 
 -- 2019-01-08T14:39:33.772
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER SEQUENCE C_BPartner_TimeSpan_SEQ RENAME TO C_Customer_Retention_SEQ
-;
+--ALTER SEQUENCE C_BPartner_TimeSpan_SEQ RENAME TO C_Customer_Retention_SEQ
+--;
 
 -- 2019-01-08T14:40:34.644
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
