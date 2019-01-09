@@ -1,7 +1,7 @@
 /// <reference types="Cypress" />
 
 import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bpartner';
-import { DiscountSchema, DiscountBreak } from '../support/utils/discountschema';
+import { DiscountSchema } from '../support/utils/discountschema';
 
 describe('purchase - vendor spec', function() {
   before(function() {
@@ -19,11 +19,6 @@ describe('purchase - vendor spec', function() {
     new DiscountSchema
       .builder(discountSchemaName)
       .setValidFrom('01/01/2019{enter}')
-      // .addDiscountBreak(new DiscountBreak()
-      //    .builder()
-      //    .setBreakValue('0')
-      //    .setBreakDiscount('0')
-      //    .build())
       .build()
       .apply();
 
