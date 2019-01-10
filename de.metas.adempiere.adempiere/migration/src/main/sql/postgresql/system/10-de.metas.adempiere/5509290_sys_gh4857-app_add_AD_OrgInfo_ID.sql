@@ -18,7 +18,7 @@ INSERT INTO AD_OrgInfo (
     ad_org_id, -- numeric(10,0) NOT NULL,
     ad_client_id, -- numeric(10,0) NOT NULL,
     createdby, -- numeric(10,0) NOT NULL,
-    updatedby, -- numeric(10,0) NOT NULL,
+    updatedby -- numeric(10,0) NOT NULL,
 )
 SELECT 
     ad_org_id, -- numeric(10,0) NOT NULL,
