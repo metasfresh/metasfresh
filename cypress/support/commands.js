@@ -130,32 +130,61 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
   });
 });
 
-// Should also work for date columns, e.g. '01/01/2018{enter}'
-Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
+/** 
+ * Should also work for date columns, e.g. '01/01/2018{enter}'.
+ * 
+ * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ */
+Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => {
   describe('Enter value into string field', function() {
 
     cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}`);
-    cy.get(`.form-field-${fieldName}`)
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      //path = `.panel-modal-content ${path}`;
+      path = `.panel-modal ${path}`;
+    }
+    cy.get(path)
       .find('input')
       .type(stringValue);
   });
 });
 
-Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
+/**
+ * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ */
+Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal) => {
   describe('Enter value into text field', function() {
 
-      cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}`);
-      cy.get(`.form-field-${fieldName}`)
+      cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
+
+      let path = `.form-field-${fieldName}`;
+      if (modal) {
+        //path = `.panel-modal-content ${path}`;
+        path = `.panel-modal ${path}`;
+      }
+      cy.get(path)
         .find('textarea')
         .type(stringValue);
     });
   });
 
+/**
+ * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ */
 Cypress.Commands.add(
   'writeIntoLookupListField',
-  (fieldName, partialValue, listValue) => {
+  (fieldName, partialValue, listValue, modal) => {
     describe('Enter value into lookup list field', function() {
-      cy.get(`#lookup_${fieldName}`)
+
+      let path = `#lookup_${fieldName}`;
+      if (modal) {
+        //path = `.panel-modal-content ${path}`;
+        path = `.panel-modal ${path}`;
+      }
+
+      cy.get(path)
         .within(($el) => {
           if ($el.find('.lookup-widget-wrapper input').length) {
             return cy.get('input').clear()
@@ -173,10 +202,17 @@ Cypress.Commands.add(
 
 /**
  * Select the given list value in a static list.
+ * 
+ * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  */
-Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
+Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
   describe('Select value in list field', function() {
-      cy.get(`.form-field-${fieldName}`)
+      let path = `.form-field-${fieldName}`;
+      if (modal) {
+        //path = `.panel-modal-content ${path}`;
+        path = `.panel-modal ${path}`;
+      }
+      cy.get(path)
         .find('.input-dropdown')
         .click();
 
@@ -187,6 +223,9 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
   );
 });
 
+/**
+ * @param expectedStatus - optional; if given, the command verifies the status
+ */
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
   describe('Execute a doc action', function() {
 
@@ -202,10 +241,13 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
       .contains(action)
       .click()
       // .click({ force: true }) // force is needed in some cases with chrome71 (IDK why, to the naked eye the action seems to be visible)
-    cy.log(`Verify that the doc status is now ${expectedStatus}`)
 
     cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist')
-    cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus)
+    if(expectedStatus) {
+      cy.log(`Verify that the doc status is now ${expectedStatus}`)
+
+      cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus)
+    }
   })
 });
 

@@ -51,6 +51,7 @@ describe('purchase - vendor spec', function() {
       cy.location().then(($location)=>{
         const apiUrl = `${config.API_URL}${$location.pathname}`
         cy.log(`Get bpartner JSON - apiUrl=${apiUrl}`)
+        
         cy.request(apiUrl)
           .then(($response)=>{
             const bpartnerJson = $response.body;
