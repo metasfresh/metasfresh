@@ -69,6 +69,29 @@ public interface I_AD_OrgInfo
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set AD_OrgInfo_ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_OrgInfo_ID (int AD_OrgInfo_ID);
+
+	/**
+	 * Get AD_OrgInfo_ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_OrgInfo_ID();
+
+    /** Column definition for AD_OrgInfo_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object> COLUMN_AD_OrgInfo_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object>(I_AD_OrgInfo.class, "AD_OrgInfo_ID", null);
+    /** Column name AD_OrgInfo_ID */
+    public static final String COLUMNNAME_AD_OrgInfo_ID = "AD_OrgInfo_ID";
+
+	/**
 	 * Set Organization Type.
 	 * Organization Type
 	 *
@@ -215,31 +238,6 @@ public interface I_AD_OrgInfo
     public static final String COLUMNNAME_DropShip_Warehouse_ID = "DropShip_Warehouse_ID";
 
 	/**
-	 * Set D-U-N-S.
-	 * Dun & Bradstreet Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDUNS (java.lang.String DUNS);
-
-	/**
-	 * Get D-U-N-S.
-	 * Dun & Bradstreet Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDUNS();
-
-    /** Column definition for DUNS */
-    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object> COLUMN_DUNS = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object>(I_AD_OrgInfo.class, "DUNS", null);
-    /** Column name DUNS */
-    public static final String COLUMNNAME_DUNS = "DUNS";
-
-	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *
@@ -383,7 +381,7 @@ public interface I_AD_OrgInfo
 	 * This message will be displayed at the bottom of a receipt when doing a sales or purchase
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setReceiptFooterMsg (java.lang.String ReceiptFooterMsg);
@@ -393,7 +391,7 @@ public interface I_AD_OrgInfo
 	 * This message will be displayed at the bottom of a receipt when doing a sales or purchase
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getReceiptFooterMsg();
@@ -408,7 +406,7 @@ public interface I_AD_OrgInfo
 	 * Präfix, der (Jasper-)Berichten und Belegen vorangestellt wird, wenn diese Abgerufen werden
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setReportPrefix (java.lang.String ReportPrefix);
@@ -418,7 +416,7 @@ public interface I_AD_OrgInfo
 	 * Präfix, der (Jasper-)Berichten und Belegen vorangestellt wird, wenn diese Abgerufen werden
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getReportPrefix();
@@ -456,31 +454,6 @@ public interface I_AD_OrgInfo
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_User> COLUMN_Supervisor_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_User>(I_AD_OrgInfo.class, "Supervisor_ID", org.compiere.model.I_AD_User.class);
     /** Column name Supervisor_ID */
     public static final String COLUMNNAME_Supervisor_ID = "Supervisor_ID";
-
-	/**
-	 * Set Steuer-ID.
-	 * Tax Identification
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setTaxID (java.lang.String TaxID);
-
-	/**
-	 * Get Steuer-ID.
-	 * Tax Identification
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getTaxID();
-
-    /** Column definition for TaxID */
-    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object> COLUMN_TaxID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object>(I_AD_OrgInfo.class, "TaxID", null);
-    /** Column name TaxID */
-    public static final String COLUMNNAME_TaxID = "TaxID";
 
 	/**
 	 * Set Bank for transfers.
