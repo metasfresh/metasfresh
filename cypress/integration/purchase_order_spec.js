@@ -2,7 +2,6 @@
 
 import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bpartner';
 import { DiscountSchema } from '../support/utils/discountschema';
-import { PurchaseOrder } from '../support/utils/purchase_order';
 
 describe('purchase order Test', function() {
     before(function() {
