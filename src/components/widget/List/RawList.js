@@ -49,7 +49,7 @@ const setSelectedValue = function(dropdownList, selected, defaultValue) {
   return changedValues;
 };
 
-class RawList extends PureComponent {
+export class RawList extends PureComponent {
   constructor(props) {
     super(props);
 

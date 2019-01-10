@@ -2,7 +2,7 @@ import React from 'react';
 import { List } from 'immutable';
 import { mount, shallow } from 'enzyme';
 
-import RawList from '../../../../components/widget/List/RawList';
+import RawList, { RawList as RawListBare } from '../../../../components/widget/List/RawList';
 import fixtures from '../../../../../test_setup/fixtures/raw_list.json';
 
 const createDummyProps = function(props, data) {
@@ -39,6 +39,35 @@ describe('RawList component', () => {
   });
 
   describe('functional tests', () => {
+    it.skip('list focuses and toggles on click', () => {
+      const onOpenDropdownSpy = jest.fn();
+
+      const props = createDummyProps(
+        {
+          ...fixtures.data1.widgetProps,
+          isFocused: false,
+          onOpenDropdown: onOpenDropdownSpy,
+        },
+        fixtures.data1.listData
+      );
+
+      const wrapper = mount(
+        <RawListBare {...props} />
+      );
+      expect(wrapper.find('.input-dropdown-container.focused').length).toBe(0);
+
+      wrapper.find('.input-dropdown-container').simulate('click');
+
+      expect(onOpenDropdownSpy).toBeCalled();
+
+      wrapper.setProps({ isToggled: true, isFocused: true });
+      wrapper.update();
+
+      expect(wrapper.find('.input-dropdown-container.focused').length).toBe(1);
+
+      wrapper.unmount();
+    });
+
     describe('with elements attached to dummy element', function() {
       let wrapper;
 
@@ -52,94 +81,42 @@ describe('RawList component', () => {
         }
       });
 
-      it('list focuses and toggles on click', () => {
+      it('list blurs and stays out of focus after tabbing out', () => {
+        const onCloseDropdownSpy = jest.fn();
+        const onBlurSpy = jest.fn();
         const props = createDummyProps(
           {
             ...fixtures.data1.widgetProps,
-            isFocused: false,
+            isFocused: true,
+            isToggled: false,
+            onCloseDropdown: onCloseDropdownSpy,
+            onBlur: onBlurSpy,
           },
           fixtures.data1.listData
         );
+        const map = {};
+        window.addEventListener = jest.fn((event, cb) => {
+          map[event] = cb;
+        });
+        const eventProps = {
+          preventDefault: jest.fn(),
+          stopPropagation: jest.fn(),
+        };
 
         wrapper = mount(
-          <div><RawList {...props} /></div>,
+          <RawList {...props} />,
           { attachTo: document.body.firstChild }
         );
 
-        // console.log('BU: ', wrapper.find('.input-dropdown-container'));
+        expect(wrapper.find('.input-dropdown-container.focused').length).toBe(1);
 
-        // const bar = document.querySelector('.input-dropdown-container focused')
+        map.keydown({ ...eventProps, key: 'Tab' });
+        wrapper.instance().forceUpdate();
+        wrapper.update();
 
-        // expect(bar.find('.input-dropdown-container focused').length).toBeNull()
-
-        expect(wrapper.find('.input-dropdown-container focused').length).toBe(0);
-
-        // console.log('WRAPPER: ', wrapper.html(), wrapper.find('.input-dropdown-container'));
-
-        wrapper.find('.input-dropdown-container').simulate('click');
-
-                console.log('WRAPPER: ', wrapper.html(), wrapper.find('.input-dropdown-container').length);
-
-
-                // expect(bar.find('.input-dropdown-container focused').length).not.toBeNull();
-                // element.findWhere(node => node.hasClass('.feature__cover'))
-
-        expect(wrapper.find('.input-dropdown-container focused').length).toBe(1);
-
-
-
-        // expect(wrapper.html()).to.contain('Content in component')
-        // expect(document.body.innerHTML).to.not.contain('Content in overlay')
-
-        // expect(wrapper.html()).toContain('focused');
-        // expect(wrapper.find('input').length).toBe(1);
-        // expect(wrapper.find('input').html()).toContain(
-        //   'Testpreisliste Lieferanten'
-        // );
+        expect(onCloseDropdownSpy).not.toHaveBeenCalled();
+        expect(onBlurSpy).toHaveBeenCalled();
       });
-
-      // it('list blurs and stays out of focus after tabbing out', () => {
-      //   const props = createDummyProps(
-      //     {
-      //       ...fixtures.data1.widgetProps,
-      //       isFocused: true,
-      //       isToggled: false,
-      //     },
-      //     fixtures.data1.listData
-      //   );
-
-      //   // wrapper = mount(<RawList {...props} />);
-
-      //   wrapper = mount(
-      //     <RawList {...props} />,
-      //     { attachTo: document.body.firstChild }
-      //   )
-
-      //   // console.log('HTML: ', wrapper.html())
-
-      //   expect(wrapper.html()).toContain('input-dropdown');
-      //   expect(wrapper.html()).toContain('focused');
-
-      //   wrapper.simulate(
-      //     'keyDown',
-      //     {
-      //       key: 'Tab',
-      //   //     target: { value: fixtures.longText.data1.value },
-      //       preventDefault: jest.fn(),
-      //     },
-      //   );
-
-      //   expect(wrapper.html()).not.toContain('focused');
-
-      //   // expect(wrapper.html()).to.contain('Content in component')
-      //   // expect(document.body.innerHTML).to.not.contain('Content in overlay')
-
-      //   // expect(wrapper.html()).toContain('focused');
-      //   // expect(wrapper.find('input').length).toBe(1);
-      //   // expect(wrapper.find('input').html()).toContain(
-      //   //   'Testpreisliste Lieferanten'
-      //   // );
-      // });
     });
   });
 });
