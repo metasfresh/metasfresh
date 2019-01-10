@@ -27,6 +27,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUs
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.reservation.HUReservation.HUReservationBuilder;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
@@ -74,7 +75,7 @@ public class HUReservationService
 	/**
 	 * Creates an HU reservation record and creates dedicated reserved VHUs with HU status "reserved".
 	 */
-	public HUReservation makeReservation(@NonNull final HUReservationRequest reservationRequest)
+	public HUReservation makeReservation(@NonNull final ReserveHUsRequest reservationRequest)
 	{
 		final List<HuId> huIds = Check.assumeNotEmpty(reservationRequest.getHuIds(),
 				"the given request needs to have huIds; request={}", reservationRequest);
@@ -90,7 +91,6 @@ public class HUReservationService
 				.onlyFromUnreservedHUs(true)
 				.keepNewCUsUnderSameParent(true)
 				.productId(reservationRequest.getProductId())
-				// TODO: also add attributes
 				.build();
 
 		final List<I_M_HU> newCUs = huTransformServiceSupplier
@@ -213,5 +213,24 @@ public class HUReservationService
 			map.put(huId, Optional.of(orderLineId));
 		}
 		return ImmutableMap.copyOf(map);
+	}
+
+	public Quantity retrieveAvailableQty(@NonNull final RetrieveAvailableHUQtyRequest request)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final List<I_M_HU> hus = handlingUnitsDAO.retrieveByIds(request.getHuIds());
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+
+		final List<IHUProductStorage> huProductStorages = storageFactory.getHUProductStorages(hus, request.getProductId());
+
+
+		for(final IHUProductStorage huProductStorage:huProductStorages)
+		{
+			huProductStorage.getQty();
+		}
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

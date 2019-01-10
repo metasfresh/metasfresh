@@ -2,14 +2,8 @@ package de.metas.handlingunits.reservation;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.api.IAttributeSet;
-
 import de.metas.handlingunits.HuId;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,19 +32,10 @@ import lombok.Value;
  */
 
 @Value
-public class HUReservationRequest
+public class RetrieveAvailableHUQtyRequest
 {
-	/** always mandatory */
-	Quantity qtyToReserve;
-
-	/** always mandatory */
-	OrderLineId salesOrderLineId;
-
 	/** mandatory, if the given HUs contain different products. */
 	ProductId productId;
-
-	/** optional. */
-	IAttributeSet attributeSet;
 
 	/**
 	 * The HUs from which the respective {@link #qtyToReserve} shall be reserved. can be higher-level-HUs;
@@ -59,18 +44,11 @@ public class HUReservationRequest
 	List<HuId> huIds;
 
 	@Builder
-	private HUReservationRequest(
-			@NonNull final Quantity qtyToReserve,
-			@NonNull final OrderLineId salesOrderLineId,
+	private RetrieveAvailableHUQtyRequest(
 			@NonNull final ProductId productId,
-			@Nullable final IAttributeSet attributeSet,
 			@Singular final List<HuId> huIds)
 	{
-		this.qtyToReserve = qtyToReserve;
-		this.salesOrderLineId = salesOrderLineId;
 		this.productId = productId;
-		this.attributeSet = attributeSet;
 		this.huIds = huIds;
 	}
-
 }

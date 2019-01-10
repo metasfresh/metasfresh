@@ -96,7 +96,7 @@ public class HUReservationServiceTest
 	{
 		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
 
-		final HUReservationRequest request = HUReservationRequest.builder()
+		final ReserveHUsRequest request = ReserveHUsRequest.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(ONE, cuUOM))
@@ -147,7 +147,7 @@ public class HUReservationServiceTest
 		// create one LU with 5 TUs with 40kg each
 		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
 
-		final HUReservationRequest firstRequest = HUReservationRequest.builder()
+		final ReserveHUsRequest firstRequest = ReserveHUsRequest.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
@@ -185,7 +185,7 @@ public class HUReservationServiceTest
 	{
 		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
 
-		final HUReservationRequest firstRequest = HUReservationRequest.builder()
+		final ReserveHUsRequest firstRequest = ReserveHUsRequest.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
@@ -198,7 +198,7 @@ public class HUReservationServiceTest
 		assertThat(firstResult.getReservedQtySum()).isPresent();
 		assertThat(firstResult.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET); // guard
 
-		final HUReservationRequest secondRequest = HUReservationRequest.builder()
+		final ReserveHUsRequest secondRequest = ReserveHUsRequest.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
