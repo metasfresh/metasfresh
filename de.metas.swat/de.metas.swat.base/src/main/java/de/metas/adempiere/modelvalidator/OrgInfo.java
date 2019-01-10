@@ -67,7 +67,7 @@ public class OrgInfo implements ModelValidator
 		final I_AD_OrgInfo orgInfo = create(Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, AD_Org_ID, ITrx.TRXNAME_None), I_AD_OrgInfo.class);
 		if(orgInfo == null)
 		{
-			logger.warn("Unalbe to retrieve AD_OrgInfo for AD_Org_ID={}; AD_Role_ID={}; AD_User_ID={}", AD_Org_ID, AD_Role_ID, AD_User_ID);
+			logger.warn("Unable to retrieve AD_OrgInfo for AD_Org_ID={}; AD_Role_ID={}; AD_User_ID={}", AD_Org_ID, AD_Role_ID, AD_User_ID);
 			return null;
 		}
 		final String ccStoreMode = orgInfo.getStoreCreditCardData();
