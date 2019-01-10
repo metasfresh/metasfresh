@@ -2,16 +2,17 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import java.math.BigDecimal;
 
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.reservation.HUReservationRequest;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.reservation.ReserveHUsRequest;
+import de.metas.handlingunits.reservation.RetrieveAvailableHUQtyRequest;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -52,13 +53,13 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-
 	@Autowired
 	private HUReservationService huReservationService;
 
 	@Autowired
 	private SalesOrderLineRepository salesOrderLineRepository;
+
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private static final String PARAMNAME_QTY_TO_RESERVE = "QtyToReserve";
 	@Param(mandatory = true, parameterName = PARAMNAME_QTY_TO_RESERVE)
@@ -79,7 +80,24 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		if (PARAMNAME_QTY_TO_RESERVE.equals(parameter.getColumnName()))
 		{
 			final SalesOrderLine salesOrderLine = retrieveSalesOrderLine();
-			return salesOrderLine.getOrderedQty().getAsBigDecimal();
+			final Quantity requiredQty = salesOrderLine.getOrderedQty().subtract(salesOrderLine.getDeliveredQty());
+
+			final ImmutableList<HuId> selectedHuIds = streamSelectedHUIds(Select.ALL)
+					.collect(ImmutableList.toImmutableList());
+
+			final RetrieveAvailableHUQtyRequest request = RetrieveAvailableHUQtyRequest
+					.builder()
+					.huIds(selectedHuIds)
+					.productId(salesOrderLine.getProductId())
+					.build();
+			final Quantity availableQty = huReservationService.retrieveAvailableQty(request);
+
+			final Quantity availableQtyInSalesOrderUOM = uomConversionBL.convertQuantityTo(
+					requiredQty,
+					UOMConversionContext.of(salesOrderLine.getProductId()),
+					availableQty.getUOM());
+
+			return availableQty.min(availableQtyInSalesOrderUOM).getAsBigDecimal();
 		}
 		return null;
 	}
@@ -92,15 +110,13 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		final ImmutableList<HuId> selectedHuIds = streamSelectedHUIds(Select.ALL)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(salesOrderLine.getAsiId());
 		final Quantity qtyToReserve = Quantity.of(qtyToReserveBD, salesOrderLine.getOrderedQty().getUOM());
-		
-		final HUReservationRequest reservationRequest = HUReservationRequest
+
+		final ReserveHUsRequest reservationRequest = ReserveHUsRequest
 				.builder()
 				.huIds(selectedHuIds)
-				.qtyToReserve(qtyToReserve)
 				.productId(salesOrderLine.getProductId())
-				.attributeSet(attributeSet)
+				.qtyToReserve(qtyToReserve)
 				.salesOrderLineId(salesOrderLine.getId().getOrderLineId())
 				.build();
 		huReservationService.makeReservation(reservationRequest);
