@@ -106,6 +106,7 @@ public final class CurrentCost
 
 		this.costPrice = from.costPrice;
 		this.currentQty = from.currentQty;
+
 		this.cumulatedAmt = from.cumulatedAmt;
 		this.cumulatedQty = from.cumulatedQty;
 	}
@@ -155,7 +156,7 @@ public final class CurrentCost
 		addCumulatedAmtAndQty(amt, qty);
 	}
 
-	public void addCumulatedAmtAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
+	private void addCumulatedAmtAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
 	{
 		assertCostCurrency(amt);
 
@@ -163,7 +164,13 @@ public final class CurrentCost
 		cumulatedQty = cumulatedQty.add(qty);
 	}
 
-	public void addToCurrentQty(@NonNull final Quantity qtyToAdd)
+	public void addToCurrentQtyAndCumulate(@NonNull final Quantity qtyToAdd, @NonNull final CostAmount amt)
+	{
+		addToCurrentQty(qtyToAdd);
+		addCumulatedAmtAndQty(amt, qtyToAdd);
+	}
+
+	private void addToCurrentQty(@NonNull final Quantity qtyToAdd)
 	{
 		currentQty = currentQty.add(qtyToAdd);
 	}

@@ -90,8 +90,8 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 				currentCosts.addToOwnCostPrice(priceAdjust);
 			}
 		}
-		currentCosts.addToCurrentQty(qty);
-		currentCosts.addCumulatedAmtAndQty(amt, qty);
+
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 
 		utils.saveCurrentCost(currentCosts);
 
@@ -104,7 +104,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-		currentCosts.addToCurrentQty(request.getQty());
+		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt());
 
 		utils.saveCurrentCost(currentCosts);
 

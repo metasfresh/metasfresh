@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailVoidRequest;
@@ -127,9 +128,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		{
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
-			currentCosts.addToCurrentQty(qty);
+			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 		}
 
 		utils.saveCurrentCost(currentCosts);
@@ -149,7 +151,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		}
 		else
 		{
-			currentCosts.addToCurrentQty(qty.negate());
+			currentCosts.addToCurrentQtyAndCumulate(qty.negate(), request.getAmt().negate());
 		}
 
 		utils.saveCurrentCost(currentCosts);

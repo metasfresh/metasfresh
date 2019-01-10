@@ -213,9 +213,10 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		{
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
-			currentCosts.addToCurrentQty(request.getQty());
+			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
 		}
 
 		// Accumulate to order costs

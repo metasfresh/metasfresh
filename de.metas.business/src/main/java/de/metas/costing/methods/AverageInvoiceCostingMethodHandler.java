@@ -100,9 +100,10 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		{
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
-			currentCosts.addToCurrentQty(qty);
+			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 		}
 
 		utils.saveCurrentCost(currentCosts);
