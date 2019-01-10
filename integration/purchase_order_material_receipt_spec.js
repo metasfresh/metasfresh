@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
 
-import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bpartner';
+import { BPartner, BPartnerLocation } from '../support/utils/bpartner';
 import { DiscountSchema, DiscountBreak } from '../support/utils/discountschema';
 import { PurchaseOrder, PurchaseOrderLine } from '../support/utils/purchase_order';
 
