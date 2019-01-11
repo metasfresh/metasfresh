@@ -16,6 +16,7 @@ Here come the actual release notes:
 # Fixes
 * metasfresh-webui-frontend
   * [#2119](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2119) Screen turns grey for 1 sec sometimes
+  * [#2120](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2140) Tab not always working correctly
   * [#2122](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2122) Quick actions dropdown covered by pagination in modals
   * [#2124](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2124) Webcam Foto not working anymore since last chrome update
   * [#2130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2130) Header/subheader not working correctly on mobile
