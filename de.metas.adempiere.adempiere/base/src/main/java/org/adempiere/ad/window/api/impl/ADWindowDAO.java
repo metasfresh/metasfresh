@@ -110,7 +110,7 @@ public class ADWindowDAO implements IADWindowDAO
 				.firstOnly(I_AD_Window.class);
 		return window.getInternalName();
 	}
-	
+
 	@Override
 	public List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow)
 	{
@@ -879,7 +879,6 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public List<I_AD_Field> retrieveFields(final I_AD_Tab adTab)
 	{
-
 		return retrieveFieldsQuery(adTab)
 				.create()
 				.list();
@@ -896,6 +895,16 @@ public class ADWindowDAO implements IADWindowDAO
 		return queryBuilder.orderBy()
 				.addColumn(I_AD_Field.COLUMNNAME_AD_Field_ID)
 				.endOrderBy();
+	}
+
+	@Override
+	public void deleteFieldsByTabId(@NonNull final AdTabId tabId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Field.class)
+				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tabId)
+				.create()
+				.delete();
 	}
 
 	@Override

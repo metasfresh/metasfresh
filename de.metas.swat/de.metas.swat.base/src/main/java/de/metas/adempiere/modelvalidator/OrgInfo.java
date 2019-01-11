@@ -35,8 +35,10 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
 /**
@@ -46,6 +48,8 @@ import de.metas.util.Services;
  */
 public class OrgInfo implements ModelValidator
 {
+	private static final Logger logger = LogManager.getLogger(OrgInfo.class);
+
 	public static final String ENV_ORG_INFO_STORE_CC_DATA = "#StoreCreditCardData";
 	private int ad_Client_ID = -1;
 
@@ -61,6 +65,11 @@ public class OrgInfo implements ModelValidator
 		final Properties ctx = Env.getCtx();
 
 		final I_AD_OrgInfo orgInfo = create(Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, AD_Org_ID, ITrx.TRXNAME_None), I_AD_OrgInfo.class);
+		if(orgInfo == null)
+		{
+			logger.warn("Unable to retrieve AD_OrgInfo for AD_Org_ID={}; AD_Role_ID={}; AD_User_ID={}", AD_Org_ID, AD_Role_ID, AD_User_ID);
+			return null;
+		}
 		final String ccStoreMode = orgInfo.getStoreCreditCardData();
 
 		Env.setContext(ctx, ENV_ORG_INFO_STORE_CC_DATA, ccStoreMode);

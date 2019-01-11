@@ -14,7 +14,7 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2092727521L;
+	private static final long serialVersionUID = 1693165435L;
 
     /** Standard Constructor */
     public X_AD_OrgInfo (Properties ctx, int AD_OrgInfo_ID, String trxName)
@@ -22,9 +22,8 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
       super (ctx, AD_OrgInfo_ID, trxName);
       /** if (AD_OrgInfo_ID == 0)
         {
-			setDUNS (null);
-			setReceiptFooterMsg (null); // 1
-			setTaxID (null);
+			setAD_OrgInfo_ID (0);
+			setReportPrefix (null); // file:////opt/metasfresh/reports
         } */
     }
 
@@ -42,6 +41,28 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set AD_OrgInfo_ID.
+		@param AD_OrgInfo_ID AD_OrgInfo_ID	  */
+	@Override
+	public void setAD_OrgInfo_ID (int AD_OrgInfo_ID)
+	{
+		if (AD_OrgInfo_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_OrgInfo_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_OrgInfo_ID, Integer.valueOf(AD_OrgInfo_ID));
+	}
+
+	/** Get AD_OrgInfo_ID.
+		@return AD_OrgInfo_ID	  */
+	@Override
+	public int getAD_OrgInfo_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgInfo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_AD_OrgType getAD_OrgType() throws RuntimeException
@@ -189,25 +210,6 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set D-U-N-S.
-		@param DUNS 
-		Dun & Bradstreet Number
-	  */
-	@Override
-	public void setDUNS (java.lang.String DUNS)
-	{
-		set_Value (COLUMNNAME_DUNS, DUNS);
-	}
-
-	/** Get D-U-N-S.
-		@return Dun & Bradstreet Number
-	  */
-	@Override
-	public java.lang.String getDUNS () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_DUNS);
 	}
 
 	@Override
@@ -428,25 +430,6 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Steuer-ID.
-		@param TaxID 
-		Tax Identification
-	  */
-	@Override
-	public void setTaxID (java.lang.String TaxID)
-	{
-		set_Value (COLUMNNAME_TaxID, TaxID);
-	}
-
-	/** Get Steuer-ID.
-		@return Tax Identification
-	  */
-	@Override
-	public java.lang.String getTaxID () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_TaxID);
 	}
 
 	@Override
