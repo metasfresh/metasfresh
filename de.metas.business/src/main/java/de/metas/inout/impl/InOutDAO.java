@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -54,6 +55,13 @@ import lombok.NonNull;
 
 public class InOutDAO implements IInOutDAO
 {
+	@Override
+	public I_M_InOutLine getLineById(final int inoutLineId)
+	{
+		Check.assumeGreaterThanZero(inoutLineId, "inoutLineId");
+		return InterfaceWrapperHelper.load(inoutLineId, I_M_InOutLine.class);
+	}
+
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
 	{
