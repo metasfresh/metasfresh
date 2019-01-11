@@ -49,7 +49,7 @@ const setSelectedValue = function(dropdownList, selected, defaultValue) {
   return changedValues;
 };
 
-class RawList extends PureComponent {
+export class RawList extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -72,7 +72,12 @@ class RawList extends PureComponent {
     let dropdownList = this.state.dropdownList;
     let changedValues = {};
 
-    if (!is(prevProps.list, list)) {
+    // If data in the list changed, we either opened or closed the selection dropdown.
+    // If we're closing it (bluring), then we don't care about the whole thing.
+    if (
+      !is(prevProps.list, list) &&
+      !(prevProps.isFocused && !this.props.isFocused)
+    ) {
       dropdownList = List(list);
       if (!mandatory && emptyText) {
         dropdownList = dropdownList.push({
