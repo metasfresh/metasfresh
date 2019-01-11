@@ -55,10 +55,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
-import org.compiere.model.MTransaction;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_M_Transaction;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
@@ -603,23 +601,5 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	private I_C_UOM getProductStockingUOM()
 	{
 		return Services.get(IProductBL.class).getStockingUOM(getM_Product_ID());
-	}
-
-	private String getMovementType()
-	{
-		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
-		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
-		if (costCollectorType.isMaterialReceipt())
-		{
-			return X_M_Transaction.MOVEMENTTYPE_WorkOrderPlus;
-		}
-		else if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
-		{
-			return MTransaction.MOVEMENTTYPE_WorkOrderMinus;
-		}
-		else
-		{
-			return null;
-		}
 	}
 }
