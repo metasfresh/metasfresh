@@ -15,25 +15,25 @@ describe('Create subscription flatrate conditions for three 1-year-periods', fun
         const timestamp = new Date().getTime(); // used in the document names, for ordering
 
         // we start with the conditions for the 3rd/last contract period
-        const year3TransitionName = `${timestamp} Year 3-dontExtend (Cypress Test)`;
-        const year3ConditionsName = `${timestamp} Year 3 (Cypress Test)`;
+        const year3TransitionName = `Transition (S) year 3-dontExtend ${timestamp}`;
+        const year3ConditionsName = `Conditions (S) year 3 ${timestamp}`;
         createAndCompleteTransition(year3TransitionName, null, null);
         createAndCompleteConditions(year3ConditionsName, year3TransitionName);
         cy.screenshot()
 
-        const year2To3TransitionName = `${timestamp} Year 2-3 (Cypress Test)`;
-        const year2ConditionsName = `${timestamp} Year 2 (Cypress Test)`;
+        const year2To3TransitionName = `Transition (S) year 2-3 ${timestamp}`;
+        const year2ConditionsName = `Conditions year 2 ${timestamp}`;
         createAndCompleteTransition(year2To3TransitionName, 'Extend contract for all periods', year3ConditionsName);
         createAndCompleteConditions(year2ConditionsName, year2To3TransitionName);
         cy.screenshot()
 
-        const year1To2TransitionName = `${timestamp} Year 1-2 (Cypress Test)`;
-        const year1ConditionsName = `${timestamp} Year 1 (Cypress Test)`;
+        const year1To2TransitionName = `Transition (S) year 1-2 ${timestamp}`;
+        const year1ConditionsName = `Conditions (S) year 1 ${timestamp}`;
         createAndCompleteTransition(year1To2TransitionName, 'Extend contract for all periods', year2ConditionsName);
         createAndCompleteConditions(year1ConditionsName, year1To2TransitionName);
         cy.screenshot()
 
-        const discountSchemaName = `${timestamp} accumulated amount-based refund conditions (Cypress Test)`;
+        const discountSchemaName = `DiscountSchema (S) ${timestamp}`;
         new DiscountSchema
             .builder(discountSchemaName)
             .addDiscountBreak(new DiscountBreak
@@ -45,7 +45,7 @@ describe('Create subscription flatrate conditions for three 1-year-periods', fun
             .apply()
         cy.screenshot()
 
-        const bPartnerName = `subscription conditions ${timestamp}`;
+        const bPartnerName = `Customer (S) ${timestamp}`;
         new BPartner
             .builder(bPartnerName)
             .setVendor(true)
@@ -71,9 +71,9 @@ function createAndCompleteConditions(conditionsName, transitionName)
 {
         cy.visit('/window/540113/NEW');
         cy.writeIntoStringField('Name', conditionsName);
-        cy.selectInListField('Type_Conditions', 'A', 'Abonnement');
-        cy.selectInListField('OnFlatrateTermExtend', 'Co', 'Copy prices');
-        cy.selectInListField('C_Flatrate_Transition_ID', transitionName, transitionName);
+        cy.selectInListField('Type_Conditions', 'Abonnement');
+        cy.selectInListField('OnFlatrateTermExtend', 'Co');
+        cy.selectInListField('C_Flatrate_Transition_ID', transitionName);
 
         cy.processDocument('Complete', 'Completed');
 }

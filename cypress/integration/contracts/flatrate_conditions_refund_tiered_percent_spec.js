@@ -4,7 +4,7 @@ import { createAndCompleteTransition, createAndCompleteRefundPercentConditions }
 import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
 
-describe('Create tiered percent-based refund conditions', function() {
+describe('Create tiered percent-based (TP) refund conditions', function() {
     before(function() {
         // login before each test and open the flatrate conditions window
         cy.loginByForm();
@@ -13,15 +13,15 @@ describe('Create tiered percent-based refund conditions', function() {
     it('Create tiered percent-based refund conditions and a vendor with a respective contract', function () {
         const timestamp = new Date().getTime(); // used in the document names, for ordering
 
-        const transitionName = `${timestamp} tiered percent-based refund conditions (Cypress Test)`;
+        const transitionName = `Transition (TP) ${timestamp}`;
         createAndCompleteTransition(transitionName, null, null);
         cy.screenshot()
 
-        const conditionsName = `${timestamp} tiered percent-based refund conditions (Cypress Test)`;
+        const conditionsName = `Conditions (TP) ${timestamp}`;
         createAndCompleteRefundPercentConditions(conditionsName, transitionName, 'T'/*Tiered / Gestaffelte Rückvergütung*/);
         cy.screenshot()
 
-        const discountSchemaName = `${timestamp} accumulated amount-based refund conditions (Cypress Test)`;
+        const discountSchemaName = `DiscountSchema (TP) ${timestamp}`;
         new DiscountSchema
             .builder(discountSchemaName)
             .addDiscountBreak(new DiscountBreak
@@ -33,7 +33,7 @@ describe('Create tiered percent-based refund conditions', function() {
             .apply()
         cy.screenshot()
 
-        const bPartnerName = `t5 tiered percent-based refund conditions ${timestamp}`;
+        const bPartnerName = `Vendor (TP) ${timestamp}`;
         new BPartner
             .builder(bPartnerName)
             .setVendor(true)
