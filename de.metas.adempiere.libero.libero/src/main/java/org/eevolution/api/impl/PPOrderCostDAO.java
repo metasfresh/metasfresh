@@ -151,6 +151,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		record.setCurrentCostPriceLL(price.getComponentsCostPrice().getValue());
 
 		record.setCumulatedAmt(from.getAccumulatedAmount().getValue());
+		record.setCumulatedQty(from.getAccumulatedQty());
 		record.setPostCalculationAmt(from.getPostCalculationAmount().getValue());
 
 		if (from.getTrxType().isCoProduct())
@@ -197,6 +198,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 						.componentsCostPrice(CostAmount.of(record.getCurrentCostPriceLL(), currencyId))
 						.build())
 				.accumulatedAmount(CostAmount.of(record.getCumulatedAmt(), currencyId))
+				.accumulatedQty(record.getCumulatedQty())
 				.postCalculationAmount(CostAmount.of(record.getPostCalculationAmt(), currencyId))
 				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.build();
