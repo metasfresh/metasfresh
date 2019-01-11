@@ -454,7 +454,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final String huStatusKey;
 		final String huStatusDisplayName;
 
-		if (hu.isReserved() && huStatusBL.isPhysicalHU(hu))
+		if (hu.isReserved() && huStatusBL.isPhysicalHU(hu)) // if e.g. a reserved HU was shipped, it shall be shown as "shipped" not "reserved"
 		{
 			huStatusKey = MSG_HU_RESERVED;
 			huStatusDisplayName = Services.get(IMsgBL.class).getMsg(Env.getCtx(), huStatusKey);
