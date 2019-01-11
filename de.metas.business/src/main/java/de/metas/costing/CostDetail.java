@@ -99,4 +99,22 @@ public class CostDetail
 			throw new AdempiereException("Previous amounts shall have same currency as the amount: " + this);
 		}
 	}
+
+	public boolean isInboundTrx()
+	{
+		return !isOutboundTrx();
+	}
+
+	public boolean isOutboundTrx()
+	{
+		final Boolean outboundTrx = getDocumentRef().getOutboundTrx();
+		if (outboundTrx != null)
+		{
+			return outboundTrx;
+		}
+		else
+		{
+			return getQty().signum() < 0;
+		}
+	}
 }
