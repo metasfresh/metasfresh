@@ -16,11 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Description;
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_DocumentNo;
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Name;
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Value;
-
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
@@ -170,7 +165,7 @@ public abstract class PO
 	private static DocWorkflowMgr s_docWFMgr = null;
 
 	/** User Maintained Entity Type */
-	static public final String ENTITYTYPE_UserMaintained = "U";
+	static protected final String ENTITYTYPE_UserMaintained = "U";
 	/** Dictionary Maintained Entity Type */
 	static public final String ENTITYTYPE_Dictionary = "D";
 
@@ -469,13 +464,13 @@ public abstract class PO
 		// same class
 		if (o1.getClass().equals(o2.getClass()))
 		{
-			int index = get_ColumnIndex(COLUMNNAME_DocumentNo);
+			int index = get_ColumnIndex("DocumentNo");
 			if (index == -1)
-				index = get_ColumnIndex(COLUMNNAME_Value);
+				index = get_ColumnIndex("Value");
 			if (index == -1)
-				index = get_ColumnIndex(COLUMNNAME_Name);
+				index = get_ColumnIndex("Name");
 			if (index == -1)
-				index = get_ColumnIndex(COLUMNNAME_Description);
+				index = get_ColumnIndex("Description");
 			if (index != -1)
 			{
 				final PO po1 = (PO)o1;
@@ -2296,7 +2291,7 @@ public abstract class PO
 	 * @param AD_Org_ID org
 	 */
 	@OverridingMethodsMustInvokeSuper
-	public void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
+	protected void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
 		if (AD_Client_ID != getAD_Client_ID())
 			setAD_Client_ID(AD_Client_ID);
@@ -3060,16 +3055,8 @@ public abstract class PO
 	 */
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		/**
-		 * Prevents saving
-		 * log.error("Error", Msg.parseTranslation(getCtx(), "@C_Currency_ID@ = @C_Currency_ID@"));
-		 * log.error("FillMandatory", Msg.getElement(getCtx(), "PriceEntered"));
-		 * /** Issues message
-		 * log.saveWarning(AD_Message, message);
-		 * log.saveInfo (AD_Message, message);
-		 **/
 		return true;
-	}	// beforeSave
+	}
 
 	/**
 	 * Called after Save for Post-Save Operation
