@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -77,7 +78,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.PagedIterator.Page;
-
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -449,9 +449,12 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private static JSONLookupValue createHUStatusDisplayLookupValue(@NonNull final I_M_HU hu)
 	{
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
 		final String huStatusKey;
 		final String huStatusDisplayName;
-		if (hu.isReserved())
+
+		if (hu.isReserved() && huStatusBL.isPhysicalHU(hu)) // if e.g. a reserved HU was shipped, it shall be shown as "shipped" not "reserved"
 		{
 			huStatusKey = MSG_HU_RESERVED;
 			huStatusDisplayName = Services.get(IMsgBL.class).getMsg(Env.getCtx(), huStatusKey);

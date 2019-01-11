@@ -5,11 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.ProductId;
+import de.metas.purchasecandidate.SalesOrderLine;
+import de.metas.purchasecandidate.SalesOrderLineRepository;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
@@ -43,13 +47,30 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 	@Autowired
 	private HUReservationService huReservationService;
 
+	@Autowired
+	private SalesOrderLineRepository salesOrderLineRepository;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final boolean anyReservedHuSelected = streamSelectedHUs(Select.ALL)
-				.anyMatch(I_M_HU::isReserved);
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(),salesOrderLineRepository);
+		final ProductId productId = salesOrderLine.getProductId();
 
-		return ProcessPreconditionsResolution.acceptIf(anyReservedHuSelected);
+		final Quantity unreservableQty = retrieveUnreservableQuantity(productId);
+		if (unreservableQty.signum() <= 0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No unreservableQty quantity for productId=" + productId);
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	private Quantity retrieveUnreservableQuantity(final ProductId productId)
+	{
+		final RetrieveHUsQtyRequest request = WEBUI_C_OrderLineSO_Util.createHuQuantityRequest(
+				streamSelectedHUIds(Select.ALL), productId);
+		final Quantity reservableQty = huReservationService.retrieveUnreservableQty(request);
+		return reservableQty;
 	}
 
 	@Override
