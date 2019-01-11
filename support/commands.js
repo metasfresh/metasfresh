@@ -231,10 +231,11 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
 
     cy.log(`Execute doc action ${action}`)
 
-    cy.get('.form-field-DocAction')
-      .find('.meta-dropdown-toggle')
+    cy.get('.form-field-DocAction .meta-dropdown-toggle')
       .click()
-      .should('have.class', 'dropdown-status-open')
+
+    cy.get('.form-field-DocAction .dropdown-status-open')
+      .should('exist')
 
     cy.get('.form-field-DocAction .dropdown-status-list')
       .find('.dropdown-status-item')
@@ -258,20 +259,35 @@ Cypress.Commands.add('openAdvancedEdit', () => {
   })
 });
 
-Cypress.Commands.add('pressAddNewButton', () => {
+/** 
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
+ */
+Cypress.Commands.add('pressAddNewButton', (waitBeforePress) => {
   describe('Press table\'s add-new-record-button', function() {
+
+    if(waitBeforePress) {
+      cy.wait(waitBeforePress)
+    }
     const addNewText = Cypress.messages.window.addNew.caption;
     cy.get('.btn')
         .contains(addNewText)
         .should('exist')
         .click();
         
-    cy.get('.panel-modal').should('exist');
+    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+        .should('exist');
   })
 });
 
-Cypress.Commands.add('pressBatchEntryButton', () => {
+/** 
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
+ */
+Cypress.Commands.add('pressBatchEntryButton', (waitBeforePress) => {
   describe('Press table\'s batch-entry-record-button', function() {
+
+    if(waitBeforePress) {
+      cy.wait(waitBeforePress)
+    }
     const batchEntryText = Cypress.messages.window.batchEntry.caption;
     cy.get('.btn')
         .contains(batchEntryText)
@@ -284,9 +300,15 @@ Cypress.Commands.add('pressBatchEntryButton', () => {
 
 /*
  * Press an overlay's "Done" button. Fail if there is a confirm dialog since that means the record could not be saved. 
+ * 
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
  */
-Cypress.Commands.add('pressDoneButton', () => {
+Cypress.Commands.add('pressDoneButton', (waitBeforePress) => {
   describe('Press an overlay\'s done-button', function() {
+
+    if(waitBeforePress) {
+      cy.wait(waitBeforePress)
+    }
 
     // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
     // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
@@ -300,11 +322,21 @@ Cypress.Commands.add('pressDoneButton', () => {
       .contains(doneText)
       .should('exist')
       .click();
+
+    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+      .should('not.exist');
   })
 });
 
-Cypress.Commands.add('pressStartButton', () => {
+/** 
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
+ */
+Cypress.Commands.add('pressStartButton', (waitBeforePress) => {
   describe('Press an overlay\'s start-button', function() {
+
+    if(waitBeforePress) {
+      cy.wait(waitBeforePress)
+    }
 
     // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
     // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
@@ -401,7 +433,6 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
       cy.get(`.form-field-C_Location_ID`).click();
       cy.wait('@completeAddress');
     });
-
   });
 });
 
@@ -410,14 +441,22 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
  */
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {
-    if (!active) {
-      cy.get('.quick-actions-wrapper .btn-inline').eq(0).click();
-      cy.get('.quick-actions-dropdown').should('exist');
 
-      return cy.get(`#quickAction_${actionName}`).click();
+    let path = `.quick-actions-wrapper` // default action
+
+    if (!active) {
+
+      cy.get('.quick-actions-wrapper .btn-inline').eq(0).click()
+      cy.get('.quick-actions-dropdown').should('exist')
+
+      path = `#quickAction_${actionName}`
     }
 
-    return cy.get('.quick-actions-wrapper').click();
+    return cy
+      .get(path)
+      .click()
+      .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+      .should('exist');;
   });
 });
 
@@ -426,8 +465,11 @@ Cypress.Commands.add('executeHeaderAction', (actionName) => {
     cy.get('.header-container .btn-square .meta-icon-more').click();
     cy.get('.subheader-container').should('exist');
 
-    //return cy.get(`#headerAction_${name}`).click();
-    return cy.get(`#headerAction_${actionName}`).click();
+    return cy
+      .get(`#headerAction_${actionName}`)
+      .click()
+      .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+      .should('exist');
   });
 });
 

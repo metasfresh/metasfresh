@@ -115,6 +115,6 @@ function applyDiscountBreak(discountBreak)
 
     cy.writeIntoStringField('BreakValue', discountBreak.breakValue)
     cy.writeIntoStringField('BreakDiscount', discountBreak.breakDiscount)
-
+    cy.selectInListField('PriceBase', 'F')
     cy.pressDoneButton()
 }
