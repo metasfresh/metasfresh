@@ -4,7 +4,7 @@ import { createAndCompleteTransition, createAndCompleteRefundPercentConditions }
 import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
 
-describe('Create accumulated percent-based refund conditions', function() {
+describe('Create accumulated percent-based (AP) refund conditions', function() {
     before(function() {
         // login before each test and open the flatrate conditions window
         cy.loginByForm();
@@ -13,15 +13,15 @@ describe('Create accumulated percent-based refund conditions', function() {
     it('Create accumulated percent-based refund conditions', function () {
         const timestamp = new Date().getTime(); // used in the document names, for ordering
 
-        const transitionName = `${timestamp} accumulated percent-based refund conditions (Cypress Test)`;
+        const transitionName = `Transitions (AP) ${timestamp}`;
         createAndCompleteTransition(transitionName, null, null)
         cy.screenshot()
 
-        const conditionsName = `${timestamp} accumulated percent-based refund conditions (Cypress Test)`;
+        const conditionsName = `Conditions  (AP) ${timestamp}`;
         createAndCompleteRefundPercentConditions(conditionsName, transitionName, 'A'/*Accumulated / Gesamtrückvergütung*/);
         cy.screenshot()
 
-        const discountSchemaName = `${timestamp} accumulated amount-based refund conditions (Cypress Test)`;
+        const discountSchemaName = `Discount schema (AP) ${timestamp}`;
         new DiscountSchema
             .builder(discountSchemaName)
             .addDiscountBreak(new DiscountBreak
@@ -33,7 +33,7 @@ describe('Create accumulated percent-based refund conditions', function() {
             .apply()
         cy.screenshot()
 
-        const bPartnerName = `accumulated percent-based refund conditions ${timestamp}`;
+        const bPartnerName = `Vendor (AP) ${timestamp}`;
         new BPartner
             .builder(bPartnerName)
             .setVendor(true)
