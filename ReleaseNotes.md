@@ -12,6 +12,8 @@ Here come the actual release notes:
 
 # metasfresh 5.87
 # Features
+* metasfresh
+  * [#4863](https://github.com/metasfresh/metasfresh/issues/4863) Add created/ updated to asynch workpackage and filter for created
 
 # Fixes
 * metasfresh-webui-frontend
