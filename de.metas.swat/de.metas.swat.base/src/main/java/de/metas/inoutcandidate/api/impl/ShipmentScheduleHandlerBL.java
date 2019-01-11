@@ -134,7 +134,6 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				.addColumn(I_M_IolCandHandler.Table_Name)
 				.endOrderBy()
 				.create()
-				.setApplyAccessFilter(true)
 				.firstOnly(I_M_IolCandHandler.class);
 	}
 

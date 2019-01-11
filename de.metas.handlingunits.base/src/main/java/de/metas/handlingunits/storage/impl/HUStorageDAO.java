@@ -10,12 +10,12 @@ package de.metas.handlingunits.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,11 +69,12 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	@Override
 	public I_M_HU_Storage retrieveStorage(final I_M_HU hu, @NonNull final ProductId productId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Storage.class, hu)
-				.filter(new EqualsQueryFilter<I_M_HU_Storage>(I_M_HU_Storage.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
-				.filter(new EqualsQueryFilter<I_M_HU_Storage>(I_M_HU_Storage.COLUMNNAME_M_Product_ID, productId))
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Storage.class, hu)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_Product_ID, productId)
 				.create()
-				.setOnlyActiveRecords(true)
 				.firstOnly(I_M_HU_Storage.class);
 	}
 
