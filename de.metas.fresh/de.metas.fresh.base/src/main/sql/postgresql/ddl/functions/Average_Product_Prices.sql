@@ -4,8 +4,30 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_pr
     IN p_datefrom date,
     IN p_dateto date,
     IN p_issotrx character)
-  RETURNS TABLE(produktnr character varying, produktname character varying, merkmal text, menge numeric, menge_lieferung numeric, mengenenheit character varying, preis numeric, betragchf text, wahrung character, preisenheit character varying, produktkategorie character varying, geschaftspartnernr character varying, geschaftspartnername character varying, country character varying, adr character varying, label character varying, belegnr character varying, bewegungsdatum timestamp without time zone) AS
-$BODY$
+ 
+ RETURNS TABLE 
+(
+	ProduktNr character varying(40),
+	ProduktName character varying(225),
+	Merkmal text,
+	Menge numeric,
+	Menge_Lieferung numeric,
+	Mengenenheit character varying,
+	Preis numeric,
+	BetragCHF text,
+	Wahrung character(3),
+	Preisenheit character varying,
+	ProduktKategorie character varying(60),
+	GeschaftspartnerNr character varying(40),
+	GeschaftspartnerName character varying(60),
+	Country character varying,
+	ADR character varying,
+	Label character varying,
+	BelegNr character varying(30), 
+	BewegungsDatum timestamp without time zone
+)
+AS
+ $BODY$
 
 SELECT 
 	p.Value AS ProduktNr
@@ -17,10 +39,22 @@ SELECT
 	, ic.qtyOrdered AS Menge
 	, iol.MovementQty AS Menge_Lieferung
 	, uom.uomsymbol AS Mengenenheit
-	, round(COALESCE( (SELECT avg(il.PriceEntered) from C_Invoice_Line_Alloc ila 
-		JOIN C_InvoiceLine il on ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
-		JOIN C_Invoice i on il.C_Invoice_Id = i.C_Invoice_ID where ic.C_Invoice_Candidate_ID = ila.C_Invoice_Candidate_ID
-	and i.docstatus in ('CO', 'CL')),  ic.PriceActual_Net_Effective),2) AS Preis
+	, round(
+		COALESCE( 
+			(SELECT avg(il.PriceEntered) 
+					FROM C_Invoice_Line_Alloc ila 
+					JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
+					JOIN C_Invoice i ON il.C_Invoice_Id = i.C_Invoice_ID 
+					WHERE ic.C_Invoice_Candidate_ID = ila.C_Invoice_Candidate_ID
+						AND i.docstatus in ('CO', 'CL')
+						AND ila.isActive = 'Y'
+						AND i.IsActive = 'Y'
+						AND il.IsActive = 'Y'
+			),  
+			ic.PriceActual_Net_Effective)
+		,
+		2) 
+		AS Preis
 	,COALESCE((CASE WHEN c.iso_code != 'CHF'
 		THEN ROUND(currencyConvert(ic.PriceActual_Net_Effective * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty)
 			, ic.C_Currency_ID -- p_curfrom_id
@@ -55,8 +89,6 @@ SELECT
 	 
 FROM C_Invoice_Candidate ic
 
-
-
 INNER JOIN M_Product p ON ic.M_Product_ID = p.M_Product_ID
 INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
 
@@ -74,6 +106,7 @@ INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
 LEFT OUTER JOIN PP_Order pp ON ic.Record_ID = pp.PP_Order_ID AND ic.AD_Table_ID = get_Table_ID('PP_Order')
 
 LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+
 
 WHERE 
 	ic.isSOTrx = p_issotrx
