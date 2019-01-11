@@ -116,6 +116,15 @@ public final class CurrentCost
 		return new CurrentCost(this);
 	}
 
+	public void setFrom(final CostDetailPreviousAmounts previousAmounts)
+	{
+		this.costPrice = previousAmounts.getCostPrice();
+		this.currentQty = previousAmounts.getCumulatedQty();
+
+		this.cumulatedAmt = previousAmounts.getCumulatedAmt();
+		this.cumulatedQty = previousAmounts.getCumulatedQty();
+	}
+
 	public CostElementId getCostElementId()
 	{
 		return getCostElement().getId();

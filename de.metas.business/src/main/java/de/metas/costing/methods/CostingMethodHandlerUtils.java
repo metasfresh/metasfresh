@@ -1,5 +1,7 @@
 package de.metas.costing.methods;
 
+import java.util.stream.Stream;
+
 import org.springframework.stereotype.Service;
 
 import de.metas.acct.api.AcctSchema;
@@ -82,6 +84,12 @@ public class CostingMethodHandlerUtils
 				.build();
 	}
 
+	private CostSegmentAndElement extractCostSegmentAndElement(final CostDetail costDetail)
+	{
+		return extractCostSegment(costDetail)
+				.withCostElementId(costDetail.getCostElementId());
+	}
+
 	public CostSegmentAndElement extractCostSegmentAndElement(final CostDetailCreateRequest request)
 	{
 		final AcctSchema acctSchema = acctSchemaRepo.getById(request.getAcctSchemaId());
@@ -150,6 +158,12 @@ public class CostingMethodHandlerUtils
 		return getCurrentCost(costSegmentAndElement);
 	}
 
+	public final CurrentCost getCurrentCost(final CostDetail costDetail)
+	{
+		final CostSegmentAndElement costSegmentAndElement = extractCostSegmentAndElement(costDetail);
+		return getCurrentCost(costSegmentAndElement);
+	}
+
 	public final CurrentCost getCurrentCost(final CostSegmentAndElement costSegmentAndElement)
 	{
 		return currentCostsRepo.getOrCreate(costSegmentAndElement);
@@ -193,5 +207,19 @@ public class CostingMethodHandlerUtils
 				request.getCurrencyConversionTypeId(),
 				request.getClientId(),
 				request.getOrgId());
+	}
+
+	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
+	{
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(costDetail.getProductId(), costDetail.getAcctSchemaId());
+		return costDetailsRepo.streamOrderedById(CostDetailQuery.builder()
+				.acctSchemaId(costDetail.getAcctSchemaId())
+				.costElementId(costDetail.getCostElementId())
+				.productId(costDetail.getProductId())
+				.attributeSetInstanceId(costingLevel.effectiveValueOrNull(costDetail.getAttributeSetInstanceId()))
+				.clientId(costingLevel.effectiveValue(costDetail.getClientId()))
+				.orgId(costingLevel.effectiveValueOrNull(costDetail.getOrgId()))
+				.afterCostDetailId(costDetail.getId())
+				.build());
 	}
 }
