@@ -4,6 +4,7 @@ import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,6 +14,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
@@ -32,6 +35,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
 import mockit.Mocked;
+import mockit.Tested;
 
 /*
  * #%L
@@ -57,13 +61,29 @@ import mockit.Mocked;
 
 public class CandidateAssignmentServiceTest
 {
+	private static final CurrencyId CURRENCY_ID = CurrencyId.ofRepoId(102);
+	private static final Percent PERCENT_10 = Percent.of(TEN);
+	private static final Percent PERCENT_15 = Percent.of("15");
+
+	private static final Money money_0_00 = Money.zero(CURRENCY_ID);
+	private static final Money money_1_30 = Money.of("1.3", CURRENCY_ID);
+	private static final Money money_1_40 = Money.of("1.4", CURRENCY_ID);
+	private static final Money money_1_80 = Money.of("1.8", CURRENCY_ID);
+	private static final Money money_2_60 = Money.of("2.6", CURRENCY_ID);
+	private static final Money money_3_40 = Money.of("3.4", CURRENCY_ID);
+	private static final Money money_5_20 = Money.of("5.2", CURRENCY_ID);
+	private static final Money money_12_00 = Money.of("12", CURRENCY_ID);
+	private static final Money money_14_00 = Money.of("14", CURRENCY_ID);
+	private static final Money money_26_00 = Money.of("26", CURRENCY_ID);
+
+	private Quantity quantity_0;
+	private Quantity quantity_4;
+	private Quantity quantity_12;
+	private Quantity quantity_14;
+	private Quantity quantity_26;
+	private Quantity quantity_30;
+
 	private static final BigDecimal FIFTEEN = new BigDecimal("15");
-
-	private static final BigDecimal FOURTEEN = new BigDecimal("14");
-
-	private static final BigDecimal TWELVE = new BigDecimal("12");
-
-	private static final BigDecimal TWENTY_SIX = new BigDecimal("26");
 
 	private I_C_UOM uomRecord;
 
@@ -85,30 +105,52 @@ public class CandidateAssignmentServiceTest
 	@Mocked
 	private RefundConfigChangeService refundConfigChangeService;
 
+	@Tested
+	private CandidateAssignmentService candidateAssignmentService;
+
+	private InvoiceSchedule invoiceSchedule;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		uomRecord = newInstance(I_C_UOM.class);
+
+		quantity_0 = Quantity.zero(uomRecord);
+		quantity_4 = Quantity.of("4", uomRecord);
+		quantity_12 = Quantity.of("12", uomRecord);
+		quantity_14 = Quantity.of("14", uomRecord);
+		quantity_26 = Quantity.of("26", uomRecord);
+		quantity_30 = Quantity.of("30", uomRecord);
+
+		invoiceSchedule = InvoiceSchedule.builder()
+				.id(InvoiceScheduleId.ofRepoId(540006))
+				.frequency(Frequency.MONTLY)
+				.invoiceDayOfMonth(30)
+				.invoiceDistance(6)
+				.build();
+
+		candidateAssignmentService = new CandidateAssignmentService(
+				refundContractRepository,
+				refundInvoiceCandidateService,
+				assignableInvoiceCandidateRepository,
+				assignmentToRefundCandidateRepository,
+				refundInvoiceCandidateRepository,
+				refundConfigChangeService);
 	}
 
 	@Test
-	public void unassignSingleCandidate()
+	public void unassignSingleCandidate_exceedingQty()
 	{
 		final RefundConfig refundConfig_0 = RefundConfig.builder()
 				.id(RefundConfigId.ofRepoId(1000001))
 				.minQty(ZERO)
 				.refundInvoiceType(RefundInvoiceType.INVOICE)
 				.refundBase(RefundBase.PERCENTAGE)
-				.percent(Percent.of(TEN))
+				.percent(PERCENT_10)
 				.productId(ProductId.ofRepoId(2005577))
-				.invoiceSchedule(InvoiceSchedule.builder()
-						.id(InvoiceScheduleId.ofRepoId(540006))
-						.frequency(Frequency.MONTLY)
-						.invoiceDayOfMonth(30)
-						.invoiceDistance(6)
-						.build())
+				.invoiceSchedule(invoiceSchedule)
 				.conditionsId(ConditionsId.ofRepoId(1000017))
 				.useInProfitCalculation(false)
 				.refundMode(RefundMode.APPLY_TO_EXCEEDING_QTY)
@@ -119,14 +161,9 @@ public class CandidateAssignmentServiceTest
 				.minQty(FIFTEEN)
 				.refundInvoiceType(RefundInvoiceType.INVOICE)
 				.refundBase(RefundBase.PERCENTAGE)
-				.percent(Percent.of(new BigDecimal("20")))
+				.percent(PERCENT_15)
 				.productId(ProductId.ofRepoId(2005577))
-				.invoiceSchedule(InvoiceSchedule.builder()
-						.id(InvoiceScheduleId.ofRepoId(540006))
-						.frequency(Frequency.MONTLY)
-						.invoiceDayOfMonth(30)
-						.invoiceDistance(6)
-						.build())
+				.invoiceSchedule(invoiceSchedule)
 				.conditionsId(ConditionsId.ofRepoId(1000017))
 				.useInProfitCalculation(false)
 				.refundMode(RefundMode.APPLY_TO_EXCEEDING_QTY)
@@ -148,12 +185,9 @@ public class CandidateAssignmentServiceTest
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(refundContract)
 				.refundConfig(refundConfig_15)
-				.money(Money.of(new BigDecimal("5.2"), CurrencyId.ofRepoId(102)))
-				.assignedQuantity(Quantity.of(TWENTY_SIX, uomRecord))
+				.money(money_5_20)
+				.assignedQuantity(quantity_26)
 				.build();
-
-		final Money money_1_40 = Money.of(new BigDecimal("1.4"), CurrencyId.ofRepoId(102));
-		final Money money_2_40 = Money.of(new BigDecimal("2.4"), CurrencyId.ofRepoId(102));
 
 		final RefundInvoiceCandidate refundCandidate_14 = RefundInvoiceCandidate
 				.builder()
@@ -163,47 +197,39 @@ public class CandidateAssignmentServiceTest
 				.refundContract(refundContract)
 				.refundConfig(refundConfig_0)
 				.money(money_1_40)
-				.assignedQuantity(Quantity.of(FOURTEEN, uomRecord))
-
+				.assignedQuantity(quantity_14)
 				.build();
 
+		final InvoiceCandidateId assignableCandidateId = InvoiceCandidateId.ofRepoId(1000023);
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
-				.id(InvoiceCandidateId.ofRepoId(1000023))
+				.id(assignableCandidateId)
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
 				.productId(ProductId.ofRepoId(2005577))
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
-				.money(Money.of(TWENTY_SIX, CurrencyId.ofRepoId(102)))
+				.money(money_26_00)
 				.precision(2)
-				.quantity(Quantity.of(TWENTY_SIX, uomRecord))
+				.quantity(quantity_26)
 				.assignmentToRefundCandidate(AssignmentToRefundCandidate
 						.builder()
-						.refundConfigId(RefundConfigId.ofRepoId(1000002))
-						.assignableInvoiceCandidateId(InvoiceCandidateId.ofRepoId(1000023))
+						.refundConfigId(refundConfig_15.getId())
+						.assignableInvoiceCandidateId(assignableCandidateId)
 						.refundInvoiceCandidate(refundCandidate_26)
-						.moneyBase(Money.of(TWELVE, CurrencyId.ofRepoId(102)))
-						.moneyAssignedToRefundCandidate(money_2_40)
-						.quantityAssigendToRefundCandidate(Quantity.of(TWELVE, uomRecord))
+						.moneyBase(money_12_00)
+						.moneyAssignedToRefundCandidate(money_1_80) /* 15% of 12 */
+						.quantityAssigendToRefundCandidate(quantity_12)
 						.useAssignedQtyInSum(true)
 						.build())
 				.assignmentToRefundCandidate(AssignmentToRefundCandidate
 						.builder()
-						.refundConfigId(RefundConfigId.ofRepoId(1000001))
-						.assignableInvoiceCandidateId(InvoiceCandidateId.ofRepoId(1000023))
+						.refundConfigId(refundConfig_0.getId())
+						.assignableInvoiceCandidateId(assignableCandidateId)
 						.refundInvoiceCandidate(refundCandidate_14)
-						.moneyBase(Money.of(FOURTEEN, CurrencyId.ofRepoId(102)))
-						.moneyAssignedToRefundCandidate(money_1_40)
-						.quantityAssigendToRefundCandidate(Quantity.of(FOURTEEN, uomRecord))
+						.moneyBase(money_14_00)
+						.moneyAssignedToRefundCandidate(money_1_40) /* 10% of 14 */
+						.quantityAssigendToRefundCandidate(quantity_14)
 						.useAssignedQtyInSum(true)
 						.build())
 				.build();
-
-		final CandidateAssignmentService candidateAssignmentService = new CandidateAssignmentService(
-				refundContractRepository,
-				refundInvoiceCandidateService,
-				assignableInvoiceCandidateRepository,
-				assignmentToRefundCandidateRepository,
-				refundInvoiceCandidateRepository,
-				refundConfigChangeService);
 
 		// invoke the method under test
 		final UnassignResult result = candidateAssignmentService.unassignSingleCandidate(assignableCandidate);
@@ -214,28 +240,126 @@ public class CandidateAssignmentServiceTest
 
 		final List<UnassignedPairOfCandidates> resultUnassignedPairs = result.getUnassignedPairs();
 		assertThat(resultUnassignedPairs)
-				.hasSize(2)
-				.allSatisfy(p -> assertThat(p.getAssignableInvoiceCandidate().getId()).isEqualTo(InvoiceCandidateId.ofRepoId(1000023)))
-				.anySatisfy(p -> assertThat(p.getUnassignedQuantity().getAsBigDecimal()).isEqualByComparingTo(TWELVE))
-				.anySatisfy(p -> assertThat(p.getUnassignedQuantity().getAsBigDecimal()).isEqualByComparingTo(FOURTEEN));
+				.extracting("assignableInvoiceCandidate.id",
+						"unassignedQuantity",
+						"refundInvoiceCandidate.id",
+						"refundInvoiceCandidate.assignedQuantity",
+						"refundInvoiceCandidate.money",
+						"refundInvoiceCandidate.refundConfigs")
+				.containsOnly(
+						tuple(assignableCandidateId, quantity_12, refundCandidate_26.getId(), quantity_14/* 26-12 */, money_3_40/* 5.2-(15% of 12) */, ImmutableList.of(refundConfig_15)),
+						tuple(assignableCandidateId, quantity_14, refundCandidate_14.getId(), quantity_0/* 14-14 */, money_0_00, ImmutableList.of(refundConfig_0)));
+	}
 
-		assertThat(resultUnassignedPairs)
-				.filteredOn(p -> p.getUnassignedQuantity().getAsBigDecimal().compareTo(TWELVE) == 0)
-				.hasSize(1)
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate_26.getId()))
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getAssignedQuantity().getAsBigDecimal()).isEqualTo(FOURTEEN)/* 26-12 */)
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo(new BigDecimal("2.8"))) /*5.2 - (20% of 12=2.4)*/
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getRefundConfigs()).hasSize(1))
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getRefundConfigs().get(0).getMinQty()).isEqualByComparingTo(FIFTEEN));
+	@Test
+	public void unassignSingleCandidate_allQtys()
+	{
+		final RefundConfig refundConfig_0 = RefundConfig.builder()
+				.id(RefundConfigId.ofRepoId(1000001))
+				.minQty(ZERO)
+				.refundInvoiceType(RefundInvoiceType.INVOICE)
+				.refundBase(RefundBase.PERCENTAGE)
+				.percent(PERCENT_10)
+				.productId(ProductId.ofRepoId(2005577))
+				.invoiceSchedule(InvoiceSchedule.builder()
+						.id(InvoiceScheduleId.ofRepoId(540006))
+						.frequency(Frequency.MONTLY)
+						.invoiceDayOfMonth(30)
+						.invoiceDistance(6)
+						.build())
+				.conditionsId(ConditionsId.ofRepoId(1000017))
+				.useInProfitCalculation(false)
+				.refundMode(RefundMode.APPLY_TO_ALL_QTIES)
+				.build();
 
+		final RefundConfig refundConfig_15 = RefundConfig.builder()
+				.id(RefundConfigId.ofRepoId(1000002))
+				.minQty(FIFTEEN)
+				.refundInvoiceType(RefundInvoiceType.INVOICE)
+				.refundBase(RefundBase.PERCENTAGE)
+				.percent(PERCENT_15) // 5% more than the preceeding
+				.productId(ProductId.ofRepoId(2005577))
+				.invoiceSchedule(invoiceSchedule)
+				.conditionsId(ConditionsId.ofRepoId(1000017))
+				.useInProfitCalculation(false)
+				.refundMode(RefundMode.APPLY_TO_ALL_QTIES)
+				.build();
+
+		final RefundContract refundContract = RefundContract.builder()
+				.id(FlatrateTermId.ofRepoId(1000000))
+				.refundConfig(refundConfig_15)
+				.refundConfig(refundConfig_0)
+				.startDate(LocalDate.parse("2018-12-01"))
+				.endDate(LocalDate.parse("2019-11-30"))
+				.bPartnerId(BPartnerId.ofRepoId(2156423))
+				.build();
+
+		final RefundInvoiceCandidate refundCandidate_30 = RefundInvoiceCandidate
+				.builder()
+				.id(InvoiceCandidateId.ofRepoId(1000024))
+				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.invoiceableFrom(LocalDate.parse("2019-11-30"))
+				.refundContract(refundContract)
+				.refundConfig(refundConfig_0)
+				.refundConfig(refundConfig_15)
+				.money(money_5_20)
+				.assignedQuantity(quantity_30)
+				.build();
+
+		final InvoiceCandidateId assignableCandidateId = InvoiceCandidateId.ofRepoId(1000023);
+
+		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
+				.id(assignableCandidateId)
+				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.productId(ProductId.ofRepoId(2005577))
+				.invoiceableFrom(LocalDate.parse("2018-12-17"))
+				.money(money_26_00)
+				.precision(2)
+				.quantity(quantity_26)
+				.assignmentToRefundCandidate(AssignmentToRefundCandidate
+						.builder()
+						.refundConfigId(refundConfig_0.getId())
+						.assignableInvoiceCandidateId(assignableCandidateId)
+						.refundInvoiceCandidate(refundCandidate_30)
+						.moneyBase(money_26_00)
+						.moneyAssignedToRefundCandidate(money_2_60)
+						.quantityAssigendToRefundCandidate(quantity_26)
+						.useAssignedQtyInSum(true)
+						.build())
+				.assignmentToRefundCandidate(AssignmentToRefundCandidate
+						.builder()
+						.refundConfigId(refundConfig_15.getId())
+						.assignableInvoiceCandidateId(assignableCandidateId)
+						.refundInvoiceCandidate(refundCandidate_30)
+						.moneyBase(money_26_00)
+						.moneyAssignedToRefundCandidate(money_1_30)
+						.quantityAssigendToRefundCandidate(quantity_26)
+						.useAssignedQtyInSum(false)
+						.build())
+				.build();
+
+		// invoke the method under test
+		final UnassignResult result = candidateAssignmentService.unassignSingleCandidate(assignableCandidate);
+
+		final AssignableInvoiceCandidate resultAssignableCandidate = result.getAssignableCandidate();
+		assertThat(resultAssignableCandidate.getAssignmentsToRefundCandidates()).isEmpty();
+		assertThat(resultAssignableCandidate.isAssigned()).isFalse();
+
+		final List<UnassignedPairOfCandidates> resultUnassignedPairs = result.getUnassignedPairs();
 		assertThat(resultUnassignedPairs)
-				.filteredOn(p -> p.getUnassignedQuantity().getAsBigDecimal().compareTo(FOURTEEN) == 0)
-				.hasSize(1)
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate_14.getId()))
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getAssignedQuantity().getAsBigDecimal()).isZero()/* 14-14 */)
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getMoney().getValue()).isZero()) /**/
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getRefundConfigs()).hasSize(1))
-				.allSatisfy(p -> assertThat(p.getRefundInvoiceCandidate().getRefundConfigs().get(0).getMinQty()).isEqualByComparingTo(ZERO));
+				.extracting("assignableInvoiceCandidate.id",
+						"unassignedQuantity",
+						"refundInvoiceCandidate.id",
+						"refundInvoiceCandidate.assignedQuantity",
+						"refundInvoiceCandidate.money",
+						"refundInvoiceCandidate.refundConfigs")
+				.containsOnly(
+						tuple(assignableCandidateId,
+								quantity_26,
+								refundCandidate_30.getId(),
+								quantity_4/* 30-26 */,
+								money_1_30/* 5.2-2.6-1.3 */,
+								ImmutableList.of(refundConfig_0, refundConfig_15)/* the unassign didn't update the candidate's configs */));
 
 	}
 }

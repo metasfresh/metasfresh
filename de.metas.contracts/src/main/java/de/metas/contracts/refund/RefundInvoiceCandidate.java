@@ -16,6 +16,7 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -101,5 +102,28 @@ public class RefundInvoiceCandidate
 				.subtract(getAssignedQuantity())
 				.subtract(ONE)
 				.max(Quantity.zero(uomRecord));
+	}
+
+	public RefundInvoiceCandidate subtractAssignment(@NonNull final AssignmentToRefundCandidate assignmentToRefundCandidate)
+	{
+		Check.assume(assignmentToRefundCandidate.getRefundInvoiceCandidate().getId().equals(getId()),
+				"The given assignmentToRefundCandidate needs to be an assignment to this refund candidate; this={}, assignmentToRefundCandidate={}",
+				this, assignmentToRefundCandidate);
+
+		final RefundInvoiceCandidateBuilder builder = toBuilder();
+
+		final Money moneySubtrahent = assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate();
+		final Money newMoneyAmount = getMoney().subtract(moneySubtrahent);
+		builder.money(newMoneyAmount);
+
+		if (assignmentToRefundCandidate.isUseAssignedQtyInSum())
+		{
+			final Quantity assignedQuantitySubtrahent = assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate();
+			final Quantity newQuantity = getAssignedQuantity().subtract(assignedQuantitySubtrahent);
+
+			builder.assignedQuantity(newQuantity);
+		}
+
+		return builder.build();
 	}
 }
