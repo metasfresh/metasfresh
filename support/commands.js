@@ -456,7 +456,7 @@ Cypress.Commands.add('executeQuickAction', (actionName, active) => {
       .get(path)
       .click()
       .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-      .should('exist');;
+      .should('exist')
   });
 });
 
@@ -469,7 +469,7 @@ Cypress.Commands.add('executeHeaderAction', (actionName) => {
       .get(`#headerAction_${actionName}`)
       .click()
       .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-      .should('exist');
+      .should('exist')
   });
 });
 
