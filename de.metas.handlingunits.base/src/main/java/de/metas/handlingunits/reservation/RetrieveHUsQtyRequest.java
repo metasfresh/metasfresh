@@ -32,7 +32,7 @@ import lombok.Value;
  */
 
 @Value
-public class RetrieveAvailableHUQtyRequest
+public class RetrieveHUsQtyRequest
 {
 	/** mandatory, if the given HUs contain different products. */
 	ProductId productId;
@@ -44,7 +44,7 @@ public class RetrieveAvailableHUQtyRequest
 	List<HuId> huIds;
 
 	@Builder
-	private RetrieveAvailableHUQtyRequest(
+	private RetrieveHUsQtyRequest(
 			@NonNull final ProductId productId,
 			@Singular final List<HuId> huIds)
 	{

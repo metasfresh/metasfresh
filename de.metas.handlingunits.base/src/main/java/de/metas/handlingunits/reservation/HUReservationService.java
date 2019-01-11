@@ -4,35 +4,45 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
 import de.metas.document.engine.IDocument;
+import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
+import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.reservation.HUReservation.HUReservationBuilder;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Setter;
 
@@ -215,7 +225,19 @@ public class HUReservationService
 		return ImmutableMap.copyOf(map);
 	}
 
-	public Quantity retrieveAvailableQty(@NonNull final RetrieveAvailableHUQtyRequest request)
+	public Quantity retrieveReservableQty(@NonNull final RetrieveHUsQtyRequest request)
+	{
+		return retrieveQuantity(request, this::isHuReservable);
+	}
+
+	public Quantity retrieveUnreservableQty(@NonNull final RetrieveHUsQtyRequest request)
+	{
+		return retrieveQuantity(request, this::isHuUnreservable);
+	}
+
+	private Quantity retrieveQuantity(
+			@NonNull final RetrieveHUsQtyRequest request,
+			@NonNull final Predicate<I_M_HU> reservablePredicate)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -223,14 +245,72 @@ public class HUReservationService
 		final List<I_M_HU> hus = handlingUnitsDAO.retrieveByIds(request.getHuIds());
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 
-		final List<IHUProductStorage> huProductStorages = storageFactory.getHUProductStorages(hus, request.getProductId());
+		final Mutable<Quantity> result = new Mutable<>();
+		final HashSet<HuId> alreadySeenHuIds = new HashSet<>();
+		new HUIterator()
+				.setDate(SystemTime.asDate())
+				.setListener(new HUIteratorListenerAdapter()
+				{
+					@Override
+					public Result beforeHU(@NonNull final IMutable<I_M_HU> hu)
+					{
+						final I_M_HU huRecord = hu.getValue();
+						if (!alreadySeenHuIds.add(HuId.ofRepoId(huRecord.getM_HU_ID())))
+						{
+							return Result.SKIP_DOWNSTREAM; // if we already saw the current HU, then we also already saw its children
+						}
+						if (reservablePredicate.test(huRecord)) // only count "elementary" storages
+						{
+							final List<IHUProductStorage> huProductStorages = storageFactory.getHUProductStorages(ImmutableList.of(huRecord), request.getProductId());
 
+							Quantity vhuResult = null;
 
-		for(final IHUProductStorage huProductStorage:huProductStorages)
+							// this can be done with stream, but old-school seems easier to understand&debug to me
+							for (final IHUProductStorage huProductStorage : huProductStorages)
+							{
+								vhuResult = vhuResult == null ? huProductStorage.getQty() : vhuResult.add(huProductStorage.getQty());
+							}
+							result.setValue(result.getValue() == null ? vhuResult : result.getValue().add(vhuResult));
+						}
+						return Result.CONTINUE;
+					}
+				})
+				.iterate(hus);
+
+		if (result.getValue() == null)
 		{
-			huProductStorage.getQty();
+			final I_C_UOM stockingUomRecord = Services.get(IProductBL.class).getStockingUOM(request.getProductId());
+			return Quantity.zero(stockingUomRecord);
 		}
-		// TODO Auto-generated method stub
-		return null;
+
+		return result.getValue();
+	}
+
+	private boolean isHuReservable(@NonNull final I_M_HU huRecord)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (!handlingUnitsBL.isVirtual(huRecord))
+		{
+			return false;
+		}
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		return huStatusBL.isStatusActive(huRecord) && !huRecord.isReserved();
+	}
+
+	private boolean isHuUnreservable(@NonNull final I_M_HU huRecord)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (!handlingUnitsBL.isVirtual(huRecord))
+		{
+			return false;
+		}
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		return huStatusBL.isStatusActive(huRecord) && huRecord.isReserved();
+	}
+
+	public Optional<Quantity> retrieveReservedQty(@NonNull final OrderLineId orderLineId)
+	{
+		final HUReservation reservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
+		return reservation.getReservedQtySum();
 	}
 }
