@@ -9,16 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
-import de.metas.handlingunits.reservation.RetrieveAvailableHUQtyRequest;
-import de.metas.order.OrderLineId;
+import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.quantity.Quantity;
@@ -68,10 +67,16 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final boolean anyActiveHuSelected = streamSelectedHUs(Select.ALL)
-				.anyMatch(hu -> X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()));
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
+		final ProductId productId = salesOrderLine.getProductId();
 
-		return ProcessPreconditionsResolution.acceptIf(anyActiveHuSelected);
+		final Quantity reservableQty = retrieveReservableQuantity(productId);
+		if (reservableQty.signum() <= 0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No reservalbe quantity for productId=" + productId);
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
@@ -79,33 +84,49 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	{
 		if (PARAMNAME_QTY_TO_RESERVE.equals(parameter.getColumnName()))
 		{
-			final SalesOrderLine salesOrderLine = retrieveSalesOrderLine();
-			final Quantity requiredQty = salesOrderLine.getOrderedQty().subtract(salesOrderLine.getDeliveredQty());
+			final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
+			final ProductId productId = salesOrderLine.getProductId();
 
-			final ImmutableList<HuId> selectedHuIds = streamSelectedHUIds(Select.ALL)
-					.collect(ImmutableList.toImmutableList());
+			final Quantity orderedQty = salesOrderLine.getOrderedQty();
 
-			final RetrieveAvailableHUQtyRequest request = RetrieveAvailableHUQtyRequest
-					.builder()
-					.huIds(selectedHuIds)
-					.productId(salesOrderLine.getProductId())
-					.build();
-			final Quantity availableQty = huReservationService.retrieveAvailableQty(request);
+			final Quantity reservedQty = huReservationService
+					.retrieveReservedQty(salesOrderLine.getId().getOrderLineId())
+					.orElse(orderedQty.toZero());
 
-			final Quantity availableQtyInSalesOrderUOM = uomConversionBL.convertQuantityTo(
-					requiredQty,
-					UOMConversionContext.of(salesOrderLine.getProductId()),
-					availableQty.getUOM());
+			final Quantity reservedQtyInSalesOrderUOM = uomConversionBL.convertQuantityTo(
+					reservedQty,
+					UOMConversionContext.of(productId),
+					orderedQty.getUOM());
 
-			return availableQty.min(availableQtyInSalesOrderUOM).getAsBigDecimal();
+			final Quantity requiredQty = orderedQty
+					.subtract(salesOrderLine.getDeliveredQty())
+					.subtract(reservedQtyInSalesOrderUOM);
+
+			final Quantity reservableQty = retrieveReservableQuantity(productId);
+
+			final Quantity reservableQtyInSalesOrderUOM = uomConversionBL.convertQuantityTo(
+					reservableQty,
+					UOMConversionContext.of(productId),
+					orderedQty.getUOM());
+
+			return requiredQty.min(reservableQtyInSalesOrderUOM).getAsBigDecimal();
 		}
 		return null;
+	}
+
+	private Quantity retrieveReservableQuantity(@NonNull final ProductId productId)
+	{
+		final RetrieveHUsQtyRequest request = WEBUI_C_OrderLineSO_Util.createHuQuantityRequest(
+				streamSelectedHUIds(Select.ALL), productId);
+
+		final Quantity reservableQty = huReservationService.retrieveReservableQty(request);
+		return reservableQty;
 	}
 
 	@Override
 	protected String doIt()
 	{
-		final SalesOrderLine salesOrderLine = retrieveSalesOrderLine();
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
 
 		final ImmutableList<HuId> selectedHuIds = streamSelectedHUIds(Select.ALL)
 				.collect(ImmutableList.toImmutableList());
@@ -122,14 +143,5 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		huReservationService.makeReservation(reservationRequest);
 
 		return MSG_OK;
-	}
-
-	private SalesOrderLine retrieveSalesOrderLine()
-	{
-		final OrderLineId orderLineId = getView()
-				.getParameterAsIdOrNull(WEBUI_C_OrderLineSO_Launch_HUEditor.VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID);
-
-		final SalesOrderLine salesOrderLine = salesOrderLineRepository.getById(orderLineId);
-		return salesOrderLine;
 	}
 }
