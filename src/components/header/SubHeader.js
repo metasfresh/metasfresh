@@ -106,9 +106,16 @@ class Subheader extends Component {
     }
   };
 
-  handleClickOutside = () => {
+  handleClickOutside = event => {
     const { closeSubheader } = this.props;
-    closeSubheader();
+    const { target } = event;
+
+    if (
+      !target.classList.contains('btn-header') &&
+      !target.parentElement.classList.contains('btn-header')
+    ) {
+      closeSubheader();
+    }
   };
 
   toggleAttachmentDelete = value => {

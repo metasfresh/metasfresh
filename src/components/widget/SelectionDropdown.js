@@ -220,7 +220,7 @@ export default class SelectionDropdown extends Component {
 
   renderOption = option => {
     const { selected } = this.props;
-    const { key, caption } = option;
+    const { key, caption, description } = option;
 
     return (
       <div
@@ -233,6 +233,7 @@ export default class SelectionDropdown extends Component {
             'input-dropdown-list-option-key-on': option === selected,
           }
         )}
+        title={description ? description : null}
         onMouseEnter={() => this.handleMouseEnter(option)}
         onMouseDown={() => this.handleMouseDown(option)}
       >

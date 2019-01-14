@@ -1,27 +1,35 @@
 /// <reference types="Cypress" />
 
 import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bpartner';
+import { DiscountSchema } from '../support/utils/discountschema';
 
 describe('purchase order Test', function() {
     before(function() {
         // login before each test
         cy.loginByForm();
     });
+    
+    const timestamp = new Date().getTime() // used in the document names, for ordering
+    const poReference = `${timestamp}`;
+    const contactLastName = `2ndary ${timestamp}`;
 
-    const timestamp = new Date().getTime(); // used in the document names, for ordering
-    const poReference = `${timestamp} (Cypress Test)`;
-    const contactLastName = `2ndary ${timestamp} (Cypress Test)`;
-
-    const vendorName = `${timestamp} (Cypress Test)`; // "Test Lieferant"
+    const vendorName = `Vendor ${timestamp}`
+    const discountSchemaName = `DiscountSchema ${timestamp}`
 
 
     it('Create a vendor, then a purchase order', function() {
 
-            new BPartner
-                .builder(vendorName)
+        new DiscountSchema
+            .builder(discountSchemaName)
+            .setValidFrom('01/01/2019{enter}')
+            .build()
+            .apply();
+
+        new BPartner
+            .builder(vendorName)
                 .setVendor(true)
-                .setVendorPricingSystem("Testpreisliste Lieferanten")
-                .setVendorDiscountSchema("STandard")
+                .setVendorPricingSystem('Testpreisliste Lieferanten')
+                .setVendorDiscountSchema(discountSchemaName)
                 .addLocation(new BPartnerLocation
                     .builder('Address1')
                     .setCity('Cologne')
@@ -51,5 +59,4 @@ describe('purchase order Test', function() {
             cy.writeIntoStringField('POReference', poReference);
             cy.clickOnCheckBox('IsDropShip');
     });
-
 });

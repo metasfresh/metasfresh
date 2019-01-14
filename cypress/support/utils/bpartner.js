@@ -14,7 +14,9 @@ export class BPartner
 
     apply() 
     {
+        cy.log(`BPartner - apply - START (name=${this.name})`);
         applyBPartner(this);
+        cy.log(`BPartner - apply - END (name=${this.name})`);
         return this;
     }
 
@@ -24,7 +26,7 @@ export class BPartner
         {
             constructor(name) 
             {
-              cy.log(`BPartnerBuilder - name = ${name}`);
+              cy.log(`BPartnerBuilder - set name = ${name}`);
               this.name = name;
               this.isVendor = false;
               this.vendorPricingSystem = undefined;
@@ -36,25 +38,25 @@ export class BPartner
           
             setVendor(isVendor)
             {
-               cy.log(`BPartnerBuilder - isVendor = ${isVendor}`);
+               cy.log(`BPartnerBuilder - set isVendor = ${isVendor}`);
                this.isVendor = isVendor;
                return this;
             }
             setVendorPricingSystem(vendorPricingSystem)
             {
-                cy.log(`BPartnerBuilder - vendorPricingSystem = ${vendorPricingSystem}`);
+                cy.log(`BPartnerBuilder - set vendorPricingSystem = ${vendorPricingSystem}`);
                 this.vendorPricingSystem = vendorPricingSystem;
                 return this; 
             }
             setVendorDiscountSchema(vendorDiscountSchema)
             {
-               cy.log(`BPartnerBuilder - vendorDiscountSchema = ${vendorDiscountSchema}`);
+               cy.log(`BPartnerBuilder - set vendorDiscountSchema = ${vendorDiscountSchema}`);
                this.vendorDiscountSchema = vendorDiscountSchema;
                return this;
             }
             setCustomer(isCustomer)
             {
-                cy.log(`BPartnerBuilder - isCustomer = ${isCustomer}`);
+                cy.log(`BPartnerBuilder - set isCustomer = ${isCustomer}`);
                 this.isCustomer = isCustomer;
                 return this;
             }
@@ -95,19 +97,19 @@ export class BPartnerLocation
         {
             constructor(name) 
             {
-                cy.log(`BPartnerLocationBuilder - name = ${name}`);
+                cy.log(`BPartnerLocationBuilder - set name = ${name}`);
                 this.name = name;
             } 
 
             setCity(city)
             {
-                cy.log(`BPartnerLocationBuilder - city = ${city}`);
+                cy.log(`BPartnerLocationBuilder - set city = ${city}`);
                 this.city = city;
                 return this;
             }
             setCountry(country) 
             {
-                cy.log(`BPartnerLocationBuilder - country = ${country}`);
+                cy.log(`BPartnerLocationBuilder - set country = ${country}`);
                 this.country = country;
                 return this;
             }
@@ -141,23 +143,22 @@ export class BPartnerContact
 
             setFirstName(firstName)
             {
-                cy.log(`BPartnerContactBuilder - firstName = ${firstName}`);
+                cy.log(`BPartnerContactBuilder - set firstName = ${firstName}`);
                 this.firstName = firstName;
                 return this;
             }
             setLastName(lastName) 
             {
-                cy.log(`BPartnerContactBuilder - lastName = ${lastName}`);
+                cy.log(`BPartnerContactBuilder - set lastName = ${lastName}`);
                 this.lastName = lastName;
                 return this;
             }
             setDefaultContact(isDefaultContact)
             {
-                cy.log(`BPartnerContactBuilder - defaultContact = ${isDefaultContact}`);
+                cy.log(`BPartnerContactBuilder - set defaultContact = ${isDefaultContact}`);
                 this.isDefaultContact = isDefaultContact;
                 return this;
             }
-
             build() 
             {
                 return new BPartnerContact(this);
@@ -171,10 +172,11 @@ function applyBPartner(bPartner)
 {
     describe(`Create new bPartner ${bPartner.name}`, function () {
 
-        cy.visit('/window/123/NEW');
-
+        cy.visit('/window/123/NEW')
+        cy.wait(500) // TODO: better figure out how to wait until the layout was gotten and processed
         cy.writeIntoStringField('CompanyName', bPartner.name);
         cy.writeIntoStringField('Name2', bPartner.name);
+
         if(bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem) 
         {
             cy.selectTab('Vendor');
@@ -230,7 +232,7 @@ function applyLocation(bPartnerLocation)
 {
     cy.selectTab('C_BPartner_Location');
     cy.pressAddNewButton();
-    cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
+    //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
     cy.writeIntoStringField('Name', bPartnerLocation.name);
     
     cy.editAddress('C_Location_ID', function () {

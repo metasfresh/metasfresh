@@ -319,7 +319,7 @@ class Header extends Component {
     }
 
     state.isSubheaderShow =
-      clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false;
+      clickedItem === 'isSubheaderShow' ? !isSubheaderShow : false;
 
     this.setState(state, callback);
 
@@ -460,9 +460,9 @@ class Header extends Component {
                       widgetData={[docStatusData]}
                       noLabel
                       type="primary"
-                      dropdownOpenCallback={() => {
-                        this.closeOverlays('dropdown');
-                      }}
+                      dropdownOpenCallback={() =>
+                        this.closeOverlays('dropdown')
+                      }
                       {...docStatus}
                     />
                     {tooltipOpen === keymap.DOC_STATUS && (
@@ -542,10 +542,7 @@ class Header extends Component {
                         'btn-meta-primary': !isSideListShow,
                       }
                     )}
-                    onClick={() => {
-                      this.closeOverlays();
-                      this.handleSidelistToggle(0);
-                    }}
+                    onClick={() => this.handleSidelistToggle(0)}
                     onMouseEnter={() =>
                       this.toggleTooltip(keymap.OPEN_SIDEBAR_MENU_0)
                     }

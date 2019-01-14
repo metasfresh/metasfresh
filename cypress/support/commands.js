@@ -130,32 +130,61 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
   });
 });
 
-// Should also work for date columns, e.g. '01/01/2018{enter}'
-Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
+/** 
+ * Should also work for date columns, e.g. '01/01/2018{enter}'.
+ * 
+ * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ */
+Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => {
   describe('Enter value into string field', function() {
 
     cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}`);
-    cy.get(`.form-field-${fieldName}`)
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      //path = `.panel-modal-content ${path}`;
+      path = `.panel-modal ${path}`;
+    }
+    cy.get(path)
       .find('input')
       .type(stringValue);
   });
 });
 
-Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
+/**
+ * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ */
+Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal) => {
   describe('Enter value into text field', function() {
 
-      cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}`);
-      cy.get(`.form-field-${fieldName}`)
+      cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
+
+      let path = `.form-field-${fieldName}`;
+      if (modal) {
+        //path = `.panel-modal-content ${path}`;
+        path = `.panel-modal ${path}`;
+      }
+      cy.get(path)
         .find('textarea')
         .type(stringValue);
     });
   });
 
+/**
+ * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ */
 Cypress.Commands.add(
   'writeIntoLookupListField',
-  (fieldName, partialValue, listValue) => {
+  (fieldName, partialValue, listValue, modal) => {
     describe('Enter value into lookup list field', function() {
-      cy.get(`#lookup_${fieldName}`)
+
+      let path = `#lookup_${fieldName}`;
+      if (modal) {
+        //path = `.panel-modal-content ${path}`;
+        path = `.panel-modal ${path}`;
+      }
+
+      cy.get(path)
         .within(($el) => {
           if ($el.find('.lookup-widget-wrapper input').length) {
             return cy.get('input').clear()
@@ -173,10 +202,17 @@ Cypress.Commands.add(
 
 /**
  * Select the given list value in a static list.
+ * 
+ * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  */
-Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
+Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
   describe('Select value in list field', function() {
-      cy.get(`.form-field-${fieldName}`)
+      let path = `.form-field-${fieldName}`;
+      if (modal) {
+        //path = `.panel-modal-content ${path}`;
+        path = `.panel-modal ${path}`;
+      }
+      cy.get(path)
         .find('.input-dropdown')
         .click();
 
@@ -187,28 +223,32 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
   );
 });
 
+/**
+ * @param expectedStatus - optional; if given, the command verifies the status
+ */
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
   describe('Execute a doc action', function() {
 
     cy.log(`Execute doc action ${action}`)
 
-    cy.get('.form-field-DocAction')
-      .find('.meta-dropdown-toggle')
-      .click();
+    cy.get('.form-field-DocAction .meta-dropdown-toggle')
+      .click()
 
-    cy.get('.form-field-DocAction')
-      .find('.dropdown-status-toggler')
-      .should('have.class', 'dropdown-status-open');
+    cy.get('.form-field-DocAction .dropdown-status-open')
+      .should('exist')
 
     cy.get('.form-field-DocAction .dropdown-status-list')
       .find('.dropdown-status-item')
       .contains(action)
-      .click({ force: true }) // force is needed in some cases with chrome71 (IDK why, to the naked eye the action seems to be visible)
-
-    cy.log(`Verify that the doc status is now ${expectedStatus}`)
+      .click()
+      // .click({ force: true }) // force is needed in some cases with chrome71 (IDK why, to the naked eye the action seems to be visible)
 
     cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist')
-    cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus)
+    if(expectedStatus) {
+      cy.log(`Verify that the doc status is now ${expectedStatus}`)
+
+      cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus)
+    }
   })
 });
 
@@ -219,20 +259,35 @@ Cypress.Commands.add('openAdvancedEdit', () => {
   })
 });
 
-Cypress.Commands.add('pressAddNewButton', () => {
+/** 
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
+ */
+Cypress.Commands.add('pressAddNewButton', (waitBeforePress) => {
   describe('Press table\'s add-new-record-button', function() {
+
+    if(waitBeforePress) {
+      cy.wait(waitBeforePress)
+    }
     const addNewText = Cypress.messages.window.addNew.caption;
     cy.get('.btn')
         .contains(addNewText)
         .should('exist')
         .click();
         
-    cy.get('.panel-modal').should('exist');
+    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+        .should('exist');
   })
 });
 
-Cypress.Commands.add('pressBatchEntryButton', () => {
+/** 
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
+ */
+Cypress.Commands.add('pressBatchEntryButton', (waitBeforePress) => {
   describe('Press table\'s batch-entry-record-button', function() {
+
+    if(waitBeforePress) {
+      cy.wait(waitBeforePress)
+    }
     const batchEntryText = Cypress.messages.window.batchEntry.caption;
     cy.get('.btn')
         .contains(batchEntryText)
@@ -245,9 +300,15 @@ Cypress.Commands.add('pressBatchEntryButton', () => {
 
 /*
  * Press an overlay's "Done" button. Fail if there is a confirm dialog since that means the record could not be saved. 
+ * 
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
  */
-Cypress.Commands.add('pressDoneButton', () => {
+Cypress.Commands.add('pressDoneButton', (waitBeforePress) => {
   describe('Press an overlay\'s done-button', function() {
+
+    if(waitBeforePress) {
+      cy.wait(waitBeforePress)
+    }
 
     // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
     // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
@@ -261,11 +322,21 @@ Cypress.Commands.add('pressDoneButton', () => {
       .contains(doneText)
       .should('exist')
       .click();
+
+    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+      .should('not.exist');
   })
 });
 
-Cypress.Commands.add('pressStartButton', () => {
+/** 
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
+ */
+Cypress.Commands.add('pressStartButton', (waitBeforePress) => {
   describe('Press an overlay\'s start-button', function() {
+
+    if(waitBeforePress) {
+      cy.wait(waitBeforePress)
+    }
 
     // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
     // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
@@ -362,7 +433,6 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
       cy.get(`.form-field-C_Location_ID`).click();
       cy.wait('@completeAddress');
     });
-
   });
 });
 
@@ -371,14 +441,22 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
  */
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {
-    if (!active) {
-      cy.get('.quick-actions-wrapper .btn-inline').eq(0).click();
-      cy.get('.quick-actions-dropdown').should('exist');
 
-      return cy.get(`#quickAction_${actionName}`).click();
+    let path = `.quick-actions-wrapper` // default action
+
+    if (!active) {
+
+      cy.get('.quick-actions-wrapper .btn-inline').eq(0).click()
+      cy.get('.quick-actions-dropdown').should('exist')
+
+      path = `#quickAction_${actionName}`
     }
 
-    return cy.get('.quick-actions-wrapper').click();
+    return cy
+      .get(path)
+      .click()
+      .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+      .should('exist')
   });
 });
 
@@ -387,8 +465,11 @@ Cypress.Commands.add('executeHeaderAction', (actionName) => {
     cy.get('.header-container .btn-square .meta-icon-more').click();
     cy.get('.subheader-container').should('exist');
 
-    //return cy.get(`#headerAction_${name}`).click();
-    return cy.get(`#headerAction_${actionName}`).click();
+    return cy
+      .get(`#headerAction_${actionName}`)
+      .click()
+      .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+      .should('exist')
   });
 });
 

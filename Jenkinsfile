@@ -140,10 +140,11 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 			publishedDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
 		}
 
+		final misc = new de.metas.jenkins.Misc()
 		currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
 <ul>
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
-<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${MF_UPSTREAM_BRANCH}_LATEST</code></li>
+<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${misc.mkDockerTag(MF_UPSTREAM_BRANCH)}_LATEST</code></li>
 </ul>"""
 	} // configFileProvider
  } // node

@@ -2,9 +2,10 @@
 
 import { createAndCompleteTransition, createAndCompleteRefundAmountConditions } from '../../support/utils/contract';
 import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
+import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
 //import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 
-describe('Create tiered amount-based refund conditions', function() {
+describe('Create tiered amount-based (TA) refund conditions', function() {
     before(function() {
         // login before each test and open the flatrate conditions window
         cy.loginByForm();
@@ -13,30 +14,45 @@ describe('Create tiered amount-based refund conditions', function() {
     it('Create tiered amount-based refund conditions and a vendor with a respective contract', function () {
         const timestamp = new Date().getTime(); // used in the document names, for ordering
 
-        const transitionName = `t5 tiered amount-based refund conditions ${timestamp}`;
+        const transitionName = `Transition (TA) ${timestamp}`;
         createAndCompleteTransition(transitionName, null, null);
+        cy.screenshot()
 
-        const conditionsName = `t5 tiered amount-based refund conditions ${timestamp}`;
+        const conditionsName = `Conditions (TA) ${timestamp}`;
         createAndCompleteRefundAmountConditions(conditionsName, transitionName, 'T'/*Tiered / Gestaffelte Rückvergütung*/);
+        cy.screenshot()
 
-        const bPartnerName = `t5 tiered amount-based refund conditions ${timestamp}`;
+        const discountSchemaName = `DiscountSchema (TA) ${timestamp}`;
+        new DiscountSchema
+            .builder(discountSchemaName)
+            .addDiscountBreak(new DiscountBreak
+                .builder()
+                .setBreakValue(0)
+                .setBreakDiscount(0)
+                .build())
+            .build()
+            .apply()
+        cy.screenshot()
 
+        const bPartnerName = `Vendor (TA) ${timestamp}`;
         new BPartner
             .builder(bPartnerName)
-            .vendor(true)
-            .vendorDiscountSchema('STandard')
-            .location(new BPartnerLocation
+            .setVendor(true)
+            .setVendorDiscountSchema(discountSchemaName)
+            .addLocation(new BPartnerLocation
                 .builder('Address1')
-                .city('Cologne')
-                .country('Deutschland')
+                .setCity('Cologne')
+                .setCountry('Deutschland')
                 .build())
             .build()
             .apply();
+        cy.screenshot()
 
         cy.executeHeaderAction('C_Flatrate_Term_Create_For_BPartners')
             .selectInListField('C_Flatrate_Conditions_ID', conditionsName, conditionsName)
-            .writeIntoStringField('StartDate', '01/01/2018{enter}')
+            .writeIntoStringField('StartDate', '01/01/2019{enter}')
             .pressStartButton();
+        cy.screenshot();
         // TODO: verify that we have a contract (maybe via selectReference)
 
         // new PurchaseOrder
